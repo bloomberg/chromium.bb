@@ -72,10 +72,16 @@ template <typename T> void V8_USE(T) { }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterfaceConstructor", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        return;
+    }
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArgument, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArgument2, info[1]);
     ExecutionContext* context = getExecutionContext();
     Document& document = *toDocument(getExecutionContext());
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, stringArgument, stringArgument2, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;
@@ -114,7 +120,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceConstructorTempl
         0, 0,
         isolate, currentWorldType);
     functionTemplate->SetCallHandler(V8TestInterfaceConstructor::constructorCallback);
-    functionTemplate->SetLength(0);
+    functionTemplate->SetLength(2);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
 

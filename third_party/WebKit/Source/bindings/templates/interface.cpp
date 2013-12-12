@@ -129,21 +129,34 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 
 
 {##############################################################################}
+{% from 'methods.cpp' import generate_argument %}
 {% block constructor %}
 {% if has_constructor %}
 {# FIXME: support overloading #}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {% if constructor_arguments %}
+    {# FIXME: support optional arguments #}
+    {% set number_of_arguments = constructor_arguments|length %}
+    {# FIXME: remove this UNLIKELY: constructors are heavy, so no difference. #}
+    if (UNLIKELY(info.Length() < {{number_of_arguments}})) {
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{number_of_arguments}}, info.Length())), info.GetIsolate());
+        return;
+    }
+    {% endif %}
     {% if is_constructor_raises_exception %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% for argument in constructor_arguments %}
+    {{generate_argument(constructor_method, argument) | indent}}
+    {% endfor %}
     {% if is_constructor_call_with_execution_context %}
     ExecutionContext* context = getExecutionContext();
     {% endif %}
     {% if is_constructor_call_with_document %}
     Document& document = *toDocument(getExecutionContext());
     {% endif %}
-    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor_arguments | join(', ')}});
+    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor_argument_list | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
@@ -390,7 +403,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
 
     {% if has_constructor or has_event_constructor %}
     functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
-    functionTemplate->SetLength({{length}});
+    functionTemplate->SetLength({{interface_length}});
     {% endif %}
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();

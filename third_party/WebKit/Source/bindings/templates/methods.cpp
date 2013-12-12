@@ -36,64 +36,8 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% endif %}
     {% for argument in method.arguments %}
-    {% if argument.is_optional and not argument.has_default and
-          argument.idl_type != 'Dictionary' %}
-    {# Optional arguments without a default value generate an early call with
-       fewer arguments if they are omitted.
-       Optional Dictionary arguments default to empty dictionary. #}
-    if (UNLIKELY(info.Length() <= {{argument.index}})) {
-        {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent(8)}}
-        return;
-    }
-    {% endif %}
-    {% if method.is_strict_type_checking and argument.is_wrapper_type %}
-    {# Type checking for wrapper interface types (if interface not implemented,
-       throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
-        return;
-    }
-    {% endif %}
-    {% if argument.is_clamp %}
-    {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
-    {{argument.cpp_type}} {{argument.name}} = 0;
-    V8TRYCATCH_VOID(double, {{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
-    if (!std::isnan({{argument.name}}NativeValue))
-        {# IDL type is used for clamping, for the right bounds, since different
-           IDL integer types have same internal C++ type (int or unsigned) #}
-        {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
-    {% elif argument.idl_type == 'SerializedScriptValue' %}
-    bool {{argument.name}}DidThrow = false;
-    {{argument.cpp_type}} {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, {{argument.name}}DidThrow, info.GetIsolate());
-    if ({{argument.name}}DidThrow)
-        return;
-    {% elif argument.is_variadic_wrapper_type %}
-    Vector<{{argument.cpp_type}} > {{argument.name}};
-    for (int i = {{argument.index}}; i < info.Length(); ++i) {
-        if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
-            throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
-            return;
-        }
-        {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(info[i])));
-    }
-    {% else %}
-    {{argument.v8_value_to_local_cpp_value}};
-    {% endif %}
-    {% if argument.enum_validation_expression %}
-    {# Methods throw on invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
-    String string = {{argument.name}};
-    if (!({{argument.enum_validation_expression}})) {
-        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('" + string + "') is not a valid enum value."), info.GetIsolate());
-        return;
-    }
-    {% endif %}
-    {% if argument.idl_type in ['Dictionary', 'Promise'] %}
-    if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('{{argument.name}}') is not an object."), info.GetIsolate());
-        return;
-    }
-    {% endif %}
-    {% endfor %}{# arguments #}
+    {{generate_argument(method, argument) | indent}}
+    {% endfor %}
     {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
     {% endif %}{# addEventListener, removeEventListener #}
 }
@@ -161,6 +105,68 @@ if (state.hadException()) {
 }
 {% endif %}
 {% if v8_set_return_value %}{{v8_set_return_value}};{% endif %}{# None for void #}
+{% endmacro %}
+
+
+{######################################}
+{% macro generate_argument(method, argument) %}
+{% if argument.is_optional and not argument.has_default and
+      argument.idl_type != 'Dictionary' %}
+{# Optional arguments without a default value generate an early call with
+   fewer arguments if they are omitted.
+   Optional Dictionary arguments default to empty dictionary. #}
+if (UNLIKELY(info.Length() <= {{argument.index}})) {
+    {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent}}
+    return;
+}
+{% endif %}
+{% if method.is_strict_type_checking and argument.is_wrapper_type %}
+{# Type checking for wrapper interface types (if interface not implemented,
+   throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
+    return;
+}
+{% endif %}
+{% if argument.is_clamp %}
+{# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
+{{argument.cpp_type}} {{argument.name}} = 0;
+V8TRYCATCH_VOID(double, {{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
+if (!std::isnan({{argument.name}}NativeValue))
+    {# IDL type is used for clamping, for the right bounds, since different
+       IDL integer types have same internal C++ type (int or unsigned) #}
+    {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
+{% elif argument.idl_type == 'SerializedScriptValue' %}
+bool {{argument.name}}DidThrow = false;
+{{argument.cpp_type}} {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, {{argument.name}}DidThrow, info.GetIsolate());
+if ({{argument.name}}DidThrow)
+    return;
+{% elif argument.is_variadic_wrapper_type %}
+Vector<{{argument.cpp_type}} > {{argument.name}};
+for (int i = {{argument.index}}; i < info.Length(); ++i) {
+    if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
+        return;
+    }
+    {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(info[i])));
+}
+{% else %}
+{{argument.v8_value_to_local_cpp_value}};
+{% endif %}
+{% if argument.enum_validation_expression %}
+{# Methods throw on invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
+String string = {{argument.name}};
+if (!({{argument.enum_validation_expression}})) {
+    throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('" + string + "') is not a valid enum value."), info.GetIsolate());
+    return;
+}
+{% endif %}
+{% if argument.idl_type in ['Dictionary', 'Promise'] %}
+if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
+    throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('{{argument.name}}') is not an object."), info.GetIsolate());
+    return;
+}
+{% endif %}
 {% endmacro %}
 
 

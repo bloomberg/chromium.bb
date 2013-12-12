@@ -112,7 +112,9 @@ def generate_interface(interface):
     template_contents = {
         'any_type_attributes': any_type_attributes,
         'conditional_string': conditional_string(interface),  # [Conditional]
+        'constructor_argument_list': constructor_argument_list(interface),
         'constructor_arguments': constructor_arguments(interface),
+        'constructor_method': {},  # stub for generating arguments
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_constructor': has_constructor,
@@ -125,6 +127,7 @@ def generate_interface(interface):
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
             'GenerateVisitDOMWrapper' in extended_attributes),
         'header_includes': header_includes,
+        'interface_length': interface_length(interface),
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
@@ -134,7 +137,6 @@ def generate_interface(interface):
             interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
-        'length': 1 if has_event_constructor else 0,  # FIXME: more complex in general, see discussion of length in http://heycam.github.io/webidl/#es-interface-call
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
@@ -197,6 +199,8 @@ def generate_constant(constant):
     }
     return constant_parameter
 
+
+# Overloads
 
 def generate_overloads(methods):
     generate_overloads_by_type(methods, is_static=False)  # Regular methods
@@ -307,7 +311,13 @@ def overload_check_argument(index, argument):
     return None
 
 
-def constructor_arguments(interface):
+# Constructors
+
+def constructor_argument_list(interface):
+    if not interface.constructors:
+        return []
+    constructor = interface.constructors[0]  # FIXME: support overloading
+
     arguments = []
     # [ConstructorCallWith=ExecutionContext]
     if has_extended_attribute_value(interface, 'ConstructorCallWith', 'ExecutionContext'):
@@ -315,8 +325,31 @@ def constructor_arguments(interface):
     # [ConstructorCallWith=Document]
     if has_extended_attribute_value(interface, 'ConstructorCallWith', 'Document'):
         arguments.append('document')
-    # FIXME: actual arguments!
+
+    arguments.extend([argument.name for argument in constructor.arguments])
+
     # [RaisesException=Constructor]
     if interface.extended_attributes.get('RaisesException') == 'Constructor':
         arguments.append('exceptionState')
+
     return arguments
+
+
+def constructor_arguments(interface):
+    if not interface.constructors:
+        return []
+    constructor = interface.constructors[0]  # FIXME: support overloading
+    return [{'v8_value_to_local_cpp_value':
+                v8_methods.v8_value_to_local_cpp_value(argument, index),
+            }
+            for index, argument in enumerate(constructor.arguments)]
+
+
+def interface_length(interface):
+    # Docs: http://heycam.github.io/webidl/#es-interface-call
+    if 'EventConstructor' in interface.extended_attributes:
+        return 1
+    if not interface.constructors:
+        return 0
+    constructor = interface.constructors[0]  # FIXME: support overloading
+    return len(constructor.arguments)  # FIXME: support optional arguments
