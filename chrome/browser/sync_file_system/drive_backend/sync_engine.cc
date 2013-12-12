@@ -482,19 +482,17 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
     return;
   }
 
-  if (status != SYNC_STATUS_OK)
-    DCHECK_EQ(SYNC_ACTION_NONE, syncer->sync_action());
-
-  if (syncer->url().is_valid() && syncer->sync_action() != SYNC_ACTION_NONE) {
-    FOR_EACH_OBSERVER(FileStatusObserver,
-                      file_status_observers_,
-                      OnFileStatusChanged(syncer->url(),
-                                          SYNC_FILE_STATUS_SYNCED,
-                                          syncer->sync_action(),
-                                          SYNC_DIRECTION_REMOTE_TO_LOCAL));
-  }
-
   if (status == SYNC_STATUS_OK) {
+    if (syncer->sync_action() != SYNC_ACTION_NONE &&
+        syncer->url().is_valid()) {
+      FOR_EACH_OBSERVER(FileStatusObserver,
+                        file_status_observers_,
+                        OnFileStatusChanged(syncer->url(),
+                                            SYNC_FILE_STATUS_SYNCED,
+                                            syncer->sync_action(),
+                                            SYNC_DIRECTION_REMOTE_TO_LOCAL));
+    }
+
     if (syncer->sync_action() == SYNC_ACTION_DELETED &&
         syncer->url().is_valid() &&
         fileapi::VirtualPath::IsRootPath(syncer->url().path())) {
