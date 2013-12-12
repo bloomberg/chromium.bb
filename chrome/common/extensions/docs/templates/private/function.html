@@ -1,8 +1,13 @@
 {{!function The function to render}}
 <div>
-  <h4 id="{{?function.id}}{{function.id}}{{:}}{{?parentId}}{{parentId}}-{{function.name}}{{/}}{{/}}">
-    {{function.name}}
-  </h4>
+  {{?parentName}}<h4{{:}}<h3{{/}}
+      {{- Might be an anonymous function. -}}
+      {{?function.id}}id="{{function.id}}"{{/}}
+      {{?hideParamTOC}}title=""{{/}}>{{function.name}}
+  {{?parentName}}</h4>{{:}}</h3>{{/}}
   {{+partials.warning_deprecated item:function/}}
-  {{+partials.function_details function:function parentName:parentName api:api/}}
+  {{+partials.function_details
+      function:function
+      parentName:parentName
+      api:api/}}
 </div>

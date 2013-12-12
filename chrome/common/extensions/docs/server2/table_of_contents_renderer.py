@@ -33,7 +33,8 @@ class TableOfContentsRenderer(object):
 
     def make_toc_items(entries):
       return [{
-        'attributes':  [(key, val) for key, val in entry.attributes.iteritems()
+        'attributes':  [{'key': key, 'value': val}
+                        for key, val in entry.attributes.iteritems()
                         if key != 'id'],
         'link':        entry.attributes.get('id', ''),
         'subheadings': make_toc_items(entry.entries),

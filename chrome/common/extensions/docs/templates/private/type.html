@@ -25,13 +25,14 @@
       {{+partials.type_item title:strings.properties
                             display_name:display_name
                             items:properties
-                            item_partial:partials.parameter_full/}}
+                            item_partial:(partials.parameter_full
+                                          hideParamTOC:true) /}}
     {{/properties}}
     {{?functions}}
       {{+partials.type_item title:strings.methods
                             display_name:display_name
                             items:functions
-                            item_partial:partials.function/}}
+                            item_partial:partials.function /}}
     {{/functions}}
     {{?events}}
       {{+partials.type_item title:strings.events

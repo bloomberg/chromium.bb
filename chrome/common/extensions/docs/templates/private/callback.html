@@ -1,5 +1,4 @@
 {{#callback}}
-<h4>Callback</h4>
 <p>
   {{?optional}}
       If you specify the <em>{{name}}</em> parameter, it should
@@ -18,7 +17,7 @@
 {{?parameters}}
 <dl>
   {{#p:parameters}}
-    {{+partials.parameter_full parameter:p/}}
+    {{+partials.parameter_full parameter:p parentName:name hideParamTOC:true /}}
   {{/parameters}}
 </dl>
 {{/parameters}}

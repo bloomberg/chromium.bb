@@ -1,13 +1,14 @@
 {{#event}}
 <div>
-  <h4 id="{{id}}">{{name}}</h4>
+  <h3 id="{{id}}">{{name}}</h3>
   <div class="description">
     {{?description}}<p>
       {{{description}}}
     </p>{{/description}}
     {{?properties}}
       {{+partials.type_item items:properties
-                            item_partial:partials.parameter_full/}}
+                            item_partial:partials.parameter_full
+                            parentName:name /}}
     {{/properties}}
   </div>
 </div>

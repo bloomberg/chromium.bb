@@ -1,6 +1,6 @@
 {{#event}}
 <div>
-  <h4 id="{{id}}">{{name}}</h4>
+  <h3 id="{{id}}">{{name}}</h3>
   {{+partials.warning_deprecated item:event/}}
   <div class="description">
     {{?description}}<p>
@@ -23,29 +23,31 @@
                                      api:api/}}
     </div>
     {{?conditions}}
-      <h4>Supported conditions</h4>
+      <h4 title="">Supported conditions</h4>
       <ul>
         {{#c:conditions}}<div><li>{{+partials.ref_link link:c/}}</li></div>{{/}}
       </ul>
     {{/conditions}}
     {{?actions}}
-      <h4>Supported actions</h4>
+      <h4 title="">Supported actions</h4>
       <ul>
         {{#a:actions}}<div><li>{{+partials.ref_link link:a/}}</li></div>{{/}}
       </ul>
     {{/actions}}
     {{/supportsRules}}
     {{?filters}}
-      <h4>Filters</h4>
+      <h4 title="">Filters</h4>
       <dl>
-        {{#f:filters +partials.parameter_full parameter:f/}}
+        {{#f:filters +partials.parameter_full parameter:f
+                                              parentName:name
+                                              hideParamTOC:true /}}
       </dl>
     {{/filters}}
     {{?supportsListeners}}
       {{+partials.function function:byName.addListener
                            parentName:name
                            api:api
-                           parentId:id/}}
+                           hideParamTOC:true /}}
     {{/supportsListeners}}
   </div>
 </div>

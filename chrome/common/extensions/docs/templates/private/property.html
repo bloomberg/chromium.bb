@@ -1,12 +1,14 @@
 {{#property}}
 <dt>
-  <span class="variable">{{name}}</span>
-  <span class="property">
-    (
-      {{?optional}}<span class="optional">optional</span>{{/}}
-      {{+partials.variable_type type:property/}}
-    )
-  </span>
+  {{?parentName}}
+  <h4 id="{{id}}" title="{{^hideParamTOC name/}}">
+    {{+partials.property_name_and_type property:property /}}
+  </h4>
+  {{:parentName}}
+  <h3 id="{{id}}" title="{{^hideParamTOC name/}}">
+    {{+partials.property_name_and_type property:property /}}
+  </h3>
+  {{/parentName}}
 </dt>
 <dd>
 {{?deprecated}}
@@ -17,9 +19,9 @@
 {{/description}}
 {{+partials.enum_descriptions enums:enum_values/}}
 {{?array.is_object}}
-  <h5>Properties of each object in <span class="variable">{{name}}</span></h5>
+  <h4 title="">Properties of each object</h4>
   <dl>
-    {{+partials.type type:array/}}
+    {{+partials.type type:array hideParamTOC:true /}}
   </dl>
 {{/array.is_object}}
 </dd>

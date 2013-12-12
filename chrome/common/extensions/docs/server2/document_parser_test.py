@@ -14,10 +14,10 @@ Preamble before heading.
 <h1 id='main' class='header'>Main header</h1>
 Some intro to the content.
 
-<h2 id='banana' class='header'>Bananas</h2>
+<h2 id='banana' class='header' title=''>Bananas</h2>
 Something about bananas.
 
-<h2 id='orange'>Oranges</h2>
+<h2 id='orange' title='hello'>Oranges</h2>
 Something about oranges.
 
 <h3 id='valencia'>Valencia Oranges</h3>
@@ -55,10 +55,10 @@ Preamble before heading.
 
 Some intro to the content.
 
-<h2 id='banana' class='header'>Bananas</h2>
+<h2 id='banana' class='header' title=''>Bananas</h2>
 Something about bananas.
 
-<h2 id='orange'>Oranges</h2>
+<h2 id='orange' title='hello'>Oranges</h2>
 Something about oranges.
 
 <h3 id='valencia'>Valencia Oranges</h3>
@@ -165,50 +165,46 @@ class DocumentParserUnittest(unittest.TestCase):
     self.assertEqual(1, len(result.sections))
     entries = result.sections[0].structure
 
-    self.assertEqual(5, len(entries), entries)
-    entry0, entry1, entry2, entry3, entry4 = entries
+    self.assertEqual(4, len(entries), entries)
+    entry0, entry1, entry2, entry3 = entries
 
-    self.assertEqual('Bananas', entry0.name)
-    self.assertEqual({'id': 'banana', 'class': 'header'}, entry0.attributes)
-    self.assertEqual([], entry0.entries)
+    self.assertEqual('hello', entry0.name)
+    self.assertEqual({'id': 'orange'}, entry0.attributes)
+    self.assertEqual(2, len(entry0.entries))
+    entry0_0, entry0_1 = entry0.entries
 
-    self.assertEqual('Oranges', entry1.name)
-    self.assertEqual({'id': 'orange'}, entry1.attributes)
-    self.assertEqual(2, len(entry1.entries))
-    entry1_0, entry1_1 = entry1.entries
+    self.assertEqual('Valencia Oranges', entry0_0.name)
+    self.assertEqual({'id': 'valencia'}, entry0_0.attributes)
+    self.assertEqual([], entry0_0.entries)
+    self.assertEqual('Seville Oranges', entry0_1.name)
+    self.assertEqual({'id': 'seville'}, entry0_1.attributes)
+    self.assertEqual([], entry0_1.entries)
 
-    self.assertEqual('Valencia Oranges', entry1_0.name)
-    self.assertEqual({'id': 'valencia'}, entry1_0.attributes)
-    self.assertEqual([], entry1_0.entries)
-    self.assertEqual('Seville Oranges', entry1_1.name)
-    self.assertEqual({'id': 'seville'}, entry1_1.attributes)
-    self.assertEqual([], entry1_1.entries)
+    self.assertEqual('Grapefruit', entry1.name)
+    self.assertEqual({}, entry1.attributes)
+    self.assertEqual([], entry1.entries)
 
-    self.assertEqual('Grapefruit', entry2.name)
-    self.assertEqual({}, entry2.attributes)
+    self.assertEqual('Not the main header', entry2.name)
+    self.assertEqual({'id': 'not-main'}, entry2.attributes)
     self.assertEqual([], entry2.entries)
 
-    self.assertEqual('Not the main header', entry3.name)
-    self.assertEqual({'id': 'not-main'}, entry3.attributes)
-    self.assertEqual([], entry3.entries)
+    self.assertEqual('Not a banana', entry3.name)
+    self.assertEqual({}, entry3.attributes)
+    self.assertEqual(2, len(entry3.entries))
+    entry3_1, entry3_2 = entry3.entries
 
-    self.assertEqual('Not a banana', entry4.name)
-    self.assertEqual({}, entry4.attributes)
-    self.assertEqual(2, len(entry4.entries))
-    entry4_1, entry4_2 = entry4.entries
+    self.assertEqual('It\'s a h4', entry3_1.name)
+    self.assertEqual({}, entry3_1.attributes)
+    self.assertEqual([], entry3_1.entries)
 
-    self.assertEqual('It\'s a h4', entry4_1.name)
-    self.assertEqual({}, entry4_1.attributes)
-    self.assertEqual([], entry4_1.entries)
+    self.assertEqual('Plantains', entry3_2.name)
+    self.assertEqual({}, entry3_2.attributes)
+    self.assertEqual(1, len(entry3_2.entries))
+    entry3_2_1, = entry3_2.entries
 
-    self.assertEqual('Plantains', entry4_2.name)
-    self.assertEqual({}, entry4_2.attributes)
-    self.assertEqual(1, len(entry4_2.entries))
-    entry4_2_1, = entry4_2.entries
-
-    self.assertEqual('Another h4', entry4_2_1.name)
-    self.assertEqual({}, entry4_2_1.attributes)
-    self.assertEqual([], entry4_2_1.entries)
+    self.assertEqual('Another h4', entry3_2_1.name)
+    self.assertEqual({}, entry3_2_1.attributes)
+    self.assertEqual([], entry3_2_1.entries)
 
   def testSingleExplicitSection(self):
     def test(document):

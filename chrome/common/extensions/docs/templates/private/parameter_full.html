@@ -2,21 +2,30 @@
 <div>
   {{?parentName}}<a name="{{id}}"></a>{{/}}
   <dl>
-    {{+partials.property property:parameter/}}
+    {{+partials.property
+        property:parameter
+        parentName:name
+        hideParamTOC:hideParamTOC /}}
   </dl>
   {{?properties}}
   <dd>
-    <h5>Properties of <span class="variable">{{name}}</span></h5>
+    <h4 title="">Properties</h4>
     <dl>
-    {{#p:properties +partials.parameter_full parameter:p/}}
+      {{#p:properties +partials.parameter_full
+          parameter:p
+          parentName:name
+          hideParamTOC:hideParamTOC /}}
     </dl>
   </dd>
   {{/properties}}
   {{?parameters}}
   <dd>
     <dl>
-    <h5>Parameters</h5>
-    {{#p:parameters +partials.parameter_full parameter:p/}}
+      <h4 title="">Parameters</h4>
+      {{#p:parameters +partials.parameter_full
+          parameter:p
+          parentName:name
+          hideParamTOC:hideParamTOC /}}
     </dl>
     {{?callback +partials.callback callback:callback/}}
   </dd>

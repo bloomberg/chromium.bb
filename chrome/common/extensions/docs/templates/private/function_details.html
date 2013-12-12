@@ -11,10 +11,13 @@
   </p>
   {{/description}}
   {{?parameters}}
-  <h4>Parameters</h4>
+  <h4 title="">Parameters</h4>
   <dl>
     {{#p:parameters}}
-      {{+partials.parameter_full parameter:p/}}
+      {{+partials.parameter_full
+          parameter:p
+          parentName:name
+          hideParamTOC:true /}}
     {{/parameters}}
   </dl>
   {{/parameters}}
@@ -22,7 +25,7 @@
     {{+partials.callback callback:callback/}}
   {{/callback}}
   {{?returns.is_object}}
-    <h4>Properties of return type</h4>
+    <h4 title="">Properties of return type</h4>
     {{+partials.type type:returns/}}
   {{/returns.is_object}}
 </div>

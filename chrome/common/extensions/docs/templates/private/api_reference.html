@@ -1,6 +1,5 @@
 <div class="api_reference">
   {{- This is a span not a header-tag so that it doesn't show up in the TOC. -}}
-  <span id="api-reference-header">Reference</span>
   {{?api.types}}
     <h2 id="types">Types</h2>
     {{#t:api.types}}
@@ -26,7 +25,7 @@
     {{/}}
   {{/api.events}}
   {{?api.domEvents}}
-    <h2 id="dom_events">DOM events</h2>
+    <h2 id="dom_events">DOM Events</h2>
     <dd>
       Listeners can be added for these events using the standard HTML
       <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget.addEventListener">addEventListener</a>
@@ -38,7 +37,7 @@
   {{/api.domEvents}}
 </div>
 {{?samples_list}}
-  <h2 id="samples">Sample {{platformTitle}} that use {{api.namespace}}</h2>
+  <h2 id="samples">Sample {{platformTitle}}</h2>
   <ul>
   {{#sample:samples_list}}
     <li><strong><a href="samples.html#{{sample.id}}">{{sample.name}}</a></strong>

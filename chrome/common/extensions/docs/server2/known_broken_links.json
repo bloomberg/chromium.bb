@@ -2011,6 +2011,18 @@
   ],
   [
     200,
+    "extensions/tabs.html",
+    "#type-ImageDetails",
+    "target anchor not found"
+  ],
+  [
+    200,
+    "extensions/tabs.html",
+    "#type-ImageDetails",
+    "target anchor not found"
+  ],
+  [
+    200,
     "extensions/declarativeContent.html",
     "#type-Rule",
     "target anchor not found"

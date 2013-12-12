@@ -16,9 +16,16 @@
 <h1>{{api.title}}</h1>
 $(table_of_contents)
 {{+partials.intro_table api:api /}}
-{{?intro +intro platform:platform platformTitle:platformTitle /}}
+{{?intro}}
+<section>
+{{+intro platform:platform platformTitle:platformTitle /}}
+</section>
+{{/intro}}
+<section>
+<h2 id="api-reference-header" title="">{{api.namespace}} reference</h2>
 {{+partials.api_reference api:api
                           platform:platform
                           platformTitle:platformTitle
                           samplesForApi:samplesForApi /}}
+</section>
 {{/partials.site}}

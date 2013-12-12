@@ -1,7 +1,9 @@
 <ol>
   {{#i:items}}
   <li {{?i.separator}}class="separator"{{/}}>
-    <a href="#{{i.link}}">{{{i.title}}}</a>
+    <a href="#{{i.link}}"
+       data-list-item
+       {{#a:i.attributes}}{{a.key}}="{{a.value}}"{{/}}>{{{i.title}}}</a>
     {{?i.subheadings +partials.table_of_contents_items items:i.subheadings /}}
   </li>
   {{/items}}

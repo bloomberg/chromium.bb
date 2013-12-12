@@ -153,6 +153,24 @@ section + section {
   border-top: 1px solid #F5F5F5;
 }
 
+/* Support a hack for the ::first-element rules below, which only apply if
+ * the element has a subset of displays, which include inline-block.
+ *
+ * Use the data-inline-block attribute rather than a class on the element
+ * because the templates may end up overriding the class attribute.
+ */
+[data-list-item] {
+  display: list-item;
+}
+
+.uncapitalize::first-letter {
+  text-transform: lowercase;
+}
+
+.capitalize::first-letter {
+  text-transform: uppercase;
+}
+
 #gc-container {
   height: auto;
   margin-top: 2em;
@@ -315,14 +333,14 @@ button.google-button:active {
   line-height: 130%;
 }
 
-#gc-pagecontent h2,
-#api-reference-header {
+#gc-pagecontent h2 {
   font-size: 170%;
   font-weight: normal;
+  line-height: 130%;
 }
 
-#api-reference-header {
-  font-weight: bold;
+#gc-pagecontent #api-reference-header {
+  font-size: 320%;
 }
 
 #gc-pagecontent h3 {
@@ -536,7 +554,7 @@ button.google-button:active {
 #toc a {
   color: black;
   line-height: 1.2em;
-  margin: 5px 0 5px 10px;
+  margin: 3px 0 3px 10px;
 }
 
 #toc li {
@@ -624,7 +642,6 @@ h2#apiReference {
 }
 
 .type_name,
-.variable,
 .property {
   font-style: italic;
 }
@@ -641,16 +658,6 @@ h2#apiReference {
 .api_reference div.summary .line {
   padding-left: 1.5em;
   text-indent: -1.5em;
-}
-
-/* This style is used because types with functions prefix the function with the
- * type name, using a lowercase first letter. */
-.api_reference .uncapitalize:first-letter {
-  text-transform: lowercase;
-}
-
-.api_reference .capitalize:first-letter {
-  text-transform: uppercase;
 }
 
 .api_reference div.description {

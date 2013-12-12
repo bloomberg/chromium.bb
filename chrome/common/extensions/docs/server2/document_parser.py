@@ -48,6 +48,8 @@ class DocumentStructureEntry(object):
     # so make it private. In particular we pretend that anything but the first
     # h1 is an h2, and it'd be odd to expose that.
     self._tag = tag
+    # Documents can override the name of the entry using title="".
+    self._has_explicit_name = False
 
   def __repr__(self):
     return '<%s>%s</%s>' % (self._tag, self.name, self._tag)
@@ -125,7 +127,16 @@ class _DocumentParser(HTMLParser):
                              (tag, self._processing_entry._tag))
       return
 
-    self._processing_entry = DocumentStructureEntry(tag, dict(attrs))
+    attrs_dict = dict(attrs)
+    self._processing_entry = DocumentStructureEntry(tag, attrs_dict)
+
+    explicit_name = attrs_dict.pop('title', None)
+    if explicit_name == '':
+      # Don't create a TOC entry at all if the tag has specified title="".
+      return
+    if explicit_name is not None:
+      self._processing_entry.name = explicit_name
+      self._processing_entry._has_explicit_name = True
 
     if tag == 'h1' and self._title_entry is not None:
       self._WarnWithPosition('Found multiple <h1> tags. Subsequent <h1> tags '
@@ -169,7 +180,8 @@ class _DocumentParser(HTMLParser):
     self._processing_entry = None
 
   def handle_data(self, data):
-    if self._processing_entry is not None:
+    if (self._processing_entry is not None and
+        not self._processing_entry._has_explicit_name):
       # += is inefficient, but probably fine here because the chances of a
       # large number of nested tags within header tags is pretty low.
       self._processing_entry.name += data
