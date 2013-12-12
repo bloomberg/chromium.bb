@@ -362,7 +362,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   ContentSettingsObserver* content_settings =
-      new ContentSettingsObserver(render_view);
+      new ContentSettingsObserver(render_view, extension_dispatcher_.get());
   if (chrome_observer_.get()) {
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
@@ -391,9 +391,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 
-  new ChromeRenderViewObserver(
-      render_view, content_settings, chrome_observer_.get(),
-      extension_dispatcher_.get());
+  new ChromeRenderViewObserver(render_view, chrome_observer_.get());
 
   new NetErrorHelper(render_view);
 }

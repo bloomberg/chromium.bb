@@ -15,8 +15,6 @@
 #include "base/timer/timer.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "extensions/common/permissions/api_permission.h"
-#include "third_party/WebKit/public/web/WebPermissionClient.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
@@ -27,11 +25,6 @@ class SkBitmap;
 class TranslateHelper;
 class WebViewColorOverlay;
 class WebViewAnimatingOverlay;
-
-namespace extensions {
-class Dispatcher;
-class Extension;
-}
 
 namespace blink {
 class WebView;
@@ -44,15 +37,12 @@ class PhishingClassifierDelegate;
 
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
-class ChromeRenderViewObserver : public content::RenderViewObserver,
-                                 public blink::WebPermissionClient {
+class ChromeRenderViewObserver : public content::RenderViewObserver {
  public:
   // translate_helper can be NULL.
   ChromeRenderViewObserver(
       content::RenderView* render_view,
-      ContentSettingsObserver* content_settings,
-      ChromeRenderProcessObserver* chrome_render_process_observer,
-      extensions::Dispatcher* extension_dispatcher);
+      ChromeRenderProcessObserver* chrome_render_process_observer);
   virtual ~ChromeRenderViewObserver();
 
  private:
@@ -77,55 +67,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                            const base::string16& stack_trace,
                                            int32 line_number,
                                            int32 severity_level) OVERRIDE;
-
-  // blink::WebPermissionClient implementation.
-  virtual bool allowDatabase(blink::WebFrame* frame,
-                             const blink::WebString& name,
-                             const blink::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual bool allowFileSystem(blink::WebFrame* frame);
-  virtual bool allowImage(blink::WebFrame* frame,
-                          bool enabled_per_settings,
-                          const blink::WebURL& image_url);
-  virtual bool allowIndexedDB(blink::WebFrame* frame,
-                              const blink::WebString& name,
-                              const blink::WebSecurityOrigin& origin);
-  virtual bool allowPlugins(blink::WebFrame* frame,
-                            bool enabled_per_settings);
-  virtual bool allowScript(blink::WebFrame* frame,
-                           bool enabled_per_settings);
-  virtual bool allowScriptFromSource(blink::WebFrame* frame,
-                                     bool enabled_per_settings,
-                                     const blink::WebURL& script_url);
-  virtual bool allowStorage(blink::WebFrame* frame, bool local);
-  virtual bool allowReadFromClipboard(blink::WebFrame* frame,
-                                      bool default_value);
-  virtual bool allowWriteToClipboard(blink::WebFrame* frame,
-                                     bool default_value);
-#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
-  virtual bool allowWebComponents(blink::WebFrame* frame, bool);
-  virtual bool allowMutationEvents(blink::WebFrame* frame,
-                                   bool default_value);
-  virtual bool allowPushState(blink::WebFrame* frame);
-#else
-  virtual bool allowWebComponents(const blink::WebDocument&, bool);
-  virtual bool allowMutationEvents(const blink::WebDocument&,
-                                   bool default_value);
-  virtual bool allowPushState(const blink::WebDocument&);
-#endif
-  virtual bool allowWebGLDebugRendererInfo(blink::WebFrame* frame);
-  virtual void didNotAllowPlugins(blink::WebFrame* frame);
-  virtual void didNotAllowScript(blink::WebFrame* frame);
-  virtual bool allowDisplayingInsecureContent(
-      blink::WebFrame* frame,
-      bool allowed_per_settings,
-      const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url);
-  virtual bool allowRunningInsecureContent(
-      blink::WebFrame* frame,
-      bool allowed_per_settings,
-      const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url);
   virtual void Navigate(const GURL& url) OVERRIDE;
 
   void OnWebUIJavaScript(const base::string16& frame_xpath,
@@ -136,14 +77,11 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                        const std::string& origin,
                                        const std::string& target);
   void OnJavaScriptStressTestControl(int cmd, int param);
-  void OnSetAllowDisplayingInsecureContent(bool allow);
-  void OnSetAllowRunningInsecureContent(bool allow);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetVisuallyDeemphasized(bool deemphasized);
   void OnRequestThumbnailForContextNode(int thumbnail_min_area_pixels,
                                         gfx::Size thumbnail_max_size_pixels);
   void OnGetFPS();
-  void OnNPAPINotSupported();
 #if defined(OS_ANDROID)
   void OnUpdateTopControlsState(content::TopControlsState constraints,
                                 content::TopControlsState current,
@@ -169,11 +107,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
 
-  // If |origin| corresponds to an installed extension, returns that extension.
-  // Otherwise returns NULL.
-  const extensions::Extension* GetExtension(
-      const blink::WebSecurityOrigin& origin) const;
-
   // Checks if a page contains <meta http-equiv="refresh" ...> tag.
   bool HasRefreshMetaTag(blink::WebFrame* frame);
 
@@ -182,10 +115,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // Owned by ChromeContentRendererClient and outlive us.
   ChromeRenderProcessObserver* chrome_render_process_observer_;
-  extensions::Dispatcher* extension_dispatcher_;
 
   // Have the same lifetime as us.
-  ContentSettingsObserver* content_settings_;
   TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 
@@ -196,10 +127,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // page id to decide whether to reindex in certain cases like history
   // replacement.
   GURL last_indexed_url_;
-
-  // Insecure content may be permitted for the duration of this render view.
-  bool allow_displaying_insecure_content_;
-  bool allow_running_insecure_content_;
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;

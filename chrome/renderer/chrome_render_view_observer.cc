@@ -19,8 +19,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/content_settings_observer.h"
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
@@ -57,7 +55,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 
-using extensions::APIPermission;
 using blink::WebAXObject;
 using blink::WebCString;
 using blink::WebDataSource;
@@ -98,74 +95,7 @@ static const int kDelayForForcedCaptureMs = 6000;
 static const size_t kMaxIndexChars = 65535;
 
 // Constants for UMA statistic collection.
-static const char kWWWDotGoogleDotCom[] = "www.google.com";
-static const char kMailDotGoogleDotCom[] = "mail.google.com";
-static const char kPlusDotGoogleDotCom[] = "plus.google.com";
-static const char kDocsDotGoogleDotCom[] = "docs.google.com";
-static const char kSitesDotGoogleDotCom[] = "sites.google.com";
-static const char kPicasawebDotGoogleDotCom[] = "picasaweb.google.com";
-static const char kCodeDotGoogleDotCom[] = "code.google.com";
-static const char kGroupsDotGoogleDotCom[] = "groups.google.com";
-static const char kMapsDotGoogleDotCom[] = "maps.google.com";
-static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
-static const char kDotGoogleUserContentDotCom[] = ".googleusercontent.com";
-static const char kGoogleReaderPathPrefix[] = "/reader/";
-static const char kGoogleSupportPathPrefix[] = "/support/";
-static const char kGoogleIntlPathPrefix[] = "/intl/";
-static const char kDotJS[] = ".js";
-static const char kDotCSS[] = ".css";
-static const char kDotSWF[] = ".swf";
-static const char kDotHTML[] = ".html";
 static const char kTranslateCaptureText[] = "Translate.CaptureText";
-enum {
-  INSECURE_CONTENT_DISPLAY = 0,
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HTML,
-  INSECURE_CONTENT_RUN,
-  INSECURE_CONTENT_RUN_HOST_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
-  INSECURE_CONTENT_RUN_TARGET_YOUTUBE,
-  INSECURE_CONTENT_RUN_JS,
-  INSECURE_CONTENT_RUN_CSS,
-  INSECURE_CONTENT_RUN_SWF,
-  INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
-  INSECURE_CONTENT_RUN_HOST_YOUTUBE,
-  INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,
-  INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,
-  INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,
-  INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE,
-  INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE,
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT,
-  INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT,
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL,
-  INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL,
-  INSECURE_CONTENT_NUM_EVENTS
-};
-
-// Constants for mixed-content blocking.
-static const char kGoogleDotCom[] = "google.com";
-
-static bool isHostInDomain(const std::string& host, const std::string& domain) {
-  return (EndsWith(host, domain, false) &&
-          (host.length() == domain.length() ||
-           (host.length() > domain.length() &&
-            host[host.length() - domain.length() - 1] == '.')));
-}
 
 namespace {
 
@@ -271,21 +201,14 @@ extensions::StackTrace GetStackTraceFromMessage(
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
-    ContentSettingsObserver* content_settings,
-    ChromeRenderProcessObserver* chrome_render_process_observer,
-    extensions::Dispatcher* extension_dispatcher)
+    ChromeRenderProcessObserver* chrome_render_process_observer)
     : content::RenderViewObserver(render_view),
       chrome_render_process_observer_(chrome_render_process_observer),
-      extension_dispatcher_(extension_dispatcher),
-      content_settings_(content_settings),
       translate_helper_(new TranslateHelper(render_view)),
       phishing_classifier_(NULL),
       last_indexed_page_id_(-1),
-      allow_displaying_insecure_content_(false),
-      allow_running_insecure_content_(false),
       capture_timer_(false, false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  render_view->GetWebView()->setPermissionClient(this);
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
     OnSetClientSidePhishingDetection(true);
 }
@@ -301,10 +224,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowDisplayingInsecureContent,
-                        OnSetAllowDisplayingInsecureContent)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
-                        OnSetAllowRunningInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
@@ -312,7 +231,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_NPAPINotSupported, OnNPAPINotSupported)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
@@ -355,26 +273,6 @@ void ChromeRenderViewObserver::OnJavaScriptStressTestControl(int cmd,
   } else if (cmd == kJavaScriptStressTestPrepareStressRun) {
     v8::Testing::PrepareStressRun(param);
   }
-}
-
-void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
-  allow_displaying_insecure_content_ = allow;
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  if (main_frame)
-    main_frame->reload();
-}
-
-void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
-  allow_running_insecure_content_ = allow;
-  OnSetAllowDisplayingInsecureContent(allow);
-}
-
-void ChromeRenderViewObserver::OnNPAPINotSupported() {
-#if defined(USE_AURA) && defined(OS_WIN)
-  content_settings_->BlockNPAPIPlugins();
-#else
-  NOTREACHED();
-#endif
 }
 
 #if defined(OS_ANDROID)
@@ -503,283 +401,6 @@ void ChromeRenderViewObserver::OnGetFPS() {
   float fps = (render_view()->GetFilteredTimePerFrame() > 0.0f)?
       1.0f / render_view()->GetFilteredTimePerFrame() : 0.0f;
   Send(new ChromeViewHostMsg_FPS(routing_id(), fps));
-}
-
-bool ChromeRenderViewObserver::allowDatabase(
-    WebFrame* frame,
-    const WebString& name,
-    const WebString& display_name,
-    unsigned long estimated_size) {
-  return content_settings_->AllowDatabase(
-      frame, name, display_name, estimated_size);
-}
-
-bool ChromeRenderViewObserver::allowFileSystem(WebFrame* frame) {
-  return content_settings_->AllowFileSystem(frame);
-}
-
-bool ChromeRenderViewObserver::allowImage(WebFrame* frame,
-                                          bool enabled_per_settings,
-                                          const WebURL& image_url) {
-  return content_settings_->AllowImage(frame, enabled_per_settings, image_url);
-}
-
-bool ChromeRenderViewObserver::allowIndexedDB(WebFrame* frame,
-                                              const WebString& name,
-                                              const WebSecurityOrigin& origin) {
-  return content_settings_->AllowIndexedDB(frame, name, origin);
-}
-
-bool ChromeRenderViewObserver::allowPlugins(WebFrame* frame,
-                                           bool enabled_per_settings) {
-  return content_settings_->AllowPlugins(frame, enabled_per_settings);
-}
-
-bool ChromeRenderViewObserver::allowScript(WebFrame* frame,
-                                          bool enabled_per_settings) {
-  return content_settings_->AllowScript(frame, enabled_per_settings);
-}
-
-bool ChromeRenderViewObserver::allowScriptFromSource(
-    WebFrame* frame,
-    bool enabled_per_settings,
-    const WebURL& script_url) {
-  return content_settings_->AllowScriptFromSource(frame,
-                                                  enabled_per_settings,
-                                                  script_url);
-}
-
-bool ChromeRenderViewObserver::allowStorage(WebFrame* frame, bool local) {
-  return content_settings_->AllowStorage(frame, local);
-}
-
-bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
-                                                     bool default_value) {
-  bool allowed = false;
-  // TODO(dcheng): Should we consider a toURL() method on WebSecurityOrigin?
-  Send(new ChromeViewHostMsg_CanTriggerClipboardRead(
-      routing_id(), GURL(frame->document().securityOrigin().toString().utf8()),
-      &allowed));
-  return allowed;
-}
-
-bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
-                                                    bool default_value) {
-  bool allowed = false;
-  Send(new ChromeViewHostMsg_CanTriggerClipboardWrite(
-      routing_id(), GURL(frame->document().securityOrigin().toString().utf8()),
-      &allowed));
-  return allowed;
-}
-
-#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
-bool ChromeRenderViewObserver::allowWebComponents(WebFrame* frame,
-                                                  bool defaultValue) {
-  if (defaultValue)
-    return true;
-
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;
-
-  if (const extensions::Extension* extension = GetExtension(origin)) {
-    if (extension->HasAPIPermission(APIPermission::kExperimental))
-      return true;
-  }
-
-  return false;
-}
-
-bool ChromeRenderViewObserver::allowMutationEvents(WebFrame* frame,
-                                                   bool default_value) {
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  if (extension && extension->is_platform_app())
-    return false;
-  return default_value;
-}
-
-bool ChromeRenderViewObserver::allowPushState(WebFrame* frame) {
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  return !extension || !extension->is_platform_app();
-}
-#else
-bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
-                                                  bool defaultValue) {
-  if (defaultValue)
-    return true;
-
-  WebSecurityOrigin origin = document.securityOrigin();
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;
-
-  if (const extensions::Extension* extension = GetExtension(origin)) {
-    if (extension->HasAPIPermission(APIPermission::kExperimental))
-      return true;
-  }
-
-  return false;
-}
-
-bool ChromeRenderViewObserver::allowMutationEvents(const WebDocument& document,
-                                                   bool default_value) {
-  WebSecurityOrigin origin = document.securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  if (extension && extension->is_platform_app())
-    return false;
-  return default_value;
-}
-
-bool ChromeRenderViewObserver::allowPushState(const WebDocument& document) {
-  WebSecurityOrigin origin = document.securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  return !extension || !extension->is_platform_app();
-}
-#endif
-
-static void SendInsecureContentSignal(int signal) {
-  UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,
-                            INSECURE_CONTENT_NUM_EVENTS);
-}
-
-bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
-    blink::WebFrame* frame,
-    bool allowed_per_settings,
-    const blink::WebSecurityOrigin& origin,
-    const blink::WebURL& resource_url) {
-  SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY);
-
-  std::string origin_host(origin.host().utf8());
-  GURL frame_gurl(frame->document().url());
-  if (isHostInDomain(origin_host, kGoogleDotCom)) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix, false)) {
-      SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT);
-    } else if (StartsWithASCII(frame_gurl.path(),
-                               kGoogleIntlPathPrefix,
-                               false)) {
-      SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL);
-    }
-  }
-
-  if (origin_host == kWWWDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix, false))
-      SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER);
-  } else if (origin_host == kMailDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE);
-  } else if (origin_host == kPlusDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE);
-  } else if (origin_host == kDocsDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE);
-  } else if (origin_host == kSitesDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE);
-  } else if (origin_host == kPicasawebDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE);
-  } else if (origin_host == kCodeDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE);
-  } else if (origin_host == kGroupsDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE);
-  } else if (origin_host == kMapsDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE);
-  } else if (origin_host == kWWWDotYoutubeDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE);
-  }
-
-  GURL resource_gurl(resource_url);
-  if (EndsWith(resource_gurl.path(), kDotHTML, false))
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HTML);
-
-  if (allowed_per_settings || allow_displaying_insecure_content_)
-    return true;
-
-  Send(new ChromeViewHostMsg_DidBlockDisplayingInsecureContent(routing_id()));
-
-  return false;
-}
-
-bool ChromeRenderViewObserver::allowRunningInsecureContent(
-    blink::WebFrame* frame,
-    bool allowed_per_settings,
-    const blink::WebSecurityOrigin& origin,
-    const blink::WebURL& resource_url) {
-  std::string origin_host(origin.host().utf8());
-  GURL frame_gurl(frame->document().url());
-  DCHECK_EQ(frame_gurl.host(), origin_host);
-
-  bool is_google = isHostInDomain(origin_host, kGoogleDotCom);
-  if (is_google) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix, false)) {
-      SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT);
-    } else if (StartsWithASCII(frame_gurl.path(),
-                               kGoogleIntlPathPrefix,
-                               false)) {
-      SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL);
-    }
-  }
-
-  if (origin_host == kWWWDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix, false))
-      SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_READER);
-  } else if (origin_host == kMailDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE);
-  } else if (origin_host == kPlusDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE);
-  } else if (origin_host == kDocsDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE);
-  } else if (origin_host == kSitesDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE);
-  } else if (origin_host == kPicasawebDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE);
-  } else if (origin_host == kCodeDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE);
-  } else if (origin_host == kGroupsDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE);
-  } else if (origin_host == kMapsDotGoogleDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE);
-  } else if (origin_host == kWWWDotYoutubeDotCom) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_YOUTUBE);
-  } else if (EndsWith(origin_host, kDotGoogleUserContentDotCom, false)) {
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT);
-  }
-
-  GURL resource_gurl(resource_url);
-  if (resource_gurl.host() == kWWWDotYoutubeDotCom)
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_TARGET_YOUTUBE);
-
-  if (EndsWith(resource_gurl.path(), kDotJS, false))
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_JS);
-  else if (EndsWith(resource_gurl.path(), kDotCSS, false))
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_CSS);
-  else if (EndsWith(resource_gurl.path(), kDotSWF, false))
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
-
-  if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    content_settings_->DidNotAllowMixedScript();
-    return false;
-  }
-
-  return true;
-}
-
-bool ChromeRenderViewObserver::allowWebGLDebugRendererInfo(WebFrame* frame) {
-  bool allowed = false;
-  Send(new ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed(
-      routing_id(),
-      GURL(frame->top()->document().securityOrigin().toString().utf8()),
-      &allowed));
-  return allowed;
-}
-
-void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {
-  content_settings_->DidNotAllowPlugins();
-}
-
-void ChromeRenderViewObserver::didNotAllowScript(WebFrame* frame) {
-  content_settings_->DidNotAllowScript();
 }
 
 void ChromeRenderViewObserver::DidStartLoading() {
@@ -983,18 +604,6 @@ ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
         render_view(), routing_id()));
   }
   return external_host_bindings_.get();
-}
-
-const extensions::Extension* ChromeRenderViewObserver::GetExtension(
-    const WebSecurityOrigin& origin) const {
-  if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
-    return NULL;
-
-  const std::string extension_id = origin.host().utf8().data();
-  if (!extension_dispatcher_->IsExtensionActive(extension_id))
-    return NULL;
-
-  return extension_dispatcher_->extensions()->GetByID(extension_id);
 }
 
 bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {

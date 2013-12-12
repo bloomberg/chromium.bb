@@ -34,7 +34,7 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
 
 MockContentSettingsObserver::MockContentSettingsObserver(
     content::RenderView* render_view)
-    : ContentSettingsObserver(render_view),
+    : ContentSettingsObserver(render_view, NULL),
       image_url_("http://www.foo.com/image.jpg"),
       image_origin_("http://www.foo.com") {
 }
@@ -74,11 +74,11 @@ TEST_F(ChromeRenderViewTest, DISABLED_AllowDOMStorage) {
           OnAllowDOMStorage(_, _, _, _, _)).WillByDefault(DeleteArg<4>());
   EXPECT_CALL(observer,
               OnAllowDOMStorage(_, _, _, _, _));
-  observer.AllowStorage(view_->GetWebView()->focusedFrame(), true);
+  observer.allowStorage(view_->GetWebView()->focusedFrame(), true);
 
   // Accessing localStorage from the same origin again shouldn't result in a
   // new IPC.
-  observer.AllowStorage(view_->GetWebView()->focusedFrame(), true);
+  observer.allowStorage(view_->GetWebView()->focusedFrame(), true);
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
@@ -189,7 +189,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
   observer->SetContentSettingRules(&content_setting_rules);
   EXPECT_CALL(mock_observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
-  EXPECT_FALSE(observer->AllowImage(GetMainFrame(),
+  EXPECT_FALSE(observer->allowImage(GetMainFrame(),
                                     true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -206,7 +206,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
   EXPECT_CALL(
       mock_observer,
       OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES)).Times(0);
-  EXPECT_TRUE(observer->AllowImage(GetMainFrame(), true,
+  EXPECT_TRUE(observer->allowImage(GetMainFrame(), true,
                                    mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
@@ -233,7 +233,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
   EXPECT_CALL(
       mock_observer,
       OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES)).Times(0);
-  EXPECT_TRUE(observer->AllowImage(GetMainFrame(), true,
+  EXPECT_TRUE(observer->allowImage(GetMainFrame(), true,
                                    mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -248,7 +248,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
           false));
   EXPECT_CALL(mock_observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
-  EXPECT_FALSE(observer->AllowImage(GetMainFrame(),
+  EXPECT_FALSE(observer->allowImage(GetMainFrame(),
                                     true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
@@ -372,7 +372,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
   EXPECT_CALL(
       mock_observer,
       OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES)).Times(0);
-  EXPECT_TRUE(observer->AllowImage(GetMainFrame(), true,
+  EXPECT_TRUE(observer->allowImage(GetMainFrame(), true,
                                    mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
