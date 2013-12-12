@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/content/common/autofill_messages.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/user_metrics.h"

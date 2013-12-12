@@ -31,9 +31,6 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../content/content.gyp:content_common',
-            '../ipc/ipc.gyp:ipc',
-            '../third_party/WebKit/public/blink.gyp:blink_minimal',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/ui.gyp:ui',
             '../url/url.gyp:url_lib',
@@ -47,7 +44,7 @@
           ],
           'include_dirs': [
             '..',
-            '<(SHARED_INTERMEDIATE_DIR)/autofill'
+            '<(SHARED_INTERMEDIATE_DIR)/autofill',
           ],
           'sources': [
             'autofill/core/browser/android/auxiliary_profile_loader_android.cc',
@@ -59,10 +56,6 @@
             'autofill/core/browser/android/personal_data_manager_android.cc',
             'autofill/core/common/autofill_constants.cc',
             'autofill/core/common/autofill_constants.h',
-            'autofill/core/common/autofill_messages.h',
-            'autofill/core/common/autofill_message_generator.cc',
-            'autofill/core/common/autofill_message_generator.h',
-            'autofill/core/common/autofill_param_traits_macros.h',
             'autofill/core/common/autofill_pref_names.cc',
             'autofill/core/common/autofill_pref_names.h',
             'autofill/core/common/autofill_switches.cc',
@@ -87,6 +80,28 @@
         },
 
         {
+          'target_name': 'autofill_content_common',
+          'type': 'static_library',
+          'dependencies': [
+            'autofill_core_common',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+            '../third_party/WebKit/public/blink.gyp:blink_minimal',
+            '../ui/gfx/gfx.gyp:gfx',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'autofill/content/common/autofill_messages.h',
+            'autofill/content/common/autofill_message_generator.cc',
+            'autofill/content/common/autofill_message_generator.h',
+            'autofill/content/common/autofill_param_traits_macros.h',
+          ],
+        },
+
+        {
           'target_name': 'autofill_core_browser',
           'type': 'static_library',
           'include_dirs': [
@@ -104,7 +119,6 @@
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../google_apis/google_apis.gyp:google_apis',
-            '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
             '../sql/sql.gyp:sql',
             '../third_party/icu/icu.gyp:icui18n',
@@ -279,6 +293,7 @@
             '..',
           ],
           'dependencies': [
+            'autofill_content_common',
             'autofill_content_risk_proto',
             'autofill_core_browser',
             'autofill_core_common',
@@ -347,6 +362,7 @@
             '..',
           ],
           'dependencies': [
+            'autofill_content_common',
             'autofill_core_common',
             '../base/base.gyp:base',
             '../content/content.gyp:content_renderer',

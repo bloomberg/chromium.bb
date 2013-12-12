@@ -7,7 +7,7 @@
 // received by RenderProcessHost should be included here for the IPC fuzzer.
 
 #include "chrome/common/all_messages.h"
-#include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/content/common/autofill_messages.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/tracing/tracing_messages.h"
 #include "components/visitedlink/common/visitedlink_messages.h"

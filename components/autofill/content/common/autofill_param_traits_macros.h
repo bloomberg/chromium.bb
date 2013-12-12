@@ -5,8 +5,8 @@
 // Singly or multiply-included shared traits file depending on circumstances.
 // This allows the use of Autofill IPC serialization macros in more than one IPC
 // message file.
-#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
-#define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
+#define COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
 
 #include "components/autofill/core/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
@@ -42,4 +42,4 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordForm)
   IPC_STRUCT_TRAITS_MEMBER(form_data)
 IPC_STRUCT_TRAITS_END()
 
-#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_

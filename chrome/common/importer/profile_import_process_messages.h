@@ -14,7 +14,7 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
-#include "components/autofill/core/common/autofill_param_traits_macros.h"
+#include "components/autofill/content/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"

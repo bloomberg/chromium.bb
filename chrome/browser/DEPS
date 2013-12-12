@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/installer",
   "+chromeos",
   "+components/autofill/content/browser",
+  "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/breakpad",

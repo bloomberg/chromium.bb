@@ -427,6 +427,7 @@
             '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
+            '<(DEPTH)/components/components.gyp:autofill_content_common',
             '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/components/components.gyp:visitedlink_common',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',

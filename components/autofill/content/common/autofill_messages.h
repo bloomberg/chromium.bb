@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "components/autofill/core/common/autofill_param_traits_macros.h"
+#include "components/autofill/content/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
