@@ -149,11 +149,7 @@ private:
     EditControlOwner* m_editControlOwner;
 };
 
-inline DateTimeEditElement* toDateTimeEditElement(Element* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isDateTimeEditElement());
-    return static_cast<DateTimeEditElement*>(element);
-}
+DEFINE_TYPE_CASTS(DateTimeEditElement, Element, element, element->isDateTimeEditElement(), element.isDateTimeEditElement());
 
 } // namespace WebCore
 

@@ -90,12 +90,7 @@ private:
     virtual bool isSimpleEditCommand() const OVERRIDE { return true; }
 };
 
-inline SimpleEditCommand* toSimpleEditCommand(EditCommand* command)
-{
-    ASSERT(command);
-    ASSERT_WITH_SECURITY_IMPLICATION(command->isSimpleEditCommand());
-    return static_cast<SimpleEditCommand*>(command);
-}
+DEFINE_TYPE_CASTS(SimpleEditCommand, EditCommand, command, command->isSimpleEditCommand(), command.isSimpleEditCommand());
 
 } // namespace WebCore
 

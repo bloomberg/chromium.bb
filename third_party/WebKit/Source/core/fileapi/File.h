@@ -126,17 +126,7 @@ private:
     String m_relativePath;
 };
 
-inline File* toFile(Blob* blob)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!blob || blob->isFile());
-    return static_cast<File*>(blob);
-}
-
-inline const File* toFile(const Blob* blob)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!blob || blob->isFile());
-    return static_cast<const File*>(blob);
-}
+DEFINE_TYPE_CASTS(File, Blob, blob, blob->isFile(), blob.isFile());
 
 } // namespace WebCore
 

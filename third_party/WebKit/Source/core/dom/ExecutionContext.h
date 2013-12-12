@@ -67,7 +67,7 @@ public:
     // Delegating to ExecutionContextClient
     void setClient(ExecutionContextClient* client) { m_client = client; }
     bool isDocument() const { return m_client && m_client->isDocument(); }
-    bool isWorkerGlobalScope() { return m_client && m_client->isWorkerGlobalScope(); }
+    bool isWorkerGlobalScope() const { return m_client && m_client->isWorkerGlobalScope(); }
     bool isJSExecutionForbidden() { return m_client && m_client->isJSExecutionForbidden(); }
     SecurityOrigin* securityOrigin() const;
     ContentSecurityPolicy* contentSecurityPolicy() const;

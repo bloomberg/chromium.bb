@@ -61,11 +61,7 @@ private:
     SVGImage* m_image;
 };
 
-inline SVGImageChromeClient* toSVGImageChromeClient(ChromeClient* client)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!client || client->isSVGImageChromeClient());
-    return static_cast<SVGImageChromeClient*>(client);
-}
+DEFINE_TYPE_CASTS(SVGImageChromeClient, ChromeClient, client, client->isSVGImageChromeClient(), client.isSVGImageChromeClient());
 
 }
 

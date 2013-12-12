@@ -91,25 +91,7 @@ private:
     Timer<SpinButtonElement> m_repeatingTimer;
 };
 
-inline SpinButtonElement* toSpinButtonElement(Element* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isSpinButtonElement());
-    return static_cast<SpinButtonElement*>(element);
-}
-
-inline SpinButtonElement* toSpinButtonElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || toElement(node)->isSpinButtonElement());
-    return static_cast<SpinButtonElement*>(node);
-}
-
-inline const SpinButtonElement* toSpinButtonElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || toElement(node)->isSpinButtonElement());
-    return static_cast<const SpinButtonElement*>(node);
-}
-
-void toSpinButtonElement(const SpinButtonElement*);
+DEFINE_TYPE_CASTS(SpinButtonElement, Node, node, toElement(node)->isSpinButtonElement(), toElement(node).isSpinButtonElement());
 
 } // namespace
 

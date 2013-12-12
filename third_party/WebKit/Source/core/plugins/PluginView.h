@@ -61,20 +61,7 @@ protected:
     PluginView() : Widget() { }
 };
 
-inline PluginView* toPluginView(Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPluginView());
-    return static_cast<PluginView*>(widget);
-}
-
-inline const PluginView* toPluginView(const Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPluginView());
-    return static_cast<const PluginView*>(widget);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toPluginView(const PluginView*);
+DEFINE_TYPE_CASTS(PluginView, Widget, widget, widget->isPluginView(), widget.isPluginView());
 
 } // namespace WebCore
 

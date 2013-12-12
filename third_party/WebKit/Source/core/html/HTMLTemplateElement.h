@@ -54,17 +54,7 @@ private:
     mutable RefPtr<TemplateContentDocumentFragment> m_content;
 };
 
-inline HTMLTemplateElement* toHTMLTemplateElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isHTMLElement() && node->hasTagName(HTMLNames::templateTag)));
-    return static_cast<HTMLTemplateElement*>(node);
-}
-
-inline const HTMLTemplateElement* toHTMLTemplateElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isHTMLElement() && node->hasTagName(HTMLNames::templateTag)));
-    return static_cast<const HTMLTemplateElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLTemplateElement, hasTagName(HTMLNames::templateTag));
 
 } // namespace WebCore
 

@@ -173,12 +173,7 @@ private:
     RefPtr<EditCommandComposition> m_composition;
 };
 
-inline CompositeEditCommand* toCompositeEditCommand(EditCommand* command)
-{
-    ASSERT(command);
-    ASSERT(command->isCompositeEditCommand());
-    return static_cast<CompositeEditCommand*>(command);
-}
+DEFINE_TYPE_CASTS(CompositeEditCommand, EditCommand, command, command->isCompositeEditCommand(), command.isCompositeEditCommand());
 
 } // namespace WebCore
 

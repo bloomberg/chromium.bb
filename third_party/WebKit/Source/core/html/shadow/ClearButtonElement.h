@@ -56,11 +56,7 @@ private:
     bool m_capturing;
 };
 
-inline ClearButtonElement* toClearButtonElement(Element* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isClearButtonElement());
-    return static_cast<ClearButtonElement*>(element);
-}
+DEFINE_TYPE_CASTS(ClearButtonElement, Element, element, element->isClearButtonElement(), element.isClearButtonElement());
 
 } // namespace
 

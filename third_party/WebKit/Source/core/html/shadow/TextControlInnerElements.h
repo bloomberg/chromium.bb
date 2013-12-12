@@ -137,11 +137,7 @@ private:
     SpeechInputResultArray m_results;
 };
 
-inline InputFieldSpeechButtonElement* toInputFieldSpeechButtonElement(Element* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isInputFieldSpeechButtonElement());
-    return static_cast<InputFieldSpeechButtonElement*>(element);
-}
+DEFINE_TYPE_CASTS(InputFieldSpeechButtonElement, Element, element, element->isInputFieldSpeechButtonElement(), element.isInputFieldSpeechButtonElement());
 
 #endif // ENABLE(INPUT_SPEECH)
 

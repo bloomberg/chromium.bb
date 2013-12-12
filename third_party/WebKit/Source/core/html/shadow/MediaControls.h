@@ -128,14 +128,7 @@ private:
     virtual const AtomicString& pseudo() const;
 };
 
-inline MediaControls* toMediaControls(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isMediaControls());
-    return static_cast<MediaControls*>(node);
-}
-
-// This will catch anyone doing an unneccessary cast.
-void toMediaControls(const MediaControls*);
+DEFINE_NODE_TYPE_CASTS(MediaControls, isMediaControls());
 
 }
 

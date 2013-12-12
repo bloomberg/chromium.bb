@@ -52,11 +52,7 @@ protected:
     virtual bool isFormControlElementWithState() const OVERRIDE;
 };
 
-inline HTMLFormControlElementWithState* toHTMLFormControlElementWithState(FormAssociatedElement* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isFormControlElementWithState());
-    return static_cast<HTMLFormControlElementWithState*>(element);
-}
+DEFINE_TYPE_CASTS(HTMLFormControlElementWithState, FormAssociatedElement, control, control->isFormControlElementWithState(), control.isFormControlElementWithState());
 
 } // namespace
 

@@ -582,20 +582,7 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
         setIsVisuallyNonEmpty();
 }
 
-inline FrameView* toFrameView(Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isFrameView());
-    return static_cast<FrameView*>(widget);
-}
-
-inline const FrameView* toFrameView(const Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isFrameView());
-    return static_cast<const FrameView*>(widget);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toFrameView(const FrameView*);
+DEFINE_TYPE_CASTS(FrameView, Widget, widget, widget->isFrameView(), widget.isFrameView());
 
 } // namespace WebCore
 

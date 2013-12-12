@@ -80,11 +80,7 @@ private:
     RefPtr<DateTimeChooser> m_chooser;
 };
 
-inline PickerIndicatorElement* toPickerIndicatorElement(Element* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isPickerIndicatorElement());
-    return static_cast<PickerIndicatorElement*>(element);
-}
+DEFINE_TYPE_CASTS(PickerIndicatorElement, Element, element, element->isPickerIndicatorElement(), element.isPickerIndicatorElement());
 
 }
 #endif

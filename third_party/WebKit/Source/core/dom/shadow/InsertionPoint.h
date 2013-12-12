@@ -87,23 +87,7 @@ private:
 
 typedef Vector<RefPtr<InsertionPoint> > DestinationInsertionPoints;
 
-inline InsertionPoint* toInsertionPoint(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isInsertionPoint());
-    return static_cast<InsertionPoint*>(node);
-}
-
-inline const InsertionPoint* toInsertionPoint(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isInsertionPoint());
-    return static_cast<const InsertionPoint*>(node);
-}
-
-inline const InsertionPoint& toInsertionPoint(const Node& node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(node.isInsertionPoint());
-    return static_cast<const InsertionPoint&>(node);
-}
+DEFINE_NODE_TYPE_CASTS(InsertionPoint, isInsertionPoint());
 
 inline bool isActiveInsertionPoint(const Node& node)
 {
