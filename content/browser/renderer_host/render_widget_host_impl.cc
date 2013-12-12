@@ -927,9 +927,8 @@ void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
-  ForwardMouseEventWithLatencyInfo(
-      MouseEventWithLatencyInfo(mouse_event,
-                                CreateRWHLatencyInfoIfNotExist(NULL)));
+  ForwardMouseEventWithLatencyInfo(MouseEventWithLatencyInfo(
+      mouse_event, CreateRWHLatencyInfoIfNotExist(NULL, mouse_event.type)));
 }
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
@@ -953,9 +952,8 @@ void RenderWidgetHostImpl::OnPointerEventActivate() {
 
 void RenderWidgetHostImpl::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
-  ForwardWheelEventWithLatencyInfo(
-      MouseWheelEventWithLatencyInfo(wheel_event,
-                                     CreateRWHLatencyInfoIfNotExist(NULL)));
+  ForwardWheelEventWithLatencyInfo(MouseWheelEventWithLatencyInfo(
+      wheel_event, CreateRWHLatencyInfoIfNotExist(NULL, wheel_event.type)));
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
@@ -983,7 +981,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (IgnoreInputEvents())
     return;
 
-  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
+  ui::LatencyInfo latency_info =
+      CreateRWHLatencyInfoIfNotExist(&ui_latency, gesture_event.type);
 
   if (gesture_event.type == blink::WebInputEvent::GestureScrollUpdate) {
     latency_info.AddLatencyNumber(
@@ -1020,7 +1019,8 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
   // Always forward TouchEvents for touch stream consistency. They will be
   // ignored if appropriate in FilterInputEvent().
 
-  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
+  ui::LatencyInfo latency_info =
+      CreateRWHLatencyInfoIfNotExist(&ui_latency, touch_event.type);
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
   input_router_->SendTouchEvent(touch_with_latency);
 }
@@ -1086,9 +1086,10 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
       suppress_next_char_events_ = false;
   }
 
-  input_router_->SendKeyboardEvent(key_event,
-                                   CreateRWHLatencyInfoIfNotExist(NULL),
-                                   is_shortcut);
+  input_router_->SendKeyboardEvent(
+      key_event,
+      CreateRWHLatencyInfoIfNotExist(NULL, key_event.type),
+      is_shortcut);
 }
 
 void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
@@ -1105,7 +1106,7 @@ void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
 }
 
 ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
-    const ui::LatencyInfo* original) {
+    const ui::LatencyInfo* original, WebInputEvent::Type type) {
   ui::LatencyInfo info;
   if (original)
     info = *original;
@@ -1117,6 +1118,7 @@ ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
     info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                           GetLatencyComponentId(),
                           ++last_input_number_);
+    info.TraceEventType(WebInputEventTraits::GetName(type));
   }
   return info;
 }

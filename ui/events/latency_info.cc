@@ -228,4 +228,11 @@ void LatencyInfo::Clear() {
   latency_components.clear();
 }
 
+void LatencyInfo::TraceEventType(const char* event_type) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("benchmark",
+                               "InputLatency",
+                               TRACE_ID_DONT_MANGLE(trace_id),
+                               event_type);
+}
+
 }  // namespace ui

@@ -120,6 +120,9 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
 
   void Clear();
 
+  // Records the |event_type| in trace buffer as TRACE_EVENT_ASYNC_STEP.
+  void TraceEventType(const char* event_type);
+
   LatencyMap latency_components;
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64 trace_id;

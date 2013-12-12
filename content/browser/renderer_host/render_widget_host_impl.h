@@ -554,7 +554,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // component if it is not already in |original|. And if |original| is
   // not NULL, it is also merged into the resulting LatencyInfo.
   ui::LatencyInfo CreateRWHLatencyInfoIfNotExist(
-      const ui::LatencyInfo* original);
+      const ui::LatencyInfo* original, blink::WebInputEvent::Type type);
 
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
