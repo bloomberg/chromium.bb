@@ -24,7 +24,7 @@ import http_download
 
 
 GS_PATTERN = 'gs://%s'
-GS_HTTPS_PATTERN = 'https://commondatastorage.googleapis.com/%s'
+GS_HTTPS_PATTERN = 'https://storage.googleapis.com/%s'
 
 
 def HttpDownload(url, target):

@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mirror_base_address="https://commondatastorage.googleapis.com/nativeclient-mirror/toolchain"
+mirror_base_address="https://storage.googleapis.com/nativeclient-mirror/toolchain"
 
 if (($#<1 || $#>2)); then
   cat <<END
@@ -111,7 +111,7 @@ mkdir -p "$target"
           exit 3
           ;;
       esac
-      wget "https://commondatastorage.googleapis.com$patchname" -O- |
+      wget "https://storage.googleapis.com$patchname" -O- |
       "$uncompress" -d |
       patch -p1
     done

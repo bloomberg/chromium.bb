@@ -8,10 +8,10 @@
 
 
 BASE_DOWNLOAD_URL = (
-    'https://commondatastorage.googleapis.com/nativeclient-archive2')
+    'https://storage.googleapis.com/nativeclient-archive2')
 
 BASE_ONCE_DOWNLOAD_URL = (
-    'https://commondatastorage.googleapis.com/nativeclient-once/object')
+    'https://storage.googleapis.com/nativeclient-once/object')
 
 # TODO(dschuff): these mappings are now identical for x86 32/64. collapse them.
 PLATFORM_MAPPING = {

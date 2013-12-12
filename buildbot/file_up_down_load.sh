@@ -44,7 +44,7 @@ readonly GS_UTIL=${GS_UTIL:-buildbot/gsutil.sh}
 readonly DIR_ARCHIVE=nativeclient-archive2
 readonly DIR_TRYBOT=nativeclient-trybot
 
-readonly URL_PREFIX_RAW=https://commondatastorage.googleapis.com
+readonly URL_PREFIX_RAW=https://storage.googleapis.com
 readonly URL_PREFIX_ARCHIVE="${URL_PREFIX_RAW}/${DIR_ARCHIVE}"
 readonly URL_PREFIX_TRYBOT="${URL_PREFIX_RAW}/${DIR_TRYBOT}"
 

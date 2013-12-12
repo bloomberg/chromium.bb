@@ -202,7 +202,7 @@ while read name id comment ; do
 	+++ native_client/tools/glibc_download.sh
 	@@ -20 +20 @@
 	-declare -r glibc_url_prefix=http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r
-	+declare -r glibc_url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2/between_builders/x86_glibc/r
+	+declare -r glibc_url_prefix=http://storage.googleapis.com/nativeclient-archive2/between_builders/x86_glibc/r
 	END
       fi
       declare rev="$(native_client/tools/glibc_revision.sh)"
@@ -516,7 +516,7 @@ while read name id comment ; do
 	+	echo "@set GDBVN \`sed q \$(srcdir)/../version.inT\`" > ./GDBvn.new
 	END
 	fi
-	declare url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2
+	declare url_prefix=http://storage.googleapis.com/nativeclient-archive2
 	if [[ "$3" = "glibc" ]]; then
 	  declare url=$url_prefix/x86_toolchain/r"$rev"/toolchain_"$2"_x86.tar.gz
 	else
