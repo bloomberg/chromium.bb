@@ -182,7 +182,7 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   void LogWrite(int result, const char* bytes, const IPEndPoint* address) const;
 
   // Returns the OS error code (or 0 on success).
-  int CreateSocket(const IPEndPoint& address);
+  int CreateSocket(int addr_family);
 
   // Same as SendTo(), except that address is passed by pointer
   // instead of by reference. It is called from Write() with |address|
@@ -200,7 +200,8 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // Bind().
   int SetSocketOptions();
   int DoBind(const IPEndPoint& address);
-  int RandomBind(const IPEndPoint& address);
+  // Binds to a random port on |address|.
+  int RandomBind(const IPAddressNumber& address);
 
   // Attempts to convert the data in |recv_addr_storage_| and |recv_addr_len_|
   // to an IPEndPoint and writes it to |address|. Returns true on success.

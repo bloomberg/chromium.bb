@@ -254,12 +254,19 @@ int UDPSocketLibevent::InternalConnect(const IPEndPoint& address) {
   DCHECK(CalledOnValidThread());
   DCHECK(!is_connected());
   DCHECK(!remote_address_.get());
-  int rv = CreateSocket(address);
+  int addr_family = address.GetSockAddrFamily();
+  int rv = CreateSocket(addr_family);
   if (rv < 0)
     return rv;
 
-  if (bind_type_ == DatagramSocket::RANDOM_BIND)
-    rv = RandomBind(address);
+  if (bind_type_ == DatagramSocket::RANDOM_BIND) {
+    // Construct IPAddressNumber of appropriate size (IPv4 or IPv6) of 0s,
+    // representing INADDR_ANY or in6addr_any.
+    size_t addr_size =
+        addr_family == AF_INET ? kIPv4AddressSize : kIPv6AddressSize;
+    IPAddressNumber addr_any(addr_size);
+    rv = RandomBind(addr_any);
+  }
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
   if (rv < 0) {
@@ -288,7 +295,7 @@ int UDPSocketLibevent::InternalConnect(const IPEndPoint& address) {
 int UDPSocketLibevent::Bind(const IPEndPoint& address) {
   DCHECK(CalledOnValidThread());
   DCHECK(!is_connected());
-  int rv = CreateSocket(address);
+  int rv = CreateSocket(address.GetSockAddrFamily());
   if (rv < 0)
     return rv;
 
@@ -405,8 +412,8 @@ void UDPSocketLibevent::LogRead(int result,
   read_bytes.Add(result);
 }
 
-int UDPSocketLibevent::CreateSocket(const IPEndPoint& address) {
-  addr_family_ = address.GetSockAddrFamily();
+int UDPSocketLibevent::CreateSocket(int addr_family) {
+  addr_family_ = addr_family;
   socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, 0);
   if (socket_ == kInvalidSocket)
     return MapSystemError(errno);
@@ -602,18 +609,16 @@ int UDPSocketLibevent::DoBind(const IPEndPoint& address) {
   return rv < 0 ? MapSystemError(errno) : rv;
 }
 
-int UDPSocketLibevent::RandomBind(const IPEndPoint& address) {
+int UDPSocketLibevent::RandomBind(const IPAddressNumber& address) {
   DCHECK(bind_type_ == DatagramSocket::RANDOM_BIND && !rand_int_cb_.is_null());
 
-  // Construct IPAddressNumber of appropriate size (IPv4 or IPv6) of 0s.
-  IPAddressNumber ip(address.address().size());
-
   for (int i = 0; i < kBindRetries; ++i) {
-    int rv = DoBind(IPEndPoint(ip, rand_int_cb_.Run(kPortStart, kPortEnd)));
+    int rv = DoBind(IPEndPoint(address,
+                               rand_int_cb_.Run(kPortStart, kPortEnd)));
     if (rv == OK || rv != ERR_ADDRESS_IN_USE)
       return rv;
   }
-  return DoBind(IPEndPoint(ip, 0));
+  return DoBind(IPEndPoint(address, 0));
 }
 
 int UDPSocketLibevent::JoinGroup(const IPAddressNumber& group_address) const {
