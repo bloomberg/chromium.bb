@@ -31,9 +31,9 @@ class FindDebugDirMock(partial_mock.PartialMock):
   ATTRS = ('FindDebugDir',)
   DEFAULT_ATTR = 'FindDebugDir'
 
-  def __init__(self, path, *args, **kwds):
+  def __init__(self, path, *args, **kwargs):
     self.path = path
-    super(FindDebugDirMock, self).__init__(*args, **kwds)
+    super(FindDebugDirMock, self).__init__(*args, **kwargs)
 
   def FindDebugDir(self, _board):
     return self.path
@@ -155,8 +155,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
 
   def testGenErrors(self, gen_mock):
     """Verify we handle errors from generation correctly"""
-    def _SetError(*_args, **kwds):
-      kwds['num_errors'].value += 1
+    def _SetError(*_args, **kwargs):
+      kwargs['num_errors'].value += 1
       return 1
     gen_mock.side_effect = _SetError
     with parallel_unittest.ParallelMock():

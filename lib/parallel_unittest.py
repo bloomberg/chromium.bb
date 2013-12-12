@@ -404,18 +404,18 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
       self.testExceptionRaising()
       self.assertEqual(os.listdir(tempdir), [])
 
-  def testKillQuiet(self, steps=None, **kwds):
+  def testKillQuiet(self, steps=None, **kwargs):
     """Test that processes do get killed if they're silent for too long."""
     if steps is None:
       steps = [self._Fail] * 10
-    kwds.setdefault('SILENT_TIMEOUT', 0.1)
-    kwds.setdefault('MINIMUM_SILENT_TIMEOUT', 0.01)
-    kwds.setdefault('SILENT_TIMEOUT_STEP', 0)
-    kwds.setdefault('SIGTERM_TIMEOUT', 0.1)
-    kwds.setdefault('PRINT_INTERVAL', 0.01)
+    kwargs.setdefault('SILENT_TIMEOUT', 0.1)
+    kwargs.setdefault('MINIMUM_SILENT_TIMEOUT', 0.01)
+    kwargs.setdefault('SILENT_TIMEOUT_STEP', 0)
+    kwargs.setdefault('SIGTERM_TIMEOUT', 0.1)
+    kwargs.setdefault('PRINT_INTERVAL', 0.01)
 
     ex_str = None
-    with mock.patch.multiple(parallel._BackgroundTask, **kwds):
+    with mock.patch.multiple(parallel._BackgroundTask, **kwargs):
       with self.OutputCapturer() as capture:
         try:
           with cros_test_lib.LoggingCapturer(cros_build_lib.logger.name):

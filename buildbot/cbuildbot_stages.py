@@ -2645,8 +2645,8 @@ class AUTestStage(HWTestStage):
 class ASyncHWTestStage(HWTestStage, ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
-  def __init__(self, *args, **dargs):
-    super(ASyncHWTestStage, self).__init__(*args, **dargs)
+  def __init__(self, *args, **kwargs):
+    super(ASyncHWTestStage, self).__init__(*args, **kwargs)
     self.wait_for_results = False
 
 
@@ -2654,8 +2654,8 @@ class QATestStage(HWTestStage, ForgivingBuilderStage):
   """Stage that runs qav suite in lab, blocking build but forgiving failures.
   """
 
-  def __init__(self, *args, **dargs):
-    super(QATestStage, self).__init__(*args, **dargs)
+  def __init__(self, *args, **kwargs):
+    super(QATestStage, self).__init__(*args, **kwargs)
 
 
 class SDKPackageStage(bs.BuilderStage):

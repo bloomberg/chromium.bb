@@ -71,10 +71,10 @@ class Manifest(object):
     return list(self.nodes.findall('project'))
 
 
-def _AddProjectsToManifestGroups(options, *projects):
+def _AddProjectsToManifestGroups(options, *args):
   """Enable the given manifest groups for the configured repository."""
 
-  groups_to_enable = ['name:%s' % x for x in projects]
+  groups_to_enable = ['name:%s' % x for x in args]
 
   git_config = options.git_config
 

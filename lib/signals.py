@@ -72,17 +72,17 @@ def SignalModuleUsable(_signal=signal.signal, _SIGUSR1=signal.SIGUSR1):
 
 
 @contextlib.contextmanager
-def DeferSignals(*signals):
+def DeferSignals(*args):
   """Context Manger to defer signals during a critical block.
 
   If a signal comes in for the masked signals, the original handler
   is ran after the  critical block has exited.
 
   Args:
-    signals: Which signals to ignore.  If none are given, defaults to
+    args: Which signals to ignore.  If none are given, defaults to
       SIGINT and SIGTERM.
   """
-
+  signals = args
   if not signals:
     signals = [signal.SIGINT, signal.SIGTERM, signal.SIGALRM]
 

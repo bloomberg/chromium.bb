@@ -73,9 +73,9 @@ def GetTestJson(change_id=None):
 
 class MockManifest(object):
 
-  def __init__(self, path, **kwds):
+  def __init__(self, path, **kwargs):
     self.root = path
-    for key, attr in kwds.iteritems():
+    for key, attr in kwargs.iteritems():
       setattr(self, key, attr)
 
   def ProjectIsContentMerging(self, _project):
@@ -562,14 +562,14 @@ class TestPatchSeries(MoxBase):
 
 
 def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
-             builder_name='foon', is_master=True, dryrun=True, **kwds):
+             builder_name='foon', is_master=True, dryrun=True, **kwargs):
   """Helper for creating ValidationPool objects for tests."""
-  kwds.setdefault('changes', [])
-  build_root = kwds.pop('build_root', '/fake_root')
+  kwargs.setdefault('changes', [])
+  build_root = kwargs.pop('build_root', '/fake_root')
 
   pool = validation_pool.ValidationPool(
       overlays, build_root, build_number, builder_name, is_master,
-      dryrun, **kwds)
+      dryrun, **kwargs)
   return pool
 
 
@@ -687,11 +687,11 @@ class TestCoreLogic(MoxBase):
                      side_effect=lambda x: x)
 
 
-  def MakePool(self, *args, **kwds):
+  def MakePool(self, *args, **kwargs):
     """Helper for creating ValidationPool objects for Mox tests."""
-    handlers = kwds.pop('handlers', False)
-    kwds['build_root'] = self.build_root
-    pool = MakePool(*args, **kwds)
+    handlers = kwargs.pop('handlers', False)
+    kwargs['build_root'] = self.build_root
+    pool = MakePool(*args, **kwargs)
     funcs = ['_HandleApplySuccess', '_HandleApplyFailure',
              '_HandleCouldNotApply', '_HandleCouldNotSubmit']
     if handlers:
@@ -703,8 +703,8 @@ class TestCoreLogic(MoxBase):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
 
   def GetPool(self, changes, applied=(), tot=(),
-              inflight=(), dryrun=True, **kwds):
-    pool = self.MakePool(changes=changes, **kwds)
+              inflight=(), dryrun=True, **kwargs):
+    pool = self.MakePool(changes=changes, **kwargs)
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]

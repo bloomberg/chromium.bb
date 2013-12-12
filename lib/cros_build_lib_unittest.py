@@ -107,11 +107,11 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
 
 
 def _ForceLoggingLevel(functor):
-  def inner(*args, **kwds):
+  def inner(*args, **kwargs):
     current = cros_build_lib.logger.getEffectiveLevel()
     try:
       cros_build_lib.logger.setLevel(logging.INFO)
-      return functor(*args, **kwds)
+      return functor(*args, **kwargs)
     finally:
       cros_build_lib.logger.setLevel(current)
   return inner
@@ -133,15 +133,15 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     self.output = 'test output'
 
   @contextlib.contextmanager
-  def _SetupPopen(self, cmd, **kwds):
+  def _SetupPopen(self, cmd, **kwargs):
     cros_signals.SignalModuleUsable().AndReturn(True)
-    ignore_sigint = kwds.pop('ignore_sigint', False)
+    ignore_sigint = kwargs.pop('ignore_sigint', False)
 
     for val in ('cwd', 'stdin', 'stdout', 'stderr'):
-      kwds.setdefault(val, None)
-    kwds.setdefault('shell', False)
-    kwds.setdefault('env', mox.IgnoreArg())
-    kwds['close_fds'] = True
+      kwargs.setdefault(val, None)
+    kwargs.setdefault('shell', False)
+    kwargs.setdefault('env', mox.IgnoreArg())
+    kwargs['close_fds'] = True
 
     # Make some arbitrary functors we can pretend are signal handlers.
     # Note that these are intentionally defined on the fly via lambda-
@@ -162,7 +162,7 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     signal.getsignal(signal.SIGTERM).AndReturn(normal_sigterm)
     signal.signal(signal.SIGTERM, mox.IgnoreArg()).AndReturn(normal_sigterm)
 
-    cros_build_lib._Popen(cmd, **kwds).AndReturn(self.proc_mock)
+    cros_build_lib._Popen(cmd, **kwargs).AndReturn(self.proc_mock)
     yield self.proc_mock
 
     # If it ignored them, RunCommand will restore sigints; record that.
@@ -526,27 +526,27 @@ class TestRetries(cros_test_lib.MoxTestCase):
 
     _setup_counters(0, 0, 0, 0)
     command = ['python', path]
-    kwds = {'redirect_stdout': True, 'print_cmd': False}
+    kwargs = {'redirect_stdout': True, 'print_cmd': False}
 
-    self.assertEqual(cros_build_lib.RunCommand(command, **kwds).output, '0\n')
+    self.assertEqual(cros_build_lib.RunCommand(command, **kwargs).output, '0\n')
 
     func = cros_build_lib.RunCommandWithRetries
 
     _setup_counters(2, 2, 0, 0)
-    self.assertEqual(func(0, command, sleep=0, **kwds).output, '2\n')
+    self.assertEqual(func(0, command, sleep=0, **kwargs).output, '2\n')
     self.mox.VerifyAll()
 
     _setup_counters(0, 2, 1, 2)
-    self.assertEqual(func(2, command, sleep=1, **kwds).output, '2\n')
+    self.assertEqual(func(2, command, sleep=1, **kwargs).output, '2\n')
     self.mox.VerifyAll()
 
     _setup_counters(0, 1, 2, 1)
-    self.assertEqual(func(1, command, sleep=2, **kwds).output, '1\n')
+    self.assertEqual(func(1, command, sleep=2, **kwargs).output, '1\n')
     self.mox.VerifyAll()
 
     _setup_counters(0, 3, 3, 2)
     self.assertRaises(cros_build_lib.RunCommandError,
-                      func, 2, command, sleep=3, **kwds)
+                      func, 2, command, sleep=3, **kwargs)
     self.mox.VerifyAll()
 
 
@@ -841,8 +841,8 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     self.assertEqual('master', func(repo_root))
 
     # TODO(ferringb): convert this over to assertRaises2
-    def assertExcept(message, **kwds):
-      reconfig(**kwds)
+    def assertExcept(message, **kwargs):
+      reconfig(**kwargs)
       try:
         func(repo_root)
         assert "Testing for %s, an exception wasn't thrown." % (message,)

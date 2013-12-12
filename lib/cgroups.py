@@ -62,10 +62,10 @@ def _FileContains(filename, strings):
 def EnsureInitialized(functor):
   """Decorator for Cgroup methods to ensure the method is ran only if inited"""
 
-  def f(self, *args, **kwds):
+  def f(self, *args, **kwargs):
     # pylint: disable=W0212
     self.Instantiate()
-    return functor(self, *args, **kwds)
+    return functor(self, *args, **kwargs)
 
   # Dummy up our wrapper to make it look like what we're wrapping,
   # and expose the underlying docstrings.
@@ -315,15 +315,15 @@ class Cgroup(object):
         raise
       return default
 
-  def _AddSingleGroup(self, name, **kwds):
+  def _AddSingleGroup(self, name, **kwargs):
     """Method for creating a node nested within this one.
 
     Derivative classes should override this method rather than AddGroup;
     see __init__ for the supported keywords.
     """
-    return self.__class__(os.path.join(self.namespace, name), **kwds)
+    return self.__class__(os.path.join(self.namespace, name), **kwargs)
 
-  def AddGroup(self, name, **kwds):
+  def AddGroup(self, name, **kwargs):
     """Add and return a cgroup nested in this one.
 
     See __init__ for the supported keywords.  If this isn't a direct child
@@ -339,16 +339,16 @@ class Cgroup(object):
     """
     name = self._LimitName(name, multilevel=True)
 
-    autoclean = kwds.pop('autoclean', True)
-    autoclean_parents = kwds.pop('autoclean_parents', autoclean)
+    autoclean = kwargs.pop('autoclean', True)
+    autoclean_parents = kwargs.pop('autoclean_parents', autoclean)
     chunks = name.split('/', 1)
     node = self
     # pylint: disable=W0212
     for chunk in chunks[:-1]:
       node = node._AddSingleGroup(chunk, parent=node,
-                                  autoclean=autoclean_parents, **kwds)
+                                  autoclean=autoclean_parents, **kwargs)
     return node._AddSingleGroup(chunks[-1], parent=node,
-                                autoclean=autoclean, **kwds)
+                                autoclean=autoclean, **kwargs)
 
   @cros_build_lib.MemoizedSingleCall
   def Instantiate(self):
@@ -532,9 +532,9 @@ class Cgroup(object):
       # during interpreter shutdown.
       self._RemoveGroupOnDisk(self.path, False, sudo_strict=False)
 
-  def TemporarilySwitchToNewGroup(self, namespace, **kwds):
+  def TemporarilySwitchToNewGroup(self, namespace, **kwargs):
     """Context manager to create a new cgroup & temporarily switch into it."""
-    node = self.AddGroup(namespace, **kwds)
+    node = self.AddGroup(namespace, **kwargs)
     return self.TemporarilySwitchToGroup(node)
 
   @contextlib.contextmanager
@@ -765,7 +765,7 @@ class ContainChildren(cros_build_lib.MasterPidContextManager):
         self.child.RemoveThisGroup(strict=False)
 
 
-def SimpleContainChildren(process_name, nesting=True, **kwds):
+def SimpleContainChildren(process_name, nesting=True, **kwargs):
   """Convenience context manager to create a cgroup for children containment
 
   See Cgroup.FindStartingGroup and Cgroup.ContainChildren for specifics.
@@ -775,7 +775,7 @@ def SimpleContainChildren(process_name, nesting=True, **kwds):
   if node is None:
     return cros_build_lib.NoOpContextManager()
   name = '%s:%i' % (process_name, os.getpid())
-  return ContainChildren(node, name, **kwds)
+  return ContainChildren(node, name, **kwargs)
 
 # This is a generic group, not associated with any specific process id, so
 # we shouldn't autoclean it on exit; doing so would delete the group from

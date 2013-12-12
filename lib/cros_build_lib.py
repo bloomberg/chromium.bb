@@ -93,7 +93,7 @@ class TerminateRunCommandError(RunCommandError):
   """
 
 
-def SudoRunCommand(cmd, user='root', **kwds):
+def SudoRunCommand(cmd, user='root', **kwargs):
   """Run a command via sudo.
 
   Client code must use this rather than coming up with their own RunCommand
@@ -104,7 +104,7 @@ def SudoRunCommand(cmd, user='root', **kwds):
     cmd: The command to run.  See RunCommand for rules of this argument-
          SudoRunCommand purely prefixes it with sudo.
     user: The user to run the command as.
-    kwds: See RunCommand options, it's a direct pass thru to it.
+    kwargs: See RunCommand options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
           If set to False, it'll suppress strict sudo behavior.
   Returns:
@@ -117,10 +117,10 @@ def SudoRunCommand(cmd, user='root', **kwds):
   """
   sudo_cmd = ['sudo']
 
-  strict = kwds.pop('strict', True)
+  strict = kwargs.pop('strict', True)
 
   if user == 'root' and os.geteuid() == 0:
-    return RunCommand(cmd, **kwds)
+    return RunCommand(cmd, **kwargs)
 
   if strict and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
@@ -135,7 +135,7 @@ def SudoRunCommand(cmd, user='root', **kwds):
 
   # Pass these values down into the sudo environment, since sudo will
   # just strip them normally.
-  extra_env = kwds.pop('extra_env', None)
+  extra_env = kwargs.pop('extra_env', None)
   extra_env = {} if extra_env is None else extra_env.copy()
 
   for var in constants.ENV_PASSTHRU:
@@ -152,14 +152,14 @@ def SudoRunCommand(cmd, user='root', **kwds):
     #  $ sudo [sudo args] -- bash -c '[shell command]'
     # If we let RunCommand take care of it, we'd end up with:
     #  $ bash -c 'sudo [sudo args] -- [shell command]'
-    shell = kwds.pop('shell', False)
+    shell = kwargs.pop('shell', False)
     if not shell:
       raise Exception('Cannot run a string command without a shell')
     sudo_cmd.extend(['/bin/bash', '-c', cmd])
   else:
     sudo_cmd.extend(cmd)
 
-  return RunCommand(sudo_cmd, **kwds)
+  return RunCommand(sudo_cmd, **kwargs)
 
 
 def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
@@ -612,33 +612,33 @@ def GetHostDomain():
   return domain if domain else 'localdomain'
 
 
-def GenericRetry(handler, max_retry, functor, *args, **kwds):
+def GenericRetry(handler, max_retry, functor, *args, **kwargs):
   """Generic retry loop w/ optional break out depending on exceptions.
 
   To retry based on the return value of |functor| see the timeout_util module.
 
   Args:
     handler: A functor invoked w/ the exception instance that
-      functor(*args, **kwds) threw.  If it returns True, then a
+      functor(*args, **kwargs) threw.  If it returns True, then a
       retry is attempted.  If False, the exception is re-raised.
     max_retry: A positive integer representing how many times to retry
       the command before giving up.  Worst case, the command is invoked
       (max_retry + 1) times before failing.
-    functor: A callable to pass args and kwds to.
+    functor: A callable to pass args and kwargs to.
     args: Positional args passed to functor.
-    kwds: Optional args passed to functor.
+    kwargs: Optional args passed to functor.
     sleep: Optional keyword.  Multiplier for how long to sleep between
       retries; will delay (1*sleep) the first time, then (2*sleep),
       continuing via attempt * sleep.
   Returns:
-    Whatever functor(*args, **kwds) returns.
+    Whatever functor(*args, **kwargs) returns.
   Raises:
-    Exception: Whatever exceptions functor(*args, **kwds) throws and
+    Exception: Whatever exceptions functor(*args, **kwargs) throws and
       isn't suppressed is raised.  Note that the first exception encountered
       is what's thrown.
   """
 
-  sleep = kwds.pop('sleep', 0)
+  sleep = kwargs.pop('sleep', 0)
   if max_retry < 0:
     raise ValueError('max_retry needs to be zero or more: %s' % max_retry)
 
@@ -647,7 +647,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwds):
     if attempt and sleep:
       time.sleep(sleep * attempt)
     try:
-      return functor(*args, **kwds)
+      return functor(*args, **kwargs)
     except Exception as e:
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.
@@ -661,7 +661,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwds):
   raise exc_info[0], exc_info[1], exc_info[2]
 
 
-def RetryException(exc_retry, max_retry, functor, *args, **kwds):
+def RetryException(exc_retry, max_retry, functor, *args, **kwargs):
   """Convience wrapper for RetryInvocation based on exceptions.
 
   Args:
@@ -676,10 +676,10 @@ def RetryException(exc_retry, max_retry, functor, *args, **kwds):
   #pylint: disable=E0102
   def exc_retry(exc, values=exc_retry):
     return isinstance(exc, values)
-  return GenericRetry(exc_retry, max_retry, functor, *args, **kwds)
+  return GenericRetry(exc_retry, max_retry, functor, *args, **kwargs)
 
 
-def RetryCommand(functor, max_retry, *args, **kwds):
+def RetryCommand(functor, max_retry, *args, **kwargs):
   """Wrapper for RunCommand that will retry a command
 
   Args:
@@ -695,13 +695,13 @@ def RetryCommand(functor, max_retry, *args, **kwds):
       Note: A process will exit with a negative exit code if it is killed by a
       signal. By default, we retry on all non-negative exit codes.
     args: Positional args passed to RunCommand; see RunCommand for specifics.
-    kwds: Optional args passed to RunCommand; see RunCommand for specifics.
+    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
   Returns:
     A CommandResult object.
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
-  values = kwds.pop('retry_on', None)
+  values = kwargs.pop('retry_on', None)
   def ShouldRetry(exc):
     """Return whether we should retry on a given exception."""
     if not ShouldRetryCommandCommon(exc):
@@ -711,7 +711,7 @@ def RetryCommand(functor, max_retry, *args, **kwds):
                    -exc.result.returncode)
       return False
     return values is None or exc.result.returncode in values
-  return GenericRetry(ShouldRetry, max_retry, functor, *args, **kwds)
+  return GenericRetry(ShouldRetry, max_retry, functor, *args, **kwargs)
 
 
 def ShouldRetryCommandCommon(exc):
@@ -724,7 +724,7 @@ def ShouldRetryCommandCommon(exc):
   return True
 
 
-def RunCommandWithRetries(max_retry, *args, **kwds):
+def RunCommandWithRetries(max_retry, *args, **kwargs):
   """Wrapper for RunCommand that will retry a command
 
   Args:
@@ -734,10 +734,10 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
-  return RetryCommand(RunCommand, max_retry, *args, **kwds)
+  return RetryCommand(RunCommand, max_retry, *args, **kwargs)
 
 
-def RunCommandCaptureOutput(cmd, **kwds):
+def RunCommandCaptureOutput(cmd, **kwargs):
   """Wrapper for RunCommand that captures output.
 
   This wrapper calls RunCommand with redirect_stdout=True and
@@ -745,10 +745,11 @@ def RunCommandCaptureOutput(cmd, **kwds):
 
   Args:
     cmd: The command to run.
-    kwds: Optional args passed to RunCommand; see RunCommand for specifics.
+    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
   """
-  return RunCommand(cmd, redirect_stdout=kwds.pop('redirect_stdout', True),
-                    redirect_stderr=kwds.pop('redirect_stderr', True), **kwds)
+  return RunCommand(cmd, redirect_stdout=kwargs.pop('redirect_stdout', True),
+                    redirect_stderr=kwargs.pop('redirect_stderr', True),
+                    **kwargs)
 
 
 def RunCommandQuietly(*args, **kwargs):
@@ -773,7 +774,7 @@ def TimedCommand(functor, *args, **kwargs):
   Args:
     functor: The function to run.
     args: The args to pass to the function.
-    kwds: Optional args to pass to the function.
+    kwargs: Optional args to pass to the function.
     timed_log_level: The log level to use (defaults to info).
     timed_log_msg: The message to log with timing info appended (defaults to
                    details about the call made).  It must include a %s to hold
@@ -838,7 +839,7 @@ def FindCompressor(compression, chroot=None):
 
 
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
-                  inputs=None, extra_args=None, **kwds):
+                  inputs=None, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.
 
   Args:
@@ -851,7 +852,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     inputs: A list of files or directories to add to the tarball.  If unset,
       defaults to ".".
     extra_args: A list of extra args to pass to "tar".
-    kwds: Any RunCommand options/overrides to use.
+    kwargs: Any RunCommand options/overrides to use.
 
   Returns:
     The cmd_result object returned by the RunCommand invocation.
@@ -860,12 +861,12 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     inputs = ['.']
   if extra_args is None:
     extra_args = []
-  kwds.setdefault('debug_level', logging.DEBUG)
+  kwargs.setdefault('debug_level', logging.DEBUG)
 
   comp = FindCompressor(compression, chroot=chroot)
   cmd = ['tar'] + extra_args + ['-I', comp, '-cf', target] + inputs
   rc_func = SudoRunCommand if sudo else RunCommand
-  return rc_func(cmd, cwd=cwd, **kwds)
+  return rc_func(cmd, cwd=cwd, **kwargs)
 
 
 def GetInput(prompt):
@@ -989,7 +990,7 @@ def NoOpContextManager():
   yield
 
 
-def AllowDisabling(enabled, functor, *args, **kwds):
+def AllowDisabling(enabled, functor, *args, **kwargs):
   """Context Manager wrapper that can be used to enable/disable usage.
 
   This is mainly useful to control whether or not a given Context Manager
@@ -1007,7 +1008,7 @@ def AllowDisabling(enabled, functor, *args, **kwds):
   implementation do this, thus the generic wrapper.
   """
   if enabled:
-    return functor(*args, **kwds)
+    return functor(*args, **kwargs)
   return NoOpContextManager()
 
 
@@ -1031,7 +1032,7 @@ class ContextManagerStack(object):
   def __init__(self):
     self._stack = []
 
-  def Add(self, functor, *args, **kwds):
+  def Add(self, functor, *args, **kwargs):
     """Add a context manager onto the stack.
 
     Usage of this is essentially the following:
@@ -1051,7 +1052,7 @@ class ContextManagerStack(object):
     """
     obj = None
     try:
-      obj = functor(*args, **kwds)
+      obj = functor(*args, **kwargs)
       return obj
     finally:
       if obj is not None:

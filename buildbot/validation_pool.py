@@ -317,9 +317,9 @@ def _PatchWrapException(functor):
   cause, while casting it into an easier to use form (one that can
   be chained in addition).
   """
-  def f(self, parent, *args, **kwds):
+  def f(self, parent, *args, **kwargs):
     try:
-      return functor(self, parent, *args, **kwds)
+      return functor(self, parent, *args, **kwargs)
     except gerrit.GerritException as e:
       if isinstance(e, gerrit.QueryNotSpecific):
         e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a * "

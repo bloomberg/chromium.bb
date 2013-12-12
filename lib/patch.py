@@ -190,9 +190,9 @@ class PatchCache(object):
     self._dict = {}
     self.Inject(*initial)
 
-  def Inject(self, *changes):
+  def Inject(self, *args):
     """Inject a sequence of changes into this cache."""
-    for change in changes:
+    for change in args:
       for key in change.LookupAliases():
         self.InjectCustomKey(key, change)
 
@@ -209,9 +209,9 @@ class PatchCache(object):
       raise ValueError("Value %r isn't a string" % (value,))
     return [value]
 
-  def Remove(self, *changes):
+  def Remove(self, *args):
     """Remove a change from this cache."""
-    for change in changes:
+    for change in args:
       for alias in self._GetAliases(change):
         self._dict.pop(alias, None)
 

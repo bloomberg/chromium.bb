@@ -236,9 +236,9 @@ def UserActRestore(opts, idx):
   opts.gerrit.RestoreChange(idx)
 
 
-def UserActReviewers(opts, idx, *emails):
+def UserActReviewers(opts, idx, *args):
   """Add/remove reviewers' emails for CL <n> (prepend with '~' to remove)"""
-
+  emails = args
   # Allow for optional leading '~'.
   email_validator = re.compile(r'^[~]?%s$' % constants.EMAIL_REGEX)
   add_list, remove_list, invalid_list = [], [], []

@@ -105,7 +105,7 @@ class TrackerAccess(object):
     return keyed_labels
 
 
-def _TestGetKeyedLabels(project_name, email, passwordFile, *bug_ids):
+def _TestGetKeyedLabels(project_name, email, passwordFile, *args):
   """Test code for GetKeyedLabels().
 
   Args:
@@ -113,8 +113,9 @@ def _TestGetKeyedLabels(project_name, email, passwordFile, *bug_ids):
     email: The email address to use to login.  May be ""
     passwordFile: A file containing the password for the email address.
                   May be "" if email is "" for anon access.
-    bug_ids: A list of bug IDs to query.
+    args: A list of bug IDs to query.
   """
+  bug_ids = args
   # If password was specified as a file, read it.
   if passwordFile:
     password = open(passwordFile, "r").read().strip()

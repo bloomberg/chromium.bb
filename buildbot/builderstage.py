@@ -145,17 +145,17 @@ class BuilderStage(object):
 
     return overlays, push_overlays
 
-  def GetRepoRepository(self, **kwds):
+  def GetRepoRepository(self, **kwargs):
     """Create a new repo repository object."""
     manifest_url = self._run.options.manifest_repo_url
     if manifest_url is None:
       manifest_url = self._run.config.manifest_repo_url
 
-    kwds.setdefault('referenced_repo', self._run.options.reference_repo)
-    kwds.setdefault('branch', self._run.manifest_branch)
-    kwds.setdefault('manifest', self._run.config.manifest)
+    kwargs.setdefault('referenced_repo', self._run.options.reference_repo)
+    kwargs.setdefault('branch', self._run.manifest_branch)
+    kwargs.setdefault('manifest', self._run.config.manifest)
 
-    return repository.RepoRepository(manifest_url, self._build_root, **kwds)
+    return repository.RepoRepository(manifest_url, self._build_root, **kwargs)
 
   def _Print(self, msg):
     """Prints a msg to stderr."""

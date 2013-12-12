@@ -535,12 +535,12 @@ class HWTestConfig(object):
   QAV_TEST_NUM = 2
 
   @classmethod
-  def DefaultList(cls, **dargs):
+  def DefaultList(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a canary build, with
     overrides for optional args."""
     # Set the number of machines for the au and qav suites. If we are
     # constrained in the number of duts in the lab, only give 1 dut to each.
-    if (dargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
+    if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
         constants.HWTEST_DEFAULT_NUM):
       au_dict = dict(num=cls.AU_TESTS_NUM)
       qav_dict = dict(num=cls.QAV_TEST_NUM)
@@ -548,45 +548,45 @@ class HWTestConfig(object):
       au_dict = dict(num=1)
       qav_dict = dict(num=1)
 
-    au_dargs = dargs.copy()
-    au_dargs.update(au_dict)
+    au_kwargs = kwargs.copy()
+    au_kwargs.update(au_dict)
 
-    qav_dargs = dargs.copy()
-    qav_dargs.update(qav_dict)
+    qav_kwargs = kwargs.copy()
+    qav_kwargs.update(qav_dict)
 
     # BVT + AU suite.
-    return [cls(cls.DEFAULT_HW_TEST, **dargs),
-            cls(constants.HWTEST_AU_SUITE, **au_dargs),
-            cls(constants.HWTEST_QAV_SUITE, **qav_dargs)]
+    return [cls(cls.DEFAULT_HW_TEST, **kwargs),
+            cls(constants.HWTEST_AU_SUITE, **au_kwargs),
+            cls(constants.HWTEST_QAV_SUITE, **qav_kwargs)]
 
   @classmethod
-  def PGOList(cls, **dargs):
+  def PGOList(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a PGO build, with overrides
     for optional args."""
     pgo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
                     timeout=90 * 60, num=1, async=True)
-    pgo_dict.update(dargs)
+    pgo_dict.update(kwargs)
     return [cls('pyauto_perf', **pgo_dict),
             cls('perf_v2', **pgo_dict)]
 
   @classmethod
-  def DefaultListCQ(cls, **dargs):
+  def DefaultListCQ(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a CQ build,
     with overrides for optional args."""
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
-    # Allows dargs overrides to default_dict for cq.
-    default_dict.update(dargs)
+    # Allows kwargs overrides to default_dict for cq.
+    default_dict.update(kwargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
 
   @classmethod
-  def DefaultListPFQ(cls, **dargs):
+  def DefaultListPFQ(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a PFQ build,
     with overrides for optional args."""
     default_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
                         file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
-    # Allows dargs overrides to default_dict for pfq.
-    default_dict.update(dargs)
+    # Allows kwargs overrides to default_dict for pfq.
+    default_dict.update(kwargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
@@ -611,11 +611,11 @@ class HWTestConfig(object):
     return int(self.timeout/60)
 
 
-def PGORecordTest(**dargs):
+def PGORecordTest(**kwargs):
   default_dict = dict(pool=constants.HWTEST_CHROME_PFQ_POOL,
                       critical=True, num=1, file_bugs=False)
-  # Allows dargs overrides to default_dict for cq.
-  default_dict.update(dargs)
+  # Allows kwargs overrides to default_dict for cq.
+  default_dict.update(kwargs)
   return HWTestConfig('PGO_record', **default_dict)
 
 
@@ -637,15 +637,17 @@ class _config(dict):
 
     return super(_config, self).__getattr__(name)
 
-  def derive(self, *inherits, **overrides):
+  def derive(self, *args, **kwargs):
     """Create a new config derived from this one.
 
     Args:
-      inherits: Mapping instances to mixin.
-      overrides: Settings to inject; see _settings for valid values.
+      args: Mapping instances to mixin.
+      kwargs: Settings to inject; see _settings for valid values.
+
     Returns:
       A new _config instance.
     """
+    inherits, overrides = args, kwargs
     new_config = copy.deepcopy(self)
     for update_config in inherits:
       new_config.update(update_config)
@@ -654,17 +656,19 @@ class _config(dict):
 
     return copy.deepcopy(new_config)
 
-  def add_config(self, name, *inherits, **overrides):
+  def add_config(self, name, *args, **kwargs):
     """Derive and add the config to cbuildbots usable config targets
 
     Args:
       name: The name to label this configuration; this is what cbuildbot
             would see.
-      inherits: See the docstring of derive.
-      overrides: See the docstring of derive.
+      args: See the docstring of derive.
+      kwargs: See the docstring of derive.
+
     Returns:
       See the docstring of derive.
     """
+    inherits, overrides = args, kwargs
     overrides['name'] = name
     new_config = self.derive(*inherits, **overrides)
 
@@ -686,21 +690,22 @@ class _config(dict):
     return new_config
 
   @classmethod
-  def add_raw_config(cls, name, *inherits, **overrides):
-    return cls().add_config(name, *inherits, **overrides)
+  def add_raw_config(cls, name, *args, **kwargs):
+    return cls().add_config(name, *args, **kwargs)
 
   @classmethod
-  def add_group(cls, name, *configs, **group_overrides):
+  def add_group(cls, name, *args, **kwargs):
     """Create a new group of build configurations.
 
     Args:
       name: The name to label this configuration; this is what cbuildbot
             would see.
-      configs: Configurations to build in this group. The first config in
-               the group is considered the primary configuration and is used
-               for syncing and creating the chroot.
-      group_overrides: See the docstring of derive. Applies to entire group.
+      args: Configurations to build in this group. The first config in
+            the group is considered the primary configuration and is used
+            for syncing and creating the chroot.
+      kwargs: See the docstring of derive. Applies to entire group.
     """
+    configs, group_overrides = args, kwargs
     child_configs = [_default.derive(x, grouped=True) for x in configs]
     group_overrides['child_configs'] = child_configs
     return configs[0].add_config(name, **group_overrides)

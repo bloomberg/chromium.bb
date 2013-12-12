@@ -738,7 +738,7 @@ def _GitRepoIsContentMerging(git_repo, remote):
   return False
 
 
-def RunGit(git_repo, cmd, retry=True, **kwds):
+def RunGit(git_repo, cmd, retry=True, **kwargs):
   """RunCommandCaptureOutput wrapper for git commands.
 
   This suppresses print_cmd, and suppresses output by default.  Git
@@ -752,7 +752,7 @@ def RunGit(git_repo, cmd, retry=True, **kwds):
       added automatically.  If you wished to run 'git remote update',
       this would be ['remote', 'update'] for example.
     retry: If set, retry on transient errors. Defaults to True.
-    kwds: Any RunCommand or GenericRetry options/overrides to use.
+    kwargs: Any RunCommand or GenericRetry options/overrides to use.
   Returns:
     A CommandResult object.
   """
@@ -767,13 +767,13 @@ def RunGit(git_repo, cmd, retry=True, **kwds):
       return True
     return False
 
-  max_retry = kwds.pop('max_retry', DEFAULT_RETRIES if retry else 0)
-  kwds.setdefault('print_cmd', False)
-  kwds.setdefault('sleep', DEFAULT_RETRY_INTERVAL)
-  kwds.setdefault('cwd', git_repo)
+  max_retry = kwargs.pop('max_retry', DEFAULT_RETRIES if retry else 0)
+  kwargs.setdefault('print_cmd', False)
+  kwargs.setdefault('sleep', DEFAULT_RETRY_INTERVAL)
+  kwargs.setdefault('cwd', git_repo)
   return cros_build_lib.GenericRetry(
       _ShouldRetry, max_retry, cros_build_lib.RunCommandCaptureOutput,
-      ['git'] + cmd, **kwds)
+      ['git'] + cmd, **kwargs)
 
 
 def GetProjectUserEmail(git_repo):
@@ -804,7 +804,7 @@ class AmbiguousBranchName(Exception):
   """Error if given branch name matches too many branches."""
 
 
-def MatchSingleBranchName(*args, **kwds):
+def MatchSingleBranchName(*args, **kwargs):
   """Match exactly one branch name, else throw an exception.
 
   Args:
@@ -814,7 +814,7 @@ def MatchSingleBranchName(*args, **kwds):
   Raises:
     raise AmbiguousBranchName if we did not match exactly one branch.
   """
-  ret = MatchBranchName(*args, **kwds)
+  ret = MatchBranchName(*args, **kwargs)
   if len(ret) != 1:
     raise AmbiguousBranchName('Did not match exactly 1 branch: %r' % ret)
   return ret[0]

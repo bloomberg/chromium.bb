@@ -109,11 +109,11 @@ I am the first commit.
     if hasattr(self, 'original_cwd'):
       os.chdir(self.original_cwd)
 
-  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     return self.patch_kls(source, 'chromiumos/chromite', ref,
                           '%s/master' % constants.EXTERNAL_REMOTE,
-                          kwds.pop('remote', constants.EXTERNAL_REMOTE),
-                          sha1=sha1, **kwds)
+                          kwargs.pop('remote', constants.EXTERNAL_REMOTE),
+                          sha1=sha1, **kwargs)
 
   def _run(self, cmd, cwd=None):
     # Note that cwd is intentionally set to a location the user can't write
@@ -144,13 +144,13 @@ I am the first commit.
     self._run(['git', 'commit', '-a', '-m', commit], repo)
     return self._GetSha1(repo, 'HEAD')
 
-  def CommitFile(self, repo, filename, content, commit=None, **kwds):
+  def CommitFile(self, repo, filename, content, commit=None, **kwargs):
     osutils.WriteFile(os.path.join(repo, filename), content)
     self._run(['git', 'add', filename], repo)
     sha1 = self._MakeCommit(repo, commit=commit)
     if not self.has_native_change_id:
-      kwds.pop('ChangeId', None)
-    patch = self._MkPatch(repo, sha1, **kwds)
+      kwargs.pop('ChangeId', None)
+    patch = self._MkPatch(repo, sha1, **kwargs)
     self.assertEqual(patch.sha1, sha1)
     return patch
 
@@ -397,10 +397,10 @@ class TestLocalPatchGit(TestGitRepoPatch):
     self.sourceroot = os.path.join(self.tempdir, 'sourceroot')
 
 
-  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
-    remote = kwds.pop('remote', constants.EXTERNAL_REMOTE)
+  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
+    remote = kwargs.pop('remote', constants.EXTERNAL_REMOTE)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          '%s/master' % remote, remote, sha1, **kwds)
+                          '%s/master' % remote, remote, sha1, **kwargs)
 
   def testUpload(self):
     def ProjectDirMock(_sourceroot):
@@ -451,13 +451,13 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
 
   patch_kls = cros_patch.UploadedLocalPatch
 
-  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     return self.patch_kls(source, self.PROJECT, ref,
                           '%s/master' % constants.EXTERNAL_REMOTE,
                           self.ORIGINAL_BRANCH,
                           self.ORIGINAL_SHA1,
-                          kwds.pop('remote', constants.EXTERNAL_REMOTE),
-                          carbon_copy_sha1=sha1, **kwds)
+                          kwargs.pop('remote', constants.EXTERNAL_REMOTE),
+                          carbon_copy_sha1=sha1, **kwargs)
 
   def testStringRepresentation(self):
     _, _, patch = self._CommonGitSetup()
@@ -483,15 +483,15 @@ class TestGerritPatch(TestGitRepoPatch):
   def test_json(self):
     return copy.deepcopy(FAKE_PATCH_JSON)
 
-  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     json = self.test_json
-    remote = kwds.pop('remote', constants.EXTERNAL_REMOTE)
-    url_prefix = kwds.pop('url_prefix', constants.EXTERNAL_GERRIT_URL)
-    suppress_branch = kwds.pop('suppress_branch', False)
-    change_id = kwds.pop('ChangeId', None)
+    remote = kwargs.pop('remote', constants.EXTERNAL_REMOTE)
+    url_prefix = kwargs.pop('url_prefix', constants.EXTERNAL_GERRIT_URL)
+    suppress_branch = kwargs.pop('suppress_branch', False)
+    change_id = kwargs.pop('ChangeId', None)
     if change_id is None:
       change_id = self.MakeChangeId()
-    json.update(kwds)
+    json.update(kwargs)
     change_num, patch_num = _GetNumber(), _GetNumber()
     # Note we intentionally use a gerrit like refspec here; we want to
     # ensure that none of our common code pathways puke on a non head/tag.
@@ -638,41 +638,41 @@ class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
 class TestFormatting(cros_test_lib.TestCase):
 
   def _assertResult(self, functor, value, expected=None, raises=False,
-                    fixup=str, **kwds):
+                    fixup=str, **kwargs):
     if raises:
       self.assertRaises2(ValueError, functor, fixup(value),
                          msg="%s(%r), original %r, did not throw a ValueError"
-                         % (functor.__name__, fixup(value), value),  **kwds)
+                         % (functor.__name__, fixup(value), value),  **kwargs)
     else:
-      self.assertEqual(functor(value, **kwds), expected,
+      self.assertEqual(functor(value, **kwargs), expected,
                        msg="failed: %s(%r) != %r; originals: %r %r"
                        % (functor.__name__, fixup(value), fixup(expected),
                           value, expected))
 
-  def _assertBad(self, functor, values, fixup=str, allow_CL=False, **kwds):
+  def _assertBad(self, functor, values, fixup=str, allow_CL=False, **kwargs):
     values = map(fixup, values)
-    pass_allow_CL = kwds.pop('pass_allow', False)
+    pass_allow_CL = kwargs.pop('pass_allow', False)
     for prefix in ([""] + (['CL:'] if allow_CL else [])):
       if pass_allow_CL:
-        kwds['allow_CL'] = bool(prefix)
+        kwargs['allow_CL'] = bool(prefix)
       for value in values:
-        self._assertResult(functor, prefix + value, raises=True, **kwds)
+        self._assertResult(functor, prefix + value, raises=True, **kwargs)
 
       for value in values:
-        self._assertResult(functor, prefix + '*' + value, raises=True, **kwds)
+        self._assertResult(functor, prefix + '*' + value, raises=True, **kwargs)
 
-  def _assertGood(self, functor, values, fixup=str, allow_CL=False, **kwds):
-    pass_allow_CL = kwds.pop('pass_allow', False)
+  def _assertGood(self, functor, values, fixup=str, allow_CL=False, **kwargs):
+    pass_allow_CL = kwargs.pop('pass_allow', False)
     values = [map(fixup, x) for x in values]
     for prefix in ([""] + (['CL:'] if allow_CL else [])):
       if pass_allow_CL:
-        kwds['allow_CL'] = bool(prefix)
+        kwargs['allow_CL'] = bool(prefix)
       for value, expected in values:
-        self._assertResult(functor, prefix + value, expected, **kwds)
+        self._assertResult(functor, prefix + value, expected, **kwargs)
 
       for value, expected in values:
         self._assertResult(functor, prefix + '*' + value, '*' + expected,
-                           **kwds)
+                           **kwargs)
 
   @staticmethod
   def _ChangeIdFixup(value):

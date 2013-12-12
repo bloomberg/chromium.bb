@@ -59,14 +59,14 @@ class GerritHelper(object):
     self._version = None
 
   @classmethod
-  def FromRemote(cls, remote, **kwds):
+  def FromRemote(cls, remote, **kwargs):
     if remote == constants.INTERNAL_REMOTE:
       host = constants.INTERNAL_GERRIT_HOST
     elif remote == constants.EXTERNAL_REMOTE:
       host = constants.EXTERNAL_GERRIT_HOST
     else:
       raise ValueError('Remote %s not supported.' % remote)
-    return cls(host, remote, **kwds)
+    return cls(host, remote, **kwargs)
 
   def SetReviewers(self, change, add=(), remove=(), project=None):
     """Modify the list of reviewers on a gerrit change.
@@ -131,7 +131,7 @@ class GerritHelper(object):
       logging.error('Command "%s" failed.', ' '.join(map(repr, cmd)),
                     exc_info=True)
 
-  def QuerySingleRecord(self, change=None, **query_kwds):
+  def QuerySingleRecord(self, change=None, **kwargs):
     """Free-form query of a gerrit change that expects a single result.
 
     Args:
@@ -141,9 +141,10 @@ class GerritHelper(object):
       Refer to Query() docstring for remaining arguments.
 
     Returns:
-      If query_kwds['raw'] == True, return a python dict representing the
+      If kwargs['raw'] == True, return a python dict representing the
       change; otherwise, return a cros_patch.GerritPatch object.
     """
+    query_kwds = kwargs
     dryrun = query_kwds.get('dryrun')
     must_match = query_kwds.pop('must_match', True)
     results = self.Query(change, **query_kwds)
@@ -159,7 +160,7 @@ class GerritHelper(object):
     return results[0]
 
   def Query(self, change=None, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False, sortkey=None, **query_kwds):
+            dryrun=False, raw=False, sortkey=None, **kwargs):
     """Free-form query for gerrit changes.
 
     Args:
@@ -175,11 +176,12 @@ class GerritHelper(object):
           results.  Otherwise, return a list of cros_patch.GerritPatch.
       sortkey: For continuation queries, this should be the '_sortkey' field
           extracted from the previous batch of results.
-      query_kwds: A dict of query parameters, as described here:
+      kwargs: A dict of query parameters, as described here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 
     Returns: A list of python dicts or cros_patch.GerritChange.
     """
+    query_kwds = kwargs
     if options:
       raise GerritException('"options" argument unsupported on gerrit-on-borg.')
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
@@ -394,14 +396,14 @@ def GetGerritHelperForChange(change):
   return GetGerritHelper(change.remote)
 
 
-def GetCrosInternal(**kwds):
+def GetCrosInternal(**kwargs):
   """Convenience method for accessing private ChromeOS gerrit."""
-  return GetGerritHelper(constants.INTERNAL_REMOTE, **kwds)
+  return GetGerritHelper(constants.INTERNAL_REMOTE, **kwargs)
 
 
-def GetCrosExternal(**kwds):
+def GetCrosExternal(**kwargs):
   """Convenience method for accessing public ChromiumOS gerrit."""
-  return GetGerritHelper(constants.EXTERNAL_REMOTE, **kwds)
+  return GetGerritHelper(constants.EXTERNAL_REMOTE, **kwargs)
 
 
 def GetChangeRef(change_number, patchset=None):

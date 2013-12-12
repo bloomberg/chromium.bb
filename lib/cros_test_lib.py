@@ -607,8 +607,8 @@ class TestCase(unittest.TestCase):
   # be suppressed for tests.
   ENVIRON_VARIABLE_SUPPRESSIONS = ('CROS_CACHEDIR',)
 
-  def __init__(self, *args, **kwds):
-    unittest.TestCase.__init__(self, *args, **kwds)
+  def __init__(self, *args, **kwargs):
+    unittest.TestCase.__init__(self, *args, **kwargs)
     # This is set to keep pylint from complaining.
     self.__test_was_run__ = False
 
@@ -711,9 +711,9 @@ class LoggingTestCase(TestCase):
 class OutputTestCase(TestCase):
   """Base class for cros unit tests with utility methods."""
 
-  def __init__(self, *args, **kwds):
+  def __init__(self, *args, **kwargs):
     """Base class __init__ takes a second argument."""
-    TestCase.__init__(self, *args, **kwds)
+    TestCase.__init__(self, *args, **kwargs)
     self._output_capturer = None
 
   def OutputCapturer(self):
@@ -946,8 +946,8 @@ class TempDirTestCase(TestCase):
 
   sudo_cleanup = False
 
-  def __init__(self, *args, **kwds):
-    TestCase.__init__(self, *args, **kwds)
+  def __init__(self, *args, **kwargs):
+    TestCase.__init__(self, *args, **kwargs)
     self.tempdir = None
     self._tempdir_obj = None
 
@@ -1485,10 +1485,10 @@ class _RunCommandMock(mox.MockObject):
 
   DEFAULT_IGNORED_ARGS = ('print_cmd',)
 
-  def __call__(self, *args, **kwds):
+  def __call__(self, *args, **kwargs):
     for arg in self.DEFAULT_IGNORED_ARGS:
-      kwds.setdefault(arg, mox.IgnoreArg())
-    return mox.MockObject.__call__(self, *args, **kwds)
+      kwargs.setdefault(arg, mox.IgnoreArg())
+    return mox.MockObject.__call__(self, *args, **kwargs)
 
 
 class _LessAnnoyingMox(mox.Mox):
@@ -1626,20 +1626,20 @@ def FindTests(directory, module_namespace=''):
   return [module_namespace + x[:-3].replace('/', '.') for x in results]
 
 
-def main(**kwds):
+def main(**kwargs):
   """Helper wrapper around unittest.main.  Invoke this, not unittest.main.
 
-  Any passed in kwds are passed directly down to unittest.main; via this, you
+  Any passed in kwargs are passed directly down to unittest.main; via this, you
   can inject custom argv for example (to limit what tests run).
   """
   # Default to exit=True; this matches old behaviour, and allows unittest
   # to trigger sys.exit on its own.  Unfortunately, the exit keyword is only
   # available in 2.7- as such, handle it ourselves.
-  allow_exit = kwds.pop('exit', True)
+  allow_exit = kwargs.pop('exit', True)
   if '--network' in sys.argv:
     sys.argv.remove('--network')
     GlobalTestConfig.NETWORK_TESTS_DISABLED = False
-  level = kwds.pop('level', logging.CRITICAL)
+  level = kwargs.pop('level', logging.CRITICAL)
   for flag in ('-d', '--debug'):
     if flag in sys.argv:
       sys.argv.remove(flag)
@@ -1647,7 +1647,7 @@ def main(**kwds):
       GerritTestCase.TEARDOWN = False
   cros_build_lib.SetupBasicLogging(level)
   try:
-    unittest.main(**kwds)
+    unittest.main(**kwargs)
     raise SystemExit(0)
   except SystemExit as e:
     if e.__class__ != SystemExit or allow_exit:

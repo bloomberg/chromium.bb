@@ -268,13 +268,13 @@ ca-t3/pk-g4-4.0.1-r333
                       self.testDevInstallerPrebuilts, packages=())
 
 
-  def testBuild(self, default=False, **kwds):
+  def testBuild(self, default=False, **kwargs):
     """Base case where Build is called with minimal options."""
-    kwds.setdefault('build_autotest', default)
-    kwds.setdefault('usepkg', default)
-    kwds.setdefault('chrome_binhost_only', default)
-    kwds.setdefault('skip_chroot_upgrade', default)
-    commands.Build(buildroot=self._buildroot, board='x86-generic', **kwds)
+    kwargs.setdefault('build_autotest', default)
+    kwargs.setdefault('usepkg', default)
+    kwargs.setdefault('chrome_binhost_only', default)
+    kwargs.setdefault('skip_chroot_upgrade', default)
+    commands.Build(buildroot=self._buildroot, board='x86-generic', **kwargs)
     self.assertCommandContains(['./build_packages'])
 
   def testBuildMaximum(self):
