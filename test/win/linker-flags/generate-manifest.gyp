@@ -152,5 +152,15 @@
         },
       },
     },
+    {
+      'target_name': 'test_generate_manifest_default_embed_default',
+      'type': 'executable',
+      'sources': ['hello.cc'],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'EnableUAC': 'true',
+        },
+      },
+    },
   ]
 }

@@ -120,4 +120,8 @@ if sys.platform == 'win32':
                 generate_manifest=False,
                 embedded_manifest=False,
                 extra_manifest=True)
+  test_manifest('test_generate_manifest_default_embed_default.exe',
+                generate_manifest=True,
+                embedded_manifest=True,
+                extra_manifest=False)
   test.pass_test()

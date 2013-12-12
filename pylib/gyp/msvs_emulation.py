@@ -645,7 +645,8 @@ class MsvsSettings(object):
   def IsEmbedManifest(self, config):
     """Returns whether manifest should be linked into binary."""
     config = self._TargetConfig(config)
-    embed = self._Setting(('VCManifestTool', 'EmbedManifest'), config)
+    embed = self._Setting(('VCManifestTool', 'EmbedManifest'), config,
+                          default='true')
     return embed == 'true'
 
   def IsLinkIncremental(self, config):
