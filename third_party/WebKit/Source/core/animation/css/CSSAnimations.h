@@ -176,7 +176,7 @@ private:
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const RenderStyle&, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);
-    static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSAnimationData*, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
+    static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSAnimationData*, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*);
 
     static void calculateAnimationCompositableValues(CSSAnimationUpdate*, const Element*);
     static void calculateTransitionCompositableValues(CSSAnimationUpdate*, const Element*);

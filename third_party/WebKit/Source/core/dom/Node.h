@@ -378,7 +378,11 @@ public:
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
 
     void setNeedsStyleRecalc(StyleChangeType = SubtreeStyleChange, StyleChangeSource = StyleChangeFromCSS);
-    void clearNeedsStyleRecalc();
+    void clearNeedsStyleRecalc()
+    {
+        m_nodeFlags &= ~StyleChangeMask;
+        clearFlag(NotifyRendererWithIdenticalStyles);
+    }
 
     bool childNeedsDistributionRecalc() const { return getFlag(ChildNeedsDistributionRecalc); }
     void setChildNeedsDistributionRecalc()  { setFlag(ChildNeedsDistributionRecalc); }

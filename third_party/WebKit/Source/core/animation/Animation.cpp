@@ -88,7 +88,7 @@ bool Animation::applyEffects(bool previouslyInEffect)
     // FIXME: Handle iteration values which overflow int.
     m_compositableValues = m_effect->sample(static_cast<int>(iteration), timeFraction());
     if (player()) {
-        m_target->setNeedsAnimationStyleRecalc();
+        m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
         return true;
     }
     return false;
@@ -102,7 +102,7 @@ void Animation::clearEffects()
     cancelAnimationOnCompositor();
     m_activeInAnimationStack = false;
     m_compositableValues.clear();
-    m_target->setNeedsAnimationStyleRecalc();
+    m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
 bool Animation::updateChildrenAndEffects() const
