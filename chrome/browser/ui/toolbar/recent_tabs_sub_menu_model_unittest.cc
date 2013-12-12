@@ -439,7 +439,7 @@ TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
   int num_items = model.GetItemCount();
   EXPECT_EQ(12, num_items);
 
-  std::vector<string16> tab_titles =
+  std::vector<base::string16> tab_titles =
       recent_tabs_builder.GetTabTitlesSortedByRecency();
   EXPECT_EQ(tab_titles[0], model.GetLabelAt(3));
   EXPECT_EQ(tab_titles[1], model.GetLabelAt(6));
@@ -474,7 +474,7 @@ TEST_F(RecentTabsSubMenuModelTest, MaxTabsPerSessionAndRecency) {
   int num_items = model.GetItemCount();
   EXPECT_EQ(9, num_items);
 
-  std::vector<string16> tab_titles =
+  std::vector<base::string16> tab_titles =
       recent_tabs_builder.GetTabTitlesSortedByRecency();
   for (int i = 0; i < 4; ++i)
     EXPECT_EQ(tab_titles[i], model.GetLabelAt(i + 3));

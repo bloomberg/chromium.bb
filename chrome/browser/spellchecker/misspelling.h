@@ -22,7 +22,8 @@
 //    misspelling.context = ASCIIToUTF16("Helllo world");
 //    misspelling.location = 0;
 //    misspelling.length = 6;
-//    misspelling.suggestions = std::vector<string16>(1, ASCIIToUTF16("Hello"));
+//    misspelling.suggestions =
+//        std::vector<base::string16>(1, ASCIIToUTF16("Hello"));
 //    misspelling.hash = GenerateRandomHash();
 //    misspelling.action.type = SpellcheckAction::TYPE_SELECT;
 //    misspelling.action.index = 0;
@@ -33,7 +34,7 @@ class Misspelling {
   Misspelling(const base::string16& context,
               size_t location,
               size_t length,
-              const std::vector<string16>& suggestions,
+              const std::vector<base::string16>& suggestions,
               uint32 hash);
   ~Misspelling();
 
@@ -56,7 +57,7 @@ class Misspelling {
   size_t length;
 
   // Spelling suggestions.
-  std::vector<string16> suggestions;
+  std::vector<base::string16> suggestions;
 
   // The hash that identifies the misspelling.
   uint32 hash;

@@ -204,7 +204,8 @@ class BackgroundContentsService : private content::NotificationObserver,
   // applications.
   // Key: application id
   // Value: BackgroundContentsInfo for the BC associated with that application
-  typedef std::map<string16, BackgroundContentsInfo> BackgroundContentsMap;
+  typedef std::map<base::string16, BackgroundContentsInfo>
+      BackgroundContentsMap;
   BackgroundContentsMap contents_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsService);

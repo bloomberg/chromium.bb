@@ -63,9 +63,9 @@ class PluginPrefsTest : public ::testing::Test {
   }
 
   void SetPolicyEnforcedPluginPatterns(
-      const std::set<string16>& disabled,
-      const std::set<string16>& disabled_exceptions,
-      const std::set<string16>& enabled) {
+      const std::set<base::string16>& disabled,
+      const std::set<base::string16>& disabled_exceptions,
+      const std::set<base::string16>& enabled) {
     plugin_prefs_->SetPolicyEnforcedPluginPatterns(
         disabled, disabled_exceptions, enabled);
   }
@@ -102,12 +102,12 @@ class PluginPrefsTest : public ::testing::Test {
 };
 
 TEST_F(PluginPrefsTest, DisabledByPolicy) {
-  std::set<string16> disabled_plugins;
+  std::set<base::string16> disabled_plugins;
   disabled_plugins.insert(ASCIIToUTF16("Disable this!"));
   disabled_plugins.insert(ASCIIToUTF16("*Google*"));
   SetPolicyEnforcedPluginPatterns(disabled_plugins,
-                                  std::set<string16>(),
-                                  std::set<string16>());
+                                  std::set<base::string16>(),
+                                  std::set<base::string16>());
 
   EXPECT_EQ(PluginPrefs::NO_POLICY,
             plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("42")));
@@ -119,11 +119,11 @@ TEST_F(PluginPrefsTest, DisabledByPolicy) {
 }
 
 TEST_F(PluginPrefsTest, EnabledByPolicy) {
-  std::set<string16> enabled_plugins;
+  std::set<base::string16> enabled_plugins;
   enabled_plugins.insert(ASCIIToUTF16("Enable that!"));
   enabled_plugins.insert(ASCIIToUTF16("PDF*"));
-  SetPolicyEnforcedPluginPatterns(std::set<string16>(),
-                                  std::set<string16>(),
+  SetPolicyEnforcedPluginPatterns(std::set<base::string16>(),
+                                  std::set<base::string16>(),
                                   enabled_plugins);
 
   EXPECT_EQ(PluginPrefs::NO_POLICY,
@@ -144,9 +144,9 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
   const base::string16 kGoogleMars(ASCIIToUTF16("Google Mars"));
   const base::string16 kGoogleEarth(ASCIIToUTF16("Google Earth"));
 
-  std::set<string16> disabled_plugins;
-  std::set<string16> disabled_plugins_exceptions;
-  std::set<string16> enabled_plugins;
+  std::set<base::string16> disabled_plugins;
+  std::set<base::string16> disabled_plugins_exceptions;
+  std::set<base::string16> enabled_plugins;
 
   disabled_plugins.insert(kEnabled);
   disabled_plugins_exceptions.insert(kEnabled);
@@ -253,11 +253,11 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   EXPECT_TRUE(plugin_prefs_->IsPluginEnabled(component_updated_plugin_2));
   EXPECT_TRUE(plugin_prefs_->IsPluginEnabled(bundled_plugin));
 
-  std::set<string16> disabled_plugins;
+  std::set<base::string16> disabled_plugins;
   disabled_plugins.insert(component_updated_plugin_name);
   SetPolicyEnforcedPluginPatterns(disabled_plugins,
-                                  std::set<string16>(),
-                                  std::set<string16>());
+                                  std::set<base::string16>(),
+                                  std::set<base::string16>());
 
   // Policy settings should be respected.
   EXPECT_FALSE(plugin_prefs_->IsPluginEnabled(component_updated_plugin_1));

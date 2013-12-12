@@ -56,7 +56,7 @@ GlobalErrorBubble::GlobalErrorBubble(
   GtkWidget* title_label = theme_service->BuildLabel(
       UTF16ToUTF8(error_->GetBubbleViewTitle()),
       ui::kGdkBlack);
-  std::vector<string16> messages = error_->GetBubbleViewMessages();
+  std::vector<base::string16> messages = error_->GetBubbleViewMessages();
   for (size_t i = 0; i < messages.size(); ++i) {
     message_labels_.push_back(theme_service->BuildLabel(
         UTF16ToUTF8(messages[i]),

@@ -36,7 +36,7 @@ class ExtensionErrorReporter {
   void ReportError(const base::string16& message, bool be_noisy);
 
   // Get the errors that have been reported so far.
-  const std::vector<string16>* GetErrors();
+  const std::vector<base::string16>* GetErrors();
 
   // Clear the list of errors reported so far.
   void ClearErrors();
@@ -48,7 +48,7 @@ class ExtensionErrorReporter {
   ~ExtensionErrorReporter();
 
   base::MessageLoop* ui_loop_;
-  std::vector<string16> errors_;
+  std::vector<base::string16> errors_;
   bool enable_noisy_errors_;
 };
 

@@ -127,8 +127,8 @@ class LoginDatabase {
       bool blacklisted, std::vector<autofill::PasswordForm*>* forms) const;
 
   // Serialization routines for vectors.
-  Pickle SerializeVector(const std::vector<string16>& vec) const;
-  std::vector<string16> DeserializeVector(const Pickle& pickle) const;
+  Pickle SerializeVector(const std::vector<base::string16>& vec) const;
+  std::vector<base::string16> DeserializeVector(const Pickle& pickle) const;
 
   base::FilePath db_path_;
   mutable sql::Connection db_;

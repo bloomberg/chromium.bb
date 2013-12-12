@@ -452,15 +452,15 @@ void PasswordFormManager::SanitizePossibleUsernames(PasswordForm* form) {
   // Remove any possible usernames that could be credit cards or SSN for privacy
   // reasons. Also remove duplicates, both in other_possible_usernames and
   // between other_possible_usernames and username_value.
-  std::set<string16> set;
-  for (std::vector<string16>::iterator it =
+  std::set<base::string16> set;
+  for (std::vector<base::string16>::iterator it =
            form->other_possible_usernames.begin();
        it != form->other_possible_usernames.end(); ++it) {
     if (!autofill::IsValidCreditCardNumber(*it) && !autofill::IsSSN(*it))
       set.insert(*it);
   }
   set.erase(form->username_value);
-  std::vector<string16> temp(set.begin(), set.end());
+  std::vector<base::string16> temp(set.begin(), set.end());
   form->other_possible_usernames.swap(temp);
 }
 

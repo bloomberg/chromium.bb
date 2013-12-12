@@ -117,7 +117,7 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
     return 0;
   }
 
-  std::vector<string16> items_;
+  std::vector<base::string16> items_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateDenialComboboxModel);
 };

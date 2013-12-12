@@ -232,7 +232,7 @@ void FileSelectHelper::OnListDone(int id, int error) {
 
 scoped_ptr<ui::SelectFileDialog::FileTypeInfo>
 FileSelectHelper::GetFileTypesFromAcceptType(
-    const std::vector<string16>& accept_types) {
+    const std::vector<base::string16>& accept_types) {
   scoped_ptr<ui::SelectFileDialog::FileTypeInfo> base_file_type(
       new ui::SelectFileDialog::FileTypeInfo());
   if (accept_types.empty())
@@ -397,7 +397,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
 
 #if defined(OS_ANDROID)
   // Android needs the original MIME types and an additional capture value.
-  std::pair<std::vector<string16>, bool> accept_types =
+  std::pair<std::vector<base::string16>, bool> accept_types =
       std::make_pair(params.accept_types, params.capture);
 #endif
 

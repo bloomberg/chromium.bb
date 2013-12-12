@@ -1860,7 +1860,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
 
   // Now go through and add dictionaries for plugins that didn't already have
   // reports in Local State.
-  for (std::map<string16, ChildProcessStats>::iterator cache_iter =
+  for (std::map<base::string16, ChildProcessStats>::iterator cache_iter =
            child_process_stats_buffer_.begin();
        cache_iter != child_process_stats_buffer_.end(); ++cache_iter) {
     ChildProcessStats stats = cache_iter->second;

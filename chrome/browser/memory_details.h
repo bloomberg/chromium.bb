@@ -62,7 +62,7 @@ struct ProcessMemoryInformation {
   // If this is a renderer process, what type it is.
   RendererProcessType renderer_type;
   // A collection of titles used, i.e. for a tab it'll show all the page titles.
-  std::vector<string16> titles;
+  std::vector<base::string16> titles;
 };
 
 typedef std::vector<ProcessMemoryInformation> ProcessMemoryInformationList;

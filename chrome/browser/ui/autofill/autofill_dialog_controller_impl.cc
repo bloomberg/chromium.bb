@@ -1862,7 +1862,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     return;
   }
 
-  std::vector<string16> popup_values, popup_labels, popup_icons;
+  std::vector<base::string16> popup_values, popup_labels, popup_icons;
   if (common::IsCreditCardType(type)) {
     GetManager()->GetCreditCardSuggestions(AutofillType(type),
                                            field_contents,

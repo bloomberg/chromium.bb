@@ -30,11 +30,11 @@ class LoginDatabaseTest : public testing::Test {
     ASSERT_TRUE(db_.Init(file_));
   }
 
-  Pickle SerializeVector(const std::vector<string16>& vec) const {
+  Pickle SerializeVector(const std::vector<base::string16>& vec) const {
     return db_.SerializeVector(vec);
   }
 
-  std::vector<string16> DeserializeVector(const Pickle& pickle) const {
+  std::vector<base::string16> DeserializeVector(const Pickle& pickle) const {
     return db_.DeserializeVector(pickle);
   }
 
@@ -612,9 +612,9 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
 
 TEST_F(LoginDatabaseTest, VectorSerialization) {
   // Empty vector.
-  std::vector<string16> vec;
+  std::vector<base::string16> vec;
   Pickle temp = SerializeVector(vec);
-  std::vector<string16> output = DeserializeVector(temp);
+  std::vector<base::string16> output = DeserializeVector(temp);
   EXPECT_THAT(output, Eq(vec));
 
   // Normal data.

@@ -80,10 +80,10 @@ std::string ReadDataFromPickle(const base::string16& format,
   return result;
 }
 
-bool WriteDataToPickle(const std::map<string16, std::string>& data,
+bool WriteDataToPickle(const std::map<base::string16, std::string>& data,
                        Pickle* pickle) {
   pickle->WriteUInt64(data.size());
-  for (std::map<string16, std::string>::const_iterator it = data.begin();
+  for (std::map<base::string16, std::string>::const_iterator it = data.begin();
        it != data.end(); ++it) {
     if (!pickle->WriteString16(it->first))
       return false;
@@ -304,7 +304,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
   }
 
   ui::ScopedClipboardWriter scw(clipboard, type);
-  std::map<string16, std::string> custom_data_map;
+  std::map<base::string16, std::string> custom_data_map;
   int32_t res = PP_OK;
   for (uint32_t i = 0; i < formats.size(); ++i) {
     if (data[i].length() > kMaxClipboardWriteSize) {

@@ -22,7 +22,7 @@ AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::QueryHistoryAndBookmarks(
     const std::vector<history::HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order,
     CancelableRequestConsumerBase* consumer,
     const QueryCallback& callback) {
@@ -44,7 +44,7 @@ AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
     const history::HistoryAndBookmarkRow& row,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     CancelableRequestConsumerBase* consumer,
     const UpdateCallback& callback) {
   UpdateRequest* request = new UpdateRequest(callback);
@@ -64,7 +64,7 @@ AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
 AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::DeleteHistoryAndBookmarks(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     CancelableRequestConsumerBase* consumer,
     const DeleteCallback& callback) {
   DeleteRequest* request = new DeleteRequest(callback);
@@ -102,7 +102,7 @@ AndroidHistoryProviderService::InsertHistoryAndBookmark(
 AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::DeleteHistory(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     CancelableRequestConsumerBase* consumer,
     const DeleteCallback& callback) {
   DeleteRequest* request = new DeleteRequest(callback);
@@ -174,7 +174,7 @@ AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::UpdateSearchTerms(
     const history::SearchRow& row,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     CancelableRequestConsumerBase* consumer,
     const UpdateCallback& callback) {
   UpdateRequest* request = new UpdateRequest(callback);
@@ -194,7 +194,7 @@ AndroidHistoryProviderService::UpdateSearchTerms(
 AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::DeleteSearchTerms(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     CancelableRequestConsumerBase* consumer,
     const DeleteCallback& callback) {
   DeleteRequest* request = new DeleteRequest(callback);
@@ -215,7 +215,7 @@ AndroidHistoryProviderService::Handle
 AndroidHistoryProviderService::QuerySearchTerms(
     const std::vector<history::SearchRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order,
     CancelableRequestConsumerBase* consumer,
     const QueryCallback& callback) {

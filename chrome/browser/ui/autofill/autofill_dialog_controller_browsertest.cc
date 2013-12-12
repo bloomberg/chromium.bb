@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   }
 
   // Now simulate some user edits and try again.
-  std::vector<string16> expectations;
+  std::vector<base::string16> expectations;
   for (size_t i = 0; i < inputs.size(); ++i) {
     base::string16 users_input = i % 2 == 0 ? base::string16()
                                             : ASCIIToUTF16("dummy");
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   }
 
   // Now simulate some user edits and try again.
-  std::vector<string16> expectations;
+  std::vector<base::string16> expectations;
   for (size_t i = 0; i < inputs.size(); ++i) {
     base::string16 users_input = i % 2 == 0 ? base::string16()
                                             : ASCIIToUTF16("dummy");
@@ -608,11 +608,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AutofillProfile full_profile(test::GetFullProfile());
 
   // Set up some variant data.
-  std::vector<string16> names;
+  std::vector<base::string16> names;
   names.push_back(ASCIIToUTF16("John Doe"));
   names.push_back(ASCIIToUTF16("Jane Doe"));
   full_profile.SetRawMultiInfo(NAME_FULL, names);
-  std::vector<string16> emails;
+  std::vector<base::string16> emails;
   emails.push_back(ASCIIToUTF16("user@example.com"));
   emails.push_back(ASCIIToUTF16("admin@example.com"));
   full_profile.SetRawMultiInfo(EMAIL_ADDRESS, emails);

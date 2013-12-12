@@ -36,7 +36,7 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
     virtual base::string16 MenuItemLabel() OVERRIDE;
     virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
     virtual base::string16 GetBubbleViewTitle() OVERRIDE;
-    virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
+    virtual std::vector<base::string16> GetBubbleViewMessages() OVERRIDE;
     virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
     virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
     virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;

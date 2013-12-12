@@ -13,7 +13,7 @@
 
 // A list of pairs containing the name and URL associated with each
 // currently active tab in the active browser window.
-typedef std::pair<string16, GURL> ActiveTabNameURLPair;
+typedef std::pair<base::string16, GURL> ActiveTabNameURLPair;
 typedef std::vector<ActiveTabNameURLPair> ActiveTabsNameURLPairVector;
 
 // A controller for the Bookmark All Tabs sheet which is presented upon

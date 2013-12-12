@@ -253,7 +253,7 @@ void SpellCheckMessageFilterMac::OnCheckSpelling(const base::string16& word,
 
 void SpellCheckMessageFilterMac::OnFillSuggestionList(
     const base::string16& word,
-    std::vector<string16>* suggestions) {
+    std::vector<base::string16>* suggestions) {
   spellcheck_mac::FillSuggestionList(word, suggestions);
 }
 

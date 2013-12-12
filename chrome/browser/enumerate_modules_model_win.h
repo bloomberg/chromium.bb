@@ -203,7 +203,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
       const base::FilePath& filename);
 
   // The typedef for the vector that maps a regular file path to %env_var%.
-  typedef std::vector< std::pair<string16, base::string16> > PathMapping;
+  typedef std::vector< std::pair<base::string16, base::string16> > PathMapping;
 
   // The vector of paths to %env_var%, used to account for differences in
   // where people keep there files, c:\windows vs. d:\windows, etc.

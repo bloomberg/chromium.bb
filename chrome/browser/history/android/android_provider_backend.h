@@ -65,7 +65,7 @@ class AndroidProviderBackend {
   AndroidStatement* QueryHistoryAndBookmarks(
       const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
-      const std::vector<string16>& selection_args,
+      const std::vector<base::string16>& selection_args,
       const std::string& sort_order);
 
   // Runs the given update and returns the number of the updated rows in
@@ -74,10 +74,11 @@ class AndroidProviderBackend {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  bool UpdateHistoryAndBookmarks(const HistoryAndBookmarkRow& row,
-                                 const std::string& selection,
-                                 const std::vector<string16>& selection_args,
-                                 int* update_count);
+  bool UpdateHistoryAndBookmarks(
+      const HistoryAndBookmarkRow& row,
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      int* update_count);
 
   // Inserts the given values and returns the URLID of the inserted row.
   AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& values);
@@ -88,16 +89,17 @@ class AndroidProviderBackend {
   // |selection_args| is the arguments for the WHERE clause.
   //
   // if |selection| is empty all history and bookmarks are deleted.
-  bool DeleteHistoryAndBookmarks(const std::string& selection,
-                                 const std::vector<string16>& selection_args,
-                                 int* deleted_count);
+  bool DeleteHistoryAndBookmarks(
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      int* deleted_count);
 
   // Deletes the matched history, returns true on success, false on error.
   // The number of deleted row is returned in |deleted_count|.
   // The url row is kept and the visit count is reset if the matched url
   // is bookmarked.
   bool DeleteHistory(const std::string& selection,
-                     const std::vector<string16>& selection_args,
+                     const std::vector<base::string16>& selection_args,
                      int* deleted_count);
 
   // SearchTerms --------------------------------------------------------------
@@ -111,7 +113,7 @@ class AndroidProviderBackend {
   AndroidStatement* QuerySearchTerms(
       const std::vector<SearchRow::ColumnID>& projections,
       const std::string& selection,
-      const std::vector<string16>& selection_args,
+      const std::vector<base::string16>& selection_args,
       const std::string& sort_order);
 
   // Runs the given update and returns the number of updated rows in
@@ -122,7 +124,7 @@ class AndroidProviderBackend {
   // |selection_args| is the arguments for WHERE clause.
   bool UpdateSearchTerms(const SearchRow& row,
                          const std::string& selection,
-                         const std::vector<string16>& selection_args,
+                         const std::vector<base::string16>& selection_args,
                          int* update_count);
 
   // Inserts the given valus and return the SearchTermID of inserted row.
@@ -135,7 +137,7 @@ class AndroidProviderBackend {
   //
   // if |selection| is empty all search be deleted.
   bool DeleteSearchTerms(const std::string& selection,
-                         const std::vector<string16>& selection_args,
+                         const std::vector<base::string16>& selection_args,
                          int * deleted_count);
 
  private:
@@ -200,7 +202,7 @@ class AndroidProviderBackend {
   // |selection_args| is the arguments for the WHERE clause.
   bool UpdateHistoryAndBookmarks(const HistoryAndBookmarkRow& row,
                        const std::string& selection,
-                       const std::vector<string16>& selection_args,
+                       const std::vector<base::string16>& selection_args,
                        int* update_count,
                        HistoryNotifications* notifications);
 
@@ -221,10 +223,11 @@ class AndroidProviderBackend {
   // The notifications are returned in |notifications| and the ownership of them
   // is transfered to the caller.
   // if |selection| is empty all history and bookmarks are deleted.
-  bool DeleteHistoryAndBookmarks(const std::string& selection,
-                                 const std::vector<string16>& selection_args,
-                                 int* deleted_count,
-                                 HistoryNotifications* notifications);
+  bool DeleteHistoryAndBookmarks(
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      int* deleted_count,
+      HistoryNotifications* notifications);
 
   // Deletes the matched history, returns true on success, false on error.
   // The number of deleted row is returned in |deleted_count|.
@@ -233,7 +236,7 @@ class AndroidProviderBackend {
   // The url row is kept and the visit is reset if the matched url is
   // bookmarked.
   bool DeleteHistory(const std::string& selection,
-                     const std::vector<string16>& selection_args,
+                     const std::vector<base::string16>& selection_args,
                      int* deleted_count,
                      HistoryNotifications* notifications);
 
@@ -278,14 +281,14 @@ class AndroidProviderBackend {
   // Runs the given query on history_bookmark virtual table and returns true if
   // succeeds, the selected URLID and url are returned in |rows|.
   bool GetSelectedURLs(const std::string& selection,
-                       const std::vector<string16>& selection_args,
+                       const std::vector<base::string16>& selection_args,
                        TableIDRows* rows);
 
   // Runs the given query on search_terms table and returns true on success,
   // The selected search term are returned in |rows|.
-  typedef std::vector<string16> SearchTerms;
+  typedef std::vector<base::string16> SearchTerms;
   bool GetSelectedSearchTerms(const std::string& selection,
-                              const std::vector<string16>& selection_args,
+                              const std::vector<base::string16>& selection_args,
                               SearchTerms* rows);
 
   // Simulates update url by deleting the previous URL and creating a new one.
@@ -299,7 +302,7 @@ class AndroidProviderBackend {
   AndroidStatement* QueryHistoryAndBookmarksInternal(
       const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
-      const std::vector<string16>& selection_args,
+      const std::vector<base::string16>& selection_args,
       const std::string& sort_order);
 
   // Delete the given urls' history, returns true on success, or false on error.

@@ -125,9 +125,9 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
 
 void AutofillPopupControllerImpl::Show(
-    const std::vector<string16>& names,
-    const std::vector<string16>& subtexts,
-    const std::vector<string16>& icons,
+    const std::vector<base::string16>& names,
+    const std::vector<base::string16>& subtexts,
+    const std::vector<base::string16>& icons,
     const std::vector<int>& identifiers) {
   SetValues(names, subtexts, icons, identifiers);
 
@@ -400,15 +400,16 @@ bool AutofillPopupControllerImpl::hide_on_outside_click() const {
   return hide_on_outside_click_;
 }
 
-const std::vector<string16>& AutofillPopupControllerImpl::names() const {
+const std::vector<base::string16>& AutofillPopupControllerImpl::names() const {
   return names_;
 }
 
-const std::vector<string16>& AutofillPopupControllerImpl::subtexts() const {
+const std::vector<base::string16>& AutofillPopupControllerImpl::subtexts()
+    const {
   return subtexts_;
 }
 
-const std::vector<string16>& AutofillPopupControllerImpl::icons() const {
+const std::vector<base::string16>& AutofillPopupControllerImpl::icons() const {
   return icons_;
 }
 
@@ -570,9 +571,9 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
 }
 
 void AutofillPopupControllerImpl::SetValues(
-    const std::vector<string16>& names,
-    const std::vector<string16>& subtexts,
-    const std::vector<string16>& icons,
+    const std::vector<base::string16>& names,
+    const std::vector<base::string16>& subtexts,
+    const std::vector<base::string16>& icons,
     const std::vector<int>& identifiers) {
   names_ = names;
   full_names_ = names;

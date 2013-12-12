@@ -800,7 +800,7 @@ std::string TemplateURLRef::HandleReplacements(
     if (i->type == SEARCH_TERMS) {
       base::string16::size_type query_start = parsed_url_.find('?');
       is_in_query = query_start != base::string16::npos &&
-          (static_cast<string16::size_type>(i->index) > query_start);
+          (static_cast<base::string16::size_type>(i->index) > query_start);
       break;
     }
   }

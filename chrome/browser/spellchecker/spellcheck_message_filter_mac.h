@@ -39,7 +39,7 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
 
   void OnCheckSpelling(const base::string16& word, int route_id, bool* correct);
   void OnFillSuggestionList(const base::string16& word,
-                            std::vector<string16>* suggestions);
+                            std::vector<base::string16>* suggestions);
   void OnShowSpellingPanel(bool show);
   void OnUpdateSpellingPanelWithMisspelledWord(const base::string16& word);
   void OnRequestTextCheck(int route_id,

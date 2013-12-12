@@ -51,7 +51,7 @@ class BookmarkIndex {
 
  private:
   typedef std::set<const BookmarkNode*> NodeSet;
-  typedef std::map<string16, NodeSet> Index;
+  typedef std::map<base::string16, NodeSet> Index;
 
   struct Match;
   typedef std::vector<Match> Matches;
@@ -116,7 +116,7 @@ class BookmarkIndex {
                       Matches* result);
 
   // Returns the set of query words from |query|.
-  std::vector<string16> ExtractQueryWords(const base::string16& query);
+  std::vector<base::string16> ExtractQueryWords(const base::string16& query);
 
   // Adds |node| to |index_|.
   void RegisterNode(const base::string16& term, const BookmarkNode* node);

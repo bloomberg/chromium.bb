@@ -630,7 +630,7 @@ bool KeywordTable::MigrateKeywordsTableForVersion45(const std::string& name) {
       " ORDER BY id ASC";
   sql::Statement s(db_->GetUniqueStatement(sql.c_str()));
   base::string16 placeholder_keyword(ASCIIToUTF16("dummy"));
-  std::set<string16> keywords;
+  std::set<base::string16> keywords;
   while (s.Step()) {
     base::string16 keyword(s.ColumnString16(1));
     bool generate_keyword = keyword.empty() || s.ColumnBool(3);

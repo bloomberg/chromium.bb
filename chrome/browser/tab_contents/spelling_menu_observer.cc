@@ -386,7 +386,7 @@ void SpellingMenuObserver::OnTextCheckComplete(
       result_.replace(it->location, it->length, it->replacement);
     }
     base::string16 result = base::i18n::ToLower(result_);
-    for (std::vector<string16>::const_iterator it = suggestions_.begin();
+    for (std::vector<base::string16>::const_iterator it = suggestions_.begin();
          it != suggestions_.end(); ++it) {
       if (result == base::i18n::ToLower(*it)) {
         succeeded_ = false;

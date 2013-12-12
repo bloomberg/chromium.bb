@@ -205,12 +205,12 @@ ExtensionInstallPrompt::Prompt::~Prompt() {
 }
 
 void ExtensionInstallPrompt::Prompt::SetPermissions(
-    const std::vector<string16>& permissions) {
+    const std::vector<base::string16>& permissions) {
   permissions_ = permissions;
 }
 
 void ExtensionInstallPrompt::Prompt::SetPermissionsDetails(
-    const std::vector<string16>& details) {
+    const std::vector<base::string16>& details) {
   details_ = details;
   is_showing_details_for_permissions_.clear();
   for (size_t i = 0; i < details.size(); ++i)

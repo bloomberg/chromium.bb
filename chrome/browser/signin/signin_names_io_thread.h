@@ -31,7 +31,7 @@ class NotificationSource;
 // ProfileIOData.
 class SigninNamesOnIOThread : public content::NotificationObserver {
  public:
-  typedef std::set<string16> EmailSet;
+  typedef std::set<base::string16> EmailSet;
 
   // Objects should only be created on UI thread.
   SigninNamesOnIOThread();

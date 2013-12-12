@@ -449,9 +449,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       ServerFieldType type,
       const base::string16& field_contents,
       const DetailInputs& inputs,
-      std::vector<string16>* popup_values,
-      std::vector<string16>* popup_labels,
-      std::vector<string16>* popup_icons);
+      std::vector<base::string16>* popup_values,
+      std::vector<base::string16>* popup_labels,
+      std::vector<base::string16>* popup_icons);
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);

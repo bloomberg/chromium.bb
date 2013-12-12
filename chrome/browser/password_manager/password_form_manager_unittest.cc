@@ -572,7 +572,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   SanitizePossibleUsernames(manager.get(), &credentials);
 
   // Possible credit card number and SSN are stripped.
-  std::vector<string16> expected;
+  std::vector<base::string16> expected;
   expected.push_back(ASCIIToUTF16("other username"));
   EXPECT_THAT(credentials.other_possible_usernames, Eq(expected));
 

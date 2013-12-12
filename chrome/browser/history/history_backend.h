@@ -331,21 +331,23 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       scoped_refptr<QueryRequest> request,
       const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
-      const std::vector<string16>& selection_args,
+      const std::vector<base::string16>& selection_args,
       const std::string& sort_order);
 
-  void UpdateHistoryAndBookmarks(scoped_refptr<UpdateRequest> request,
-                                 const HistoryAndBookmarkRow& row,
-                                 const std::string& selection,
-                                 const std::vector<string16>& selection_args);
+  void UpdateHistoryAndBookmarks(
+      scoped_refptr<UpdateRequest> request,
+      const HistoryAndBookmarkRow& row,
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args);
 
-  void DeleteHistoryAndBookmarks(scoped_refptr<DeleteRequest> request,
-                                 const std::string& selection,
-                                 const std::vector<string16>& selection_args);
+  void DeleteHistoryAndBookmarks(
+      scoped_refptr<DeleteRequest> request,
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args);
 
   void DeleteHistory(scoped_refptr<DeleteRequest> request,
                      const std::string& selection,
-                     const std::vector<string16>& selection_args);
+                     const std::vector<base::string16>& selection_args);
 
   // Statement ----------------------------------------------------------------
   // Move the statement's current position.
@@ -364,16 +366,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void UpdateSearchTerms(scoped_refptr<UpdateRequest> request,
                          const SearchRow& row,
                          const std::string& selection,
-                         const std::vector<string16> selection_args);
+                         const std::vector<base::string16> selection_args);
 
   void DeleteSearchTerms(scoped_refptr<DeleteRequest> request,
                          const std::string& selection,
-                         const std::vector<string16> selection_args);
+                         const std::vector<base::string16> selection_args);
 
   void QuerySearchTerms(scoped_refptr<QueryRequest> request,
                         const std::vector<SearchRow::ColumnID>& projections,
                         const std::string& selection,
-                        const std::vector<string16>& selection_args,
+                        const std::vector<base::string16>& selection_args,
                         const std::string& sort_order);
 
 #endif  // defined(OS_ANDROID)

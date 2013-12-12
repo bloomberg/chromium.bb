@@ -61,7 +61,7 @@ void ExtensionErrorReporter::ReportError(const base::string16& message,
   }
 }
 
-const std::vector<string16>* ExtensionErrorReporter::GetErrors() {
+const std::vector<base::string16>* ExtensionErrorReporter::GetErrors() {
   return &errors_;
 }
 

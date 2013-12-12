@@ -520,7 +520,7 @@ class MetricsService
   int next_window_id_;
 
   // Buffer of child process notifications for quick access.
-  std::map<string16, ChildProcessStats> child_process_stats_buffer_;
+  std::map<base::string16, ChildProcessStats> child_process_stats_buffer_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.

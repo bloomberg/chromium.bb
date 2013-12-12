@@ -16,7 +16,7 @@ namespace {
 
 // Builds a value from a list of spellcheck suggestions. The caller owns the
 // result.
-base::Value* BuildSuggestionsValue(const std::vector<string16>& list) {
+base::Value* BuildSuggestionsValue(const std::vector<base::string16>& list) {
   base::ListValue* result = new base::ListValue;
   result->AppendStrings(list);
   return result;
@@ -38,7 +38,7 @@ Misspelling::Misspelling()
 Misspelling::Misspelling(const base::string16& context,
                          size_t location,
                          size_t length,
-                         const std::vector<string16>& suggestions,
+                         const std::vector<base::string16>& suggestions,
                          uint32 hash)
     : context(context),
       location(location),

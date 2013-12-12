@@ -417,7 +417,7 @@ void SSLBlockingPage::NotifyAllowCertificate() {
 // static
 void SSLBlockingPage::SetExtraInfo(
     DictionaryValue* strings,
-    const std::vector<string16>& extra_info) {
+    const std::vector<base::string16>& extra_info) {
   DCHECK_LT(extra_info.size(), 5U);  // We allow 5 paragraphs max.
   const char* keys[5] = {
       "moreInfo1", "moreInfo2", "moreInfo3", "moreInfo4", "moreInfo5"

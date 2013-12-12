@@ -38,7 +38,7 @@ namespace {
 base::string16 GenerateUniqueFolderName(BookmarkModel* model,
                                         const base::string16& folder_name) {
   // Build a set containing the bookmark bar folder names.
-  std::set<string16> existing_folder_names;
+  std::set<base::string16> existing_folder_names;
   const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
   for (int i = 0; i < bookmark_bar->child_count(); ++i) {
     const BookmarkNode* node = bookmark_bar->GetChild(i);
@@ -173,7 +173,7 @@ void ProfileWriter::AddBookmarks(
     // Ensure any enclosing folders are present in the model.  The bookmark's
     // enclosing folder structure should be
     //   path[0] > path[1] > ... > path[size() - 1]
-    for (std::vector<string16>::const_iterator folder_name =
+    for (std::vector<base::string16>::const_iterator folder_name =
              bookmark->path.begin();
          folder_name != bookmark->path.end(); ++folder_name) {
       if (bookmark->in_toolbar && parent == bookmark_bar &&

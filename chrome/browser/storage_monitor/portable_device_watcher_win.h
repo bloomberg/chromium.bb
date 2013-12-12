@@ -29,7 +29,7 @@ class TestPortableDeviceWatcherWin;
 // tasks it spins off to a SequencedTaskRunner.
 class PortableDeviceWatcherWin {
  public:
-  typedef std::vector<string16> StorageObjectIDs;
+  typedef std::vector<base::string16> StorageObjectIDs;
 
   struct DeviceStorageObject {
     DeviceStorageObject(const base::string16& temporary_id,
@@ -102,7 +102,7 @@ class PortableDeviceWatcherWin {
 
   // Key: MTP device plug and play ID string.
   // Value: Vector of device storage objects.
-  typedef std::map<string16, StorageObjects> MTPDeviceMap;
+  typedef std::map<base::string16, StorageObjects> MTPDeviceMap;
 
   // Helpers to enumerate existing MTP storage devices.
   virtual void EnumerateAttachedDevices();

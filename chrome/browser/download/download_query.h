@@ -58,7 +58,7 @@ class DownloadQuery {
     FILTER_FILENAME_REGEX,       // string
     FILTER_MIME,                 // string
     FILTER_PAUSED,               // bool
-    FILTER_QUERY,                // vector<string16>
+    FILTER_QUERY,                // vector<base::string16>
     FILTER_STARTED_AFTER,        // string
     FILTER_STARTED_BEFORE,       // string
     FILTER_START_TIME,           // string

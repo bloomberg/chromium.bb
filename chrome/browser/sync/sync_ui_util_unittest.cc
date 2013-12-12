@@ -323,7 +323,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
 // will return a unique combination of status and link messages from
 // GetStatusLabels().
 TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
-  std::set<string16> messages;
+  std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
     scoped_ptr<Profile> profile(new TestingProfile());
     ProfileSyncServiceMock service(profile.get());

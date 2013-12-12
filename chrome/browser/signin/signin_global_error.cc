@@ -143,8 +143,8 @@ base::string16 SigninGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE);
 }
 
-std::vector<string16> SigninGlobalError::GetBubbleViewMessages() {
-  std::vector<string16> messages;
+std::vector<base::string16> SigninGlobalError::GetBubbleViewMessages() {
+  std::vector<base::string16> messages;
 
   // If the user isn't signed in, no need to display an error bubble.
   SigninManagerBase* signin_manager =

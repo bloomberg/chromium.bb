@@ -325,7 +325,7 @@ void MessageCenterSettingsController::SetNotifierEnabled(
                    << notifier.notifier_id.url.spec();
       }
     } else {
-      std::map<string16, ContentSettingsPattern>::const_iterator iter =
+      std::map<base::string16, ContentSettingsPattern>::const_iterator iter =
           patterns_.find(notifier.name);
       if (iter != patterns_.end()) {
         notification_service->ClearSetting(iter->second);

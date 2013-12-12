@@ -332,7 +332,7 @@ class SearchProvider : public AutocompleteProvider,
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
-  typedef std::pair<string16, std::string> MatchKey;
+  typedef std::pair<base::string16, std::string> MatchKey;
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
   typedef ScopedVector<SuggestionDeletionHandler> SuggestionDeletionHandlers;
 

@@ -152,7 +152,7 @@ class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual gfx::Image GetBubbleViewIcon() OVERRIDE;
   virtual base::string16 GetBubbleViewTitle() OVERRIDE;
-  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
+  virtual std::vector<base::string16> GetBubbleViewMessages() OVERRIDE;
   virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
@@ -252,15 +252,16 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
                                     UTF8ToUTF16(extension_->name()));
 }
 
-std::vector<string16> ExtensionDisabledGlobalError::GetBubbleViewMessages() {
-  std::vector<string16> messages;
+std::vector<base::string16>
+ExtensionDisabledGlobalError::GetBubbleViewMessages() {
+  std::vector<base::string16> messages;
   messages.push_back(l10n_util::GetStringFUTF16(
       extension_->is_app() ?
       IDS_APP_DISABLED_ERROR_LABEL : IDS_EXTENSION_DISABLED_ERROR_LABEL,
       UTF8ToUTF16(extension_->name())));
   messages.push_back(l10n_util::GetStringUTF16(
       IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
-  std::vector<string16> permission_warnings =
+  std::vector<base::string16> permission_warnings =
       extensions::PermissionMessageProvider::Get()->GetWarningMessages(
           extension_->GetActivePermissions(), extension_->GetType());
   for (size_t i = 0; i < permission_warnings.size(); ++i) {

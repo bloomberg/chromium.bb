@@ -25,7 +25,7 @@ void HistoryBackend::QueryHistoryAndBookmarks(
     scoped_refptr<QueryRequest> request,
     const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (request->canceled())
     return;
@@ -42,7 +42,7 @@ void HistoryBackend::UpdateHistoryAndBookmarks(
     scoped_refptr<UpdateRequest> request,
     const HistoryAndBookmarkRow& row,
     const std::string& selection,
-    const std::vector<string16>& selection_args) {
+    const std::vector<base::string16>& selection_args) {
   if (request->canceled())
     return;
 
@@ -59,7 +59,7 @@ void HistoryBackend::UpdateHistoryAndBookmarks(
 void HistoryBackend::DeleteHistoryAndBookmarks(
     scoped_refptr<DeleteRequest> request,
     const std::string& selection,
-    const std::vector<string16>& selection_args) {
+    const std::vector<base::string16>& selection_args) {
   if (request->canceled())
     return;
 
@@ -75,7 +75,7 @@ void HistoryBackend::DeleteHistoryAndBookmarks(
 void HistoryBackend::DeleteHistory(
     scoped_refptr<DeleteRequest> request,
     const std::string& selection,
-    const std::vector<string16>& selection_args) {
+    const std::vector<base::string16>& selection_args) {
   if (request->canceled())
     return;
 
@@ -133,7 +133,7 @@ void HistoryBackend::UpdateSearchTerms(
     scoped_refptr<UpdateRequest> request,
     const SearchRow& row,
     const std::string& selection,
-    const std::vector<string16> selection_args) {
+    const std::vector<base::string16> selection_args) {
   if (request->canceled())
     return;
 
@@ -149,7 +149,7 @@ void HistoryBackend::UpdateSearchTerms(
 void HistoryBackend::DeleteSearchTerms(
     scoped_refptr<DeleteRequest> request,
     const std::string& selection,
-    const std::vector<string16> selection_args) {
+    const std::vector<base::string16> selection_args) {
   if (request->canceled())
     return;
 
@@ -167,7 +167,7 @@ void HistoryBackend::QuerySearchTerms(
     scoped_refptr<QueryRequest> request,
     const std::vector<SearchRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (request->canceled())
     return;

@@ -63,7 +63,7 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 // Returns true if |text| contains each string in |words|. This is used when
 // searching for bookmarks.
 bool DoesBookmarkTextContainWords(const base::string16& text,
-                                  const std::vector<string16>& words) {
+                                  const std::vector<base::string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
     if (!base::i18n::StringSearchIgnoringCaseAndAccents(
             words[i], text, NULL, NULL)) {
@@ -76,7 +76,7 @@ bool DoesBookmarkTextContainWords(const base::string16& text,
 // Returns true if |node|s title or url contains the strings in |words|.
 // |languages| argument is user's accept-language setting to decode IDN.
 bool DoesBookmarkContainWords(const BookmarkNode* node,
-                              const std::vector<string16>& words,
+                              const std::vector<base::string16>& words,
                               const std::string& languages) {
   return
       DoesBookmarkTextContainWords(node->GetTitle(), words) ||
@@ -221,7 +221,7 @@ void GetBookmarksContainingText(BookmarkModel* model,
                                 size_t max_count,
                                 const std::string& languages,
                                 std::vector<const BookmarkNode*>* nodes) {
-  std::vector<string16> words;
+  std::vector<base::string16> words;
   QueryParser parser;
   parser.ParseQueryWords(base::i18n::ToLower(text), &words);
   if (words.empty())

@@ -43,7 +43,7 @@ class SuspiciousExtensionBubbleController : public ProfileKeyedAPI {
   base::string16 GetDismissButtonLabel();
 
   // Returns a vector of names of suspicious extensions found.
-  std::vector<string16> GetSuspiciousExtensionNames();
+  std::vector<base::string16> GetSuspiciousExtensionNames();
 
   // Callbacks from bubble. Declared virtual for testing purposes.
   virtual void OnBubbleDismiss();

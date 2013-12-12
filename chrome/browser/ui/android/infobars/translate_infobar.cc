@@ -36,7 +36,7 @@ TranslateInfoBar::~TranslateInfoBar() {
 ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   java_translate_delegate_.Reset(Java_TranslateInfoBarDelegate_create(env));
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  std::vector<string16> languages;
+  std::vector<base::string16> languages;
   languages.reserve(delegate->num_languages());
   for (size_t i = 0; i < delegate->num_languages(); ++i)
     languages.push_back(delegate->language_name_at(i));

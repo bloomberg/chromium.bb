@@ -61,7 +61,7 @@ BookmarkIndex::~BookmarkIndex() {
 void BookmarkIndex::Add(const BookmarkNode* node) {
   if (!node->is_url())
     return;
-  std::vector<string16> terms = ExtractQueryWords(node->GetTitle());
+  std::vector<base::string16> terms = ExtractQueryWords(node->GetTitle());
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
 }
@@ -70,7 +70,7 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
   if (!node->is_url())
     return;
 
-  std::vector<string16> terms = ExtractQueryWords(node->GetTitle());
+  std::vector<base::string16> terms = ExtractQueryWords(node->GetTitle());
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
 }
@@ -79,7 +79,7 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
     const base::string16& query,
     size_t max_count,
     std::vector<BookmarkTitleMatch>* results) {
-  std::vector<string16> terms = ExtractQueryWords(query);
+  std::vector<base::string16> terms = ExtractQueryWords(query);
   if (terms.empty())
     return;
 
@@ -245,10 +245,11 @@ void BookmarkIndex::CombineMatches(const Index::const_iterator& index_i,
   }
 }
 
-std::vector<string16> BookmarkIndex::ExtractQueryWords(const base::string16& query) {
-  std::vector<string16> terms;
+std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
+    const base::string16& query) {
+  std::vector<base::string16> terms;
   if (query.empty())
-    return std::vector<string16>();
+    return std::vector<base::string16>();
   QueryParser parser;
   // TODO(brettw): use ICU normalization:
   // http://userguide.icu-project.org/transforms/normalization

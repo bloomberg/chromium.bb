@@ -553,7 +553,8 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   return Init(db_path_);
 }
 
-Pickle LoginDatabase::SerializeVector(const std::vector<string16>& vec) const {
+Pickle LoginDatabase::SerializeVector(
+    const std::vector<base::string16>& vec) const {
   Pickle p;
   for (size_t i = 0; i < vec.size(); ++i) {
     p.WriteString16(vec[i]);
@@ -561,8 +562,9 @@ Pickle LoginDatabase::SerializeVector(const std::vector<string16>& vec) const {
   return p;
 }
 
-std::vector<string16> LoginDatabase::DeserializeVector(const Pickle& p) const {
-  std::vector<string16> ret;
+std::vector<base::string16> LoginDatabase::DeserializeVector(
+    const Pickle& p) const {
+  std::vector<base::string16> ret;
   base::string16 str;
 
   PickleIterator iterator(p);

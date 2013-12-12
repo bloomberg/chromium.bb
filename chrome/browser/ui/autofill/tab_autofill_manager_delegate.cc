@@ -114,9 +114,9 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
 void TabAutofillManagerDelegate::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    const std::vector<string16>& icons,
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels,
+    const std::vector<base::string16>& icons,
     const std::vector<int>& identifiers,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Convert element_bounds to be in screen space.

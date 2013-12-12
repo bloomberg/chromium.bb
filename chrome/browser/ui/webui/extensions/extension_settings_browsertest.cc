@@ -115,9 +115,9 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
       VLOG(1) << "  " << (*it)->id();
 
     VLOG(1) << "Errors follow:";
-    const std::vector<string16>* errors =
+    const std::vector<base::string16>* errors =
         ExtensionErrorReporter::GetInstance()->GetErrors();
-    for (std::vector<string16>::const_iterator iter = errors->begin();
+    for (std::vector<base::string16>::const_iterator iter = errors->begin();
          iter != errors->end(); ++iter)
       VLOG(1) << *iter;
 

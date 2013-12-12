@@ -88,7 +88,7 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(
     return;
   }
 
-  std::vector<string16> strings;
+  std::vector<base::string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swapped_language_buttons_, autodetermined_source_language_);
   DCHECK_EQ(autodetermined_source_language_ ? 2U : 3U, strings.size());

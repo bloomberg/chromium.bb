@@ -88,13 +88,13 @@ class AutofillPopupController {
   // to take in the row index and return a single element, instead of the
   // whole vector.
   // The main labels for each autofill item.
-  virtual const std::vector<string16>& names() const = 0;
+  virtual const std::vector<base::string16>& names() const = 0;
 
   // Smaller labels for each autofill item.
-  virtual const std::vector<string16>& subtexts() const = 0;
+  virtual const std::vector<base::string16>& subtexts() const = 0;
 
   // A string which identifies the icon to be shown for each autofill item.
-  virtual const std::vector<string16>& icons() const = 0;
+  virtual const std::vector<base::string16>& icons() const = 0;
 
   // Identifier for the row.
   virtual const std::vector<int>& identifiers() const = 0;

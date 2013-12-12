@@ -152,7 +152,7 @@ TEST_F(QueryParserTest, ParseQueryWords) {
     { "\"foo bar\" a", "foo", "bar", "a", 3 },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    std::vector<string16> results;
+    std::vector<base::string16> results;
     QueryParser parser;
     parser.ParseQueryWords(UTF8ToUTF16(data[i].text), &results);
     ASSERT_EQ(data[i].word_count, results.size());

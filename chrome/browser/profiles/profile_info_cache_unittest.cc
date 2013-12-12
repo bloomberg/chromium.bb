@@ -500,7 +500,7 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
   ASSERT_EQ(4U, GetCache()->GetNumberOfProfiles());
 
   // Check that the profiles can be extracted from the local state.
-  std::vector<string16> names = ProfileInfoCache::GetProfileNames();
+  std::vector<base::string16> names = ProfileInfoCache::GetProfileNames();
   for (size_t i = 0; i < 4; i++)
     ASSERT_FALSE(names[i].empty());
 }

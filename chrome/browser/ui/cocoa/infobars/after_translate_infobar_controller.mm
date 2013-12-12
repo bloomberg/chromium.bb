@@ -15,7 +15,7 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 - (void)loadLabelText {
   autodeterminedSourceLanguage_ = ([self delegate]->original_language_index() ==
                         TranslateInfoBarDelegate::kNoIndex);
-  std::vector<string16> strings;
+  std::vector<base::string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swappedLanugageButtons_, autodeterminedSourceLanguage_);
   DCHECK_EQ(autodeterminedSourceLanguage_ ? 2U : 3U, strings.size());

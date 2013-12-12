@@ -50,7 +50,7 @@ template<> bool GetAs(const base::Value& in, std::string* out) {
 template<> bool GetAs(const base::Value& in, base::string16* out) {
   return in.GetAsString(out);
 }
-template<> bool GetAs(const base::Value& in, std::vector<string16>* out) {
+template<> bool GetAs(const base::Value& in, std::vector<base::string16>* out) {
   out->clear();
   const base::ListValue* list = NULL;
   if (!in.GetAsList(&list))
@@ -70,7 +70,7 @@ template<> bool GetAs(const base::Value& in, std::vector<string16>* out) {
 // DownloadItem fields.
 
 static bool MatchesQuery(
-    const std::vector<string16>& query_terms,
+    const std::vector<base::string16>& query_terms,
     const DownloadItem& item) {
   DCHECK(!query_terms.empty());
   base::string16 url_raw(UTF8ToUTF16(item.GetOriginalUrl().spec()));
@@ -83,7 +83,7 @@ static bool MatchesQuery(
   }
   base::string16 path(item.GetTargetFilePath().LossyDisplayName());
 
-  for (std::vector<string16>::const_iterator it = query_terms.begin();
+  for (std::vector<base::string16>::const_iterator it = query_terms.begin();
        it != query_terms.end(); ++it) {
     base::string16 term = base::i18n::ToLower(*it);
     if (!base::i18n::StringSearchIgnoringCaseAndAccents(
@@ -275,7 +275,7 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
     case FILTER_EXISTS:
       return AddFilter(BuildFilter<bool>(value, EQ, &GetExists));
     case FILTER_FILENAME:
-      return AddFilter(BuildFilter<string16>(value, EQ, &GetFilename));
+      return AddFilter(BuildFilter<base::string16>(value, EQ, &GetFilename));
     case FILTER_FILENAME_REGEX:
       return AddFilter(BuildRegexFilter(value, &GetFilenameUTF8));
     case FILTER_MIME:
@@ -283,7 +283,7 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
     case FILTER_PAUSED:
       return AddFilter(BuildFilter<bool>(value, EQ, &IsPaused));
     case FILTER_QUERY: {
-      std::vector<string16> query_terms;
+      std::vector<base::string16> query_terms;
       return GetAs(value, &query_terms) &&
              (query_terms.empty() ||
               AddFilter(base::Bind(&MatchesQuery, query_terms)));
@@ -399,7 +399,8 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
       sorters_.push_back(Sorter::Build<std::string>(direction, &GetUrl));
       break;
     case SORT_FILENAME:
-      sorters_.push_back(Sorter::Build<string16>(direction, &GetFilename));
+      sorters_.push_back(
+          Sorter::Build<base::string16>(direction, &GetFilename));
       break;
     case SORT_DANGER:
       sorters_.push_back(Sorter::Build<DownloadDangerType>(

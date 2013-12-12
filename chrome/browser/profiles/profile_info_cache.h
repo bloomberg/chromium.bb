@@ -145,7 +145,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Because this method will be called during uninstall, before the creation
   // of the ProfileManager, it reads directly from the local state preferences,
   // rather than going through the ProfileInfoCache object.
-  static std::vector<string16> GetProfileNames();
+  static std::vector<base::string16> GetProfileNames();
 
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);

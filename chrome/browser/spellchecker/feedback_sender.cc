@@ -83,7 +83,7 @@ Misspelling BuildFeedback(const SpellCheckResult& result,
   return Misspelling(context,
                      start,
                      result.length,
-                     std::vector<string16>(1, result.replacement),
+                     std::vector<base::string16>(1, result.replacement),
                      result.hash);
 }
 

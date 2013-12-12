@@ -63,7 +63,7 @@ class ManagedModeSiteList {
   // Returns a list of all categories.
   // TODO(bauerb): The list is hardcoded for now, but if we allow custom
   // categories, this should live in some registry.
-  static void GetCategoryNames(std::vector<string16>* categories);
+  static void GetCategoryNames(std::vector<base::string16>* categories);
 
   // Returns a list of all sites in this site list.
   void GetSites(std::vector<Site>* sites);

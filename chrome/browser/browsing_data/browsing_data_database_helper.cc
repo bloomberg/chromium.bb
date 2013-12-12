@@ -81,9 +81,9 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
         // Non-websafe state is not considered browsing data.
         continue;
       }
-      std::vector<string16> databases;
+      std::vector<base::string16> databases;
       ori->GetAllDatabaseNames(&databases);
-      for (std::vector<string16>::const_iterator db = databases.begin();
+      for (std::vector<base::string16>::const_iterator db = databases.begin();
            db != databases.end(); ++db) {
         base::FilePath file_path =
             tracker_->GetFullDBFilePath(ori->GetOriginIdentifier(), *db);

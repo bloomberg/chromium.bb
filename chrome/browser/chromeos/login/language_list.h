@@ -47,12 +47,12 @@ class LanguageList {
     std::string locale_code;  // E.g., en-us.
   };
 
-  typedef std::map<string16, LocaleData> LocaleDataMap;
+  typedef std::map<base::string16, LocaleData> LocaleDataMap;
 
   void InitNativeNames(const std::vector<std::string>& locale_codes);
 
   // The names of all the locales in the current application locale.
-  std::vector<string16> locale_names_;
+  std::vector<base::string16> locale_names_;
 
   // A map of some extra data (LocaleData) keyed off the name of the locale.
   LocaleDataMap native_names_;

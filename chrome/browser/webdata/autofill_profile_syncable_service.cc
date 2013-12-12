@@ -381,7 +381,7 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   specifics->set_guid(profile.guid());
   specifics->set_origin(profile.origin());
 
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   profile.GetRawMultiInfo(autofill::NAME_FIRST, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_name_first(LimitData(UTF16ToUTF8(values[i])));
@@ -579,7 +579,7 @@ bool AutofillProfileSyncableService::UpdateMultivaluedField(
     ServerFieldType field_type,
     const ::google::protobuf::RepeatedPtrField<std::string>& new_values,
     AutofillProfile* autofill_profile) {
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   autofill_profile->GetRawMultiInfo(field_type, &values);
   bool changed = false;
   if (static_cast<size_t>(new_values.size()) != values.size()) {

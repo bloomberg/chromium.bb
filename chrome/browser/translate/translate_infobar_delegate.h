@@ -168,7 +168,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // should be inverted (some languages express the sentense as "The page has
   // been translate to <lang2> from <lang1>."). It is ignored if
   // |autodetermined_source_language| is true.
-  static void GetAfterTranslateStrings(std::vector<string16>* strings,
+  static void GetAfterTranslateStrings(std::vector<base::string16>* strings,
                                        bool* swap_languages,
                                        bool autodetermined_source_language);
 

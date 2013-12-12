@@ -70,7 +70,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // Suggested words from the local spellchecker. If the spelling service
   // returns a word in this list, we hide the context-menu item to prevent
   // showing the same word twice.
-  std::vector<string16> suggestions_;
+  std::vector<base::string16> suggestions_;
 
   // The string used for animation until we receive a response from the Spelling
   // service. The current animation just adds periods at the end of this string:

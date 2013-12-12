@@ -45,7 +45,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   // ssl_error.html files.
   // Note: there can be up to 5 strings in |extra_info|.
   static void SetExtraInfo(base::DictionaryValue* strings,
-                           const std::vector<string16>& extra_info);
+                           const std::vector<base::string16>& extra_info);
 
  protected:
   // InterstitialPageDelegate implementation.

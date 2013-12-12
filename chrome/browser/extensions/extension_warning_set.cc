@@ -183,7 +183,7 @@ std::string ExtensionWarning::GetLocalizedMessage(
   // These parameters may be unsafe (URLs and Extension names) and need
   // to be HTML-escaped before being embedded in the UI. Also extension IDs
   // are translated to full extension names.
-  std::vector<string16> final_parameters;
+  std::vector<base::string16> final_parameters;
   for (size_t i = 0; i < message_parameters_.size(); ++i) {
     std::string message = message_parameters_[i];
     if (StartsWithASCII(message, kTranslate, true)) {

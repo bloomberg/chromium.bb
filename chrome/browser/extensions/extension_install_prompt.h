@@ -80,9 +80,9 @@ class ExtensionInstallPrompt
     ~Prompt();
 
     // Sets the permission list for this prompt.
-    void SetPermissions(const std::vector<string16>& permissions);
+    void SetPermissions(const std::vector<base::string16>& permissions);
     // Sets the permission list details for this prompt.
-    void SetPermissionsDetails(const std::vector<string16>& details);
+    void SetPermissionsDetails(const std::vector<base::string16>& details);
     void SetIsShowingDetails(DetailsType type,
                              size_t index,
                              bool is_showing_details);
@@ -158,8 +158,8 @@ class ExtensionInstallPrompt
 
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
-    std::vector<string16> permissions_;
-    std::vector<string16> details_;
+    std::vector<base::string16> permissions_;
+    std::vector<base::string16> details_;
     std::vector<bool> is_showing_details_for_permissions_;
     std::vector<bool> is_showing_details_for_oauth_;
     bool is_showing_details_for_retained_files_;

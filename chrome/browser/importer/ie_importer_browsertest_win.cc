@@ -116,7 +116,7 @@ const FaviconGroup kIEFaviconGroup[2] = {
 
 bool CreateOrderBlob(const base::FilePath& favorites_folder,
                      const base::string16& path,
-                     const std::vector<string16>& entries) {
+                     const std::vector<base::string16>& entries) {
   if (entries.size() > 255)
     return false;
 
@@ -512,7 +512,8 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
   };
   ASSERT_TRUE(CreateOrderBlob(
       base::FilePath(path), L"",
-      std::vector<string16>(root_links, root_links + arraysize(root_links))));
+      std::vector<base::string16>(root_links,
+                                  root_links + arraysize(root_links))));
 
   HRESULT res;
 

@@ -64,7 +64,7 @@ bool CheckSpelling(const base::string16& word_to_check, int tag);
 // kMaxSuggestions, which is defined in spellchecker_common.h) of suggestions
 // for the string |wrong_word|.
 void FillSuggestionList(const base::string16& wrong_word,
-                        std::vector<string16>* optional_suggestions);
+                        std::vector<base::string16>* optional_suggestions);
 
 // Adds the given word to the platform dictionary.
 void AddWord(const base::string16& word);

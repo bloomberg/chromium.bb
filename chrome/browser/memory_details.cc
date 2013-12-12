@@ -152,7 +152,7 @@ std::string MemoryDetails::ToLogString() {
             iter1->process_type, iter1->renderer_type);
     if (!iter1->titles.empty()) {
       log += " [";
-      for (std::vector<string16>::const_iterator iter2 =
+      for (std::vector<base::string16>::const_iterator iter2 =
                iter1->titles.begin();
            iter2 != iter1->titles.end(); ++iter2) {
         if (iter2 != iter1->titles.begin())

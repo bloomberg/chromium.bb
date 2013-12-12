@@ -534,7 +534,7 @@ TEST_F(AutofillProfileSyncableServiceTest, UpdateField) {
 TEST_F(AutofillProfileSyncableServiceTest, UpdateMultivaluedField) {
   AutofillProfile profile(kGuid1, kHttpsOrigin);
 
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   values.push_back(UTF8ToUTF16("1@1.com"));
   values.push_back(UTF8ToUTF16("2@1.com"));
   profile.SetRawMultiInfo(autofill::EMAIL_ADDRESS, values);
@@ -570,7 +570,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   profile1.SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("111 First St."));
 
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   values.push_back(UTF8ToUTF16("1@1.com"));
   values.push_back(UTF8ToUTF16("2@1.com"));
   profile1.SetRawMultiInfo(autofill::EMAIL_ADDRESS, values);

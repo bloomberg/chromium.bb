@@ -53,7 +53,7 @@ void AddResourceIcon(const gfx::ImageSkia* icon, void* data) {
 }
 
 // Returns an expander with the lines in |details|.
-GtkWidget* CreateDetailsWidget(const std::vector<string16>& details,
+GtkWidget* CreateDetailsWidget(const std::vector<base::string16>& details,
                                int width,
                                bool show_bullets) {
   GtkWidget* expander = gtk_expander_new(
@@ -291,7 +291,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
         gtk_box_pack_start(GTK_BOX(permission_vbox), permission_label,
                            FALSE, FALSE, 0);
         if (!prompt.GetPermissionsDetails(i).empty()) {
-          std::vector<string16> details;
+          std::vector<base::string16> details;
           details.push_back(prompt.GetPermissionsDetails(i));
           gtk_box_pack_start(
               GTK_BOX(permission_vbox),
@@ -349,7 +349,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     gtk_box_pack_start(GTK_BOX(retained_files_container), retained_files_header,
                        FALSE, FALSE, 0);
 
-    std::vector<string16> paths;
+    std::vector<base::string16> paths;
     for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i) {
       paths.push_back(prompt.GetRetainedFile(i));
     }

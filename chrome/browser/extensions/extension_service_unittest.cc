@@ -186,12 +186,12 @@ struct ExtensionsOrder {
   }
 };
 
-static std::vector<string16> GetErrors() {
-  const std::vector<string16>* errors =
+static std::vector<base::string16> GetErrors() {
+  const std::vector<base::string16>* errors =
       ExtensionErrorReporter::GetInstance()->GetErrors();
-  std::vector<string16> ret_val;
+  std::vector<base::string16> ret_val;
 
-  for (std::vector<string16>::const_iterator iter = errors->begin();
+  for (std::vector<base::string16>::const_iterator iter = errors->begin();
        iter != errors->end(); ++iter) {
     std::string utf8_error = UTF16ToUTF8(*iter);
     if (utf8_error.find(".svn") == std::string::npos) {
@@ -862,7 +862,7 @@ class ExtensionServiceTest
   const Extension* VerifyCrxInstall(const base::FilePath& path,
                                     InstallState install_state,
                                     const std::string& expected_old_name) {
-    std::vector<string16> errors = GetErrors();
+    std::vector<base::string16> errors = GetErrors();
     const Extension* extension = NULL;
     if (install_state != INSTALL_FAILED) {
       if (install_state == INSTALL_NEW)
@@ -890,7 +890,7 @@ class ExtensionServiceTest
             << path.value();
       }
 
-      for (std::vector<string16>::iterator err = errors.begin();
+      for (std::vector<base::string16>::iterator err = errors.begin();
         err != errors.end(); ++err) {
         LOG(ERROR) << *err;
       }
@@ -971,7 +971,7 @@ class ExtensionServiceTest
     else
       base::RunLoop().RunUntilIdle();
 
-    std::vector<string16> errors = GetErrors();
+    std::vector<base::string16> errors = GetErrors();
     int error_count = errors.size();
     int enabled_extension_count =
         service_->extensions()->size();
@@ -1973,7 +1973,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
       GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"));
 
   base::RunLoop().RunUntilIdle();
-  std::vector<string16> errors = GetErrors();
+  std::vector<base::string16> errors = GetErrors();
   EXPECT_TRUE(installed_) << "Nothing was installed.";
   EXPECT_FALSE(was_update_) << path.value();
   ASSERT_EQ(1u, loaded_.size()) << "Nothing was loaded.";

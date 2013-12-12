@@ -404,7 +404,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   friend class TemplateURLServiceTestUtilBase;
 
-  typedef std::map<string16, TemplateURL*> KeywordToTemplateMap;
+  typedef std::map<base::string16, TemplateURL*> KeywordToTemplateMap;
   typedef std::map<std::string, TemplateURL*> GUIDToTemplateMap;
 
   // Declaration of values to be used in an enumerated histogram to tally

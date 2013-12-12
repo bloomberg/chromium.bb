@@ -73,7 +73,7 @@ class GlobalErrorWithStandardBubble
   // Returns the messages for the bubble view, one per line. Multiple messages
   // are only supported on Views.
   // TODO(yoz): Add multi-line support for GTK and Cocoa.
-  virtual std::vector<string16> GetBubbleViewMessages() = 0;
+  virtual std::vector<base::string16> GetBubbleViewMessages() = 0;
   // Returns the accept button label for the bubble view.
   virtual base::string16 GetBubbleViewAcceptButtonLabel() = 0;
   // Returns the cancel button label for the bubble view. To hide the cancel

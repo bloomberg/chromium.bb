@@ -12,7 +12,7 @@
 
 // Additional data needed by TemplateURLRef::ReplaceSearchTerms on Android.
 struct SearchTermsDataAndroid {
-  static base::LazyInstance<string16>::Leaky rlz_parameter_value_;
+  static base::LazyInstance<base::string16>::Leaky rlz_parameter_value_;
   static base::LazyInstance<std::string>::Leaky search_client_;
 };
 

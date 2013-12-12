@@ -59,10 +59,10 @@ const char* kSearchTermUpdateClause =
         "(keyword_search_terms.url_id = urls.id) "
     "GROUP BY keyword_search_terms.term";
 
-void BindStatement(const std::vector<string16>& selection_args,
+void BindStatement(const std::vector<base::string16>& selection_args,
                    sql::Statement* statement,
                    int* col_index) {
-  for (std::vector<string16>::const_iterator i = selection_args.begin();
+  for (std::vector<base::string16>::const_iterator i = selection_args.begin();
        i != selection_args.end(); ++i) {
     // Using the same method as Android, binding all argument as String.
     statement->BindString16(*col_index, *i);
@@ -137,7 +137,7 @@ AndroidProviderBackend::~AndroidProviderBackend() {
 AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
     const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (projections.empty())
     return NULL;
@@ -156,7 +156,7 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
 bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
     const HistoryAndBookmarkRow& row,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int* updated_count) {
   HistoryNotifications notifications;
 
@@ -188,7 +188,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
 
 bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int* deleted_count) {
   HistoryNotifications notifications;
 
@@ -205,7 +205,7 @@ bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
 
 bool AndroidProviderBackend::DeleteHistory(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int* deleted_count) {
   HistoryNotifications notifications;
 
@@ -290,7 +290,7 @@ void AndroidProviderBackend::ScopedTransaction::Commit() {
 bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
     const HistoryAndBookmarkRow& row,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int* updated_count,
     HistoryNotifications* notifications) {
   if (!IsHistoryAndBookmarkRowValid(row))
@@ -412,7 +412,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
 
 bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int * deleted_count,
     HistoryNotifications* notifications) {
   if (!EnsureInitializedAndUpdated())
@@ -437,7 +437,7 @@ bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
 
 bool AndroidProviderBackend::DeleteHistory(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int* deleted_count,
     HistoryNotifications* notifications) {
   if (!EnsureInitializedAndUpdated())
@@ -494,7 +494,7 @@ bool AndroidProviderBackend::DeleteHistory(
 AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
     const std::vector<SearchRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (projections.empty())
     return NULL;
@@ -532,7 +532,7 @@ AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
 bool AndroidProviderBackend::UpdateSearchTerms(
     const SearchRow& row,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int* update_count) {
   if (!EnsureInitializedAndUpdated())
     return false;
@@ -631,7 +631,7 @@ SearchTermID AndroidProviderBackend::InsertSearchTerm(
 
 bool AndroidProviderBackend::DeleteSearchTerms(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     int * deleted_count) {
   if (!EnsureInitializedAndUpdated())
     return false;
@@ -872,7 +872,7 @@ int AndroidProviderBackend::AppendBookmarkResultColumn(
 
 bool AndroidProviderBackend::GetSelectedURLs(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     TableIDRows* rows) {
   std::string sql("SELECT url_id, urls_url, bookmark FROM (");
   sql.append(kVirtualHistoryAndBookmarkTable);
@@ -902,7 +902,7 @@ bool AndroidProviderBackend::GetSelectedURLs(
 
 bool AndroidProviderBackend::GetSelectedSearchTerms(
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     SearchTerms* rows) {
   std::string sql("SELECT search "
                   "FROM android_cache_db.search_terms ");
@@ -963,7 +963,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   scoped_ptr<AndroidStatement> statement;
   statement.reset(QueryHistoryAndBookmarksInternal(projections, oss.str(),
-      std::vector<string16>(), std::string()));
+      std::vector<base::string16>(), std::string()));
   if (!statement.get() || !statement->statement()->Step())
     return false;
 
@@ -1069,7 +1069,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
     const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
-    const std::vector<string16>& selection_args,
+    const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   std::string sql;
   sql.append("SELECT ");

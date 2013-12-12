@@ -179,7 +179,7 @@ TEST_F(SQLiteCursorTest, Run) {
 
   // Query the inserted row.
   service_->QueryHistoryAndBookmarks(projections, std::string(),
-      std::vector<string16>(), std::string(), &cancelable_consumer_,
+      std::vector<base::string16>(), std::string(), &cancelable_consumer_,
       Bind(&CallbackHelper::OnQueryResult, callback.get()));
   base::MessageLoop::current()->Run();
   ASSERT_TRUE(callback->success());

@@ -54,7 +54,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
-  std::set<string16> keys;
+  std::set<base::string16> keys;
   base::win::RegistryKeyIterator iterator_machine_key(
       HKEY_LOCAL_MACHINE, ASCIIToWide(kRegistryExtensions).c_str());
   for (; iterator_machine_key.Valid(); ++iterator_machine_key)
@@ -67,7 +67,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   // Iterate over the keys found, first trying HKLM, then HKCU, as per Windows
   // policy conventions. We only fall back to HKCU if the HKLM key cannot be
   // opened, not if the data within the key is invalid, for example.
-  for (std::set<string16>::const_iterator it = keys.begin();
+  for (std::set<base::string16>::const_iterator it = keys.begin();
        it != keys.end(); ++it) {
     base::win::RegKey key;
     base::string16 key_path = ASCIIToWide(kRegistryExtensions);

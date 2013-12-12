@@ -185,7 +185,7 @@ TEST_F(SuspiciousExtensionBubbleTest, MAYBE_ControllerTest) {
   EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2));
 
   EXPECT_FALSE(controller->HasSuspiciousExtensions());
-  std::vector<string16> suspicious_extensions =
+  std::vector<base::string16> suspicious_extensions =
       controller->GetSuspiciousExtensionNames();
   EXPECT_EQ(0U, suspicious_extensions.size());
   EXPECT_EQ(0U, controller->link_click_count());

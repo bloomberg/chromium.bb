@@ -59,7 +59,7 @@ ExtensionNameComparator::ExtensionNameComparator(icu::Collator* collator)
 bool ExtensionNameComparator::operator()(
     const scoped_refptr<const Extension>& x,
     const scoped_refptr<const Extension>& y) {
-  return l10n_util::StringComparator<string16>(collator_)(
+  return l10n_util::StringComparator<base::string16>(collator_)(
       UTF8ToUTF16(x->name()), UTF8ToUTF16(y->name()));
 }
 

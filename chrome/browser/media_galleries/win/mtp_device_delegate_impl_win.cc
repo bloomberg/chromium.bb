@@ -80,7 +80,7 @@ base::string16 GetFileObjectIdFromPathOnBlockingPoolThread(
           file_path, &relative_path))
     return base::string16();
 
-  std::vector<string16> path_components;
+  std::vector<base::string16> path_components;
   relative_path.GetComponents(&path_components);
   DCHECK(!path_components.empty());
   base::string16 parent_id(device_info.storage_object_id);

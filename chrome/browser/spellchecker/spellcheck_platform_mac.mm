@@ -195,7 +195,7 @@ bool CheckSpelling(const base::string16& word_to_check, int tag) {
 }
 
 void FillSuggestionList(const base::string16& wrong_word,
-                        std::vector<string16>* optional_suggestions) {
+                        std::vector<base::string16>* optional_suggestions) {
   NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
   TimeTicks debug_begin_time = base::Histogram::DebugNow();
   // The suggested words for |wrong_word|.

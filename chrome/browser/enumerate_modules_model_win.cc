@@ -632,7 +632,7 @@ void ModuleEnumerator::PreparePathMappings() {
   path_mapping_.clear();
 
   scoped_ptr<base::Environment> environment(base::Environment::Create());
-  std::vector<string16> env_vars;
+  std::vector<base::string16> env_vars;
   env_vars.push_back(L"LOCALAPPDATA");
   env_vars.push_back(L"ProgramFiles");
   env_vars.push_back(L"ProgramData");
@@ -641,7 +641,7 @@ void ModuleEnumerator::PreparePathMappings() {
   env_vars.push_back(L"TEMP");
   env_vars.push_back(L"TMP");
   env_vars.push_back(L"CommonProgramFiles");
-  for (std::vector<string16>::const_iterator variable = env_vars.begin();
+  for (std::vector<base::string16>::const_iterator variable = env_vars.begin();
        variable != env_vars.end(); ++variable) {
     std::string path;
     if (environment->GetVar(WideToASCII(*variable).c_str(), &path)) {

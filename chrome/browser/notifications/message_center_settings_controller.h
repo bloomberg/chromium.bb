@@ -103,7 +103,7 @@ class MessageCenterSettingsController
 
   scoped_ptr<extensions::AppIconLoader> app_icon_loader_;
 
-  std::map<string16, ContentSettingsPattern> patterns_;
+  std::map<base::string16, ContentSettingsPattern> patterns_;
 
   // The list of all configurable notifier groups. This is each profile that is
   // loaded (and in the ProfileInfoCache - so no incognito profiles go here).

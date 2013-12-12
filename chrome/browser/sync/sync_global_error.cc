@@ -64,8 +64,8 @@ base::string16 SyncGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE);
 }
 
-std::vector<string16> SyncGlobalError::GetBubbleViewMessages() {
-  return std::vector<string16>(1, bubble_message_);
+std::vector<base::string16> SyncGlobalError::GetBubbleViewMessages() {
+  return std::vector<base::string16>(1, bubble_message_);
 }
 
 base::string16 SyncGlobalError::GetBubbleViewAcceptButtonLabel() {

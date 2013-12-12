@@ -51,7 +51,7 @@ class UninstallView : public views::ButtonListener,
   virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
-  typedef std::map<string16, base::string16> BrowsersMap;
+  typedef std::map<base::string16, base::string16> BrowsersMap;
 
   // Initializes the controls on the dialog.
   void SetupControls();

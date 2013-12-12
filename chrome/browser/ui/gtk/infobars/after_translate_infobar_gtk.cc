@@ -31,7 +31,7 @@ void AfterTranslateInfoBar::PlatformSpecificSetOwner() {
       GetDelegate()->original_language_index() ==
       TranslateInfoBarDelegate::kNoIndex;
 
-  std::vector<string16> strings;
+  std::vector<base::string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
         &strings, &swapped_language_combos, autodetermined_source_language);
   DCHECK_EQ(autodetermined_source_language ? 2U : 3U, strings.size());

@@ -80,7 +80,7 @@ void GetValueList(const AutofillProfile& profile,
                   scoped_ptr<ListValue>* list) {
   list->reset(new ListValue);
 
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   profile.GetRawMultiInfo(type, &values);
 
   // |GetRawMultiInfo()| always returns at least one, potentially empty, item.
@@ -96,7 +96,7 @@ void GetValueList(const AutofillProfile& profile,
 void SetValueList(const ListValue* list,
                   ServerFieldType type,
                   AutofillProfile* profile) {
-  std::vector<string16> values(list->GetSize());
+  std::vector<base::string16> values(list->GetSize());
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::string16 value;
     if (list->GetString(i, &value))
@@ -110,9 +110,9 @@ void GetNameList(const AutofillProfile& profile,
                  scoped_ptr<ListValue>* names) {
   names->reset(new ListValue);
 
-  std::vector<string16> first_names;
-  std::vector<string16> middle_names;
-  std::vector<string16> last_names;
+  std::vector<base::string16> first_names;
+  std::vector<base::string16> middle_names;
+  std::vector<base::string16> last_names;
   profile.GetRawMultiInfo(autofill::NAME_FIRST, &first_names);
   profile.GetRawMultiInfo(autofill::NAME_MIDDLE, &middle_names);
   profile.GetRawMultiInfo(autofill::NAME_LAST, &last_names);
@@ -137,9 +137,9 @@ void GetNameList(const AutofillProfile& profile,
 // Set the multi-valued element for |type| from input |list| values.
 void SetNameList(const ListValue* names, AutofillProfile* profile) {
   const size_t size = names->GetSize();
-  std::vector<string16> first_names(size);
-  std::vector<string16> middle_names(size);
-  std::vector<string16> last_names(size);
+  std::vector<base::string16> first_names(size);
+  std::vector<base::string16> middle_names(size);
+  std::vector<base::string16> last_names(size);
 
   for (size_t i = 0; i < size; ++i) {
     const ListValue* name;

@@ -256,7 +256,7 @@ base::string16 TranslateInfoBarDelegate::GetLanguageDisplayableName(
 
 // static
 void TranslateInfoBarDelegate::GetAfterTranslateStrings(
-    std::vector<string16>* strings,
+    std::vector<base::string16>* strings,
     bool* swap_languages,
     bool autodetermined_source_language) {
   DCHECK(strings);

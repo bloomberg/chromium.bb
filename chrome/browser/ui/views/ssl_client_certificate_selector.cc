@@ -59,7 +59,7 @@ class CertificateSelectorTableModel : public ui::TableModel {
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
  private:
-  std::vector<string16> items_;
+  std::vector<base::string16> items_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateSelectorTableModel);
 };

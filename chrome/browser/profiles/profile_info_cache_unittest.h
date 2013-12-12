@@ -40,7 +40,7 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
 
  private:
   ProfileInfoCache* GetCache();
-  std::set<string16> profile_names_;
+  std::set<base::string16> profile_names_;
   TestingProfileManager* testing_profile_manager_;
   DISALLOW_COPY_AND_ASSIGN(ProfileNameVerifierObserver);
 };

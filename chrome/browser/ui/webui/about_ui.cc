@@ -459,10 +459,10 @@ std::string AboutDiscards(const std::string& path) {
 
   chromeos::OomPriorityManager* oom =
       g_browser_process->platform_part()->oom_priority_manager();
-  std::vector<string16> titles = oom->GetTabTitles();
+  std::vector<base::string16> titles = oom->GetTabTitles();
   if (!titles.empty()) {
     output.append("<ul>");
-    std::vector<string16>::iterator it = titles.begin();
+    std::vector<base::string16>::iterator it = titles.begin();
     for ( ; it != titles.end(); ++it) {
       std::string title = UTF16ToUTF8(*it);
       title = net::EscapeForHTML(title);

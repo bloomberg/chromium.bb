@@ -7,7 +7,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "content/public/browser/browser_thread.h"
 
-base::LazyInstance<string16>::Leaky
+base::LazyInstance<base::string16>::Leaky
     SearchTermsDataAndroid::rlz_parameter_value_ = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::string>::Leaky
     SearchTermsDataAndroid::search_client_ = LAZY_INSTANCE_INITIALIZER;

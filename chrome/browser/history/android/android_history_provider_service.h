@@ -69,7 +69,7 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   Handle QueryHistoryAndBookmarks(
       const std::vector<history::HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
-      const std::vector<string16>& selection_args,
+      const std::vector<base::string16>& selection_args,
       const std::string& sort_order,
       CancelableRequestConsumerBase* consumer,
       const QueryCallback& callback);
@@ -80,11 +80,12 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  Handle UpdateHistoryAndBookmarks(const history::HistoryAndBookmarkRow& row,
-                                   const std::string& selection,
-                                   const std::vector<string16>& selection_args,
-                                   CancelableRequestConsumerBase* consumer,
-                                   const UpdateCallback& callback);
+  Handle UpdateHistoryAndBookmarks(
+      const history::HistoryAndBookmarkRow& row,
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      CancelableRequestConsumerBase* consumer,
+      const UpdateCallback& callback);
 
   // Deletes the specified rows and invokes the |callback| to return the number
   // of row deleted on success.
@@ -93,10 +94,11 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // |selection_args| is the arguments for the WHERE clause.
   //
   // if |selection| is empty all history and bookmarks are deleted.
-  Handle DeleteHistoryAndBookmarks(const std::string& selection,
-                                   const std::vector<string16>& selection_args,
-                                   CancelableRequestConsumerBase* consumer,
-                                   const DeleteCallback& callback);
+  Handle DeleteHistoryAndBookmarks(
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      CancelableRequestConsumerBase* consumer,
+      const DeleteCallback& callback);
 
   // Inserts the given values into history backend, and invokes the |callback|
   // to return the result.
@@ -107,7 +109,7 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // Deletes the matched history and invokes |callback| to return the number of
   // the row deleted from the |callback|.
   Handle DeleteHistory(const std::string& selection,
-                       const std::vector<string16>& selection_args,
+                       const std::vector<base::string16>& selection_args,
                        CancelableRequestConsumerBase* consumer,
                        const DeleteCallback& callback);
 
@@ -140,7 +142,7 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // |selection_args| is the arguments for WHERE clause.
   Handle UpdateSearchTerms(const history::SearchRow& row,
                            const std::string& selection,
-                           const std::vector<string16>& selection_args,
+                           const std::vector<base::string16>& selection_args,
                            CancelableRequestConsumerBase* consumer,
                            const UpdateCallback& callback);
 
@@ -151,7 +153,7 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   //
   // if |selection| is empty all search be deleted.
   Handle DeleteSearchTerms(const std::string& selection,
-                           const std::vector<string16>& selection_args,
+                           const std::vector<base::string16>& selection_args,
                            CancelableRequestConsumerBase* consumer,
                            const DeleteCallback& callback);
 
@@ -164,7 +166,7 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   Handle QuerySearchTerms(
       const std::vector<history::SearchRow::ColumnID>& projections,
       const std::string& selection,
-      const std::vector<string16>& selection_args,
+      const std::vector<base::string16>& selection_args,
       const std::string& sort_order,
       CancelableRequestConsumerBase* consumer,
       const QueryCallback& callback);

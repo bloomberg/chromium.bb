@@ -91,7 +91,7 @@ class QueryNodeWord : public QueryNode {
       Snippet::MatchPositions* match_positions) const OVERRIDE;
   virtual bool HasMatchIn(
       const std::vector<QueryWord>& words) const OVERRIDE;
-  virtual void AppendWords(std::vector<string16>* words) const OVERRIDE;
+  virtual void AppendWords(std::vector<base::string16>* words) const OVERRIDE;
 
  private:
   base::string16 word_;
@@ -352,7 +352,7 @@ int QueryParser::ParseQuery(const base::string16& query,
 }
 
 void QueryParser::ParseQueryWords(const base::string16& query,
-                                  std::vector<string16>* words) {
+                                  std::vector<base::string16>* words) {
   QueryNodeList root;
   if (!ParseQueryImpl(query, &root))
     return;

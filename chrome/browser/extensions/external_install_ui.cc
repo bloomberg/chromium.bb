@@ -107,7 +107,7 @@ class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual base::string16 GetBubbleViewTitle() OVERRIDE;
-  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
+  virtual std::vector<base::string16> GetBubbleViewMessages() OVERRIDE;
   virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
@@ -138,7 +138,7 @@ class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
   virtual bool HasBubbleView() OVERRIDE;
   virtual gfx::Image GetBubbleViewIcon() OVERRIDE;
   virtual base::string16 GetBubbleViewTitle() OVERRIDE;
-  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
+  virtual std::vector<base::string16> GetBubbleViewMessages() OVERRIDE;
   virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
@@ -285,8 +285,8 @@ base::string16 ExternalInstallMenuAlert::GetBubbleViewTitle() {
   return base::string16();
 }
 
-std::vector<string16> ExternalInstallMenuAlert::GetBubbleViewMessages() {
-  return std::vector<string16>();
+std::vector<base::string16> ExternalInstallMenuAlert::GetBubbleViewMessages() {
+  return std::vector<base::string16>();
 }
 
 base::string16 ExternalInstallMenuAlert::GetBubbleViewAcceptButtonLabel() {
@@ -368,8 +368,9 @@ base::string16 ExternalInstallGlobalError::GetBubbleViewTitle() {
   return prompt_->GetDialogTitle();
 }
 
-std::vector<string16> ExternalInstallGlobalError::GetBubbleViewMessages() {
-  std::vector<string16> messages;
+std::vector<base::string16>
+ExternalInstallGlobalError::GetBubbleViewMessages() {
+  std::vector<base::string16> messages;
   messages.push_back(prompt_->GetHeading());
   if (prompt_->GetPermissionCount()) {
     messages.push_back(prompt_->GetPermissionsHeading());

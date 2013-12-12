@@ -87,7 +87,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
   [iconView_ setImage:image.ToNSImage()];
 
   [title_ setStringValue:SysUTF16ToNSString(error_->GetBubbleViewTitle())];
-  std::vector<string16> messages = error_->GetBubbleViewMessages();
+  std::vector<base::string16> messages = error_->GetBubbleViewMessages();
   base::string16 message = JoinString(messages, '\n');
 
   base::scoped_nsobject<NSMutableAttributedString> messageValue(

@@ -77,7 +77,7 @@ class QueryParser {
   // "foo bar" results in two entries being added to words, one for foo and one
   // for bar.
   void ParseQueryWords(const base::string16& query,
-                       std::vector<string16>* words);
+                       std::vector<base::string16>* words);
 
   // Parses |query|, returning the nodes that constitute the valid words in the
   // query. This is intended for later usage with DoesQueryMatch. Ownership of

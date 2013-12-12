@@ -151,12 +151,12 @@ base::string16 SuspiciousExtensionBubbleController::GetDismissButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BUTTON);
 }
 
-std::vector<string16>
+std::vector<base::string16>
 SuspiciousExtensionBubbleController::GetSuspiciousExtensionNames() {
   if (suspicious_extensions_.empty())
-    return std::vector<string16>();
+    return std::vector<base::string16>();
 
-  std::vector<string16> return_value;
+  std::vector<base::string16> return_value;
   for (ExtensionIdList::const_iterator it = suspicious_extensions_.begin();
        it != suspicious_extensions_.end(); ++it) {
     const Extension* extension = service_->GetInstalledExtension(*it);

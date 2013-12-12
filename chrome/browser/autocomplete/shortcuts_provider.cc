@@ -252,7 +252,7 @@ ShortcutsProvider::WordMap ShortcutsProvider::CreateWordMapForString(
                                       base::i18n::BreakIterator::BREAK_WORD);
   if (!word_iter.Init())
     return word_map;
-  std::vector<string16> words;
+  std::vector<base::string16> words;
   while (word_iter.Advance()) {
     if (word_iter.IsWord())
       words.push_back(word_iter.GetString());
@@ -268,8 +268,8 @@ ShortcutsProvider::WordMap ShortcutsProvider::CreateWordMapForString(
   // is mandated in C++11, and part of that decision was based on a survey of
   // existing implementations that found that it was already true everywhere.)
   std::reverse(words.begin(), words.end());
-  for (std::vector<string16>::const_iterator i(words.begin()); i != words.end();
-       ++i)
+  for (std::vector<base::string16>::const_iterator i(words.begin());
+       i != words.end(); ++i)
     word_map.insert(std::make_pair((*i)[0], *i));
   return word_map;
 }

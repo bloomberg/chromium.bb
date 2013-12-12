@@ -43,7 +43,7 @@ class ManagedUserService : public BrowserContextKeyedService,
                            public content::NotificationObserver,
                            public chrome::BrowserListObserver {
  public:
-  typedef std::vector<string16> CategoryList;
+  typedef std::vector<base::string16> CategoryList;
   typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
   typedef base::Callback<void(const GoogleServiceAuthError&)> AuthErrorCallback;
 

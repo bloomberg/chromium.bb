@@ -174,10 +174,11 @@ void SuspiciousExtensionBubbleView::Init() {
   extensions->SetMultiLine(true);
   extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  std::vector<string16> extension_list;
+  std::vector<base::string16> extension_list;
   char16 bullet_point = 0x2022;
 
-  std::vector<string16> suspicious = controller_->GetSuspiciousExtensionNames();
+  std::vector<base::string16> suspicious =
+      controller_->GetSuspiciousExtensionNames();
   size_t i = 0;
   for (; i < suspicious.size() && i < kMaxExtensionsToShow; ++i) {
     // Add each extension with bullet point.

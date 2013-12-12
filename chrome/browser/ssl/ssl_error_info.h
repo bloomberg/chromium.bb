@@ -67,7 +67,7 @@ class SSLErrorInfo {
 
   // A lengthy explanation of what the error is.  Each entry in the returned
   // vector is a paragraph.
-  const std::vector<string16>& extra_information() const {
+  const std::vector<base::string16>& extra_information() const {
     return extra_information_;
   }
 
@@ -75,14 +75,14 @@ class SSLErrorInfo {
   SSLErrorInfo(const base::string16& title,
                const base::string16& details,
                const base::string16& short_description,
-               const std::vector<string16>& extra_info);
+               const std::vector<base::string16>& extra_info);
 
   base::string16 title_;
   base::string16 details_;
   base::string16 short_description_;
   // Extra-informations contains paragraphs of text explaining in details what
   // the error is and what the risks are.
-  std::vector<string16> extra_information_;
+  std::vector<base::string16> extra_information_;
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
