@@ -99,6 +99,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
+#include "chrome/browser/ui/webui/chromeos/charger_replacement_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
@@ -387,6 +388,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIBluetoothPairingHost)
     return &NewWebUI<chromeos::BluetoothPairingUI>;
+  if (url.host() == chrome::kChromeUIChargerReplacementHost)
+    return &NewWebUI<chromeos::ChargerReplacementUI>;
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
   if (url.host() == chrome::kChromeUICryptohomeHost)

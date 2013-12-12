@@ -191,6 +191,7 @@ extern const char kAudioDevicesMute[];
 extern const char kAudioDevicesVolumePercent[];
 extern const char kAudioMute[];
 extern const char kAudioVolumePercent[];
+extern const char kSpringChargerCheck[];
 extern const char kTapToClickEnabled[];
 extern const char kTapDraggingEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];

@@ -5,13 +5,16 @@
 #include "ash/system/chromeos/power/tray_power.h"
 
 #include "ash/ash_switches.h"
+#include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status_view.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/system_notifier.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/icu/source/i18n/unicode/fieldpos.h"
@@ -108,7 +111,8 @@ TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
       power_tray_(NULL),
       notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE),
-      usb_charger_was_connected_(false) {
+      usb_charger_was_connected_(false),
+      line_power_was_connected_(false) {
   PowerStatus::Get()->AddObserver(this);
 }
 
@@ -162,6 +166,13 @@ void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayPower::OnPowerStatusChanged() {
+  RecordChargerType();
+
+  if (PowerStatus::Get()->IsOriginalSpringChargerConnected()) {
+    ash::Shell::GetInstance()->system_tray_delegate()->
+        ShowSpringChargerReplacementDialog();
+  }
+
   bool battery_alert = UpdateNotificationState();
   if (power_tray_)
     power_tray_->UpdateStatus(battery_alert);
@@ -182,6 +193,7 @@ void TrayPower::OnPowerStatusChanged() {
     HideNotificationView();
 
   usb_charger_was_connected_ = PowerStatus::Get()->IsUsbChargerConnected();
+  line_power_was_connected_ = PowerStatus::Get()->IsLinePowerConnected();
 }
 
 bool TrayPower::MaybeShowUsbChargerNotification() {
@@ -299,6 +311,30 @@ bool TrayPower::UpdateNotificationStateForRemainingPercentage() {
   }
   NOTREACHED();
   return false;
+}
+
+void TrayPower::RecordChargerType() {
+  if (!PowerStatus::Get()->IsLinePowerConnected() ||
+      line_power_was_connected_)
+    return;
+
+  ChargerType current_charger = UNKNOWN_CHARGER;
+  if (PowerStatus::Get()->IsMainsChargerConnected()) {
+    current_charger = MAINS_CHARGER;
+  } else if (PowerStatus::Get()->IsUsbChargerConnected()) {
+    current_charger = USB_CHARGER;
+  } else if (PowerStatus::Get()->IsOriginalSpringChargerConnected()) {
+    current_charger =
+        ash::Shell::GetInstance()->system_tray_delegate()->
+            HasUserConfirmedSafeSpringCharger() ?
+        SAFE_SPRING_CHARGER : UNCONFIRMED_SPRING_CHARGER;
+  }
+
+  if (current_charger != UNKNOWN_CHARGER) {
+    UMA_HISTOGRAM_ENUMERATION("Power.ChargerType",
+                              current_charger,
+                              CHARGER_TYPE_COUNT);
+  }
 }
 
 }  // namespace internal

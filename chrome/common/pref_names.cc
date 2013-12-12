@@ -567,6 +567,18 @@ const char kAudioMute[] = "settings.audio.mute";
 // |kAudioDevicesVolumePercent| setting.
 const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 
+// An integer pref to record user's spring charger check result.
+// 0 - unknown charger, not checked yet.
+// 1 - confirmed safe charger.
+// 2 - confirmed original charger and declined to order new charger.
+// 3 - confirmed original charger and ordered new charger online.
+// 4 - confirmed original charger and ordered new charger by phone.
+// 5 - confirmed original charger, ordered a new one online, but continue to use
+//     the old one.
+// 6 - confirmed original charger, ordered a new one by phone, but continue to
+//     use the old one.
+const char kSpringChargerCheck[] = "settings.spring_charger.check_result";
+
 // A boolean pref set to true if touchpad tap-to-click is enabled.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 

@@ -188,6 +188,16 @@ bool PowerStatus::IsUsbChargerConnected() const {
       power_manager::PowerSupplyProperties_ExternalPower_USB;
 }
 
+bool PowerStatus::IsOriginalSpringChargerConnected() const {
+  // Use the hard coded enum integer value for
+  // PowerSupplyProperties_ExternalPower_ORIGINAL_SPRING_CHARGER
+  // in purpose of backport compatibility.
+  // TODO(jennyz): change this to use
+  // PowerSupplyProperties_ExternalPower_ORIGINAL_SPRING_CHARGER on trunk
+  // after the change has been merged.
+  return proto_.external_power() == 3;
+}
+
 gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
   gfx::Image all;
   if (IsUsbChargerConnected()) {

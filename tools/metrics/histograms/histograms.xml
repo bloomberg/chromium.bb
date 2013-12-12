@@ -13933,6 +13933,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Power.ChargerType" enum="PowerChargerType">
+  <summary>
+    External power supply type such as MAINS_CHARGER, USB_CHARGER,
+    UNCONFIRMED_SPRING_CHARGER, SAFE_SPRING_CHARGER. A sample is reported each
+    time a charger is connected to the device.
+  </summary>
+</histogram>
+
 <histogram name="Power.FirmwareResumeTimeOnAC" units="milliseconds">
   <summary>
     The time that the firmware took to resume the Chrome OS device from
@@ -28251,6 +28259,14 @@ other types of suffix sets.
   <int value="0" label="Brightness Down"/>
   <int value="1" label="Brightness Up"/>
   <int value="2" label="Brightness Absolute"/>
+</enum>
+
+<enum name="PowerChargerType" type="int">
+  <int value="0" label="Unknown charger"/>
+  <int value="1" label="MAINS charger"/>
+  <int value="2" label="USB Charger"/>
+  <int value="3" label="Unconfirmed Spring Charger"/>
+  <int value="4" label="Safe Spring Charger"/>
 </enum>
 
 <enum name="PreconnectedNavigation" type="int">
