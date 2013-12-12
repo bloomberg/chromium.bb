@@ -61,7 +61,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/storage/Storage.h"
 #include "platform/PlatformScreen.h"

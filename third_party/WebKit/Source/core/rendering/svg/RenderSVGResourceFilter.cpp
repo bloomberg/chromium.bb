@@ -25,7 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"

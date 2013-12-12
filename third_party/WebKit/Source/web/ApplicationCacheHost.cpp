@@ -46,7 +46,7 @@
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"

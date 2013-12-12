@@ -38,7 +38,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/PrerenderHandle.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/network/DNS.h"
 
 namespace WebCore {

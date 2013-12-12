@@ -40,7 +40,7 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/FrameView.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/Pagination.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/GridPosition.h"

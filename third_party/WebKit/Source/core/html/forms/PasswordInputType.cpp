@@ -41,7 +41,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 

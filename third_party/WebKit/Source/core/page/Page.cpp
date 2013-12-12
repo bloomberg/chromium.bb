@@ -49,7 +49,7 @@
 #include "core/page/PageGroup.h"
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderView.h"

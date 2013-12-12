@@ -31,7 +31,7 @@
 
 #include "CSSValueKeywords.h"
 #include "core/dom/Document.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 
 namespace WebCore {
 

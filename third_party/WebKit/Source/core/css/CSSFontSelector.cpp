@@ -39,7 +39,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "wtf/text/AtomicString.h"

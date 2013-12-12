@@ -31,7 +31,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/ColorChooser.h"
 #include "platform/Supplementable.h"
 #include "platform/text/LocaleToScriptMapping.h"

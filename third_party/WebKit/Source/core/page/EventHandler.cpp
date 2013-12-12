@@ -72,7 +72,7 @@
 #include "core/inspector/InspectorController.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
 #include "core/platform/chromium/ChromiumDataObject.h"

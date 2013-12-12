@@ -43,7 +43,7 @@
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderView.h"

@@ -1319,7 +1319,7 @@
             'page/RuntimeCSSEnabled.h',
             'frame/Screen.cpp',
             'frame/Screen.h',
-            'page/Settings.cpp',
+            'frame/Settings.cpp',
             'page/SpatialNavigation.cpp',
             'frame/SuspendableTimer.cpp',
             'frame/SuspendableTimer.h',

@@ -157,7 +157,7 @@
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestResult.h"

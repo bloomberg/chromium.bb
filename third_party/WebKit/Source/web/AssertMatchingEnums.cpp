@@ -69,7 +69,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/InjectedStyleSheet.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/rendering/CompositingReasons.h"

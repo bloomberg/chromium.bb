@@ -45,7 +45,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/URLPatternMatcher.h"
 

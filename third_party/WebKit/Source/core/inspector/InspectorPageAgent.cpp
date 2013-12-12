@@ -66,7 +66,7 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/geolocation/GeolocationController.h"

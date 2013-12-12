@@ -39,7 +39,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"

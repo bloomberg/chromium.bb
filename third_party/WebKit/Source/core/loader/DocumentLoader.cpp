@@ -50,7 +50,7 @@
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mhtml/ArchiveResourceCollection.h"

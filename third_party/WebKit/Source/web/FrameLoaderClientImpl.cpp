@@ -70,7 +70,7 @@
 #include "core/page/EventHandler.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/rendering/HitTestResult.h"

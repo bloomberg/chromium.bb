@@ -79,7 +79,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/PageConsole.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/FloatConversion.h"

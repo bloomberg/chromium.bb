@@ -28,7 +28,7 @@
 
 #include "HTMLNames.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/ImageQualityController.h"

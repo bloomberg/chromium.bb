@@ -51,7 +51,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderWordBreak.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"

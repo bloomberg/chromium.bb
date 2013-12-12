@@ -39,7 +39,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/JSONValues.h"
 #include "platform/network/FormData.h"
 #include "platform/text/DecodeEscapeSequences.h"

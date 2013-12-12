@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/frame/SettingsDelegate.h"
 
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 
 namespace WebCore {
 

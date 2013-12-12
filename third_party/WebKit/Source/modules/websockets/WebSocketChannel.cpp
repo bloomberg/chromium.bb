@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"

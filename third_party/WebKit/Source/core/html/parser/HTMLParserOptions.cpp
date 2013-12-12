@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 
 namespace WebCore {
 

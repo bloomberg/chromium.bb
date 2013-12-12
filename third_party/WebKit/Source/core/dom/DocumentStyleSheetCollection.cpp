@@ -39,7 +39,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/svg/SVGStyleElement.h"
 
 namespace WebCore {

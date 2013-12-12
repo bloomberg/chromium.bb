@@ -42,7 +42,7 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"

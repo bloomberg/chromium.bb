@@ -26,7 +26,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"

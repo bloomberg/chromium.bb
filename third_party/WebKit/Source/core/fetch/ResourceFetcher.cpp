@@ -57,7 +57,7 @@
 #include "core/frame/Frame.h"
 #include "core/timing/Performance.h"
 #include "core/timing/ResourceTimingInfo.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"

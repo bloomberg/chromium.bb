@@ -31,7 +31,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderApplet.h"
 #include "platform/Widget.h"
 #include "platform/weborigin/KURL.h"

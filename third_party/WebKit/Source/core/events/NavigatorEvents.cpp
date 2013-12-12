@@ -34,7 +34,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 
 namespace WebCore {
 

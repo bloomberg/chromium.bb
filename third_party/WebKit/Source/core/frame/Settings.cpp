@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 
 #include <limits>
 #include "core/dom/Document.h"

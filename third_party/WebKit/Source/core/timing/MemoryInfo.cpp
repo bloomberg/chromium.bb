@@ -33,7 +33,7 @@
 
 #include <limits>
 #include "core/frame/Frame.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"

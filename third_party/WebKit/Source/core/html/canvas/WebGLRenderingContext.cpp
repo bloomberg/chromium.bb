@@ -69,7 +69,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/NotImplemented.h"
 #include "platform/geometry/IntSize.h"

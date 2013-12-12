@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebSettingsImpl.h"
 
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include "public/platform/WebString.h"

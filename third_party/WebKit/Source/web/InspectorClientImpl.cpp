@@ -37,7 +37,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURL.h"

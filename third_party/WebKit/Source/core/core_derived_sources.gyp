@@ -50,7 +50,7 @@
             '../build/scripts/templates/InternalSettingsGenerated.cpp.tmpl',
             '../build/scripts/templates/InternalSettingsGenerated.h.tmpl',
             '../build/scripts/templates/SettingsMacros.h.tmpl',
-            'page/Settings.in',
+            'frame/Settings.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/SettingsMacros.h',
@@ -61,7 +61,7 @@
           'action': [
             'python',
             '../build/scripts/make_settings.py',
-            'page/Settings.in',
+            'frame/Settings.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],

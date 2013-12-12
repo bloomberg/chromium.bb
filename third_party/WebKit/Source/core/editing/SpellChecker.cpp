@@ -41,7 +41,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/SpellCheckerClient.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/text/TextCheckerClient.h"

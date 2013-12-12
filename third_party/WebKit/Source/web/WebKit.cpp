@@ -40,7 +40,7 @@
 #include "core/Init.h"
 #include "core/dom/Microtask.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"

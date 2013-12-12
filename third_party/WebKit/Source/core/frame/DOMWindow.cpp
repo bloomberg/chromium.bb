@@ -85,7 +85,7 @@
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"

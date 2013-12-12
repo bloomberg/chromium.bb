@@ -41,7 +41,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 #include "platform/Logging.h"

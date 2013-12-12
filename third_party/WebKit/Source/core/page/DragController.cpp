@@ -60,7 +60,7 @@
 #include "core/page/DragState.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
+#include "core/frame/Settings.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/HitTestRequest.h"
