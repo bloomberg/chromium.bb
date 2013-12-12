@@ -8,7 +8,8 @@ namespace ppapi {
 
 // We must provide explicit definitions of these functions for builds on
 // Windows.
-PpapiNaClChannelArgs::PpapiNaClChannelArgs() {
+PpapiNaClChannelArgs::PpapiNaClChannelArgs() : off_the_record(false),
+                                               supports_dev_channel(false) {
 }
 
 PpapiNaClChannelArgs::~PpapiNaClChannelArgs() {

@@ -19,6 +19,7 @@ struct PPAPI_SHARED_EXPORT PpapiNaClChannelArgs {
 
   bool off_the_record;
   PpapiPermissions permissions;
+  bool supports_dev_channel;
 
   // Switches from the command-line.
   std::vector<std::string> switch_names;

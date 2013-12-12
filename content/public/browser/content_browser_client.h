@@ -618,6 +618,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(
       content::BrowserContext* browser_context,
       const GURL& url);
+
+  // Returns true if dev channel APIs are available for plugins.
+  virtual bool IsPluginAllowedToUseDevChannelAPIs();
 };
 
 }  // namespace content

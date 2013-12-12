@@ -159,6 +159,9 @@ class PluginService {
                                        base::string16* plugin_name,
                                        base::string16* plugin_version) = 0;
 #endif
+
+  // Returns true iff PPAPI "dev channel" methods are supported.
+  virtual bool PpapiDevChannelSupported() = 0;
 };
 
 }  // namespace content

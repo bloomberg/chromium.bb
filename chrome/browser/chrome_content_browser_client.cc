@@ -140,6 +140,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_util.h"
@@ -2651,5 +2652,21 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
   return false;
 #endif
 }
+
+bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
+#if defined(ENABLE_PLUGINS)
+  // Allow access for tests.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting)) {
+    return true;
+  }
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel <= chrome::VersionInfo::CHANNEL_DEV;
+#else
+  return false;
+#endif
+}
+
 
 }  // namespace chrome

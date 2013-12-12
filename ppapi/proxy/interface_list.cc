@@ -165,6 +165,7 @@ InterfaceProxy* ProxyFactory(Dispatcher* dispatcher) {
 }
 
 base::LazyInstance<PpapiPermissions> g_process_global_permissions;
+base::LazyInstance<bool> g_supports_dev_channel;
 
 }  // namespace
 
@@ -189,7 +190,6 @@ InterfaceList::InterfaceList() {
     #include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
     #include "ppapi/thunk/interfaces_ppb_public_stable.h"
   }
-
   {
     Permission current_required_permission = PERMISSION_DEV;
     #include "ppapi/thunk/interfaces_ppb_public_dev.h"
@@ -204,6 +204,8 @@ InterfaceList::InterfaceList() {
     #include "ppapi/thunk/interfaces_ppb_private_flash.h"
 #endif  // !defined(OS_NACL)
   }
+
+  // TODO(teravest): Add dev channel interfaces here.
 
   #undef PROXIED_API
   #undef PROXIED_IFACE
@@ -310,6 +312,12 @@ void InterfaceList::SetProcessGlobalPermissions(
   g_process_global_permissions.Get() = permissions;
 }
 
+// static
+void InterfaceList::SetSupportsDevChannel(
+    bool supports_dev_channel) {
+  g_supports_dev_channel.Get() = supports_dev_channel;
+}
+
 ApiID InterfaceList::GetIDForPPBInterface(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_browser_info_.find(name);
@@ -339,6 +347,8 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
     return NULL;
+
+  // Dev channel checking goes here.
 
   if (g_process_global_permissions.Get().HasPermission(
           found->second.required_permission))

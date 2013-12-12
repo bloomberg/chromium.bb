@@ -214,6 +214,8 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
   // plugin.
   ppapi::proxy::InterfaceList::SetProcessGlobalPermissions(
       args.permissions);
+  ppapi::proxy::InterfaceList::SetSupportsDevChannel(
+      args.supports_dev_channel);
 
   int32_t error = ::PPP_InitializeModule(
       0 /* module */,

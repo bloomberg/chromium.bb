@@ -40,6 +40,7 @@ include_rules = [
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",
+  "+ppapi/shared_impl",
   # Defines some types that are marshalled over IPC.
   "+ppapi/shared_impl/ppp_flash_browser_operations_shared.h",
   "+rlz",

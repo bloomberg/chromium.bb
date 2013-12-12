@@ -36,6 +36,7 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -802,6 +803,8 @@ void NaClProcessHost::OnPpapiChannelCreated(
     ppapi::PpapiNaClChannelArgs args;
     args.off_the_record = nacl_host_message_filter_->off_the_record();
     args.permissions = permissions_;
+    args.supports_dev_channel =
+        content::PluginService::GetInstance()->PpapiDevChannelSupported();
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     DCHECK(cmdline);
     std::string flag_whitelist[] = {switches::kV, switches::kVModule};

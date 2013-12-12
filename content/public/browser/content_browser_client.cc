@@ -311,4 +311,8 @@ bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
   return false;
 }
 
+bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
+  return false;
+}
+
 }  // namespace content

@@ -841,4 +841,9 @@ bool PluginServiceImpl::IsPluginWindow(HWND window) {
 }
 #endif
 
+bool PluginServiceImpl::PpapiDevChannelSupported() {
+  return content::GetContentClient()->browser()->
+      IsPluginAllowedToUseDevChannelAPIs();
+}
+
 }  // namespace content

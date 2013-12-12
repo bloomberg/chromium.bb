@@ -206,7 +206,8 @@ void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
 }
 
 void PpapiThread::OnLoadPlugin(const base::FilePath& path,
-                               const ppapi::PpapiPermissions& permissions) {
+                               const ppapi::PpapiPermissions& permissions,
+                               bool supports_dev_channel) {
   // In case of crashes, the crash dump doesn't indicate which plugin
   // it came from.
   base::debug::SetCrashKeyValue("ppapi_path", path.MaybeAsASCII());
@@ -216,6 +217,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // This must be set before calling into the plugin so it can get the
   // interfaces it has permission for.
   ppapi::proxy::InterfaceList::SetProcessGlobalPermissions(permissions);
+  ppapi::proxy::InterfaceList::SetSupportsDevChannel(supports_dev_channel);
   permissions_ = permissions;
 
   // Trusted Pepper plugins may be "internal", i.e. built-in to the browser

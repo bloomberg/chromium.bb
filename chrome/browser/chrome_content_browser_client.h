@@ -272,6 +272,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& url) OVERRIDE;
 
+  virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
+
  private:
 #if defined(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.

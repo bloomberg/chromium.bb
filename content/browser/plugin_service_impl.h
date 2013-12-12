@@ -121,6 +121,7 @@ class CONTENT_EXPORT PluginServiceImpl
   // Returns true iff the given HWND is a plugin.
   bool IsPluginWindow(HWND window);
 #endif
+  virtual bool PpapiDevChannelSupported() OVERRIDE;
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the

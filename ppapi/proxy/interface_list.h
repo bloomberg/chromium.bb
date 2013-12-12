@@ -35,6 +35,8 @@ class InterfaceList {
   // using to keep honest plugins honest.
   static PPAPI_PROXY_EXPORT void SetProcessGlobalPermissions(
       const PpapiPermissions& permissions);
+  static PPAPI_PROXY_EXPORT void SetSupportsDevChannel(
+      bool supports_dev_channel);
 
   // Looks up the ID for the given interface name. Returns API_ID_NONE if
   // the interface string is not found.
