@@ -635,6 +635,11 @@
                 '../skia/skia.gyp:filter_fuzz_stub',
               ],
             }],
+            ['OS=="linux" and enable_ipc_fuzzer==1', {
+              'dependencies': [
+                '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
+              ],
+            }],
             ['internal_filter_fuzzer==1', {
               'dependencies': [
                 '../skia/tools/clusterfuzz-data/fuzzers/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
