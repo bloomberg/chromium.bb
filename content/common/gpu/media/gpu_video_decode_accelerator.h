@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -38,7 +39,6 @@ class GpuVideoDecodeAccelerator
       int32 host_route_id,
       GpuCommandBufferStub* stub,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
-  virtual ~GpuVideoDecodeAccelerator();
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -70,6 +70,9 @@ class GpuVideoDecodeAccelerator
 
  private:
   class MessageFilter;
+
+  // We only allow self-delete, from OnWillDestroyStub(), after cleanup there.
+  virtual ~GpuVideoDecodeAccelerator();
 
   // Handlers for IPC messages.
   void OnDecode(base::SharedMemoryHandle handle, int32 id, uint32 size);
@@ -112,6 +115,10 @@ class GpuVideoDecodeAccelerator
 
   // The message filter to run VDA::Decode on IO thread if VDA supports it.
   scoped_refptr<MessageFilter> filter_;
+
+  // Used to wait on for |filter_| to be removed, before we can safely
+  // destroy the VDA.
+  base::WaitableEvent filter_removed_;
 
   // GPU child message loop.
   scoped_refptr<base::MessageLoopProxy> child_message_loop_;

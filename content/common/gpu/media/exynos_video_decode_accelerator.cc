@@ -1483,7 +1483,8 @@ bool ExynosVideoDecodeAccelerator::StartDevicePoll() {
 
 bool ExynosVideoDecodeAccelerator::StopDevicePoll(bool keep_mfc_input_state) {
   DVLOG(3) << "StopDevicePoll()";
-  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
+  if (decoder_thread_.IsRunning())
+    DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!SetDevicePollInterrupt())
@@ -1897,6 +1898,8 @@ void ExynosVideoDecodeAccelerator::DestroyMfcOutputBuffers() {
   DCHECK(!mfc_output_streamon_);
 
   if (mfc_output_buffer_map_.size() != 0) {
+    // TODO(sheu, posciak): Making the context current should not be required
+    // anymore. Remove it and verify (crbug.com/327869).
     if (!make_context_current_.Run()) {
       DLOG(ERROR) << "DestroyMfcOutputBuffers(): "
                   << "could not make context current";
