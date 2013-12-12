@@ -32,7 +32,7 @@ namespace blink {
 
 class WebScrollbar;
 
-class WebScrollbarThemeGeometry {
+class BLINK_PLATFORM_EXPORT WebScrollbarThemeGeometry {
 public:
     virtual ~WebScrollbarThemeGeometry() { }
 

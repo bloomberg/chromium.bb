@@ -26,6 +26,7 @@
 #ifndef WebScrollbarThemeGeometryNative_h
 #define WebScrollbarThemeGeometryNative_h
 
+#include "platform/PlatformExport.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "wtf/PassOwnPtr.h"
@@ -38,7 +39,7 @@ namespace blink {
 
 class WebScrollbar;
 
-class WebScrollbarThemeGeometryNative : public WebScrollbarThemeGeometry {
+class PLATFORM_EXPORT WebScrollbarThemeGeometryNative : public WebScrollbarThemeGeometry {
 public:
     static PassOwnPtr<WebScrollbarThemeGeometryNative> create(WebCore::ScrollbarTheme*);
 

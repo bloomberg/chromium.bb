@@ -269,6 +269,8 @@
       'exported/WebScrollbarImpl.h',
       'exported/WebScrollbarThemeClientImpl.cpp',
       'exported/WebScrollbarThemeClientImpl.h',
+      'exported/WebScrollbarThemeGeometryNative.cpp',
+      'exported/WebScrollbarThemeGeometryNative.h',
       'exported/WebSocketHandshakeRequestInfo.cpp',
       'exported/WebSocketHandshakeResponseInfo.cpp',
       'exported/WebSocketStreamError.cpp',
