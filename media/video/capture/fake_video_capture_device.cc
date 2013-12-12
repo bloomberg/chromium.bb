@@ -204,8 +204,6 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
                                    frame_size,
                                    base::Time::Now(),
                                    0,
-                                   false,
-                                   false,
                                    capture_format_);
   if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&
       format_roster_.size() > 0U) {

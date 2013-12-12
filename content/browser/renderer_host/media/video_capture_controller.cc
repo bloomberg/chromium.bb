@@ -114,8 +114,6 @@ class VideoCaptureController::VideoCaptureDeviceClient
                                        int length,
                                        base::Time timestamp,
                                        int rotation,
-                                       bool flip_vert,
-                                       bool flip_horiz,
                                        const VideoCaptureFormat& frame_format)
       OVERRIDE;
   virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
@@ -265,8 +263,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     int length,
     base::Time timestamp,
     int rotation,
-    bool flip_vert,
-    bool flip_horiz,
     const VideoCaptureFormat& frame_format) {
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
 
@@ -313,24 +309,12 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   int destination_height = new_height;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
 
-  // When rotating by 90 and 270 degrees swap |flip_horiz| and |flip_vert|
-  // because ConvertToI420() flips image before rotation, while
-  // OnIncomingCapturedFrame() interface assumes that rotation happens before
-  // flips.
-  if (rotation == 90 || rotation == 270)
-    std::swap(flip_horiz, flip_vert);
-
-  // Assuming rotation happens first and flips next, we can consolidate both
-  // vertical and horizontal flips together with rotation into two variables:
-  // new_rotation = (rotation + 180 * horizontal_flip) modulo 360
-  // new_vertical_flip = horizontal_flip XOR vertical_flip
-  int new_rotation_angle = (rotation + 180 * flip_horiz) % 360;
   libyuv::RotationMode rotation_mode = libyuv::kRotate0;
-  if (new_rotation_angle == 90)
+  if (rotation == 90)
     rotation_mode = libyuv::kRotate90;
-  else if (new_rotation_angle == 180)
+  else if (rotation == 180)
     rotation_mode = libyuv::kRotate180;
-  else if (new_rotation_angle == 270)
+  else if (rotation == 270)
     rotation_mode = libyuv::kRotate270;
 
   switch (frame_format.pixel_format) {
@@ -374,8 +358,8 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   // kRGB24 on Windows start at the bottom line and has a negative stride. This
   // is not supported by libyuv, so the media API is used instead.
   if (frame_format.pixel_format == media::PIXEL_FORMAT_RGB24) {
-    // Rotation and flipping is not supported in kRGB24 and OS_WIN case.
-    DCHECK(!rotation && !flip_vert && !flip_horiz);
+    // Rotation is not supported in kRGB24 and OS_WIN case.
+    DCHECK(!rotation);
     need_convert_rgb24_on_win = true;
   }
 #endif
@@ -393,7 +377,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
                              yplane_stride,
                              uv_plane_stride);
   } else {
-    if (new_rotation_angle==90 || new_rotation_angle==270){
+    if (rotation==90 || rotation==270){
       // To be compatible with non-libyuv code in RotatePlaneByPixels, when
       // rotating by 90/270, only the maximum square portion located in the
       // center of the image is rotated. F.i. 640x480 pixels, only the central
@@ -423,7 +407,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
                           crop_x,
                           crop_y,
                           new_width + chopped_width,
-                          new_height * (flip_vert ^ flip_horiz ? -1 : 1),
+                          new_height,
                           destination_width,
                           destination_height,
                           rotation_mode,

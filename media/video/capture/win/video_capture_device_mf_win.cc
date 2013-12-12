@@ -206,7 +206,7 @@ class MFReaderCallback
       DWORD stream_flags, LONGLONG time_stamp, IMFSample* sample) {
     base::Time stamp(base::Time::Now());
     if (!sample) {
-      observer_->OnIncomingCapturedFrame(NULL, 0, stamp, 0, false, false);
+      observer_->OnIncomingCapturedFrame(NULL, 0, stamp, 0);
       return S_OK;
     }
 
@@ -220,8 +220,7 @@ class MFReaderCallback
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
         buffer->Lock(&data, &max_length, &length);
-        observer_->OnIncomingCapturedFrame(data, length, stamp,
-                                           0, false, false);
+        observer_->OnIncomingCapturedFrame(data, length, stamp, 0);
         buffer->Unlock();
       }
     }
@@ -409,17 +408,13 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
     const base::Time& time_stamp,
-    int rotation,
-    bool flip_vert,
-    bool flip_horiz) {
+    int rotation) {
   base::AutoLock lock(lock_);
   if (data && client_.get())
     client_->OnIncomingCapturedFrame(data,
                                      length,
                                      time_stamp,
                                      rotation,
-                                     flip_vert,
-                                     flip_horiz,
                                      capture_format_);
 
   if (capture_) {

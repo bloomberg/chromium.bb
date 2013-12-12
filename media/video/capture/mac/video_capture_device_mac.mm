@@ -301,8 +301,6 @@ void VideoCaptureDeviceMac::ReceiveFrame(
                                    video_frame_length,
                                    base::Time::Now(),
                                    0,
-                                   false,
-                                   false,
                                    capture_format_);
 }
 

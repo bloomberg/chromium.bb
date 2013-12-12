@@ -288,8 +288,6 @@ void FileVideoCaptureDevice::OnCaptureTask() {
                                    frame_size_,
                                    base::Time::Now(),
                                    0,
-                                   false,
-                                   false,
                                    capture_format_);
   // Reschedule next CaptureTask.
   base::MessageLoop::current()->PostDelayedTask(

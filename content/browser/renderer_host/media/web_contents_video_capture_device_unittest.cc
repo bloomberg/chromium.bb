@@ -340,8 +340,6 @@ class StubClient : public media::VideoCaptureDevice::Client {
       int length,
       base::Time timestamp,
       int rotation,
-      bool flip_vert,
-      bool flip_horiz,
       const media::VideoCaptureFormat& frame_format) OVERRIDE {
     FAIL();
   }

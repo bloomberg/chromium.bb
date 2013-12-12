@@ -519,8 +519,6 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
           buffer.bytesused,
           base::Time::Now(),
           0,
-          false,
-          false,
           capture_format_);
 
       // Enqueue the buffer again.

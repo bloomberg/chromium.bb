@@ -344,19 +344,12 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
                           mDeviceOrientation + ", camera orientation=" +
                           mCameraOrientation);
                 }
-                boolean flipVertical = false;
-                boolean flipHorizontal = false;
-                if (mCameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    rotation = (mCameraOrientation + rotation) % 360;
-                    rotation = (360 - rotation) % 360;
-                    flipHorizontal = (rotation == 270 || rotation == 90);
-                    flipVertical = flipHorizontal;
-                } else {
-                    rotation = (mCameraOrientation - rotation + 360) % 360;
+                if (mCameraFacing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                    rotation = 360 - rotation;
                 }
+                rotation = (mCameraOrientation + rotation) % 360;
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
-                        data, mExpectedFrameSize,
-                        rotation, flipVertical, flipHorizontal);
+                        data, mExpectedFrameSize, rotation);
             }
         } finally {
             mPreviewBufferLock.unlock();
@@ -413,9 +406,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             long nativeVideoCaptureDeviceAndroid,
             byte[] data,
             int length,
-            int rotation,
-            boolean flipVertical,
-            boolean flipHorizontal);
+            int rotation);
 
     private int getDeviceOrientation() {
         int orientation = 0;

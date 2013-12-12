@@ -57,9 +57,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
       const uint8* data,
       int length,
       const base::Time& time_stamp,
-      int rotation,
-      bool flip_vert,
-      bool flip_horiz);
+      int rotation);
 
  private:
   void OnError(HRESULT hr);

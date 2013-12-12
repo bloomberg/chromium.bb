@@ -478,7 +478,7 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
                                           int length) {
   client_->OnIncomingCapturedFrame(
-      buffer, length, base::Time::Now(), 0, false, false, capture_format_);
+      buffer, length, base::Time::Now(), 0, capture_format_);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {

@@ -39,9 +39,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
       jobject obj,
       jbyteArray data,
       jint length,
-      jint rotation,
-      jboolean flip_vert,
-      jboolean flip_horiz);
+      jint rotation);
 
  private:
   enum InternalState {

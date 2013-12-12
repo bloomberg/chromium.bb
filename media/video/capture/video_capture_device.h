@@ -171,8 +171,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
         int length,
         base::Time timestamp,
         int rotation,  // Clockwise.
-        bool flip_vert,
-        bool flip_horiz,
         const VideoCaptureFormat& frame_format) = 0;
 
     // Captured a new video frame, held in |buffer|.

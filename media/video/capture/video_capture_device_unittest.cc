@@ -79,8 +79,6 @@ class MockClient : public media::VideoCaptureDevice::Client {
                                        int length,
                                        base::Time timestamp,
                                        int rotation,
-                                       bool flip_vert,
-                                       bool flip_horiz,
                                        const VideoCaptureFormat& format)
       OVERRIDE {
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
