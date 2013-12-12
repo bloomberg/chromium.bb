@@ -955,12 +955,14 @@ int Compare(const StringPiece& a,
       // specialized CompareSuffix<> because metadata is relatively uncommon
       // in the database.
 
-      if (type_byte_a == kDatabaseFreeListTypeByte)
-        return Compare<DatabaseFreeListKey>(
-            a, b, only_compare_index_keys, ok);
-      if (type_byte_a == kDatabaseNameTypeByte)
+      if (type_byte_a == kDatabaseFreeListTypeByte) {
+        // TODO(jsbell): No need to pass only_compare_index_keys through here.
+        return Compare<DatabaseFreeListKey>(a, b, only_compare_index_keys, ok);
+      }
+      if (type_byte_a == kDatabaseNameTypeByte) {
         return Compare<DatabaseNameKey>(
             a, b, /*only_compare_index_keys*/ false, ok);
+      }
       break;
     }
 
@@ -989,24 +991,32 @@ int Compare(const StringPiece& a,
       // specialized CompareSuffix<> because metadata is relatively uncommon
       // in the database.
 
-      if (type_byte_a == kObjectStoreMetaDataTypeByte)
+      if (type_byte_a == kObjectStoreMetaDataTypeByte) {
+        // TODO(jsbell): No need to pass only_compare_index_keys through here.
         return Compare<ObjectStoreMetaDataKey>(
             a, b, only_compare_index_keys, ok);
-      if (type_byte_a == kIndexMetaDataTypeByte)
+      }
+      if (type_byte_a == kIndexMetaDataTypeByte) {
         return Compare<IndexMetaDataKey>(
             a, b, /*only_compare_index_keys*/ false, ok);
-      if (type_byte_a == kObjectStoreFreeListTypeByte)
+      }
+      if (type_byte_a == kObjectStoreFreeListTypeByte) {
         return Compare<ObjectStoreFreeListKey>(
             a, b, only_compare_index_keys, ok);
-      if (type_byte_a == kIndexFreeListTypeByte)
+      }
+      if (type_byte_a == kIndexFreeListTypeByte) {
         return Compare<IndexFreeListKey>(
             a, b, /*only_compare_index_keys*/ false, ok);
-      if (type_byte_a == kObjectStoreNamesTypeByte)
+      }
+      if (type_byte_a == kObjectStoreNamesTypeByte) {
+        // TODO(jsbell): No need to pass only_compare_index_keys through here.
         return Compare<ObjectStoreNamesKey>(
             a, b, only_compare_index_keys, ok);
-      if (type_byte_a == kIndexNamesKeyTypeByte)
+      }
+      if (type_byte_a == kIndexNamesKeyTypeByte) {
         return Compare<IndexNamesKey>(
             a, b, /*only_compare_index_keys*/ false, ok);
+      }
       break;
     }
 

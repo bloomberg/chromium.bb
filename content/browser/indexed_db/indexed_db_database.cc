@@ -1461,13 +1461,14 @@ void IndexedDBDatabase::OpenConnection(
                 metadata_.int_version);
     } else {
       base::string16 message;
-      if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
+      if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
         message = ASCIIToUTF16(
             "Internal error opening database with no version specified.");
-      else
+      } else {
         message =
             ASCIIToUTF16("Internal error opening database with version ") +
             Int64ToString16(version);
+      }
       callbacks->OnError(IndexedDBDatabaseError(
           blink::WebIDBDatabaseExceptionUnknownError, message));
       return;

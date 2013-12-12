@@ -48,11 +48,12 @@ bool IndexWriter::VerifyIndexKeys(
     if (!ok)
       return false;
     if (!*can_add_keys) {
-      if (error_message)
+      if (error_message) {
         *error_message = ASCIIToUTF16("Unable to add key to index '") +
                          index_metadata_.name +
                          ASCIIToUTF16("': at least one key does not satisfy "
                                       "the uniqueness requirements.");
+      }
       return true;
     }
   }
