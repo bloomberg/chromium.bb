@@ -34,6 +34,7 @@ float* ScoredHistoryMatch::raw_term_score_to_topicality_score_ = NULL;
 float* ScoredHistoryMatch::days_ago_to_recency_score_ = NULL;
 bool ScoredHistoryMatch::initialized_ = false;
 int ScoredHistoryMatch::bookmark_value_ = 1;
+bool ScoredHistoryMatch::discount_frecency_when_few_visits_ = false;
 bool ScoredHistoryMatch::allow_tld_matches_ = false;
 bool ScoredHistoryMatch::allow_scheme_matches_ = false;
 bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
@@ -509,7 +510,9 @@ float ScoredHistoryMatch::GetFrecency(const base::Time& now,
         GetRecencyScore((now - visits[i].first).InDays());
     summed_visit_points += (value_of_transition * bucket_weight);
   }
-  return visits.size() * summed_visit_points / total_sampled_visits;
+  return visits.size() * summed_visit_points /
+      (discount_frecency_when_few_visits_ ? kMaxVisitsToScore :
+       total_sampled_visits);
 }
 
 // static
@@ -571,6 +574,8 @@ void ScoredHistoryMatch::Init() {
         HistoryURLProvider::kScoreForBestInlineableResult - 1;
   }
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
+  discount_frecency_when_few_visits_ =
+      OmniboxFieldTrial::HQPDiscountFrecencyWhenFewVisits();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
   allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
   initialized_ = true;
