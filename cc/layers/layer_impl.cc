@@ -84,6 +84,8 @@ LayerImpl::~LayerImpl() {
   layer_animation_controller_->RemoveValueObserver(this);
   layer_animation_controller_->remove_value_provider(this);
 
+  if (!copy_requests_.empty() && layer_tree_impl_->IsActiveTree())
+    layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
   layer_tree_impl_->UnregisterLayer(this);
 
   if (scroll_children_) {
