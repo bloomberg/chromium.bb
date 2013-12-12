@@ -255,7 +255,7 @@ static inline ScrollGranularity wheelGranularityToScrollGranularity(unsigned del
     }
 }
 
-static inline bool scrollNodeLogically(float delta, ScrollGranularity granularity, ScrollLogicalDirection direction, Node* node, Node** stopNode)
+static inline bool scrollNode(float delta, ScrollGranularity granularity, ScrollDirection direction, Node* node, Node** stopNode, IntPoint absolutePoint = IntPoint())
 {
     if (!delta)
         return false;
@@ -265,36 +265,10 @@ static inline bool scrollNodeLogically(float delta, ScrollGranularity granularit
     RenderBox* curBox = node->renderer()->enclosingBox();
 
     while (curBox && !curBox->isRenderView()) {
-        ScrollDirection physicalDirection =
-            logicalToPhysical(direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
+        ScrollDirection physicalDirection = toPhysicalDirection(
+            direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
 
         if (curBox->scroll(physicalDirection, granularity, delta)) {
-            if (stopNode)
-                *stopNode = curBox->node();
-            return true;
-        }
-
-        if (stopNode && *stopNode && curBox->node() == *stopNode)
-            return true;
-
-        curBox = curBox->containingBlock();
-    }
-
-    return false;
-}
-
-static inline bool scrollNode(float delta, ScrollGranularity granularity, ScrollDirection positiveDirection, ScrollDirection negativeDirection, Node* node, Node** stopNode, IntPoint absolutePoint = IntPoint())
-{
-    if (!delta)
-        return false;
-    if (!node->renderer())
-        return false;
-
-    float absDelta = delta > 0 ? delta : -delta;
-    RenderBox* curBox = node->renderer()->enclosingBox();
-
-    while (curBox && !curBox->isRenderView()) {
-        if (curBox->scroll(delta < 0 ? negativeDirection : positiveDirection, granularity, absDelta)) {
             if (stopNode)
                 *stopNode = curBox->node();
             return true;
@@ -1002,41 +976,9 @@ bool EventHandler::scrollOverflow(ScrollDirection direction, ScrollGranularity g
     if (!node)
         node = m_mousePressNode.get();
 
-    // FIXME: Remove once scrollNode is refactored
-    ScrollDirection negative = ScrollUp;
-    if (direction == ScrollLeft)
-        negative = ScrollRight;
-    else if (direction == ScrollRight)
-        negative = ScrollLeft;
-    else if (direction == ScrollUp)
-        negative = ScrollDown;
-    else if (direction == ScrollDown)
-        negative = ScrollUp;
-
     if (node) {
         RenderObject* r = node->renderer();
-        if (r && !r->isListBox() && scrollNode(1.0f, granularity, direction, negative, node, 0)) {
-            setFrameWasScrolledByUser();
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool EventHandler::logicalScrollOverflow(ScrollLogicalDirection direction, ScrollGranularity granularity, Node* startingNode)
-{
-    Node* node = startingNode;
-
-    if (!node)
-        node = m_frame->document()->focusedElement();
-
-    if (!node)
-        node = m_mousePressNode.get();
-
-    if (node) {
-        RenderObject* r = node->renderer();
-        if (r && !r->isListBox() && scrollNodeLogically(1.0f, granularity, direction, node, 0)) {
+        if (r && !r->isListBox() && scrollNode(1.0f, granularity, direction, node, 0)) {
             setFrameWasScrolledByUser();
             return true;
         }
@@ -1060,30 +1002,6 @@ bool EventHandler::scrollRecursively(ScrollDirection direction, ScrollGranularit
     if (!frame)
         return false;
     return frame->eventHandler().scrollRecursively(direction, granularity, m_frame->ownerElement());
-}
-
-bool EventHandler::logicalScrollRecursively(ScrollLogicalDirection direction, ScrollGranularity granularity, Node* startingNode)
-{
-    // The layout needs to be up to date to determine if we can scroll. We may be
-    // here because of an onLoad event, in which case the final layout hasn't been performed yet.
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
-    if (logicalScrollOverflow(direction, granularity, startingNode))
-        return true;
-    Frame* frame = m_frame;
-    FrameView* view = frame->view();
-
-    bool scrolled = false;
-    if (view && view->logicalScroll(direction, granularity))
-        scrolled = true;
-
-    if (scrolled)
-        return true;
-
-    frame = frame->tree().parent();
-    if (!frame)
-        return false;
-
-    return frame->eventHandler().logicalScrollRecursively(direction, granularity, m_frame->ownerElement());
 }
 
 IntPoint EventHandler::lastKnownMousePosition() const
@@ -2296,10 +2214,10 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
-    if (scrollNode(wheelEvent->deltaX(), granularity, ScrollRight, ScrollLeft, startNode, &stopNode, roundedIntPoint(wheelEvent->absoluteLocation())))
+    if (scrollNode(wheelEvent->deltaX(), granularity, ScrollRight, startNode, &stopNode, roundedIntPoint(wheelEvent->absoluteLocation())))
         wheelEvent->setDefaultHandled();
 
-    if (scrollNode(wheelEvent->deltaY(), granularity, ScrollDown, ScrollUp, startNode, &stopNode, roundedIntPoint(wheelEvent->absoluteLocation())))
+    if (scrollNode(wheelEvent->deltaY(), granularity, ScrollDown, startNode, &stopNode, roundedIntPoint(wheelEvent->absoluteLocation())))
         wheelEvent->setDefaultHandled();
 
     if (!m_latchedWheelEventNode)
@@ -2684,8 +2602,8 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     // First try to scroll the closest scrollable RenderBox ancestor of |node|.
     ScrollGranularity granularity = ScrollByPixel;
-    bool horizontalScroll = scrollNode(delta.width(), granularity, ScrollLeft, ScrollRight, node, &stopNode);
-    bool verticalScroll = scrollNode(delta.height(), granularity, ScrollUp, ScrollDown, node, &stopNode);
+    bool horizontalScroll = scrollNode(delta.width(), granularity, ScrollLeft, node, &stopNode);
+    bool verticalScroll = scrollNode(delta.height(), granularity, ScrollUp, node, &stopNode);
 
     if (scrollShouldNotPropagate)
         m_previousGestureScrolledNode = stopNode;
@@ -3486,8 +3404,8 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     if (event->ctrlKey() || event->metaKey() || event->altKey() || event->altGraphKey())
         return;
 
-    ScrollLogicalDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
-    if (logicalScrollOverflow(direction, ScrollByPage)) {
+    ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
+    if (scrollOverflow(direction, ScrollByPage)) {
         event->setDefaultHandled();
         return;
     }
@@ -3496,7 +3414,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     if (!view)
         return;
 
-    if (view->logicalScroll(direction, ScrollByPage))
+    if (view->scroll(direction, ScrollByPage))
         event->setDefaultHandled();
 }
 

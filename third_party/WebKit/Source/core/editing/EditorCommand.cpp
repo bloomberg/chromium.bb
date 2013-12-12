@@ -975,12 +975,12 @@ static bool executeRemoveFormat(Frame& frame, Event*, EditorCommandSource, const
 
 static bool executeScrollPageBackward(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().logicalScrollRecursively(ScrollBlockDirectionBackward, ScrollByPage);
+    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionBackward, ScrollByPage);
 }
 
 static bool executeScrollPageForward(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().logicalScrollRecursively(ScrollBlockDirectionForward, ScrollByPage);
+    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionForward, ScrollByPage);
 }
 
 static bool executeScrollLineUp(Frame& frame, Event*, EditorCommandSource, const String&)
@@ -995,12 +995,12 @@ static bool executeScrollLineDown(Frame& frame, Event*, EditorCommandSource, con
 
 static bool executeScrollToBeginningOfDocument(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().logicalScrollRecursively(ScrollBlockDirectionBackward, ScrollByDocument);
+    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionBackward, ScrollByDocument);
 }
 
 static bool executeScrollToEndOfDocument(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().logicalScrollRecursively(ScrollBlockDirectionForward, ScrollByDocument);
+    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionForward, ScrollByDocument);
 }
 
 static bool executeSelectAll(Frame& frame, Event*, EditorCommandSource, const String&)

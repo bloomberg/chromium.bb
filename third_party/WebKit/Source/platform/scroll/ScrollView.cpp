@@ -295,9 +295,12 @@ void ScrollView::setScrollPosition(const IntPoint& scrollPoint)
     updateScrollbars(IntSize(newScrollPosition.x(), newScrollPosition.y()));
 }
 
-bool ScrollView::logicalScroll(ScrollLogicalDirection direction, ScrollGranularity granularity)
+bool ScrollView::scroll(ScrollDirection direction, ScrollGranularity granularity)
 {
-    return scroll(logicalToPhysical(direction, isVerticalDocument(), isFlippedDocument()), granularity);
+    ScrollDirection physicalDirection =
+        toPhysicalDirection(direction, isVerticalDocument(), isFlippedDocument());
+
+    return ScrollableArea::scroll(physicalDirection, granularity);
 }
 
 IntSize ScrollView::overhangAmount() const

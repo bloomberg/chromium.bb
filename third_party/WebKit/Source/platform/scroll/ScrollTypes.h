@@ -34,18 +34,21 @@ enum ScrollDirection {
     ScrollUp,
     ScrollDown,
     ScrollLeft,
-    ScrollRight
-};
+    ScrollRight,
 
-enum ScrollLogicalDirection {
     ScrollBlockDirectionBackward,
     ScrollBlockDirectionForward,
     ScrollInlineDirectionBackward,
     ScrollInlineDirectionForward
 };
 
+inline bool isLogical(ScrollDirection direction)
+{
+    return direction >= ScrollBlockDirectionBackward;
+}
 
-inline ScrollDirection logicalToPhysical(ScrollLogicalDirection direction, bool isVertical, bool isFlipped)
+// Convert logical scroll direction to physical. Physical scroll directions are unaffected.
+inline ScrollDirection toPhysicalDirection(ScrollDirection direction, bool isVertical, bool isFlipped)
 {
     switch (direction) {
     case ScrollBlockDirectionBackward: {
@@ -88,11 +91,17 @@ inline ScrollDirection logicalToPhysical(ScrollLogicalDirection direction, bool 
             return ScrollDown;
         return ScrollUp;
     }
+    // Direction is already physical
+    case ScrollUp:
+    case ScrollDown:
+    case ScrollLeft:
+    case ScrollRight:
+        return direction;
     default:
         ASSERT_NOT_REACHED();
         break;
     }
-    return ScrollUp;
+    return direction;
 }
 
 enum ScrollGranularity {

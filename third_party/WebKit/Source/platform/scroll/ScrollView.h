@@ -163,8 +163,7 @@ public:
     virtual void setScrollPosition(const IntPoint&);
     void scrollBy(const IntSize& s) { return setScrollPosition(scrollPosition() + s); }
 
-    // A logical scroll that just ends up calling the corresponding physical scroll() based off the document's writing mode.
-    bool logicalScroll(ScrollLogicalDirection, ScrollGranularity);
+    bool scroll(ScrollDirection, ScrollGranularity);
 
     // Scroll the actual contents of the view (either blitting or invalidating as needed).
     void scrollContents(const IntSize& scrollDelta);

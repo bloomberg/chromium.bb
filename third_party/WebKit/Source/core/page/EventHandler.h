@@ -131,7 +131,6 @@ public:
 
     bool scrollOverflow(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
     bool scrollRecursively(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
-    bool logicalScrollRecursively(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
 
     bool handleMouseMoveEvent(const PlatformMouseEvent&);
     void handleMouseLeaveEvent(const PlatformMouseEvent&);
@@ -215,8 +214,6 @@ private:
     void hoverTimerFired(Timer<EventHandler>*);
     void cursorUpdateTimerFired(Timer<EventHandler>*);
     void activeIntervalTimerFired(Timer<EventHandler>*);
-
-    bool logicalScrollOverflow(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
 
     bool shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&, const PlatformWheelEvent&) const;
     bool mouseDownMayStartSelect() const { return m_mouseDownMayStartSelect; }
