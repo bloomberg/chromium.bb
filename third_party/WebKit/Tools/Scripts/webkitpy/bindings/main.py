@@ -43,10 +43,8 @@ TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 # Python compiler is incomplete; skip IDLs with unimplemented features
 SKIP_PYTHON = set([
     'TestCustomAccessors.idl',
-    'TestEvent.idl',
     'TestEventTarget.idl',
     'TestException.idl',
-    'TestExtendedEvent.idl',
     'TestImplements.idl',
     'TestInterface.idl',
     'TestInterfaceImplementedAs.idl',
