@@ -11,6 +11,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"
+#include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/enter.h"
 
@@ -51,7 +52,9 @@ PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 PluginGlobals::PluginGlobals()
     : ppapi::PpapiGlobals(),
       plugin_proxy_delegate_(NULL),
-      callback_tracker_(new CallbackTracker) {
+      callback_tracker_(new CallbackTracker),
+      resource_reply_thread_registrar_(
+          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 
@@ -66,7 +69,9 @@ PluginGlobals::PluginGlobals()
 PluginGlobals::PluginGlobals(PerThreadForTest per_thread_for_test)
     : ppapi::PpapiGlobals(per_thread_for_test),
       plugin_proxy_delegate_(NULL),
-      callback_tracker_(new CallbackTracker) {
+      callback_tracker_(new CallbackTracker),
+      resource_reply_thread_registrar_(
+          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())) {
   DCHECK(!plugin_globals_);
 }
 

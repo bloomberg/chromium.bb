@@ -13,6 +13,10 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_message_loop_api.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace tracked_objects {
 class Location;
 }
@@ -43,6 +47,8 @@ class PPAPI_SHARED_EXPORT MessageLoopShared
   virtual void PostClosure(const tracked_objects::Location& from_here,
                            const base::Closure& closure,
                            int64 delay_ms) = 0;
+
+  virtual base::MessageLoopProxy* GetMessageLoopProxy() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoopShared);
 };

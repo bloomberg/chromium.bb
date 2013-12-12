@@ -178,6 +178,8 @@
           'proxy/proxy_object_var.h',
           'proxy/resource_creation_proxy.cc',
           'proxy/resource_creation_proxy.h',
+          'proxy/resource_reply_thread_registrar.cc',
+          'proxy/resource_reply_thread_registrar.h',
           'proxy/talk_resource.cc',
           'proxy/talk_resource.h',
           'proxy/tcp_server_socket_private_resource.cc',

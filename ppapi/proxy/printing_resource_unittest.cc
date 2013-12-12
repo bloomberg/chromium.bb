@@ -8,6 +8,7 @@
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/locking_resource_releaser.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/proxy/printing_resource.h"
@@ -76,10 +77,10 @@ TEST_F(PrintingResourceTest, GetDefaultPrintSettings) {
     PP_FALSE,
     PP_PRINTOUTPUTFORMAT_PDF
   };
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(reply_params,
-          PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply(
-              reply_settings))));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      reply_params,
+      PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply(
+          reply_settings));
 
   EXPECT_TRUE(PP_RectEqual(reply_settings.printable_area,
                            output_settings.printable_area));

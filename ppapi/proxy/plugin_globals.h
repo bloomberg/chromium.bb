@@ -34,6 +34,7 @@ namespace proxy {
 
 class MessageLoopResource;
 class PluginProxyDelegate;
+class ResourceReplyThreadRegistrar;
 
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
  public:
@@ -128,6 +129,10 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // The embedder should call this function when the command line is known.
   void set_command_line(const std::string& c) { command_line_ = c; }
 
+  ResourceReplyThreadRegistrar* resource_reply_thread_registrar() {
+    return resource_reply_thread_registrar_.get();
+  }
+
  private:
   class BrowserSender;
 
@@ -159,6 +164,8 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // Thread for performing potentially blocking file operations. It's created
   // lazily, since it might not be needed.
   scoped_ptr<base::Thread> file_thread_;
+
+  scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginGlobals);
 };

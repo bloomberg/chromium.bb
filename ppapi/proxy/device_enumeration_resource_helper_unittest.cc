@@ -7,6 +7,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/device_enumeration_resource_helper.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
@@ -258,10 +259,9 @@ TEST_F(DeviceEnumerationResourceHelperTest, EnumerateDevices) {
 
   {
     ProxyAutoUnlock unlock;
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-        PpapiPluginMsg_ResourceReply(
-            reply_params,
-            PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply(data))));
+    PluginMessageFilter::DispatchResourceReplyForTest(
+        reply_params,
+        PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply(data));
   }
   EXPECT_TRUE(callback.called());
   EXPECT_EQ(PP_OK, callback.result());
@@ -304,11 +304,10 @@ TEST_F(DeviceEnumerationResourceHelperTest, MonitorDeviceChange) {
   {
     ProxyAutoUnlock unlock;
     // Synthesize a response with no device.
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-        PpapiPluginMsg_ResourceReply(
-            reply_params,
-            PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
-                callback_id, data))));
+    PluginMessageFilter::DispatchResourceReplyForTest(
+        reply_params,
+        PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
+            callback_id, data));
   }
   EXPECT_TRUE(helper.called() && helper.same_as_expected());
 
@@ -327,11 +326,10 @@ TEST_F(DeviceEnumerationResourceHelperTest, MonitorDeviceChange) {
   {
     ProxyAutoUnlock unlock;
     // Synthesize a response with some devices.
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-        PpapiPluginMsg_ResourceReply(
-            reply_params,
-            PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
-                callback_id, data))));
+    PluginMessageFilter::DispatchResourceReplyForTest(
+        reply_params,
+        PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
+            callback_id, data));
   }
   EXPECT_TRUE(helper.called() && helper.same_as_expected());
 
@@ -357,11 +355,10 @@ TEST_F(DeviceEnumerationResourceHelperTest, MonitorDeviceChange) {
   {
     ProxyAutoUnlock unlock;
     // |helper2| should receive the result while |helper| shouldn't.
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-        PpapiPluginMsg_ResourceReply(
-            reply_params,
-            PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
-                callback_id2, data))));
+    PluginMessageFilter::DispatchResourceReplyForTest(
+        reply_params,
+        PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
+            callback_id2, data));
   }
   EXPECT_TRUE(helper2.called() && helper2.same_as_expected());
   EXPECT_FALSE(helper.called());
@@ -372,11 +369,10 @@ TEST_F(DeviceEnumerationResourceHelperTest, MonitorDeviceChange) {
     ProxyAutoUnlock unlock;
     // Even if a message with |callback_id| arrives. |helper| shouldn't receive
     // the result.
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-        PpapiPluginMsg_ResourceReply(
-            reply_params,
-            PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
-                callback_id, data))));
+    PluginMessageFilter::DispatchResourceReplyForTest(
+        reply_params,
+        PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
+            callback_id, data));
   }
   EXPECT_FALSE(helper2.called());
   EXPECT_FALSE(helper.called());
@@ -396,11 +392,10 @@ TEST_F(DeviceEnumerationResourceHelperTest, MonitorDeviceChange) {
   {
     ProxyAutoUnlock unlock;
     // |helper2| shouldn't receive any result any more.
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-        PpapiPluginMsg_ResourceReply(
-            reply_params,
-            PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
-                callback_id2, data))));
+    PluginMessageFilter::DispatchResourceReplyForTest(
+        reply_params,
+        PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
+            callback_id2, data));
   }
   EXPECT_FALSE(helper2.called());
 }

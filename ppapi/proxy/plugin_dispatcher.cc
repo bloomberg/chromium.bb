@@ -29,7 +29,7 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
-#include "ppapi/proxy/resource_message_params.h"
+#include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
@@ -173,7 +173,9 @@ bool PluginDispatcher::InitPluginWithChannel(
   // The message filter will intercept and process certain messages directly
   // on the I/O thread.
   channel()->AddFilter(
-      new PluginMessageFilter(delegate->GetGloballySeenInstanceIDSet()));
+      new PluginMessageFilter(
+          delegate->GetGloballySeenInstanceIDSet(),
+          PluginGlobals::Get()->resource_reply_thread_registrar()));
   return true;
 }
 
@@ -226,7 +228,6 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
     // Handle some plugin-specific control messages.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
-      IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
       IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
       IPC_MESSAGE_HANDLER(PpapiMsg_SetPreferences, OnMsgSetPreferences)
       IPC_MESSAGE_UNHANDLED(handled = false);
@@ -287,16 +288,6 @@ thunk::ResourceCreationAPI* PluginDispatcher::GetResourceCreationAPI() {
       GetInterfaceProxy(API_ID_RESOURCE_CREATION));
 }
 
-// static
-void PluginDispatcher::DispatchResourceReply(
-    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
-    const IPC::Message& nested_msg) {
-  // We need to grab the proxy lock to ensure that we don't collide with the
-  // plugin making pepper calls on a different thread.
-  ProxyAutoLock lock;
-  LockedDispatchResourceReply(reply_params, nested_msg);
-}
-
 void PluginDispatcher::ForceFreeAllInstances() {
   if (!g_instance_to_dispatcher)
     return;
@@ -313,12 +304,6 @@ void PluginDispatcher::ForceFreeAllInstances() {
       OnMessageReceived(msg);
     }
   }
-}
-
-void PluginDispatcher::OnMsgResourceReply(
-    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
-    const IPC::Message& nested_msg) {
-  LockedDispatchResourceReply(reply_params, nested_msg);
 }
 
 void PluginDispatcher::OnMsgSupportsInterface(
@@ -347,21 +332,6 @@ void PluginDispatcher::OnMsgSetPreferences(const Preferences& prefs) {
     received_preferences_ = true;
     preferences_ = prefs;
   }
-}
-
-// static
-void PluginDispatcher::LockedDispatchResourceReply(
-    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
-    const IPC::Message& nested_msg) {
-  Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
-      reply_params.pp_resource());
-  if (!resource) {
-    DLOG_IF(INFO, reply_params.sequence() != 0)
-        << "Pepper resource reply message received but the resource doesn't "
-           "exist (probably has been destroyed).";
-    return;
-  }
-  resource->OnReplyReceived(reply_params, nested_msg);
 }
 
 }  // namespace proxy

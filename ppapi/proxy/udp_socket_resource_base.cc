@@ -91,7 +91,8 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
       PpapiHostMsg_UDPSocket_SetOption(name, option_data),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgSetOptionReply,
                  base::Unretained(this),
-                 callback));
+                 callback),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -112,7 +113,8 @@ int32_t UDPSocketResourceBase::BindImpl(
       BROWSER,
       PpapiHostMsg_UDPSocket_Bind(*addr),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgBindReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -146,7 +148,8 @@ int32_t UDPSocketResourceBase::RecvFromImpl(
       BROWSER,
       PpapiHostMsg_UDPSocket_RecvFrom(bytes_to_read_),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgRecvFromReply,
-                 base::Unretained(this), addr));
+                 base::Unretained(this), addr),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -180,7 +183,8 @@ int32_t UDPSocketResourceBase::SendToImpl(
       BROWSER,
       PpapiHostMsg_UDPSocket_SendTo(std::string(buffer, num_bytes), *addr),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgSendToReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 

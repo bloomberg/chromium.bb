@@ -8,6 +8,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/proxy/locking_resource_releaser.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/proxy/websocket_resource.h"
@@ -84,9 +85,8 @@ TEST_F(WebSocketResourceTest, Connect) {
   ResourceMessageReplyParams reply_params(params.pp_resource(),
                                           params.sequence());
   reply_params.set_result(PP_OK);
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(reply_params,
-          PpapiPluginMsg_WebSocket_ConnectReply(url, protocol1))));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      reply_params, PpapiPluginMsg_WebSocket_ConnectReply(url, protocol1));
 
   EXPECT_EQ(PP_OK, g_callback_result);
   EXPECT_EQ(true, g_callback_called);
@@ -102,20 +102,17 @@ TEST_F(WebSocketResourceTest, UnsolicitedReplies) {
   // Check if BufferedAmountReply is handled.
   ResourceMessageReplyParams reply_params(res.get(), 0);
   reply_params.set_result(PP_OK);
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(
-          reply_params,
-          PpapiPluginMsg_WebSocket_BufferedAmountReply(19760227u))));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      reply_params, PpapiPluginMsg_WebSocket_BufferedAmountReply(19760227u));
 
   uint64_t amount = websocket_iface->GetBufferedAmount(res.get());
   EXPECT_EQ(19760227u, amount);
 
   // Check if StateReply is handled.
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(
-          reply_params,
-          PpapiPluginMsg_WebSocket_StateReply(
-              static_cast<int32_t>(PP_WEBSOCKETREADYSTATE_CLOSING)))));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      reply_params,
+      PpapiPluginMsg_WebSocket_StateReply(
+          static_cast<int32_t>(PP_WEBSOCKETREADYSTATE_CLOSING)));
 
   PP_WebSocketReadyState state = websocket_iface->GetReadyState(res.get());
   EXPECT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING, state);
@@ -143,9 +140,9 @@ TEST_F(WebSocketResourceTest, MessageError) {
   ResourceMessageReplyParams connect_reply_params(params.pp_resource(),
                                                   params.sequence());
   connect_reply_params.set_result(PP_OK);
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(connect_reply_params,
-          PpapiPluginMsg_WebSocket_ConnectReply(url, std::string()))));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      connect_reply_params,
+      PpapiPluginMsg_WebSocket_ConnectReply(url, std::string()));
 
   EXPECT_EQ(PP_OK, g_callback_result);
   EXPECT_TRUE(g_callback_called);
@@ -157,9 +154,8 @@ TEST_F(WebSocketResourceTest, MessageError) {
   // Synthesize a WebSocket_ErrorReply message.
   ResourceMessageReplyParams error_reply_params(res.get(), 0);
   error_reply_params.set_result(PP_OK);
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(error_reply_params,
-          PpapiPluginMsg_WebSocket_ErrorReply())));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      error_reply_params, PpapiPluginMsg_WebSocket_ErrorReply());
 
   EXPECT_EQ(PP_ERROR_FAILED, g_callback_result);
   EXPECT_TRUE(g_callback_called);

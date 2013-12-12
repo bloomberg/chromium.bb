@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/proxy/locking_resource_releaser.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/proxy/talk_resource.h"
@@ -58,8 +59,7 @@ class TalkResourceTest : public PluginProxyTest {
     ResourceMessageReplyParams reply_params(params.pp_resource(),
                                             params.sequence());
     reply_params.set_result(result);
-    IPC::Message reply_msg = PpapiPluginMsg_ResourceReply(reply_params, reply);
-    ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(reply_msg));
+    PluginMessageFilter::DispatchResourceReplyForTest(reply_params, reply);
   }
 };
 
@@ -84,9 +84,8 @@ TEST_F(TalkResourceTest, GetPermission) {
   ResourceMessageReplyParams reply_params(params.pp_resource(),
                                           params.sequence());
   reply_params.set_result(1);
-  IPC::Message reply = PpapiPluginMsg_ResourceReply(
+  PluginMessageFilter::DispatchResourceReplyForTest(
       reply_params, PpapiPluginMsg_Talk_RequestPermissionReply());
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(reply));
 
   ASSERT_TRUE(callback.called());
   ASSERT_EQ(1, callback.result());
@@ -111,9 +110,8 @@ TEST_F(TalkResourceTest, RequestPermission) {
   ResourceMessageReplyParams reply_params(params.pp_resource(),
                                           params.sequence());
   reply_params.set_result(1);
-  IPC::Message reply = PpapiPluginMsg_ResourceReply(
+  PluginMessageFilter::DispatchResourceReplyForTest(
       reply_params, PpapiPluginMsg_Talk_RequestPermissionReply());
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(reply));
 
   ASSERT_TRUE(callback.called());
   ASSERT_EQ(1, callback.result());
@@ -143,9 +141,8 @@ TEST_F(TalkResourceTest, StartStopRemoting) {
   // Receive an event
   ASSERT_FALSE(event_callback.called());
   ResourceMessageReplyParams notify_params(res.get(), 0);
-  IPC::Message notify = PpapiPluginMsg_ResourceReply(
+  PluginMessageFilter::DispatchResourceReplyForTest(
       notify_params, PpapiPluginMsg_Talk_NotifyEvent(PP_TALKEVENT_ERROR));
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(notify));
   ASSERT_TRUE(event_callback.called());
   ASSERT_EQ(PP_TALKEVENT_ERROR, event_callback.result());
 
@@ -165,7 +162,8 @@ TEST_F(TalkResourceTest, StartStopRemoting) {
 
   // Events should be discarded at this point
   event_callback.Reset();
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(notify));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      notify_params, PpapiPluginMsg_Talk_NotifyEvent(PP_TALKEVENT_ERROR));
   ASSERT_FALSE(event_callback.called());
 }
 

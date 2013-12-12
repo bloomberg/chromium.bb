@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/c/pp_errors.h"
@@ -17,8 +18,9 @@
 #include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/resource_message_params.h"
+#include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "ppapi/shared_impl/resource.h"
-
+#include "ppapi/shared_impl/tracked_callback.h"
 namespace ppapi {
 namespace proxy {
 
@@ -99,6 +101,23 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
                const IPC::Message& msg,
                const CallbackType& callback);
 
+  // Comparing with the previous Call() method, this method takes
+  // |reply_thread_hint| as a hint to determine which thread to handle the reply
+  // message.
+  //
+  // If |reply_thread_hint| is non-blocking, the reply message will be handled
+  // on the target thread of the callback; otherwise, it will be handled on the
+  // main thread.
+  //
+  // If handling a reply message will cause a TrackedCallback to be run, it is
+  // recommended to use this version of Call(). It eliminates unnecessary
+  // thread switching and therefore has better performance.
+  template<typename ReplyMsgClass, typename CallbackType>
+  int32_t Call(Destination dest,
+               const IPC::Message& msg,
+               const CallbackType& callback,
+               scoped_refptr<TrackedCallback> reply_thread_hint);
+
   // Calls the browser/renderer with sync messages. Returns the pepper error
   // code from the call.
   // |ReplyMsgClass| is the type of the reply message that is expected. If it
@@ -159,6 +178,8 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
       CallbackMap;
   CallbackMap callbacks_;
 
+  scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginResource);
 };
 
@@ -166,6 +187,15 @@ template<typename ReplyMsgClass, typename CallbackType>
 int32_t PluginResource::Call(Destination dest,
                              const IPC::Message& msg,
                              const CallbackType& callback) {
+  return Call<ReplyMsgClass>(dest, msg, callback, NULL);
+}
+
+template<typename ReplyMsgClass, typename CallbackType>
+int32_t PluginResource::Call(
+    Destination dest,
+    const IPC::Message& msg,
+    const CallbackType& callback,
+    scoped_refptr<TrackedCallback> reply_thread_hint) {
   TRACE_EVENT2("ppapi proxy", "PluginResource::Call",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));
@@ -176,6 +206,11 @@ int32_t PluginResource::Call(Destination dest,
       new PluginResourceCallback<ReplyMsgClass, CallbackType>(callback));
   callbacks_.insert(std::make_pair(params.sequence(), plugin_callback));
   params.set_has_callback();
+
+  if (resource_reply_thread_registrar_) {
+    resource_reply_thread_registrar_->Register(
+        pp_resource(), params.sequence(), reply_thread_hint);
+  }
   SendResourceCall(dest, params, msg);
   return params.sequence();
 }

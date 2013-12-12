@@ -63,6 +63,8 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
                            const base::Closure& closure,
                            int64 delay_ms) OVERRIDE;
 
+  virtual base::MessageLoopProxy* GetMessageLoopProxy() OVERRIDE;
+
   // TLS destructor function.
   static void ReleaseMessageLoop(void* value);
 

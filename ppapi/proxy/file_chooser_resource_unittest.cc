@@ -8,6 +8,7 @@
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/locking_resource_releaser.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -101,9 +102,8 @@ TEST_F(FileChooserResourceTest, Show) {
   create_info.browser_pending_host_resource_id = 12;
   create_info.renderer_pending_host_resource_id = 15;
   create_info_array.push_back(create_info);
-  ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
-      PpapiPluginMsg_ResourceReply(reply_params,
-          PpapiPluginMsg_FileChooser_ShowReply(create_info_array))));
+  PluginMessageFilter::DispatchResourceReplyForTest(
+      reply_params, PpapiPluginMsg_FileChooser_ShowReply(create_info_array));
 
   // Should have populated our vector.
   ASSERT_EQ(1u, dest.size());

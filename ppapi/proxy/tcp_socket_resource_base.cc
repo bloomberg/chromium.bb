@@ -84,7 +84,8 @@ int32_t TCPSocketResourceBase::BindImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_Bind(*addr),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgBindReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -106,7 +107,8 @@ int32_t TCPSocketResourceBase::ConnectImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_Connect(host, port),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgConnectReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -127,7 +129,8 @@ int32_t TCPSocketResourceBase::ConnectWithNetAddressImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_ConnectWithNetAddress(*addr),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgConnectReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -172,7 +175,8 @@ int32_t TCPSocketResourceBase::SSLHandshakeImpl(
                                           trusted_certificates_,
                                           untrusted_certificates_),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgSSLHandshakeReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -233,7 +237,8 @@ int32_t TCPSocketResourceBase::ReadImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_Read(bytes_to_read_),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgReadReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -259,7 +264,8 @@ int32_t TCPSocketResourceBase::WriteImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_Write(std::string(buffer, bytes_to_write)),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgWriteReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -280,7 +286,8 @@ int32_t TCPSocketResourceBase::ListenImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_Listen(backlog),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgListenReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -301,7 +308,8 @@ int32_t TCPSocketResourceBase::AcceptImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_Accept(),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgAcceptReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -363,7 +371,8 @@ int32_t TCPSocketResourceBase::SetOptionImpl(
       BROWSER,
       PpapiHostMsg_TCPSocket_SetOption(name, option_data),
       base::Bind(&TCPSocketResourceBase::OnPluginMsgSetOptionReply,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
   return PP_OK_COMPLETIONPENDING;
 }
 

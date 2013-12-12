@@ -6,7 +6,9 @@
 
 #include <limits>
 
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 
 namespace ppapi {
 namespace proxy {
@@ -16,7 +18,10 @@ PluginResource::PluginResource(Connection connection, PP_Instance instance)
       connection_(connection),
       next_sequence_number_(1),
       sent_create_to_browser_(false),
-      sent_create_to_renderer_(false) {
+      sent_create_to_renderer_(false),
+      resource_reply_thread_registrar_(
+          PpapiGlobals::Get()->IsPluginGlobals() ?
+              PluginGlobals::Get()->resource_reply_thread_registrar() : NULL) {
 }
 
 PluginResource::~PluginResource() {
@@ -28,6 +33,9 @@ PluginResource::~PluginResource() {
     connection_.renderer_sender->Send(
         new PpapiHostMsg_ResourceDestroyed(pp_resource()));
   }
+
+  if (resource_reply_thread_registrar_)
+    resource_reply_thread_registrar_->Unregister(pp_resource());
 }
 
 void PluginResource::OnReplyReceived(

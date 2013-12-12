@@ -97,9 +97,6 @@ class PpapiThread : public ChildThread,
   void OnCreateChannel(base::ProcessId renderer_pid,
                        int renderer_child_id,
                        bool incognito);
-  void OnResourceReply(
-      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
-      const IPC::Message& nested_msg);
   void OnSetNetworkState(bool online);
   void OnCrash();
   void OnHang();

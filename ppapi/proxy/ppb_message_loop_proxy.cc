@@ -189,6 +189,10 @@ void MessageLoopResource::PostClosure(
   }
 }
 
+base::MessageLoopProxy* MessageLoopResource::GetMessageLoopProxy() {
+  return loop_proxy_.get();
+}
+
 // static
 void MessageLoopResource::ReleaseMessageLoop(void* value) {
   static_cast<MessageLoopResource*>(value)->DetachFromThread();
