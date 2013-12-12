@@ -80,13 +80,13 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   // Requests the player to exit fullscreen.
   void ExitFullscreen(int player_id);
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   // Requests an external surface for out-of-band compositing.
   void RequestExternalSurface(int player_id, const gfx::RectF& geometry);
 
   // RenderViewObserver overrides.
   virtual void DidCommitCompositorFrame() OVERRIDE;
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   // Encrypted media related methods.
   void InitializeCDM(int media_keys_id,
@@ -132,10 +132,10 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   // Gets the pointer to ProxyMediaKeys given the |media_keys_id|.
   ProxyMediaKeys* GetMediaKeys(int media_keys_id);
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   // Gets the list of media players with video geometry changes.
   void RetrieveGeometryChanges(std::map<int, gfx::RectF>* changes);
-#endif
+#endif  // defined(VIDEO_HOLE)
 
  private:
   // Message handlers.

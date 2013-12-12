@@ -104,10 +104,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                               media::MediaKeys::KeyError error_code,
                               int system_code) OVERRIDE;
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   // Called to disble the current fullscreen playback if the video is encrypted.
   // TODO(qinmin): remove this once we have the new fullscreen mode.
@@ -145,10 +145,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnReleaseSession(int media_keys_id, uint32 session_id);
   void OnSetMediaKeys(int player_id, int media_keys_id);
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   virtual void OnNotifyExternalSurface(
       int player_id, bool is_request, const gfx::RectF& rect);
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   // Adds a given player to the list.
   void AddPlayer(media::MediaPlayerAndroid* player);

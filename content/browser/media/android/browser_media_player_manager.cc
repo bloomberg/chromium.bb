@@ -134,10 +134,10 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CreateSession, OnCreateSession)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_UpdateSession, OnUpdateSession)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_ReleaseSession, OnReleaseSession)
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
                         OnNotifyExternalSurface)
-#endif
+#endif  // defined(VIDEO_HOLE)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -409,7 +409,7 @@ void BrowserMediaPlayerManager::OnSessionError(
       routing_id(), media_keys_id, session_id, error_code, system_code));
 }
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
 void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
@@ -435,7 +435,7 @@ void BrowserMediaPlayerManager::OnNotifyExternalSurface(
   if (view)
     view->NotifyExternalSurface(player_id, is_request, rect);
 }
-#endif
+#endif  // defined(VIDEO_HOLE)
 
 void BrowserMediaPlayerManager::DisableFullscreenEncryptedMediaPlayback() {
   if (fullscreen_player_id_ == -1)
@@ -536,12 +536,12 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   if (player_id == fullscreen_player_id_)
     fullscreen_player_is_released_ = true;
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   WebContentsViewAndroid* view =
       static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
   if (view)
     view->NotifyExternalSurface(player_id, false, gfx::RectF());
-#endif
+#endif  // defined(VIDEO_HOLE)
 }
 
 void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {

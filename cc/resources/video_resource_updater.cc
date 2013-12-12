@@ -71,9 +71,9 @@ bool VideoResourceUpdater::VerifyFrame(
     case media::VideoFrame::YV16:
     case media::VideoFrame::YV12J:
     case media::VideoFrame::NATIVE_TEXTURE:
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
     case media::VideoFrame::HOLE:
-#endif
+#endif  // defined(VIDEO_HOLE)
       return true;
 
     // Unacceptable inputs. ¯\(°_o)/¯
@@ -109,9 +109,9 @@ static gfx::Size SoftwarePlaneDimension(
       case media::VideoFrame::I420:
       case media::VideoFrame::NATIVE_TEXTURE:
       case media::VideoFrame::HISTOGRAM_MAX:
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
       case media::VideoFrame::HOLE:
-#endif
+#endif  // defined(VIDEO_HOLE)
         NOTREACHED();
     }
   }
@@ -124,13 +124,13 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   media::VideoFrame::Format input_frame_format = video_frame->format();
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   if (input_frame_format == media::VideoFrame::HOLE) {
     VideoFrameExternalResources external_resources;
     external_resources.type = VideoFrameExternalResources::HOLE;
     return external_resources;
   }
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   // Only YUV software video frames are supported.
   DCHECK(input_frame_format == media::VideoFrame::YV12 ||

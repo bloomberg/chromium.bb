@@ -270,14 +270,13 @@ IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DurationChanged,
                      int /* demuxer_client_id */,
                      base::TimeDelta /* duration */)
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
 // Notify the player about the external surface, requesting it if necessary.
 IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
                     int /* player_id */,
                     bool /* is_request */,
                     gfx::RectF /* rect */)
-
-#endif
+#endif  // defined(VIDEO_HOLE)
 
 // Messages for encrypted media extensions API ------------------------------
 // TODO(xhwang): Move the following messages to a separate file.

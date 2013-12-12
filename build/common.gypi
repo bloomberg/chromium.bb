@@ -2145,7 +2145,10 @@
         'defines': ['OS_CHROMEOS=1'],
       }],
       ['google_tv==1', {
-        'defines': ['GOOGLE_TV=1'],
+        'defines': [
+          'GOOGLE_TV=1',
+          'VIDEO_HOLE=1',
+        ],
       }],
       ['use_xi2_mt!=0 and use_x11==1', {
         'defines': ['USE_XI2_MT=<(use_xi2_mt)'],

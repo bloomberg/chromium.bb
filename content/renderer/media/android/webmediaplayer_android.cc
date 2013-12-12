@@ -139,12 +139,13 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       external_surface_threshold_ = -1;
     }
   }
+#endif  // defined(GOOGLE_TV)
 
+#if defined(VIDEO_HOLE)
   // Defer stream texture creation until we are sure it's necessary.
-  stream_id_ = 0;
   needs_establish_peer_ = false;
   current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
-#endif
+#endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
 
   if (blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
@@ -324,15 +325,17 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
 }
 
 void WebMediaPlayerAndroid::play() {
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   if (hasVideo() && needs_external_surface_ &&
       !manager_->IsInFullscreen(frame_)) {
     DCHECK(!needs_establish_peer_);
     manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
+#endif  // defined(VIDEO_HOLE)
+#if defined(GOOGLE_TV)
   if (audio_renderer_ && paused())
     audio_renderer_->Play();
-#endif
+#endif  // defined(GOOGLE_TV)
 
   TryCreateStreamTextureProxyIfNeeded();
   if (hasVideo() && needs_establish_peer_)
@@ -726,11 +729,15 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   if (natural_size_.width == width && natural_size_.height == height)
     return;
 
+#if defined(VIDEO_HOLE)
+  bool has_surface_size_restriction = false;
 #if defined(GOOGLE_TV)
-  if ((external_surface_threshold_ >= 0 &&
-       external_surface_threshold_ <= width * height) ||
-      // Use H/W surface for MSE as the content is protected.
-      media_source_delegate_) {
+  has_surface_size_restriction = external_surface_threshold_ >= 0 &&
+       external_surface_threshold_ <= width * height;
+#endif  // defined(GOOGLE_TV)
+  // Use H/W surface for MSE as the content might be protected.
+  // TODO(qinmin): Change this so that only EME needs the H/W surface
+  if (media_source_delegate_ || has_surface_size_restriction) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       manager_->RequestExternalSurface(player_id_, last_computed_rect_);
@@ -743,7 +750,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
       EstablishSurfaceTexturePeer();
     }
   }
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   natural_size_.width = width;
   natural_size_.height = height;
@@ -790,10 +797,10 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   if (!paused() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   if (!paused() && needs_external_surface_)
     manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   frame_->view()->willExitFullScreen();
   frame_->view()->didExitFullScreen();
@@ -859,9 +866,9 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
   if (!needs_external_surface_)
     needs_establish_peer_ = true;
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   last_computed_rect_ = gfx::RectF();
-#endif
+#endif  // defined(VIDEO_HOLE)
 }
 
 void WebMediaPlayerAndroid::ReleaseMediaResources() {
@@ -1008,8 +1015,8 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
 
 void WebMediaPlayerAndroid::ReallocateVideoFrame() {
   if (needs_external_surface_) {
-    // VideoFrame::CreateHoleFrame is only defined under GOOGLE_TV.
-#if defined(GOOGLE_TV)
+    // VideoFrame::CreateHoleFrame is only defined under VIDEO_HOLE.
+#if defined(VIDEO_HOLE)
     if (!natural_size_.isEmpty()) {
       scoped_refptr<VideoFrame> new_frame =
           VideoFrame::CreateHoleFrame(natural_size_);
@@ -1018,8 +1025,8 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
       client_->repaint();
     }
 #else
-    NOTIMPLEMENTED() << "Hole punching not supported outside of Google TV";
-#endif
+    NOTIMPLEMENTED() << "Hole punching not supported without VIDEO_HOLE flag";
+#endif  // defined(VIDEO_HOLE)
   } else if (!is_remote_ && texture_id_) {
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
         make_scoped_ptr(new VideoFrame::MailboxHolder(
@@ -1145,7 +1152,7 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
     delegate_->DidPause(this);
 }
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
 bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
   if (!video_weblayer_)
     return false;

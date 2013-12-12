@@ -390,7 +390,7 @@ bool RendererMediaPlayerManager::IsInFullscreen(blink::WebFrame* frame) {
   return fullscreen_frame_ == frame;
 }
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
 void RendererMediaPlayerManager::RequestExternalSurface(
     int player_id,
     const gfx::RectF& geometry) {
@@ -426,6 +426,6 @@ void RendererMediaPlayerManager::RetrieveGeometryChanges(
     }
   }
 }
-#endif
+#endif  // defined(VIDEO_HOLE)
 
 }  // namespace content

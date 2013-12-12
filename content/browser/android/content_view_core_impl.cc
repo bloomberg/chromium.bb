@@ -1284,27 +1284,27 @@ void ContentViewCoreImpl::AttachExternalVideoSurface(JNIEnv* env,
                                                      jobject obj,
                                                      jint player_id,
                                                      jobject jsurface) {
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
   if (rvhi && rvhi->media_player_manager()) {
     rvhi->media_player_manager()->AttachExternalVideoSurface(
         static_cast<int>(player_id), jsurface);
   }
-#endif
+#endif  // defined(VIDEO_HOLE)
 }
 
 void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
                                                      jobject obj,
                                                      jint player_id) {
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
   if (rvhi && rvhi->media_player_manager()) {
     rvhi->media_player_manager()->DetachExternalVideoSurface(
         static_cast<int>(player_id));
   }
-#endif
+#endif  // defined(VIDEO_HOLE)
 }
 
 jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,

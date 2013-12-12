@@ -54,10 +54,10 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "I420";
     case VideoFrame::NATIVE_TEXTURE:
       return "NATIVE_TEXTURE";
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
       return "HOLE";
-#endif
+#endif  // defined(VIDEO_HOLE)
     case VideoFrame::YV12A:
       return "YV12A";
     case VideoFrame::YV12J:
@@ -227,8 +227,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateBlackFrame(const gfx::Size& size) {
   return CreateColorFrame(size, kBlackY, kBlackUV, kBlackUV, kZero);
 }
 
-#if defined(GOOGLE_TV)
-// This block and other blocks wrapped around #if defined(GOOGLE_TV) is not
+#if defined(VIDEO_HOLE)
+// This block and other blocks wrapped around #if defined(VIDEO_HOLE) is not
 // maintained by the general compositor team. Please contact the following
 // people instead:
 //
@@ -243,15 +243,15 @@ scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
       VideoFrame::HOLE, size, gfx::Rect(size), size, base::TimeDelta(), false));
   return frame;
 }
-#endif
+#endif  // defined(VIDEO_HOLE)
 
 // static
 size_t VideoFrame::NumPlanes(Format format) {
   switch (format) {
     case VideoFrame::NATIVE_TEXTURE:
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
-#endif
+#endif  // defined(VIDEO_HOLE)
       return 0;
     case VideoFrame::YV12:
     case VideoFrame::YV16:
@@ -328,9 +328,9 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
     case VideoFrame::UNKNOWN:
     case VideoFrame::NATIVE_TEXTURE:
     case VideoFrame::HISTOGRAM_MAX:
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
-#endif
+#endif  // defined(VIDEO_HOLE)
       break;
   }
   NOTREACHED() << "Unsupported video frame format/plane: "

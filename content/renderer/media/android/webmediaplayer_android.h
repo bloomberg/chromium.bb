@@ -191,12 +191,12 @@ class WebMediaPlayerAndroid
   // Detach the player from its manager.
   void Detach();
 
-#if defined(GOOGLE_TV)
+#if defined(VIDEO_HOLE)
   // Retrieve geometry of the media player (i.e. location and size of the video
   // frame) if changed. Returns true only if the geometry has been changed since
   // the last call.
   bool RetrieveGeometryChange(gfx::RectF* rect);
-#endif
+#endif  // defined(VIDEO_HOLE)
 
   virtual MediaKeyException generateKeyRequest(
       const blink::WebString& key_system,
@@ -255,11 +255,6 @@ class WebMediaPlayerAndroid
 
   // Requesting whether the surface texture peer needs to be reestablished.
   void SetNeedsEstablishPeer(bool needs_establish_peer);
-
-#if defined(GOOGLE_TV)
-  // Request external surface for out-of-band composition.
-  void RequestExternalSurface();
-#endif
 
  private:
   void DrawRemotePlaybackIcon();
@@ -401,14 +396,16 @@ class WebMediaPlayerAndroid
 
   scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
 
+#if defined(VIDEO_HOLE)
+  // A rectangle represents the geometry of video frame, when computed last
+  // time.
+  gfx::RectF last_computed_rect_;
+#endif  // defined(VIDEO_HOLE)
+
 #if defined(GOOGLE_TV)
   // Pixel threshold for external surface usage. Negative value means that the
   // threshold is not defined, so that external surface is never used.
   int external_surface_threshold_;
-
-  // A rectangle represents the geometry of video frame, when computed last
-  // time.
-  gfx::RectF last_computed_rect_;
 
   // Media Stream related fields.
   media::Demuxer* demuxer_;
