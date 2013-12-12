@@ -102,7 +102,7 @@ void LanguageState::SetTranslateEnabled(bool value) {
     return;
 
   translate_enabled_ = value;
-  if (observer_ && navigation_controller_) {
+  if (observer_) {
     content::WebContents* web_contents =
         navigation_controller_->GetWebContents();
     observer_->OnTranslateEnabledChanged(web_contents);
@@ -118,9 +118,13 @@ void LanguageState::SetIsPageTranslated(bool value) {
     return;
 
   is_page_translated_ = value;
-  if (observer_ && navigation_controller_) {
+  if (observer_) {
     content::WebContents* web_contents =
         navigation_controller_->GetWebContents();
     observer_->OnIsPageTranslatedChanged(web_contents);
   }
+
+  // With the translation done, the translate feature must be enabled.
+  if (is_page_translated_)
+    SetTranslateEnabled(true);
 }

@@ -12,7 +12,10 @@ class WebContents;
 // The observer for the language state.
 class LanguageStateObserver {
  public:
+  // Handles when the value of IsPageTranslated is changed.
   virtual void OnIsPageTranslatedChanged(content::WebContents* source) = 0;
+
+  // Handles when the value of translate_enabled is changed.
   virtual void OnTranslateEnabledChanged(content::WebContents* source) = 0;
 
  protected:

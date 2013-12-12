@@ -100,8 +100,7 @@ class LanguageState {
   std::string prev_original_lang_;
   std::string prev_current_lang_;
 
-  // The navigation controller of the tab we are associated with. This may be
-  // NULL only when testing.
+  // The navigation controller of the tab we are associated with.
   content::NavigationController* navigation_controller_;
 
   // Whether it is OK to offer to translate the page.  Some pages explictly

@@ -2580,6 +2580,7 @@
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sessions2/sessions_sync_manager_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
+            'browser/tab_contents/language_state_unittest.cc',
             'browser/tab_contents/render_view_context_menu_unittest.cc',
             'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
             'browser/ui/browser_instant_controller_unittest.cc',
