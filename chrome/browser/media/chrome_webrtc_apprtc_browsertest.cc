@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 #include "net/test/python_utils.h"
 
 
@@ -49,6 +50,10 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
+#if defined(OS_MACOSX)
+    // TODO(mcasas): Remove this switch when http://crbug.com/327618 is solved.
+    command_line->AppendSwitch(switches::kDisableAVFoundation);
+#endif
   }
 
  protected:
