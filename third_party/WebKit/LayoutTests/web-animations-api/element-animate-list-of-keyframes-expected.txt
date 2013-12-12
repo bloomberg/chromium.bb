@@ -1,0 +1,5 @@
+
+PASS Calling animate() should start an animation. 
+PASS Calling animate() should start an animation. CamelCase property names should be parsed. 
+PASS Calling animate() with a pre-constructed keyframes list should start an animation. Invalid style declarations should be ignored. 
+

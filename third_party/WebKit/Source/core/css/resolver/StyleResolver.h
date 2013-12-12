@@ -124,6 +124,7 @@ public:
     // and should be removed when that is replaced by Web Animations.
     void keyframeStylesForAnimation(Element*, const RenderStyle&, KeyframeList&);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, const StyleKeyframe*, const AtomicString& animationName);
+    static PassRefPtr<KeyframeAnimationEffect> createKeyframeAnimationEffect(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeAnimationEffect::KeyframeVector&);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
 

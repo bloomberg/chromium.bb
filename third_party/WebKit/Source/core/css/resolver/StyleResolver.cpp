@@ -863,6 +863,26 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
     }
 }
 
+// This function is used by the WebAnimations JavaScript API method animate().
+// FIXME: Remove this when animate() switches away from resolution-dependent parsing.
+PassRefPtr<KeyframeAnimationEffect> StyleResolver::createKeyframeAnimationEffect(Element& element, const Vector<RefPtr<MutableStylePropertySet> >& propertySetVector, KeyframeAnimationEffect::KeyframeVector& keyframes)
+{
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    ASSERT(propertySetVector.size() == keyframes.size());
+
+    StyleResolverState state(element.document(), &element);
+    state.setStyle(RenderStyle::create());
+
+    for (unsigned i = 0; i < propertySetVector.size(); ++i) {
+        for (unsigned j = 0; j < propertySetVector[i]->propertyCount(); ++j) {
+            CSSPropertyID id = propertySetVector[i]->propertyAt(j).id();
+            StyleBuilder::applyProperty(id, state, propertySetVector[i]->getPropertyCSSValue(id).get());
+            keyframes[i]->setPropertyValue(id, CSSAnimatableValueFactory::create(id, *state.style()).get());
+        }
+    }
+    return KeyframeAnimationEffect::create(keyframes);
+}
+
 PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
 {
     ASSERT(document().frame());

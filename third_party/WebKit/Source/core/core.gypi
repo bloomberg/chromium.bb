@@ -1,6 +1,7 @@
 {
     'variables': {
         'core_idl_files': [
+            'animation/ElementAnimation.idl',
             'css/CSS.idl',
             'css/CSSCharsetRule.idl',
             'css/CSSFontFaceLoadEvent.idl',
@@ -573,6 +574,8 @@
             'animation/AnimatableValue.h',
             'animation/AnimatableVisibility.cpp',
             'animation/AnimatableVisibility.h',
+            'animation/ElementAnimation.cpp',
+            'animation/ElementAnimation.h',
             'animation/Animation.cpp',
             'animation/Animation.h',
             'animation/AnimationClock.h',
@@ -3235,6 +3238,7 @@
             'animation/CompositorAnimationsTestHelper.h',
             'animation/CompositorAnimationsTimingFunctionReverserTest.cpp',
             'animation/DocumentTimelineTest.cpp',
+            'animation/ElementAnimationTest.cpp',
             'animation/KeyframeAnimationEffectTest.cpp',
             'animation/PlayerTest.cpp',
             'animation/TimedItemCalculationsTest.cpp',

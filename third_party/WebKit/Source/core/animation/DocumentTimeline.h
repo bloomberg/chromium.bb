@@ -75,6 +75,7 @@ public:
     double currentTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;
+    const Vector<RefPtr<Player> >& players() const { return m_players; }
 
     void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)
     {
