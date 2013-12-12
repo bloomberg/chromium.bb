@@ -1275,6 +1275,8 @@
             'frame/NavigatorID.cpp',
             'frame/NavigatorID.h',
             'frame/NavigatorOnLine.h',
+            'frame/SettingsDelegate.cpp',
+            'frame/SettingsDelegate.h',
             'page/NetworkStateNotifier.cpp',
             'page/NetworkStateNotifier.h',
             'page/Page.cpp',

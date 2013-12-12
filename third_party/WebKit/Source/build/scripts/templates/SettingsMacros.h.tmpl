@@ -40,7 +40,7 @@ void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} 
     if (m_{{setting.name}} == {{setting.name}}) \
         return; \
     m_{{setting.name}} = {{setting.name}}; \
-    m_page->setNeedsRecalcStyleInAllFrames(); \
+    invalidate(SettingsDelegate::StyleChange); \
 } \
 {%- endfor %}
 // End of SETTINGS_SETTER_BODIES.

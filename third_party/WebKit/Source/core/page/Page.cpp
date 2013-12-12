@@ -28,8 +28,11 @@
 #include "core/editing/UndoStack.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -41,9 +44,7 @@
 #include "core/page/ContextMenuController.h"
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/frame/FrameView.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/PageLifecycleNotifier.h"
@@ -52,6 +53,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/storage/StorageNamespace.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "platform/plugins/PluginData.h"
@@ -97,7 +99,8 @@ float deviceScaleFactor(Frame* frame)
 }
 
 Page::Page(PageClients& pageClients)
-    : m_autoscrollController(AutoscrollController::create(*this))
+    : SettingsDelegate(Settings::create())
+    , m_autoscrollController(AutoscrollController::create(*this))
     , m_chrome(Chrome::create(this, pageClients.chromeClient))
     , m_dragCaretController(DragCaretController::create())
     , m_dragController(DragController::create(this, pageClients.dragClient))
@@ -106,7 +109,6 @@ Page::Page(PageClients& pageClients)
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_historyController(adoptPtr(new HistoryController(this)))
-    , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
     , m_undoStack(UndoStack::create())
     , m_backForwardClient(pageClients.backForwardClient)
@@ -435,12 +437,6 @@ double Page::timerAlignmentInterval() const
     return m_timerAlignmentInterval;
 }
 
-void Page::dnsPrefetchingStateChanged()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->document()->initDNSPrefetch();
-}
-
 #if !ASSERT_DISABLED
 void Page::checkSubframeCountConsistency() const
 {
@@ -487,11 +483,46 @@ void Page::removeMultisamplingChangedObserver(MultisamplingChangedObserver* obse
     m_multisamplingChangedObservers.remove(observer);
 }
 
-void Page::multisamplingChanged()
+void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
 {
-    HashSet<MultisamplingChangedObserver*>::iterator stop = m_multisamplingChangedObservers.end();
-    for (HashSet<MultisamplingChangedObserver*>::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
-        (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
+    switch (changeType) {
+    case SettingsDelegate::StyleChange:
+        setNeedsRecalcStyleInAllFrames();
+        break;
+    case SettingsDelegate::ViewportDescriptionChange:
+        if (mainFrame())
+            mainFrame()->document()->updateViewportDescription();
+        break;
+    case SettingsDelegate::MediaTypeChange:
+        m_mainFrame->view()->setMediaType(settings().mediaTypeOverride());
+        setNeedsRecalcStyleInAllFrames();
+        break;
+    case SettingsDelegate::DNSPrefetchingChange:
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
+            frame->document()->initDNSPrefetch();
+        break;
+    case SettingsDelegate::MultisamplingChange: {
+        HashSet<MultisamplingChangedObserver*>::iterator stop = m_multisamplingChangedObservers.end();
+        for (HashSet<MultisamplingChangedObserver*>::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
+            (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
+        break;
+    }
+    case SettingsDelegate::ImageLoadingChange:
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            frame->document()->fetcher()->setImagesEnabled(settings().areImagesEnabled());
+            frame->document()->fetcher()->setAutoLoadImages(settings().loadsImagesAutomatically());
+        }
+        break;
+    case SettingsDelegate::TextAutosizingChange:
+        // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            TextAutosizer* textAutosizer = frame->document()->textAutosizer();
+            if (textAutosizer)
+                textAutosizer->recalculateMultipliers();
+        }
+        setNeedsRecalcStyleInAllFrames();
+        break;
+    }
 }
 
 void Page::didCommitLoad(Frame* frame)

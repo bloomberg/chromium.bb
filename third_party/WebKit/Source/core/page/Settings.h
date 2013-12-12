@@ -29,14 +29,17 @@
 
 #include "SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
+#include "core/frame/SettingsDelegate.h"
 #include "platform/Timer.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Page;
+class Page; // For inspector, remove after http://crbug.com/327476
 
 enum EditableLinkBehavior {
     EditableLinkDefaultBehavior,
@@ -49,7 +52,7 @@ enum EditableLinkBehavior {
 class Settings {
     WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<Settings> create(Page*);
+    static PassOwnPtr<Settings> create();
 
     GenericFontFamilySettings& genericFontFamilySettings() { return m_genericFontFamilySettings; }
 
@@ -133,10 +136,18 @@ public:
     void setLayerSquashingEnabled(bool enabled) { m_layerSquashingEnabled = enabled; }
     bool isLayerSquashingEnabled() const { return m_layerSquashingEnabled; }
 
-private:
-    explicit Settings(Page*);
+    void setDelegate(SettingsDelegate*);
 
-    Page* m_page;
+private:
+    Settings();
+
+    void invalidate(SettingsDelegate::ChangeType);
+
+    // FIXME: pageOfShame() is a hack for the inspector code:
+    // http://crbug.com/327476
+    Page* pageOfShame() const;
+
+    SettingsDelegate* m_delegate;
 
     String m_mediaTypeOverride;
     GenericFontFamilySettings m_genericFontFamilySettings;
@@ -167,10 +178,6 @@ private:
 
     // FIXME: This is a temporary flag and should be removed when squashing is ready.
     bool m_layerSquashingEnabled : 1;
-
-    Timer<Settings> m_setImageLoadingSettingsTimer;
-    void imageLoadingSettingsTimerFired(Timer<Settings>*);
-    void recalculateTextAutosizingMultipliers();
 };
 
 } // namespace WebCore

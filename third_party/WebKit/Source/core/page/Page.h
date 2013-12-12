@@ -22,9 +22,10 @@
 #define Page_h
 
 #include "core/dom/ViewportDescription.h"
-#include "core/page/PageVisibilityState.h"
+#include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/HistoryController.h"
+#include "core/page/PageVisibilityState.h"
 #include "core/rendering/Pagination.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
@@ -82,7 +83,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(Frame*);
 
-class Page : public Supplementable<Page>, public LifecycleContext<Page> {
+class Page : public Supplementable<Page>, public LifecycleContext<Page>, public SettingsDelegate {
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:
@@ -187,8 +188,6 @@ public:
     const Pagination& pagination() const { return m_pagination; }
     void setPagination(const Pagination&);
 
-    void dnsPrefetchingStateChanged();
-
     static void allVisitedStateChanged(PageGroup*);
     static void visitedStateChanged(PageGroup*, LinkHash visitedHash);
 
@@ -222,7 +221,6 @@ public:
 
     void addMultisamplingChangedObserver(MultisamplingChangedObserver*);
     void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
-    void multisamplingChanged();
 
     void didCommitLoad(Frame*);
 
@@ -243,6 +241,10 @@ private:
 
     void setTimerAlignmentInterval(double);
 
+    // SettingsDelegate overrides.
+    virtual Page* page() OVERRIDE { return this; }
+    virtual void settingsChanged(SettingsDelegate::ChangeType) OVERRIDE;
+
     const OwnPtr<AutoscrollController> m_autoscrollController;
     const OwnPtr<Chrome> m_chrome;
     const OwnPtr<DragCaretController> m_dragCaretController;
@@ -254,7 +256,6 @@ private:
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
     const OwnPtr<HistoryController> m_historyController;
-    const OwnPtr<Settings> m_settings;
     const OwnPtr<ProgressTracker> m_progress;
     const OwnPtr<UndoStack> m_undoStack;
 

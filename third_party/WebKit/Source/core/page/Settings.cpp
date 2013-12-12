@@ -28,27 +28,18 @@
 
 #include <limits>
 #include "core/dom/Document.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Chrome.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/rendering/TextAutosizer.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 using namespace std;
 
 namespace WebCore {
 
-static void setImageLoadingSettings(Page* page)
-{
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        frame->document()->fetcher()->setImagesEnabled(page->settings().areImagesEnabled());
-        frame->document()->fetcher()->setAutoLoadImages(page->settings().loadsImagesAutomatically());
-    }
-}
 
 // NOTEs
 //  1) EditingMacBehavior comprises builds on Mac;
@@ -83,9 +74,8 @@ static const bool defaultSelectTrailingWhitespaceEnabled = true;
 static const bool defaultSelectTrailingWhitespaceEnabled = false;
 #endif
 
-Settings::Settings(Page* page)
-    : m_page(0)
-    , m_mediaTypeOverride("screen")
+Settings::Settings()
+    : m_mediaTypeOverride("screen")
     , m_accessibilityFontScaleFactor(1)
     , m_deviceScaleAdjustment(1.0f)
 #if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
@@ -109,17 +99,34 @@ Settings::Settings(Page* page)
     , m_viewportMetaEnabled(false)
     , m_compositorDrivenAcceleratedScrollingEnabled(false)
     , m_layerSquashingEnabled(false)
-    , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
 {
-    m_page = page; // Page is not yet fully initialized wen constructing Settings, so keeping m_page null over initializeDefaultFontFamilies() call.
 }
 
-PassOwnPtr<Settings> Settings::create(Page* page)
+PassOwnPtr<Settings> Settings::create()
 {
-    return adoptPtr(new Settings(page));
+    return adoptPtr(new Settings);
 }
 
 SETTINGS_SETTER_BODIES
+
+void Settings::setDelegate(SettingsDelegate* delegate)
+{
+    m_delegate = delegate;
+}
+
+void Settings::invalidate(SettingsDelegate::ChangeType changeType)
+{
+    if (m_delegate)
+        m_delegate->settingsChanged(changeType);
+}
+
+// This is a total hack and should be removed.
+Page* Settings::pageOfShame() const
+{
+    if (!m_delegate)
+        return 0;
+    return m_delegate->page();
+}
 
 void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
 {
@@ -127,12 +134,12 @@ void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
         return;
 
     m_textAutosizingEnabled = textAutosizingEnabled;
-    m_page->setNeedsRecalcStyleInAllFrames();
+    invalidate(SettingsDelegate::StyleChange);
 }
 
 bool Settings::textAutosizingEnabled() const
 {
-    return InspectorInstrumentation::overrideTextAutosizing(m_page, m_textAutosizingEnabled);
+    return InspectorInstrumentation::overrideTextAutosizing(pageOfShame(), m_textAutosizingEnabled);
 }
 
 void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizingWindowSizeOverride)
@@ -141,7 +148,7 @@ void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizing
         return;
 
     m_textAutosizingWindowSizeOverride = textAutosizingWindowSizeOverride;
-    m_page->setNeedsRecalcStyleInAllFrames();
+    invalidate(SettingsDelegate::StyleChange);
 }
 
 void Settings::setUseWideViewport(bool useWideViewport)
@@ -150,8 +157,7 @@ void Settings::setUseWideViewport(bool useWideViewport)
         return;
 
     m_useWideViewport = useWideViewport;
-    if (m_page->mainFrame())
-        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportDescription());
+    invalidate(SettingsDelegate::ViewportDescriptionChange);
 }
 
 void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
@@ -160,37 +166,24 @@ void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
         return;
 
     m_loadWithOverviewMode = loadWithOverviewMode;
-    if (m_page->mainFrame())
-        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportDescription());
-}
-
-void Settings::recalculateTextAutosizingMultipliers()
-{
-    // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        TextAutosizer* textAutosizer = frame->document()->textAutosizer();
-        if (textAutosizer)
-            textAutosizer->recalculateMultipliers();
-    }
-
-    m_page->setNeedsRecalcStyleInAllFrames();
+    invalidate(SettingsDelegate::ViewportDescriptionChange);
 }
 
 void Settings::setAccessibilityFontScaleFactor(float fontScaleFactor)
 {
     m_accessibilityFontScaleFactor = fontScaleFactor;
-    recalculateTextAutosizingMultipliers();
+    invalidate(SettingsDelegate::TextAutosizingChange);
 }
 
 void Settings::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
     m_deviceScaleAdjustment = deviceScaleAdjustment;
-    recalculateTextAutosizingMultipliers();
+    invalidate(SettingsDelegate::TextAutosizingChange);
 }
 
 float Settings::deviceScaleAdjustment() const
 {
-    return InspectorInstrumentation::overrideFontScaleFactor(m_page, m_deviceScaleAdjustment);
+    return InspectorInstrumentation::overrideFontScaleFactor(pageOfShame(), m_deviceScaleAdjustment);
 }
 
 void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
@@ -199,39 +192,19 @@ void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
         return;
 
     m_mediaTypeOverride = mediaTypeOverride;
-
-    Frame* mainFrame = m_page->mainFrame();
-    ASSERT(mainFrame);
-    FrameView* view = mainFrame->view();
-    ASSERT(view);
-
-    view->setMediaType(mediaTypeOverride);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    invalidate(SettingsDelegate::MediaTypeChange);
 }
 
 void Settings::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
 {
     m_loadsImagesAutomatically = loadsImagesAutomatically;
-
-    // Changing this setting to true might immediately start new loads for images that had previously had loading disabled.
-    // If this happens while a WebView is being dealloc'ed, and we don't know the WebView is being dealloc'ed, these new loads
-    // can cause crashes downstream when the WebView memory has actually been free'd.
-    // One example where this can happen is in Mac apps that subclass WebView then do work in their overridden dealloc methods.
-    // Starting these loads synchronously is not important.  By putting it on a 0-delay, properly closing the Page cancels them
-    // before they have a chance to really start.
-    // See http://webkit.org/b/60572 for more discussion.
-    m_setImageLoadingSettingsTimer.startOneShot(0);
-}
-
-void Settings::imageLoadingSettingsTimerFired(Timer<Settings>*)
-{
-    setImageLoadingSettings(m_page);
+    invalidate(SettingsDelegate::ImageLoadingChange);
 }
 
 void Settings::setScriptEnabled(bool isScriptEnabled)
 {
     m_isScriptEnabled = isScriptEnabled;
-    InspectorInstrumentation::scriptsEnabled(m_page, m_isScriptEnabled);
+    InspectorInstrumentation::scriptsEnabled(pageOfShame(), m_isScriptEnabled);
 }
 
 void Settings::setJavaEnabled(bool isJavaEnabled)
@@ -242,9 +215,7 @@ void Settings::setJavaEnabled(bool isJavaEnabled)
 void Settings::setImagesEnabled(bool areImagesEnabled)
 {
     m_areImagesEnabled = areImagesEnabled;
-
-    // See comment in setLoadsImagesAutomatically.
-    m_setImageLoadingSettingsTimer.startOneShot(0);
+    invalidate(SettingsDelegate::ImageLoadingChange);
 }
 
 void Settings::setPluginsEnabled(bool arePluginsEnabled)
@@ -258,7 +229,7 @@ void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)
         return;
 
     m_dnsPrefetchingEnabled = dnsPrefetchingEnabled;
-    m_page->dnsPrefetchingStateChanged();
+    invalidate(SettingsDelegate::DNSPrefetchingChange);
 }
 
 void Settings::setMockScrollbarsEnabled(bool flag)
@@ -277,7 +248,7 @@ void Settings::setOpenGLMultisamplingEnabled(bool flag)
         return;
 
     m_openGLMultisamplingEnabled = flag;
-    m_page->multisamplingChanged();
+    invalidate(SettingsDelegate::MultisamplingChange);
 }
 
 bool Settings::openGLMultisamplingEnabled()
@@ -291,8 +262,7 @@ void Settings::setViewportEnabled(bool enabled)
         return;
 
     m_viewportEnabled = enabled;
-    if (m_page->mainFrame())
-        m_page->mainFrame()->document()->updateViewportDescription();
+    invalidate(SettingsDelegate::ViewportDescriptionChange);
 }
 
 void Settings::setViewportMetaEnabled(bool enabled)
