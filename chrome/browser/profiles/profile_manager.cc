@@ -434,7 +434,7 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
   CHECK(s_allow_get_default_profile)
       << "GetPrimaryUserProfile() called before allowed.";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager->IsLoggedIn())
+  if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();
   chromeos::UserManager* manager = chromeos::UserManager::Get();
   return manager->GetProfileByUser(manager->GetPrimaryUser());
@@ -449,7 +449,7 @@ Profile* ProfileManager::GetActiveUserProfile() {
   CHECK(s_allow_get_default_profile)
       << "GetActiveUserProfile() called before allowed.";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager->IsLoggedIn())
+  if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();
   chromeos::UserManager* manager = chromeos::UserManager::Get();
   return manager->GetProfileByUser(manager->GetActiveUser());
@@ -461,7 +461,8 @@ Profile* ProfileManager::GetActiveUserProfile() {
 Profile* ProfileManager::GetPrimaryUserProfileOrOffTheRecord() {
   Profile* profile = GetPrimaryUserProfile();
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsLoggedInAsGuest())
     profile = profile->GetOffTheRecordProfile();
 #endif
   return profile;
@@ -470,7 +471,8 @@ Profile* ProfileManager::GetPrimaryUserProfileOrOffTheRecord() {
 Profile* ProfileManager::GetActiveUserProfileOrOffTheRecord() {
   Profile* profile = GetActiveUserProfile();
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsLoggedInAsGuest())
     profile = profile->GetOffTheRecordProfile();
 #endif
   return profile;
