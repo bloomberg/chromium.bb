@@ -47,7 +47,10 @@ except ImportError:
 
 PRE_CQ = 'pre-cq'
 CQ = 'cq'
-SUBMITTED_WAIT_TIMEOUT = 120 # Time in seconds.
+
+# The gerrit-on-borg team tells us that delays up to 5 minutes can be
+# normal.  Setting timeout to 7 minutes to be safe-ish.
+SUBMITTED_WAIT_TIMEOUT = 7 * 60 # Time in seconds.
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
