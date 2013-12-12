@@ -19,7 +19,9 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -43,6 +45,7 @@
 #endif
 #if defined(OS_WIN)
 #include <windows.h>
+#include "base/win/windows_version.h"
 #endif
 #if defined(OS_MACOSX)
 #include <mach/vm_param.h>
@@ -388,13 +391,60 @@ TEST_F(ProcessUtilTest, GetAppOutput) {
 TEST_F(ProcessUtilTest, LaunchAsUser) {
   base::UserTokenHandle token;
   ASSERT_TRUE(OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &token));
-  std::wstring cmdline =
-      this->MakeCmdLine("SimpleChildProcess", false).GetCommandLineString();
   base::LaunchOptions options;
   options.as_user = token;
-  EXPECT_TRUE(base::LaunchProcess(cmdline, options, NULL));
+  EXPECT_TRUE(base::LaunchProcess(
+      this->MakeCmdLine("SimpleChildProcess", false), options, NULL));
 }
 
+static const char kEventToTriggerHandleSwitch[] = "event-to-trigger-handle";
+
+MULTIPROCESS_TEST_MAIN(TriggerEventChildProcess) {
+  std::string handle_value_string =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kEventToTriggerHandleSwitch);
+  CHECK(!handle_value_string.empty());
+
+  uint64 handle_value_uint64;
+  CHECK(base::StringToUint64(handle_value_string, &handle_value_uint64));
+  // Give ownership of the handle to |event|.
+  base::WaitableEvent event(reinterpret_cast<HANDLE>(handle_value_uint64));
+
+  event.Signal();
+
+  return 0;
+}
+
+TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
+  // Manually create the event, so that it can be inheritable.
+  SECURITY_ATTRIBUTES security_attributes = {};
+  security_attributes.nLength = static_cast<DWORD>(sizeof(security_attributes));
+  security_attributes.lpSecurityDescriptor = NULL;
+  security_attributes.bInheritHandle = true;
+
+  // Takes ownership of the event handle.
+  base::WaitableEvent event(
+      CreateEvent(&security_attributes, true, false, NULL));
+  base::HandlesToInheritVector handles_to_inherit;
+  handles_to_inherit.push_back(event.handle());
+  base::LaunchOptions options;
+  options.handles_to_inherit = &handles_to_inherit;
+
+  CommandLine cmd_line = MakeCmdLine("TriggerEventChildProcess", false);
+  cmd_line.AppendSwitchASCII(kEventToTriggerHandleSwitch,
+      base::Uint64ToString(reinterpret_cast<uint64>(event.handle())));
+
+  // This functionality actually requires Vista or later. Make sure that it
+  // fails properly on XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    EXPECT_FALSE(base::LaunchProcess(cmd_line, options, NULL));
+    return;
+  }
+
+  // Launch the process and wait for it to trigger the event.
+  ASSERT_TRUE(base::LaunchProcess(cmd_line, options, NULL));
+  EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
+}
 #endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX)

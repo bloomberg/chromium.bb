@@ -11,6 +11,7 @@
 #include <psapi.h>
 
 #include <ios>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -108,13 +109,49 @@ bool LaunchProcess(const string16& cmdline,
   win::StartupInformation startup_info_wrapper;
   STARTUPINFO* startup_info = startup_info_wrapper.startup_info();
 
+  bool inherit_handles = options.inherit_handles;
+  DWORD flags = 0;
+  if (options.handles_to_inherit) {
+    if (options.handles_to_inherit->empty()) {
+      inherit_handles = false;
+    } else {
+      if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+        DLOG(ERROR) << "Specifying handles to inherit requires Vista or later.";
+        return false;
+      }
+
+      if (options.handles_to_inherit->size() >
+              std::numeric_limits<DWORD>::max() / sizeof(HANDLE)) {
+        DLOG(ERROR) << "Too many handles to inherit.";
+        return false;
+      }
+
+      if (!startup_info_wrapper.InitializeProcThreadAttributeList(1)) {
+        DPLOG(ERROR);
+        return false;
+      }
+
+      if (!startup_info_wrapper.UpdateProcThreadAttribute(
+              PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+              const_cast<HANDLE*>(&options.handles_to_inherit->at(0)),
+              static_cast<DWORD>(options.handles_to_inherit->size() *
+                  sizeof(HANDLE)))) {
+        DPLOG(ERROR);
+        return false;
+      }
+
+      inherit_handles = true;
+      flags |= EXTENDED_STARTUPINFO_PRESENT;
+    }
+  }
+
   if (options.empty_desktop_name)
     startup_info->lpDesktop = L"";
   startup_info->dwFlags = STARTF_USESHOWWINDOW;
   startup_info->wShowWindow = options.start_hidden ? SW_HIDE : SW_SHOW;
 
   if (options.stdin_handle || options.stdout_handle || options.stderr_handle) {
-    DCHECK(options.inherit_handles);
+    DCHECK(inherit_handles);
     DCHECK(options.stdin_handle);
     DCHECK(options.stdout_handle);
     DCHECK(options.stderr_handle);
@@ -123,8 +160,6 @@ bool LaunchProcess(const string16& cmdline,
     startup_info->hStdOutput = options.stdout_handle;
     startup_info->hStdError = options.stderr_handle;
   }
-
-  DWORD flags = 0;
 
   if (options.job_handle) {
     flags |= CREATE_SUSPENDED;
@@ -152,7 +187,7 @@ bool LaunchProcess(const string16& cmdline,
     BOOL launched =
         CreateProcessAsUser(options.as_user, NULL,
                             const_cast<wchar_t*>(cmdline.c_str()),
-                            NULL, NULL, options.inherit_handles, flags,
+                            NULL, NULL, inherit_handles, flags,
                             enviroment_block, NULL, startup_info,
                             &temp_process_info);
     DestroyEnvironmentBlock(enviroment_block);
@@ -163,7 +198,7 @@ bool LaunchProcess(const string16& cmdline,
   } else {
     if (!CreateProcess(NULL,
                        const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
-                       options.inherit_handles, flags, NULL, NULL,
+                       inherit_handles, flags, NULL, NULL,
                        startup_info, &temp_process_info)) {
       DPLOG(ERROR);
       return false;

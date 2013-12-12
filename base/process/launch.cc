@@ -10,6 +10,7 @@ LaunchOptions::LaunchOptions()
     : wait(false),
 #if defined(OS_WIN)
       start_hidden(false),
+      handles_to_inherit(NULL),
       inherit_handles(false),
       as_user(NULL),
       empty_desktop_name(false),
