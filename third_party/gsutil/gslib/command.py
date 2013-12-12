@@ -169,7 +169,8 @@ class Command(object):
 
   def __init__(self, command_runner, args, headers, debug, parallel_operations,
                gsutil_bin_dir, boto_lib_dir, config_file_list, gsutil_ver,
-               bucket_storage_uri_class, test_method=None):
+               bucket_storage_uri_class, test_method=None,
+               bypass_prodaccess=True):
     """
     Args:
       command_runner: CommandRunner (for commands built atop other commands).
@@ -186,6 +187,7 @@ class Command(object):
       test_method: Optional general purpose method for testing purposes.
                    Application and semantics of this method will vary by
                    command and test type.
+      bypass_prodaccess: Boolean to ignore the existance of prodaccess.
 
     Implementation note: subclasses shouldn't need to define an __init__
     method, and instead depend on the shared initialization that happens
@@ -209,6 +211,7 @@ class Command(object):
     self.exclude_symlinks = False
     self.recursion_requested = False
     self.all_versions = False
+    self.bypass_prodaccess = bypass_prodaccess
 
     # Process sub-command instance specifications.
     # First, ensure subclass implementation sets all required keys.
@@ -343,9 +346,9 @@ class Command(object):
     if os.path.isfile(acl_arg):
       acl_file = open(acl_arg, 'r')
       acl_arg = acl_file.read()
-      
+
       # TODO: Remove this workaround when GCS allows
-      # whitespace in the Permission element on the server-side 
+      # whitespace in the Permission element on the server-side
       acl_arg = re.sub(r'<Permission>\s*(\S+)\s*</Permission>',
                        r'<Permission>\1</Permission>', acl_arg)
 
@@ -642,7 +645,7 @@ class Command(object):
   def _ConfigureNoOpAuthIfNeeded(self):
     """Sets up no-op auth handler if no boto credentials are configured."""
     config = boto.config
-    if not util.HasConfiguredCredentials():
+    if not util.HasConfiguredCredentials(self.bypass_prodaccess):
       if self.config_file_list:
         if (config.has_option('Credentials', 'gs_oauth2_refresh_token')
             and not HAVE_OAUTH2):

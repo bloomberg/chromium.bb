@@ -75,15 +75,6 @@ class GstoolsUnitTests(unittest.TestCase):
     self.assertEqual(code, 0)
     self.assertEqual(err, '')
 
-  def test_gsutil_version(self):
-    gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH, None)
-    _, _, err = gsutil.check_call('version')
-    err_lines = err.splitlines()
-    self.assertEqual(err_lines[0], 'gsutil version 3.25')
-    self.assertEqual(
-        err_lines[1],
-        'checksum c9cffb512f467c0aa54880788b9ee6ca (OK)')
-
   def test_get_sha1(self):
     lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
     self.assertEqual(

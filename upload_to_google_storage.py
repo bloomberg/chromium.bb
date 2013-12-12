@@ -234,7 +234,8 @@ def main(args):
 
   # Make sure we can find a working instance of gsutil.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
-    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
+    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto,
+                    bypass_prodaccess=True)
   else:
     gsutil = None
     for path in os.environ["PATH"].split(os.pathsep):

@@ -44,12 +44,13 @@ def GetNormalizedPlatform():
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
   and is also immutable."""
-  def __init__(self, path, boto_path, timeout=None):
+  def __init__(self, path, boto_path, timeout=None, bypass_prodaccess=False):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
     self.timeout = timeout
     self.boto_path = boto_path
+    self.bypass_prodaccess = bypass_prodaccess
 
   def get_sub_env(self):
     env = os.environ.copy()
@@ -68,13 +69,19 @@ class Gsutil(object):
     return env
 
   def call(self, *args):
-    return subprocess2.call((sys.executable, self.path) + args,
-                            env=self.get_sub_env(),
-                            timeout=self.timeout)
+    cmd = [sys.executable, self.path]
+    if self.bypass_prodaccess:
+      cmd.append('--bypass_prodaccess')
+    cmd.extend(args)
+    return subprocess2.call(cmd, env=self.get_sub_env(), timeout=self.timeout)
 
   def check_call(self, *args):
+    cmd = [sys.executable, self.path]
+    if self.bypass_prodaccess:
+      cmd.append('--bypass_prodaccess')
+    cmd.extend(args)
     ((out, err), code) = subprocess2.communicate(
-        (sys.executable, self.path) + args,
+        cmd,
         stdout=subprocess2.PIPE,
         stderr=subprocess2.PIPE,
         env=self.get_sub_env(),
@@ -343,17 +350,14 @@ def main(args):
   if options.no_auth:
     options.boto = os.devnull
 
-  # Make sure we can find a working instance of gsutil.
+  # Make sure gsutil exists where we expect it to.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
-    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
+    gsutil = Gsutil(GSUTIL_DEFAULT_PATH,
+                    boto_path=options.boto,
+                    bypass_prodaccess=options.no_auth)
   else:
-    gsutil = None
-    for path in os.environ["PATH"].split(os.pathsep):
-      if os.path.exists(path) and 'gsutil' in os.listdir(path):
-        gsutil = Gsutil(os.path.join(path, 'gsutil'), boto_path=options.boto)
-    if not gsutil:
-      parser.error('gsutil not found in %s, bad depot_tools checkout?' %
-                  GSUTIL_DEFAULT_PATH)
+    parser.error('gsutil not found in %s, bad depot_tools checkout?' %
+                 GSUTIL_DEFAULT_PATH)
 
   # Passing in -g/--config will run our copy of GSUtil, then quit.
   if options.config:

@@ -15,6 +15,9 @@ Modifications:
 * Moved gsutil/third_party into our own third_party directory
 * Append sys.path in gsutil/gsutil to find the moved third_party modules
 * Updated checksum ce71ac982f1148315e7fa65cff2f83e8 -> c9cffb512f467c0aa54880788b9ee6ca
-* Remove code to remove http_proxy before boto.config invocation.
+* Removed code to remove http_proxy before boto.config invocation.
+* Added and imports gsutil/plugins/sso_auth.py to support prodaccess
+  based authentication.
+* Added flag to bypass prodaccess authentication.
 
 Full license is in the COPYING file.

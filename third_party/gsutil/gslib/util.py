@@ -16,6 +16,7 @@
 
 import math
 import re
+import os
 import sys
 import time
 
@@ -61,7 +62,7 @@ class ListingStyle(object):
   LONG_LONG = 'LONG_LONG'
 
 
-def HasConfiguredCredentials():
+def HasConfiguredCredentials(bypass_prodaccess):
   """Determines if boto credential/config file exists."""
   config = boto.config
   has_goog_creds = (config.has_option('Credentials', 'gs_access_key_id') and
@@ -71,8 +72,10 @@ def HasConfiguredCredentials():
   has_oauth_creds = (HAVE_OAUTH2 and
       config.has_option('Credentials', 'gs_oauth2_refresh_token'))
   has_auth_plugins = config.has_option('Plugin', 'plugin_directory')
+  # Pretend prodaccess doesn't exist if --bypass_prodaccess is passed in.
+  has_prodaccess = HasExecutable('prodaccess') and not bypass_prodaccess
   return (has_goog_creds or has_amzn_creds or has_oauth_creds
-          or has_auth_plugins)
+          or has_auth_plugins or has_prodaccess)
 
 
 def _RoundToNearestExponent(num):
@@ -153,3 +156,12 @@ def ExtractErrorDetail(e):
   if detail_start != -1 and detail_end != -1:
     return (exc_name, e.body[detail_start+9:detail_end])
   return (exc_name, None)
+
+
+def HasExecutable(filename):
+  """Determines if an executable is available on the system."""
+  for path in os.environ['PATH'].split(os.pathsep):
+    exe_file = os.path.join(path, filename)
+    if os.path.exists(exe_file) and os.access(exe_file, os.X_OK):
+      return True
+  return False
