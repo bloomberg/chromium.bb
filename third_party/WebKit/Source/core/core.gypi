@@ -2569,8 +2569,6 @@
             'html/parser/HTMLEntityTable.h',
             'html/parser/HTMLFormattingElementList.cpp',
             'html/parser/HTMLFormattingElementList.h',
-            'html/parser/HTMLIdentifier.cpp',
-            'html/parser/HTMLIdentifier.h',
             'html/parser/HTMLInputStream.h',
             'html/parser/HTMLMetaCharsetParser.cpp',
             'html/parser/HTMLMetaCharsetParser.h',

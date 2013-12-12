@@ -358,9 +358,9 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     return adoptRef(new (string) StringImpl(length));
 }
 
-static Vector<StringImpl*>& staticStrings()
+static StaticStringsTable& staticStrings()
 {
-    DEFINE_STATIC_LOCAL(Vector<StringImpl*>, staticStrings, ());
+    DEFINE_STATIC_LOCAL(StaticStringsTable, staticStrings, ());
     return staticStrings;
 }
 
@@ -368,7 +368,7 @@ static Vector<StringImpl*>& staticStrings()
 static bool s_allowCreationOfStaticStrings = true;
 #endif
 
-const Vector<StringImpl*>& StringImpl::allStaticStrings()
+const StaticStringsTable& StringImpl::allStaticStrings()
 {
     return staticStrings();
 }
@@ -380,9 +380,9 @@ void StringImpl::freezeStaticStrings()
 #ifndef NDEBUG
     s_allowCreationOfStaticStrings = false;
 #endif
-
-    staticStrings().shrinkToFit();
 }
+
+unsigned StringImpl::m_highestStaticStringLength = 0;
 
 StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsigned hash)
 {
@@ -390,11 +390,18 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     ASSERT(string);
     ASSERT(length);
 
+    StaticStringsTable::const_iterator it = staticStrings().find(hash);
+    if (it != staticStrings().end()) {
+        ASSERT(!memcmp(string, it->value + 1, length * sizeof(LChar)));
+        return it->value;
+    }
+
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
+
     WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
     StringImpl* impl = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
 
@@ -406,7 +413,8 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
 #endif
 
     ASSERT(isMainThread());
-    staticStrings().append(impl);
+    m_highestStaticStringLength = std::max(m_highestStaticStringLength, length);
+    staticStrings().add(hash, impl);
     WTF_ANNOTATE_BENIGN_RACE(impl,
         "Benign race on the reference counter of a static string created by StringImpl::createStatic");
 

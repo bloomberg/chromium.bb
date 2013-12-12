@@ -26,7 +26,6 @@
 #ifndef CompactHTMLToken_h
 #define CompactHTMLToken_h
 
-#include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLToken.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
@@ -39,13 +38,13 @@ class QualifiedName;
 class CompactHTMLToken {
 public:
     struct Attribute {
-        Attribute(const HTMLIdentifier& name, const String& value)
+        Attribute(const String& name, const String& value)
             : name(name)
             , value(value)
         {
         }
 
-        HTMLIdentifier name;
+        String name;
         String value;
     };
 
@@ -54,7 +53,7 @@ public:
     bool isSafeToSendToAnotherThread() const;
 
     HTMLToken::Type type() const { return static_cast<HTMLToken::Type>(m_type); }
-    const HTMLIdentifier& data() const { return m_data; }
+    const String& data() const { return m_data; }
     bool selfClosing() const { return m_selfClosing; }
     bool isAll8BitData() const { return m_isAll8BitData; }
     const Vector<Attribute>& attributes() const { return m_attributes; }
@@ -63,7 +62,7 @@ public:
 
     // There is only 1 DOCTYPE token per document, so to avoid increasing the
     // size of CompactHTMLToken, we just use the m_attributes vector.
-    const HTMLIdentifier& publicIdentifier() const { return m_attributes[0].name; }
+    const String& publicIdentifier() const { return m_attributes[0].name; }
     const String& systemIdentifier() const { return m_attributes[0].value; }
     bool doctypeForcesQuirks() const { return m_doctypeForcesQuirks; }
 
@@ -73,7 +72,7 @@ private:
     unsigned m_isAll8BitData : 1;
     unsigned m_doctypeForcesQuirks: 1;
 
-    HTMLIdentifier m_data; // "name", "characters", or "data" depending on m_type
+    String m_data; // "name", "characters", or "data" depending on m_type
     Vector<Attribute> m_attributes;
     TextPosition m_textPosition;
 };

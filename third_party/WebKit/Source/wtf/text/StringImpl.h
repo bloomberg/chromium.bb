@@ -26,6 +26,7 @@
 #include <limits.h>
 #include "wtf/ASCIICType.h"
 #include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 #include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
 #include "wtf/WTFExport.h"
@@ -41,6 +42,7 @@ typedef const struct __CFString * CFStringRef;
 
 namespace WTF {
 
+struct AlreadyHashed;
 struct CStringTranslator;
 template<typename CharacterType> struct HashAndCharactersTranslator;
 struct HashAndUTF8CharactersTranslator;
@@ -56,6 +58,7 @@ enum StripBehavior { StripExtraWhiteSpace, DoNotStripWhiteSpace };
 
 typedef bool (*CharacterMatchFunctionPtr)(UChar);
 typedef bool (*IsWhiteSpaceFunctionPtr)(UChar);
+typedef HashMap<unsigned, StringImpl*, AlreadyHashed> StaticStringsTable;
 
 // Define STRING_STATS to turn on run time statistics of string sizes and memory usage
 #undef STRING_STATS
@@ -180,7 +183,8 @@ public:
 
     static StringImpl* createStatic(const char* string, unsigned length, unsigned hash);
     static void freezeStaticStrings();
-    static const Vector<StringImpl*>& allStaticStrings();
+    static const StaticStringsTable& allStaticStrings();
+    static unsigned highestStaticStringLength() { return m_highestStaticStringLength; }
 
     static PassRefPtr<StringImpl> create(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> create(const LChar*, unsigned length);
@@ -441,6 +445,8 @@ private:
 #ifdef STRING_STATS
     static StringStats m_stringStats;
 #endif
+
+    static unsigned m_highestStaticStringLength;
 
 #ifndef NDEBUG
     void assertHashIsCorrect()

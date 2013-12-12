@@ -47,15 +47,15 @@ static bool match(const StringImpl* impl, const QualifiedName& qName)
     return impl == qName.localName().impl();
 }
 
-static bool match(const HTMLIdentifier& name, const QualifiedName& qName)
-{
-    return match(name.asStringImpl(), qName);
-}
-
 static bool match(const AtomicString& name, const QualifiedName& qName)
 {
     ASSERT(isMainThread());
     return qName.localName() == name;
+}
+
+static bool match(const String& name, const QualifiedName& qName)
+{
+    return threadSafeMatch(name, qName);
 }
 
 static const StringImpl* tagImplFor(const HTMLToken::DataVector& data)
@@ -67,9 +67,9 @@ static const StringImpl* tagImplFor(const HTMLToken::DataVector& data)
     return 0;
 }
 
-static const StringImpl* tagImplFor(const HTMLIdentifier& tagName)
+static const StringImpl* tagImplFor(const String& tagName)
 {
-    const StringImpl* result = tagName.asStringImpl();
+    const StringImpl* result = tagName.impl();
     if (result->isStatic())
         return result;
     return 0;

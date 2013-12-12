@@ -71,11 +71,11 @@ private:
 
     void addStaticStrings()
     {
-        const Vector<StringImpl*>& staticStrings = StringImpl::allStaticStrings();
+        const StaticStringsTable& staticStrings = StringImpl::allStaticStrings();
 
-        Vector<StringImpl*>::const_iterator it = staticStrings.begin();
+        StaticStringsTable::const_iterator it = staticStrings.begin();
         for (; it != staticStrings.end(); ++it) {
-            addStringImpl(*it);
+            addStringImpl(it->value);
         }
     }
 

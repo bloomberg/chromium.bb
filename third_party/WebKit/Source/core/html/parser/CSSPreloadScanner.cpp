@@ -29,7 +29,6 @@
 #include "core/html/parser/CSSPreloadScanner.h"
 
 #include "FetchInitiatorTypeNames.h"
-#include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/text/SegmentedString.h"
 
@@ -66,16 +65,15 @@ void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, const SegmentedS
     scanCommon(data.data(), data.data() + data.size(), source, requests);
 }
 
-void CSSPreloadScanner::scan(const HTMLIdentifier& identifier,  const SegmentedString& source, PreloadRequestStream& requests)
+void CSSPreloadScanner::scan(const String& tagName,  const SegmentedString& source, PreloadRequestStream& requests)
 {
-    const StringImpl* data = identifier.asStringImpl();
-    if (data->is8Bit()) {
-        const LChar* begin = data->characters8();
-        scanCommon(begin, begin + data->length(), source, requests);
+    if (tagName.is8Bit()) {
+        const LChar* begin = tagName.characters8();
+        scanCommon(begin, begin + tagName.length(), source, requests);
         return;
     }
-    const UChar* begin = data->characters16();
-    scanCommon(begin, begin + data->length(), source, requests);
+    const UChar* begin = tagName.characters16();
+    scanCommon(begin, begin + tagName.length(), source, requests);
 }
 
 inline void CSSPreloadScanner::tokenize(UChar c, const SegmentedString& source)
