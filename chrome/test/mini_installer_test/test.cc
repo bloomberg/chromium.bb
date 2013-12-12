@@ -330,28 +330,6 @@ TEST_F(MiniInstallTest, InstallChromeAndChromeFrameMultiInstallSys) {
       provider_->GetCurrentBuild()));
 }
 
-TEST_F(MiniInstallTest,
-    InstallChromeAndChromeFrameReadyModeUser) {
-  ASSERT_TRUE(
-      installer_test::Install(full_installer_,SwitchBuilder().AddChrome()
-      .AddChromeFrame().AddMultiInstall().AddReadyMode()));
-  ASSERT_TRUE(installer_test::ValidateInstall(
-      false,
-      InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI,
-      provider_->GetCurrentBuild()));
-}
-
-TEST_F(MiniInstallTest,
-    InstallChromeAndChromeFrameReadyModeSys) {
-  ASSERT_TRUE(installer_test::Install(full_installer_,
-      SwitchBuilder().AddChrome().AddChromeFrame().AddMultiInstall()
-      .AddReadyMode().AddSystemInstall()));
-  ASSERT_TRUE(installer_test::ValidateInstall(
-      true,
-      InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI,
-      provider_->GetCurrentBuild()));
-}
-
 TEST_F(MiniInstallTest, InstallChromeFrameUsingMultiInstallUser) {
   ASSERT_TRUE(installer_test::Install(full_installer_,
       SwitchBuilder().AddChromeFrame().AddMultiInstall()));

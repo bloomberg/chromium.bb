@@ -380,10 +380,6 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
   for (Products::const_iterator it = products.begin(); it < products.end();
        ++it) {
     const Product& p = **it;
-    if (p.is_chrome_frame()) {
-      AddChromeFrameWorkItems(original_state, installer_state, setup_path,
-                              new_version, p, list);
-    }
     if (p.is_chrome_app_host()) {
       AddInstallAppCommandWorkItems(installer_state, original_state,
                                     new_version, p, list);
@@ -685,18 +681,6 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
   CommandLine uninstall_arguments(CommandLine::NO_PROGRAM);
   AppendUninstallCommandLineFlags(installer_state, product,
                                   &uninstall_arguments);
-
-  // If Chrome Frame is installed in Ready Mode, add --chrome-frame to Chrome's
-  // uninstall entry. We skip this processing in case of uninstall since this
-  // means that Chrome Frame is being uninstalled, so there's no need to do any
-  // looping.
-  if (product.is_chrome() &&
-      installer_state.operation() != InstallerState::UNINSTALL) {
-    const Product* chrome_frame =
-        installer_state.FindProduct(BrowserDistribution::CHROME_FRAME);
-    if (chrome_frame && chrome_frame->HasOption(kOptionReadyMode))
-      chrome_frame->AppendProductFlags(&uninstall_arguments);
-  }
 
   string16 update_state_key(browser_dist->GetStateKey());
   install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
@@ -1282,143 +1266,6 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
   DCHECK(set_msi_work_item);
   set_msi_work_item->set_ignore_failure(true);
   set_msi_work_item->set_log_message("Could not write MSI marker!");
-}
-
-void AddChromeFrameWorkItems(const InstallationState& original_state,
-                             const InstallerState& installer_state,
-                             const base::FilePath& setup_path,
-                             const Version& new_version,
-                             const Product& product,
-                             WorkItemList* list) {
-  DCHECK(product.is_chrome_frame());
-  if (!installer_state.is_multi_install()) {
-    VLOG(1) << "Not adding GCF specific work items for single install.";
-    return;
-  }
-
-  string16 version_key(product.distribution()->GetVersionKey());
-  bool ready_mode = product.HasOption(kOptionReadyMode);
-  HKEY root = installer_state.root_key();
-  const bool is_install =
-      (installer_state.operation() != InstallerState::UNINSTALL);
-  bool update_chrome_uninstall_command = false;
-  BrowserDistribution* dist =
-      installer_state.multi_package_binaries_distribution();
-  if (ready_mode) {
-    // If GCF is being installed in ready mode, we write an entry to the
-    // multi-install state key.  If the value already exists, we will not
-    // overwrite it since the user might have opted out.
-    list->AddCreateRegKeyWorkItem(root, dist->GetStateKey());
-    list->AddSetRegValueWorkItem(root, dist->GetStateKey(),
-        kChromeFrameReadyModeField,
-        static_cast<int64>(is_install ? 1 : 0),  // The value we want to set.
-        !is_install);  // Overwrite existing value.
-    if (is_install) {
-      base::FilePath installer_path(installer_state
-          .GetInstallerDirectory(new_version).Append(setup_path.BaseName()));
-
-      CommandLine basic_cl(installer_path);
-      basic_cl.AppendSwitch(switches::kChromeFrame);
-      basic_cl.AppendSwitch(switches::kMultiInstall);
-
-      if (installer_state.system_install())
-        basic_cl.AppendSwitch(switches::kSystemLevel);
-
-      CommandLine temp_opt_out(basic_cl);
-      temp_opt_out.AppendSwitch(switches::kChromeFrameReadyModeTempOptOut);
-
-      CommandLine end_temp_opt_out(basic_cl);
-      end_temp_opt_out.AppendSwitch(
-          switches::kChromeFrameReadyModeEndTempOptOut);
-
-      CommandLine opt_out(installer_path);
-      AppendUninstallCommandLineFlags(installer_state, product, &opt_out);
-      // Force Uninstall silences the prompt to reboot to complete uninstall.
-      opt_out.AppendSwitch(switches::kForceUninstall);
-
-      CommandLine opt_in(basic_cl);
-      opt_in.AppendSwitch(switches::kChromeFrameReadyModeOptIn);
-
-      list->AddSetRegValueWorkItem(root, version_key,
-                                   google_update::kRegCFTempOptOutCmdField,
-                                   temp_opt_out.GetCommandLineString(), true);
-      list->AddSetRegValueWorkItem(root, version_key,
-                                   google_update::kRegCFEndTempOptOutCmdField,
-                                   end_temp_opt_out.GetCommandLineString(),
-                                   true);
-      list->AddSetRegValueWorkItem(root, version_key,
-                                   google_update::kRegCFOptOutCmdField,
-                                   opt_out.GetCommandLineString(), true);
-      list->AddSetRegValueWorkItem(root, version_key,
-                                   google_update::kRegCFOptInCmdField,
-                                   opt_in.GetCommandLineString(), true);
-    } else {
-      // If Chrome is not also being uninstalled, we need to update its command
-      // line so that it doesn't include uninstalling Chrome Frame now.
-      update_chrome_uninstall_command =
-          (installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER) ==
-           NULL);
-    }
-  } else {
-    // It doesn't matter here if we're installing or uninstalling Chrome Frame.
-    // If ready mode isn't specified on the command line for installs, we need
-    // to delete the ready mode flag from the registry if it exists - this
-    // constitutes an opt-in for the user.  If we're uninstalling CF and ready
-    // mode isn't specified on the command line, that means that CF wasn't
-    // installed with ready mode enabled (the --ready-mode switch should be set
-    // in the registry) so deleting the value should have no effect.
-    // In both cases (install/uninstall), we need to make sure that Chrome's
-    // uninstallation command line does not include the --chrome-frame switch
-    // so that uninstalling Chrome will no longer uninstall Chrome Frame.
-
-    list->AddDeleteRegValueWorkItem(root, dist->GetStateKey(),
-        kChromeFrameReadyModeField);
-
-    const Product* chrome =
-        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
-    if (chrome) {
-      // Chrome is already a part of this installation run, so we can assume
-      // that the uninstallation arguments will be updated correctly.
-    } else {
-      // Chrome is not a part of this installation run, so we have to explicitly
-      // check if Chrome is installed, and if so, update its uninstallation
-      // command lines.
-      const ProductState* chrome_state = original_state.GetProductState(
-          installer_state.system_install(),
-          BrowserDistribution::CHROME_BROWSER);
-      update_chrome_uninstall_command =
-          (chrome_state != NULL) && chrome_state->is_multi_install();
-    }
-  }
-
-  if (!ready_mode || !is_install) {
-    list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFTempOptOutCmdField);
-    list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFEndTempOptOutCmdField);
-    list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFOptOutCmdField);
-    list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFOptInCmdField);
-  }
-
-  if (update_chrome_uninstall_command) {
-    // Chrome is not a part of this installation run, so we have to explicitly
-    // check if Chrome is installed, and if so, update its uninstallation
-    // command lines.
-    const ProductState* chrome_state = original_state.GetProductState(
-        installer_state.system_install(), BrowserDistribution::CHROME_BROWSER);
-    if (chrome_state != NULL) {
-      DCHECK(chrome_state->is_multi_install());
-      Product chrome(BrowserDistribution::GetSpecificDistribution(
-                         BrowserDistribution::CHROME_BROWSER));
-      chrome.InitializeFromUninstallCommand(chrome_state->uninstall_command());
-      AddUninstallShortcutWorkItems(installer_state, setup_path,
-                                    chrome_state->version(), chrome, list);
-    } else {
-      NOTREACHED() << "What happened to Chrome?";
-    }
-  }
 }
 
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,

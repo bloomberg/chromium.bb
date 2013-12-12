@@ -112,8 +112,8 @@ void AddChannelValueUpdateWorkItems(
 
 // Makes appropriate changes to the Google Update "ap" value in the registry.
 // Specifically, removes the flags associated with this product ("-chrome" or
-// "-chromeframe[-readymode]") from the "ap" values for all other
-// installed products and for the multi-installer package.
+// "-chromeframe") from the "ap" values for all other installed products and for
+// the multi-installer package.
 void ProcessGoogleUpdateItems(
     const installer::InstallationState& original_state,
     const installer::InstallerState& installer_state,
@@ -1060,19 +1060,6 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
   }
 }
 
-bool ProcessChromeFrameWorkItems(const InstallationState& original_state,
-                                 const InstallerState& installer_state,
-                                 const base::FilePath& setup_path,
-                                 const Product& product) {
-  if (!product.is_chrome_frame())
-    return false;
-
-  scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
-  AddChromeFrameWorkItems(original_state, installer_state, setup_path,
-                          Version(), product, item_list.get());
-  return item_list->Do();
-}
-
 InstallStatus UninstallProduct(const InstallationState& original_state,
                                const InstallerState& installer_state,
                                const base::FilePath& setup_path,
@@ -1276,11 +1263,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
             shadow_app_launcher_dist->GetVersionKey());
       }
     }
-  }
-
-  if (product.is_chrome_frame()) {
-    ProcessChromeFrameWorkItems(original_state, installer_state, setup_path,
-                                product);
   }
 
   if (installer_state.is_multi_install()) {

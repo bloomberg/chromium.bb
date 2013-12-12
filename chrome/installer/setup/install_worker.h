@@ -131,16 +131,6 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
                              bool set,
                              WorkItemList* work_item_list);
 
-// Called for either installation or uninstallation. This method updates the
-// registry according to Chrome Frame specific options for the current
-// installation.  This includes handling of the ready-mode option.
-void AddChromeFrameWorkItems(const InstallationState& original_state,
-                             const InstallerState& installer_state,
-                             const base::FilePath& setup_path,
-                             const base::Version& new_version,
-                             const Product& product,
-                             WorkItemList* list);
-
 // Called for either installation or uninstallation. This method adds or
 // removes COM registration for a product's DelegateExecute verb handler.
 // If |new_version| is empty, the registrations will point to

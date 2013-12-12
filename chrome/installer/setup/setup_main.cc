@@ -38,7 +38,6 @@
 #include "chrome/installer/setup/archive_patch_helper.h"
 #include "chrome/installer/setup/cf_migration.h"
 #include "chrome/installer/setup/chrome_frame_quick_enable.h"
-#include "chrome/installer/setup/chrome_frame_ready_mode.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -368,18 +367,8 @@ bool CheckGroupPolicySettings(const InstallationState& original_state,
 }
 
 // If only the binaries are being updated, fail.
-// If Chrome Frame is being installed by itself in multi-mode, non-ready-mode:
+// If Chrome Frame is being installed by itself in multi-mode:
 //   - If a non-multi Chrome Frame installation is present, fail.
-// If Chrome Frame is being installed by itself in multi-mode, ready-mode:
-//   - If no Chrome installation is present, fail.
-//   - If a Chrome installation is present, add it to the set of products to
-//     install.
-// If Chrome Frame is being installed with Chrome in multi-mode, ready-mode:
-//   - If a non-multi Chrome Frame installation is present, Chrome Frame is
-//     removed from |installer_state|'s list of products (thereby preserving
-//     the existing SxS install).
-//   - If a multi Chrome Frame installation is present, its options are
-//     preserved (i.e., the --ready-mode command-line option is ignored).
 // If any product is being installed in single-mode that already exists in
 // multi-mode, fail.
 bool CheckMultiInstallConditions(const InstallationState& original_state,
@@ -455,30 +444,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       return true;
     }
 
-    if (chrome) {
-      if (chrome_frame &&
-          chrome_frame->HasOption(installer::kOptionReadyMode)) {
-        // We're being asked to install Chrome with Chrome Frame in ready-mode.
-        // This is an optimistic operation: if a SxS install of Chrome Frame
-        // is already present, don't touch it; if a multi-install of Chrome
-        // Frame is present, preserve its settings (ready-mode).
-        if (cf_state) {
-          installer_state->RemoveProduct(chrome_frame);
-          chrome_frame = NULL;
-          if (cf_state->is_multi_install()) {
-            chrome_frame = installer_state->AddProductFromState(
-                BrowserDistribution::CHROME_FRAME, *cf_state);
-            VLOG(1) << "Upgrading existing multi-install Chrome Frame rather "
-                       "than installing in ready-mode.";
-          } else {
-            VLOG(1) << "Skipping upgrade of single-install Chrome Frame rather "
-                       "than installing in ready-mode.";
-          }
-        } else {
-          VLOG(1) << "Performing initial install of Chrome Frame ready-mode.";
-        }
-      }
-    } else if (chrome_state) {
+    if (!chrome && chrome_state) {
       // A product other than Chrome is being installed in multi-install mode,
       // and Chrome is already present. Add Chrome to the set of products
       // (making it multi-install in the process) so that it is updated, too.
@@ -488,15 +454,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       multi_chrome->SetOption(installer::kOptionMultiInstall, true);
       chrome = installer_state->AddProduct(&multi_chrome);
       VLOG(1) << "Upgrading existing Chrome browser in multi-install mode.";
-    } else if (chrome_frame &&
-               chrome_frame->HasOption(installer::kOptionReadyMode)) {
-      // Chrome Frame with ready-mode is to be installed, yet Chrome is
-      // neither installed nor being installed.  Fail.
-      LOG(ERROR) << "Cannot install Chrome Frame in ready mode without Chrome.";
-      *status = installer::READY_MODE_REQUIRES_CHROME;
-      installer_state->WriteInstallerResult(
-          *status, IDS_INSTALL_READY_MODE_REQUIRES_CHROME_BASE, NULL);
-      return false;
     }
 
     // Fail if we're installing Chrome Frame when a single-install of it is
@@ -1255,20 +1212,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
             cmd_line.GetProgram(), installer::REENTRY_SYS_UPDATE, true);
       }
     }
-  } else if (cmd_line.HasSwitch(
-                 installer::switches::kChromeFrameReadyModeOptIn)) {
-    *exit_code = InstallUtil::GetInstallReturnCode(
-        installer::ChromeFrameReadyModeOptIn(original_state, *installer_state));
-  } else if (cmd_line.HasSwitch(
-                 installer::switches::kChromeFrameReadyModeTempOptOut)) {
-    *exit_code = InstallUtil::GetInstallReturnCode(
-        installer::ChromeFrameReadyModeTempOptOut(original_state,
-                                                  *installer_state));
-  } else if (cmd_line.HasSwitch(
-                 installer::switches::kChromeFrameReadyModeEndTempOptOut)) {
-    *exit_code = InstallUtil::GetInstallReturnCode(
-        installer::ChromeFrameReadyModeEndTempOptOut(original_state,
-                                                     *installer_state));
   } else if (cmd_line.HasSwitch(installer::switches::kChromeFrameQuickEnable)) {
     *exit_code = installer::ChromeFrameQuickEnable(original_state,
                                                    installer_state);

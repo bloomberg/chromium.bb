@@ -41,7 +41,7 @@ InstallStatus CheckQuickEnablePreconditions(
     return NON_MULTI_INSTALLATION_EXISTS;
   }
 
-  // Chrome Frame must not be installed (ready-mode doesn't count).
+  // Chrome Frame must not be installed.
   const ProductState* cf_state =
       machine_state.GetProductState(installer_state.system_install(),
                                     BrowserDistribution::CHROME_FRAME);
@@ -51,9 +51,7 @@ InstallStatus CheckQuickEnablePreconditions(
                                              BrowserDistribution::CHROME_FRAME);
   }
 
-  if (cf_state != NULL &&
-      !cf_state->uninstall_command().HasSwitch(
-          switches::kChromeFrameReadyMode)) {
+  if (cf_state != NULL) {
     LOG(ERROR) << "Chrome Frame already installed.";
     return installer_state.system_install() ?
         SYSTEM_LEVEL_INSTALL_EXISTS : USER_LEVEL_INSTALL_EXISTS;
@@ -108,8 +106,6 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       // context of an interactive session with a user.
       AddVersionKeyWorkItems(installer_state->root_key(), cf->distribution(),
                              new_version, true, item_list.get());
-      AddChromeFrameWorkItems(machine_state, *installer_state, setup_path,
-                              new_version, *cf, item_list.get());
 
       const Version* opv = chrome_state->old_version();
       AppendPostInstallTasks(*installer_state, setup_path, opv,

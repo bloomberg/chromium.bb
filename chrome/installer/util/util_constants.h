@@ -145,10 +145,6 @@ extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
 extern const char kChromeAppLauncher[];
 extern const char kChromeFrame[];
 extern const char kChromeFrameQuickEnable[];
-extern const char kChromeFrameReadyMode[];
-extern const char kChromeFrameReadyModeOptIn[];
-extern const char kChromeFrameReadyModeTempOptOut[];
-extern const char kChromeFrameReadyModeEndTempOptOut[];
 extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
 extern const char kCriticalUpdateVersion[];
@@ -206,7 +202,6 @@ extern const wchar_t kChromeFrameDll[];
 extern const wchar_t kChromeFrameHelperDll[];
 extern const wchar_t kChromeFrameHelperExe[];
 extern const wchar_t kChromeFrameHelperWndClass[];
-extern const wchar_t kChromeFrameReadyModeField[];
 extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];
@@ -243,7 +238,6 @@ extern const wchar_t kInstallerSuccessLaunchCmdLine[];
 
 // Product options.
 extern const wchar_t kOptionMultiInstall[];
-extern const wchar_t kOptionReadyMode[];
 
 // Chrome channel display names.
 // NOTE: Canary is not strictly a 'channel', but rather a separate product

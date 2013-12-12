@@ -34,11 +34,6 @@ SwitchBuilder& SwitchBuilder::AddMultiInstall() {
   return *this;
 }
 
-SwitchBuilder& SwitchBuilder::AddReadyMode() {
-  switches_.AppendSwitch(installer::switches::kChromeFrameReadyMode);
-  return *this;
-}
-
 SwitchBuilder& SwitchBuilder::AddSystemInstall() {
   switches_.AppendSwitch(installer::switches::kSystemLevel);
   return *this;

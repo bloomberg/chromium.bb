@@ -151,8 +151,6 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kChrome },
     { installer::switches::kChromeFrame,
       installer::master_preferences::kChromeFrame },
-    { installer::switches::kChromeFrameReadyMode,
-      installer::master_preferences::kChromeFrameReadyMode },
     { installer::switches::kDisableLogging,
       installer::master_preferences::kDisableLogging },
     { installer::switches::kMsi,

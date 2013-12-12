@@ -30,21 +30,6 @@ const char kChromeFrame[] = "chrome-frame";
 // Installs Chrome Frame from an already installed multi-install of Chrome.
 const char kChromeFrameQuickEnable[] = "quick-enable-cf";
 
-// When installing Chrome Frame, install it in ready mode.
-// If --chrome-frame is not on the command line, this switch has no effect.
-const char kChromeFrameReadyMode[] = "ready-mode";
-
-// GCF ready mode opt-in.  This enables a full installation of GCF.
-const char kChromeFrameReadyModeOptIn[] = "ready-mode-opt-in";
-
-// GCF ready mode temp opt-out.  This disables the GCF user agent modification
-// and detection of headers/meta tags.
-const char kChromeFrameReadyModeTempOptOut[] = "ready-mode-temp-opt-out";
-
-// End GCF ready mode temp opt-out.  This re-enables the GCF user agent
-// modification and detection of headers/meta tags.
-const char kChromeFrameReadyModeEndTempOptOut[] = "ready-mode-end-temp-opt-out";
-
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";
 
@@ -236,7 +221,6 @@ const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
 const wchar_t kChromeFrameHelperDll[] = L"chrome_frame_helper.dll";
 const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
 const wchar_t kChromeFrameHelperWndClass[] = L"ChromeFrameHelperWindowClass";
-const wchar_t kChromeFrameReadyModeField[] = L"ChromeFrameReadyMode";
 const wchar_t kChromeLauncherExe[] = L"chrome_launcher.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
@@ -272,7 +256,6 @@ const wchar_t kInstallerSuccessLaunchCmdLine[] =
     L"InstallerSuccessLaunchCmdLine";
 
 const wchar_t kOptionMultiInstall[] = L"multi-install";
-const wchar_t kOptionReadyMode[] = L"ready-mode";
 
 // Chrome channel display names.
 const wchar_t kChromeChannelUnknown[] = L"unknown";

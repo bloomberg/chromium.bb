@@ -53,9 +53,6 @@ class ChromeFrameOperations : public ProductOperations {
                                     InstallStatus status,
                                     bool system_level) const OVERRIDE;
 
- protected:
-  void NormalizeOptions(std::set<string16>* options) const;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameOperations);
 };

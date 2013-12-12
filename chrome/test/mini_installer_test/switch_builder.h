@@ -21,7 +21,6 @@ class SwitchBuilder {
   SwitchBuilder& AddChrome();
   SwitchBuilder& AddChromeFrame();
   SwitchBuilder& AddMultiInstall();
-  SwitchBuilder& AddReadyMode();
   SwitchBuilder& AddSystemInstall();
 
  private:

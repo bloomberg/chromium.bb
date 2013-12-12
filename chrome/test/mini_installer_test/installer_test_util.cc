@@ -30,12 +30,10 @@ BrowserDistribution::Type ToBrowserDistributionType(
        InstallationValidator::ProductBits::CHROME_MULTI);
   const int kChromeFrameMask =
       (InstallationValidator::ProductBits::CHROME_FRAME_SINGLE |
-       InstallationValidator::ProductBits::CHROME_FRAME_MULTI |
-       InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+       InstallationValidator::ProductBits::CHROME_FRAME_MULTI);
   const int kBinariesMask =
       (InstallationValidator::ProductBits::CHROME_MULTI |
-       InstallationValidator::ProductBits::CHROME_FRAME_MULTI |
-       InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+       InstallationValidator::ProductBits::CHROME_FRAME_MULTI);
   // Default return is CHROME_BINARIES.
   BrowserDistribution::Type ret_value = BrowserDistribution::CHROME_BINARIES;
   if (type & kChromeMask)

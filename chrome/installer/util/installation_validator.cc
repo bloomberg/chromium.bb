@@ -35,19 +35,6 @@ void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
   // --chrome should be present for uninstall iff --multi-install.  This wasn't
   // the case in Chrome 10 (between r68996 and r72497), though, so consider it
   // optional.
-
-  // --chrome-frame --ready-mode should be present for uninstall iff CF in ready
-  // mode.
-  const ProductState* cf_state =
-      ctx.machine_state.GetProductState(ctx.system_install,
-                                        BrowserDistribution::CHROME_FRAME);
-  const bool ready_mode =
-      cf_state != NULL &&
-      cf_state->uninstall_command().HasSwitch(switches::kChromeFrameReadyMode);
-  expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
-                                         ready_mode));
-  expectations->push_back(
-      std::make_pair(std::string(switches::kChromeFrameReadyMode), ready_mode));
 }
 
 void InstallationValidator::ChromeRules::AddRenameSwitchExpectations(
@@ -59,11 +46,9 @@ void InstallationValidator::ChromeRules::AddRenameSwitchExpectations(
   // --chrome should not be present for rename.  It was for a time, so we'll be
   // lenient so that mini_installer tests pass.
 
-  // --chrome-frame --ready-mode should never be present.
+  // --chrome-frame should never be present.
   expectations->push_back(
       std::make_pair(std::string(switches::kChromeFrame), false));
-  expectations->push_back(
-      std::make_pair(std::string(switches::kChromeFrameReadyMode), false));
 }
 
 bool InstallationValidator::ChromeRules::UsageStatsAllowed(
@@ -173,14 +158,12 @@ const InstallationValidator::InstallationType
   CHROME_FRAME_SINGLE_CHROME_MULTI,
   CHROME_FRAME_MULTI,
   CHROME_FRAME_MULTI_CHROME_MULTI,
-  CHROME_FRAME_READY_MODE_CHROME_MULTI,
   CHROME_APP_HOST,
   CHROME_APP_HOST_CHROME_FRAME_SINGLE,
   CHROME_APP_HOST_CHROME_FRAME_SINGLE_CHROME_MULTI,
   CHROME_APP_HOST_CHROME_FRAME_MULTI,
   CHROME_APP_HOST_CHROME_FRAME_MULTI_CHROME_MULTI,
   CHROME_APP_HOST_CHROME_MULTI,
-  CHROME_APP_HOST_CHROME_MULTI_CHROME_FRAME_READY_MODE,
 };
 
 void InstallationValidator::ValidateAppCommandFlags(
@@ -439,7 +422,7 @@ void InstallationValidator::ValidateBinariesCommands(
   DCHECK(is_valid);
 
   // The quick-enable-cf command must be present if Chrome Binaries are
-  // installed and Chrome Frame is not installed (or installed in ready mode).
+  // installed and Chrome Frame is not installed.
   const ChannelInfo& channel = ctx.state.channel();
   const ProductState* binaries_state = ctx.machine_state.GetProductState(
       ctx.system_install, BrowserDistribution::CHROME_BINARIES);
@@ -449,7 +432,7 @@ void InstallationValidator::ValidateBinariesCommands(
   CommandExpectations expectations;
 
   if (binaries_state != NULL) {
-    if (cf_state == NULL || channel.IsReadyMode())
+    if (cf_state == NULL)
       expectations[kCmdQuickEnableCf] = &ValidateQuickEnableCfCommand;
 
     expectations[kCmdQuickEnableApplicationHost] =
@@ -504,22 +487,6 @@ void InstallationValidator::ValidateBinaries(
     *is_valid = false;
     LOG(ERROR) << "Chrome Binaries have \"-chromeframe\" in channel name, yet "
                   "Chrome Frame is not installed multi: \"" << channel.value()
-               << "\"";
-  }
-
-  // ap must have -readymode iff Chrome Frame is installed in ready-mode
-  if (cf_state != NULL &&
-      cf_state->uninstall_command().HasSwitch(
-          installer::switches::kChromeFrameReadyMode)) {
-    if (!channel.IsReadyMode()) {
-      *is_valid = false;
-      LOG(ERROR) << "Chrome Binaries are missing \"-readymode\" in channel"
-                    " name: \"" << channel.value() << "\"";
-    }
-  } else if (channel.IsReadyMode()) {
-    *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries have \"-readymode\" in channel name, yet "
-                  "Chrome Frame is not in ready mode: \"" << channel.value()
                << "\"";
   }
 
@@ -849,10 +816,7 @@ bool InstallationValidator::ValidateInstallationTypeForState(
                     chrome_frame_rules, &rock_on);
     int cf_bit = !product_state->is_multi_install() ?
         ProductBits::CHROME_FRAME_SINGLE :
-        (product_state->uninstall_command().HasSwitch(
-             switches::kChromeFrameReadyMode) ?
-                 ProductBits::CHROME_FRAME_READY_MODE :
-                 ProductBits::CHROME_FRAME_MULTI);
+        ProductBits::CHROME_FRAME_MULTI;
     *type = static_cast<InstallationType>(*type | cf_bit);
   }
 

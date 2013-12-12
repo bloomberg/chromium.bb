@@ -15,18 +15,6 @@
 
 namespace installer {
 
-// Remove ready-mode if not multi-install.
-void ChromeFrameOperations::NormalizeOptions(
-    std::set<string16>* options) const {
-  std::set<string16>::iterator ready_mode(options->find(kOptionReadyMode));
-  if (ready_mode != options->end() &&
-      options->find(kOptionMultiInstall) == options->end()) {
-    LOG(WARNING) << "--ready-mode option does not apply when --multi-install "
-                    "is not also specified; ignoring.";
-    options->erase(ready_mode);
-  }
-}
-
 void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
                                         std::set<string16>* options) const {
   DCHECK(options);
@@ -35,7 +23,6 @@ void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
     const char* pref_name;
     const wchar_t* option_name;
   } map[] = {
-    { master_preferences::kChromeFrameReadyMode, kOptionReadyMode },
     { master_preferences::kMultiInstall, kOptionMultiInstall }
   };
 
@@ -46,8 +33,6 @@ void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
     if (prefs.GetBool(scan->pref_name, &pref_value) && pref_value)
       options->insert(scan->option_name);
   }
-
-  NormalizeOptions(options);
 }
 
 void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
@@ -58,7 +43,6 @@ void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
     const char* flag_name;
     const wchar_t* option_name;
   } map[] = {
-    { switches::kChromeFrameReadyMode, kOptionReadyMode },
     { switches::kMultiInstall, kOptionMultiInstall }
   };
 
@@ -67,8 +51,6 @@ void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
     if (uninstall_command.HasSwitch(scan->flag_name))
       options->insert(scan->option_name);
   }
-
-  NormalizeOptions(options);
 }
 
 void ChromeFrameOperations::AddKeyFiles(
@@ -98,10 +80,6 @@ void ChromeFrameOperations::AppendProductFlags(
 
   // --chrome-frame is always needed.
   cmd_line->AppendSwitch(switches::kChromeFrame);
-
-  // ready-mode is only supported in multi-installs of Chrome Frame.
-  if (is_multi_install && options.find(kOptionReadyMode) != options.end())
-    cmd_line->AppendSwitch(switches::kChromeFrameReadyMode);
 }
 
 void ChromeFrameOperations::AppendRenameFlags(const std::set<string16>& options,
@@ -125,10 +103,8 @@ bool ChromeFrameOperations::SetChannelFlags(const std::set<string16>& options,
   DCHECK(channel_info);
   bool modified = channel_info->SetChromeFrame(set);
 
-  // Always remove the options if we're called to remove flags or if the
-  // corresponding option isn't set.
-  modified |= channel_info->SetReadyMode(
-      set && options.find(kOptionReadyMode) != options.end());
+  // Unconditionally remove the legacy -readymode flag.
+  modified |= channel_info->SetReadyMode(false);
 
   return modified;
 #else
@@ -138,7 +114,7 @@ bool ChromeFrameOperations::SetChannelFlags(const std::set<string16>& options,
 
 bool ChromeFrameOperations::ShouldCreateUninstallEntry(
     const std::set<string16>& options) const {
-  return options.find(kOptionReadyMode) == options.end();
+  return true;
 }
 
 void ChromeFrameOperations::AddDefaultShortcutProperties(

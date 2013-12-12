@@ -28,8 +28,6 @@ extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
 extern const char kChromeAppLauncher[];
 // Boolean. This is to be a Chrome Frame install.
 extern const char kChromeFrame[];
-// Boolean. Chrome Frame is to be installed in ready-mode.
-extern const char kChromeFrameReadyMode[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const char kChromeShortcutIconIndex[];
 // Boolean. This is a legacy preference and should no longer be used; it is

@@ -185,10 +185,6 @@ void InstallerState::Initialize(const CommandLine& command_line,
         const char* switch_name;
         bool switch_expected;
       } conditional_additions[] = {
-        // If Chrome Frame is installed in Ready Mode, remove it with Chrome.
-        { BrowserDistribution::CHROME_FRAME,
-          switches::kChromeFrameReadyMode,
-          true },
         // If the App Host is installed, but not the App Launcher, remove it
         // with Chrome. Note however that for system-level Chrome uninstalls,
         // any installed user-level App Host will remain even if there is no
