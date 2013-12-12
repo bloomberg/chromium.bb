@@ -33,7 +33,7 @@ class Rapidjson : public Json {
  public:
   Rapidjson() : document_(new rapidjson::Document), valid_(false) {}
 
-  virtual ~RapidJson() {}
+  virtual ~Rapidjson() {}
 
   virtual bool ParseObject(const std::string& json) {
     document_->Parse<rapidjson::kParseValidateEncodingFlag>(json.c_str());
@@ -53,7 +53,7 @@ class Rapidjson : public Json {
     assert(member != NULL);
     assert(member->value.IsString());
     return std::string(member->value.GetString(),
-                      member->value.GetStringLength());
+                       member->value.GetStringLength());
   }
 
  protected:

@@ -24,7 +24,6 @@
 
 namespace {
 
-using i18n::addressinput::BuildCallback;
 using i18n::addressinput::FakeStorage;
 using i18n::addressinput::scoped_ptr;
 using i18n::addressinput::Storage;
@@ -36,7 +35,8 @@ class FakeStorageTest : public testing::Test {
   virtual ~FakeStorageTest() {}
 
   Storage::Callback* BuildCallback() {
-    return ::BuildCallback(this, &FakeStorageTest::OnDataReady);
+    return i18n::addressinput::BuildCallback(
+        this, &FakeStorageTest::OnDataReady);
   }
 
   FakeStorage storage_;

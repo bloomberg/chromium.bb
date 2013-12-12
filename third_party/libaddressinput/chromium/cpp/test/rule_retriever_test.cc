@@ -28,7 +28,6 @@
 
 namespace {
 
-using i18n::addressinput::BuildCallback;
 using i18n::addressinput::FakeDownloader;
 using i18n::addressinput::FakeStorage;
 using i18n::addressinput::Retriever;
@@ -50,7 +49,8 @@ class RuleRetrieverTest : public testing::Test {
   virtual ~RuleRetrieverTest() {}
 
   RuleRetriever::Callback* BuildCallback() {
-    return ::BuildCallback(this, &RuleRetrieverTest::OnRuleReady);
+    return i18n::addressinput::BuildCallback(
+        this, &RuleRetrieverTest::OnRuleReady);
   }
 
   RuleRetriever rule_retriever_;

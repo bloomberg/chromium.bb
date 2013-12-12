@@ -37,6 +37,11 @@
 
 #include "util/md5.h"
 
+#ifdef _MSC_VER
+// http://msdn.microsoft.com/en-us/library/2ts7cx93%28v=vs.110%29.aspx
+#define snprintf _snprintf
+#endif  // _MSC_VER
+
 namespace i18n {
 namespace addressinput {
 

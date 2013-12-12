@@ -26,7 +26,6 @@
 
 namespace {
 
-using i18n::addressinput::BuildCallback;
 using i18n::addressinput::FakeStorage;
 using i18n::addressinput::scoped_ptr;
 using i18n::addressinput::Storage;
@@ -45,7 +44,8 @@ class ValidatingStorageTest : public testing::Test  {
   virtual ~ValidatingStorageTest() {}
 
   Storage::Callback* BuildCallback() {
-    return ::BuildCallback(this, &ValidatingStorageTest::OnDataReady);
+    return i18n::addressinput::BuildCallback(
+        this, &ValidatingStorageTest::OnDataReady);
   }
 
   FakeStorage* const wrapped_storage_;  // Owned by |storage_|.

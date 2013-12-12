@@ -26,7 +26,6 @@
 
 namespace {
 
-using i18n::addressinput::BuildCallback;
 using i18n::addressinput::Downloader;
 using i18n::addressinput::FakeDownloader;
 using i18n::addressinput::RegionDataConstants;
@@ -39,7 +38,8 @@ class FakeDownloaderTest : public testing::TestWithParam<std::string> {
   virtual ~FakeDownloaderTest() {}
 
   Downloader::Callback* BuildCallback() {
-    return ::BuildCallback(this, &FakeDownloaderTest::OnDownloaded);
+    return i18n::addressinput::BuildCallback(
+        this, &FakeDownloaderTest::OnDownloaded);
   }
 
   FakeDownloader downloader_;

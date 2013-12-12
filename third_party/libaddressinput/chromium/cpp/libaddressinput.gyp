@@ -33,6 +33,7 @@
       'sources': [
         'src/address_field.cc',
         'src/address_field_util.cc',
+        'src/address_problem.cc',
         'src/address_ui.cc',
         'src/localization.cc',
         'src/lookup_key_util.cc',
