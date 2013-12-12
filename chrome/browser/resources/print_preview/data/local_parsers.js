@@ -99,7 +99,8 @@ cr.define('print_preview', function() {
            print_preview.Destination.Origin.PRIVET,
            destinationInfo.name,
            false /*isRecent*/,
-           print_preview.Destination.ConnectionStatus.ONLINE));
+           print_preview.Destination.ConnectionStatus.ONLINE,
+           { cloudID: destinationInfo.cloudID }));
     }
 
     if (destinationInfo.isUnregistered) {

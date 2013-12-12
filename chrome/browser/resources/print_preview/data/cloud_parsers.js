@@ -77,7 +77,8 @@ cr.define('cloudprint', function() {
       lastAccessTime: parseInt(
           json[CloudDestinationParser.Field_.LAST_ACCESS], 10) || Date.now(),
       isTosAccepted: (id == print_preview.Destination.GooglePromotedId.FEDEX) ?
-          json[CloudDestinationParser.Field_.IS_TOS_ACCEPTED] : null
+          json[CloudDestinationParser.Field_.IS_TOS_ACCEPTED] : null,
+      cloudID: id
     };
     var cloudDest = new print_preview.Destination(
         id,

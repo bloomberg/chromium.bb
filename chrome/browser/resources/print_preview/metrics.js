@@ -40,7 +40,13 @@ cr.define('print_preview', function() {
     // search widget) is shown to the user.
     CLOUDPRINT_PROMO_SHOWN: 3,
     // Used when the user chooses to sign-in to their Google account.
-    SIGNIN_TRIGGERED: 4
+    SIGNIN_TRIGGERED: 4,
+    // Used when a user selects the privet printer in a pair of duplicate
+    // privet and cloud printers.
+    PRIVET_DUPLICATE_SELECTED: 5,
+    // Used when a user selects the cloud printer in a pair of duplicate
+    // privet and cloud printers.
+    CLOUD_DUPLICATE_SELECTED: 6
   };
 
   /**

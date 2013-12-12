@@ -60,7 +60,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationStore_ = new print_preview.DestinationStore(
-        this.nativeLayer_, this.appState_);
+        this.nativeLayer_, this.appState_, this.metrics_);
 
     /**
      * Storage of the print ticket used to create the print job.

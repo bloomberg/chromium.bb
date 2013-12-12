@@ -19,7 +19,8 @@ cr.define('print_preview', function() {
    * @param {{tags: Array.<string>,
    *          isOwned: ?boolean,
    *          lastAccessTime: ?number,
-   *          isTosAccepted: ?boolean}=} opt_params Optional parameters for the
+   *          isTosAccepted: ?boolean,
+   *          cloudID: ?string}=} opt_params Optional parameters for the
    *     destination.
    * @constructor
    */
@@ -112,6 +113,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isTosAccepted_ = (opt_params && opt_params.isTosAccepted) || false;
+
+    /**
+     * Cloud ID for privet printers
+     * @type {?string}
+     * @private
+     */
+    this.cloudID_ = (opt_params && opt_params.cloudID) || '';
   };
 
   /**
@@ -256,6 +264,11 @@ cr.define('print_preview', function() {
     /** @return {!Array.<string>} Tags associated with the destination. */
     get tags() {
       return this.tags_.slice(0);
+    },
+
+    /** @return {string} Cloud ID associated with the destination */
+    get cloudID() {
+      return this.cloudID_;
     },
 
     /** @return {print_preview.Cdd} Print capabilities of the destination. */

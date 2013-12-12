@@ -124,6 +124,8 @@ enum PrintDestinationBuckets {
   DESTINATION_CLOSED_UNCHANGED,
   SIGNIN_PROMPT,
   SIGNIN_TRIGGERED,
+  PRIVET_DUPLICATE_SELECTED,
+  CLOUD_DUPLICATE_SELECTED,
   PRINT_DESTINATION_BUCKET_BOUNDARY
 };
 
@@ -1564,6 +1566,7 @@ void PrintPreviewHandler::FillPrinterDescription(
   printer_value->SetString("name", description.name);
   printer_value->SetBoolean("hasLocalPrinting", has_local_printing);
   printer_value->SetBoolean("isUnregistered", description.id.empty());
+  printer_value->SetString("cloudID", description.id);
 }
 
 #endif
