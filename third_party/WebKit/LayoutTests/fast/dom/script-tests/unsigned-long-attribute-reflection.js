@@ -39,11 +39,9 @@ function testUnsignedLong(interface, createElement, attribute)
 
         t(0, "0");
         t(2147483647, "2147483647");
-        // per spec:
-        //t(2147483648, "0");
-        //t(-1, "0");
-        // per implementation <http://crbug.com/316122>:
-        t(2147483648, "2147483648");
-        t(-1, "4294967295");
+        t(2147483648, "0");
+        t(2147483700, "0");
+        t(-1, "0");
+        t(-3, "0");
     }, "set " + interface + "." + attribute);
 }
