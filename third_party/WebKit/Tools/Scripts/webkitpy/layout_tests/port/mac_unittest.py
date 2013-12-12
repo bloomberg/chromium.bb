@@ -44,7 +44,7 @@ class MacPortTest(port_testcase.PortTestCase):
         self.assertEqual(expected, port.name())
 
     def test_versions(self):
-        self.assertTrue(self.make_port().name() in ('mac-snowleopard', 'mac-lion', 'mac-mountainlion'))
+        self.assertTrue(self.make_port().name() in ('mac-snowleopard', 'mac-lion', 'mac-mountainlion', 'mac-mavericks'))
 
         self.assert_name(None, 'snowleopard', 'mac-snowleopard')
         self.assert_name('mac', 'snowleopard', 'mac-snowleopard')
@@ -53,8 +53,8 @@ class MacPortTest(port_testcase.PortTestCase):
 
         self.assert_name(None, 'lion', 'mac-lion')
         self.assert_name(None, 'mountainlion', 'mac-mountainlion')
-        self.assert_name(None, 'mavericks', 'mac-mountainlion')
-        self.assert_name(None, 'future', 'mac-mountainlion')
+        self.assert_name(None, 'mavericks', 'mac-mavericks')
+        self.assert_name(None, 'future', 'mac-mavericks')
 
         self.assert_name('mac', 'lion', 'mac-lion')
         self.assertRaises(AssertionError, self.assert_name, None, 'tiger', 'should-raise-assertion-so-this-value-does-not-matter')
@@ -67,6 +67,9 @@ class MacPortTest(port_testcase.PortTestCase):
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('mac-lion'))
 
         port = self.make_port(port_name='mac-mountainlion')
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('mac-mountainlion'))
+
+        port = self.make_port(port_name='mac-mavericks')
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('mac'))
 
     def test_operating_system(self):

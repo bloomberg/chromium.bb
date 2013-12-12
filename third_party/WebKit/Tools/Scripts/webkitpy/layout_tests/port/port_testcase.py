@@ -274,6 +274,8 @@ class PortTestCase(unittest.TestCase):
             TestConfiguration('retina', 'x86', 'release'),
             TestConfiguration('mountainlion', 'x86', 'debug'),
             TestConfiguration('mountainlion', 'x86', 'release'),
+            TestConfiguration('mavericks', 'x86', 'debug'),
+            TestConfiguration('mavericks', 'x86', 'release'),
             TestConfiguration('xp', 'x86', 'debug'),
             TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'debug'),

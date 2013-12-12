@@ -38,17 +38,22 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'retina', 'mountainlion')
+    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'retina', 'mountainlion', 'mavericks')
     port_name = 'mac'
 
-    FALLBACK_PATHS = { 'mountainlion': [ 'mac' ]}
+    # FIXME: We treat Retina (High-DPI) devices as if they are running
+    # a different operating system version. This is lame and should be fixed.
+    # Note that the retina versions fallback to the non-retina versions and so no
+    # baselines are shared between retina versions; this keeps the fallback graph as a tree
+    # and maximizes the number of baselines we can share that way.
+    # We also currently only support Retina on 10.8; we need to either upgrade to 10.9 or support both.
+
+    FALLBACK_PATHS = {}
+    FALLBACK_PATHS['mavericks'] = ['mac']
+    FALLBACK_PATHS['mountainlion'] = ['mac-mountainlion'] + FALLBACK_PATHS['mavericks']
+    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mountainlion']
     FALLBACK_PATHS['lion'] = ['mac-lion'] + FALLBACK_PATHS['mountainlion']
     FALLBACK_PATHS['snowleopard'] = ['mac-snowleopard'] + FALLBACK_PATHS['lion']
-
-    # FIXME: We treat Retina (High-DPI) devices as if they are running
-    # a different operating system version. This isn't accurate, but will work until
-    # we need to test and support baselines across multiple O/S versions.
-    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mountainlion']
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 
@@ -57,13 +62,12 @@ class MacPort(base.Port):
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('mac'):
-            if host.platform.is_highdpi():
-                return "mac-retina"
-            # 10.9 isn't explicitly supported, pretend it's 10.8.
-            if host.platform.os_version in ('mavericks', 'future'):
-                version = 'mountainlion'
+            if host.platform.os_version in ('future',):
+                version = 'mavericks'
             else:
                 version = host.platform.os_version
+            if host.platform.is_highdpi():
+                return 'retina'
             return port_name + '-' + version
         return port_name
 

@@ -100,6 +100,7 @@ class Port(object):
         ('retina', 'x86'),
 
         ('mountainlion', 'x86'),
+        ('mavericks', 'x86'),
         ('xp', 'x86'),
         ('win7', 'x86'),
         ('lucid', 'x86'),
@@ -110,13 +111,13 @@ class Port(object):
         )
 
     ALL_BASELINE_VARIANTS = [
-        'mac-mountainlion', 'mac-retina', 'mac-lion', 'mac-snowleopard',
+        'mac-mavericks', 'mac-mountainlion', 'mac-retina', 'mac-lion', 'mac-snowleopard',
         'win-win7', 'win-xp',
         'linux-x86_64', 'linux-x86',
     ]
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        'mac': ['snowleopard', 'lion', 'retina', 'mountainlion'],
+        'mac': ['snowleopard', 'lion', 'retina', 'mountainlion', 'mavericks'],
         'win': ['xp', 'win7'],
         'linux': ['lucid'],
         'android': ['icecreamsandwich'],

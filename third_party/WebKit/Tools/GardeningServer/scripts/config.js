@@ -49,6 +49,7 @@ config.kPlatforms = {
             'WebKit Mac10.7 (dbg)': {version: 'lion', debug: true},
             'WebKit Mac10.8': {version: 'mountainlion'},
             'WebKit Mac10.8 (retina)': {version: 'retina'},
+            'WebKit Mac10.9': {version: 'mavericks'},
             'WebKit Android (Nexus4)': {version: 'android'},
         },
         resultsDirectoryNameFromBuilderName: function(builderName) {
