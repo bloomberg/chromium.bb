@@ -21,6 +21,8 @@ enum SyncAction {
   SYNC_ACTION_DELETED,
 };
 
+const char* SyncActionToString(SyncAction action);
+
 }  // namespace sync_file_system
 
 #endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_ACTION_H_

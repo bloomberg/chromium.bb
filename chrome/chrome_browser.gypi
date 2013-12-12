@@ -2377,6 +2377,7 @@
         'browser/sync_file_system/remote_change_processor.h',
         'browser/sync_file_system/remote_file_sync_service.cc',
         'browser/sync_file_system/remote_file_sync_service.h',
+        'browser/sync_file_system/sync_action.cc',
         'browser/sync_file_system/sync_action.h',
         'browser/sync_file_system/sync_callbacks.h',
         'browser/sync_file_system/sync_direction.h',
