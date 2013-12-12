@@ -33,5 +33,6 @@ interface IDBCursor {
     [CallWith=ScriptState, RaisesException] IDBRequest update(any value);
     [RaisesException] void advance([EnforceRange] unsigned long count);
     [CallWith=ExecutionContext, ImplementedAs=continueFunction, RaisesException] void continue([Default=Undefined] optional any key);
+    [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=IndexedDBExperimental] void continuePrimaryKey(any key, any primaryKey);
     [CallWith=ExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete();
 };

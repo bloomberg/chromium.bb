@@ -433,7 +433,7 @@ public:
 
         // Continue cursor before making injected script calls, otherwise transaction might be finished.
         TrackExceptionState exceptionState;
-        idbCursor->continueFunction(0, exceptionState);
+        idbCursor->continueFunction(0, 0, exceptionState);
         if (exceptionState.hadException()) {
             m_requestCallback->sendFailure("Could not continue cursor.");
             return;

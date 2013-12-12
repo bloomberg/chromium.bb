@@ -34,16 +34,33 @@ function prepareDatabase(evt)
     event.target.transaction.oncomplete = finishJSTest;
 }
 
+function checkCursorProperties() {
+    shouldBeTrue("cursor instanceof IDBCursor");
+    shouldBeTrue("'key' in cursor");
+    shouldBeTrue("'primaryKey' in cursor");
+
+    shouldBeTrue("'continue' in cursor");
+    shouldBeEqualToString("typeof cursor.continue", "function");
+    shouldBeTrue("'continuePrimaryKey' in cursor");
+    shouldBeEqualToString("typeof cursor.continuePrimaryKey", "function");
+    shouldBeTrue("'advance' in cursor");
+    shouldBeEqualToString("typeof cursor.advance", "function");
+    shouldBeTrue("'update' in cursor");
+    shouldBeEqualToString("typeof cursor.update", "function");
+    shouldBeTrue("'delete' in cursor");
+    shouldBeEqualToString("typeof cursor.delete", "function");
+}
+
 function onStoreOpenCursor(evt) {
     preamble(evt);
     evalAndLog("cursor = event.target.result");
     shouldBeNonNull("cursor");
-    shouldBeTrue("cursor instanceof IDBCursor");
-    shouldBeTrue("cursor instanceof IDBCursorWithValue");
-    shouldBeTrue("'key' in cursor");
+    checkCursorProperties();
+
     shouldBe("cursor.key", "0");
-    shouldBeTrue("'primaryKey' in cursor");
     shouldBe("cursor.primaryKey", "0");
+
+    shouldBeTrue("cursor instanceof IDBCursorWithValue");
     shouldBeTrue("'value' in cursor");
     shouldBeEqualToString("JSON.stringify(cursor.value)", '{"indexOn":"a"}');
 }
@@ -52,12 +69,13 @@ function onStoreOpenKeyCursor(evt) {
     preamble(evt);
     evalAndLog("cursor = event.target.result");
     shouldBeNonNull("cursor");
-    shouldBeTrue("cursor instanceof IDBCursor");
-    shouldBeFalse("cursor instanceof IDBCursorWithValue");
-    shouldBeTrue("'key' in cursor");
+    checkCursorProperties();
+
     shouldBe("cursor.key", "0");
     shouldBeTrue("'primaryKey' in cursor");
     shouldBe("cursor.primaryKey", "0");
+
+    shouldBeFalse("cursor instanceof IDBCursorWithValue");
     shouldBeFalse("'value' in cursor");
 }
 
@@ -65,12 +83,12 @@ function onIndexOpenCursor(evt) {
     preamble(evt);
     evalAndLog("cursor = event.target.result");
     shouldBeNonNull("cursor");
-    shouldBeTrue("cursor instanceof IDBCursor");
-    shouldBeTrue("cursor instanceof IDBCursorWithValue");
-    shouldBeTrue("'key' in cursor");
+    checkCursorProperties();
+
     shouldBeEqualToString("cursor.key", "a");
-    shouldBeTrue("'primaryKey' in cursor");
     shouldBe("cursor.primaryKey", "0");
+
+    shouldBeTrue("cursor instanceof IDBCursorWithValue");
     shouldBeTrue("'value' in cursor");
     shouldBeEqualToString("JSON.stringify(cursor.value)", '{"indexOn":"a"}');
 }
@@ -79,11 +97,12 @@ function onIndexOpenKeyCursor(evt) {
     preamble(evt);
     evalAndLog("cursor = event.target.result");
     shouldBeNonNull("cursor");
-    shouldBeTrue("cursor instanceof IDBCursor");
-    shouldBeFalse("cursor instanceof IDBCursorWithValue");
-    shouldBeTrue("'key' in cursor");
+    checkCursorProperties();
+
     shouldBeEqualToString("cursor.key", "a");
-    shouldBeTrue("'primaryKey' in cursor");
+    shouldBe("cursor.primaryKey", "0");
+
+    shouldBeFalse("cursor instanceof IDBCursorWithValue");
     shouldBe("cursor.primaryKey", "0");
     shouldBeFalse("'value' in cursor");
 }

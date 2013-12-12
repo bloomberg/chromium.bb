@@ -336,7 +336,7 @@ private:
         Vector<int64_t> indexIds;
         indexIds.append(m_indexMetadata.id);
         if (cursor) {
-            cursor->continueFunction(static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
+            cursor->continueFunction(static_cast<IDBKey*>(0), static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
 
             RefPtr<IDBKey> primaryKey = cursor->idbPrimaryKey();
             ScriptValue value = cursor->value(context);

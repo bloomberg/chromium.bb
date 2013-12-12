@@ -22,11 +22,21 @@ onStoreOpenCursor():
 cursor = event.target.result
 PASS cursor is non-null.
 PASS cursor instanceof IDBCursor is true
-PASS cursor instanceof IDBCursorWithValue is true
 PASS 'key' in cursor is true
-PASS cursor.key is 0
 PASS 'primaryKey' in cursor is true
+PASS 'continue' in cursor is true
+PASS typeof cursor.continue is "function"
+PASS 'continuePrimaryKey' in cursor is true
+PASS typeof cursor.continuePrimaryKey is "function"
+PASS 'advance' in cursor is true
+PASS typeof cursor.advance is "function"
+PASS 'update' in cursor is true
+PASS typeof cursor.update is "function"
+PASS 'delete' in cursor is true
+PASS typeof cursor.delete is "function"
+PASS cursor.key is 0
 PASS cursor.primaryKey is 0
+PASS cursor instanceof IDBCursorWithValue is true
 PASS 'value' in cursor is true
 PASS JSON.stringify(cursor.value) is "{\"indexOn\":\"a\"}"
 
@@ -34,22 +44,43 @@ onStoreOpenKeyCursor():
 cursor = event.target.result
 PASS cursor is non-null.
 PASS cursor instanceof IDBCursor is true
-PASS cursor instanceof IDBCursorWithValue is false
 PASS 'key' in cursor is true
+PASS 'primaryKey' in cursor is true
+PASS 'continue' in cursor is true
+PASS typeof cursor.continue is "function"
+PASS 'continuePrimaryKey' in cursor is true
+PASS typeof cursor.continuePrimaryKey is "function"
+PASS 'advance' in cursor is true
+PASS typeof cursor.advance is "function"
+PASS 'update' in cursor is true
+PASS typeof cursor.update is "function"
+PASS 'delete' in cursor is true
+PASS typeof cursor.delete is "function"
 PASS cursor.key is 0
 PASS 'primaryKey' in cursor is true
 PASS cursor.primaryKey is 0
+PASS cursor instanceof IDBCursorWithValue is false
 PASS 'value' in cursor is false
 
 onIndexOpenCursor():
 cursor = event.target.result
 PASS cursor is non-null.
 PASS cursor instanceof IDBCursor is true
-PASS cursor instanceof IDBCursorWithValue is true
 PASS 'key' in cursor is true
-PASS cursor.key is "a"
 PASS 'primaryKey' in cursor is true
+PASS 'continue' in cursor is true
+PASS typeof cursor.continue is "function"
+PASS 'continuePrimaryKey' in cursor is true
+PASS typeof cursor.continuePrimaryKey is "function"
+PASS 'advance' in cursor is true
+PASS typeof cursor.advance is "function"
+PASS 'update' in cursor is true
+PASS typeof cursor.update is "function"
+PASS 'delete' in cursor is true
+PASS typeof cursor.delete is "function"
+PASS cursor.key is "a"
 PASS cursor.primaryKey is 0
+PASS cursor instanceof IDBCursorWithValue is true
 PASS 'value' in cursor is true
 PASS JSON.stringify(cursor.value) is "{\"indexOn\":\"a\"}"
 
@@ -57,10 +88,21 @@ onIndexOpenKeyCursor():
 cursor = event.target.result
 PASS cursor is non-null.
 PASS cursor instanceof IDBCursor is true
-PASS cursor instanceof IDBCursorWithValue is false
 PASS 'key' in cursor is true
-PASS cursor.key is "a"
 PASS 'primaryKey' in cursor is true
+PASS 'continue' in cursor is true
+PASS typeof cursor.continue is "function"
+PASS 'continuePrimaryKey' in cursor is true
+PASS typeof cursor.continuePrimaryKey is "function"
+PASS 'advance' in cursor is true
+PASS typeof cursor.advance is "function"
+PASS 'update' in cursor is true
+PASS typeof cursor.update is "function"
+PASS 'delete' in cursor is true
+PASS typeof cursor.delete is "function"
+PASS cursor.key is "a"
+PASS cursor.primaryKey is 0
+PASS cursor instanceof IDBCursorWithValue is false
 PASS cursor.primaryKey is 0
 PASS 'value' in cursor is false
 PASS successfullyParsed is true

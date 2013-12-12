@@ -68,13 +68,14 @@ public:
     PassRefPtr<IDBRequest> update(ScriptState*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
     void continueFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    void continuePrimaryKey(ExecutionContext*, const ScriptValue& key, const ScriptValue& primaryKey, ExceptionState&);
     PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, ExceptionState&);
 
     bool isKeyDirty() const { return m_keyDirty; }
     bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }
     bool isValueDirty() const { return m_valueDirty; }
 
-    void continueFunction(PassRefPtr<IDBKey>, ExceptionState&);
+    void continueFunction(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, ExceptionState&);
     void postSuccessHandlerCallback();
     void close();
     void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
