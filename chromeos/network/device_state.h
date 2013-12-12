@@ -29,6 +29,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   // Accessors
   const std::string& mac_address() const { return mac_address_; }
 
+  // Returns |mac_address_| in aa:bb format.
+  std::string GetFormattedMacAddress() const;
+
   // Cellular specific accessors
   const std::string& home_provider_id() const { return home_provider_id_; }
   bool provider_requires_roaming() const { return provider_requires_roaming_; }

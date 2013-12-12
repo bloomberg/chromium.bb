@@ -245,7 +245,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
   return NULL;
 }
 
-std::string NetworkStateHandler::HardwareAddressForType(
+std::string NetworkStateHandler::FormattedHardwareAddressForType(
     const NetworkTypePattern& type) const {
   const DeviceState* device = NULL;
   const NetworkState* network = ConnectedNetworkByType(type);
@@ -255,23 +255,7 @@ std::string NetworkStateHandler::HardwareAddressForType(
     device = GetDeviceStateByType(type);
   if (!device)
     return std::string();
-  std::string result = device->mac_address();
-  StringToUpperASCII(&result);
-  return result;
-}
-
-std::string NetworkStateHandler::FormattedHardwareAddressForType(
-    const NetworkTypePattern& type) const {
-  std::string address = HardwareAddressForType(type);
-  if (address.size() % 2 != 0)
-    return address;
-  std::string result;
-  for (size_t i = 0; i < address.size(); ++i) {
-    if ((i != 0) && (i % 2 == 0))
-      result.push_back(':');
-    result.push_back(address[i]);
-  }
-  return result;
+  return device->GetFormattedMacAddress();
 }
 
 void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {

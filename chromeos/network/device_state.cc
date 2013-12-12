@@ -132,6 +132,18 @@ bool DeviceState::InitialPropertiesReceived(
   return false;
 }
 
+std::string DeviceState::GetFormattedMacAddress() const {
+  if (mac_address_.size() % 2 != 0)
+    return mac_address_;
+  std::string result;
+  for (size_t i = 0; i < mac_address_.size(); ++i) {
+    if ((i != 0) && (i % 2 == 0))
+      result.push_back(':');
+    result.push_back(mac_address_[i]);
+  }
+  return result;
+}
+
 bool DeviceState::IsSimAbsent() const {
   return technology_family_ == shill::kTechnologyFamilyGsm && !sim_present_;
 }
