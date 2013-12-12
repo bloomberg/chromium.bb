@@ -278,7 +278,12 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
 
 DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
   if (IsMirrored()) {
-    DCHECK_LE(2u, num_connected_displays());
+    if (software_mirroring_enabled()) {
+      CHECK_EQ(2u, num_connected_displays());
+      // This comment is to make it easy to distinguish the crash
+      // between two checks.
+      CHECK_EQ(1u, displays_.size());
+    }
     return std::make_pair(displays_[0].id(), mirrored_display_id_);
   } else {
     CHECK_GE(2u, displays_.size());
