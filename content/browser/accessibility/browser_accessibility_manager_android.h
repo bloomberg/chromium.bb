@@ -42,6 +42,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
   // Tree methods.
   jint GetRootId(JNIEnv* env, jobject obj);
+  jboolean IsNodeValid(JNIEnv* env, jobject obj, jint id);
   jint HitTest(JNIEnv* env, jobject obj, jint x, jint y);
 
   // Populate Java accessibility data structures with info about a node.

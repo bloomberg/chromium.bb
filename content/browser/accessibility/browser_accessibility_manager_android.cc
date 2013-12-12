@@ -161,6 +161,11 @@ jint BrowserAccessibilityManagerAndroid::GetRootId(JNIEnv* env, jobject obj) {
   return static_cast<jint>(root_->renderer_id());
 }
 
+jboolean BrowserAccessibilityManagerAndroid::IsNodeValid(
+    JNIEnv* env, jobject obj, jint id) {
+  return GetFromRendererID(id) != NULL;
+}
+
 jint BrowserAccessibilityManagerAndroid::HitTest(
     JNIEnv* env, jobject obj, jint x, jint y) {
   BrowserAccessibilityAndroid* result =

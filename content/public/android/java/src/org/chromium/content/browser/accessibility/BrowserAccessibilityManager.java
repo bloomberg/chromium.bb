@@ -142,7 +142,10 @@ public class BrowserAccessibilityManager {
      * @see AccessibilityNodeProvider#performAction(int, int, Bundle)
      */
     protected boolean performAction(int virtualViewId, int action, Bundle arguments) {
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0) {
+        // We don't support any actions on the host view or nodes
+        // that are not (any longer) in the tree.
+        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0
+                || !nativeIsNodeValid(mNativeObj, virtualViewId)) {
             return false;
         }
 
@@ -163,13 +166,15 @@ public class BrowserAccessibilityManager {
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
                 nativeClick(mNativeObj, virtualViewId);
-                break;
+                sendAccessibilityEvent(virtualViewId,
+                        AccessibilityEvent.TYPE_VIEW_CLICKED);
+                return true;
             case AccessibilityNodeInfo.ACTION_FOCUS:
                 nativeFocus(mNativeObj, virtualViewId);
-                break;
+                return true;
             case AccessibilityNodeInfo.ACTION_CLEAR_FOCUS:
                 nativeBlur(mNativeObj);
-                break;
+                return true;
             default:
                 break;
         }
@@ -536,6 +541,7 @@ public class BrowserAccessibilityManager {
     }
 
     private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);
+    private native boolean nativeIsNodeValid(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native int nativeHitTest(long nativeBrowserAccessibilityManagerAndroid, int x, int y);
     private native boolean nativePopulateAccessibilityNodeInfo(
         long nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
