@@ -271,7 +271,12 @@ elif sys.platform == 'darwin':
 
     # There was a symlink, process it.
     base, symlink, rest = _split_at_symlink_native(None, path)
-    assert symlink, (path, base, symlink, rest, resolved)
+    if not symlink:
+      # TODO(maruel): This can happen on OSX because we use stale APIs on OSX.
+      # Fixing the APIs usage will likely fix this bug. The bug occurs due to
+      # hardlinked files, where the API may return one file path or the other
+      # depending on how it feels.
+      return base
     prev = base
     base = safe_join(_native_case(base), symlink)
     assert len(base) > len(prev)
