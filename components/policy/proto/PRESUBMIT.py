@@ -32,9 +32,9 @@ def _CheckPolicyProtobufs(input_api, output_api):
     path_a = input_api.os_path.join(root, *file_a.split('/'))
     path_b = input_api.os_path.join(root, *file_b.split('/'))
     with open(path_a, 'r') as f_a:
-      content_a = f_a.read()
+      content_a = f_a.readlines()[3:]
     with open(path_b, 'r') as f_b:
-      content_b = f_b.read()
+      content_b = f_b.readlines()[3:]
     if content_a != content_b:
       # If you get this error then check |file_pairs| and make sure that the
       # contents of the files in each pair match.
