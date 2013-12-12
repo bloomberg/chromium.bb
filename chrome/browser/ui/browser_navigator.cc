@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -364,10 +365,15 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
 // |params->target_contents| with it and update to point to the swapped-in
 // WebContents.
 bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
+  Profile* profile =
+      Profile::FromBrowserContext(params->target_contents->GetBrowserContext());
+  InstantSearchPrerenderer* prerenderer =
+      InstantSearchPrerenderer::GetForProfile(profile);
+  if (prerenderer && prerenderer->UsePrerenderedPage(url, params))
+    return true;
+
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(
-              params->target_contents->GetBrowserContext()));
+      prerender::PrerenderManagerFactory::GetForProfile(profile);
   return prerender_manager &&
       prerender_manager->MaybeUsePrerenderedPage(url, params);
 }

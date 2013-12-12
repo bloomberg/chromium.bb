@@ -109,10 +109,7 @@ class InstantService : public BrowserContextKeyedService,
   void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
 
   InstantSearchPrerenderer* instant_search_prerenderer() {
-#if defined(UNIT_TEST)
     return instant_prerenderer_.get();
-#endif
-    return NULL;
   }
 
  private:

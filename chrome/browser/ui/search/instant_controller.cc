@@ -109,10 +109,8 @@ void InstantController::SetSuggestionToPrefetch(
     }
   } else {
     if (chrome::ShouldPrefetchSearchResults()) {
-      InstantService* instant_service = GetInstantService();
       InstantSearchPrerenderer* prerenderer =
-          instant_service ? instant_service->instant_search_prerenderer() :
-              NULL;
+          InstantSearchPrerenderer::GetForProfile(profile());
       if (prerenderer)
         prerenderer->Prerender(suggestion);
     }

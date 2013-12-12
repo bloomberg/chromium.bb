@@ -307,10 +307,8 @@ base::string16 GetSearchTermsFromURL(Profile* profile, const GURL& url) {
   if (url.is_valid() && url == GetSearchResultPrefetchBaseURL(profile)) {
     // InstantSearchPrerenderer has the search query for the Instant search base
     // page.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profile);
     InstantSearchPrerenderer* prerenderer =
-        instant_service ? instant_service->instant_search_prerenderer() : NULL;
+        InstantSearchPrerenderer::GetForProfile(profile);
     DCHECK(prerenderer);
     return prerenderer->get_last_query();
   }

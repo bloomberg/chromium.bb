@@ -190,12 +190,12 @@ PrerenderContents::PrerenderContents(
     Origin origin,
     uint8 experiment_id)
     : prerendering_has_started_(false),
+      session_storage_namespace_id_(-1),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
       referrer_(referrer),
       profile_(profile),
       page_id_(0),
-      session_storage_namespace_id_(-1),
       has_stopped_loading_(false),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),

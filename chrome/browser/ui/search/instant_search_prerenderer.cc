@@ -9,6 +9,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -17,7 +19,6 @@ namespace {
 
 // Returns true if the underlying page supports Instant search.
 bool PageSupportsInstantSearch(content::WebContents* contents) {
-  DCHECK(contents);
   // Search results page supports Instant search.
   return SearchTabHelper::FromWebContents(contents)->IsSearchResultsPage();
 }
@@ -33,6 +34,15 @@ InstantSearchPrerenderer::InstantSearchPrerenderer(Profile* profile,
 InstantSearchPrerenderer::~InstantSearchPrerenderer() {
   if (prerender_handle_)
     prerender_handle_->OnCancel();
+}
+
+// static
+InstantSearchPrerenderer* InstantSearchPrerenderer::GetForProfile(
+    Profile* profile) {
+  DCHECK(profile);
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  return instant_service ? instant_service->instant_search_prerenderer() : NULL;
 }
 
 void InstantSearchPrerenderer::Init(
@@ -135,7 +145,7 @@ bool InstantSearchPrerenderer::UsePrerenderedPage(
 
 bool InstantSearchPrerenderer::IsAllowed(const AutocompleteMatch& match,
                                          content::WebContents* source) const {
-  return AutocompleteMatch::IsSearchType(match.type) &&
+  return source && AutocompleteMatch::IsSearchType(match.type) &&
       !PageSupportsInstantSearch(source);
 }
 

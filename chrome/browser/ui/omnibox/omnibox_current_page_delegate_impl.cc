@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -96,6 +97,16 @@ void OmniboxCurrentPageDelegateImpl::DoPrerender(
   content::WebContents* web_contents = controller_->GetWebContents();
   gfx::Rect container_bounds;
   web_contents->GetView()->GetContainerBounds(&container_bounds);
+
+  InstantSearchPrerenderer* prerenderer =
+      InstantSearchPrerenderer::GetForProfile(profile_);
+  if (prerenderer && prerenderer->IsAllowed(match, web_contents)) {
+    prerenderer->Init(
+        web_contents->GetController().GetSessionStorageNamespaceMap(),
+        container_bounds.size());
+    return;
+  }
+
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)->
       StartPrerendering(
           match.destination_url,

@@ -340,6 +340,11 @@ class PrerenderContents : public content::NotificationObserver,
   // The prerendered WebContents; may be null.
   scoped_ptr<content::WebContents> prerender_contents_;
 
+  // The session storage namespace id for use in matching. We must save it
+  // rather than get it from the RenderViewHost since in the control group
+  // we won't have a RenderViewHost.
+  int64 session_storage_namespace_id_;
+
  private:
   class WebContentsDelegateImpl;
 
@@ -381,11 +386,6 @@ class PrerenderContents : public content::NotificationObserver,
   // This array can contain more than element as a result of redirects,
   // such as HTTP redirects or javascript redirects.
   std::vector<GURL> alias_urls_;
-
-  // The session storage namespace id for use in matching. We must save it
-  // rather than get it from the RenderViewHost since in the control group
-  // we won't have a RenderViewHost.
-  int64 session_storage_namespace_id_;
 
   bool has_stopped_loading_;
 

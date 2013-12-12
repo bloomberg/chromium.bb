@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_controller.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -332,19 +333,27 @@ void OmniboxEditModel::OnChanged() {
 
   AutocompleteActionPredictor::Action recommended_action =
       AutocompleteActionPredictor::ACTION_NONE;
-  AutocompleteActionPredictor* action_predictor = user_input_in_progress_ ?
-      predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_) :
-      NULL;
-  if (action_predictor) {
-    action_predictor->RegisterTransitionalMatches(user_text_, result());
-    // Confer with the AutocompleteActionPredictor to determine what action, if
-    // any, we should take. Get the recommended action here even if we don't
-    // need it so we can get stats for anyone who is opted in to UMA, but only
-    // get it if the user has actually typed something to avoid constructing it
-    // before it's needed. Note: This event is triggered as part of startup when
-    // the initial tab transitions to the start page.
-    recommended_action =
-        action_predictor->RecommendAction(user_text_, current_match);
+  if (user_input_in_progress_) {
+    InstantSearchPrerenderer* prerenderer =
+        InstantSearchPrerenderer::GetForProfile(profile_);
+    if (prerenderer &&
+        prerenderer->IsAllowed(current_match, controller_->GetWebContents()) &&
+        popup_model()->IsOpen() && has_focus()) {
+      recommended_action = AutocompleteActionPredictor::ACTION_PRERENDER;
+    } else {
+      AutocompleteActionPredictor* action_predictor =
+          predictors::AutocompleteActionPredictorFactory::GetForProfile(
+              profile_);
+      action_predictor->RegisterTransitionalMatches(user_text_, result());
+      // Confer with the AutocompleteActionPredictor to determine what action,
+      // if any, we should take. Get the recommended action here even if we
+      // don't need it so we can get stats for anyone who is opted in to UMA,
+      // but only get it if the user has actually typed something to avoid
+      // constructing it before it's needed. Note: This event is triggered as
+      // part of startup when the initial tab transitions to the start page.
+      recommended_action =
+          action_predictor->RecommendAction(user_text_, current_match);
+    }
   }
 
   UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.Action",
@@ -494,8 +503,7 @@ void OmniboxEditModel::Revert() {
                                   false, true);
   AutocompleteActionPredictor* action_predictor =
       predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
-  if (action_predictor)
-    action_predictor->ClearTransitionalMatches();
+  action_predictor->ClearTransitionalMatches();
 }
 
 void OmniboxEditModel::StartAutocomplete(

@@ -40,6 +40,9 @@ class InstantSearchPrerenderer {
   InstantSearchPrerenderer(Profile* profile, const GURL& url);
   ~InstantSearchPrerenderer();
 
+  // Returns the InstantSearchPrerenderer instance for the given |profile|.
+  static InstantSearchPrerenderer* GetForProfile(Profile* profile);
+
   // Prerender the |prerender_url_| contents. The
   // |session_storage_namespace_map| is used to identify the namespace of the
   // active tab at the time the prerender is generated. The |size| gives the
