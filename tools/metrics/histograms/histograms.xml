@@ -4024,9 +4024,21 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Event.Latency.RendererImpl.GestureScroll" units="microseconds">
+  <obsolete>
+    Deprecated 12/2013 and replaced by Event.Latency.RendererImpl.GestureScroll2
+  </obsolete>
   <summary>
-    Time between initial creation of touch event and the resulting ScrollGesture
-    reaches Impl thread.
+    Time between initial creation of touch event and when the resulting
+    ScrollGesture reaches Impl thread. Maximum is 200ms.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.RendererImpl.GestureScroll2"
+    units="microseconds">
+  <summary>
+    Time between initial creation of touch event and when the resulting
+    ScrollGesture reaches Impl thread. Maximum is 1000ms. This supersedes the
+    Event.Latency.RendererImpl.GestureScroll metric.
   </summary>
 </histogram>
 
