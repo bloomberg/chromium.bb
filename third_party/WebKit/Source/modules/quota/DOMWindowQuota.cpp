@@ -34,7 +34,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/page/PageConsole.h"
 #include "modules/quota/StorageInfo.h"
 #include "wtf/PassRefPtr.h"
 

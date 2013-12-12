@@ -35,6 +35,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontSize.h"
+#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -48,9 +49,8 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/HTMLInterchange.h"
 #include "core/editing/htmlediting.h"
-#include "core/html/HTMLFontElement.h"
 #include "core/frame/Frame.h"
-#include "core/page/RuntimeCSSEnabled.h"
+#include "core/html/HTMLFontElement.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

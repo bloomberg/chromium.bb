@@ -39,7 +39,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
 #include "core/events/EventTarget.h"
-#include "core/page/RuntimeCSSEnabled.h"
+#include "core/css/RuntimeCSSEnabled.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

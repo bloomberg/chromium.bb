@@ -59,7 +59,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
-#include "core/page/RuntimeCSSEnabled.h"
+#include "core/css/RuntimeCSSEnabled.h"
 #include "core/frame/animation/AnimationController.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"

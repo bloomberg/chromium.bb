@@ -25,7 +25,7 @@
 
 #include "CSSValueKeywords.h"
 #include "StylePropertyShorthand.h"
-#include "core/page/RuntimeCSSEnabled.h"
+#include "core/css/RuntimeCSSEnabled.h"
 #include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"
 

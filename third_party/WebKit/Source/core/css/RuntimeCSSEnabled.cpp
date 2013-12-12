@@ -28,7 +28,8 @@
  */
 
 #include "config.h"
-#include "core/page/RuntimeCSSEnabled.h"
+#include "core/css/RuntimeCSSEnabled.h"
+
 #include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {
