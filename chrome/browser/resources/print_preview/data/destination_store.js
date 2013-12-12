@@ -465,6 +465,7 @@ cr.define('print_preview', function() {
      *     updated or {@code null} if it was the new destination.
      */
     updateDestination: function(destination) {
+      assert(destination.constructor !== Array, 'Single printer expected');
       var key = this.getDestinationKey_(destination.origin, destination.id);
       var existingDestination = this.destinationMap_[key];
       if (existingDestination != null) {
@@ -741,10 +742,12 @@ cr.define('print_preview', function() {
      */
     onPrivetCapabilitiesSet_: function(event) {
       var destinationId = event.printerId;
-      var dest = print_preview.PrivetDestinationParser.parse(event.printer);
-      dest.capabilities = event.capabilities;
-
-      this.updateDestination(dest);
+      var destinations =
+          print_preview.PrivetDestinationParser.parse(event.printer);
+      destinations.forEach(function(dest) {
+        dest.capabilities = event.capabilities;
+        this.updateDestination(dest);
+      }, this);
     },
 
     /**
@@ -755,7 +758,7 @@ cr.define('print_preview', function() {
       this.isPrivetDestinationSearchInProgress_ = false;
       this.hasLoadedAllPrivetDestinations_ = true;
       cr.dispatchSimpleEvent(
-        this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
 
     /**
