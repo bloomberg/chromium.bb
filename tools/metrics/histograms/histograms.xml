@@ -19952,6 +19952,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.DeclineTranslateDismissUI">
+  <summary>
+    The number of times the translate UI was closed without translating in the
+    way that the user doesn't deny translating explicityly, like pressing 'Nope'
+    button. This is counted on both the infobar and the bubble UI. We are
+    comparing this on infobar to that on bubble by A/B testing and expecting
+    that the user will click 'Nope' button on bubble less times than infobar. We
+    won't delete this histogram after the experiment.
+  </summary>
+</histogram>
+
 <histogram name="Translate.HtmlLang" enum="TranslateLanguage">
   <summary>
     A page may provide a lang attribute in html tag. For each page load,
@@ -20073,6 +20084,14 @@ other types of suffix sets.
     Chrome Translate shows an error infobar when an error happens on translation
     and the infobar message depends on what kind of error happens. This metric
     counts how often each error message is shown.
+  </summary>
+</histogram>
+
+<histogram name="Translate.ShowErrorUI" enum="TranslateError">
+  <summary>
+    Chrome Translate shows an error UI (infobar or bubble) when an error happens
+    on translation and the UI message depends on what kind of error happens.
+    This metric counts how often each error message is shown.
   </summary>
 </histogram>
 

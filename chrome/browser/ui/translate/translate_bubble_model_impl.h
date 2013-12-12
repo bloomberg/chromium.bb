@@ -23,8 +23,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE;
   virtual void SetViewState(TranslateBubbleModel::ViewState view_state)
       OVERRIDE;
-  virtual TranslateErrors::Type GetErrorType() const OVERRIDE;
-  virtual void SetErrorType(TranslateErrors::Type error_type) OVERRIDE;
+  virtual void ShowError(TranslateErrors::Type error_type) OVERRIDE;
   virtual void GoBackFromAdvanced() OVERRIDE;
   virtual int GetNumberOfLanguages() const OVERRIDE;
   virtual base::string16 GetLanguageNameAt(int index) const OVERRIDE;
@@ -38,7 +37,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual void SetAlwaysTranslate(bool value) OVERRIDE;
   virtual void Translate() OVERRIDE;
   virtual void RevertTranslation() OVERRIDE;
-  virtual void TranslationDeclined() OVERRIDE;
+  virtual void TranslationDeclined(bool explicitly_closed) OVERRIDE;
   virtual bool IsPageTranslatedInCurrentLanguages() const OVERRIDE;
 
  private:

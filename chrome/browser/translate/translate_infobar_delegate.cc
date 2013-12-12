@@ -115,7 +115,7 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
-  ui_delegate_.TranslationDeclined();
+  ui_delegate_.TranslationDeclined(false);
 }
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
@@ -180,6 +180,7 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar",
                             error_type_,
                             TranslateErrors::TRANSLATE_ERROR_MAX);
+  ui_delegate_.OnErrorShown(error_type_);
   switch (error_type_) {
     case TranslateErrors::NETWORK:
       return l10n_util::GetStringUTF16(
@@ -300,8 +301,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     : InfoBarDelegate(),
       infobar_type_(infobar_type),
       background_animation_(NONE),
-      ui_delegate_(web_contents, original_language, target_language,
-                   error_type),
+      ui_delegate_(web_contents, original_language, target_language),
       error_type_(error_type),
       prefs_(prefs),
       shortcut_config_(shortcut_config) {

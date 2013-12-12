@@ -40,11 +40,8 @@ class TranslateBubbleModel {
   // Transitions the view state.
   virtual void SetViewState(ViewState view_state) = 0;
 
-  // Returns the error type.
-  virtual TranslateErrors::Type GetErrorType() const = 0;
-
-  // Sets the error type.
-  virtual void SetErrorType(TranslateErrors::Type error_type) = 0;
+  // Shows an error.
+  virtual void ShowError(TranslateErrors::Type error_type) = 0;
 
   // Goes back from the 'Advanced' view state.
   virtual void GoBackFromAdvanced() = 0;
@@ -89,8 +86,10 @@ class TranslateBubbleModel {
   // Reverts translation.
   virtual void RevertTranslation() = 0;
 
-  // Processes when the user declines translation.
-  virtual void TranslationDeclined() = 0;
+  // Processes when the user dismiss the bubble without translating.
+  // |explicitly_closed| is true if the user explicitly closed the UI, for
+  // example, clicking 'Nope' button.
+  virtual void TranslationDeclined(bool explicitly_closed) = 0;
 
   // Returns true if the page is translated in the currently selected source
   // and target language.

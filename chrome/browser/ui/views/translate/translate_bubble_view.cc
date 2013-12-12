@@ -160,8 +160,10 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
         TranslateBubbleModel::VIEW_STATE_ADVANCED) {
       return;
     }
-    translate_bubble_view_->SwitchView(type);
-    translate_bubble_view_->model()->SetErrorType(error_type);
+    if (type != TranslateBubbleModel::VIEW_STATE_ERROR)
+      translate_bubble_view_->SwitchView(type);
+    else
+      translate_bubble_view_->SwitchToErrorView(error_type);
     return;
   }
 
@@ -170,12 +172,12 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
   GetTranslateLanguages(web_contents, &source_language, &target_language);
 
   scoped_ptr<TranslateUIDelegate> ui_delegate(
-      new TranslateUIDelegate(web_contents, source_language, target_language,
-                              error_type));
+      new TranslateUIDelegate(web_contents, source_language, target_language));
   scoped_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(type, ui_delegate.Pass()));
   TranslateBubbleView* view = new TranslateBubbleView(anchor_view,
                                                       model.Pass(),
+                                                      error_type,
                                                       browser,
                                                       web_contents);
   views::BubbleDelegateView::CreateBubble(view)->Show();
@@ -210,6 +212,9 @@ void TranslateBubbleView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
 
   UpdateChildVisibilities();
+
+  if (model_->GetViewState() == TranslateBubbleModel::VIEW_STATE_ERROR)
+    model_->ShowError(error_type_);
 }
 
 void TranslateBubbleView::ButtonPressed(views::Button* sender,
@@ -225,7 +230,7 @@ void TranslateBubbleView::WindowClosing() {
   // TranslateBubbleViewModel should take a reference of a WebContents at each
   // method. (crbug/320497)
   if (!translate_executed_ && web_contents())
-    model_->TranslationDeclined();
+    model_->TranslationDeclined(denial_button_clicked_);
 
   // We have to reset |translate_bubble_view_| here, not in our destructor,
   // because we'll be destroyed asynchronously and the shown state will be
@@ -285,25 +290,22 @@ void TranslateBubbleView::OnComboboxTextButtonClicked(
   if (combobox != denial_combobox_)
     return;
 
+  denial_button_clicked_ = true;
   int index = combobox->selected_index();
   switch (index) {
     case TranslateDenialComboboxModel::INDEX_NOPE:
-      if (!translate_executed_)
-        model_->TranslationDeclined();
-      StartFade(false);
       break;
     case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_LANGUAGE:
       model_->SetNeverTranslateLanguage(true);
-      StartFade(false);
       break;
     case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_SITE:
       model_->SetNeverTranslateSite(true);
-      StartFade(false);
       break;
     default:
       NOTREACHED();
       break;
   }
+  StartFade(false);
 }
 
 void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
@@ -322,6 +324,7 @@ TranslateBubbleModel::ViewState TranslateBubbleView::GetViewState() const {
 TranslateBubbleView::TranslateBubbleView(
     views::View* anchor_view,
     scoped_ptr<TranslateBubbleModel> model,
+    TranslateErrors::Type error_type,
     Browser* browser,
     content::WebContents* web_contents)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
@@ -338,11 +341,13 @@ TranslateBubbleView::TranslateBubbleView(
       advanced_cancel_button_(NULL),
       advanced_done_button_(NULL),
       model_(model.Pass()),
+      error_type_(error_type),
       is_in_incognito_window_(
           web_contents ?
           web_contents->GetBrowserContext()->IsOffTheRecord() : false),
       browser_(browser),
-      translate_executed_(false) {
+      translate_executed_(false),
+      denial_button_clicked_(false) {
   if (model_->GetViewState() !=
       TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
     translate_executed_ = true;
@@ -772,6 +777,12 @@ void TranslateBubbleView::SwitchView(
   if (view_state == TranslateBubbleModel::VIEW_STATE_ADVANCED)
     UpdateAdvancedView();
   SizeToContents();
+}
+
+void TranslateBubbleView::SwitchToErrorView(TranslateErrors::Type error_type) {
+  SwitchView(TranslateBubbleModel::VIEW_STATE_ERROR);
+  error_type_ = error_type;
+  model_->ShowError(error_type);
 }
 
 void TranslateBubbleView::UpdateAdvancedView() {

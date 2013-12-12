@@ -359,8 +359,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
     scoped_ptr<TranslateUIDelegate> ui_delegate(
         new TranslateUIDelegate(web_contents,
                                 source_language,
-                                target_language,
-                                error_type));
+                                target_language));
     model_.reset(
         new TranslateBubbleModelImpl(view_state, ui_delegate.Pass()));
   }

@@ -27,12 +27,8 @@ void TranslateBubbleModelImpl::SetViewState(
   view_state_transition_.SetViewState(view_state);
 }
 
-TranslateErrors::Type TranslateBubbleModelImpl::GetErrorType() const {
-  return ui_delegate_->error_type();
-}
-
-void TranslateBubbleModelImpl::SetErrorType(TranslateErrors::Type error_type) {
-  ui_delegate_->set_error_type(error_type);
+void TranslateBubbleModelImpl::ShowError(TranslateErrors::Type error_type) {
+  ui_delegate_->OnErrorShown(error_type);
 }
 
 void TranslateBubbleModelImpl::GoBackFromAdvanced() {
@@ -87,8 +83,8 @@ void TranslateBubbleModelImpl::RevertTranslation() {
   ui_delegate_->RevertTranslation();
 }
 
-void TranslateBubbleModelImpl::TranslationDeclined() {
-  ui_delegate_->TranslationDeclined();
+void TranslateBubbleModelImpl::TranslationDeclined(bool explicitly_closed) {
+  ui_delegate_->TranslationDeclined(explicitly_closed);
 }
 
 bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {

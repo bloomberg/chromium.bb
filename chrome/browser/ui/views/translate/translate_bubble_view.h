@@ -120,6 +120,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   TranslateBubbleView(views::View* anchor_view,
                       scoped_ptr<TranslateBubbleModel> model,
+                      TranslateErrors::Type error_type,
                       Browser* browser,
                       content::WebContents* web_contents);
 
@@ -159,6 +160,9 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   // Switches the view type.
   void SwitchView(TranslateBubbleModel::ViewState view_state);
 
+  // Switches to the error view.
+  void SwitchToErrorView(TranslateErrors::Type error_type);
+
   // Updates the advanced view.
   void UpdateAdvancedView();
 
@@ -184,6 +188,8 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   scoped_ptr<TranslateBubbleModel> model_;
 
+  TranslateErrors::Type error_type_;
+
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;
 
@@ -192,6 +198,9 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   // Whether the translation is acutually executed.
   bool translate_executed_;
+
+  // Whether one of denial buttons is clicked.
+  bool denial_button_clicked_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleView);
 };

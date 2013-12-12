@@ -28,18 +28,18 @@ const char kNeverTranslateSite[] = "Translate.NeverTranslateSite";
 const char kAlwaysTranslateLang[] = "Translate.AlwaysTranslateLang";
 const char kModifyOriginalLang[] = "Translate.ModifyOriginalLang";
 const char kModifyTargetLang[] = "Translate.ModifyTargetLang";
+const char kDeclineTranslateDismissUI[] = "Translate.DeclineTranslateDismissUI";
+const char kShowErrorUI[] = "Translate.ShowErrorUI";
 
 }  // namespace
 
 TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
                                          const std::string& original_language,
-                                         const std::string& target_language,
-                                         TranslateErrors::Type error_type)
+                                         const std::string& target_language)
     : web_contents_(web_contents),
       original_language_index_(NO_INDEX),
       initial_original_language_index_(NO_INDEX),
-      target_language_index_(NO_INDEX),
-      error_type_(error_type) {
+      target_language_index_(NO_INDEX) {
   DCHECK(web_contents_);
 
   std::vector<std::string> language_codes;
@@ -86,6 +86,17 @@ TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
 }
 
 TranslateUIDelegate::~TranslateUIDelegate() {
+}
+
+void TranslateUIDelegate::OnErrorShown(TranslateErrors::Type error_type) {
+  DCHECK_LE(TranslateErrors::NONE, error_type);
+  DCHECK_LT(error_type, TranslateErrors::TRANSLATE_ERROR_MAX);
+
+  if (error_type == TranslateErrors::NONE)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(kShowErrorUI, error_type,
+                            TranslateErrors::TRANSLATE_ERROR_MAX);
 }
 
 size_t TranslateUIDelegate::GetNumberOfLanguages() const {
@@ -158,7 +169,7 @@ void TranslateUIDelegate::RevertTranslation() {
   UMA_HISTOGRAM_BOOLEAN(kRevertTranslation, true);
 }
 
-void TranslateUIDelegate::TranslationDeclined() {
+void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
     prefs_->ResetTranslationAcceptedCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationDeniedCount(GetOriginalLanguageCode());
@@ -173,6 +184,9 @@ void TranslateUIDelegate::TranslationDeclined() {
       language_state().set_translation_declined(true);
 
   UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
+
+  if (!explicitly_closed)
+    UMA_HISTOGRAM_BOOLEAN(kDeclineTranslateDismissUI, true);
 }
 
 bool TranslateUIDelegate::IsLanguageBlocked() {

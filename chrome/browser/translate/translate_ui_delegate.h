@@ -30,17 +30,13 @@ class TranslateUIDelegate {
 
   TranslateUIDelegate(content::WebContents* web_contents,
                       const std::string& original_language,
-                      const std::string& target_language,
-                      TranslateErrors::Type error_type);
+                      const std::string& target_language);
   virtual ~TranslateUIDelegate();
 
   content::WebContents* web_contents() { return web_contents_; }
 
-  TranslateErrors::Type error_type() const { return error_type_; }
-
-  void set_error_type(TranslateErrors::Type error_type) {
-    error_type_ = error_type;
-  }
+  // Handles when an error message is shown.
+  void OnErrorShown(TranslateErrors::Type error_type);
 
   // Returns the number of languages supported.
   size_t GetNumberOfLanguages() const;
@@ -76,7 +72,7 @@ class TranslateUIDelegate {
   void RevertTranslation();
 
   // Processes when the user declines translation.
-  void TranslationDeclined();
+  void TranslationDeclined(bool explicitly_closed);
 
   // Returns true if the current language is blocked.
   bool IsLanguageBlocked();
@@ -128,9 +124,6 @@ class TranslateUIDelegate {
 
   // The translation related preferences.
   scoped_ptr<TranslatePrefs> prefs_;
-
-  // The error type.
-  TranslateErrors::Type error_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegate);
 };
