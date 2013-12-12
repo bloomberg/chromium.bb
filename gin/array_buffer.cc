@@ -127,6 +127,13 @@ ArrayBuffer::ArrayBuffer(v8::Isolate* isolate,
 ArrayBuffer::~ArrayBuffer() {
 }
 
+ArrayBuffer& ArrayBuffer::operator=(const ArrayBuffer& other) {
+  private_ = other.private_;
+  bytes_ = other.bytes_;
+  num_bytes_ = other.num_bytes_;
+  return *this;
+}
+
 // Converter<ArrayBuffer> -----------------------------------------------------
 
 bool Converter<ArrayBuffer>::FromV8(v8::Isolate* isolate,

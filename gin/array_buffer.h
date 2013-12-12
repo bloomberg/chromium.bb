@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "gin/converter.h"
+#include "gin/gin_export.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -22,12 +23,13 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   static ArrayBufferAllocator* SharedInstance();
 };
 
-class ArrayBuffer {
+class GIN_EXPORT ArrayBuffer {
  public:
   ArrayBuffer();
   explicit ArrayBuffer(v8::Isolate* isolate);
   ArrayBuffer(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> buffer);
   ~ArrayBuffer();
+  ArrayBuffer& operator=(const ArrayBuffer& other);
 
   void* bytes() const { return bytes_; }
   size_t num_bytes() const { return num_bytes_; }
@@ -43,12 +45,12 @@ class ArrayBuffer {
 };
 
 template<>
-struct Converter<ArrayBuffer> {
+struct GIN_EXPORT Converter<ArrayBuffer> {
   static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      ArrayBuffer* out);
 };
 
-class ArrayBufferView {
+class GIN_EXPORT ArrayBufferView {
  public:
   ArrayBufferView();
   ArrayBufferView(v8::Isolate* isolate, v8::Handle<v8::ArrayBufferView> view);
@@ -68,7 +70,7 @@ class ArrayBufferView {
 };
 
 template<>
-struct Converter<ArrayBufferView> {
+struct GIN_EXPORT Converter<ArrayBufferView> {
   static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      ArrayBufferView* out);
 };

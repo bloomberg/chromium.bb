@@ -7,14 +7,16 @@
 
 #include "base/template_util.h"
 #include "gin/converter.h"
+#include "gin/gin_export.h"
 #include "gin/public/wrapper_info.h"
 
 namespace gin {
 
 namespace internal {
 
-void* FromV8Impl(v8::Isolate* isolate, v8::Handle<v8::Value> val,
-                 WrapperInfo* info);
+GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
+                            v8::Handle<v8::Value> val,
+                            WrapperInfo* info);
 
 }  // namespace internal
 
@@ -42,7 +44,7 @@ class Wrappable;
 
 
 // Non-template base class to share code between templates instances.
-class WrappableBase {
+class GIN_EXPORT WrappableBase {
  protected:
   WrappableBase();
   virtual ~WrappableBase();

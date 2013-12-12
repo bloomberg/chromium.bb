@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "gin/gin_export.h"
 #include "gin/modules/file_module_provider.h"
 #include "gin/runner.h"
 
@@ -19,7 +20,7 @@ typedef v8::Local<v8::ObjectTemplate> (*ModuleTemplateGetter)(
 // Emebedders that use AMD modules will probably want to use a RunnerDelegate
 // that inherits from ModuleRunnerDelegate. ModuleRunnerDelegate lets embedders
 // register built-in modules and routes module requests to FileModuleProvider.
-class ModuleRunnerDelegate : public RunnerDelegate {
+class GIN_EXPORT ModuleRunnerDelegate : public RunnerDelegate {
  public:
   explicit ModuleRunnerDelegate(
       const std::vector<base::FilePath>& search_paths);

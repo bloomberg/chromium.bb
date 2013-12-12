@@ -5,6 +5,7 @@
 #ifndef GIN_PUBLIC_WRAPPER_INFO_H_
 #define GIN_PUBLIC_WRAPPER_INFO_H_
 
+#include "gin/gin_export.h"
 #include "gin/public/gin_embedders.h"
 #include "v8/include/v8.h"
 
@@ -21,7 +22,7 @@ enum InternalFields {
   kNumberOfInternalFields,
 };
 
-struct WrapperInfo {
+struct GIN_EXPORT WrapperInfo {
   static WrapperInfo* From(v8::Handle<v8::Object> object);
   const GinEmbedder embedder;
 };

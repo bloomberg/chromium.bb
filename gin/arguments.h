@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "gin/converter.h"
+#include "gin/gin_export.h"
 
 namespace gin {
 
 // Arguments is a wrapper around v8::FunctionCallbackInfo that integrates
 // with Converter to make it easier to marshall arguments and return values
 // between V8 and C++.
-class Arguments {
+class GIN_EXPORT Arguments {
  public:
   Arguments();
   explicit Arguments(const v8::FunctionCallbackInfo<v8::Value>& info);

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "gin/gin_export.h"
 #include "gin/runner.h"
 
 namespace gin {
@@ -18,7 +19,7 @@ namespace gin {
 // modules in the directories indiciated by |search_paths|. Although we still
 // read from the file system on the main thread, we'll eventually want to move
 // the reads to a background thread.
-class FileModuleProvider {
+class GIN_EXPORT FileModuleProvider {
  public:
   explicit FileModuleProvider(
       const std::vector<base::FilePath>& search_paths);

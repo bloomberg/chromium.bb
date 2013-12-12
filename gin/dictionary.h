@@ -6,6 +6,7 @@
 #define GIN_DICTIONARY_H_
 
 #include "gin/converter.h"
+#include "gin/gin_export.h"
 
 namespace gin {
 
@@ -21,7 +22,7 @@ namespace gin {
 //          v8::HandleScope. Generally speaking, you should store a Dictionary
 //          on the stack.
 //
-class Dictionary {
+class GIN_EXPORT Dictionary {
  public:
   explicit Dictionary(v8::Isolate* isolate);
   Dictionary(v8::Isolate* isolate, v8::Handle<v8::Object> object);
@@ -51,7 +52,7 @@ class Dictionary {
 };
 
 template<>
-struct Converter<Dictionary> {
+struct GIN_EXPORT Converter<Dictionary> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     Dictionary val);
   static bool FromV8(v8::Isolate* isolate,

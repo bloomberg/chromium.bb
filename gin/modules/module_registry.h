@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "gin/gin_export.h"
 #include "gin/per_context_data.h"
 
 namespace gin {
@@ -30,7 +31,7 @@ struct PendingModule;
 // function. The spec says we should only add that property once our
 // implementation complies with the specification.
 //
-class ModuleRegistry : public ContextSupplement {
+class GIN_EXPORT ModuleRegistry : public ContextSupplement {
  public:
   typedef base::Callback<void (v8::Handle<v8::Value>)> LoadModuleCallback;
 

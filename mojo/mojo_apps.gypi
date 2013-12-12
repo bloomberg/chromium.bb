@@ -6,6 +6,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
+        '../v8/tools/gyp/v8.gyp:v8',
         'mojo_common_lib',
         'mojo_gles2',
         'mojo_gles2_bindings',

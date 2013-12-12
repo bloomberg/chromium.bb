@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "gin/gin_export.h"
 #include "gin/public/wrapper_info.h"
 #include "v8/include/v8.h"
 
@@ -15,7 +16,7 @@ namespace gin {
 
 // There is one instance of PerIsolateData per v8::Isolate managed by Gin. This
 // class stores all the Gin-related data that varies per isolate.
-class PerIsolateData {
+class GIN_EXPORT PerIsolateData {
  public:
   explicit PerIsolateData(v8::Isolate* isolate);
   ~PerIsolateData();

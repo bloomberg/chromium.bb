@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/gin_export.h"
 #include "gin/handle.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/wrapper_info.h"
@@ -58,10 +59,9 @@ struct CallbackParamTraits<const T*> {
 
 // This simple base class is used so that we can share a single object template
 // among every CallbackHolder instance.
-class CallbackHolderBase : public Wrappable<CallbackHolderBase> {
+class GIN_EXPORT CallbackHolderBase : public Wrappable<CallbackHolderBase> {
  public:
   static WrapperInfo kWrapperInfo;
-
  protected:
   virtual ~CallbackHolderBase() {}
 };
@@ -333,7 +333,7 @@ struct Dispatcher<R(P1, P2, P3, P4)> {
 
 // This should be called once per-isolate to initialize the function template
 // system.
-void InitFunctionTemplates(PerIsolateData* isolate_data);
+GIN_EXPORT void InitFunctionTemplates(PerIsolateData* isolate_data);
 
 
 // CreateFunctionTemplate creates a v8::FunctionTemplate that will create

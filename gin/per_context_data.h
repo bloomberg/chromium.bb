@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "gin/gin_export.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -16,7 +17,7 @@ class Runner;
 
 // Embedders can store additional per-context data by subclassing
 // ContextSupplement.
-class ContextSupplement {
+class GIN_EXPORT ContextSupplement {
  public:
   ContextSupplement();
   virtual ~ContextSupplement();
@@ -31,7 +32,7 @@ class ContextSupplement {
 
 // There is one instance of PerContextData per v8::Context managed by Gin. This
 // class stores all the Gin-related data that varies per context.
-class PerContextData {
+class GIN_EXPORT PerContextData {
  public:
   explicit PerContextData(v8::Handle<v8::Context> context);
   ~PerContextData();

@@ -8,12 +8,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "gin/gin_export.h"
 #include "v8/include/v8.h"
 
 namespace gin {
 
 // TryCatch is a convenient wrapper around v8::TryCatch.
-class TryCatch {
+class GIN_EXPORT TryCatch {
  public:
   TryCatch();
   ~TryCatch();

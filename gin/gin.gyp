@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'gin',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../v8/tools/gyp/v8.gyp:v8',
@@ -17,6 +17,9 @@
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../v8/tools/gyp/v8.gyp:v8',
+      ],
+      'defines': [
+        'GIN_IMPLEMENTATION',
       ],
       'sources': [
         'arguments.cc',
@@ -30,6 +33,7 @@
         'dictionary.h',
         'function_template.cc',
         'function_template.h',
+        'gin_export.h',
         'handle.h',
         'isolate_holder.cc',
         'modules/console.cc',
@@ -63,7 +67,9 @@
       'target_name': 'gin_shell',
       'type': 'executable',
       'dependencies': [
+        '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../v8/tools/gyp/v8.gyp:v8',
         'gin',
       ],
       'sources': [
@@ -80,6 +86,7 @@
       'type': 'static_library',
       'dependencies': [
         '../testing/gtest.gyp:gtest',
+        '../v8/tools/gyp/v8.gyp:v8',
         'gin',
       ],
       'export_dependent_settings': [
@@ -100,6 +107,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
+        '../v8/tools/gyp/v8.gyp:v8',
         'gin_test',
       ],
       'sources': [

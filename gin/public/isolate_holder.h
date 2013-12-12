@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "gin/gin_export.h"
 
 namespace v8 {
 class Isolate;
@@ -26,7 +27,7 @@ class PerIsolateData;
 // pass them to IsolateHolder.
 //
 // It is not possible to mix the two.
-class IsolateHolder {
+class GIN_EXPORT IsolateHolder {
  public:
   IsolateHolder();
   explicit IsolateHolder(v8::Isolate* isolate);

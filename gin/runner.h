@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "gin/gin_export.h"
 #include "gin/public/context_holder.h"
 
 namespace gin {
@@ -18,7 +19,7 @@ class TryCatch;
 // Subclass RunnerDelegate to customize the behavior of |Runner|. Typical
 // embedders will want to subclass one of the specialized RunnerDelegates,
 // such as ModuleRunnerDelegate.
-class RunnerDelegate {
+class GIN_EXPORT RunnerDelegate {
  public:
   RunnerDelegate();
   virtual ~RunnerDelegate();
@@ -33,7 +34,7 @@ class RunnerDelegate {
 
 // Runner lets you run code in a v8::Context. Upon construction, Runner will
 // create a v8::Context. Upon destruction, Runner will dispose the context.
-class Runner : public ContextHolder {
+class GIN_EXPORT Runner : public ContextHolder {
  public:
   Runner(RunnerDelegate* delegate, v8::Isolate* isolate);
   ~Runner();
@@ -58,7 +59,7 @@ class Runner : public ContextHolder {
     return weak_factory_.GetWeakPtr();
   }
 
-  class Scope {
+  class GIN_EXPORT Scope {
    public:
     explicit Scope(Runner* runner);
     ~Scope();
