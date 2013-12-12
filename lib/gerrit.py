@@ -4,8 +4,6 @@
 
 """Module containing helper class and methods for interacting with Gerrit."""
 
-import itertools
-import json
 import logging
 import operator
 
@@ -68,14 +66,13 @@ class GerritHelper(object):
       raise ValueError('Remote %s not supported.' % remote)
     return cls(host, remote, **kwargs)
 
-  def SetReviewers(self, change, add=(), remove=(), project=None):
+  def SetReviewers(self, change, add=(), remove=()):
     """Modify the list of reviewers on a gerrit change.
 
     Args:
       change: ChangeId or change number for a gerrit review.
       add: Sequence of email addresses of reviewers to add.
       remove: Sequence of email addresses of reviewers to remove.
-      project: Deprecated.
     """
     if add:
       gob_util.AddReviewers(self.host, change, add)
@@ -103,12 +100,11 @@ class GerritHelper(object):
     query = { 'project': project, 'commit': commit, 'must_match': must_match }
     return self.QuerySingleRecord(change, **query)
 
-  def IsChangeCommitted(self, change, dryrun=False, must_match=False):
+  def IsChangeCommitted(self, change, must_match=False):
     """Check whether a gerrit change has been merged.
 
     Args:
       change: A gerrit change number.
-      dryrun: Deprecated.
       must_match: Raise an exception if the change is not found.  If this is
           False, then a missing change will return None.
     """
