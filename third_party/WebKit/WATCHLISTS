@@ -51,7 +51,7 @@
       'filepath': 'Source/core/page/.*Event' \
                   '|Source/core/dom/.*Event' \
                   '|Source/core/css/.*Event' \
-                  '|Source/core/platform/.*Event'
+                  '|Source/platform/.*Event'
     },
     'heap': {
       'filepath': 'Source/heap',
@@ -72,7 +72,7 @@
       'filepath':  'Source/core/editing/Editor' \
                    '|Source/core/editing/Spell' \
                    '|Source/core/editing/TextCheckingHelper' \
-                   '|Source/core/platform/Text/TextCheck' \
+                   '|Source/platform/text/TextCheck' \
                    '|Source/web/EditorClientImpl' \
                    '|LayoutTests/editing/spelling' \
                    '|public/web/WebSpellCheckClient.h',
@@ -81,11 +81,13 @@
       'filepath': 'Source/wtf',
     },
     'platform_graphics': {
-      'filepath': 'Source/core/platform/graphics',
+      'filepath': 'Source/platform/fonts' \
+                  '|Source/platform/geometry' \
+                  '|Source/platform/graphics'
     },
     'platform': {
       'filepath': 'Source/core/platform' \
-                  '|Source/Platform'
+                  '|Source/platform'
     },
     'svg': {
       'filepath': 'Source/core/svg|Source/core/rendering/svg',
@@ -101,7 +103,7 @@
     },
     'layers': {
       'filepath': 'Source/core/page/scrolling/ScrollingCoordinator' \
-                  '|Source/core/platform/graphics/GraphicsLayer' \
+                  '|Source/platform/graphics/GraphicsLayer' \
                   '|Source/core/rendering/RenderLayer'
     },
     "content_security_policy": {
@@ -125,11 +127,12 @@
     },
     'media': {
       'filepath': 'Source/core/css/mediaControls' \
-                  '|Source/core/platform/graphics/.*Media' \
                   '|Source/core/html/.*(Audio|Media|Video)' \
                   '|Source/core/html/shadow/MediaControl' \
                   '|Source/core/rendering/RenderMedia' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
+                  '|Source/platform/drm/' \
+                  '|Source/platform/graphics/media/' \
                   '|Source/web/.*Media' \
                   '|LayoutTests/media/' \
                   '|public/.*Media'
@@ -142,7 +145,7 @@
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
                   '|Source/core/fileapi/' \
-                  '|Source/core/platform/.*File' \
+                  '|Source/platform/.*File' \
                   '|Source/web/.*File' \
                   '|LayoutTests/fast/file' \
                   '|public/.*File'
@@ -179,6 +182,7 @@
     },
     'mediastream': {
       'filepath': 'Source/core/platform/mediastream/' \
+                  '|Source/platform/mediastream/' \
                   '|Source/modules/mediastream/' \
                   '|LayoutTests/fast/mediastream/' \
                   '|Source/core/platform/chromium/support/'
@@ -253,7 +257,8 @@
                            'cabanier@adobe.com',
                            'dsinclair@chromium.org',
                            'dschulze@chromium.org',
-                           'rob.buis@samsung.com' ],
+                           'rob.buis@samsung.com',
+                           'jbroman@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org', 'dschulze@chromium.org', 'rob.buis@samsung.com' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org' ],
     'dom': [ 'adamk+blink@chromium.org', 'eae+blinkwatch@chromium.org', 'dglazkov+blink@chromium.org' ],
