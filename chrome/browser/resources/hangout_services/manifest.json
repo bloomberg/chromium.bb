@@ -17,6 +17,7 @@
     "persistent": false
   },
   "permissions": [
+    "alarms",
     "desktopCapture",
     "system.cpu",
     "webrtcAudioPrivate",
