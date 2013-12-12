@@ -24,8 +24,7 @@ using base::android::ConvertUTF8ToJavaString;
 namespace {
 
 Profile* GetOriginalProfile() {
-  return g_browser_process->profile_manager()->GetDefaultProfile()->
-      GetOriginalProfile();
+  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
 }
 
 }  // namespace

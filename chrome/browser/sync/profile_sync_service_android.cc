@@ -63,7 +63,7 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     return;
   }
 
-  profile_ = g_browser_process->profile_manager()->GetDefaultProfile();
+  profile_ = ProfileManager::GetActiveUserProfile();
   if (profile_ == NULL) {
     NOTREACHED() << "Sync Init: Profile not found.";
     return;
