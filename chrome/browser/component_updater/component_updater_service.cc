@@ -749,44 +749,14 @@ void CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
 // Builds the sequence of <app> elements in the update check and returns it
 // in the |update_check_items| parameter.
 void CrxUpdateService::AddUpdateCheckItems(std::string* update_check_items) {
-  // Given that our |work_items_| list is expected to contain relatively few
-  // items, we simply loop several times.
+  // All items are added to a single update check.
   for (UpdateItems::const_iterator it = work_items_.begin();
        it != work_items_.end(); ++it) {
     CrxUpdateItem* item = *it;
-    if (item->status != CrxUpdateItem::kNew)
-      continue;
-    AddItemToUpdateCheck(item, update_check_items);
-  }
-
-  // Next we can go back to components we already checked, here
-  // we can also batch them in a single url request, as long as
-  // we have not checked them recently.
-  const base::TimeDelta min_delta_time =
-      base::TimeDelta::FromSeconds(config_->MinimumReCheckWait());
-
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    CrxUpdateItem* item = *it;
-    if ((item->status != CrxUpdateItem::kNoUpdate) &&
-        (item->status != CrxUpdateItem::kUpToDate))
-      continue;
-    base::TimeDelta delta = base::Time::Now() - item->last_check;
-    if (delta < min_delta_time)
-      continue;
-    AddItemToUpdateCheck(item, update_check_items);
-  }
-
-  // Finally, we check components that we already updated as long as
-  // we have not checked them recently.
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    CrxUpdateItem* item = *it;
-    if (item->status != CrxUpdateItem::kUpdated)
-      continue;
-    base::TimeDelta delta = base::Time::Now() - item->last_check;
-    if (delta < min_delta_time)
-      continue;
+    DCHECK(item->status == CrxUpdateItem::kNew ||
+           item->status == CrxUpdateItem::kNoUpdate ||
+           item->status == CrxUpdateItem::kUpToDate ||
+           item->status == CrxUpdateItem::kUpdated);
     AddItemToUpdateCheck(item, update_check_items);
   }
 }
