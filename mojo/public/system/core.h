@@ -12,95 +12,81 @@
 #include "mojo/public/system/macros.h"
 #include "mojo/public/system/system_export.h"
 
-// Types -----------------------------------------------------------------------
+// Types/constants -------------------------------------------------------------
 
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
 // (typically they'll be ignored), not necessarily an error.
 
-// Used to specify time ticks. Value is in microseconds.
+// |MojoTimeTicks|: Used to specify time ticks. Value is in microseconds.
+
 typedef int64_t MojoTimeTicks;
 
-// Handles to Mojo objects.
+// |MojoHandle|: Handles to Mojo objects.
+//   |MOJO_HANDLE_INVALID| - A value that is never a valid handle.
+
 typedef uint32_t MojoHandle;
 
-// Result codes for Mojo operations. Non-negative values are success codes;
-// negative values are error/failure codes.
-typedef int32_t MojoResult;
-
-// Used to specify deadlines (timeouts), in microseconds. Note that
-// |MOJO_DEADLINE_INDEFINITE| (-1) means "forever".
-typedef uint64_t MojoDeadline;
-
-// Used to specify the state of a handle to wait on (e.g., the ability to read
-// or write to it).
-typedef uint32_t MojoWaitFlags;
-
-// Used to specify different modes to |MojoWriteMessage()|.
-typedef uint32_t MojoWriteMessageFlags;
-
-// Used to specify different modes to |MojoReadMessage()|.
-typedef uint32_t MojoReadMessageFlags;
-
-// Constants -------------------------------------------------------------------
-
-// |MojoHandle|:
-//    |MOJO_HANDLE_INVALID| - A value that is never a valid handle.
 #ifdef __cplusplus
 const MojoHandle MOJO_HANDLE_INVALID = 0;
 #else
 #define MOJO_HANDLE_INVALID ((MojoHandle) 0)
 #endif
 
-// |MojoResult|:
-//    |MOJO_RESULT_OK| - Not an error; returned on success. Note that positive
-//        |MojoResult|s may also be used to indicate success.
-//    |MOJO_RESULT_CANCELLED| - Operation was cancelled, typically by the
-//        caller.
-//    |MOJO_RESULT_UNKNOWN| - Unknown error (e.g., if not enough information is
-//        available for a more specific error).
-//    |MOJO_RESULT_INVALID_ARGUMENT| - Caller specified an invalid argument.
-//        This differs from |MOJO_RESULT_FAILED_PRECONDITION| in that the former
-//        indicates arguments that are invalid regardless of the state of the
-//        system.
-//    |MOJO_RESULT_DEADLINE_EXCEEDED| - Deadline expired before the operation
-//        could complete.
-//    |MOJO_RESULT_NOT_FOUND| - Some requested entity was not found (i.e., does
-//        not exist).
-//    |MOJO_RESULT_ALREADY_EXISTS| - Some entity or condition that we attempted
-//        to create already exists.
-//    |MOJO_RESULT_PERMISSION_DENIED| - The caller does not have permission to
-//        for the operation (use |MOJO_RESULT_RESOURCE_EXHAUSTED| for rejections
-//        caused by exhausting some resource instead).
-//    |MOJO_RESULT_RESOURCE_EXHAUSTED| - Some resource required for the call
-//        (possibly some quota) has been exhausted.
-//    |MOJO_RESULT_FAILED_PRECONDITION| - The system is not in a state required
-//        for the operation (use this if the caller must do something to rectify
-//        the state before retrying).
-//    |MOJO_RESULT_ABORTED| - The operation was aborted by the system, possibly
-//        due to a concurrency issue (use this if the caller may retry at a
-//        higher level).
-//    |MOJO_RESULT_OUT_OF_RANGE| - The operation was attempted past the valid
-//        range. Unlike |MOJO_RESULT_INVALID_ARGUMENT|, this indicates that the
-//        operation may be/become valid depending on the system state. (This
-//        error is similar to |MOJO_RESULT_FAILED_PRECONDITION|, but is more
-//        specific.)
-//    |MOJO_RESULT_UNIMPLEMENTED| - The operation is not implemented, supported,
-//        or enabled.
-//    |MOJO_RESULT_INTERNAL| - Internal error: this should never happen and
-//        indicates that some invariant expected by the system has been broken.
-//    |MOJO_RESULT_UNAVAILABLE| - The operation is (temporarily) currently
-//        unavailable. The caller may simply retry the operation (possibly with
-//        a backoff).
-//    |MOJO_RESULT_DATA_LOSS| - Unrecoverable data loss or corruption.
-//    |MOJO_RESULT_BUSY| - One of the resources involved is currently being used
-//        (possibly on another thread) in a way that prevents the current
-//        operation from proceeding, e.g., if the other operation may result in
-//        the resource being invalidated.
+// |MojoResult|: Result codes for Mojo operations. Non-negative values are
+// success codes; negative values are error/failure codes.
+//   |MOJO_RESULT_OK| - Not an error; returned on success. Note that positive
+//       |MojoResult|s may also be used to indicate success.
+//   |MOJO_RESULT_CANCELLED| - Operation was cancelled, typically by the caller.
+//   |MOJO_RESULT_UNKNOWN| - Unknown error (e.g., if not enough information is
+//       available for a more specific error).
+//   |MOJO_RESULT_INVALID_ARGUMENT| - Caller specified an invalid argument. This
+//       differs from |MOJO_RESULT_FAILED_PRECONDITION| in that the former
+//       indicates arguments that are invalid regardless of the state of the
+//       system.
+//   |MOJO_RESULT_DEADLINE_EXCEEDED| - Deadline expired before the operation
+//       could complete.
+//   |MOJO_RESULT_NOT_FOUND| - Some requested entity was not found (i.e., does
+//       not exist).
+//   |MOJO_RESULT_ALREADY_EXISTS| - Some entity or condition that we attempted
+//       to create already exists.
+//   |MOJO_RESULT_PERMISSION_DENIED| - The caller does not have permission to
+//       for the operation (use |MOJO_RESULT_RESOURCE_EXHAUSTED| for rejections
+//       caused by exhausting some resource instead).
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| - Some resource required for the call
+//       (possibly some quota) has been exhausted.
+//   |MOJO_RESULT_FAILED_PRECONDITION| - The system is not in a state required
+//       for the operation (use this if the caller must do something to rectify
+//       the state before retrying).
+//   |MOJO_RESULT_ABORTED| - The operation was aborted by the system, possibly
+//       due to a concurrency issue (use this if the caller may retry at a
+//       higher level).
+//   |MOJO_RESULT_OUT_OF_RANGE| - The operation was attempted past the valid
+//       range. Unlike |MOJO_RESULT_INVALID_ARGUMENT|, this indicates that the
+//       operation may be/become valid depending on the system state. (This
+//       error is similar to |MOJO_RESULT_FAILED_PRECONDITION|, but is more
+//       specific.)
+//   |MOJO_RESULT_UNIMPLEMENTED| - The operation is not implemented, supported,
+//       or enabled.
+//   |MOJO_RESULT_INTERNAL| - Internal error: this should never happen and
+//       indicates that some invariant expected by the system has been broken.
+//   |MOJO_RESULT_UNAVAILABLE| - The operation is (temporarily) currently
+//       unavailable. The caller may simply retry the operation (possibly with a
+//       backoff).
+//   |MOJO_RESULT_DATA_LOSS| - Unrecoverable data loss or corruption.
+//   |MOJO_RESULT_BUSY| - One of the resources involved is currently being used
+//       (possibly on another thread) in a way that prevents the current
+//       operation from proceeding, e.g., if the other operation may result in
+//       the resource being invalidated.
 //
 // Note that positive values are also available as success codes.
 //
 // The codes from |MOJO_RESULT_OK| to |MOJO_RESULT_DATA_LOSS| come from
 // Google3's canonical error codes.
+//
+// TODO(vtl): Add a |MOJO_RESULT_SHOULD_WAIT|.
+
+typedef int32_t MojoResult;
+
 #ifdef __cplusplus
 const MojoResult MOJO_RESULT_OK = 0;
 const MojoResult MOJO_RESULT_CANCELLED = -1;
@@ -139,20 +125,28 @@ const MojoResult MOJO_RESULT_BUSY = -16;
 #define MOJO_RESULT_BUSY ((MojoResult) -16)
 #endif
 
-// |MojoDeadline|:
-//    |MOJO_DEADLINE_INDEFINITE|
+// |MojoDeadline|: Used to specify deadlines (timeouts), in microseconds (except
+// for |MOJO_DEADLINE_INDEFINITE|).
+//   |MOJO_DEADLINE_INDEFINITE| - Used to indicate "forever".
+
+typedef uint64_t MojoDeadline;
+
 #ifdef __cplusplus
 const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #else
 #define MOJO_DEADLINE_INDEFINITE = ((MojoDeadline) -1);
 #endif
 
-// |MojoWaitFlags|:
-//    |MOJO_WAIT_FLAG_NONE| - No flags. |MojoWait()|, etc. will return
-//        |MOJO_RESULT_FAILED_PRECONDITION| if you attempt to wait on this.
-//    |MOJO_WAIT_FLAG_READABLE| - Can read (e.g., a message) from the handle.
-//    |MOJO_WAIT_FLAG_WRITABLE| - Can write (e.g., a message) to the handle.
-//    |MOJO_WAIT_FLAG_EVERYTHING| - All flags.
+// |MojoWaitFlags|: Used to specify the state of a handle to wait on (e.g., the
+// ability to read or write to it).
+//   |MOJO_WAIT_FLAG_NONE| - No flags. |MojoWait()|, etc. will return
+//       |MOJO_RESULT_FAILED_PRECONDITION| if you attempt to wait on this.
+//   |MOJO_WAIT_FLAG_READABLE| - Can read (e.g., a message) from the handle.
+//   |MOJO_WAIT_FLAG_WRITABLE| - Can write (e.g., a message) to the handle.
+//   |MOJO_WAIT_FLAG_EVERYTHING| - All flags.
+
+typedef uint32_t MojoWaitFlags;
+
 #ifdef __cplusplus
 const MojoWaitFlags MOJO_WAIT_FLAG_NONE = 0;
 const MojoWaitFlags MOJO_WAIT_FLAG_READABLE = 1 << 0;
@@ -165,19 +159,27 @@ const MojoWaitFlags MOJO_WAIT_FLAG_EVERYTHING = ~0;
 #define MOJO_WAIT_FLAG_EVERYTHING (~((MojoWaitFlags) 0))
 #endif
 
-// |MojoWriteMessageFlags|:
-//    |MOJO_WRITE_MESSAGE_FLAG_NONE| - No flags; default mode.
+// |MojoWriteMessageFlags|: Used to specify different modes to
+// |MojoWriteMessage()|.
+//   |MOJO_WRITE_MESSAGE_FLAG_NONE| - No flags; default mode.
+
+typedef uint32_t MojoWriteMessageFlags;
+
 #ifdef __cplusplus
 const MojoWriteMessageFlags MOJO_WRITE_MESSAGE_FLAG_NONE = 0;
 #else
 #define MOJO_WRITE_MESSAGE_FLAG_NONE ((MojoWriteMessageFlags) 0)
 #endif
 
-// |MojoReadMessageFlags|:
-//    |MOJO_READ_MESSAGE_FLAG_NONE| - No flags; default mode.
-//    |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| - If the message is unable to be read
-//        for whatever reason (e.g., the caller-supplied buffer is too small),
-//        discard the message (i.e., simply dequeue it).
+// |MojoReadMessageFlags|: Used to specify different modes to
+// |MojoReadMessage()|.
+//   |MOJO_READ_MESSAGE_FLAG_NONE| - No flags; default mode.
+//   |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| - If the message is unable to be read
+//       for whatever reason (e.g., the caller-supplied buffer is too small),
+//       discard the message (i.e., simply dequeue it).
+
+typedef uint32_t MojoReadMessageFlags;
+
 #ifdef __cplusplus
 const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_NONE = 0;
 const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
@@ -200,8 +202,8 @@ MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow();
 // Closes the given |handle|.
 //
 // Returns:
-//    |MOJO_RESULT_OK| on success.
-//    |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle.
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle.
 //
 // Concurrent operations on |handle| may succeed (or fail as usual) if they
 // happen before the close, be cancelled with result |MOJO_RESULT_CANCELLED| if
@@ -213,14 +215,14 @@ MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
 // or until |deadline| has passed.
 //
 // Returns:
-//    |MOJO_RESULT_OK| if some flag in |flags| was satisfied (or is already
+//   |MOJO_RESULT_OK| if some flag in |flags| was satisfied (or is already
 //        satisfied).
-//    |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle (e.g., if
-//        it has already been closed).
-//    |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline has passed without any of
-//        the flags being satisfied.
-//    |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that any
-//        flag in |flags| will ever be satisfied.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle (e.g., if
+//       it has already been closed).
+//   |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline has passed without any of
+//       the flags being satisfied.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that any
+//       flag in |flags| will ever be satisfied.
 //
 // If there are multiple waiters (on different threads, obviously) waiting on
 // the same handle and flag and that flag becomes set, all waiters will be
@@ -234,32 +236,105 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWait(MojoHandle handle,
 // respectively, or until |deadline| has passed.
 //
 // Returns:
-//    The index |i| (from 0 to |num_handles-1|) if |handle[i]| satisfies
-//        |flags[i]|.
-//    |MOJO_RESULT_INVALID_ARGUMENT| if some |handle[i]| is not a valid handle
-//        (e.g., if it has already been closed).
-//    |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline has passed without any of
-//        handles satisfying any of its flags.
-//    |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that SOME
-//        |handle[i]| will ever satisfy any of its flags |flags[i]|.
+//   The index |i| (from 0 to |num_handles-1|) if |handle[i]| satisfies
+//       |flags[i]|.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some |handle[i]| is not a valid handle
+//       (e.g., if it has already been closed).
+//   |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline has passed without any of
+//       handles satisfying any of its flags.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that SOME
+//       |handle[i]| will ever satisfy any of its flags |flags[i]|.
 MOJO_SYSTEM_EXPORT MojoResult MojoWaitMany(const MojoHandle* handles,
                                            const MojoWaitFlags* flags,
                                            uint32_t num_handles,
                                            MojoDeadline deadline);
 
-// TODO(vtl): flags? other params (e.g., queue sizes, max message sizes?)
-MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(MojoHandle* handle_0,
-                                                    MojoHandle* handle_1);
+// Message pipe:
 
-MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(
-    MojoHandle handle,
-    const void* bytes, uint32_t num_bytes,
-    const MojoHandle* handles,
-    uint32_t num_handles,
-    MojoWriteMessageFlags flags);
+// Creates a message pipe, which is a bidirectional communication channel for
+// framed data (i.e., messages). Messages can contain plain data and/or Mojo
+// handles. On success, |*message_pipe_handle_0| and |*message_pipe_1| are set
+// to handles for the two endpoints (ports) for the message pipe.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message_pipe_handle_0| and/or
+//       |message_pipe_handle_1| do not appear to be valid pointers.
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
+//       been reached.
+//
+// TODO(vtl): Add an options struct pointer argument.
+MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
+    MojoHandle* message_pipe_handle_0,
+    MojoHandle* message_pipe_handle_1);
 
-MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle handle,
-                                              void* bytes, uint32_t* num_bytes,
+// Writes a message to the message pipe endpoint given by |message_pipe_handle|,
+// with message data specified by |bytes| of size |num_bytes| and attached
+// handles specified by |handles| of count |num_handles|, and options specified
+// by |flags|. If there is no message data, |bytes| may be null, in which case
+// |num_bytes| must be zero. If there are no attached handles, |handles| may be
+// null, in which case |num_handles| must be zero.
+//
+// If handles are attached, on success the handles will no longer be valid (the
+// receiver will receive equivalent, but logically different, handles). Handles
+// to be sent should not be in simultaneous use (e.g., on another thread).
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success (i.e., the message was enqueued).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |message_pipe_handle| is not a valid handle, or some of the
+//       requirements above are not satisfied).
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if some system limit has been reached, or
+//       the number of handles to send is too large (TODO(vtl): reconsider the
+//       latter case).
+//   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
+//       Note that closing an endpoint is not necessarily synchronous (e.g.,
+//       across processes), so this function may be succeed even if the other
+//       endpoint has been closed (in which case the message would be dropped).
+//   |MOJO_RESULT_BUSY| if some handle to be sent is currently in use.
+//
+// TODO(vtl): Add a notion of capacity for message pipes, and return
+// |MOJO_RESULT_SHOULD_WAIT| if the message pipe is full.
+MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
+                                               const void* bytes,
+                                               uint32_t num_bytes,
+                                               const MojoHandle* handles,
+                                               uint32_t num_handles,
+                                               MojoWriteMessageFlags flags);
+
+// Reads a message from the message pipe endpoint given by
+// |message_pipe_handle|; also usable to query the size of the next message or
+// discard the next message. |bytes|/|*num_bytes| indicate the buffer/buffer
+// size to receive the message data (if any) and |handles|/|*num_handles|
+// indicate the buffer/maximum handle count to receive the attached handles (if
+// any).
+//
+// |num_bytes| and |num_handles| are "in-out" parameters. On return, they will
+// usually indicate the number of bytes and number of attached handles in the
+// "next" message, whether it was read or not.
+//
+// If |bytes| is null, then |*num_bytes| must be zero, and similarly for
+// |handles| and |*num_handles|.
+//
+// Partial reads are NEVER done. Either a full read is done and |MOJO_RESULT_OK|
+// returned, or the read is NOT done and |MOJO_RESULT_RESOURCE_EXHAUSTED| is
+// returned (if |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| was set, the message is
+// also discarded in this case).
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success. FIXME - what's success?
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid.
+//   |MOJO_RESULT_NOT_FOUND| if no message was available to be read (TODO(vtl):
+//       change this to |MOJO_RESULT_SHOULD_WAIT|).
+//   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if one of the buffers to receive the
+//       message/attached handles (|bytes|/|*num_bytes| or
+//       |handles|/|*num_handles|) was too small. (TODO(vtl): Reconsider this
+//       error code; should distinguish this from the hitting-system-limits
+//       case.)
+MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
+                                              void* bytes,
+                                              uint32_t* num_bytes,
                                               MojoHandle* handles,
                                               uint32_t* num_handles,
                                               MojoReadMessageFlags flags);

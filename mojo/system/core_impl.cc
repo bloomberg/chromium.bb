@@ -134,11 +134,11 @@ MojoResult CoreImpl::WaitMany(const MojoHandle* handles,
   return WaitManyInternal(handles, flags, num_handles, deadline);
 }
 
-MojoResult CoreImpl::CreateMessagePipe(MojoHandle* handle_0,
-                                       MojoHandle* handle_1) {
-  if (!VerifyUserPointer<MojoHandle>(handle_0, 1))
+MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle_0,
+                                       MojoHandle* message_pipe_handle_1) {
+  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle_0, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<MojoHandle>(handle_1, 1))
+  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle_1, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<MessagePipeDispatcher> dispatcher_0(
@@ -165,17 +165,18 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* handle_0,
   dispatcher_0->Init(message_pipe, 0);
   dispatcher_1->Init(message_pipe, 1);
 
-  *handle_0 = h0;
-  *handle_1 = h1;
+  *message_pipe_handle_0 = h0;
+  *message_pipe_handle_1 = h1;
   return MOJO_RESULT_OK;
 }
 
-MojoResult CoreImpl::WriteMessage(
-    MojoHandle handle,
-    const void* bytes, uint32_t num_bytes,
-    const MojoHandle* handles, uint32_t num_handles,
-    MojoWriteMessageFlags flags) {
-  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
+MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
+                                  const void* bytes,
+                                  uint32_t num_bytes,
+                                  const MojoHandle* handles,
+                                  uint32_t num_handles,
+                                  MojoWriteMessageFlags flags) {
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(message_pipe_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -217,7 +218,7 @@ MojoResult CoreImpl::WriteMessage(
     for (i = 0; i < num_handles; i++) {
       // Sending your own handle is not allowed (and, for consistency, returns
       // "busy").
-      if (handles[i] == handle) {
+      if (handles[i] == message_pipe_handle) {
         error_result = MOJO_RESULT_BUSY;
         break;
       }
@@ -305,12 +306,13 @@ MojoResult CoreImpl::WriteMessage(
   return rv;
 }
 
-MojoResult CoreImpl::ReadMessage(
-    MojoHandle handle,
-    void* bytes, uint32_t* num_bytes,
-    MojoHandle* handles, uint32_t* num_handles,
-    MojoReadMessageFlags flags) {
-  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
+MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
+                                 void* bytes,
+                                 uint32_t* num_bytes,
+                                 MojoHandle* handles,
+                                 uint32_t* num_handles,
+                                 MojoReadMessageFlags flags) {
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(message_pipe_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 

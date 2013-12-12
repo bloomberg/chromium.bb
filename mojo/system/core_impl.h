@@ -44,17 +44,18 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
                               uint32_t num_handles,
                               MojoDeadline deadline) OVERRIDE;
 
-  virtual MojoResult CreateMessagePipe(MojoHandle* handle_0,
-                                       MojoHandle* handle_1) OVERRIDE;
+  virtual MojoResult CreateMessagePipe(
+      MojoHandle* message_pipe_handle_0,
+      MojoHandle* message_pipe_handle_1) OVERRIDE;
 
-  virtual MojoResult WriteMessage(MojoHandle handle,
+  virtual MojoResult WriteMessage(MojoHandle message_pipe_handle,
                                   const void* bytes,
                                   uint32_t num_bytes,
                                   const MojoHandle* handles,
                                   uint32_t num_handles,
                                   MojoWriteMessageFlags flags) OVERRIDE;
 
-  virtual MojoResult ReadMessage(MojoHandle handle,
+  virtual MojoResult ReadMessage(MojoHandle message_pipe_handle,
                                  void* bytes,
                                  uint32_t* num_bytes,
                                  MojoHandle* handles,

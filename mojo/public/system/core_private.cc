@@ -36,31 +36,33 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
   return g_core->WaitMany(handles, flags, num_handles, deadline);
 }
 
-MojoResult MojoCreateMessagePipe(MojoHandle* handle_0, MojoHandle* handle_1) {
+MojoResult MojoCreateMessagePipe(MojoHandle* message_pipe_handle_0,
+                                 MojoHandle* message_pipe_handle_1) {
   assert(g_core);
-  return g_core->CreateMessagePipe(handle_0, handle_1);
+  return g_core->CreateMessagePipe(message_pipe_handle_0,
+                                   message_pipe_handle_1);
 }
 
-MojoResult MojoWriteMessage(MojoHandle handle,
-                            const void* bytes, uint32_t num_bytes,
-                            const MojoHandle* handles, uint32_t num_handles,
+MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
+                            const void* bytes,
+                            uint32_t num_bytes,
+                            const MojoHandle* handles,
+                            uint32_t num_handles,
                             MojoWriteMessageFlags flags) {
   assert(g_core);
-  return g_core->WriteMessage(handle,
-                              bytes, num_bytes,
-                              handles, num_handles,
-                              flags);
+  return g_core->WriteMessage(message_pipe_handle, bytes, num_bytes, handles,
+                              num_handles, flags);
 }
 
-MojoResult MojoReadMessage(MojoHandle handle,
-                           void* bytes, uint32_t* num_bytes,
-                           MojoHandle* handles, uint32_t* num_handles,
+MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
+                           void* bytes,
+                           uint32_t* num_bytes,
+                           MojoHandle* handles,
+                           uint32_t* num_handles,
                            MojoReadMessageFlags flags) {
   assert(g_core);
-  return g_core->ReadMessage(handle,
-                             bytes, num_bytes,
-                             handles, num_handles,
-                             flags);
+  return g_core->ReadMessage(message_pipe_handle, bytes, num_bytes, handles,
+                             num_handles, flags);
 }
 
 }  // extern "C"

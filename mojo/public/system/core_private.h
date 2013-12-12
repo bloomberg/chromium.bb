@@ -27,15 +27,15 @@ class MOJO_SYSTEM_EXPORT CorePrivate {
                               const MojoWaitFlags* flags,
                               uint32_t num_handles,
                               MojoDeadline deadline) = 0;
-  virtual MojoResult CreateMessagePipe(MojoHandle* handle_0,
-                                       MojoHandle* handle_1) = 0;
-  virtual MojoResult WriteMessage(MojoHandle handle,
+  virtual MojoResult CreateMessagePipe(MojoHandle* message_pipe_handle_0,
+                                       MojoHandle* message_pipe_handle_1) = 0;
+  virtual MojoResult WriteMessage(MojoHandle message_pipe_handle,
                                   const void* bytes,
                                   uint32_t num_bytes,
                                   const MojoHandle* handles,
                                   uint32_t num_handles,
                                   MojoWriteMessageFlags flags) = 0;
-  virtual MojoResult ReadMessage(MojoHandle handle,
+  virtual MojoResult ReadMessage(MojoHandle message_pipe_handle,
                                  void* bytes,
                                  uint32_t* num_bytes,
                                  MojoHandle* handles,
