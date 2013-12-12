@@ -76,6 +76,10 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setReplicaLayer(blink::WebLayer* replica);
   virtual void setOpacity(float opacity);
   virtual float opacity() const;
+  virtual void setBlendMode(blink::WebBlendMode blend_mode);
+  virtual blink::WebBlendMode blendMode() const;
+  virtual void setIsRootForIsolatedGroup(bool root);
+  virtual bool isRootForIsolatedGroup();
   virtual void setOpaque(bool opaque);
   virtual bool opaque() const;
   virtual void setPosition(const blink::WebFloatPoint& position);
