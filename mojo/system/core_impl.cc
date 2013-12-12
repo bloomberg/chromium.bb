@@ -367,9 +367,7 @@ MojoResult CoreImpl::WriteData(MojoHandle data_pipe_producer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return dispatcher->WriteData(elements, num_elements, flags);
 }
 
 MojoResult CoreImpl::BeginWriteData(MojoHandle data_pipe_producer_handle,
@@ -381,9 +379,7 @@ MojoResult CoreImpl::BeginWriteData(MojoHandle data_pipe_producer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return dispatcher->BeginWriteData(buffer, buffer_num_elements, flags);
 }
 
 MojoResult CoreImpl::EndWriteData(MojoHandle data_pipe_producer_handle,
@@ -393,9 +389,7 @@ MojoResult CoreImpl::EndWriteData(MojoHandle data_pipe_producer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return dispatcher->EndWriteData(num_elements_written);
 }
 
 MojoResult CoreImpl::ReadData(MojoHandle data_pipe_consumer_handle,
@@ -407,9 +401,7 @@ MojoResult CoreImpl::ReadData(MojoHandle data_pipe_consumer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return dispatcher->ReadData(elements, num_elements, flags);
 }
 
 MojoResult CoreImpl::BeginReadData(MojoHandle data_pipe_consumer_handle,
@@ -421,9 +413,7 @@ MojoResult CoreImpl::BeginReadData(MojoHandle data_pipe_consumer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return dispatcher->BeginReadData(buffer, buffer_num_elements, flags);
 }
 
 MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
@@ -433,9 +423,7 @@ MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  return dispatcher->EndReadData(num_elements_read);
 }
 
 CoreImpl::CoreImpl()
