@@ -457,4 +457,19 @@ TEST_F(ImageDecodingStoreTest, clearInUse)
     EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 }
 
+TEST_F(ImageDecodingStoreTest, disableImageCaching)
+{
+    ImageDecodingStore::instance()->setImageCachingEnabled(false);
+    insertCache(SkISize::Make(1, 1));
+    insertCache(SkISize::Make(2, 2));
+    EXPECT_EQ(0, ImageDecodingStore::instance()->cacheEntries());
+
+    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createCompleteImage(SkISize::Make(3, 3), true));
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
+    unlockCache(cachedImage);
+    EXPECT_EQ(0, ImageDecodingStore::instance()->cacheEntries());
+    ImageDecodingStore::instance()->setImageCachingEnabled(true);
+}
+
 } // namespace

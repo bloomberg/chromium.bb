@@ -92,6 +92,18 @@ public:
     static void initializeOnce();
     static void shutdown();
 
+    // Why do we need this?
+    // ImageDecodingStore is used in two code paths:
+    // 1. Android uses this to cache both images and decoders.
+    // 2. Skia discardable memory path has its own cache. We still want cache
+    //    decoders but not images because Skia will take care of it.
+    // Because of the two use cases we want to just disable image caching.
+    //
+    // FIXME: It is weird to have this behavior. We want to remove image
+    // caching from this class once the transition to Skia discardable memory
+    // is complete.
+    static void setImageCachingEnabled(bool);
+
     // Access a complete cached image object. A complete cached image object is
     // indexed by the origin (ImageFrameGenerator), scaled size and frame index
     // within the image file.

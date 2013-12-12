@@ -35,6 +35,7 @@ namespace {
 // 32MB memory limit for cache.
 static const size_t defaultCacheLimitInBytes = 32768 * 1024;
 static ImageDecodingStore* s_instance = 0;
+static bool s_imageCachingEnabled = true;
 
 static void setInstance(ImageDecodingStore* imageDecodingStore)
 {
@@ -77,6 +78,11 @@ void ImageDecodingStore::shutdown()
     setInstance(0);
 }
 
+void ImageDecodingStore::setImageCachingEnabled(bool enabled)
+{
+    s_imageCachingEnabled = enabled;
+}
+
 bool ImageDecodingStore::lockCache(const ImageFrameGenerator* generator, const SkISize& scaledSize, size_t index, const ScaledImageFragment** cachedImage)
 {
     ASSERT(cachedImage);
@@ -94,17 +100,29 @@ bool ImageDecodingStore::lockCache(const ImageFrameGenerator* generator, const S
 
 void ImageDecodingStore::unlockCache(const ImageFrameGenerator* generator, const ScaledImageFragment* cachedImage)
 {
-    MutexLocker lock(m_mutex);
-    cachedImage->bitmap().unlockPixels();
-    ImageCacheMap::iterator iter = m_imageCacheMap.find(ImageCacheEntry::makeCacheKey(generator, cachedImage->scaledSize(), cachedImage->index(), cachedImage->generation()));
-    ASSERT_WITH_SECURITY_IMPLICATION(iter != m_imageCacheMap.end());
+    Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
+    {
+        MutexLocker lock(m_mutex);
+        cachedImage->bitmap().unlockPixels();
+        ImageCacheMap::iterator iter = m_imageCacheMap.find(ImageCacheEntry::makeCacheKey(generator, cachedImage->scaledSize(), cachedImage->index(), cachedImage->generation()));
+        ASSERT_WITH_SECURITY_IMPLICATION(iter != m_imageCacheMap.end());
 
-    CacheEntry* cacheEntry = iter->value.get();
-    cacheEntry->decrementUseCount();
+        CacheEntry* cacheEntry = iter->value.get();
+        cacheEntry->decrementUseCount();
 
-    // Put the entry to the end of list.
-    m_orderedCacheList.remove(cacheEntry);
-    m_orderedCacheList.append(cacheEntry);
+        // Put the entry to the end of list.
+        m_orderedCacheList.remove(cacheEntry);
+        m_orderedCacheList.append(cacheEntry);
+
+        // FIXME: This code is temporary such that in the new Skia
+        // discardable memory path we do not cache images.
+        // Once the transition is complete the logic to handle
+        // image caching should be removed entirely.
+        if (!s_imageCachingEnabled && !cacheEntry->useCount()) {
+            removeFromCacheInternal(cacheEntry, &cacheEntriesToDelete);
+            removeFromCacheListInternal(cacheEntriesToDelete);
+        }
+    }
 }
 
 const ScaledImageFragment* ImageDecodingStore::insertAndLockCache(const ImageFrameGenerator* generator, PassOwnPtr<ScaledImageFragment> image)
