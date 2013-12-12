@@ -166,23 +166,28 @@ class UI_EXPORT IBusBridge {
 
   // Initializes the mapping from |engine_id| to |handler|.
   // |engine_id| must not be empty and |handler| must not be null.
-  virtual void InitEngineHandler(
+  virtual void SetEngineHandler(
       const std::string& engine_id,
       IBusEngineHandlerInterface* handler) = 0;
 
-  // Returns current EngineHandler. This function returns NULL if current engine
-  // is not ready to use.
-  virtual IBusEngineHandlerInterface* GetEngineHandler() const = 0;
+  // Returns IBusEngineHandlerInterface* mapped by |engine_id|.  NULL is
+  // returned if |engine_id| is not mapped any engines.
+  virtual IBusEngineHandlerInterface* GetEngineHandler(
+      const std::string& engine_id) = 0;
 
   // Updates current EngineHandler. If there is no active engine service, pass
   // NULL for |handler|. Caller must release |handler|.
-  virtual void SetEngineHandler(IBusEngineHandlerInterface* handler) = 0;
+  virtual void SetCurrentEngineHandler(IBusEngineHandlerInterface* handler) = 0;
 
   // Updates current EngineHandler by Engine ID. If there is no active
   // engine service, pass an empty string for |engine_id|.  The set
   // IBusEngineHandlerInterface is returned.
-  virtual IBusEngineHandlerInterface* SetEngineHandlerById(
+  virtual IBusEngineHandlerInterface* SetCurrentEngineHandlerById(
       const std::string& engine_id) = 0;
+
+  // Returns current EngineHandler. This function returns NULL if current engine
+  // is not ready to use.
+  virtual IBusEngineHandlerInterface* GetCurrentEngineHandler() const = 0;
 
   // Returns current CandidateWindowHandler. This function returns NULL if
   // current candidate window is not ready to use.

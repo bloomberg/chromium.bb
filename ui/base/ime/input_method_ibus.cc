@@ -30,7 +30,7 @@
 
 namespace {
 chromeos::IBusEngineHandlerInterface* GetEngine() {
-  return chromeos::IBusBridge::Get()->GetEngineHandler();
+  return chromeos::IBusBridge::Get()->GetCurrentEngineHandler();
 }
 }  // namespace
 

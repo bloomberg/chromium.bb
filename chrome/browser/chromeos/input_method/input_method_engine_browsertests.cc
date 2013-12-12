@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
   IBusEngineHandlerInterface* engine_handler =
-      IBusBridge::Get()->GetEngineHandler();
+      IBusBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   // onActivate event should be fired if Enable function is called.
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
   IBusEngineHandlerInterface* engine_handler =
-      IBusBridge::Get()->GetEngineHandler();
+      IBusBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   extensions::ExtensionHost* host = FindHostWithPath(

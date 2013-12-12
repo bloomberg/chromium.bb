@@ -67,7 +67,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     manager_->SetXKeyboardForTesting(xkeyboard_);
     mock_engine_handler_.reset(new MockIMEEngineHandler());
     IBusBridge::Initialize();
-    IBusBridge::Get()->SetEngineHandler(mock_engine_handler_.get());
+    IBusBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
     ime_list_.clear();
 
@@ -119,7 +119,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     candidate_window_controller_ = NULL;
     xkeyboard_ = NULL;
     manager_.reset();
-    IBusBridge::Get()->SetEngineHandler(NULL);
+    IBusBridge::Get()->SetCurrentEngineHandler(NULL);
     IBusBridge::Shutdown();
   }
 
@@ -129,17 +129,17 @@ class InputMethodManagerImplTest :  public testing::Test {
     mock_delegate_ = new MockComponentExtIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(mock_delegate_);
-    // Note, for production, these InitEngineHandler are called when
+    // Note, for production, these SetEngineHandler are called when
     // IBusEngineHandlerInterface is initialized via
     // InitializeComponentextension.
-    IBusBridge::Get()->InitEngineHandler(kNaclMozcUsId,
-                                         mock_engine_handler_.get());
-    IBusBridge::Get()->InitEngineHandler(kNaclMozcJpId,
-                                         mock_engine_handler_.get());
-    IBusBridge::Get()->InitEngineHandler(kExt2Engine1Id,
-                                         mock_engine_handler_.get());
-    IBusBridge::Get()->InitEngineHandler(kExt2Engine2Id,
-                                         mock_engine_handler_.get());
+    IBusBridge::Get()->SetEngineHandler(kNaclMozcUsId,
+                                        mock_engine_handler_.get());
+    IBusBridge::Get()->SetEngineHandler(kNaclMozcJpId,
+                                        mock_engine_handler_.get());
+    IBusBridge::Get()->SetEngineHandler(kExt2Engine1Id,
+                                        mock_engine_handler_.get());
+    IBusBridge::Get()->SetEngineHandler(kExt2Engine2Id,
+                                        mock_engine_handler_.get());
     manager_->InitializeComponentExtensionForTesting(delegate.Pass());
   }
 
@@ -914,7 +914,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       GURL(),
       GURL(),
       NULL);
-  IBusBridge::Get()->InitEngineHandler(ext1_id, mock_engine_handler_.get());
+  IBusBridge::Get()->SetEngineHandler(ext1_id, mock_engine_handler_.get());
 
   // Extension IMEs are not enabled by default.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
@@ -943,7 +943,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       GURL(),
       GURL(),
       NULL);
-  IBusBridge::Get()->InitEngineHandler(ext2_id, mock_engine_handler_.get());
+  IBusBridge::Get()->SetEngineHandler(ext2_id, mock_engine_handler_.get());
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
   extension_ime_ids.push_back(
@@ -996,7 +996,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
       GURL(),
       GURL(),
       NULL);
-  IBusBridge::Get()->InitEngineHandler(ext_id, mock_engine_handler_.get());
+  IBusBridge::Get()->SetEngineHandler(ext_id, mock_engine_handler_.get());
 
   // Extension IME is not enabled by default.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());

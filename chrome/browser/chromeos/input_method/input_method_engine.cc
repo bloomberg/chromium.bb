@@ -72,13 +72,6 @@ InputMethodEngine::InputMethodEngine()
 
 InputMethodEngine::~InputMethodEngine() {
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
-
-  // Do not unset engine before removing input method extension, above
-  // function may call reset function of engine object.
-  //
-  // TODO(komatsu): Move this logic to InputMethodManager.
-  if (IBusBridge::Get()->GetEngineHandler() == this)
-    IBusBridge::Get()->SetEngineHandler(NULL);
 }
 
 void InputMethodEngine::Initialize(
@@ -111,7 +104,7 @@ void InputMethodEngine::Initialize(
 
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, input_view, this);
-  IBusBridge::Get()->InitEngineHandler(ibus_id_, this);
+  IBusBridge::Get()->SetEngineHandler(ibus_id_, this);
 }
 
 void InputMethodEngine::StartIme() {

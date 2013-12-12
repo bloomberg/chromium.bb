@@ -37,7 +37,7 @@ class IBusBridgeImpl : public IBusBridge {
   }
 
   // IBusBridge override.
-  virtual void InitEngineHandler(
+  virtual void SetEngineHandler(
       const std::string& engine_id,
       IBusEngineHandlerInterface* handler) OVERRIDE {
     DCHECK(!engine_id.empty());
@@ -46,17 +46,23 @@ class IBusBridgeImpl : public IBusBridge {
   }
 
   // IBusBridge override.
-  virtual IBusEngineHandlerInterface* GetEngineHandler() const OVERRIDE {
-    return engine_handler_;
+  virtual IBusEngineHandlerInterface* GetEngineHandler(
+      const std::string& engine_id) OVERRIDE {
+    if (engine_id.empty() ||
+        engine_handler_map_.find(engine_id) == engine_handler_map_.end()) {
+      return NULL;
+    }
+    return engine_handler_map_[engine_id];
   }
 
   // IBusBridge override.
-  virtual void SetEngineHandler(IBusEngineHandlerInterface* handler) OVERRIDE {
+  virtual void SetCurrentEngineHandler(
+      IBusEngineHandlerInterface* handler) OVERRIDE {
     engine_handler_ = handler;
   }
 
   // IBusBridge override.
-  virtual IBusEngineHandlerInterface* SetEngineHandlerById(
+  virtual IBusEngineHandlerInterface* SetCurrentEngineHandlerById(
       const std::string& engine_id) OVERRIDE {
     if (engine_id.empty()) {
       engine_handler_ = NULL;
@@ -65,6 +71,11 @@ class IBusBridgeImpl : public IBusBridge {
 
     DCHECK(engine_handler_map_.find(engine_id) != engine_handler_map_.end());
     engine_handler_ = engine_handler_map_[engine_id];
+    return engine_handler_;
+  }
+
+  // IBusBridge override.
+  virtual IBusEngineHandlerInterface* GetCurrentEngineHandler() const OVERRIDE {
     return engine_handler_;
   }
 

@@ -207,7 +207,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
 
     mock_ime_engine_handler_.reset(
         new chromeos::MockIMEEngineHandler());
-    chromeos::IBusBridge::Get()->SetEngineHandler(
+    chromeos::IBusBridge::Get()->SetCurrentEngineHandler(
         mock_ime_engine_handler_.get());
 
     mock_ime_candidate_window_handler_.reset(
@@ -223,7 +223,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     if (ime_.get())
       ime_->SetFocusedTextInputClient(NULL);
     ime_.reset();
-    chromeos::IBusBridge::Get()->SetEngineHandler(NULL);
+    chromeos::IBusBridge::Get()->SetCurrentEngineHandler(NULL);
     chromeos::IBusBridge::Get()->SetCandidateWindowHandler(NULL);
     mock_ime_engine_handler_.reset();
     mock_ime_candidate_window_handler_.reset();

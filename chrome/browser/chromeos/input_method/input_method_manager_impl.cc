@@ -301,7 +301,8 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   pending_input_method_.clear();
-  IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+  IBusEngineHandlerInterface* engine =
+      IBusBridge::Get()->GetCurrentEngineHandler();
 
   // Hide candidate window and info list.
   if (candidate_window_controller_.get())
@@ -311,7 +312,7 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     if (engine) {
       engine->Disable();
-      IBusBridge::Get()->SetEngineHandler(NULL);
+      IBusBridge::Get()->SetCurrentEngineHandler(NULL);
     }
   } else {
     // Disable the current engine and enable the next engine.
@@ -319,7 +320,8 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
       engine->Disable();
 
     IBusEngineHandlerInterface* next_engine =
-        IBusBridge::Get()->SetEngineHandlerById(input_method_id_to_switch);
+        IBusBridge::Get()->SetCurrentEngineHandlerById(
+            input_method_id_to_switch);
 
     if (next_engine)
       next_engine->Enable();
@@ -408,7 +410,7 @@ void InputMethodManagerImpl::ActivateInputMethodProperty(
   for (size_t i = 0; i < property_list_.size(); ++i) {
     if (property_list_[i].key == key) {
       IBusEngineHandlerInterface* engine =
-          IBusBridge::Get()->GetEngineHandler();
+          IBusBridge::Get()->GetCurrentEngineHandler();
       if (engine)
         engine->PropertyActivate(key);
       return;
@@ -465,6 +467,10 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   // If |current_input_method| is no longer in |active_input_method_ids_|,
   // switch to the first one in |active_input_method_ids_|.
   ChangeInputMethod(current_input_method_.id());
+
+  if (IBusBridge::Get()->GetCurrentEngineHandler() ==
+      IBusBridge::Get()->GetEngineHandler(id))
+    IBusBridge::Get()->SetCurrentEngineHandler(NULL);
 }
 
 void InputMethodManagerImpl::GetInputMethodExtensions(
@@ -739,7 +745,8 @@ void InputMethodManagerImpl::PropertyChanged() {
 }
 
 void InputMethodManagerImpl::CandidateClicked(int index) {
-  IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+  IBusEngineHandlerInterface* engine =
+      IBusBridge::Get()->GetCurrentEngineHandler();
   if (engine)
     engine->CandidateClicked(index);
 }
