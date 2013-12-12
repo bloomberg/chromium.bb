@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#include "base/atomicops.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -54,25 +55,29 @@ const ThreadData::Status kInitialStartupState =
 static const bool kAllowAlternateTimeSourceHandling = true;
 
 inline bool IsProfilerTimingEnabled() {
-  static enum {
+  enum {
     UNDEFINED_TIMING,
     ENABLED_TIMING,
     DISABLED_TIMING,
-  } timing_enabled = UNDEFINED_TIMING;
-  // This initialization is not thread-safe, so the value of |timing_enabled|
-  // can be computed multiple times. This is not an issue, as the computed value
-  // will always be the same, and is side-effect free, while needing to use a
-  // lock or a memory barrier would be more costly.
-  if (timing_enabled == UNDEFINED_TIMING) {
+  };
+  static base::subtle::Atomic32 timing_enabled = UNDEFINED_TIMING;
+  // Reading |timing_enabled| is done without barrier because multiple
+  // initialization is not an issue while the barrier can be relatively costly
+  // given that this method is sometimes called in a tight loop.
+  base::subtle::Atomic32 current_timing_enabled =
+      base::subtle::NoBarrier_Load(&timing_enabled);
+  if (current_timing_enabled == UNDEFINED_TIMING) {
     if (!CommandLine::InitializedForCurrentProcess())
       return true;
-    timing_enabled = (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                          switches::kProfilerTiming) ==
-                      switches::kProfilerTimingDisabledValue)
-                         ? DISABLED_TIMING
-                         : ENABLED_TIMING;
+    current_timing_enabled =
+        (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+             switches::kProfilerTiming) ==
+         switches::kProfilerTimingDisabledValue)
+            ? DISABLED_TIMING
+            : ENABLED_TIMING;
+    base::subtle::NoBarrier_Store(&timing_enabled, current_timing_enabled);
   }
-  return timing_enabled == ENABLED_TIMING;
+  return current_timing_enabled == ENABLED_TIMING;
 }
 
 }  // namespace
