@@ -400,7 +400,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
         }
         if (currentFontSize != desiredFontSize) {
             inlineStyle->setProperty(CSSPropertyFontSize, cssValuePool().createValue(desiredFontSize, CSSPrimitiveValue::CSS_PX), false);
-            setNodeAttribute(element.get(), styleAttr, inlineStyle->asText());
+            setNodeAttribute(element.get(), styleAttr, AtomicString(inlineStyle->asText()));
         }
         if (inlineStyle->isEmpty()) {
             removeNodeAttribute(element.get(), styleAttr);
@@ -519,7 +519,7 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, Node* unsp
             RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
             inlineStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
             inlineStyle->removeProperty(CSSPropertyDirection);
-            setNodeAttribute(element, styleAttr, inlineStyle->asText());
+            setNodeAttribute(element, styleAttr, AtomicString(inlineStyle->asText()));
             if (isSpanWithoutAttributesOrUnstyledStyleSpan(element))
                 removeNodePreservingChildren(element);
         }
@@ -766,7 +766,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
                 continue;
             RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
             inlineStyle->mergeAndOverrideOnConflict(style->style());
-            setNodeAttribute(element, styleAttr, inlineStyle->asText());
+            setNodeAttribute(element, styleAttr, AtomicString(inlineStyle->asText()));
             continue;
         }
 
@@ -1005,7 +1005,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
     // Since addInlineStyleIfNeeded can't add styles to block-flow render objects, add style attribute instead.
     // FIXME: applyInlineStyleToRange should be used here instead.
     if ((node->renderer()->isRenderBlockFlow() || node->childNodeCount()) && node->isHTMLElement()) {
-        setNodeAttribute(toHTMLElement(node), styleAttr, newInlineStyle->style()->asText());
+        setNodeAttribute(toHTMLElement(node), styleAttr, AtomicString(newInlineStyle->style()->asText()));
         return;
     }
 
@@ -1387,7 +1387,7 @@ void ApplyStyleCommand::addBlockStyle(const StyleChange& styleChange, HTMLElemen
             cssText.append(' ');
         cssText.append(decl->asText());
     }
-    setNodeAttribute(block, styleAttr, cssText.toString());
+    setNodeAttribute(block, styleAttr, cssText.toAtomicString());
 }
 
 void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtr<Node> passedStart, PassRefPtr<Node> passedEnd, EAddStyledElement addStyledElement)

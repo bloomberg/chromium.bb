@@ -489,7 +489,7 @@ static bool executeInsertHorizontalRule(Frame& frame, Event*, EditorCommandSourc
     ASSERT(frame.document());
     RefPtr<HTMLHRElement> rule = HTMLHRElement::create(*frame.document());
     if (!value.isEmpty())
-        rule->setIdAttribute(value);
+        rule->setIdAttribute(AtomicString(value));
     return executeInsertNode(frame, rule.release());
 }
 

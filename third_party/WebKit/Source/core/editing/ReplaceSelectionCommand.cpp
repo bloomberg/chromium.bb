@@ -513,8 +513,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
                 continue;
             }
             removeNodeAttribute(element, styleAttr);
-        } else if (newInlineStyle->style()->propertyCount() != inlineStyle->propertyCount())
-            setNodeAttribute(element, styleAttr, newInlineStyle->style()->asText());
+        } else if (newInlineStyle->style()->propertyCount() != inlineStyle->propertyCount()) {
+            setNodeAttribute(element, styleAttr, AtomicString(newInlineStyle->style()->asText()));
+        }
 
         // FIXME: Tolerate differences in id, class, and style attributes.
         if (isNonTableCellHTMLBlockElement(element) && areIdenticalElements(element, element->parentNode())
@@ -788,8 +789,9 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
     if (style->isEmpty() || !wrappingStyleSpan->firstChild()) {
         insertedNodes.willRemoveNodePreservingChildren(*wrappingStyleSpan);
         removeNodePreservingChildren(wrappingStyleSpan);
-    } else
-        setNodeAttribute(wrappingStyleSpan, styleAttr, style->style()->asText());
+    } else {
+        setNodeAttribute(wrappingStyleSpan, styleAttr, AtomicString(style->style()->asText()));
+    }
 }
 
 void ReplaceSelectionCommand::mergeEndIfNeeded()
