@@ -17,6 +17,17 @@ namespace {
 
 typedef test::CoreTestBase CoreImplTest;
 
+TEST_F(CoreImplTest, GetTimeTicksNow) {
+  const MojoTimeTicks start = core()->GetTimeTicksNow();
+  EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
+      << "GetTimeTicksNow should return nonzero value";
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(15));
+  const MojoTimeTicks finish = core()->GetTimeTicksNow();
+  // Allow for some fuzz in sleep.
+  EXPECT_GE((finish - start), static_cast<MojoTimeTicks>(8000))
+      << "Sleeping should result in increasing time ticks";
+}
+
 TEST_F(CoreImplTest, Basic) {
   MockHandleInfo info;
 
@@ -494,17 +505,6 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passed[0]));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_received));
-}
-
-TEST_F(CoreImplTest, GetTimeTicksNow) {
-  const MojoTimeTicks start = core()->GetTimeTicksNow();
-  EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
-      << "TimeTicks should return non-zero value";
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(15));
-  const MojoTimeTicks finish = core()->GetTimeTicksNow();
-  // Allow for some fuzz in sleep().
-  EXPECT_GE((finish - start), static_cast<MojoTimeTicks>(8000))
-      << "Sleeping should result in incrementing time ticks";
 }
 
 }  // namespace

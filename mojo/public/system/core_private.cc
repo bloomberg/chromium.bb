@@ -11,6 +11,11 @@ static mojo::CorePrivate* g_core = NULL;
 
 extern "C" {
 
+MojoTimeTicks MojoGetTimeTicksNow() {
+  assert(g_core);
+  return g_core->GetTimeTicksNow();
+}
+
 MojoResult MojoClose(MojoHandle handle) {
   assert(g_core);
   return g_core->Close(handle);
@@ -56,11 +61,6 @@ MojoResult MojoReadMessage(MojoHandle handle,
                              bytes, num_bytes,
                              handles, num_handles,
                              flags);
-}
-
-MojoTimeTicks MojoGetTimeTicksNow() {
-  assert(g_core);
-  return g_core->GetTimeTicksNow();
 }
 
 }  // extern "C"

@@ -12,6 +12,12 @@
 namespace mojo {
 namespace {
 
+TEST(CoreCppTest, GetTimeTicksNow) {
+  const MojoTimeTicks start = GetTimeTicksNow();
+  EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
+      << "GetTimeTicksNow should return nonzero value";
+}
+
 TEST(CoreCppTest, Basic) {
   // Basic |Handle| implementation:
   {
@@ -366,12 +372,6 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_0.release().value()));
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_1.release().value()));
   }
-}
-
-TEST(CoreCppTest, GetTimeTicksNow) {
-  const MojoTimeTicks start = GetTimeTicksNow();
-  EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
-      << "TimeTicks should return non-zero value";
 }
 
 }  // namespace

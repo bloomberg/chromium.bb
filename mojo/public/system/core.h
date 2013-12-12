@@ -17,6 +17,9 @@
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
 // (typically they'll be ignored), not necessarily an error.
 
+// Used to specify time ticks. Value is in microseconds.
+typedef int64_t MojoTimeTicks;
+
 // Handles to Mojo objects.
 typedef uint32_t MojoHandle;
 
@@ -37,9 +40,6 @@ typedef uint32_t MojoWriteMessageFlags;
 
 // Used to specify different modes to |MojoReadMessage()|.
 typedef uint32_t MojoReadMessageFlags;
-
-// Used to specify time ticks. Value is in microseconds.
-typedef int64_t MojoTimeTicks;
 
 // Constants -------------------------------------------------------------------
 
@@ -192,6 +192,11 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
 extern "C" {
 #endif
 
+// Platform-dependent monotonically increasing tick count representing "right
+// now." The resolution of this clock is ~1-15ms.  Resolution varies depending
+// on hardware/operating system configuration.
+MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow();
+
 // Closes the given |handle|.
 //
 // Returns:
@@ -258,11 +263,6 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle handle,
                                               MojoHandle* handles,
                                               uint32_t* num_handles,
                                               MojoReadMessageFlags flags);
-
-// Platform-dependent monotonically increasing tick count representing "right
-// now." The resolution of this clock is ~1-15ms.  Resolution varies depending
-// on hardware/operating system configuration.
-MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow();
 
 #ifdef __cplusplus
 }  // extern "C"

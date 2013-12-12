@@ -18,6 +18,7 @@ class MOJO_SYSTEM_EXPORT CorePrivate {
 
   static void Init(CorePrivate* core);
 
+  virtual MojoTimeTicks GetTimeTicksNow() = 0;
   virtual MojoResult Close(MojoHandle handle) = 0;
   virtual MojoResult Wait(MojoHandle handle,
                           MojoWaitFlags flags,
@@ -40,7 +41,6 @@ class MOJO_SYSTEM_EXPORT CorePrivate {
                                  MojoHandle* handles,
                                  uint32_t* num_handles,
                                  MojoReadMessageFlags flags) = 0;
-  virtual MojoTimeTicks GetTimeTicksNow() = 0;
 };
 
 }  // namespace mojo

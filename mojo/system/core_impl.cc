@@ -86,6 +86,10 @@ void CoreImpl::Init() {
   CorePrivate::Init(new CoreImpl());
 }
 
+MojoTimeTicks CoreImpl::GetTimeTicksNow() {
+  return base::TimeTicks::Now().ToInternalValue();
+}
+
 MojoResult CoreImpl::Close(MojoHandle handle) {
   if (handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -341,10 +345,6 @@ MojoResult CoreImpl::ReadMessage(
   }
 
   return rv;
-}
-
-MojoTimeTicks CoreImpl::GetTimeTicksNow() {
-  return base::TimeTicks::Now().ToInternalValue();
 }
 
 CoreImpl::CoreImpl()

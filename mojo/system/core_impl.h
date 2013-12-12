@@ -31,6 +31,8 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
  public:
   static void Init();
 
+  virtual MojoTimeTicks GetTimeTicksNow() OVERRIDE;
+
   virtual MojoResult Close(MojoHandle handle) OVERRIDE;
 
   virtual MojoResult Wait(MojoHandle handle,
@@ -58,8 +60,6 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
                                  MojoHandle* handles,
                                  uint32_t* num_handles,
                                  MojoReadMessageFlags flags) OVERRIDE;
-
-  virtual MojoTimeTicks GetTimeTicksNow() OVERRIDE;
 
  private:
   friend class test::CoreTestBase;
