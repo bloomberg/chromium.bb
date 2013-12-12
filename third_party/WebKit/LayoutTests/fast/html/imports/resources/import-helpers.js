@@ -14,7 +14,8 @@ function waitAndTest(tests)
 
     function runSingleTest(options)
     {
-        var ntries = 10;
+        var interval = 1;
+        var ntries = 8;
         function checkWhenReady()
         {
             if (--ntries < 0) {
@@ -22,8 +23,9 @@ function waitAndTest(tests)
                 return finishJSTest();
             }
 
+            interval *= 2;
             if (!options.ready())
-                return setTimeout(checkWhenReady, 0);
+                return setTimeout(checkWhenReady, interval);
 
             options.test();
             return runNext();
