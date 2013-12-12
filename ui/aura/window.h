@@ -68,6 +68,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                            public ui::EventTarget,
                            public ui::GestureConsumer {
  public:
+  // Used when stacking windows.
+  enum StackDirection {
+    STACK_ABOVE,
+    STACK_BELOW
+  };
+
   typedef std::vector<Window*> Windows;
 
   explicit Window(WindowDelegate* delegate);
@@ -378,14 +384,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
  private:
   friend class test::WindowTestApi;
   friend class LayoutManager;
-  friend class WindowTargeter;
   friend class RootWindow;
-
-  // Used when stacking windows.
-  enum StackDirection {
-    STACK_ABOVE,
-    STACK_BELOW
-  };
+  friend class WindowTargeter;
 
   // Called by the public {Set,Get,Clear}Property functions.
   int64 SetPropertyInternal(const void* key,
@@ -445,17 +445,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Called when this window's parent has changed.
   void OnParentChanged();
 
-  // Populates |ancestors| with all transient ancestors of |window| that are
-  // children of |this|. Returns true if any ancestors were found, false if not.
-  bool GetAllTransientAncestors(Window* window, Windows* ancestors) const;
-
-  // Replaces two windows |window1| and |window2| with their possible transient
-  // ancestors that are still siblings (have a common transient parent).
-  // |window1| and |window2| are not modified if such ancestors cannot be found.
-  void FindCommonSiblings(Window** window1, Window** window2) const;
-
   // Returns true when |ancestor| is a transient ancestor of |this|.
   bool HasTransientAncestor(const Window* ancestor) const;
+
+  // Adjusts |target| so that we don't attempt to stack on top of a window with
+  // a NULL delegate. See implementation for details.
+  void SkipNullDelegatesForStacking(StackDirection direction,
+                                    Window** target) const;
 
   // Determines the real location for stacking |child| and invokes
   // StackChildRelativeToImpl().

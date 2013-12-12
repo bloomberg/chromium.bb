@@ -13,6 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/views/corewm/capture_controller.h"
+#include "ui/views/corewm/transient_window_stacking_client.h"
 #endif
 
 namespace views {
@@ -37,6 +38,9 @@ void ViewsTestBase::SetUp() {
 #if defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
+  // SetWindowStackingClient() takes ownership of TransientWindowStackingClient.
+  aura::client::SetWindowStackingClient(
+      new corewm::TransientWindowStackingClient);
 #endif  // USE_AURA
   ui::InitializeInputMethodForTesting();
 }
@@ -53,6 +57,7 @@ void ViewsTestBase::TearDown() {
   ui::ShutdownInputMethodForTesting();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
+  aura::client::SetWindowStackingClient(NULL);
   CHECK(!corewm::ScopedCaptureClient::IsActive());
 #endif  // USE_AURA
 }

@@ -22,6 +22,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/capture_controller.h"
+#include "ui/views/corewm/transient_window_stacking_client.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -87,6 +88,10 @@ void AshTestHelper::SetUp(bool start_session) {
   test_screenshot_delegate_ = new TestScreenshotDelegate();
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
+
+  // SetWindowStackingClient() takes ownership of TransientWindowStackingClient.
+  aura::client::SetWindowStackingClient(
+      new views::corewm::TransientWindowStackingClient);
 }
 
 void AshTestHelper::TearDown() {
@@ -111,6 +116,8 @@ void AshTestHelper::TearDown() {
   zero_duration_mode_.reset();
 
   CHECK(!views::corewm::ScopedCaptureClient::IsActive());
+
+  aura::client::SetWindowStackingClient(NULL);
 }
 
 void AshTestHelper::RunAllPendingInMessageLoop() {

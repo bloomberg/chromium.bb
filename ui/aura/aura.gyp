@@ -71,6 +71,8 @@
         'client/visibility_client.h',
         'client/window_move_client.cc',
         'client/window_move_client.h',
+        'client/window_stacking_client.cc',
+        'client/window_stacking_client.h',
         'client/window_tree_client.cc',
         'client/window_tree_client.h',
         'client/window_types.h',
