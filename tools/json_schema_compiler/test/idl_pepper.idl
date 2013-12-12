@@ -1,0 +1,93 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Tests Pepper API generation.
+
+[internal] namespace idlPepper {
+  enum EnumType {
+    name1,
+    name2
+  };
+
+  enum AnotherEnumType {
+    name1,
+    name2
+  };
+
+  dictionary MyType3 {
+    MyType1 a;
+  };
+
+  dictionary MyType2 {
+    MyType1 a;
+  };
+
+  dictionary MyType1 {
+  };
+
+  dictionary MyType4 {
+    MyType1 a;
+  };
+
+  dictionary MyType5 {
+    MyType3[] a;
+    MyType4? b;
+  };
+
+  dictionary MyType6 {
+    MyType5 a;
+  };
+
+  dictionary MyType0 {
+  };
+
+  dictionary MyType {
+    long int_single;
+    long[] int_array;
+    long? optional_int;
+    long[]? optional_int_array;
+    double double_single;
+    double[] double_array;
+    double? optional_double;
+    double[]? optional_double_array;
+    DOMString string;
+    DOMString[] string_array;
+    DOMString? optional_string;
+    DOMString[]? optional_string_array;
+    EnumType enum_single;
+    EnumType[] enum_array;
+    EnumType? optional_enum;
+    EnumType[]? optional_enum_array;
+    MyType0 struct_single;
+    MyType0[] struct_array;
+    MyType0? optional_struct;
+    MyType0[]? optional_struct_array;
+  };
+
+  callback Callback1 = void(MyType5 arg);
+  callback Callback2 = void(double arg);
+  callback Callback3 = void(double[] arg);
+  callback Callback4 = void(MyType0[] arg);
+  callback Callback5 = void(MyType0 arg);
+
+  interface Functions {
+    static void function1(optional MyType2[] arg);
+    static void function2(optional MyType3 arg);
+    static void function3(Callback1 cb);
+    static void function4(Callback2 cb);
+    static double function5();
+    static MyType5 function6();
+    static void function7(Callback3 cb);
+    static void function8(Callback4 cb);
+    static void function9(Callback5 cb);
+    static double[] function10();
+    static MyType0[] function11();
+    static MyType0 function12();
+    static void function13(MyType arg);
+  };
+
+  interface Events {
+    static void onFoo1(MyType6 arg);
+  };
+};
