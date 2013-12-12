@@ -231,7 +231,10 @@ void DesktopRootWindowHostWin::StackAtTop() {
 }
 
 void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
-  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
+  gfx::Size expanded_size;
+  expanded_size = GetExpandedWindowSize(
+      message_handler_->window_ex_style(), size);
+  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(expanded_size);
   message_handler_->CenterWindow(size_in_pixels);
 }
 
