@@ -31,8 +31,16 @@
     RaisesException=Constructor,
 ] interface TestInterfaceEventConstructor : Event {
     readonly attribute DOMString readonlyStringAttribute;
+
     [InitializedByEventConstructor] readonly attribute DOMString initializedByEventConstructorReadonlyStringAttribute;
     [InitializedByEventConstructor] readonly attribute any initializedByEventConstructorReadonlyAnyAttribute;
+    [InitializedByEventConstructor] readonly attribute boolean initializedByEventConstructorReadonlyBooleanAttribute;
+    [InitializedByEventConstructor] readonly attribute long initializedByEventConstructorReadonlyLongAttribute;
+    [InitializedByEventConstructor] readonly attribute Uint8Array initializedByEventConstructorReadonlyUint8ArrayAttribute;
+    [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute;
+    [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty[] initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute;
+    // [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty? initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute; // FIXME: implement getters for nullable interface type attributes
+
     [DeprecateAs=initializedByEventConstructorReadonlyStringAttribute, InitializedByEventConstructor] readonly attribute DOMString deprecatedInitializedByEventConstructorReadonlyStringAttribute;
     [ImplementedAs=implementedAsName, InitializedByEventConstructor] readonly attribute DOMString implementedAsInitializedByEventConstructorReadonlyStringAttribute;
     [DeprecateAs=initializedByEventConstructorReadonlyStringAttribute, ImplementedAs=deprecatedImplementedAsName, InitializedByEventConstructor] readonly attribute DOMString deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute;

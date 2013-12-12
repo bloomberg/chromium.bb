@@ -304,19 +304,16 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
     {% for attribute in attributes
            if (attribute.is_initialized_by_event_constructor and
                not attribute.idl_type == 'any')%}
-    {# FIXME: implement [ImplementedAs] #}
-    {# FIXME: implement [DeprecateAs] #}
-    {# FIXME: special-case any #}
-    {# FIXME: implement withPropertyAttributes #}
+    {% set is_nullable = 'true' if attribute.is_nullable else 'false' %}
     {% if attribute.deprecate_as %}
-    if (options.convert(conversionContext, "{{attribute.name}}", eventInit.{{attribute.cpp_name}})) {
+    if (options.convert(conversionContext.setConversionType("{{attribute.idl_type}}", {{is_nullable}}), "{{attribute.name}}", eventInit.{{attribute.cpp_name}})) {
         if (options.hasProperty("{{attribute.name}}"))
             UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
     } else {
         return false;
     }
     {% else %}
-    if (!options.convert(conversionContext, "{{attribute.name}}", eventInit.{{attribute.cpp_name}}))
+    if (!options.convert(conversionContext.setConversionType("{{attribute.idl_type}}", {{is_nullable}}), "{{attribute.name}}", eventInit.{{attribute.cpp_name}}))
         return false;
     {% endif %}
     {% endfor %}

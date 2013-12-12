@@ -79,7 +79,8 @@ def generate_attribute(interface, attribute):
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.conditional_string(attribute),
-        'constructor_type': v8_types.constructor_type(idl_type) if is_constructor_attribute(attribute) else None,
+        'constructor_type': v8_types.constructor_type(idl_type)
+                            if is_constructor_attribute(attribute) else None,
         'cpp_name': cpp_name(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
@@ -329,6 +330,8 @@ def property_attributes(attribute):
         property_attributes_list.append('v8::DontDelete')
     return property_attributes_list or ['v8::None']
 
+
+# Constructors
 
 def is_constructor_attribute(attribute):
     return attribute.idl_type.endswith('Constructor')
