@@ -51,6 +51,8 @@ class SpeedIndexMetric(Metric):
   def AddResults(self, tab, results, chart_name=None):
     """Calculate the speed index and add it to the results."""
     index = self._impl.CalculateSpeedIndex()
+    # Release the tab so that it can be disconnected.
+    self._impl = None
     results.Add('speed_index', 'ms', index, chart_name=chart_name)
 
   def IsFinished(self, tab):
