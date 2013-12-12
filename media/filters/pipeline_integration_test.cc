@@ -60,7 +60,6 @@ const int kAppendTimeMs = kAppendTimeSec * 1000;
 const int k320WebMFileDurationMs = 2737;
 const int k640WebMFileDurationMs = 2763;
 const int kOpusEndTrimmingWebMFileDurationMs = 2771;
-const uint32 kOpusEndTrimmingWebMFileAudioBytes = 528676;
 const int kVP9WebMFileDurationMs = 2735;
 const int kVP8AWebMFileDurationMs = 2700;
 
@@ -567,8 +566,6 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_EQ(kOpusEndTrimmingWebMFileAudioBytes,
-            pipeline_->GetStatistics().audio_bytes_decoded);
   source.Abort();
   Stop();
 }
@@ -1063,10 +1060,12 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus-end-trimming.webm"),
                     PIPELINE_OK));
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_EQ(kOpusEndTrimmingWebMFileAudioBytes,
-            pipeline_->GetStatistics().audio_bytes_decoded);
 }
 
 // Verify that VP9 video in WebM containers can be played back.

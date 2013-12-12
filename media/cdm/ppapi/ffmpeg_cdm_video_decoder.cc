@@ -174,7 +174,7 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
     return false;
   }
 
-  av_frame_.reset(avcodec_alloc_frame());
+  av_frame_.reset(av_frame_alloc());
   is_initialized_ = true;
 
   return true;

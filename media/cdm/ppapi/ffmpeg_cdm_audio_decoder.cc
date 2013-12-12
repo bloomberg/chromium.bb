@@ -180,7 +180,7 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
   }
 
   // Success!
-  av_frame_.reset(avcodec_alloc_frame());
+  av_frame_.reset(av_frame_alloc());
   samples_per_second_ = config.samples_per_second;
   bytes_per_frame_ = codec_context_->channels * config.bits_per_channel / 8;
   output_timestamp_helper_.reset(

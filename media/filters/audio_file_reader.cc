@@ -132,7 +132,7 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
 
   // Holds decoded audio.
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame(
-      avcodec_alloc_frame());
+      av_frame_alloc());
 
   // Read until we hit EOF or we've read the requested number of frames.
   AVPacket packet;

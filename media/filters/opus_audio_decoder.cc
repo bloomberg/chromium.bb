@@ -601,10 +601,12 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
 
   // Decoding finished successfully, update statistics.
   PipelineStatistics statistics;
-  statistics.audio_bytes_decoded =
-      frames_decoded *
-      demuxer_stream_->audio_decoder_config().bytes_per_frame();
+  statistics.audio_bytes_decoded = input->data_size();
   statistics_cb_.Run(statistics);
+
+  // Discard the buffer to indicate we need more data.
+  if (!frames_decoded)
+    *output_buffer = NULL;
 
   return true;
 }

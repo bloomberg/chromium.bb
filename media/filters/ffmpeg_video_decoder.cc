@@ -104,8 +104,6 @@ int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
   frame->opaque = NULL;
   video_frame.swap(reinterpret_cast<VideoFrame**>(&frame->opaque));
   frame->type = FF_BUFFER_TYPE_USER;
-  frame->pkt_pts = codec_context->pkt ? codec_context->pkt->pts :
-                                        AV_NOPTS_VALUE;
   frame->width = codec_context->width;
   frame->height = codec_context->height;
   frame->format = codec_context->pix_fmt;
@@ -382,7 +380,7 @@ bool FFmpegVideoDecoder::ConfigureDecoder() {
     return false;
   }
 
-  av_frame_.reset(avcodec_alloc_frame());
+  av_frame_.reset(av_frame_alloc());
   return true;
 }
 

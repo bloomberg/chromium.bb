@@ -372,7 +372,7 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   }
 
   // Success!
-  av_frame_.reset(avcodec_alloc_frame());
+  av_frame_.reset(av_frame_alloc());
   channel_layout_ = config.channel_layout();
   samples_per_second_ = config.samples_per_second();
   output_timestamp_helper_.reset(
