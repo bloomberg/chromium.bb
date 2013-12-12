@@ -181,8 +181,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
                                         RequestWaitState state) OVERRIDE;
 
   void AccumulateContentLength(
-      int64 received_payload_byte_count, int64 original_payload_byte_count,
-      chrome_browser_net::DataReductionRequestType data_reduction_type);
+      int64 received_payload_byte_count,
+      int64 original_payload_byte_count,
+      chrome_browser_net::DataReductionRequestType data_reduction_type,
+      void* profile);
 
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   void* profile_;

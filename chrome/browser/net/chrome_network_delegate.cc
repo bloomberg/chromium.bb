@@ -218,7 +218,8 @@ void ForwardRequestStatus(
 void UpdateContentLengthPrefs(
     int received_content_length,
     int original_content_length,
-    chrome_browser_net::DataReductionRequestType data_reduction_type) {
+    chrome_browser_net::DataReductionRequestType data_reduction_type,
+    Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
@@ -231,6 +232,11 @@ void UpdateContentLengthPrefs(
   if (!prefs)
     return;
 
+  // Ignore off-the-record data.
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile) ||
+      profile->IsOffTheRecord()) {
+    return;
+  }
 #if defined(OS_ANDROID)
   bool with_data_reduction_proxy_enabled =
       g_browser_process->profile_manager()->GetDefaultProfile()->
@@ -249,11 +255,12 @@ void UpdateContentLengthPrefs(
 void StoreAccumulatedContentLength(
     int received_content_length,
     int original_content_length,
-    chrome_browser_net::DataReductionRequestType data_reduction_type) {
+    chrome_browser_net::DataReductionRequestType data_reduction_type,
+    Profile* profile) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&UpdateContentLengthPrefs,
                  received_content_length, original_content_length,
-                 data_reduction_type));
+                 data_reduction_type, profile));
 }
 
 void RecordContentLengthHistograms(
@@ -528,8 +535,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
           request->response_info().headers->GetInt64HeaderValue(
               "x-original-content-length");
       chrome_browser_net::DataReductionRequestType data_reduction_type =
-          chrome_browser_net::GetDataReductionRequestType(
-              reinterpret_cast<Profile*>(profile_), request);
+          chrome_browser_net::GetDataReductionRequestType(request);
 
       base::TimeDelta freshness_lifetime =
           request->response_info().headers->GetFreshnessLifetime(
@@ -540,7 +546,8 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
               received_content_length);
       AccumulateContentLength(received_content_length,
                               adjusted_original_content_length,
-                              data_reduction_type);
+                              data_reduction_type,
+                              profile_);
       RecordContentLengthHistograms(received_content_length,
                                     original_content_length,
                                     freshness_lifetime);
@@ -759,13 +766,16 @@ void ChromeNetworkDelegate::OnRequestWaitStateChange(
 }
 
 void ChromeNetworkDelegate::AccumulateContentLength(
-    int64 received_content_length, int64 original_content_length,
-    chrome_browser_net::DataReductionRequestType data_reduction_type) {
+    int64 received_content_length,
+    int64 original_content_length,
+    chrome_browser_net::DataReductionRequestType data_reduction_type,
+    void* profile) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
   StoreAccumulatedContentLength(received_content_length,
                                 original_content_length,
-                                data_reduction_type);
+                                data_reduction_type,
+                                reinterpret_cast<Profile*>(profile_));
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;
 }

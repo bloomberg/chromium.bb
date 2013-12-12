@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/host_port_pair.h"
@@ -375,9 +374,7 @@ bool IsDataReductionProxyReponse(
 namespace chrome_browser_net {
 
 DataReductionRequestType GetDataReductionRequestType(
-    const Profile* profile, const net::URLRequest* request) {
-  if (profile != NULL && profile->IsOffTheRecord())
-    return OFF_THE_RECORD;
+    const net::URLRequest* request) {
   if (request->url().SchemeIs(content::kHttpsScheme))
     return HTTPS;
   if (!request->url().SchemeIs(content::kHttpScheme)) {
@@ -481,9 +478,6 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     switch (data_reduction_type) {
       case VIA_DATA_REDUCTION_PROXY:
         via_proxy.Add(original_content_length, received_content_length);
-        break;
-      case OFF_THE_RECORD:
-        // We don't measure off-the-record data.
         break;
       case HTTPS:
         https.Add(received_content_length);

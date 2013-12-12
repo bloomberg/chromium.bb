@@ -12,7 +12,6 @@ class URLRequest;
 }
 
 class PrefService;
-class Profile;
 
 namespace chrome_browser_net {
 
@@ -20,10 +19,8 @@ enum DataReductionRequestType {
   VIA_DATA_REDUCTION_PROXY,  // A request served by the data reduction proxy.
 
   // Below are reasons why a request is not served by the enabled data
-  // saving proxy.
-  OFF_THE_RECORD,  // An off-the-record (incognito) request, either http
-                   // or https.
-  HTTPS,  // An https request that is not from an off-the-record profile.
+  // reduction proxy. We don't count off-the-record profile data in all cases.
+  HTTPS,  // An https request.
   SHORT_BYPASS,  // The client is bypassed by the proxy for a short time.
   LONG_BYPASS,  // The client is bypassed by the proxy for a long time (due
                 // to country bypass policy, for example).
@@ -32,7 +29,6 @@ enum DataReductionRequestType {
 
 // Returns DataReductionRequestType for |request|.
 DataReductionRequestType GetDataReductionRequestType(
-    const Profile* profile,
     const net::URLRequest* request);
 
 // Returns |received_content_length| as adjusted original content length if
