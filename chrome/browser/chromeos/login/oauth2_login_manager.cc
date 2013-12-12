@@ -93,12 +93,20 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   ProfileOAuth2TokenService* token_service = GetTokenService();
-  if (token_service->RefreshTokenIsAvailable(
-          token_service->GetPrimaryAccountId())) {
+  const std::string& primary_account_id = token_service->GetPrimaryAccountId();
+  if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
     LOG(WARNING) << "OAuth2 refresh token is already loaded.";
     RestoreSessionCookies();
   } else {
     LOG(WARNING) << "Loading OAuth2 refresh token from database.";
+
+    // Flag user with invalid token status in case there are no saved tokens
+    // and OnRefreshTokenAvailable is not called. Flagging it here would
+    // cause user to go through Gaia in next login to obtain a new refresh
+    // token.
+    UserManager::Get()->SaveUserOAuthStatus(primary_account_id,
+                                            User::OAUTH2_TOKEN_STATUS_INVALID);
+
     token_service->LoadCredentials();
   }
 }
