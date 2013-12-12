@@ -100,10 +100,12 @@ void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void Checkbox::OnFocus() {
+  LabelButton::OnFocus();
   UpdateImage();
 }
 
 void Checkbox::OnBlur() {
+  LabelButton::OnBlur();
   UpdateImage();
 }
 

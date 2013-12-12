@@ -125,9 +125,9 @@ class ExamplesWindowContents : public WidgetDelegateView,
     example_shown_->RemoveAllChildViews(false);
     example_shown_->AddChildView(combobox_model_.GetItemViewAt(
         combobox->selected_index()));
-    example_shown_->RequestFocus();
     SetStatus(std::string());
     Layout();
+    SchedulePaint();
   }
 
   // Creates the layout within the examples window.
