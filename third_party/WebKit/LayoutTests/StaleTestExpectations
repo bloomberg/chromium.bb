@@ -38,9 +38,9 @@ webkit.org/b/81145 [ SnowLeopard Lion ] fast/frames/invalid.html [ WontFix ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ WontFix ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ WontFix ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ WontFix ]
-webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ WontFix ]
-webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ WontFix ]
-webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ WontFix ]
+webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ WontFix ]
+webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ WontFix ]
+webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ WontFix ]
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ WontFix ]
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ WontFix ]
 webkit.org/b/86114 virtual/legacy-animations-engine/animations/combo-transform-translate+scale.html [ WontFix ]
@@ -131,7 +131,7 @@ crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ WontFix
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
-crbug.com/7482 [ Win Lion MountainLion Retina ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Win Lion MountainLion Mavericks Retina ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # This test isn't just slow -- sometimes it times out indefinitely.
 crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Pass Timeout ] # Also Slow

@@ -269,6 +269,18 @@ crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
+# Untriaged Mavericks failures
+
+crbug.com/314947 [ Mavericks ] crash/array-splice.html [ Timeout ]
+crbug.com/314947 [ Mavericks ] crash/string-replacement-outofmemory.html [ Timeout ]
+crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-mouse-events.html [ Failure ]
+crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]
+crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
+crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
+crbug.com/314947 [ Mavericks ] http/tests/xmlhttprequest/origin-exact-matching.html [ Failure ]
+crbug.com/314947 [ Mavericks ] printing/return-from-printing-mode.html [ ImageOnlyFailure ] 
+
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
 crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
