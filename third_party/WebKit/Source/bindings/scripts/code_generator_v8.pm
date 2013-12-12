@@ -3967,7 +3967,7 @@ sub GenerateImplementationNamedPropertyGetter
     $code .= "\n";
     $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
+    $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     if ($raisesExceptions) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
     }
@@ -4086,7 +4086,7 @@ sub GenerateImplementationNamedPropertyDeleter
     my $code = "static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
+    $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
@@ -4136,7 +4136,7 @@ sub GenerateImplementationNamedPropertyQuery
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
+    AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     bool result = collection->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())

@@ -91,7 +91,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     String functionString;
     if (!function->IsFunction()) {
         if (function->IsString()) {
-            functionString = toWebCoreString(function.As<v8::String>());
+            functionString = toCoreString(function.As<v8::String>());
         } else {
             v8::Handle<v8::String> v8String = function->ToString();
 
@@ -99,7 +99,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
             if (v8String.IsEmpty())
                 return;
 
-            functionString = toWebCoreString(v8String);
+            functionString = toCoreString(v8String);
         }
 
         // Don't allow setting timeouts to run empty functions!
@@ -365,9 +365,9 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 
     // FIXME: Handle exceptions properly.
-    String urlString = toWebCoreStringWithUndefinedOrNullCheck(info[0]);
+    String urlString = toCoreStringWithUndefinedOrNullCheck(info[0]);
     DialogHandler handler(info[1]);
-    String dialogFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
+    String dialogFeaturesString = toCoreStringWithUndefinedOrNullCheck(info[2]);
 
     impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(), firstDOMWindow(), setUpDialog, &handler);
 
@@ -413,7 +413,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
         return;
 
     // Search sub-frames.
-    AtomicString propName = toWebCoreAtomicString(name);
+    AtomicString propName = toCoreAtomicString(name);
     Frame* child = frame->tree().scopedChild(propName);
     if (child) {
         v8SetReturnValueFast(info, child->domWindow(), window);
@@ -480,7 +480,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
     if (key->IsString()) {
         DEFINE_STATIC_LOCAL(const AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
 
-        AtomicString name = toWebCoreAtomicString(key.As<v8::String>());
+        AtomicString name = toCoreAtomicString(key.As<v8::String>());
         Frame* childFrame = target->tree().scopedChild(name);
         // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
         // because that would generate infinite recursion.

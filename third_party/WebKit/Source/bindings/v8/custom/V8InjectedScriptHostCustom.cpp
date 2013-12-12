@@ -365,7 +365,7 @@ void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Functi
 {
     v8::Handle<v8::Value> functionValue = info[0];
     int scopeIndex = info[1]->Int32Value();
-    String variableName = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
+    String variableName = toCoreStringWithUndefinedOrNullCheck(info[2]);
     v8::Handle<v8::Value> newValue = info[3];
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
@@ -430,7 +430,7 @@ void V8InjectedScriptHost::monitorFunctionMethodCustom(const v8::FunctionCallbac
     }
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
-    host->monitorFunction(scriptId, lineNumber, columnNumber, toWebCoreStringWithUndefinedOrNullCheck(name));
+    host->monitorFunction(scriptId, lineNumber, columnNumber, toCoreStringWithUndefinedOrNullCheck(name));
 }
 
 void V8InjectedScriptHost::unmonitorFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

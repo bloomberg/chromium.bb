@@ -45,7 +45,7 @@ void V8PannerNode::panningModelAttributeSetterCustom(v8::Local<v8::Value> value,
     }
 
     if (value->IsString()) {
-        String model = toWebCoreString(value.As<v8::String>());
+        String model = toCoreString(value.As<v8::String>());
         if (model == "equalpower" || model == "HRTF" || model == "soundfield") {
             imp->setPanningModel(model);
             return;
@@ -69,7 +69,7 @@ void V8PannerNode::distanceModelAttributeSetterCustom(v8::Local<v8::Value> value
     }
 
     if (value->IsString()) {
-        String model = toWebCoreString(value.As<v8::String>());
+        String model = toCoreString(value.As<v8::String>());
         if (model == "linear" || model == "inverse" || model == "exponential") {
             imp->setDistanceModel(model);
             return;

@@ -69,7 +69,7 @@ static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
         v8::Local<v8::Value> subItems = item->Get(v8AtomicString(isolate, "subItems"));
         if (!type->IsString())
             continue;
-        String typeString = toWebCoreStringWithNullCheck(type.As<v8::String>());
+        String typeString = toCoreStringWithNullCheck(type.As<v8::String>());
         if (typeString == "separator") {
             ContextMenuItem item(ContextMenuItem(SeparatorType,
                                  ContextMenuItemCustomTagNoAction,

@@ -171,7 +171,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (block.HasCaught()) {
         v8::Local<v8::Message> message = block.Message();
         state->hadException = true;
-        state->errorMessage = toWebCoreString(message->Get());
+        state->errorMessage = toCoreString(message->Get());
         state->lineNumber = message->GetLineNumber();
         state->columnNumber = message->GetStartColumn() + 1;
         V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, sourceURL, message->GetScriptResourceName(), ScriptValue());

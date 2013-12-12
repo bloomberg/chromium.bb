@@ -155,7 +155,7 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
     scriptId = String::number(scriptIdValue);
     v8::ScriptOrigin origin = function->GetScriptOrigin();
     if (!origin.ResourceName().IsEmpty() && origin.ResourceName()->IsString())
-        sourceName = toWebCoreString(origin.ResourceName().As<v8::String>());
+        sourceName = toCoreString(origin.ResourceName().As<v8::String>());
     else
         sourceName = "";
     lineNumber = function->GetScriptLineNumber();

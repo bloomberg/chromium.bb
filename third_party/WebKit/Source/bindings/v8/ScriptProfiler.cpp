@@ -84,7 +84,7 @@ PassRefPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
     if (!profile)
         return 0;
 
-    String profileTitle = toWebCoreString(profile->GetTitle());
+    String profileTitle = toCoreString(profile->GetTitle());
     double idleTime = 0.0;
     ProfileNameIdleTimeMap* profileNameIdleTimeMap = ScriptProfiler::currentProfileNameIdleTimeMap();
     ProfileNameIdleTimeMap::iterator profileIdleTime = profileNameIdleTimeMap->find(profileTitle);

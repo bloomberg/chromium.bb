@@ -105,7 +105,7 @@ static inline void countCssPropertyInfoUsage(const CSSPropertyInfo& propInfo)
 // Also, certain prefixes such as 'css-' are stripped.
 static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
 {
-    String propertyName = toWebCoreString(v8PropertyName);
+    String propertyName = toCoreString(v8PropertyName);
     typedef HashMap<String, CSSPropertyInfo*> CSSPropertyInfoMap;
     DEFINE_STATIC_LOCAL(CSSPropertyInfoMap, map, ());
     CSSPropertyInfo* propInfo = map.get(propertyName);

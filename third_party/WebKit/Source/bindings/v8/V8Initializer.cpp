@@ -95,7 +95,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     if (!firstWindow->isCurrentlyDisplayedInFrame())
         return;
 
-    String errorMessage = toWebCoreString(message->Get());
+    String errorMessage = toCoreString(message->Get());
 
     v8::Handle<v8::StackTrace> stackTrace = message->GetStackTrace();
     RefPtr<ScriptCallStack> callStack;
@@ -105,7 +105,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
-    String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName.As<v8::String>());
+    String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toCoreString(resourceName.As<v8::String>());
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
     RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn() + 1, DOMWrapperWorld::current());
@@ -199,7 +199,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
 
     // During the frame teardown, there may not be a valid context.
     if (ExecutionContext* context = getExecutionContext()) {
-        String errorMessage = toWebCoreString(message->Get());
+        String errorMessage = toCoreString(message->Get());
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
 
         RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, DOMWrapperWorld::current());

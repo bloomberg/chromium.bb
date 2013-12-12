@@ -5020,7 +5020,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = V8TestObject::toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
+    AtomicString propertyName = toCoreAtomicString(name);
     String element = collection->namedItem(propertyName);
     if (element.isNull())
         return;
@@ -5051,7 +5051,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TestObj* collection = V8TestObject::toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
+    AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     bool result = collection->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())

@@ -46,7 +46,7 @@ ScriptProfile::~ScriptProfile()
 String ScriptProfile::title() const
 {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
-    return toWebCoreString(m_profile->GetTitle());
+    return toCoreString(m_profile->GetTitle());
 }
 
 unsigned int ScriptProfile::uid() const
@@ -81,9 +81,9 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
     }
 
     RefPtr<TypeBuilder::Profiler::CPUProfileNode> result = TypeBuilder::Profiler::CPUProfileNode::create()
-        .setFunctionName(toWebCoreString(node->GetFunctionName()))
+        .setFunctionName(toCoreString(node->GetFunctionName()))
         .setScriptId(String::number(node->GetScriptId()))
-        .setUrl(toWebCoreString(node->GetScriptResourceName()))
+        .setUrl(toCoreString(node->GetScriptResourceName()))
         .setLineNumber(node->GetLineNumber())
         .setColumnNumber(node->GetColumnNumber())
         .setHitCount(node->GetHitCount())

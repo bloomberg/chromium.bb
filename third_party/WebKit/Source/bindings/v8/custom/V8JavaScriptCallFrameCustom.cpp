@@ -38,7 +38,7 @@ namespace WebCore {
 void V8JavaScriptCallFrame::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
-    String expression = toWebCoreStringWithUndefinedOrNullCheck(info[0]);
+    String expression = toCoreStringWithUndefinedOrNullCheck(info[0]);
     v8SetReturnValue(info, impl->evaluate(expression));
 }
 

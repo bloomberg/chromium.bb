@@ -51,7 +51,7 @@ bool ScriptValue::getString(String& result) const
     v8::Handle<v8::Value> string = v8Value();
     if (string.IsEmpty() || !string->IsString())
         return false;
-    result = toWebCoreString(string.As<v8::String>());
+    result = toCoreString(string.As<v8::String>());
     return true;
 }
 
@@ -82,7 +82,7 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
     if (value->IsNumber())
         return JSONBasicValue::create(value->NumberValue());
     if (value->IsString())
-        return JSONString::create(toWebCoreString(value.As<v8::String>()));
+        return JSONString::create(toCoreString(value.As<v8::String>()));
     if (value->IsArray()) {
         v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
         RefPtr<JSONArray> inspectorArray = JSONArray::create();
