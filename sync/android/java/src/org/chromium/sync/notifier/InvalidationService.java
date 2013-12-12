@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,12 +132,12 @@ public class InvalidationService extends AndroidListener {
         if (isTransient) {
           // Retry immediately on transient failures. The base AndroidListener will handle
           // exponential backoff if there are repeated failures.
-          List<ObjectId> objectIdAsList = CollectionUtil.newArrayList(objectId);
-          if (readRegistrationsFromPrefs().contains(objectId)) {
-              register(clientId, objectIdAsList);
-          } else {
-              unregister(clientId, objectIdAsList);
-          }
+            List<ObjectId> objectIdAsList = CollectionUtil.newArrayList(objectId);
+            if (readRegistrationsFromPrefs().contains(objectId)) {
+                register(clientId, objectIdAsList);
+            } else {
+                unregister(clientId, objectIdAsList);
+            }
         }
     }
 
@@ -148,15 +148,15 @@ public class InvalidationService extends AndroidListener {
         List<ObjectId> objectIdAsList = CollectionUtil.newArrayList(objectId);
         boolean registrationisDesired = readRegistrationsFromPrefs().contains(objectId);
         if (regState == RegistrationState.REGISTERED) {
-          if (!registrationisDesired) {
-            Log.i(TAG, "Unregistering for object we're no longer interested in");
-            unregister(clientId, objectIdAsList);
-          }
+            if (!registrationisDesired) {
+                Log.i(TAG, "Unregistering for object we're no longer interested in");
+                unregister(clientId, objectIdAsList);
+            }
         } else {
-          if (registrationisDesired) {
-            Log.i(TAG, "Registering for an object");
-            register(clientId, objectIdAsList);
-          }
+            if (registrationisDesired) {
+                Log.i(TAG, "Registering for an object");
+                register(clientId, objectIdAsList);
+            }
         }
     }
 

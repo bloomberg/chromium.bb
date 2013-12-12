@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ public class AccountManagerHelper {
 
     public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
-    private static final Object lock = new Object();
+    private static final Object sLock = new Object();
 
     private static final int MAX_TRIES = 3;
 
@@ -82,7 +82,7 @@ public class AccountManagerHelper {
      * @return a singleton instance of the AccountManagerHelper
      */
     public static AccountManagerHelper get(Context context) {
-        synchronized (lock) {
+        synchronized (sLock) {
             if (sAccountManagerHelper == null) {
                 sAccountManagerHelper = new AccountManagerHelper(context,
                         new SystemAccountManagerDelegate(context));
@@ -94,7 +94,7 @@ public class AccountManagerHelper {
     @VisibleForTesting
     public static void overrideAccountManagerHelperForTests(Context context,
             AccountManagerDelegate accountManager) {
-        synchronized (lock) {
+        synchronized (sLock) {
             sAccountManagerHelper = new AccountManagerHelper(context, accountManager);
         }
     }
@@ -162,10 +162,10 @@ public class AccountManagerHelper {
      */
     @Deprecated
     public String getAuthTokenFromBackground(Account account, String authTokenType) {
-            AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
-                    authTokenType, false, null, null);
-            AtomicBoolean errorEncountered = new AtomicBoolean(false);
-            return getAuthTokenInner(future, errorEncountered);
+        AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
+                authTokenType, false, null, null);
+        AtomicBoolean errorEncountered = new AtomicBoolean(false);
+        return getAuthTokenInner(future, errorEncountered);
     }
 
     /**

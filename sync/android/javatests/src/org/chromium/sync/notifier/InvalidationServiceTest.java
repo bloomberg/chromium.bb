@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -337,7 +337,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
          * Verify appropriate return values.
          */
         assertNull(getService().readState());
-        byte[] writtenState = new byte[]{7,4,0};
+        byte[] writtenState = new byte[]{7, 4, 0};
         getService().writeState(writtenState);
         assertTrue(Arrays.equals(writtenState, getService().readState()));
     }
@@ -812,29 +812,29 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
     /** Creates an intent to start the InvalidationService. */
     private Intent createStartIntent() {
-      Intent intent = new Intent();
-      return intent;
+        Intent intent = new Intent();
+        return intent;
     }
 
     /** Creates an intent to stop the InvalidationService. */
     private Intent createStopIntent() {
-      Intent intent = new Intent();
-      intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
-      return intent;
+        Intent intent = new Intent();
+        intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
+        return intent;
     }
 
     /** Creates an intent to register some types with the InvalidationService. */
     private Intent createRegisterIntent(Account account, boolean allTypes, Set<ModelType> types) {
-      Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
-      return intent;
+        Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
+        return intent;
     }
 
     /** Creates an intent to register some types with the InvalidationService. */
     private Intent createRegisterIntent(
-        Account account, int[] objectSources, String[] objectNames) {
-      Intent intent = InvalidationIntentProtocol.createRegisterIntent(
-          account, objectSources, objectNames);
-      return intent;
+            Account account, int[] objectSources, String[] objectNames) {
+        Intent intent = InvalidationIntentProtocol.createRegisterIntent(
+                account, objectSources, objectNames);
+        return intent;
     }
 
     /** Returns whether {@code intent} is an {@link AndroidListener} start intent. */

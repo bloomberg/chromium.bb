@@ -24,16 +24,16 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
 
     public static Parcelable.Creator CREATOR =
             new Parcelable.Creator<SyncDecryptionPassphraseType>() {
-        @Override
-        public SyncDecryptionPassphraseType createFromParcel(Parcel parcel) {
-            return fromInternalValue(parcel.readInt());
-        }
+                @Override
+                public SyncDecryptionPassphraseType createFromParcel(Parcel parcel) {
+                    return fromInternalValue(parcel.readInt());
+                }
 
-        @Override
-        public SyncDecryptionPassphraseType[] newArray(int size) {
-            return new SyncDecryptionPassphraseType[size];
-        }
-    };
+                @Override
+                public SyncDecryptionPassphraseType[] newArray(int size) {
+                    return new SyncDecryptionPassphraseType[size];
+                }
+            };
 
     public static SyncDecryptionPassphraseType fromInternalValue(int value) {
         for (SyncDecryptionPassphraseType type : values()) {

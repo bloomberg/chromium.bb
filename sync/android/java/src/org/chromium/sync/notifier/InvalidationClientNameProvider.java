@@ -23,10 +23,10 @@ public class InvalidationClientNameProvider {
 
     public static InvalidationClientNameProvider get() {
         synchronized (LOCK) {
-           if (sInstance == null) {
-               sInstance = new InvalidationClientNameProvider();
-           }
-           return sInstance;
+            if (sInstance == null) {
+                sInstance = new InvalidationClientNameProvider();
+            }
+            return sInstance;
         }
     }
 

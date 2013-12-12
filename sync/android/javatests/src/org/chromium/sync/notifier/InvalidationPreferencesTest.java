@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
                 ObjectId.newInstance(1, "obj1".getBytes()),
                 ObjectId.newInstance(2, "obj2".getBytes()));
         Account account = new Account("test@example.com", "bogus");
-        byte[] internalClientState = new byte[]{100,101,102};
+        byte[] internalClientState = new byte[]{100, 101, 102};
         invPreferences.setSyncTypes(editContext, syncTypes);
         invPreferences.setObjectIds(editContext, objectIds);
         invPreferences.setAccount(editContext, account);

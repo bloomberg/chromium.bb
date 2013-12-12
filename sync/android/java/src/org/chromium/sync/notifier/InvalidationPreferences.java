@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,29 +117,29 @@ public class InvalidationPreferences {
     /** Returns the saved non-sync object ids, or {@code null} if none exist. */
     @Nullable
     public Set<ObjectId> getSavedObjectIds() {
-      SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-      Set<String> objectIdStrings = preferences.getStringSet(PrefKeys.TANGO_OBJECT_IDS, null);
-      if (objectIdStrings == null) {
-          return null;
-      }
-      Set<ObjectId> objectIds = new HashSet<ObjectId>(objectIdStrings.size());
-      for (String objectIdString : objectIdStrings) {
-          ObjectId objectId = getObjectId(objectIdString);
-          if (objectId != null) {
-              objectIds.add(objectId);
-          }
-      }
-      return objectIds;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        Set<String> objectIdStrings = preferences.getStringSet(PrefKeys.TANGO_OBJECT_IDS, null);
+        if (objectIdStrings == null) {
+            return null;
+        }
+        Set<ObjectId> objectIds = new HashSet<ObjectId>(objectIdStrings.size());
+        for (String objectIdString : objectIdStrings) {
+            ObjectId objectId = getObjectId(objectIdString);
+            if (objectId != null) {
+                objectIds.add(objectId);
+            }
+        }
+        return objectIds;
     }
 
     /** Sets the saved non-sync object ids */
     public void setObjectIds(EditContext editContext, Collection<ObjectId> objectIds) {
-      Preconditions.checkNotNull(objectIds);
-      Set<String> objectIdStrings = new HashSet<String>(objectIds.size());
-      for (ObjectId objectId : objectIds) {
-          objectIdStrings.add(getObjectIdString(objectId));
-      }
-      editContext.editor.putStringSet(PrefKeys.TANGO_OBJECT_IDS, objectIdStrings);
+        Preconditions.checkNotNull(objectIds);
+        Set<String> objectIdStrings = new HashSet<String>(objectIds.size());
+        for (ObjectId objectId : objectIds) {
+            objectIdStrings.add(getObjectIdString(objectId));
+        }
+        editContext.editor.putStringSet(PrefKeys.TANGO_OBJECT_IDS, objectIdStrings);
     }
 
     /** Returns the saved account, or {@code null} if none exists. */

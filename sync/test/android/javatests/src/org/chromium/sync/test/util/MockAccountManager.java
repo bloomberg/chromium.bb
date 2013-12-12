@@ -111,7 +111,7 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     @Override
     public Account[] getAccountsByType(@Nullable String type) {
-        if(!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(type)) {
+        if (!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(type)) {
             throw new IllegalArgumentException("Invalid account type: " + type);
         }
         if (mAccounts == null) {
@@ -285,7 +285,7 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     @Override
     public void invalidateAuthToken(String accountType, String authToken) {
-        if(!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(accountType)) {
+        if (!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(accountType)) {
             throw new IllegalArgumentException("Invalid account type: " + accountType);
         }
         if (authToken == null) {
