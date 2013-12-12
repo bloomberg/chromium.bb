@@ -68,14 +68,14 @@
     "serveFrom": "nacl",
     "supportsTemplates": true
   },
-  "devtools-docs": {
-    "github": {
-      "owner": "GoogleChrome",
-      "repo": "devtools-docs-migration"
-    },
-    "serveFrom": "devtools",
-    "supportsTemplates": true
-  },
+  //"devtools-docs": {
+  //  "github": {
+  //    "owner": "GoogleChrome",
+  //    "repo": "devtools-docs-migration"
+  //  },
+  //  "serveFrom": "devtools",
+  //  "supportsTemplates": true
+  //},
   "multidevice-docs": {
     "github": {
       "owner": "GoogleChrome",
