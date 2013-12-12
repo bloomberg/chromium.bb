@@ -340,20 +340,17 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   windowOrigin.y -= NSHeight(frame) - offsets.height;
   frame.origin = windowOrigin;
 
-  // Is the window still animating in? If so, then cancel that and create a new
-  // animation setting the opacity and new frame value. Otherwise the current
-  // animation will continue after this frame is set, reverting the frame to
-  // what it was when the animation started.
+  // In case the window is animating already, change its size by creating a
+  // new animation setting the opacity and new frame value. Otherwise, a
+  // preexisting animation would continue after the frame is set, reverting
+  // the frame to what it was when the animation started.
   NSWindow* window = [self window];
-  if ([window isVisible] && [[window animator] alphaValue] < 1.0) {
-    [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
-    [[window animator] setAlphaValue:1.0];
-    [[window animator] setFrame:frame display:YES];
-    [NSAnimationContext endGrouping];
-  } else {
-    [window setFrame:frame display:YES];
-  }
+  id animator = [window animator];
+  [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+  [animator setAlphaValue:1.0];
+  [animator setFrame:frame display:YES];
+  [NSAnimationContext endGrouping];
 
   // A NSViewFrameDidChangeNotification won't be sent until the extension view
   // content is loaded. The window is hidden on init, so show it the first time
