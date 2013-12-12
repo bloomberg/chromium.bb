@@ -216,7 +216,8 @@ void WebSocketChannel::SendFrame(bool fin,
 }
 
 void WebSocketChannel::SendFlowControl(int64 quota) {
-  DCHECK_EQ(CONNECTED, state_);
+  DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
+         state_ == CLOSE_WAIT);
   // TODO(ricea): Add interface to WebSocketStream and implement.
   // stream_->SendFlowControl(quota);
 }

@@ -899,6 +899,14 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   EXPECT_EQ(connect_data_.origin, actual.origin);
 }
 
+// Verify that calling SendFlowControl before the connection is established does
+// not cause a crash.
+TEST_F(WebSocketChannelTest, SendFlowControlDuringHandshakeOkay) {
+  CreateChannelAndConnect();
+  ASSERT_TRUE(channel_);
+  channel_->SendFlowControl(65536);
+}
+
 // Any WebSocketEventInterface methods can delete the WebSocketChannel and
 // return CHANNEL_DELETED. The WebSocketChannelDeletingTests are intended to
 // verify that there are no use-after-free bugs when this happens. Problems will
