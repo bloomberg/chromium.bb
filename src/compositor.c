@@ -1442,7 +1442,7 @@ weston_buffer_destroy_handler(struct wl_listener *listener, void *data)
 	free(buffer);
 }
 
-struct weston_buffer *
+WL_EXPORT struct weston_buffer *
 weston_buffer_from_resource(struct wl_resource *resource)
 {
 	struct weston_buffer *buffer;
