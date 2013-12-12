@@ -915,6 +915,7 @@ void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
     // |immersive_fullscreen_controller_| should only be set if immersive
     // fullscreen is the fullscreen type used by the OS.
     immersive_fullscreen_controller_->SetEnabled(
+        ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
         (fullscreen_types & ShellWindow::FULLSCREEN_TYPE_OS) != 0);
     // Autohide the shelf instead of hiding the shelf completely when only in
     // OS fullscreen.

@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "base/metrics/histogram.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -257,7 +258,8 @@ void ImmersiveFullscreenController::Init(Delegate* delegate,
   native_window_ = widget_->GetNativeWindow();
 }
 
-void ImmersiveFullscreenController::SetEnabled(bool enabled) {
+void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
+                                               bool enabled) {
   if (enabled_ == enabled)
     return;
   enabled_ = enabled;
@@ -300,6 +302,12 @@ void ImmersiveFullscreenController::SetEnabled(bool enabled) {
     reveal_state_ = CLOSED;
 
     delegate_->OnImmersiveFullscreenExited();
+  }
+
+  if (enabled_) {
+    UMA_HISTOGRAM_ENUMERATION("Ash.ImmersiveFullscreen.WindowType",
+                              window_type,
+                              WINDOW_TYPE_COUNT);
   }
 }
 

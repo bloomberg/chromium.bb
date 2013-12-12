@@ -74,7 +74,11 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     return;
 
   EnableWindowObservers(enabled);
-  controller_->SetEnabled(enabled);
+
+  controller_->SetEnabled(browser_view_->browser()->is_app() ?
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP :
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER
+      , enabled);
 }
 
 bool ImmersiveModeControllerAsh::IsEnabled() const {

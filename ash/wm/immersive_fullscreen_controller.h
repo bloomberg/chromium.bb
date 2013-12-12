@@ -45,6 +45,16 @@ class ASH_EXPORT ImmersiveFullscreenController
       public aura::WindowObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
+  // The enum is used for an enumerated histogram. New items should be only
+  // added to the end.
+  enum WindowType {
+    WINDOW_TYPE_OTHER,
+    WINDOW_TYPE_BROWSER,
+    WINDOW_TYPE_HOSTED_APP,
+    WINDOW_TYPE_PACKAGED_APP,
+    WINDOW_TYPE_COUNT
+  };
+
   class Delegate {
    public:
     // Called when a reveal of the top-of-window views starts.
@@ -85,7 +95,9 @@ class ASH_EXPORT ImmersiveFullscreenController
             views::View* top_container);
 
   // Enables or disables immersive fullscreen.
-  void SetEnabled(bool enable);
+  // |window_type| is the type of window which is put in immersive fullscreen.
+  // It is only used for histogramming.
+  void SetEnabled(WindowType window_type, bool enable);
 
   // Returns true if |native_window_| is in immersive fullscreen.
   bool IsEnabled() const;

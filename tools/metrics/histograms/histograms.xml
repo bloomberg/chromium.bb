@@ -216,6 +216,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.ActiveWindowShowTypeOverTime" enum="ActiveWindowShowType">
+  <summary>
+    The show type of the active window tracked over time by logging on a regular
+    basis (30 minutes).
+  </summary>
+</histogram>
+
 <histogram name="Ash.Dock.Action" enum="DockedAction">
   <summary>
     User-initiated action taken that affects docked windows such as docking,
@@ -284,6 +291,13 @@ other types of suffix sets.
   <summary>
     The gesture-events recognized and dispatched by the browser gesture
     recognizer for various UI components.
+  </summary>
+</histogram>
+
+<histogram name="Ash.ImmersiveFullscreen.WindowType" enum="WindowType">
+  <summary>
+    The type of the window which is put into immersive fullscreen. Immersive
+    fullscreen is entered via the F4 key.
   </summary>
 </histogram>
 
@@ -21411,6 +21425,14 @@ other types of suffix sets.
   <int value="2" label="Use resource from cache"/>
 </enum>
 
+<enum name="ActiveWindowShowType" type="int">
+  <int value="0" label="No Active Window"/>
+  <int value="1" label="Other"/>
+  <int value="2" label="Maximized"/>
+  <int value="3" label="Fullscreen"/>
+  <int value="4" label="Snapped"/>
+</enum>
+
 <enum name="AndroidEvictionReason" type="int">
   <int value="0" label="TabUnusedTooLong"/>
   <int value="1" label="TabUnusedInSession"/>
@@ -30776,6 +30798,13 @@ other types of suffix sets.
   <int value="3" label="Vista"/>
   <int value="4" label="Windows 7"/>
   <int value="5" label="Windows 8"/>
+</enum>
+
+<enum name="WindowType" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Browser"/>
+  <int value="2" label="Hosted App"/>
+  <int value="3" label="Packaged App"/>
 </enum>
 
 <enum name="XMLHttpRequestSendArrayBufferOrView" type="int">

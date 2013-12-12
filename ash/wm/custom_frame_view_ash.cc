@@ -89,8 +89,11 @@ class CustomFrameViewAshWindowStateDelegate
     } else {
       window_state->Restore();
     }
-    if (immersive_fullscreen_controller_)
-      immersive_fullscreen_controller_->SetEnabled(enter_fullscreen);
+    if (immersive_fullscreen_controller_) {
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
+          enter_fullscreen);
+    }
     return true;
   }
   // Overridden from aura::WindowObserver:
@@ -107,7 +110,9 @@ class CustomFrameViewAshWindowStateDelegate
         !window_state->IsMinimized() &&
         immersive_fullscreen_controller_.get() &&
         immersive_fullscreen_controller_->IsEnabled()) {
-      immersive_fullscreen_controller_->SetEnabled(false);
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
+          false);
     }
   }
 
