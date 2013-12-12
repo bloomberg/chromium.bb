@@ -265,6 +265,13 @@
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
           ],
         }],
+        ['OS=="linux" and use_aura==1', {
+          # TODO(gbillock): aura linux does not support the automation for
+          # SendMouseMoveNotifyWhenDone
+          'sources!': [
+            'browser/ui/views/toolbar/toolbar_button_test.cc',
+          ],
+        }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',

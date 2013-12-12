@@ -128,12 +128,5 @@ class ToolbarButtonDragTest : public ViewEventTestBase,
   bool menu_closed_;
 };
 
-// TODO(gbillock): aura linux does not support the automation for
-// SendMouseMoveNotifyWhenDone. crbug.com/325055
-#if defined(OS_LINUX) && defined(USE_AURA)
-#define MAYBE_DragActivation DISABLED_DragActivation
-#else
-#define MAYBE_DragActivation DragActivation
-#endif
-
-VIEW_TEST(ToolbarButtonDragTest, MAYBE_DragActivation)
+// Broken since landed. crbug.com/325055
+VIEW_TEST(ToolbarButtonDragTest, DISABLED_DragActivation)
