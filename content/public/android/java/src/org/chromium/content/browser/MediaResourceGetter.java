@@ -60,6 +60,10 @@ class MediaResourceGetter {
         int width = 0;
         int height = 0;
         boolean success = false;
+        if ("GT-I9100".contentEquals(android.os.Build.MODEL)
+                && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            return new MediaMetadata(0, 0, 0, success);
+        }
         // TODO(qinmin): use ConnectionTypeObserver to listen to the network type change.
         ConnectivityManager mConnectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
