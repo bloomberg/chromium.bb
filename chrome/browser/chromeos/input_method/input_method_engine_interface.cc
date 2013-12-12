@@ -9,7 +9,8 @@ namespace chromeos {
 InputMethodEngineInterface::KeyboardEvent::KeyboardEvent()
     : alt_key(false),
       ctrl_key(false),
-      shift_key(false) {
+      shift_key(false),
+      caps_lock(false) {
 }
 
 InputMethodEngineInterface::KeyboardEvent::~KeyboardEvent() {
