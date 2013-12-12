@@ -85,7 +85,7 @@ public:
 
     virtual WGC3Denum checkFramebufferStatus(WGC3Denum target)
     {
-        return WebCore::GraphicsContext3D::FRAMEBUFFER_COMPLETE;
+        return GL_FRAMEBUFFER_COMPLETE;
     }
 
     virtual void clear(WGC3Dbitfield mask) { }
@@ -131,13 +131,13 @@ public:
 
     virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value)
     {
-        if (pname == WebCore::GraphicsContext3D::MAX_TEXTURE_SIZE)
+        if (pname == GL_MAX_TEXTURE_SIZE)
             *value = 1024;
     }
 
     virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value)
     {
-        if (pname == WebCore::GraphicsContext3D::LINK_STATUS)
+        if (pname == GL_LINK_STATUS)
             *value = 1;
     }
 
@@ -146,7 +146,7 @@ public:
 
     virtual void getShaderiv(WebGLId shader, WGC3Denum pname, WGC3Dint* value)
     {
-        if (pname == WebCore::GraphicsContext3D::COMPILE_STATUS)
+        if (pname == GL_COMPILE_STATUS)
             *value = 1;
     }
 

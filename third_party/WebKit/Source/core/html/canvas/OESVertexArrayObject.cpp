@@ -94,7 +94,7 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
         return;
 
     if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, context()))) {
-        m_context->graphicsContext3D()->synthesizeGLError(GraphicsContext3D::INVALID_OPERATION);
+        m_context->graphicsContext3D()->synthesizeGLError(GL_INVALID_OPERATION);
         return;
     }
 

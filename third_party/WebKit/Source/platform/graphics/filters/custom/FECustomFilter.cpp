@@ -81,7 +81,7 @@ void FECustomFilter::deleteRenderBuffers()
     if (m_frameBuffer) {
         // Make sure to unbind any framebuffer from the context first, otherwise
         // some platforms might refuse to bind the same buffer id again.
-        m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0);
+        m_context->bindFramebuffer(GL_FRAMEBUFFER, 0);
         m_context->deleteFramebuffer(m_frameBuffer);
         m_frameBuffer = 0;
     }
@@ -101,7 +101,7 @@ void FECustomFilter::deleteMultisampleRenderBuffers()
     if (m_multisampleFrameBuffer) {
         // Make sure to unbind any framebuffer from the context first, otherwise
         // some platforms might refuse to bind the same buffer id again.
-        m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0);
+        m_context->bindFramebuffer(GL_FRAMEBUFFER, 0);
         m_context->deleteFramebuffer(m_multisampleFrameBuffer);
         m_multisampleFrameBuffer = 0;
     }
@@ -137,11 +137,11 @@ void FECustomFilter::clearShaderResult()
 void FECustomFilter::drawFilterMesh(Platform3DObject inputTexture)
 {
     bool multisample = canUseMultisampleBuffers();
-    m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, multisample ? m_multisampleFrameBuffer : m_frameBuffer);
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, multisample ? m_multisampleFrameBuffer : m_frameBuffer);
     m_context->viewport(0, 0, m_contextSize.width(), m_contextSize.height());
 
     m_context->clearColor(0, 0, 0, 0);
-    m_context->clear(GraphicsContext3D::COLOR_BUFFER_BIT | GraphicsContext3D::DEPTH_BUFFER_BIT);
+    m_context->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_customFilterRenderer->draw(inputTexture, m_contextSize);
 
@@ -190,7 +190,7 @@ bool FECustomFilter::applyShader()
     drawFilterMesh(needsInputTexture ? m_inputTexture : 0);
 
     ASSERT(static_cast<size_t>(newContextSize.width() * newContextSize.height() * 4) == dstPixelArray->length());
-    m_context->readPixels(0, 0, newContextSize.width(), newContextSize.height(), GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, dstPixelArray->data());
+    m_context->readPixels(0, 0, newContextSize.width(), newContextSize.height(), GL_RGBA, GL_UNSIGNED_BYTE, dstPixelArray->data());
 
     return true;
 }
@@ -204,8 +204,8 @@ bool FECustomFilter::ensureInputTexture()
 
 void FECustomFilter::uploadInputTexture(Uint8ClampedArray* srcPixelArray)
 {
-    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_inputTexture);
-    m_context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, m_contextSize.width(), m_contextSize.height(), 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, srcPixelArray->data());
+    m_context->bindTexture(GL_TEXTURE_2D, m_inputTexture);
+    m_context->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_contextSize.width(), m_contextSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, srcPixelArray->data());
 }
 
 bool FECustomFilter::ensureFrameBuffer()
@@ -252,12 +252,12 @@ void FECustomFilter::resolveMultisampleBuffer()
     m_context->bindFramebuffer(Extensions3D::DRAW_FRAMEBUFFER, m_frameBuffer);
 
     ASSERT(m_context->extensions());
-    m_context->extensions()->blitFramebuffer(0, 0, m_contextSize.width(), m_contextSize.height(), 0, 0, m_contextSize.width(), m_contextSize.height(), GraphicsContext3D::COLOR_BUFFER_BIT, GraphicsContext3D::NEAREST);
+    m_context->extensions()->blitFramebuffer(0, 0, m_contextSize.width(), m_contextSize.height(), 0, 0, m_contextSize.width(), m_contextSize.height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     m_context->bindFramebuffer(Extensions3D::READ_FRAMEBUFFER, 0);
     m_context->bindFramebuffer(Extensions3D::DRAW_FRAMEBUFFER, 0);
 
-    m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_frameBuffer);
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
 }
 
 bool FECustomFilter::canUseMultisampleBuffers() const
@@ -285,19 +285,19 @@ bool FECustomFilter::resizeMultisampleBuffers(const IntSize& newContextSize)
     Extensions3D* extensions = m_context->extensions();
     ASSERT(extensions);
 
-    m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFrameBuffer);
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFrameBuffer);
 
-    m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_multisampleRenderBuffer);
-    extensions->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, Extensions3D::RGBA8_OES, newContextSize.width(), newContextSize.height());
-    m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::RENDERBUFFER, m_multisampleRenderBuffer);
+    m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderBuffer);
+    extensions->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, Extensions3D::RGBA8_OES, newContextSize.width(), newContextSize.height());
+    m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleRenderBuffer);
 
-    m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_multisampleDepthBuffer);
-    extensions->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::DEPTH_COMPONENT16, newContextSize.width(), newContextSize.height());
-    m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_multisampleDepthBuffer);
+    m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleDepthBuffer);
+    extensions->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, GL_DEPTH_COMPONENT16, newContextSize.width(), newContextSize.height());
+    m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_multisampleDepthBuffer);
 
-    m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, 0);
+    m_context->bindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    if (m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
+    if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         deleteMultisampleRenderBuffers();
         return false;
     }
@@ -313,7 +313,7 @@ bool FECustomFilter::resizeContextIfNeeded(const IntSize& newContextSize)
         return true;
 
     int maxTextureSize = 0;
-    m_context->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &maxTextureSize);
+    m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
     if (newContextSize.height() > maxTextureSize || newContextSize.width() > maxTextureSize)
         return false;
 
@@ -324,31 +324,31 @@ bool FECustomFilter::resizeContext(const IntSize& newContextSize)
 {
     bool multisample = resizeMultisampleBuffers(newContextSize);
 
-    m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_frameBuffer);
-    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_destTexture);
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+    m_context->bindTexture(GL_TEXTURE_2D, m_destTexture);
     // We are going to clear the output buffer anyway, so we can safely initialize the destination texture with garbage data.
     // FIXME: GraphicsContext3D::texImage2DDirect is not implemented on Chromium.
-    m_context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, newContextSize.width(), newContextSize.height(), 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, 0);
-    m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_destTexture, 0);
+    m_context->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newContextSize.width(), newContextSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_destTexture, 0);
 
     // We don't need the depth buffer for the texture framebuffer, if we already
     // have a multisample buffer.
     if (!multisample) {
-        m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
-        m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::DEPTH_COMPONENT16, newContextSize.width(), newContextSize.height());
-        m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
+        m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+        m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, newContextSize.width(), newContextSize.height());
+        m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
     }
 
-    if (m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE)
+    if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
 
     if (multisample) {
         // Clear the framebuffer first, otherwise the first blit will fail.
         m_context->clearColor(0, 0, 0, 0);
-        m_context->clear(GraphicsContext3D::COLOR_BUFFER_BIT);
+        m_context->clear(GL_COLOR_BUFFER_BIT);
     }
 
-    m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, 0);
+    m_context->bindRenderbuffer(GL_RENDERBUFFER, 0);
 
     m_contextSize = newContextSize;
     return true;

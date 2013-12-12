@@ -177,8 +177,8 @@ bool Extensions3D::canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destT
 {
     // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
     // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
-    if ((destFormat == GraphicsContext3D::RGB || destFormat == GraphicsContext3D::RGBA)
-        && destType == GraphicsContext3D::UNSIGNED_BYTE
+    if ((destFormat == GL_RGB || destFormat == GL_RGBA)
+        && destType == GL_UNSIGNED_BYTE
         && !level)
         return true;
     return false;

@@ -594,7 +594,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     WebGraphicsContext3D* webGraphicsContext3D = context3D->webContext();
     WebCanvas* canvas = context->canvas();
     unsigned textureId = static_cast<unsigned>((m_bitmap.getTexture())->getTextureHandle());
-    if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, true, false))
+    if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE, true, false))
         return;
 
     // Draw the texture based bitmap onto the Canvas. If the canvas is hardware based, this will do a GPU-GPU texture copy. If the canvas is software based,

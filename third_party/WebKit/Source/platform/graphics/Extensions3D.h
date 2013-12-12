@@ -213,16 +213,9 @@ public:
         COLOR_ATTACHMENT14_EXT = 0x8CEE,
         COLOR_ATTACHMENT15_EXT = 0x8CEF,
 
-        // GL_OES_EGL_image_external
-        GL_TEXTURE_EXTERNAL_OES = 0x8D65,
-
         // GL_CHROMIUM_map_sub (enums inherited from GL_ARB_vertex_buffer_object)
         READ_ONLY = 0x88B8,
         WRITE_ONLY = 0x88B9,
-
-        // GL_ANGLE_texture_usage
-        GL_TEXTURE_USAGE_ANGLE = 0x93A2,
-        GL_FRAMEBUFFER_ATTACHMENT_ANGLE = 0x93A3,
 
         // GL_EXT_texture_storage
         BGRA8_EXT = 0x93A1,

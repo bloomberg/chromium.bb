@@ -59,7 +59,7 @@ void WebGLBuffer::setTarget(GC3Denum target)
     // In WebGL, a buffer is bound to one target in its lifetime
     if (m_target)
         return;
-    if (target == GraphicsContext3D::ARRAY_BUFFER || target == GraphicsContext3D::ELEMENT_ARRAY_BUFFER)
+    if (target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER)
         m_target = target;
 }
 

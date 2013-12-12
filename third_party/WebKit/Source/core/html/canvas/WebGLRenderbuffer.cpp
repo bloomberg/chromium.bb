@@ -43,7 +43,7 @@ WebGLRenderbuffer::~WebGLRenderbuffer()
 
 WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContext* ctx)
     : WebGLSharedObject(ctx)
-    , m_internalFormat(GraphicsContext3D::RGBA4)
+    , m_internalFormat(GL_RGBA4)
     , m_initialized(false)
     , m_width(0)
     , m_height(0)
