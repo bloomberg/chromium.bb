@@ -176,34 +176,6 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-TEST_F(DeferredImageDecoderTest, drawDiscardableIntoSkPicture)
-{
-    DeferredImageDecoder::setSkiaDiscardableMemoryEnabled(true);
-
-    m_lazyDecoder->setData(m_data.get(), true);
-    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
-    EXPECT_EQ(1, image->bitmap().width());
-    EXPECT_EQ(1, image->bitmap().height());
-    EXPECT_FALSE(image->bitmap().isNull());
-    EXPECT_TRUE(image->bitmap().isImmutable());
-
-    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
-    tempCanvas->drawBitmap(image->bitmap(), 0, 0);
-    m_picture.endRecording();
-    EXPECT_EQ(0, m_frameBufferRequestCount);
-
-    m_canvas->drawPicture(m_picture);
-    EXPECT_EQ(0, m_frameBufferRequestCount);
-
-    SkBitmap canvasBitmap;
-    canvasBitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
-    ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
-    SkAutoLockPixels autoLock(canvasBitmap);
-    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
-
-    DeferredImageDecoder::setSkiaDiscardableMemoryEnabled(false);
-}
-
 TEST_F(DeferredImageDecoderTest, DISABLED_drawScaledIntoSkPicture)
 {
     m_lazyDecoder->setData(m_data.get(), true);
