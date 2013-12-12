@@ -349,6 +349,95 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
   return rv;
 }
 
+MojoResult CoreImpl::CreateDataPipe(
+    const struct MojoCreateDataPipeOptions* options,
+    MojoHandle* producer_handle,
+    MojoHandle* consumer_handle) {
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::WriteData(MojoHandle data_pipe_producer_handle,
+                               const void* elements,
+                               uint32_t* num_elements,
+                               MojoWriteDataFlags flags) {
+  scoped_refptr<Dispatcher> dispatcher(
+      GetDispatcher(data_pipe_producer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::BeginWriteData(MojoHandle data_pipe_producer_handle,
+                                    void** buffer,
+                                    uint32_t* buffer_num_elements,
+                                    MojoWriteDataFlags flags) {
+  scoped_refptr<Dispatcher> dispatcher(
+      GetDispatcher(data_pipe_producer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::EndWriteData(MojoHandle data_pipe_producer_handle,
+                                  uint32_t num_elements_written) {
+  scoped_refptr<Dispatcher> dispatcher(
+      GetDispatcher(data_pipe_producer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::ReadData(MojoHandle data_pipe_consumer_handle,
+                              void* elements,
+                              uint32_t* num_elements,
+                              MojoReadDataFlags flags) {
+  scoped_refptr<Dispatcher> dispatcher(
+      GetDispatcher(data_pipe_consumer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::BeginReadData(MojoHandle data_pipe_consumer_handle,
+                                   const void** buffer,
+                                   uint32_t* buffer_num_elements,
+                                   MojoReadDataFlags flags) {
+  scoped_refptr<Dispatcher> dispatcher(
+      GetDispatcher(data_pipe_consumer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
+MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
+                                 uint32_t num_elements_read) {
+  scoped_refptr<Dispatcher> dispatcher(
+      GetDispatcher(data_pipe_consumer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // TODO(vtl)
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
 CoreImpl::CoreImpl()
     : next_handle_(MOJO_HANDLE_INVALID + 1) {
 }

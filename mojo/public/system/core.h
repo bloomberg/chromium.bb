@@ -159,6 +159,8 @@ const MojoWaitFlags MOJO_WAIT_FLAG_EVERYTHING = ~0;
 #define MOJO_WAIT_FLAG_EVERYTHING (~((MojoWaitFlags) 0))
 #endif
 
+// Message pipe:
+
 // |MojoWriteMessageFlags|: Used to specify different modes to
 // |MojoWriteMessage()|.
 //   |MOJO_WRITE_MESSAGE_FLAG_NONE| - No flags; default mode.
@@ -186,6 +188,64 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
 #else
 #define MOJO_READ_MESSAGE_FLAG_NONE ((MojoReadMessageFlags) 0)
 #define MOJO_READ_MESSAGE_FLAG_MAY_DISCARD ((MojoReadMessageFlags) 1 << 0)
+#endif
+
+// Data pipe:
+
+// |MojoCreateDataPipeOptions|: Used to specify creation parameters for a data
+// pipe to |MojoCreateDataPipe()|.
+//   |MojoCreateDataPipeOptionsFlags|: Used to specify different modes of
+//       operation.
+//     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE|: No flags; default mode.
+//     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD|: May discard data for
+//         whatever reason; best-effort delivery. In particular, if the capacity
+//         is reached, old data may be discard to make room for new data.
+// TODO(vtl): Finish this.
+typedef uint32_t MojoCreateDataPipeOptionsFlags;
+
+#ifdef __cplusplus
+const MojoCreateDataPipeOptionsFlags
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE = 0;
+const MojoCreateDataPipeOptionsFlags
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD = 1 << 0;
+#else
+#define MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE \
+    ((MojoCreateDataPipeOptionsFlags) 0)
+#define MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD \
+    ((MojoCreateDataPipeOptionsFlags) 1 << 0)
+#endif
+
+struct MojoCreateDataPipeOptions {
+  size_t struct_size;  // Set to the size of this structure.
+  MojoCreateDataPipeOptionsFlags flags;
+  uint32_t element_size;
+  uint32_t capacity_num_elements;
+};
+
+// |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
+// and |MojoBeginWriteData()|.
+//   |MOJO_WRITE_DATA_FLAG_NONE| - No flags; default mode.
+// TODO(vtl)
+
+typedef uint32_t MojoWriteDataFlags;
+
+#ifdef __cplusplus
+const MojoWriteDataFlags MOJO_WRITE_DATA_FLAG_NONE = 0;
+#else
+#define MOJO_WRITE_DATA_FLAG_NONE ((MojoWriteDataFlags) 0)
+#endif
+
+// |MojoReadDataFlags|: Used to specify different modes to |MojoReadData()| and
+// |MojoBeginReadData()|.
+//   |MOJO_READ_DATA_FLAG_NONE| - No flags; default mode.
+// TODO(vtl)
+
+typedef uint32_t MojoReadDataFlags;
+
+#ifdef __cplusplus
+const MojoReadDataFlags MOJO_READ_DATA_FLAG_NONE = 0;
+#else
+#define MOJO_READ_DATA_FLAG_NONE ((MojoReadDataFlags) 0)
 #endif
 
 // Functions -------------------------------------------------------------------
@@ -309,9 +369,11 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 // indicate the buffer/maximum handle count to receive the attached handles (if
 // any).
 //
-// |num_bytes| and |num_handles| are "in-out" parameters. On return, they will
-// usually indicate the number of bytes and number of attached handles in the
-// "next" message, whether it was read or not.
+// |num_bytes| and |num_handles| are optional "in-out" parameters. If non-null,
+// on return |*num_bytes| and |*num_handles| will usually indicate the number
+// of bytes and number of attached handles in the "next" message, respectively,
+// whether that message was read or not. (If null, the number of bytes/handles
+// is treated as zero.)
 //
 // If |bytes| is null, then |*num_bytes| must be zero, and similarly for
 // |handles| and |*num_handles|.
@@ -322,7 +384,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 // also discarded in this case).
 //
 // Returns:
-//   |MOJO_RESULT_OK| on success. FIXME - what's success?
+//   |MOJO_RESULT_OK| on success (i.e., a message was actually read).
 //   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid.
 //   |MOJO_RESULT_NOT_FOUND| if no message was available to be read (TODO(vtl):
 //       change this to |MOJO_RESULT_SHOULD_WAIT|).
@@ -338,6 +400,46 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
                                               MojoHandle* handles,
                                               uint32_t* num_handles,
                                               MojoReadMessageFlags flags);
+
+// Data pipe:
+// TODO(vtl): Moar docs.
+
+MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
+    const struct MojoCreateDataPipeOptions* options,
+    MojoHandle* producer_handle,
+    MojoHandle* consumer_handle);
+
+MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
+    MojoHandle data_pipe_producer_handle,
+    const void* elements,
+    uint32_t* num_elements,
+    MojoWriteDataFlags flags);
+
+MOJO_SYSTEM_EXPORT MojoResult MojoBeginWriteData(
+    MojoHandle data_pipe_producer_handle,
+    void** buffer,
+    uint32_t* buffer_num_elements,
+    MojoWriteDataFlags flags);
+
+MOJO_SYSTEM_EXPORT MojoResult MojoEndWriteData(
+    MojoHandle data_pipe_producer_handle,
+    uint32_t num_elements_written);
+
+MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
+    MojoHandle data_pipe_consumer_handle,
+    void* elements,
+    uint32_t* num_elements,
+    MojoReadDataFlags flags);
+
+MOJO_SYSTEM_EXPORT MojoResult MojoBeginReadData(
+    MojoHandle data_pipe_consumer_handle,
+    const void** buffer,
+    uint32_t* buffer_num_elements,
+    MojoReadDataFlags flags);
+
+MOJO_SYSTEM_EXPORT MojoResult MojoEndReadData(
+    MojoHandle data_pipe_consumer_handle,
+    uint32_t num_elements_read);
 
 #ifdef __cplusplus
 }  // extern "C"

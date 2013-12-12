@@ -31,36 +31,55 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
  public:
   static void Init();
 
+  // |CorePrivate| implementation:
   virtual MojoTimeTicks GetTimeTicksNow() OVERRIDE;
-
   virtual MojoResult Close(MojoHandle handle) OVERRIDE;
-
   virtual MojoResult Wait(MojoHandle handle,
                           MojoWaitFlags flags,
                           MojoDeadline deadline) OVERRIDE;
-
   virtual MojoResult WaitMany(const MojoHandle* handles,
                               const MojoWaitFlags* flags,
                               uint32_t num_handles,
                               MojoDeadline deadline) OVERRIDE;
-
   virtual MojoResult CreateMessagePipe(
       MojoHandle* message_pipe_handle_0,
       MojoHandle* message_pipe_handle_1) OVERRIDE;
-
   virtual MojoResult WriteMessage(MojoHandle message_pipe_handle,
                                   const void* bytes,
                                   uint32_t num_bytes,
                                   const MojoHandle* handles,
                                   uint32_t num_handles,
                                   MojoWriteMessageFlags flags) OVERRIDE;
-
   virtual MojoResult ReadMessage(MojoHandle message_pipe_handle,
                                  void* bytes,
                                  uint32_t* num_bytes,
                                  MojoHandle* handles,
                                  uint32_t* num_handles,
                                  MojoReadMessageFlags flags) OVERRIDE;
+  virtual MojoResult CreateDataPipe(
+      const struct MojoCreateDataPipeOptions* options,
+      MojoHandle* producer_handle,
+      MojoHandle* consumer_handle) OVERRIDE;
+  virtual MojoResult WriteData(MojoHandle data_pipe_producer_handle,
+                               const void* elements,
+                               uint32_t* num_elements,
+                               MojoWriteDataFlags flags) OVERRIDE;
+  virtual MojoResult BeginWriteData(MojoHandle data_pipe_producer_handle,
+                                    void** buffer,
+                                    uint32_t* buffer_num_elements,
+                                    MojoWriteDataFlags flags) OVERRIDE;
+  virtual MojoResult EndWriteData(MojoHandle data_pipe_producer_handle,
+                                  uint32_t num_elements_written) OVERRIDE;
+  virtual MojoResult ReadData(MojoHandle data_pipe_consumer_handle,
+                              void* elements,
+                              uint32_t* num_elements,
+                              MojoReadDataFlags flags) OVERRIDE;
+  virtual MojoResult BeginReadData(MojoHandle data_pipe_consumer_handle,
+                                   const void** buffer,
+                                   uint32_t* buffer_num_elements,
+                                   MojoReadDataFlags flags) OVERRIDE;
+  virtual MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
+                                 uint32_t num_elements_read) OVERRIDE;
 
  private:
   friend class test::CoreTestBase;
