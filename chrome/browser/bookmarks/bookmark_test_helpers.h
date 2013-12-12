@@ -32,9 +32,9 @@ void WaitForBookmarkModelToLoad(Profile* profile);
 // purposes to use (UTF-8) |std::string|s.)
 std::string ModelStringFromNode(const BookmarkNode* node);
 
-// Create and add the node hierarchy specified by |nodeString| to the
+// Create and add the node hierarchy specified by |model_string| to the
 // bookmark node given by |node|. The string has the same format as
-// specified for ModelStringFromNode. The new nodes added to |node|
+// specified for ModelStringFromNode(). The new nodes added to |node|
 // are appended to the end of node's existing subnodes, if any.
 // |model| must be the model of which |node| is a member.
 // NOTE: The string format is very rigid and easily broken if not followed

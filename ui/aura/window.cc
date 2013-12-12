@@ -68,6 +68,106 @@ ui::LayerType WindowLayerTypeToUILayerType(WindowLayerType window_layer_type) {
   return ui::LAYER_NOT_DRAWN;
 }
 
+// Used when searching for a Window to stack relative to.
+template <class T>
+T IteratorForDirectionBegin(aura::Window* window);
+
+template <>
+Window::Windows::const_iterator IteratorForDirectionBegin(
+    aura::Window* window) {
+  return window->children().begin();
+}
+
+template <>
+Window::Windows::const_reverse_iterator IteratorForDirectionBegin(
+    aura::Window* window) {
+  return window->children().rbegin();
+}
+
+template <class T>
+T IteratorForDirectionEnd(aura::Window* window);
+
+template <>
+Window::Windows::const_iterator IteratorForDirectionEnd(aura::Window* window) {
+  return window->children().end();
+}
+
+template <>
+Window::Windows::const_reverse_iterator IteratorForDirectionEnd(
+    aura::Window* window) {
+  return window->children().rend();
+}
+
+// Depth first search for the first Window with a layer to stack relative
+// to. Starts at target. Does not descend into |ignore|.
+template <class T>
+ui::Layer* FindStackingTargetLayerDown(aura::Window* target,
+                                       aura::Window* ignore) {
+  if (target == ignore)
+    return NULL;
+
+  if (target->layer())
+    return target->layer();
+
+  for (T i = IteratorForDirectionBegin<T>(target);
+       i != IteratorForDirectionEnd<T>(target); ++i) {
+    ui::Layer* layer = FindStackingTargetLayerDown<T>(*i, ignore);
+    if (layer)
+      return layer;
+  }
+  return NULL;
+}
+
+// Depth first search through the siblings of |target||. This does not search
+// all the siblings, only those before/after |target| (depening upon the
+// template type) and ignoring |ignore|. Returns the Layer of the first Window
+// encountered with a Layer.
+template <class T>
+ui::Layer* FindStackingLayerInSiblings(aura::Window* target,
+                                       aura::Window* ignore) {
+  aura::Window* parent = target->parent();
+  for (T i = std::find(IteratorForDirectionBegin<T>(parent),
+                  IteratorForDirectionEnd<T>(parent), target);
+       i != IteratorForDirectionEnd<T>(parent); ++i) {
+    ui::Layer* layer = FindStackingTargetLayerDown<T>(*i, ignore);
+    if (layer)
+      return layer;
+  }
+  return NULL;
+}
+
+// Returns the first Window that has a Layer. This does a depth first search
+// through the descendants of |target| first, then ascends up doing a depth
+// first search through siblings of all ancestors until a Layer is found or an
+// ancestor with a layer is found. This is intended to locate a layer to stack
+// other layers relative to.
+template <class T>
+ui::Layer* FindStackingTargetLayer(aura::Window* target, aura::Window* ignore) {
+  ui::Layer* result = FindStackingTargetLayerDown<T>(target, ignore);
+  if (result)
+    return result;
+  while (target->parent()) {
+    ui::Layer* result = FindStackingLayerInSiblings<T>(target, ignore);
+    if (result)
+      return result;
+    target = target->parent();
+    if (target->layer())
+      return NULL;
+  }
+  return NULL;
+}
+
+// Does a depth first search for all descendants of |child| that have layers.
+// This stops at any descendants that have layers (and adds them to |layers|).
+void GetLayersToStack(aura::Window* child, std::vector<ui::Layer*>* layers) {
+  if (child->layer()) {
+    layers->push_back(child->layer());
+    return;
+  }
+  for (size_t i = 0; i < child->children().size(); ++i)
+    GetLayersToStack(child->children()[i], layers);
+}
+
 }  // namespace
 
 class ScopedCursorHider {
@@ -732,7 +832,8 @@ bool Window::HasCapture() {
 }
 
 void Window::SuppressPaint() {
-  layer_->SuppressPaint();
+  if (layer_)
+    layer_->SuppressPaint();
 }
 
 // {Set,Get,Clear}Property are implemented in window_property.h.
@@ -754,15 +855,17 @@ void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 std::string Window::GetDebugInfo() const {
   return base::StringPrintf(
       "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f",
       name().empty() ? "Unknown" : name().c_str(), id(),
       bounds().x(), bounds().y(), bounds().width(), bounds().height(),
       visible_ ? "WindowVisible" : "WindowHidden",
-      layer_->GetTargetVisibility() ? "LayerVisible" : "LayerHidden",
-      layer_->opacity());
+      layer_ ?
+          (layer_->GetTargetVisibility() ? "LayerVisible" : "LayerHidden") :
+          "NoLayer",
+      layer_ ? layer_->opacity() : 1.0f);
 }
 
 void Window::PrintWindowHierarchy(int depth) const {
@@ -1127,17 +1230,20 @@ void Window::StackChildRelativeTo(Window* child,
   // delegates.  Walk backward to find a valid target window.
   // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
   // for an explanation of this.
-  while (final_target_i > 0 &&
-         children_[direction == STACK_ABOVE ? final_target_i :
-                                              final_target_i - 1]->layer_
-             ->delegate() == NULL) {
+  while (final_target_i > 0) {
+    const size_t index = direction == STACK_ABOVE ?
+        final_target_i : final_target_i - 1;
+    if (!children_[index]->layer_ ||
+        children_[index]->layer_->delegate() != NULL)
+      break;
     --final_target_i;
   }
 
   Window* final_target = children_[final_target_i];
 
   // If we couldn't find a valid target position, don't move anything.
-  if (direction == STACK_ABOVE && final_target->layer_->delegate() == NULL)
+  if (direction == STACK_ABOVE &&
+      (final_target->layer_ && final_target->layer_->delegate() == NULL))
     return;
 
   // Don't try to stack a child above itself.
@@ -1188,12 +1294,64 @@ void Window::StackChildRelativeToImpl(Window* child,
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
-  if (direction == STACK_ABOVE)
-    layer_->StackAbove(child->layer_, target->layer_);
-  else
-    layer_->StackBelow(child->layer_, target->layer_);
+  StackChildLayerRelativeTo(child, target, direction);
 
   child->OnStackingChanged();
+}
+
+void Window::StackChildLayerRelativeTo(Window* child,
+                                       Window* target,
+                                       StackDirection direction) {
+  Window* ancestor_with_layer = GetAncestorWithLayer(NULL);
+  ui::Layer* ancestor_layer =
+      ancestor_with_layer ? ancestor_with_layer->layer() : NULL;
+  if (!ancestor_layer)
+    return;
+
+  if (child->layer_ && target->layer_) {
+    if (direction == STACK_ABOVE)
+      ancestor_layer->StackAbove(child->layer_, target->layer_);
+    else
+      ancestor_layer->StackBelow(child->layer_, target->layer_);
+    return;
+  }
+  typedef std::vector<ui::Layer*> Layers;
+  Layers layers;
+  GetLayersToStack(child, &layers);
+  if (layers.empty())
+    return;
+
+  ui::Layer* target_layer;
+  if (direction == STACK_ABOVE) {
+    target_layer =
+        FindStackingTargetLayer<Windows::const_reverse_iterator>(target, child);
+  } else {
+    target_layer =
+        FindStackingTargetLayer<Windows::const_iterator>(target, child);
+  }
+
+  if (!target_layer) {
+    if (direction == STACK_ABOVE) {
+      for (Layers::const_reverse_iterator i = layers.rbegin();
+           i != layers.rend(); ++i) {
+        ancestor_layer->StackAtBottom(*i);
+      }
+    } else {
+      for (Layers::const_iterator i = layers.begin(); i != layers.end(); ++i)
+        ancestor_layer->StackAtTop(*i);
+    }
+    return;
+  }
+
+  if (direction == STACK_ABOVE) {
+    for (Layers::const_reverse_iterator i = layers.rbegin();
+         i != layers.rend(); ++i) {
+      ancestor_layer->StackAbove(*i, target_layer);
+    }
+  } else {
+    for (Layers::const_iterator i = layers.begin(); i != layers.end(); ++i)
+      ancestor_layer->StackBelow(*i, target_layer);
+  }
 }
 
 void Window::OnStackingChanged() {
@@ -1435,9 +1593,11 @@ const Window* Window::GetAncestorWithLayer(gfx::Vector2d* offset) const {
   for (const aura::Window* window = this; window; window = window->parent()) {
     if (window->layer_)
       return window;
-    *offset += window->bounds().OffsetFromOrigin();
+    if (offset)
+      *offset += window->bounds().OffsetFromOrigin();
   }
-  *offset = gfx::Vector2d();
+  if (offset)
+    *offset = gfx::Vector2d();
   return NULL;
 }
 

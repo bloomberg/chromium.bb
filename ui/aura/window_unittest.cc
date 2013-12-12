@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
@@ -3550,6 +3551,303 @@ TEST_F(WindowTest, ConvertPointToTargetLayerless) {
 
   // w11ll->w12
   EXPECT_EQ("-4,-4", ConvertPointToTargetString(w11ll, w12));
+}
+
+#if !defined(NDEBUG)
+// Verifies PrintWindowHierarchy() doesn't crash with a layerless window.
+TEST_F(WindowTest, PrintWindowHierarchyNotCrashLayerless) {
+  Window root(NULL);
+  root.InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  root.PrintWindowHierarchy(0);
+}
+#endif
+
+namespace {
+
+// See AddWindowsFromString() for details.
+aura::Window* CreateWindowFromDescription(const std::string& description,
+                                          WindowDelegate* delegate) {
+  WindowLayerType window_type = WINDOW_LAYER_NOT_DRAWN;
+  std::vector<std::string> tokens;
+  Tokenize(description, ":", &tokens);
+  DCHECK(!tokens.empty());
+  std::string name(tokens[0]);
+  tokens.erase(tokens.begin());
+  if (!tokens.empty()) {
+    if (tokens[0] == "ll") {
+      window_type = WINDOW_LAYER_NONE;
+      tokens.erase(tokens.begin());
+    }
+    DCHECK(tokens.empty()) << "unknown tokens for creating window "
+                           << description;
+  }
+  Window* window = new Window(delegate);
+  window->InitWithWindowLayerType(window_type);
+  window->SetName(name);
+  // Window name is only propagated to layer in debug builds.
+  if (window->layer())
+    window->layer()->set_name(name);
+  return window;
+}
+
+// Creates and adds a tree of windows to |parent|. |description| consists
+// of the following pieces:
+//   X: Identifies a new window. Consists of a name and optionally ":ll" to
+//      specify  WINDOW_LAYER_NONE, eg "w1:ll".
+//   []: optionally used to specify the children of the window. Contains any
+//       number of window identifiers and their corresponding children.
+// For example: "[ a [ a1 a2:ll ] b c [ c1 ] ]" creates the tree:
+//   a
+//     a1
+//     a2 -> WINDOW_LAYER_NONE.
+//   b
+//   c
+//     c1
+// NOTE: you must have a space after every token.
+std::string::size_type AddWindowsFromString(aura::Window* parent,
+                                            const std::string& description,
+                                            std::string::size_type start_pos,
+                                            WindowDelegate* delegate) {
+  DCHECK(parent);
+  std::string::size_type end_pos = description.find(' ', start_pos);
+  while (end_pos != std::string::npos) {
+    const std::string::size_type part_length = end_pos - start_pos;
+    const std::string window_description =
+        description.substr(start_pos, part_length);
+    if (window_description == "[") {
+      start_pos = AddWindowsFromString(parent->children().back(),
+                                       description,
+                                       end_pos + 1,
+                                       delegate);
+      end_pos = description.find(' ', start_pos);
+      if (end_pos == std::string::npos && start_pos != end_pos)
+        end_pos = description.length();
+    } else if (window_description == "]") {
+      ++end_pos;
+      break;
+    } else {
+      Window* window =
+          CreateWindowFromDescription(window_description, delegate);
+      parent->AddChild(window);
+      start_pos = ++end_pos;
+      end_pos = description.find(' ', start_pos);
+    }
+  }
+  return end_pos;
+}
+
+// Used by BuildRootWindowTreeDescription().
+std::string BuildWindowTreeDescription(const aura::Window& window) {
+  std::string result;
+  result += window.name();
+  if (window.children().empty())
+    return result;
+
+  result += " [ ";
+  for (size_t i = 0; i < window.children().size(); ++i) {
+    if (i != 0)
+      result += " ";
+    result += BuildWindowTreeDescription(*(window.children()[i]));
+  }
+  result += " ]";
+  return result;
+}
+
+// Creates a string from |window|. See AddWindowsFromString() for details of the
+// returned string. This does *not* include the layer type in the description,
+// on the name.
+std::string BuildRootWindowTreeDescription(const aura::Window& window) {
+  std::string result;
+  for (size_t i = 0; i < window.children().size(); ++i) {
+    if (i != 0)
+      result += " ";
+    result += BuildWindowTreeDescription(*(window.children()[i]));
+  }
+  return result;
+}
+
+// Used by BuildRootWindowTreeDescription().
+std::string BuildLayerTreeDescription(const ui::Layer& layer) {
+  std::string result;
+  result += layer.name();
+  if (layer.children().empty())
+    return result;
+
+  result += " [ ";
+  for (size_t i = 0; i < layer.children().size(); ++i) {
+    if (i != 0)
+      result += " ";
+    result += BuildLayerTreeDescription(*(layer.children()[i]));
+  }
+  result += " ]";
+  return result;
+}
+
+// Builds a string for all the children of |layer|. The returned string is in
+// the same format as AddWindowsFromString() but only includes the name of the
+// layers.
+std::string BuildRootLayerTreeDescription(const ui::Layer& layer) {
+  std::string result;
+  for (size_t i = 0; i < layer.children().size(); ++i) {
+    if (i != 0)
+      result += " ";
+    result += BuildLayerTreeDescription(*(layer.children()[i]));
+  }
+  return result;
+}
+
+// Returns the first window whose name matches |name| in |parent|.
+aura::Window* FindWindowByName(aura::Window* parent,
+                               const std::string& name) {
+  if (parent->name() == name)
+    return parent;
+  for (size_t i = 0; i < parent->children().size(); ++i) {
+    aura::Window* child = FindWindowByName(parent->children()[i], name);
+    if (child)
+      return child;
+  }
+  return NULL;
+}
+
+}  // namespace
+
+// Direction to stack.
+enum StackType {
+  STACK_ABOVE,
+  STACK_BELOW,
+  STACK_AT_BOTTOM,
+  STACK_AT_TOP,
+};
+
+// Permutations of StackChildAt with various data.
+TEST_F(WindowTest, StackChildAtLayerless) {
+  struct TestData {
+    // Describes the window tree to create. See AddWindowsFromString() for
+    // details.
+    const std::string initial_description;
+
+    // Identifies the window to move.
+    const std::string source_window;
+
+    // Window to move |source_window| relative to. Not used for STACK_AT_BOTTOM
+    // or STACK_AT_TOP.
+    const std::string target_window;
+
+    StackType stack_type;
+
+    // Expected window and layer results.
+    const std::string expected_description;
+    const std::string expected_layer_description;
+  } data[] = {
+    // 1 at top.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ]",
+      "1",
+      "",
+      STACK_AT_TOP,
+      "2 [ 21 ] 1 [ 11 12 ]",
+      "21 11 12",
+    },
+
+    // 1 at bottom.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ]",
+      "1",
+      "",
+      STACK_AT_BOTTOM,
+      "1 [ 11 12 ] 2 [ 21 ]",
+      "11 12 21",
+    },
+
+    // 2 at bottom.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ]",
+      "2",
+      "",
+      STACK_AT_BOTTOM,
+      "2 [ 21 ] 1 [ 11 12 ]",
+      "21 11 12",
+    },
+
+    // 3 below 2.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ] 3:ll",
+      "3",
+      "2",
+      STACK_BELOW,
+      "1 [ 11 12 ] 3 2 [ 21 ]",
+      "11 12 21",
+    },
+
+    // 2 below 1.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ]",
+      "2",
+      "1",
+      STACK_BELOW,
+      "2 [ 21 ] 1 [ 11 12 ]",
+      "21 11 12",
+    },
+
+    // 1 above 3.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ] 3:ll",
+      "1",
+      "3",
+      STACK_ABOVE,
+      "2 [ 21 ] 3 1 [ 11 12 ]",
+      "21 11 12",
+    },
+
+    // 1 above 2.
+    {
+      "1:ll [ 11 12 ] 2:ll [ 21 ]",
+      "1",
+      "2",
+      STACK_ABOVE,
+      "2 [ 21 ] 1 [ 11 12 ]",
+      "21 11 12",
+    },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+    test::TestWindowDelegate delegate;
+    Window root(NULL);
+    root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+    root.SetBounds(gfx::Rect(0, 0, 100, 100));
+    AddWindowsFromString(
+        &root,
+        data[i].initial_description,
+        static_cast<std::string::size_type>(0), &delegate);
+    aura::Window* source = FindWindowByName(&root, data[i].source_window);
+    ASSERT_TRUE(source != NULL) << "unable to find source window "
+                                << data[i].source_window << " at " << i;
+    aura::Window* target = FindWindowByName(&root, data[i].target_window);
+    switch (data[i].stack_type) {
+      case STACK_ABOVE:
+        ASSERT_TRUE(target != NULL) << "unable to find target window "
+                                    << data[i].target_window << " at " << i;
+        source->parent()->StackChildAbove(source, target);
+        break;
+      case STACK_BELOW:
+        ASSERT_TRUE(target != NULL) << "unable to find target window "
+                                    << data[i].target_window << " at " << i;
+        source->parent()->StackChildBelow(source, target);
+        break;
+      case STACK_AT_BOTTOM:
+        source->parent()->StackChildAtBottom(source);
+        break;
+      case STACK_AT_TOP:
+        source->parent()->StackChildAtTop(source);
+        break;
+    }
+    EXPECT_EQ(data[i].expected_layer_description,
+              BuildRootLayerTreeDescription(*root.layer()))
+        << "layer tree doesn't match at " << i;
+    EXPECT_EQ(data[i].expected_description,
+              BuildRootWindowTreeDescription(root))
+        << "window tree doesn't match at " << i;
+  }
 }
 
 }  // namespace test

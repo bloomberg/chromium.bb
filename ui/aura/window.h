@@ -332,7 +332,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool HasCapture();
 
   // Suppresses painting window content by disgarding damaged rect and ignoring
-  // new paint requests.
+  // new paint requests. This is a one way operation and there is no way to
+  // reenable painting.
   void SuppressPaint();
 
   // Sets the |value| of the given window |property|. Setting to the default
@@ -363,7 +364,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // These methods are useful when debugging.
   std::string GetDebugInfo() const;
   void PrintWindowHierarchy(int depth) const;
@@ -467,6 +468,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                                 Window* target,
                                 StackDirection direction);
 
+  // Invoked from StackChildRelativeToImpl() to stack the layers appropriately
+  // when stacking |child| relative to |target|.
+  void StackChildLayerRelativeTo(Window* child,
+                                 Window* target,
+                                 StackDirection direction);
+
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();
 
@@ -529,7 +536,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool ContainsMouse();
 
   // Returns the first ancestor (starting at |this|) with a layer. |offset| is
-  // set to the offset from |this| to the first ancestor with a layer.
+  // set to the offset from |this| to the first ancestor with a layer. |offset|
+  // may be NULL.
   Window* GetAncestorWithLayer(gfx::Vector2d* offset) {
     return const_cast<Window*>(
         const_cast<const Window*>(this)->GetAncestorWithLayer(offset));
