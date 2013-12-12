@@ -40,6 +40,9 @@
   <message name="IDS_POLICY_DM_STATUS_SERVICE_MISSING_LICENSES" desc="Message indicating the enterprise server doesn't have enough licenses to allow management.">
     Licenses exhausted
   </message>
+  <message name="IDS_POLICY_DM_STATUS_SERVICE_DEPROVISIONED" desc="Message indicating the administrator has deprovisioned this client on the server.">
+    Deprovisioned
+  </message>
   <message name="IDS_POLICY_DM_STATUS_SERVICE_POLICY_NOT_FOUND" desc="Message indicating that the enterprise server failed to find the policy to be applied to the device.">
     Policy not found
   </message>

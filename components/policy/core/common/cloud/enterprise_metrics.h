@@ -163,6 +163,8 @@ enum MetricEnrollment {
   // Enrollment failed because the robot account refresh token couldn't be
   // persisted on the device.
   kMetricEnrollmentRobotRefreshTokenStoreFailed,
+  // Enrollment failed because the administrator has deprovisioned the device.
+  kMetricEnrollmentDeprovisioned,
 
   kMetricEnrollmentSize  // Must be the last.
 };

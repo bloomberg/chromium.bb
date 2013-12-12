@@ -223,6 +223,9 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
         case policy::DM_STATUS_SERVICE_MISSING_LICENSES:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, true);
           break;
+        case policy::DM_STATUS_SERVICE_DEPROVISIONED:
+          ShowError(IDS_ENTERPRISE_ENROLLMENT_DEPROVISIONED_ERROR, true);
+          break;
         case policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
           break;

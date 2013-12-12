@@ -22974,6 +22974,9 @@ other types of suffix sets.
     Enrollment failed due to an error persisting the device robot refresh token
     on the device.
   </int>
+  <int value="22" label="Deprovisioned device">
+    Enrollment failed because the administrator has deprovisioned the device.
+  </int>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">

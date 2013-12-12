@@ -305,6 +305,7 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     case DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
     case DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
     case DM_STATUS_SERVICE_MISSING_LICENSES:
+    case DM_STATUS_SERVICE_DEPROVISIONED:
       // Need a re-registration, no use in retrying.
       refresh_callback_.Cancel();
       return;

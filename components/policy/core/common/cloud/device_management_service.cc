@@ -46,7 +46,8 @@ const int kDeviceNotFound = 410;
 const int kPendingApproval = 412;
 const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
-const int kPolicyNotFound = 902;  // This error is not sent as HTTP status code.
+const int kPolicyNotFound = 902;
+const int kDeprovisioned = 903;
 
 bool IsProxyError(const net::URLRequestStatus status) {
   switch (status.error()) {
@@ -255,6 +256,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(
       return;
     case kInvalidSerialNumber:
       ReportError(DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER);
+      return;
+    case kDeprovisioned:
+      ReportError(DM_STATUS_SERVICE_DEPROVISIONED);
       return;
     case kDeviceIdConflict:
       ReportError(DM_STATUS_SERVICE_DEVICE_ID_CONFLICT);

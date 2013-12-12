@@ -87,6 +87,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_DEVICE_ID_CONFLICT,
   // Service error: The licenses have expired or have been exhausted.
   DM_STATUS_SERVICE_MISSING_LICENSES,
+  // Service error: The administrator has deprovisioned this client.
+  DM_STATUS_SERVICE_DEPROVISIONED,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
 };
