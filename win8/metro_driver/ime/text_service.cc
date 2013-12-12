@@ -87,7 +87,6 @@
 
 namespace metro_driver {
 namespace {
-typedef TSFTextStore TextStore;
 
 // Japanese IME expects the default value of this compartment is
 // TF_SENTENCEMODE_PHRASEPREDICT to emulate IMM32 behavior. This value is

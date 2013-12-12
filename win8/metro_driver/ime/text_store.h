@@ -25,61 +25,61 @@ namespace metro_driver {
 
 class TextStoreDelegate;
 
-// TSFTextStore is used to interact with the input method via TSF manager.
-// TSFTextStore have a string buffer which is manipulated by TSF manager through
+// TextStore is used to interact with the input method via TSF manager.
+// TextStore have a string buffer which is manipulated by TSF manager through
 // ITextStoreACP interface methods such as SetText().
-// When the input method updates the composition, TSFTextStore calls
+// When the input method updates the composition, TextStore calls
 // TextInputClient::SetCompositionText(). And when the input method finishes the
-// composition, TSFTextStore calls TextInputClient::InsertText() and clears the
+// composition, TextStore calls TextInputClient::InsertText() and clears the
 // buffer.
 //
-// How TSFTextStore works:
+// How TextStore works:
 //  - The user enters "a".
 //    - The input method set composition as "a".
-//    - TSF manager calls TSFTextStore::RequestLock().
-//    - TSFTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - TSF manager calls TextStore::RequestLock().
+//    - TextStore callbacks ITextStoreACPSink::OnLockGranted().
 //    - In OnLockGranted(), TSF manager calls
-//      - TSFTextStore::OnStartComposition()
-//      - TSFTextStore::SetText()
+//      - TextStore::OnStartComposition()
+//      - TextStore::SetText()
 //        The string buffer is set as "a".
-//      - TSFTextStore::OnUpdateComposition()
-//      - TSFTextStore::OnEndEdit()
-//        TSFTextStore can get the composition information such as underlines.
-//   - TSFTextStore calls TextInputClient::SetCompositionText().
+//      - TextStore::OnUpdateComposition()
+//      - TextStore::OnEndEdit()
+//        TextStore can get the composition information such as underlines.
+//   - TextStore calls TextInputClient::SetCompositionText().
 //     "a" is shown with an underline as composition string.
 // - The user enters <space>.
 //    - The input method set composition as "A".
-//    - TSF manager calls TSFTextStore::RequestLock().
-//    - TSFTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - TSF manager calls TextStore::RequestLock().
+//    - TextStore callbacks ITextStoreACPSink::OnLockGranted().
 //    - In OnLockGranted(), TSF manager calls
-//      - TSFTextStore::SetText()
+//      - TextStore::SetText()
 //        The string buffer is set as "A".
-//      - TSFTextStore::OnUpdateComposition()
-//      - TSFTextStore::OnEndEdit()
-//   - TSFTextStore calls TextInputClient::SetCompositionText().
+//      - TextStore::OnUpdateComposition()
+//      - TextStore::OnEndEdit()
+//   - TextStore calls TextInputClient::SetCompositionText().
 //     "A" is shown with an underline as composition string.
 // - The user enters <enter>.
 //    - The input method commits "A".
-//    - TSF manager calls TSFTextStore::RequestLock().
-//    - TSFTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - TSF manager calls TextStore::RequestLock().
+//    - TextStore callbacks ITextStoreACPSink::OnLockGranted().
 //    - In OnLockGranted(), TSF manager calls
-//      - TSFTextStore::OnEndComposition()
-//      - TSFTextStore::OnEndEdit()
-//        TSFTextStore knows "A" is committed.
-//   - TSFTextStore calls TextInputClient::InsertText().
+//      - TextStore::OnEndComposition()
+//      - TextStore::OnEndEdit()
+//        TextStore knows "A" is committed.
+//   - TextStore calls TextInputClient::InsertText().
 //     "A" is shown as committed string.
-//   - TSFTextStore clears the string buffer.
-//   - TSFTextStore calls OnSelectionChange(), OnLayoutChange() and
+//   - TextStore clears the string buffer.
+//   - TextStore calls OnSelectionChange(), OnLayoutChange() and
 //     OnTextChange() of ITextStoreACPSink to let TSF manager know that the
 //     string buffer has been changed.
 //
 // About the locking scheme:
 // When TSF manager manipulates the string buffer it calls RequestLock() to get
-// the lock of the document. If TSFTextStore can grant the lock request, it
+// the lock of the document. If TextStore can grant the lock request, it
 // callbacks ITextStoreACPSink::OnLockGranted().
 // RequestLock() is called from only one thread, but called recursively in
 // OnLockGranted() or OnSelectionChange() or OnLayoutChange() or OnTextChange().
-// If the document is locked and the lock request is asynchronous, TSFTextStore
+// If the document is locked and the lock request is asynchronous, TextStore
 // queues the request. The queued requests will be handled after the current
 // lock is removed.
 // More information about document locks can be found here:
@@ -87,16 +87,15 @@ class TextStoreDelegate;
 //
 // More information about TSF can be found here:
 //   http://msdn.microsoft.com/en-us/library/ms629032
-// TODO(yukawa): Rename TSFTextStore to TextStore.
-class ATL_NO_VTABLE TSFTextStore
+class ATL_NO_VTABLE TextStore
     : public CComObjectRootEx<CComMultiThreadModel>,
       public ITextStoreACP,
       public ITfContextOwnerCompositionSink,
       public ITfTextEditSink {
  public:
-  virtual ~TSFTextStore();
+  virtual ~TextStore();
 
-  BEGIN_COM_MAP(TSFTextStore)
+  BEGIN_COM_MAP(TextStore)
     COM_INTERFACE_ENTRY(ITextStoreACP)
     COM_INTERFACE_ENTRY(ITfContextOwnerCompositionSink)
     COM_INTERFACE_ENTRY(ITfTextEditSink)
@@ -216,15 +215,15 @@ class ATL_NO_VTABLE TSFTextStore
   // Sends OnLayoutChange() via |text_store_acp_sink_|.
   void SendOnLayoutChange();
 
-  // Creates an instance of TSFTextStore. Returns NULL if fails.
-  static scoped_refptr<TSFTextStore> Create(
+  // Creates an instance of TextStore. Returns NULL if fails.
+  static scoped_refptr<TextStore> Create(
       HWND window_handle,
       const std::vector<InputScope>& input_scopes,
       TextStoreDelegate* delegate);
 
  private:
-  friend CComObject<TSFTextStore>;
-  TSFTextStore();
+  friend CComObject<TextStore>;
+  TextStore();
 
   void Initialize(HWND window_handle,
                   ITfCategoryMgr* category_manager,
@@ -308,7 +307,7 @@ class ATL_NO_VTABLE TSFTextStore
   // The delegate attached to this text store.
   TextStoreDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(TSFTextStore);
+  DISALLOW_COPY_AND_ASSIGN(TextStore);
 };
 
 }  // namespace metro_driver
