@@ -68,6 +68,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 #include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/common/quota/quota_types.h"
@@ -828,10 +829,17 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 
 void RendererWebKitPlatformSupportImpl::screenColorProfile(
     WebVector<char>* to_profile) {
+#if defined(OS_WIN)
+  // On Windows screen color profile is only available in the browser.
   std::vector<char> profile;
   RenderThread::Get()->Send(
       new ViewHostMsg_GetMonitorColorProfile(&profile));
   *to_profile = profile;
+#else
+  // On other platforms color profile can be obtained directly.
+  gfx::ColorProfile profile;
+  *to_profile = profile.profile();
+#endif
 }
 
 //------------------------------------------------------------------------------
