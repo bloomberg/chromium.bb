@@ -44,6 +44,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -273,10 +274,13 @@ void SearchTabHelper::DidFailProvisionalLoad(
     const base::string16& /* frame_unique_name */,
     bool is_main_frame,
     const GURL& validated_url,
-    int /* error_code */,
+    int error_code,
     const base::string16& /* error_description */,
     content::RenderViewHost* /* render_view_host */) {
+  // If error_code is ERR_ABORTED means that the user has canceled this
+  // navigation so it shouldn't be redirected.
   if (is_main_frame &&
+      error_code != net::ERR_ABORTED &&
       chrome::ShouldUseCacheableNTP() &&
       validated_url != GURL(chrome::kChromeSearchLocalNtpUrl) &&
       chrome::IsNTPURL(validated_url, profile())) {

@@ -30,6 +30,7 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
+#include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -295,6 +296,26 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailRedirectNTPToLocal) {
       cacheableNTPURL, 1, string16(), NULL);
   CommitPendingLoad(controller);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+                 controller->GetLastCommittedEntry()->GetURL());
+}
+
+TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectIfAborted) {
+  AddTab(browser(), GURL("chrome://blank"));
+  content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::NavigationController* controller = &contents->GetController();
+
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(contents);
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  // A failed provisional load of a cacheable NTP should be redirected to local
+  // NTP.
+  const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
+  search_tab_helper->DidFailProvisionalLoad(1, string16(), true,
+      cacheableNTPURL, net::ERR_ABORTED, string16(), NULL);
+  CommitPendingLoad(controller);
+  EXPECT_EQ(GURL("chrome://blank"),
                  controller->GetLastCommittedEntry()->GetURL());
 }
 
