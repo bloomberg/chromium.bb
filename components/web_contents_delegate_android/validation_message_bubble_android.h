@@ -31,7 +31,7 @@ class ValidationMessageBubbleAndroid {
   virtual ~ValidationMessageBubbleAndroid();
   virtual void SetPositionRelativeToAnchor(
       content::RenderWidgetHost* widget_host,
-      const gfx::Rect& anchor_in_screen) OVERRIDE;
+      const gfx::Rect& anchor_in_screen);
 
   static bool Register(JNIEnv* env);
 
