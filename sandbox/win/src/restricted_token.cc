@@ -277,7 +277,7 @@ unsigned RestrictedToken::AddUserSidForDenyOnly() {
 }
 
 unsigned RestrictedToken::DeleteAllPrivileges(
-    const std::vector<std::wstring> *exceptions) {
+    const std::vector<base::string16> *exceptions) {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;

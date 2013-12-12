@@ -27,7 +27,7 @@ inline typename string_type::value_type* WriteInto(string_type* str,
 }
 
 // Grabbed from base/string_util.cc
-std::string WideToMultiByte(const std::wstring& wide, UINT code_page) {
+std::string WideToMultiByte(const base::string16& wide, UINT code_page) {
   if (wide.length() == 0)
     return std::string();
 
@@ -46,7 +46,7 @@ std::string WideToMultiByte(const std::wstring& wide, UINT code_page) {
 }
 
 // Grabbed from base/string_util.cc
-std::string WideToUTF8(const std::wstring& wide) {
+std::string WideToUTF8(const base::string16& wide) {
   return WideToMultiByte(wide, CP_UTF8);
 }
 

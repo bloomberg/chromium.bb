@@ -17,7 +17,7 @@ typedef void(__cdecl *lpfnInit)(HANDLE);
 bool ParseCommandLine(wchar_t * command_line,
                       std::string * dll_name,
                       std::string * entry_point,
-                      std::wstring * log_file) {
+                      base::string16 * log_file) {
   DCHECK(dll_name);
   DCHECK(entry_point);
   DCHECK(log_file);
@@ -35,8 +35,8 @@ bool ParseCommandLine(wchar_t * command_line,
      return false;
   }
 
-  std::wstring entry_point_wide = arg_list[1];
-  std::wstring dll_name_wide = arg_list[2];
+  base::string16 entry_point_wide = arg_list[1];
+  base::string16 dll_name_wide = arg_list[2];
   *entry_point = std::string(entry_point_wide.begin(), entry_point_wide.end());
   *dll_name    = std::string(dll_name_wide.begin(), dll_name_wide.end());
   *log_file    = arg_list[3];
@@ -126,7 +126,7 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE, wchar_t* command_line,
 
     // Parse the command line to find out what we need to call
     std::string dll_name, entry_point;
-    std::wstring log_file;
+    base::string16 log_file;
     if (!ParseCommandLine(GetCommandLineW(),
                           &dll_name,
                           &entry_point,

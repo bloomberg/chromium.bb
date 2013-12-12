@@ -19,7 +19,7 @@ bool IsXPSP2OrLater() {
        (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
 }
 
-void InitObjectAttribs(const std::wstring& name,
+void InitObjectAttribs(const base::string16& name,
                        ULONG attributes,
                        HANDLE root,
                        OBJECT_ATTRIBUTES* obj_attr,

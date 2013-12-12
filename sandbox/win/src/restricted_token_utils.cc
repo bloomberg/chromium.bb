@@ -29,7 +29,7 @@ DWORD CreateRestrictedToken(HANDLE *token_handle,
   RestrictedToken restricted_token;
   restricted_token.Init(NULL);  // Initialized with the current process token
 
-  std::vector<std::wstring> privilege_exceptions;
+  std::vector<base::string16> privilege_exceptions;
   std::vector<Sid> sid_exceptions;
 
   bool deny_sids = true;
@@ -237,7 +237,7 @@ DWORD SetObjectIntegrityLabel(HANDLE handle, SE_OBJECT_TYPE type,
                               const wchar_t* ace_access,
                               const wchar_t* integrity_level_sid) {
   // Build the SDDL string for the label.
-  std::wstring sddl = L"S:(";     // SDDL for a SACL.
+  base::string16 sddl = L"S:(";   // SDDL for a SACL.
   sddl += SDDL_MANDATORY_LABEL;   // Ace Type is "Mandatory Label".
   sddl += L";;";                  // No Ace Flags.
   sddl += ace_access;             // Add the ACE access.

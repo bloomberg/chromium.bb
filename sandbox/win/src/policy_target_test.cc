@@ -229,7 +229,7 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(NULL, prog_name, MAX_PATH);
 
-  std::wstring arguments(L"\"");
+  base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 wait";  // Don't care about the "state" argument.
 
@@ -256,7 +256,7 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
 
-  std::wstring desktop_name = policy->GetAlternateDesktop();
+  base::string16 desktop_name = policy->GetAlternateDesktop();
   HDESK desk = ::OpenDesktop(desktop_name.c_str(), 0, FALSE, DESKTOP_ENUMERATE);
   EXPECT_TRUE(NULL != desk);
   EXPECT_TRUE(::CloseDesktop(desk));
@@ -292,7 +292,7 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(NULL, prog_name, MAX_PATH);
 
-  std::wstring arguments(L"\"");
+  base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 wait";  // Don't care about the "state" argument.
 
@@ -319,11 +319,11 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
 
-  std::wstring desktop_name = policy->GetAlternateDesktop();
+  base::string16 desktop_name = policy->GetAlternateDesktop();
   ASSERT_FALSE(desktop_name.empty());
 
   // Make sure there is a backslash, for the window station name.
-  EXPECT_NE(desktop_name.find_first_of(L'\\'), std::wstring::npos);
+  EXPECT_NE(desktop_name.find_first_of(L'\\'), base::string16::npos);
 
   // Isolate the desktop name.
   desktop_name = desktop_name.substr(desktop_name.find_first_of(L'\\') + 1);

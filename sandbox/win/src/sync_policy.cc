@@ -21,9 +21,9 @@ namespace sandbox {
 
 // Provides functionality to resolve a symbolic link within the object
 // directory passed in.
-NTSTATUS ResolveSymbolicLink(const std::wstring& directory_name,
-                             const std::wstring& name,
-                             std::wstring* target) {
+NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
+                             const base::string16& name,
+                             base::string16* target) {
   NtOpenDirectoryObjectFunction NtOpenDirectoryObject = NULL;
   ResolveNTFunctionPtr("NtOpenDirectoryObject", &NtOpenDirectoryObject);
 
@@ -107,7 +107,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
   DWORD session_id = 0;
   ProcessIdToSessionId(::GetCurrentProcessId(), &session_id);
 
-  std::wstring base_named_objects_path;
+  base::string16 base_named_objects_path;
 
   NTSTATUS status = ResolveSymbolicLink(L"\\Sessions\\BNOLINKS",
                                         base::StringPrintf(L"%d", session_id),
@@ -133,7 +133,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
 bool SyncPolicy::GenerateRules(const wchar_t* name,
                                TargetPolicy::Semantics semantics,
                                LowLevelPolicy* policy) {
-  std::wstring mod_name(name);
+  base::string16 mod_name(name);
   if (mod_name.empty()) {
     return false;
   }
@@ -178,7 +178,7 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
 
 DWORD SyncPolicy::CreateEventAction(EvalResult eval_result,
                                     const ClientInfo& client_info,
-                                    const std::wstring &event_name,
+                                    const base::string16 &event_name,
                                     uint32 event_type,
                                     uint32 initial_state,
                                     HANDLE *handle) {
@@ -216,7 +216,7 @@ DWORD SyncPolicy::CreateEventAction(EvalResult eval_result,
 
 DWORD SyncPolicy::OpenEventAction(EvalResult eval_result,
                                   const ClientInfo& client_info,
-                                  const std::wstring &event_name,
+                                  const base::string16 &event_name,
                                   uint32 desired_access,
                                   HANDLE *handle) {
   NtOpenEventFunction NtOpenEvent = NULL;

@@ -160,7 +160,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   CrossCallReturn answer;
   uint32 tag1 = 666;
   const wchar_t text[] = L"98765 - 43210";
-  std::wstring copied_text;
+  base::string16 copied_text;
   CrossCallParamsEx* actual_params;
 
   CrossCall(client, tag1, text, &answer);
@@ -204,7 +204,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_STREQ(text, copied_text.c_str());
 
   param_size = 1;
-  std::wstring copied_text_p0, copied_text_p2;
+  base::string16 copied_text_p0, copied_text_p2;
 
   const wchar_t text2[] = L"AeFG";
   CrossCall(client, tag1, text2, null_text, text, &answer);

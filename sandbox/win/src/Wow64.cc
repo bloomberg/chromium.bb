@@ -142,13 +142,13 @@ bool Wow64::RunWowHelper(void* buffer) {
   // Get the path to the helper (beside the exe).
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(NULL, prog_name, MAX_PATH);
-  std::wstring path(prog_name);
+  base::string16 path(prog_name);
   size_t name_pos = path.find_last_of(L"\\");
-  if (std::wstring::npos == name_pos)
+  if (base::string16::npos == name_pos)
     return false;
   path.resize(name_pos + 1);
 
-  std::wstringstream command;
+  std::basic_stringstream<base::char16> command;
   command << std::hex << std::showbase << L"\"" << path <<
                L"wow_helper.exe\" " << child_->ProcessId() << " " <<
                bit_cast<ULONG>(buffer);

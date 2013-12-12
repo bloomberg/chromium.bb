@@ -131,7 +131,7 @@ void ReleaseArgs(const IPCParams* ipc_params, void* args[kMaxIpcParams]) {
   for (size_t i = 0; i < kMaxIpcParams; i++) {
     switch (ipc_params->args[i]) {
       case WCHAR_TYPE: {
-        delete reinterpret_cast<std::wstring*>(args[i]);
+        delete reinterpret_cast<base::string16*>(args[i]);
         args[i] = NULL;
         break;
       }
@@ -159,7 +159,7 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
       ipc_params->args[i] = type;
       switch (type) {
         case WCHAR_TYPE: {
-          scoped_ptr<std::wstring> data(new std::wstring);
+          scoped_ptr<base::string16> data(new base::string16);
           if (!params->GetParameterStr(i, data.get())) {
             args[i] = 0;
             ReleaseArgs(ipc_params, args);

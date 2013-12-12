@@ -43,7 +43,7 @@ bool SyncDispatcher::SetupService(InterceptionManager* manager,
   return false;
 }
 
-bool SyncDispatcher::CreateEvent(IPCInfo* ipc, std::wstring* name,
+bool SyncDispatcher::CreateEvent(IPCInfo* ipc, base::string16* name,
                                  DWORD event_type, DWORD initial_state) {
   const wchar_t* event_name = name->c_str();
   CountedParameterSet<NameBased> params;
@@ -61,7 +61,7 @@ bool SyncDispatcher::CreateEvent(IPCInfo* ipc, std::wstring* name,
   return true;
 }
 
-bool SyncDispatcher::OpenEvent(IPCInfo* ipc, std::wstring* name,
+bool SyncDispatcher::OpenEvent(IPCInfo* ipc, base::string16* name,
                                DWORD desired_access) {
   const wchar_t* event_name = name->c_str();
 

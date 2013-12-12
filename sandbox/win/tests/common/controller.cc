@@ -16,12 +16,12 @@ namespace {
 static const int kDefaultTimeout = 60000;
 
 // Constructs a full path to a file inside the system32 folder.
-std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
+base::string16 MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
   wchar_t windows_path[MAX_PATH] = {0};
   if (0 == ::GetSystemWindowsDirectoryW(windows_path, MAX_PATH))
-    return std::wstring();
+    return base::string16();
 
-  std::wstring full_path(windows_path);
+  base::string16 full_path(windows_path);
   if (full_path.empty())
     return full_path;
 
@@ -34,12 +34,12 @@ std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
 }
 
 // Constructs a full path to a file inside the syswow64 folder.
-std::wstring MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
+base::string16 MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
   wchar_t windows_path[MAX_PATH] = {0};
   if (0 == ::GetSystemWindowsDirectoryW(windows_path, MAX_PATH))
-    return std::wstring();
+    return base::string16();
 
-  std::wstring full_path(windows_path);
+  base::string16 full_path(windows_path);
   if (full_path.empty())
     return full_path;
 
@@ -62,7 +62,7 @@ bool IsProcessRunning(HANDLE process) {
 
 namespace sandbox {
 
-std::wstring MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
+base::string16 MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
       base::win::OSInfo::WOW64_ENABLED) ?
       MakePathToSysWow64(name, is_obj_man_path) :
@@ -150,7 +150,7 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
   if (!is_init_)
     return false;
 
-  std::wstring win32_path = MakePathToSys32(pattern, false);
+  base::string16 win32_path = MakePathToSys32(pattern, false);
   if (win32_path.empty())
     return false;
 
@@ -183,7 +183,7 @@ int TestRunner::RunTest(const wchar_t* command) {
   wchar_t state_number[2];
   state_number[0] = L'0' + state_;
   state_number[1] = L'\0';
-  std::wstring full_command(state_number);
+  base::string16 full_command(state_number);
   full_command += L" ";
   full_command += command;
 
@@ -210,7 +210,7 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
   ResultCode result = SBOX_ALL_OK;
   PROCESS_INFORMATION target = {0};
 
-  std::wstring arguments(L"\"");
+  base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child";
   arguments += no_sandbox_ ? L"-no-sandbox " : L" ";

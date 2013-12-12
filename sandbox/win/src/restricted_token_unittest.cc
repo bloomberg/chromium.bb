@@ -353,7 +353,7 @@ TEST(RestrictedTokenTest, DeleteAllPrivilegesException) {
   RestrictedToken token;
   HANDLE token_handle = NULL;
 
-  std::vector<std::wstring> exceptions;
+  std::vector<base::string16> exceptions;
   exceptions.push_back(SE_CHANGE_NOTIFY_NAME);
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
