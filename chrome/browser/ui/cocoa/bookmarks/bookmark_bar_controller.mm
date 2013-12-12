@@ -251,7 +251,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;
-    folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
+    folderTarget_.reset(
+        [[BookmarkFolderTarget alloc] initWithController:self
+                                                 profile:browser_->profile()]);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset(

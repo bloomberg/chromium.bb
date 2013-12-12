@@ -290,7 +290,8 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
                                         subFolderGrowthToRight]];
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
-    folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
+    folderTarget_.reset(
+        [[BookmarkFolderTarget alloc] initWithController:self profile:profile]);
     [self configureWindow];
     hoverState_.reset([[BookmarkBarFolderHoverState alloc] init]);
   }
