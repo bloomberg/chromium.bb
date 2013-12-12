@@ -53,7 +53,7 @@ class DataTypeManager {
                     syncer::ModelTypeSet requested_types,
                     std::map<syncer::ModelType, syncer::SyncError>
                         failed_data_types,
-                    syncer::ModelTypeSet waiting_to_start,
+                    syncer::ModelTypeSet unfinished_data_types,
                     syncer::ModelTypeSet needs_crypto);
     ~ConfigureResult();
     ConfigureStatus status;
@@ -62,12 +62,11 @@ class DataTypeManager {
     // These types encountered a failure in association.
     std::map<syncer::ModelType, syncer::SyncError> failed_data_types;
 
-    // List of types that failed to start association with in our alloted
-    // time period(see kDataTypeLoadWaitTimeInSeconds). We move
-    // forward here and allow these types to continue loading in the
-    // background. When these types are loaded DataTypeManager will
-    // be informed and another configured cycle will be started.
-    syncer::ModelTypeSet waiting_to_start;
+    // List of types that failed to finish loading/associating within our
+    // alloted time period(see |kAssociationTimeOutInSeconds|). We move
+    // forward here and allow these types to continue to load/associate in
+    // the background.
+    syncer::ModelTypeSet unfinished_data_types;
 
     // Those types that are unable to start due to the cryptographer not being
     // ready.

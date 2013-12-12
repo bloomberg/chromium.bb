@@ -207,8 +207,8 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   syncer::ModelTypeSet enabled_types =
       syncer::Difference(last_requested_types_, failed_types);
 
-  model_association_manager_.Initialize(enabled_types);
   last_restart_time_ = base::Time::Now();
+  configuration_stats_.clear();
 
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == RETRYING);
 
@@ -217,7 +217,7 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   if (state_ == STOPPED || state_ == CONFIGURED)
     NotifyStart();
 
-  model_association_manager_.StopDisabledTypes();
+  model_association_manager_.Initialize(enabled_types);
 
   download_types_queue_ = PrioritizeTypes(enabled_types);
   association_types_queue_ = std::queue<AssociationTypesInfo>();
@@ -266,8 +266,6 @@ void DataTypeManagerImpl::ProcessReconfigure() {
   // Wait for current download and association to finish.
   if (!(download_types_queue_.empty() && association_types_queue_.empty()))
     return;
-
-  model_association_manager_.ResetForReconfiguration();
 
   // An attempt was made to reconfigure while we were already configuring.
   // This can be because a passphrase was accepted or the user changed the
@@ -377,25 +375,26 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
   if (!debug_info_listener_.IsInitialized())
     return;
 
+  AssociationTypesInfo& info = association_types_queue_.front();
   configuration_stats_.push_back(syncer::DataTypeConfigurationStats());
   configuration_stats_.back().model_type = type;
   configuration_stats_.back().association_stats = association_stats;
-
-  AssociationTypesInfo& info = association_types_queue_.front();
-  configuration_stats_.back().download_wait_time =
-      info.download_start_time - last_restart_time_;
-  if (info.first_sync_types.Has(type)) {
-    configuration_stats_.back().download_time =
-        info.download_ready_time - info.download_start_time;
+  if (info.types.Has(type)) {
+    // Times in |info| only apply to non-slow types.
+    configuration_stats_.back().download_wait_time =
+        info.download_start_time - last_restart_time_;
+    if (info.first_sync_types.Has(type)) {
+      configuration_stats_.back().download_time =
+          info.download_ready_time - info.download_start_time;
+    }
+    configuration_stats_.back().association_wait_time_for_high_priority =
+        info.association_request_time - info.download_ready_time;
+    configuration_stats_.back().high_priority_types_configured_before =
+        info.high_priority_types_before;
+    configuration_stats_.back().same_priority_types_configured_before =
+        info.configured_types;
+    info.configured_types.Put(type);
   }
-  configuration_stats_.back().association_wait_time_for_high_priority =
-      info.association_request_time - info.download_ready_time;
-  configuration_stats_.back().high_priority_types_configured_before =
-      info.high_priority_types_before;
-  configuration_stats_.back().same_priority_types_configured_before =
-      info.configured_types;
-
-  info.configured_types.Put(type);
 }
 
 void DataTypeManagerImpl::OnModelAssociationDone(
@@ -461,22 +460,11 @@ void DataTypeManagerImpl::OnModelAssociationDone(
     ConfigureResult configure_result(status,
                                      result.requested_types,
                                      failed_data_types_handler_->GetAllErrors(),
-                                     result.waiting_to_start,
+                                     result.unfinished_data_types,
                                      result.needs_crypto);
     NotifyDone(configure_result);
   }
 }
-
-void DataTypeManagerImpl::OnTypesLoaded() {
-  if (state_ != CONFIGURED) {
-    // Ignore this. either we just started another configuration or
-    // we are in some sort of error.
-    return;
-  }
-
-  Restart(syncer::CONFIGURE_REASON_RECONFIGURATION);
-}
-
 
 void DataTypeManagerImpl::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

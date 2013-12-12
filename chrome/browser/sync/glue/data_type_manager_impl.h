@@ -66,7 +66,6 @@ class DataTypeManagerImpl : public DataTypeManager,
       const syncer::DataTypeAssociationStats& association_stats) OVERRIDE;
   virtual void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) OVERRIDE;
-  virtual void OnTypesLoaded() OVERRIDE;
 
   // Used by unit tests. TODO(sync) : This would go away if we made
   // this class be able to do Dependency injection. crbug.com/129212.

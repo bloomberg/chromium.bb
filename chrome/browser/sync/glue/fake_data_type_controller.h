@@ -51,6 +51,8 @@ class FakeDataTypeController : public DataTypeController {
 
   virtual void SetDelayModelLoad();
 
+  void SetModelLoadError(syncer::SyncError error);
+
   virtual void SimulateModelLoadFinishing();
 
  protected:
@@ -62,6 +64,7 @@ class FakeDataTypeController : public DataTypeController {
   syncer::ModelType type_;
   StartCallback last_start_callback_;
   ModelLoadCallback model_load_callback_;
+  syncer::SyncError load_error_;
 };
 
 }  // namespace browser_sync

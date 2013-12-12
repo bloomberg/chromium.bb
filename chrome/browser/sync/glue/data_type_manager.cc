@@ -22,12 +22,12 @@ DataTypeManager::ConfigureResult::ConfigureResult(
     ConfigureStatus status,
     syncer::ModelTypeSet requested_types,
     std::map<syncer::ModelType, syncer::SyncError> failed_data_types,
-    syncer::ModelTypeSet waiting_to_start,
+    syncer::ModelTypeSet unfinished_data_types,
     syncer::ModelTypeSet needs_crypto)
     : status(status),
       requested_types(requested_types),
       failed_data_types(failed_data_types),
-      waiting_to_start(waiting_to_start),
+      unfinished_data_types(unfinished_data_types),
       needs_crypto(needs_crypto) {
   if (!failed_data_types.empty() || !needs_crypto.Empty()) {
     DCHECK_NE(OK, status);

@@ -84,8 +84,9 @@ void FrontendDataTypeController::StartAssociating(
   start_callback_ = start_callback;
   state_ = ASSOCIATING;
   if (!Associate()) {
-    // We failed to associate and are aborting.
-    DCHECK(state_ == DISABLED || state_ == NOT_RUNNING);
+    // It's possible StartDone(..) resulted in a Stop() call, or that
+    // association failed, so we just verify that the state has moved forward.
+    DCHECK_NE(state_, ASSOCIATING);
     return;
   }
   DCHECK_EQ(state_, RUNNING);

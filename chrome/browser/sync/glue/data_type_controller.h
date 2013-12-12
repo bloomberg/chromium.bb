@@ -53,8 +53,6 @@ class DataTypeController
     OK_FIRST_RUN,         // Same as OK, but sent on first successful
                           // start for this type for this user as
                           // determined by cloud state.
-    BUSY,                 // Start() was called while already in progress.
-    NOT_ENABLED,          // This data type is not enabled for the current user.
     ASSOCIATION_FAILED,   // An error occurred during model association.
     ABORTED,              // Start was aborted by calling Stop().
     UNRECOVERABLE_ERROR,  // An unrecoverable error occured.

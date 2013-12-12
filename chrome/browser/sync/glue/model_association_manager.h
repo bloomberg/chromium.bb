@@ -33,12 +33,6 @@ class ModelAssociationResultProcessor {
   virtual void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) = 0;
   virtual ~ModelAssociationResultProcessor() {}
-
-  // Called to let the |ModelAssociationResultProcessor| know that "delayed"
-  // types have finished loading and association should take place. (A delayed
-  // type here is a type that did not finish loading during the previous
-  // configure cycle.)
-  virtual void OnTypesLoaded() = 0;
 };
 
 // The class that is responsible for model association.
@@ -64,19 +58,6 @@ class ModelAssociationManager {
   // When this is completed, |OnModelAssociationDone| will be invoked.
   void StartAssociationAsync(const syncer::ModelTypeSet& types_to_associate);
 
-  // It is valid to call this only when we are initialized to configure
-  // but we have not started the configuration.(i.e., |Initialize| has
-  // been called but |StartAssociationAsync| has not yet been called.)
-  // If we have started configuration then the DataTypeManager will wait until
-  // the current configuration is done before processing the reconfigure
-  // request. We goto IDLE state and clear all our internal state. It is
-  // safe to do this as we have not started association on any DTCs.
-  void ResetForReconfiguration();
-
-  // Should only be called after Initialize.
-  // Stops any disabled types.
-  void StopDisabledTypes();
-
   // This is used for TESTING PURPOSE ONLY. The test case can inspect
   // and modify the timer.
   // TODO(sync) : This would go away if we made this class be able to do
@@ -89,20 +70,25 @@ class ModelAssociationManager {
     INITIALIZED_TO_CONFIGURE,
     // Starting a new configuration.
     CONFIGURING,
-    // A stop command was issued.
-    ABORTED,
     // No configuration is in progress.
     IDLE
   };
 
-  // Returns true if any requested types currently need to start model
-  // association.  If non-null, fills |needs_start| with all such controllers.
-  bool GetControllersNeedingStart(
-      std::vector<DataTypeController*>* needs_start);
+  // Called at the end of association to reset state to prepare for next
+  // round of association.
+  void ResetForNextAssociation();
+
+  // Called by Initialize() to stop types that are not in |desired_types_|.
+  void StopDisabledTypes();
+
+  // Start loading non-running types that are in |desired_types_|.
+  void LoadEnabledTypes();
 
   // Callback passed to each data type controller on starting association. This
   // callback will be invoked when the model association is done.
-  void TypeStartCallback(DataTypeController::StartResult start_result,
+  void TypeStartCallback(syncer::ModelType type,
+                         base::TimeTicks type_start_time,
+                         DataTypeController::StartResult start_result,
                          const syncer::SyncMergeResult& local_merge_result,
                          const syncer::SyncMergeResult& syncer_merge_result);
 
@@ -110,25 +96,36 @@ class ModelAssociationManager {
   // will be passed to |LoadModels| function.
   void ModelLoadCallback(syncer::ModelType type, syncer::SyncError error);
 
-  // Calls the |LoadModels| method on the next controller waiting to start.
-  void LoadModelForNextType();
-
-  // Calls |StartAssociating| on the next available controller whose models are
-  // loaded.
-  void StartAssociatingNextType();
-
   // When a type fails to load or fails associating this method is invoked to
   // do the book keeping and do the UMA reporting.
-  void AppendToFailedDatatypesAndLogError(
-      DataTypeController::StartResult result,
-      const syncer::SyncError& error);
+  void AppendToFailedDatatypesAndLogError(const syncer::SyncError& error);
 
-  syncer::ModelTypeSet GetTypesWaitingToLoad();
+  // Called when all requested types are associated or association times out.
+  // Notify |result_processor_| of configuration results.
+  void ModelAssociationDone();
 
   State state_;
 
-  // Data types currently being associated.
+  // Data types that are enabled.
+  syncer::ModelTypeSet desired_types_;
+
+  // Data types that are requested to associate.
+  syncer::ModelTypeSet requested_types_;
+
+  // Data types currently being associated, including types waiting for model
+  // load.
   syncer::ModelTypeSet associating_types_;
+
+  // Data types that are loaded, i.e. ready to associate.
+  syncer::ModelTypeSet loaded_types_;
+
+  // Data types that are associated, i.e. no more action needed during
+  // reconfiguration if not disabled.
+  syncer::ModelTypeSet associated_types_;
+
+  // Data types that are still loading/associating when configuration times
+  // out.
+  syncer::ModelTypeSet slow_types_;
 
   // Collects the list of errors resulting from failing to start a type. This
   // would eventually be sent to the listeners after all the types have
@@ -138,47 +135,9 @@ class ModelAssociationManager {
   // The set of types that can't configure due to cryptographer errors.
   syncer::ModelTypeSet needs_crypto_types_;
 
-  // The order in which association of the datatypes should be performed.
-  std::map<syncer::ModelType, int> start_order_;
-
-  // This illustration explains the movement of one DTC through various lists.
-  // Consider a dataype, say, BOOKMARKS which is NOT_RUNNING and will be
-  // configured now.
-  // Initially all lists are empty. BOOKMARKS is in the |controllers_|
-  // map. Here is how the controller moves to various list
-  // (indicated by arrows). The first column is the method that causes the
-  // transition.
-  // Step 1 : |Initialize| - |controllers_| -> |needs_start_|
-  // Step 2 : |LoadModelForNextType| - |needs_start_| -> |pending_model_load_|
-  // Step 3 : |ModelLoadCallback| - |pending_model_load_| ->
-  //    |waiting_to_associate_|
-  // Step 4 : |StartAssociatingNextType| - |waiting_to_associate_| ->
-  //    |currently_associating_|
-  // Step 5 : |TypeStartCallback| - |currently_associating_| set to NULL.
-
-  // Controllers that need to be started during a config cycle.
-  std::vector<DataTypeController*> needs_start_;
-
-  // Controllers that need to be stopped during a config cycle.
-  std::vector<DataTypeController*> needs_stop_;
-
-  // Controllers whose |LoadModels| function has been invoked and that are
-  // waiting for their models to be loaded. Cotrollers will be moved from
-  // |needs_start_| to this list as their |LoadModels| method is invoked.
-  std::vector<DataTypeController*> pending_model_load_;
-
-  // Controllers whose models are loaded and are ready to do model
-  // association. Controllers will be moved from |pending_model_load_|
-  // list to this list as they finish loading their model.
-  std::vector<DataTypeController*> waiting_to_associate_;
-
   // Time when StartAssociationAsync() is called to associate for a set of data
   // types.
-  base::Time association_start_time_;
-
-  // Controller currently doing model association.
-  DataTypeController* currently_associating_;
-  base::Time current_type_association_start_time_;
+  base::TimeTicks association_start_time_;
 
   // Set of all registered controllers.
   const DataTypeController::TypeMap* controllers_;
@@ -190,6 +149,8 @@ class ModelAssociationManager {
   base::OneShotTimer<ModelAssociationManager> timer_;
 
   base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
+
+  DataTypeManager::ConfigureStatus configure_status_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };

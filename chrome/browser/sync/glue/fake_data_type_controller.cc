@@ -28,8 +28,11 @@ void FakeDataTypeController::LoadModels(
   }
 
   if (model_load_delayed_ == false) {
-    state_ = MODEL_LOADED;
-    model_load_callback.Run(type(), syncer::SyncError());
+    if (load_error_.IsSet())
+      state_ = DISABLED;
+    else
+      state_ = MODEL_LOADED;
+    model_load_callback.Run(type(), load_error_);
   } else {
     model_load_callback_ = model_load_callback;
     state_ = MODEL_STARTING;
@@ -141,9 +144,14 @@ void FakeDataTypeController::SetDelayModelLoad() {
   model_load_delayed_ = true;
 }
 
+void FakeDataTypeController::SetModelLoadError(syncer::SyncError error) {
+  load_error_ = error;
+}
+
 void FakeDataTypeController::SimulateModelLoadFinishing() {
   ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback.Run(type(), syncer::SyncError());
+  model_load_callback.Run(type(), load_error_);
+  model_load_callback_.Reset();
 }
 
 }  // namespace browser_sync
