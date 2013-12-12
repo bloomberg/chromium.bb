@@ -137,10 +137,10 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
   pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
 #if defined(OS_WIN)
   deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
-  background_downloads_enabled_ =
-      HasSwitchValue(switch_values, kSwitchEnableBackgroundDownloads);
+  background_downloads_enabled_ = true;
 #else
   deltas_enabled_ = false;
+  background_downloads_enabled_ = false;
 #endif
 
   url_source_ = GetSwitchArgument(switch_values, kSwitchUrlSource);
