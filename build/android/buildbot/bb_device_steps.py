@@ -451,8 +451,14 @@ def RunGPUTests(options):
   InstallApk(options, INSTRUMENTATION_TESTS['ContentShell'], False)
 
   bb_annotations.PrintNamedStep('gpu_tests')
+  revision = _GetRevision(options)
+  data_dir = os.path.join(DIR_BUILD_ROOT, 'content_gpu_data', 'telemetry')
   RunCmd(['content/test/gpu/run_gpu_test',
-          '--browser=android-content-shell', 'pixel'])
+          '--browser=android-content-shell',
+          '--generated-dir=%s' % os.path.join(data_dir, 'generated'),
+          '--reference-dir=%s' % os.path.join(data_dir, 'reference'),
+          '--build-revision=%s' % revision,
+          'pixel'])
 
   bb_annotations.PrintNamedStep('webgl_conformance_tests')
   RunCmd(['content/test/gpu/run_gpu_test',
