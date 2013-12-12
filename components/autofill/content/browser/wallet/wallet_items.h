@@ -117,8 +117,10 @@ class WalletItems {
    private:
     friend class WalletItemsTest;
     friend scoped_ptr<MaskedInstrument> GetTestMaskedInstrumentWithDetails(
-        const std::string&, scoped_ptr<Address> address,
-        Type type, Status status);
+        const std::string& id,
+        scoped_ptr<Address> address,
+        Type type,
+        Status status);
     FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,
                              GetInfoCreditCardExpMonth);
     FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,
@@ -273,11 +275,11 @@ class WalletItems {
 
  private:
   friend class WalletItemsTest;
-  friend scoped_ptr<WalletItems> GetTestWalletItems(
-      const std::vector<RequiredAction>&,
-      const std::string&,
-      const std::string&,
-      AmexPermission);
+  friend scoped_ptr<WalletItems> GetTestWalletItemsWithDetails(
+      const std::vector<RequiredAction>& required_actions,
+      const std::string& default_instrument_id,
+      const std::string& default_address_id,
+      AmexPermission amex_permission);
   friend scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
       RequiredAction action);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
