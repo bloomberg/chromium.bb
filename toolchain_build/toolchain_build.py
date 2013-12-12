@@ -577,7 +577,7 @@ def HostTools(host, target):
               # Since we're doing this build in a clean environment without
               # any libc installed, we need to force its hand here.
               GccCommand(host, target,
-                         MakeCommand(['all-gcc', 'LIMITS_H_TEST=true'])),
+                         MakeCommand(host, ['all-gcc', 'LIMITS_H_TEST=true'])),
               # gcc/Makefile's install targets populate this directory
               # only if it already exists.
               command.Mkdir(command.path.join('%(output)s',
