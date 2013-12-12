@@ -119,7 +119,7 @@ Resource::Type TabContentsResource::GetType() const {
   return HostsExtension() ? EXTENSION : RENDERER;
 }
 
-string16 TabContentsResource::GetTitle() const {
+base::string16 TabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   GURL url = web_contents_->GetURL();
   base::string16 tab_title = util::GetTitleFromWebContents(web_contents_);
@@ -142,7 +142,7 @@ string16 TabContentsResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
-string16 TabContentsResource::GetProfileName() const {
+base::string16 TabContentsResource::GetProfileName() const {
   return util::GetProfileNameFromInfoCache(profile_);
 }
 

@@ -47,7 +47,7 @@ int CountryComboboxModel::GetItemCount() const {
   return countries_.size();
 }
 
-string16 CountryComboboxModel::GetItemAt(int index) {
+base::string16 CountryComboboxModel::GetItemAt(int index) {
   AutofillCountry* country = countries_[index];
   if (country)
     return countries_[index]->name();

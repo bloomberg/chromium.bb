@@ -90,7 +90,7 @@ int BackForwardMenuModel::GetCommandIdAt(int index) const {
   return index;
 }
 
-string16 BackForwardMenuModel::GetLabelAt(int index) const {
+base::string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // Return label "Show Full History" for the last item of the menu.
   if (index == GetItemCount() - 1)
     return l10n_util::GetStringUTF16(IDS_SHOWFULLHISTORY_LINK);
@@ -415,7 +415,7 @@ bool BackForwardMenuModel::ItemHasIcon(int index) const {
   return index < GetItemCount() && !IsSeparator(index);
 }
 
-string16 BackForwardMenuModel::GetShowFullHistoryLabel() const {
+base::string16 BackForwardMenuModel::GetShowFullHistoryLabel() const {
   return l10n_util::GetStringUTF16(IDS_SHOWFULLHISTORY_LINK);
 }
 

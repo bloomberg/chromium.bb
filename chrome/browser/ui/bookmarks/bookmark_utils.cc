@@ -257,8 +257,8 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
   prefs->SetBoolean(prefs::kShowBookmarkBar, always_show);
 }
 
-string16 FormatBookmarkURLForDisplay(const GURL& url,
-                                     const PrefService* prefs) {
+base::string16 FormatBookmarkURLForDisplay(const GURL& url,
+                                           const PrefService* prefs) {
   std::string languages;
   if (prefs)
     languages = prefs->GetString(prefs::kAcceptLanguages);

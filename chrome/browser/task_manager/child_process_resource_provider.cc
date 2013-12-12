@@ -94,14 +94,14 @@ ChildProcessResource::~ChildProcessResource() {
 }
 
 // Resource methods:
-string16 ChildProcessResource::GetTitle() const {
+base::string16 ChildProcessResource::GetTitle() const {
   if (title_.empty())
     title_ = GetLocalizedTitle();
 
   return title_;
 }
 
-string16 ChildProcessResource::GetProfileName() const {
+base::string16 ChildProcessResource::GetProfileName() const {
   return base::string16();
 }
 
@@ -149,7 +149,7 @@ void ChildProcessResource::SetSupportNetworkUsage() {
   network_usage_support_ = true;
 }
 
-string16 ChildProcessResource::GetLocalizedTitle() const {
+base::string16 ChildProcessResource::GetLocalizedTitle() const {
   base::string16 title = name_;
   if (title.empty()) {
     switch (process_type_) {

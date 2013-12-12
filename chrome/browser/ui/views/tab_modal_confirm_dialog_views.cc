@@ -89,11 +89,11 @@ void TabModalConfirmDialogViews::LinkClicked(views::Link* source,
 //////////////////////////////////////////////////////////////////////////////
 // TabModalConfirmDialogViews, views::DialogDelegate implementation:
 
-string16 TabModalConfirmDialogViews::GetWindowTitle() const {
+base::string16 TabModalConfirmDialogViews::GetWindowTitle() const {
   return delegate_->GetTitle();
 }
 
-string16 TabModalConfirmDialogViews::GetDialogButtonLabel(
+base::string16 TabModalConfirmDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return delegate_->GetAcceptButtonTitle();

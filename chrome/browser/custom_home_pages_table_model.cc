@@ -204,13 +204,13 @@ int CustomHomePagesTableModel::RowCount() {
   return static_cast<int>(entries_.size());
 }
 
-string16 CustomHomePagesTableModel::GetText(int row, int column_id) {
+base::string16 CustomHomePagesTableModel::GetText(int row, int column_id) {
   DCHECK(column_id == 0);
   DCHECK(row >= 0 && row < RowCount());
   return entries_[row].title.empty() ? FormattedURL(row) : entries_[row].title;
 }
 
-string16 CustomHomePagesTableModel::GetTooltip(int row) {
+base::string16 CustomHomePagesTableModel::GetTooltip(int row) {
   return entries_[row].title.empty() ? base::string16() :
       l10n_util::GetStringFUTF16(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
                                  entries_[row].title, FormattedURL(row));
@@ -264,7 +264,7 @@ CustomHomePagesTableModel::Entry*
   return NULL;
 }
 
-string16 CustomHomePagesTableModel::FormattedURL(int row) const {
+base::string16 CustomHomePagesTableModel::FormattedURL(int row) const {
   std::string languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   base::string16 url = net::FormatUrl(entries_[row].url, languages);

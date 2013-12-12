@@ -16,7 +16,7 @@
 
 namespace location_bar_util {
 
-string16 CalculateMinString(const base::string16& description) {
+base::string16 CalculateMinString(const base::string16& description) {
   // Chop at the first '.' or whitespace.
   const size_t dot_index = description.find('.');
   const size_t ws_index = description.find_first_of(base::kWhitespaceUTF16);

@@ -96,7 +96,7 @@ void BundleInstaller::SetAutoApproveForTesting(bool auto_approve) {
 
 BundleInstaller::Item::Item() : state(STATE_PENDING) {}
 
-string16 BundleInstaller::Item::GetNameForDisplay() {
+base::string16 BundleInstaller::Item::GetNameForDisplay() {
   base::string16 name = UTF8ToUTF16(localized_name);
   base::i18n::AdjustStringForLocaleDirection(&name);
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_PERMISSION_LINE, name);
@@ -176,7 +176,7 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
   }
 }
 
-string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
+base::string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
   // For STATE_FAILED, we can't tell if the items were apps or extensions
   // so we always show the same message.
   if (state == Item::STATE_FAILED) {

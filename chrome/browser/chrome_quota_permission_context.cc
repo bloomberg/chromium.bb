@@ -108,7 +108,7 @@ bool RequestQuotaInfoBarDelegate::ShouldExpireInternal(
   return false;
 }
 
-string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
+base::string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
   // If the site requested larger quota than this threshold, show a different
   // message to the user.
   const int64 kRequestLargeQuotaThreshold = 5 * 1024 * 1024;

@@ -43,7 +43,7 @@ const char kMetroPinMetric[] = "Metro.SecondaryTilePin";
 
 // Generate an ID for the tile based on |url_str|. The ID is simply a hash of
 // the URL.
-string16 GenerateTileId(const base::string16& url_str) {
+base::string16 GenerateTileId(const base::string16& url_str) {
   uint8 hash[crypto::kSHA256Length];
   crypto::SHA256HashString(UTF16ToUTF8(url_str), hash, sizeof(hash));
   std::string hash_str = base::HexEncode(hash, sizeof(hash));

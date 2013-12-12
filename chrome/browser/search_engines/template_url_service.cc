@@ -320,7 +320,7 @@ TemplateURLService::~TemplateURLService() {
 }
 
 // static
-string16 TemplateURLService::GenerateKeyword(const GURL& url) {
+base::string16 TemplateURLService::GenerateKeyword(const GURL& url) {
   DCHECK(url.is_valid());
   // Strip "www." off the front of the keyword; otherwise the keyword won't work
   // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
@@ -332,7 +332,7 @@ string16 TemplateURLService::GenerateKeyword(const GURL& url) {
 }
 
 // static
-string16 TemplateURLService::CleanUserInputKeyword(
+base::string16 TemplateURLService::CleanUserInputKeyword(
     const base::string16& keyword) {
   // Remove the scheme.
   base::string16 result(base::i18n::ToLower(keyword));
@@ -856,7 +856,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   on_loaded_callbacks_.Notify();
 }
 
-string16 TemplateURLService::GetKeywordShortName(
+base::string16 TemplateURLService::GetKeywordShortName(
     const base::string16& keyword,
     bool* is_omnibox_api_extension_keyword) {
   const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
@@ -2361,8 +2361,8 @@ void TemplateURLService::ResetTemplateURLGUID(TemplateURL* url,
   UpdateNoNotify(url, new_url, search_terms_data);
 }
 
-string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
-                                             bool force) {
+base::string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
+                                                   bool force) {
   if (!force) {
     // Already unique.
     if (!GetTemplateURLForKeyword(turl.keyword()))

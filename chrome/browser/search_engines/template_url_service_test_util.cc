@@ -116,7 +116,7 @@ void TemplateURLServiceTestUtilBase::ResetModel(bool verify_load) {
     VerifyLoad();
 }
 
-string16 TemplateURLServiceTestUtilBase::GetAndClearSearchTerm() {
+base::string16 TemplateURLServiceTestUtilBase::GetAndClearSearchTerm() {
   return
       static_cast<TestingTemplateURLService*>(model())->GetAndClearSearchTerm();
 }

@@ -221,7 +221,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, views::DialogDelegate implementation:
 
-string16 CollectedCookiesViews::GetWindowTitle() const {
+base::string16 CollectedCookiesViews::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_DIALOG_TITLE);
 }
 
@@ -229,7 +229,7 @@ int CollectedCookiesViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_CANCEL;
 }
 
-string16 CollectedCookiesViews::GetDialogButtonLabel(
+base::string16 CollectedCookiesViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }

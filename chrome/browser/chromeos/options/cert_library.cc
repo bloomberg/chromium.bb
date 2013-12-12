@@ -153,7 +153,8 @@ int CertLibrary::NumCertificates(CertType type) const {
   return static_cast<int>(cert_list.size());
 }
 
-string16 CertLibrary::GetCertDisplayStringAt(CertType type, int index) const {
+base::string16 CertLibrary::GetCertDisplayStringAt(CertType type,
+                                                   int index) const {
   net::X509Certificate* cert = GetCertificateAt(type, index);
   bool hardware_backed = IsCertHardwareBackedAt(type, index);
   return GetDisplayString(cert, hardware_backed);

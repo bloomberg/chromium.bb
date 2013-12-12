@@ -263,7 +263,7 @@ int ExternalInstallMenuAlert::MenuItemCommandID() {
   return kMenuCommandId;
 }
 
-string16 ExternalInstallMenuAlert::MenuItemLabel() {
+base::string16 ExternalInstallMenuAlert::MenuItemLabel() {
   int id = -1;
   if (extension_->is_app())
     id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_APP;
@@ -281,7 +281,7 @@ void ExternalInstallMenuAlert::ExecuteMenuItem(Browser* browser) {
 bool ExternalInstallMenuAlert::HasBubbleView() {
   return false;
 }
-string16 ExternalInstallMenuAlert::GetBubbleViewTitle() {
+base::string16 ExternalInstallMenuAlert::GetBubbleViewTitle() {
   return base::string16();
 }
 
@@ -289,11 +289,11 @@ std::vector<string16> ExternalInstallMenuAlert::GetBubbleViewMessages() {
   return std::vector<string16>();
 }
 
-string16 ExternalInstallMenuAlert::GetBubbleViewAcceptButtonLabel() {
+base::string16 ExternalInstallMenuAlert::GetBubbleViewAcceptButtonLabel() {
   return base::string16();
 }
 
-string16 ExternalInstallMenuAlert::GetBubbleViewCancelButtonLabel() {
+base::string16 ExternalInstallMenuAlert::GetBubbleViewCancelButtonLabel() {
   return base::string16();
 }
 
@@ -364,7 +364,7 @@ gfx::Image ExternalInstallGlobalError::GetBubbleViewIcon() {
                 extension_misc::EXTENSION_ICON_SMALL)));
 }
 
-string16 ExternalInstallGlobalError::GetBubbleViewTitle() {
+base::string16 ExternalInstallGlobalError::GetBubbleViewTitle() {
   return prompt_->GetDialogTitle();
 }
 
@@ -383,11 +383,11 @@ std::vector<string16> ExternalInstallGlobalError::GetBubbleViewMessages() {
   return messages;
 }
 
-string16 ExternalInstallGlobalError::GetBubbleViewAcceptButtonLabel() {
+base::string16 ExternalInstallGlobalError::GetBubbleViewAcceptButtonLabel() {
   return prompt_->GetAcceptButtonLabel();
 }
 
-string16 ExternalInstallGlobalError::GetBubbleViewCancelButtonLabel() {
+base::string16 ExternalInstallGlobalError::GetBubbleViewCancelButtonLabel() {
   return prompt_->GetAbortButtonLabel();
 }
 

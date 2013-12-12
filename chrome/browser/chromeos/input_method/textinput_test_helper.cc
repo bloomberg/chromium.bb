@@ -43,7 +43,7 @@ TextInputTestHelper::~TextInputTestHelper() {
   GetInputMethod()->RemoveObserver(this);
 }
 
-string16 TextInputTestHelper::GetSurroundingText() const {
+base::string16 TextInputTestHelper::GetSurroundingText() const {
   return surrounding_text_;
 }
 

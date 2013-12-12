@@ -77,7 +77,7 @@ int PluginInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
-string16 PluginInfoBarDelegate::GetLinkText() const {
+base::string16 PluginInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
@@ -130,11 +130,11 @@ std::string UnauthorizedPluginInfoBarDelegate::GetLearnMoreURL() const {
   return chrome::kBlockedPluginLearnMoreURL;
 }
 
-string16 UnauthorizedPluginInfoBarDelegate::GetMessageText() const {
+base::string16 UnauthorizedPluginInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, name_);
 }
 
-string16 UnauthorizedPluginInfoBarDelegate::GetButtonLabel(
+base::string16 UnauthorizedPluginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PLUGIN_ENABLE_TEMPORARILY : IDS_PLUGIN_ENABLE_ALWAYS);
@@ -225,11 +225,11 @@ std::string OutdatedPluginInfoBarDelegate::GetLearnMoreURL() const {
   return chrome::kOutdatedPluginLearnMoreURL;
 }
 
-string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
+base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
-string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
+base::string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PLUGIN_UPDATE : IDS_PLUGIN_ENABLE_TEMPORARILY);
@@ -364,7 +364,7 @@ int PluginInstallerInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
-string16 PluginInstallerInfoBarDelegate::GetMessageText() const {
+base::string16 PluginInstallerInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
@@ -372,7 +372,7 @@ int PluginInstallerInfoBarDelegate::GetButtons() const {
   return callback_.is_null() ? BUTTON_NONE : BUTTON_OK;
 }
 
-string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
+base::string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON);
@@ -383,7 +383,7 @@ bool PluginInstallerInfoBarDelegate::Accept() {
   return false;
 }
 
-string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
+base::string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(new_install_ ?
       IDS_PLUGININSTALLER_PROBLEMSINSTALLING :
       IDS_PLUGININSTALLER_PROBLEMSUPDATING);
@@ -470,7 +470,7 @@ int PluginMetroModeInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
-string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {
+base::string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16((mode_ == MISSING_PLUGIN) ?
       IDS_METRO_MISSING_PLUGIN_PROMPT : IDS_METRO_NPAPI_PLUGIN_PROMPT, name_);
 }
@@ -479,7 +479,7 @@ int PluginMetroModeInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
+base::string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
 #if defined(USE_AURA) && defined(USE_ASH)
   return l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART);
@@ -510,7 +510,7 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
   return true;
 }
 
-string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
+base::string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

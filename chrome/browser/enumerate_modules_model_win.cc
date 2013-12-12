@@ -720,7 +720,7 @@ void ModuleEnumerator::ReportBack() {
   observer_->DoneScanning();
 }
 
-string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
+base::string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
     const base::FilePath& filename) {
   HCERTSTORE store = NULL;
   HCRYPTMSG message = NULL;

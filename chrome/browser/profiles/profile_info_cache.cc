@@ -286,7 +286,7 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
   return std::string::npos;
 }
 
-string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
+base::string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   base::string16 name;
   if (IsUsingGAIANameOfProfileAtIndex(index)) {
     base::string16 given_name = GetGAIAGivenNameOfProfileAtIndex(index);
@@ -298,7 +298,7 @@ string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   return name;
 }
 
-string16 ProfileInfoCache::GetShortcutNameOfProfileAtIndex(size_t index)
+base::string16 ProfileInfoCache::GetShortcutNameOfProfileAtIndex(size_t index)
     const {
   base::string16 shortcut_name;
   GetInfoForProfileAtIndex(index)->GetString(
@@ -310,7 +310,8 @@ base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(sorted_keys_[index]);
 }
 
-string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(size_t index) const {
+base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
+    size_t index) const {
   base::string16 user_name;
   GetInfoForProfileAtIndex(index)->GetString(kUserNameKey, &user_name);
   return user_name;

@@ -82,14 +82,14 @@ GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
 }
 
-string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
+base::string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
       net::StripWWWFromHost(google_url_tracker_->fetched_google_url()),
       net::StripWWWFromHost(google_url_tracker_->google_url()));
 }
 
-string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
+base::string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   if (button == BUTTON_OK) {
     return l10n_util::GetStringFUTF16(
@@ -101,7 +101,7 @@ string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
       net::StripWWWFromHost(google_url_tracker_->google_url()));
 }
 
-string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
+base::string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

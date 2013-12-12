@@ -376,7 +376,7 @@ bool TemplateURLRef::IsValidUsingTermsData(
   return valid_;
 }
 
-string16 TemplateURLRef::DisplayURL() const {
+base::string16 TemplateURLRef::DisplayURL() const {
   ParseIfNecessary();
   base::string16 result(UTF8ToUTF16(GetURL()));
   if (valid_ && !replacements_.empty()) {
@@ -418,7 +418,8 @@ const std::string& TemplateURLRef::GetSearchTermKey() const {
   return search_term_key_;
 }
 
-string16 TemplateURLRef::SearchTermToString16(const std::string& term) const {
+base::string16 TemplateURLRef::SearchTermToString16(
+    const std::string& term) const {
   const std::vector<std::string>& encodings = owner_->input_encodings();
   base::string16 result;
 
@@ -1100,7 +1101,7 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
   return url.ReplaceComponents(rep);
 }
 
-string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
+base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
   base::string16 bidi_safe_short_name = data_.short_name;
   base::i18n::AdjustStringForLocaleDirection(&bidi_safe_short_name);
   return bidi_safe_short_name;

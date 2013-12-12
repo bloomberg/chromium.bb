@@ -142,7 +142,7 @@ const gfx::ImageSkia& GetDefaultImage(int index) {
       GetImageSkiaNamed(kDefaultImageResourceIDs[index]);
 }
 
-string16 GetDefaultImageDescription(int index) {
+base::string16 GetDefaultImageDescription(int index) {
   DCHECK(index >= 0 && index < kDefaultImagesCount);
   int string_id = kDefaultImageDescriptions[index];
   if (string_id)

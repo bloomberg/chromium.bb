@@ -94,7 +94,7 @@ BackgroundContentsResource::BackgroundContentsResource(
 BackgroundContentsResource::~BackgroundContentsResource() {
 }
 
-string16 BackgroundContentsResource::GetTitle() const {
+base::string16 BackgroundContentsResource::GetTitle() const {
   base::string16 title = application_name_;
 
   if (title.empty()) {
@@ -106,7 +106,7 @@ string16 BackgroundContentsResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title);
 }
 
-string16 BackgroundContentsResource::GetProfileName() const {
+base::string16 BackgroundContentsResource::GetProfileName() const {
   return base::string16();
 }
 

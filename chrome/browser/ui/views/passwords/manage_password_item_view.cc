@@ -91,7 +91,7 @@ ManagePasswordItemView::ManagePasswordItemView(
 }
 
 // static
-string16 ManagePasswordItemView::GetPasswordDisplayString(
+base::string16 ManagePasswordItemView::GetPasswordDisplayString(
     const base::string16& password) {
   const wchar_t kPasswordBullet = 0x2022;
   const size_t kMaxPasswordChar = 22;

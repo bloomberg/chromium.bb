@@ -22,7 +22,7 @@ LanguageList::LanguageList() {
 
 LanguageList::~LanguageList() {}
 
-string16 LanguageList::GetLanguageNameAt(int index) const {
+base::string16 LanguageList::GetLanguageNameAt(int index) const {
   DCHECK_LT(index, languages_count());
   LocaleDataMap::const_iterator locale_data =
       native_names_.find(locale_names_[index]);

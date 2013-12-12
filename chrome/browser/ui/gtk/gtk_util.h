@@ -283,7 +283,7 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog);
 
 // Returns the stock menu item label for the "preferences" item - returns an
 // empty string if no stock item found.
-string16 GetStockPreferencesMenuLabel();
+base::string16 GetStockPreferencesMenuLabel();
 
 // Checks whether a widget is actually visible, i.e. whether it and all its
 // ancestors up to its toplevel are visible.

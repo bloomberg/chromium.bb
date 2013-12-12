@@ -37,7 +37,7 @@ NaClInfoBarDelegate::NaClInfoBarDelegate() : ConfirmInfoBarDelegate() {
 NaClInfoBarDelegate::~NaClInfoBarDelegate() {
 }
 
-string16 NaClInfoBarDelegate::GetMessageText() const {
+base::string16 NaClInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_NACL_APP_MISSING_ARCH_MESSAGE);
 }
 
@@ -45,7 +45,7 @@ int NaClInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
 }
 
-string16 NaClInfoBarDelegate::GetLinkText() const {
+base::string16 NaClInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

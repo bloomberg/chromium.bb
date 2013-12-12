@@ -9,11 +9,10 @@
 
 #include "base/i18n/break_iterator.h"
 
-string16 TrimWords(
-    size_t* start,
-    size_t end,
-    const base::string16& text,
-    size_t keep) {
+base::string16 TrimWords(size_t* start,
+                         size_t end,
+                         const base::string16& text,
+                         size_t keep) {
   if (*start > text.length() || *start > end)
     return text;
   base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);

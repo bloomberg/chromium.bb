@@ -117,7 +117,7 @@ ErrorInfoBarDelegate::ErrorInfoBarDelegate(
 ErrorInfoBarDelegate::~ErrorInfoBarDelegate() {
 }
 
-string16 ErrorInfoBarDelegate::GetMessageText() const {
+base::string16 ErrorInfoBarDelegate::GetMessageText() const {
   return error_.message();
 }
 
@@ -125,7 +125,7 @@ int ErrorInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 ErrorInfoBarDelegate::GetLinkText() const {
+base::string16 ErrorInfoBarDelegate::GetLinkText() const {
   return (error_.type() == extensions::CrxInstallerError::ERROR_OFF_STORE) ?
       l10n_util::GetStringUTF16(IDS_LEARN_MORE) : base::string16();
 }

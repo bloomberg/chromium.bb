@@ -105,11 +105,11 @@ ExtensionProcessResource::ExtensionProcessResource(
 ExtensionProcessResource::~ExtensionProcessResource() {
 }
 
-string16 ExtensionProcessResource::GetTitle() const {
+base::string16 ExtensionProcessResource::GetTitle() const {
   return title_;
 }
 
-string16 ExtensionProcessResource::GetProfileName() const {
+base::string16 ExtensionProcessResource::GetProfileName() const {
   return util::GetProfileNameFromInfoCache(
       Profile::FromBrowserContext(
           render_view_host_->GetProcess()->GetBrowserContext()));

@@ -479,7 +479,7 @@ bool CreateNewBookmarkFromNetscapeURL(GtkSelectionData* selection_data,
   return true;
 }
 
-string16 GetNameForURL(const GURL& url) {
+base::string16 GetNameForURL(const GURL& url) {
   if (url.is_valid()) {
     return net::GetSuggestedFilename(url,
                                      std::string(),

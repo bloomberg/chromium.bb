@@ -459,7 +459,7 @@ void ConnectionTester::RunAllTests(const GURL& url) {
 }
 
 // static
-string16 ConnectionTester::ProxySettingsExperimentDescription(
+base::string16 ConnectionTester::ProxySettingsExperimentDescription(
     ProxySettingsExperiment experiment) {
   // TODO(eroman): Use proper string resources.
   switch (experiment) {
@@ -478,7 +478,7 @@ string16 ConnectionTester::ProxySettingsExperimentDescription(
 }
 
 // static
-string16 ConnectionTester::HostResolverExperimentDescription(
+base::string16 ConnectionTester::HostResolverExperimentDescription(
     HostResolverExperiment experiment) {
   // TODO(eroman): Use proper string resources.
   switch (experiment) {

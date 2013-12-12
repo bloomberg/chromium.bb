@@ -31,7 +31,7 @@ UserDataDirDialogView::~UserDataDirDialogView() {
   select_file_dialog_->ListenerDestroyed();
 }
 
-string16 UserDataDirDialogView::GetDialogButtonLabel(
+base::string16 UserDataDirDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
@@ -46,7 +46,7 @@ string16 UserDataDirDialogView::GetDialogButtonLabel(
   return base::string16();
 }
 
-string16 UserDataDirDialogView::GetWindowTitle() const {
+base::string16 UserDataDirDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CANT_WRITE_USER_DIRECTORY_TITLE);
 }
 

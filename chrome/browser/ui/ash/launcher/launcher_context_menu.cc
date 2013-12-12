@@ -170,7 +170,7 @@ bool LauncherContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == MENU_OPEN_NEW;
 }
 
-string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
+base::string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
   if (command_id == MENU_OPEN_NEW) {
     if (item_.type == ash::TYPE_PLATFORM_APP) {
       return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);

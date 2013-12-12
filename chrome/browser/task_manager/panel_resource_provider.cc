@@ -72,7 +72,7 @@ Resource::Type PanelResource::GetType() const {
   return EXTENSION;
 }
 
-string16 PanelResource::GetTitle() const {
+base::string16 PanelResource::GetTitle() const {
   base::string16 title = panel_->GetWindowTitle();
   // Since the title will be concatenated with an IDS_TASK_MANAGER_* prefix
   // we need to explicitly set the title to be LTR format if there is no
@@ -87,7 +87,7 @@ string16 PanelResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(message_prefix_id_, title);
 }
 
-string16 PanelResource::GetProfileName() const {
+base::string16 PanelResource::GetProfileName() const {
   return util::GetProfileNameFromInfoCache(panel_->profile());
 }
 

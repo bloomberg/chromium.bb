@@ -405,7 +405,8 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
   return false;
 }
 
-string16 TranslationDelegate::GetLocalizedString(int installer_string_id) {
+base::string16 TranslationDelegate::GetLocalizedString(
+    int installer_string_id) {
   int resource_id = 0;
   switch (installer_string_id) {
   // HANDLE_STRING is used by the DO_INSTALLER_STRING_MAPPING macro which is in

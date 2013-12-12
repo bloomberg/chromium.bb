@@ -259,7 +259,7 @@ void PluginFinder::ReinitializePlugins(
   }
 }
 
-string16 PluginFinder::FindPluginNameWithIdentifier(
+base::string16 PluginFinder::FindPluginNameWithIdentifier(
     const std::string& identifier) {
   base::AutoLock lock(mutex_);
   PluginMap::const_iterator it = identifier_plugin_.find(identifier);

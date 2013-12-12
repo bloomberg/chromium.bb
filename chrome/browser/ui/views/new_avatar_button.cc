@@ -39,7 +39,7 @@ views::TextButtonDefaultBorder* CreateBorder(const int normal_image_set[],
   return border;
 }
 
-string16 GetElidedText(const base::string16& original_text) {
+base::string16 GetElidedText(const base::string16& original_text) {
   // Maximum characters the button can be before the text will get elided.
   const int kMaxCharactersToDisplay = 15;
 

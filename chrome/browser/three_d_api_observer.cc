@@ -96,7 +96,7 @@ ThreeDAPIInfoBarDelegate*
   return this;
 }
 
-string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {
+base::string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {
   message_text_queried_ = true;
 
   base::string16 api_name;
@@ -113,7 +113,7 @@ string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {
                                     api_name);
 }
 
-string16 ThreeDAPIInfoBarDelegate::GetButtonLabel(
+base::string16 ThreeDAPIInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_3D_APIS_BLOCKED_OK_BUTTON_LABEL :
@@ -136,7 +136,7 @@ bool ThreeDAPIInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 ThreeDAPIInfoBarDelegate::GetLinkText() const {
+base::string16 ThreeDAPIInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

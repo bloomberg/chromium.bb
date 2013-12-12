@@ -57,7 +57,7 @@ std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
   return errors;
 }
 
-string16 GetSigninMenuLabel(Profile* profile) {
+base::string16 GetSigninMenuLabel(Profile* profile) {
   GlobalError* error = signin_ui_util::GetSignedInServiceError(profile);
   if (error)
     return error->MenuItemLabel();

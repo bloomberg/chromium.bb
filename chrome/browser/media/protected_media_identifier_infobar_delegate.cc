@@ -91,13 +91,13 @@ bool ProtectedMediaIdentifierInfoBarDelegate::ShouldExpireInternal(
               content::PAGE_TRANSITION_RELOAD);
 }
 
-string16 ProtectedMediaIdentifierInfoBarDelegate::GetMessageText() const {
+base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
 }
 
-string16 ProtectedMediaIdentifierInfoBarDelegate::GetButtonLabel(
+base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PROTECTED_MEDIA_IDENTIFIER_ALLOW_BUTTON :
@@ -109,7 +109,7 @@ bool ProtectedMediaIdentifierInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 ProtectedMediaIdentifierInfoBarDelegate::GetLinkText() const {
+base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetLinkText() const {
 #if defined(OS_ANDROID)
   return l10n_util::GetStringUTF16(
       IDS_PROTECTED_MEDIA_IDENTIFIER_SETTINGS_LINK);

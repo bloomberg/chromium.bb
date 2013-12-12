@@ -101,7 +101,7 @@ int TaskManagerTableModel::RowCount() {
   return model_->ResourceCount();
 }
 
-string16 TaskManagerTableModel::GetText(int row, int col_id) {
+base::string16 TaskManagerTableModel::GetText(int row, int col_id) {
   return model_->GetResourceById(row, col_id);
 }
 
@@ -572,7 +572,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
   return false;
 }
 
-string16 TaskManagerView::GetWindowTitle() const {
+base::string16 TaskManagerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
 }
 

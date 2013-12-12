@@ -277,7 +277,7 @@ void InProcessImporterBridge::NotifyEnded() {
       base::Bind(&ExternalProcessImporterHost::NotifyImportEnded, host_));
 }
 
-string16 InProcessImporterBridge::GetLocalizedString(int message_id) {
+base::string16 InProcessImporterBridge::GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
 }
 

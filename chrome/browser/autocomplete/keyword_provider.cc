@@ -99,7 +99,7 @@ static int global_input_uid_;
 }  // namespace
 
 // static
-string16 KeywordProvider::SplitKeywordFromInput(
+base::string16 KeywordProvider::SplitKeywordFromInput(
     const base::string16& input,
     bool trim_leading_whitespace,
     base::string16* remaining_input) {
@@ -124,7 +124,7 @@ string16 KeywordProvider::SplitKeywordFromInput(
 }
 
 // static
-string16 KeywordProvider::SplitReplacementStringFromInput(
+base::string16 KeywordProvider::SplitReplacementStringFromInput(
     const base::string16& input,
     bool trim_leading_whitespace) {
   // The input may contain leading whitespace, strip it.
@@ -181,7 +181,8 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
   return NULL;
 }
 
-string16 KeywordProvider::GetKeywordForText(const base::string16& text) const {
+base::string16 KeywordProvider::GetKeywordForText(
+    const base::string16& text) const {
   const base::string16 keyword(TemplateURLService::CleanUserInputKeyword(text));
 
   if (keyword.empty())

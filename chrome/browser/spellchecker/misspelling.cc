@@ -65,7 +65,7 @@ base::DictionaryValue* Misspelling::Serialize() const {
   return result;
 }
 
-string16 Misspelling::GetMisspelledString() const {
+base::string16 Misspelling::GetMisspelledString() const {
   // Feedback sender does not create Misspelling objects for spellcheck results
   // that are out-of-bounds of checked text length.
   if (location > context.length())

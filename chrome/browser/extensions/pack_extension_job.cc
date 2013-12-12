@@ -90,7 +90,7 @@ void PackExtensionJob::ReportFailureOnClientThread(
 }
 
 // static
-string16 PackExtensionJob::StandardSuccessMessage(
+base::string16 PackExtensionJob::StandardSuccessMessage(
     const base::FilePath& crx_file,
     const base::FilePath& key_file) {
   base::string16 crx_file_string = crx_file.LossyDisplayName();

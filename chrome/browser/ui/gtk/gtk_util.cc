@@ -942,7 +942,7 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog) {
   return gfx::Rect(x, y, width, height);
 }
 
-string16 GetStockPreferencesMenuLabel() {
+base::string16 GetStockPreferencesMenuLabel() {
   GtkStockItem stock_item;
   base::string16 preferences;
   if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {

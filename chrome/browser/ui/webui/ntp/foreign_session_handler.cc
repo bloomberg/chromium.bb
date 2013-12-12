@@ -217,7 +217,8 @@ bool ForeignSessionHandler::IsTabSyncEnabled() {
   return service && service->GetActiveDataTypes().Has(syncer::PROXY_TABS);
 }
 
-string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {
+base::string16 ForeignSessionHandler::FormatSessionTime(
+    const base::Time& time) {
   // Return a time like "1 hour ago", "2 days ago", etc.
   base::Time now = base::Time::Now();
   // TimeElapsed does not support negative TimeDelta values, so then we use 0.

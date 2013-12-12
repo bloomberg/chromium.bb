@@ -139,7 +139,7 @@ void StackedPanelCollection::RefreshLayoutWithTopPanelStartingAt(
     secondary_stack_window_->EndBatchUpdatePanelBounds();
 }
 
-string16 StackedPanelCollection::GetTitle() const {
+base::string16 StackedPanelCollection::GetTitle() const {
   if (panels_.empty())
     return base::string16();
 

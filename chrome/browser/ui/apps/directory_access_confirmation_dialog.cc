@@ -49,12 +49,12 @@ DirectoryAccessConfirmationDialog::DirectoryAccessConfirmationDialog(
       writable_(writable),
       app_name_(app_name) {}
 
-string16 DirectoryAccessConfirmationDialog::GetTitle() {
+base::string16 DirectoryAccessConfirmationDialog::GetTitle() {
   return l10n_util::GetStringUTF16(
       IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_TITLE);
 }
 
-string16 DirectoryAccessConfirmationDialog::GetMessage() {
+base::string16 DirectoryAccessConfirmationDialog::GetMessage() {
   if (writable_) {
     return l10n_util::GetStringFUTF16(
         IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_MESSAGE_WRITABLE,
@@ -66,10 +66,10 @@ string16 DirectoryAccessConfirmationDialog::GetMessage() {
   }
 }
 
-string16 DirectoryAccessConfirmationDialog::GetAcceptButtonTitle() {
+base::string16 DirectoryAccessConfirmationDialog::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
 }
-string16 DirectoryAccessConfirmationDialog::GetCancelButtonTitle() {
+base::string16 DirectoryAccessConfirmationDialog::GetCancelButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
 }
 

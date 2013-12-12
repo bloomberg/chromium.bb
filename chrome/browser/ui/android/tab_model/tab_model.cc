@@ -84,7 +84,7 @@ ToolbarModel* TabModel::GetToolbarModel() {
   return toolbar_model_.get();
 }
 
-string16 TabModel::GetSearchTermsForCurrentTab() {
+base::string16 TabModel::GetSearchTermsForCurrentTab() {
   return toolbar_model_->GetText();
 }
 
@@ -95,7 +95,7 @@ std::string TabModel::GetQueryExtractionParam() {
   return search_terms_data.InstantExtendedEnabledParam();
 }
 
-string16 TabModel::GetCorpusNameForCurrentTab() {
+base::string16 TabModel::GetCorpusNameForCurrentTab() {
   return toolbar_model_->GetCorpusNameForMobile();
 }
 

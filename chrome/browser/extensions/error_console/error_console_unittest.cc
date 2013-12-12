@@ -39,7 +39,7 @@ StackTrace GetDefaultStackTrace() {
   return stack_trace;
 }
 
-string16 GetSourceForExtensionId(const std::string& extension_id) {
+base::string16 GetSourceForExtensionId(const std::string& extension_id) {
   return base::UTF8ToUTF16(
       std::string(kExtensionScheme) +
       content::kStandardSchemeSeparator +

@@ -71,13 +71,13 @@ int AppMetroInfoBarDelegateWin::GetIconID() const {
   return GetAppListIconResourceId();
 }
 
-string16 AppMetroInfoBarDelegateWin::GetMessageText() const {
+base::string16 AppMetroInfoBarDelegateWin::GetMessageText() const {
   return l10n_util::GetStringUTF16(mode_ == SHOW_APP_LIST ?
       IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_APP_LIST :
       IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_PACKAGED_APP);
 }
 
-string16 AppMetroInfoBarDelegateWin::GetButtonLabel(
+base::string16 AppMetroInfoBarDelegateWin::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(button == BUTTON_CANCEL ?
       IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_NO_BUTTON :
@@ -104,7 +104,7 @@ bool AppMetroInfoBarDelegateWin::Cancel() {
   return false;
 }
 
-string16 AppMetroInfoBarDelegateWin::GetLinkText() const {
+base::string16 AppMetroInfoBarDelegateWin::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

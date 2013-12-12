@@ -377,7 +377,7 @@ void DesktopNotifications::RemoveNotificationById(
   }
 }
 
-string16 DesktopNotifications::GetNotificationMessageForTest(
+base::string16 DesktopNotifications::GetNotificationMessageForTest(
     const std::string& id) const {
   NotificationMap::const_iterator it = notification_map_.find(id);
   if (it == notification_map_.end())

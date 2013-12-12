@@ -59,7 +59,7 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
 
 // Gets the security originator of the tab. It returns a string with no '/'
 // at the end to display in the UI.
-string16 GetSecurityOrigin(WebContents* web_contents) {
+base::string16 GetSecurityOrigin(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!web_contents)
@@ -77,7 +77,7 @@ string16 GetSecurityOrigin(WebContents* web_contents) {
   return UTF8ToUTF16(security_origin);
 }
 
-string16 GetTitle(WebContents* web_contents) {
+base::string16 GetTitle(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!web_contents)

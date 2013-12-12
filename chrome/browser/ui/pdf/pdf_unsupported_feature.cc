@@ -118,15 +118,15 @@ void PDFEnableAdobeReaderPromptDelegate::Cancel() {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarCancel"));
 }
 
-string16 PDFEnableAdobeReaderPromptDelegate::GetAcceptButtonText() const {
+base::string16 PDFEnableAdobeReaderPromptDelegate::GetAcceptButtonText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON);
 }
 
-string16 PDFEnableAdobeReaderPromptDelegate::GetCancelButtonText() const {
+base::string16 PDFEnableAdobeReaderPromptDelegate::GetCancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
-string16 PDFEnableAdobeReaderPromptDelegate::GetMessageText() const {
+base::string16 PDFEnableAdobeReaderPromptDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER);
 }
 
@@ -298,11 +298,12 @@ PDFUnsupportedFeaturePromptDelegate::PDFUnsupportedFeaturePromptDelegate(
 PDFUnsupportedFeaturePromptDelegate::~PDFUnsupportedFeaturePromptDelegate() {
 }
 
-string16 PDFUnsupportedFeaturePromptDelegate::GetMessageText() const {
+base::string16 PDFUnsupportedFeaturePromptDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_MESSAGE);
 }
 
-string16 PDFUnsupportedFeaturePromptDelegate::GetAcceptButtonText() const {
+base::string16 PDFUnsupportedFeaturePromptDelegate::GetAcceptButtonText()
+    const {
 #if defined(OS_WIN)
   if (base::win::IsMetroProcess())
     return l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_METRO_MODE_LINK);
@@ -314,7 +315,8 @@ string16 PDFUnsupportedFeaturePromptDelegate::GetAcceptButtonText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_INSTALL_READER_LINK);
 }
 
-string16 PDFUnsupportedFeaturePromptDelegate::GetCancelButtonText() const {
+base::string16 PDFUnsupportedFeaturePromptDelegate::GetCancelButtonText()
+    const {
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 

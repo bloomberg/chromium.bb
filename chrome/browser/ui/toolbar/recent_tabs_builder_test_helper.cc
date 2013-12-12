@@ -163,9 +163,9 @@ base::Time RecentTabsBuilderTestHelper::GetTabTimestamp(int session_index,
       .tabs[tab_index].timestamp;
 }
 
-string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
-                                                  int window_index,
-                                                  int tab_index) {
+base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
+                                                        int window_index,
+                                                        int tab_index) {
   base::string16 title =
       sessions_[session_index].windows[window_index].tabs[tab_index].title;
   if (title.empty()) {

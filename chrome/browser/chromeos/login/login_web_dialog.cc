@@ -83,7 +83,7 @@ ui::ModalType LoginWebDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 LoginWebDialog::GetDialogTitle() const {
+base::string16 LoginWebDialog::GetDialogTitle() const {
   return title_;
 }
 

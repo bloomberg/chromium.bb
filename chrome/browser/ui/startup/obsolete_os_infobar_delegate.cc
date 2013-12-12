@@ -47,7 +47,7 @@ ObsoleteOSInfoBarDelegate::ObsoleteOSInfoBarDelegate()
 ObsoleteOSInfoBarDelegate::~ObsoleteOSInfoBarDelegate() {
 }
 
-string16 ObsoleteOSInfoBarDelegate::GetMessageText() const {
+base::string16 ObsoleteOSInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
 }
 
@@ -55,7 +55,7 @@ int ObsoleteOSInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
 }
 
-string16 ObsoleteOSInfoBarDelegate::GetLinkText() const {
+base::string16 ObsoleteOSInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

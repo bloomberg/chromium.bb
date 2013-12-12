@@ -53,8 +53,8 @@ void MediaBrowserTest::RunMediaTestPage(
   EXPECT_EQ(ASCIIToUTF16(expected_title), final_title);
 }
 
-string16 MediaBrowserTest::RunTest(const GURL& gurl,
-                                   const char* expected_title) {
+base::string16 MediaBrowserTest::RunTest(const GURL& gurl,
+                                         const char* expected_title) {
   DVLOG(1) << "Running test URL: " << gurl;
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),

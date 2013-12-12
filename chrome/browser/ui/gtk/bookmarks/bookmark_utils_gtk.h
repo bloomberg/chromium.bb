@@ -112,6 +112,6 @@ bool CreateNewBookmarkFromNetscapeURL(GtkSelectionData* selection_data,
 
 // Returns a name for the given URL. Used for drags into bookmark areas when
 // the source doesn't specify a title.
-string16 GetNameForURL(const GURL& url);
+base::string16 GetNameForURL(const GURL& url);
 
 #endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_UTILS_GTK_H_

@@ -35,8 +35,8 @@ namespace {
 
 // Generates a unique folder name. If |folder_name| is not unique, then this
 // repeatedly tests for '|folder_name| + (i)' until a unique name is found.
-string16 GenerateUniqueFolderName(BookmarkModel* model,
-                                  const base::string16& folder_name) {
+base::string16 GenerateUniqueFolderName(BookmarkModel* model,
+                                        const base::string16& folder_name) {
   // Build a set containing the bookmark bar folder names.
   std::set<string16> existing_folder_names;
   const BookmarkNode* bookmark_bar = model->bookmark_bar_node();

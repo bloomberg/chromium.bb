@@ -108,7 +108,7 @@ ui::ModalType PrintPreviewDialogDelegate::GetDialogModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 PrintPreviewDialogDelegate::GetDialogTitle() const {
+base::string16 PrintPreviewDialogDelegate::GetDialogTitle() const {
   // Only used on Windows? UI folks prefer no title.
   return base::string16();
 }

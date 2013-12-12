@@ -293,7 +293,7 @@ ui::ModalType SetAsDefaultBrowserDialogImpl::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 SetAsDefaultBrowserDialogImpl::GetDialogTitle() const {
+base::string16 SetAsDefaultBrowserDialogImpl::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_METRO_FLOW_TAB_TITLE);
 }
 

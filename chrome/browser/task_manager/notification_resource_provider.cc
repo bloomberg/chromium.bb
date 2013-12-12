@@ -75,11 +75,11 @@ NotificationResource::NotificationResource(BalloonHost* balloon_host)
 NotificationResource::~NotificationResource() {
 }
 
-string16 NotificationResource::GetTitle() const {
+base::string16 NotificationResource::GetTitle() const {
   return title_;
 }
 
-string16 NotificationResource::GetProfileName() const {
+base::string16 NotificationResource::GetProfileName() const {
   return base::string16();
 }
 

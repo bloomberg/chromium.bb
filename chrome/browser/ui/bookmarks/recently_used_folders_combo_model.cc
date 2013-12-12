@@ -100,7 +100,7 @@ int RecentlyUsedFoldersComboModel::GetItemCount() const {
   return static_cast<int>(items_.size());
 }
 
-string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
+base::string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
   switch (items_[index].type) {
     case Item::TYPE_NODE:
       return items_[index].node->GetTitle();

@@ -54,7 +54,7 @@ base::Time MTPDeviceObjectEnumerator::LastModifiedTime() {
   return object_entries_[index_].last_modified_time;
 }
 
-string16 MTPDeviceObjectEnumerator::GetObjectId() const {
+base::string16 MTPDeviceObjectEnumerator::GetObjectId() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsIndexReadyAndInRange())
     return base::string16();

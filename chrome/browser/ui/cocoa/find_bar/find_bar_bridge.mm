@@ -60,7 +60,7 @@ void FindBarBridge::SetFindTextAndSelectedRange(
                    selectedRange:selected_range.ToNSRange()];
 }
 
-string16 FindBarBridge::GetFindText() {
+base::string16 FindBarBridge::GetFindText() {
   return base::SysNSStringToUTF16([cocoa_controller_ findText]);
 }
 
@@ -121,13 +121,13 @@ bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
   return window_visible;
 }
 
-string16 FindBarBridge::GetFindSelectedText() {
+base::string16 FindBarBridge::GetFindSelectedText() {
   // This function is currently only used in Views.
   NOTIMPLEMENTED();
   return base::string16();
 }
 
-string16 FindBarBridge::GetMatchCountText() {
+base::string16 FindBarBridge::GetMatchCountText() {
   return base::SysNSStringToUTF16([cocoa_controller_ matchCountText]);
 }
 

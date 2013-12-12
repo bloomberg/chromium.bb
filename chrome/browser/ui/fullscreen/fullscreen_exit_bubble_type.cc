@@ -15,9 +15,9 @@
 
 namespace fullscreen_bubble {
 
-string16 GetLabelTextForType(FullscreenExitBubbleType type,
-                             const GURL& url,
-                             ExtensionService* extension_service) {
+base::string16 GetLabelTextForType(FullscreenExitBubbleType type,
+                                   const GURL& url,
+                                   ExtensionService* extension_service) {
   base::string16 host(UTF8ToUTF16(url.host()));
   if (extension_service) {
     const ExtensionSet* extensions = extension_service->extensions();
@@ -90,7 +90,7 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
   }
 }
 
-string16 GetDenyButtonTextForType(FullscreenExitBubbleType type) {
+base::string16 GetDenyButtonTextForType(FullscreenExitBubbleType type) {
   switch (type) {
     case FEB_TYPE_FULLSCREEN_BUTTONS:
       return l10n_util::GetStringUTF16(IDS_FULLSCREEN_EXIT_FULLSCREEN);

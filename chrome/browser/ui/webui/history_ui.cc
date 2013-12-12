@@ -193,7 +193,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 
 // Returns a localized version of |visit_time| including a relative
 // indicator (e.g. today, yesterday).
-string16 getRelativeDateLocalized(const base::Time& visit_time) {
+base::string16 getRelativeDateLocalized(const base::Time& visit_time) {
   base::Time midnight = base::Time::Now().LocalMidnight();
   base::string16 date_str = ui::TimeFormat::RelativeDate(visit_time, &midnight);
   if (date_str.empty()) {

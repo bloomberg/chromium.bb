@@ -27,7 +27,7 @@ class FindBackendTest : public ChromeRenderViewHostTestHarness {
 
 namespace {
 
-string16 FindPrepopulateText(WebContents* contents) {
+base::string16 FindPrepopulateText(WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   return FindBarStateFactory::GetLastPrepopulateText(profile);
 }

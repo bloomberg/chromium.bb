@@ -27,7 +27,8 @@ namespace {
 
 // Reads path to the native messaging host manifest from the registry. Returns
 // empty string if the path isn't found.
-string16 GetManifestPath(const base::string16& native_host_name, DWORD flags) {
+base::string16 GetManifestPath(const base::string16& native_host_name,
+                               DWORD flags) {
   base::win::RegKey key;
   base::string16 result;
 

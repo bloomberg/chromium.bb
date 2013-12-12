@@ -152,11 +152,11 @@ int MonthComboboxModel::GetItemCount() const {
 }
 
 // static
-string16 MonthComboboxModel::FormatMonth(int index) {
+base::string16 MonthComboboxModel::FormatMonth(int index) {
   return ASCIIToUTF16(base::StringPrintf("%.2d", index));
 }
 
-string16 MonthComboboxModel::GetItemAt(int index) {
+base::string16 MonthComboboxModel::GetItemAt(int index) {
   return index == 0 ?
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH) :
       FormatMonth(index);
@@ -178,7 +178,7 @@ int YearComboboxModel::GetItemCount() const {
   return 11;
 }
 
-string16 YearComboboxModel::GetItemAt(int index) {
+base::string16 YearComboboxModel::GetItemAt(int index) {
   if (index == 0) {
     return l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR);

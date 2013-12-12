@@ -24,8 +24,8 @@ const char kStorageUniqueIdB[] =
 // Returns the storage name of the device specified by |pnp_device_id|.
 // |storage_object_id| specifies the string ID that uniquely identifies the
 // object on the device.
-string16 GetMTPStorageName(const base::string16& pnp_device_id,
-                           const base::string16& storage_object_id) {
+base::string16 GetMTPStorageName(const base::string16& pnp_device_id,
+                                 const base::string16& storage_object_id) {
   if (pnp_device_id == TestPortableDeviceWatcherWin::kMTPDeviceWithInvalidInfo)
     return base::string16();
 

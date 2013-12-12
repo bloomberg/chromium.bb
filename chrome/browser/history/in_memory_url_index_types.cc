@@ -40,8 +40,8 @@ std::string TruncateUrl(const std::string& url) {
   return url.substr(0, kCleanedUpUrlMaxLength);
 }
 
-string16 CleanUpUrlForMatching(const GURL& gurl,
-                               const std::string& languages) {
+base::string16 CleanUpUrlForMatching(const GURL& gurl,
+                                     const std::string& languages) {
   return base::i18n::ToLower(net::FormatUrl(
       GURL(TruncateUrl(gurl.spec())), languages,
       net::kFormatUrlOmitUsernamePassword,
@@ -49,7 +49,7 @@ string16 CleanUpUrlForMatching(const GURL& gurl,
       NULL, NULL, NULL));
 }
 
-string16 CleanUpTitleForMatching(const base::string16& title) {
+base::string16 CleanUpTitleForMatching(const base::string16& title) {
   return base::i18n::ToLower(title.substr(0u, kCleanedUpTitleMaxLength));
 }
 

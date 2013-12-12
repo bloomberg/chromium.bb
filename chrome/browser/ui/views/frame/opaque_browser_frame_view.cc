@@ -423,7 +423,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitle() const {
   return delegate && delegate->ShouldShowWindowTitle();
 }
 
-string16 OpaqueBrowserFrameView::GetWindowTitle() const {
+base::string16 OpaqueBrowserFrameView::GetWindowTitle() const {
   return frame()->widget_delegate()->GetWindowTitle();
 }
 

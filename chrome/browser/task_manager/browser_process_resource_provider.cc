@@ -67,14 +67,14 @@ BrowserProcessResource::~BrowserProcessResource() {
 }
 
 // Resource methods:
-string16 BrowserProcessResource::GetTitle() const {
+base::string16 BrowserProcessResource::GetTitle() const {
   if (title_.empty()) {
     title_ = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT);
   }
   return title_;
 }
 
-string16 BrowserProcessResource::GetProfileName() const {
+base::string16 BrowserProcessResource::GetProfileName() const {
   return base::string16();
 }
 

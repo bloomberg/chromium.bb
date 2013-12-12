@@ -207,7 +207,7 @@ std::string BrandCode();
 bool KeystoneEnabled();
 
 // The version of the application currently installed on disk.
-string16 CurrentlyInstalledVersion();
+base::string16 CurrentlyInstalledVersion();
 
 }  // namespace keystone_glue
 

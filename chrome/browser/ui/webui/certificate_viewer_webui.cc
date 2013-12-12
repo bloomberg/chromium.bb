@@ -65,7 +65,7 @@ ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-string16 CertificateViewerDialog::GetDialogTitle() const {
+base::string16 CertificateViewerDialog::GetDialogTitle() const {
   return title_;
 }
 

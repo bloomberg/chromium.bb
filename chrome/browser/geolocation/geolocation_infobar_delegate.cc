@@ -138,12 +138,12 @@ bool GeolocationInfoBarDelegate::ShouldExpireInternal(
               content::PAGE_TRANSITION_RELOAD);
 }
 
-string16 GeolocationInfoBarDelegate::GetMessageText() const {
+base::string16 GeolocationInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_, display_languages_));
 }
 
-string16 GeolocationInfoBarDelegate::GetButtonLabel(
+base::string16 GeolocationInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_GEOLOCATION_ALLOW_BUTTON : IDS_GEOLOCATION_DENY_BUTTON);
@@ -156,7 +156,7 @@ bool GeolocationInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 GeolocationInfoBarDelegate::GetLinkText() const {
+base::string16 GeolocationInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

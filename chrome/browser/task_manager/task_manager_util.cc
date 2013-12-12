@@ -47,7 +47,7 @@ int GetMessagePrefixID(bool is_app,
   return IDS_TASK_MANAGER_TAB_PREFIX;
 }
 
-string16 GetProfileNameFromInfoCache(Profile* profile) {
+base::string16 GetProfileNameFromInfoCache(Profile* profile) {
   DCHECK(profile);
 
   ProfileInfoCache& cache =
@@ -60,7 +60,7 @@ string16 GetProfileNameFromInfoCache(Profile* profile) {
     return cache.GetNameOfProfileAtIndex(index);
 }
 
-string16 GetTitleFromWebContents(content::WebContents* web_contents) {
+base::string16 GetTitleFromWebContents(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
   base::string16 title = web_contents->GetTitle();

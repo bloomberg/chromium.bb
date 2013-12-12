@@ -86,7 +86,7 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
       connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN) {
 }
 
-string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
+base::string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
   if (identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
       identity_status ==  WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
     return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
@@ -102,7 +102,7 @@ WebsiteSettingsUI::~WebsiteSettingsUI() {
 }
 
 // static
-string16 WebsiteSettingsUI::PermissionTypeToUIString(
+base::string16 WebsiteSettingsUI::PermissionTypeToUIString(
       ContentSettingsType type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_IMAGES:
@@ -135,7 +135,8 @@ string16 WebsiteSettingsUI::PermissionTypeToUIString(
 }
 
 // static
-string16 WebsiteSettingsUI::PermissionValueToUIString(ContentSetting value) {
+base::string16 WebsiteSettingsUI::PermissionValueToUIString(
+    ContentSetting value) {
   switch (value) {
     case CONTENT_SETTING_ALLOW:
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW);
@@ -150,7 +151,7 @@ string16 WebsiteSettingsUI::PermissionValueToUIString(ContentSetting value) {
 }
 
 // static
-string16 WebsiteSettingsUI::PermissionActionToUIString(
+base::string16 WebsiteSettingsUI::PermissionActionToUIString(
       ContentSetting setting,
       ContentSetting default_setting,
       content_settings::SettingSource source) {

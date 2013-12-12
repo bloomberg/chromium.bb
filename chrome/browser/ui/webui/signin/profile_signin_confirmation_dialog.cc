@@ -161,7 +161,7 @@ ui::ModalType ProfileSigninConfirmationDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 ProfileSigninConfirmationDialog::GetDialogTitle() const {
+base::string16 ProfileSigninConfirmationDialog::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_TITLE);
 }
 

@@ -158,7 +158,7 @@ std::string SupervisedUserManagerImpl::GetUserSyncId(const std::string& user_id)
   return result;
 }
 
-string16 SupervisedUserManagerImpl::GetManagerDisplayName(
+base::string16 SupervisedUserManagerImpl::GetManagerDisplayName(
     const std::string& user_id) const {
   PrefService* local_state = g_browser_process->local_state();
   const DictionaryValue* manager_names =

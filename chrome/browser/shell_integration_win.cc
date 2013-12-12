@@ -48,7 +48,7 @@ const wchar_t kAppListAppNameSuffix[] = L"AppList";
 // Helper function for ShellIntegration::GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
 // user data dir and profile dir joined by a ".".
-string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
+base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   // Return empty string if profile_path is empty
   if (profile_path.empty())
     return base::string16();
@@ -81,7 +81,7 @@ string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   return profile_id;
 }
 
-string16 GetAppListAppName() {
+base::string16 GetAppListAppName() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 app_name(dist->GetBaseAppId());
   app_name.append(kAppListAppNameSuffix);
@@ -90,8 +90,8 @@ string16 GetAppListAppName() {
 
 // Gets expected app id for given Chrome (based on |command_line| and
 // |is_per_user_install|).
-string16 GetExpectedAppId(const CommandLine& command_line,
-                          bool is_per_user_install) {
+base::string16 GetExpectedAppId(const CommandLine& command_line,
+                                bool is_per_user_install) {
   base::FilePath user_data_dir;
   if (command_line.HasSwitch(switches::kUserDataDir))
     user_data_dir = command_line.GetSwitchValuePath(switches::kUserDataDir);
@@ -332,7 +332,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return ff_default;
 }
 
-string16 ShellIntegration::GetAppModelIdForProfile(
+base::string16 ShellIntegration::GetAppModelIdForProfile(
     const base::string16& app_name,
     const base::FilePath& profile_path) {
   std::vector<string16> components;
@@ -343,7 +343,7 @@ string16 ShellIntegration::GetAppModelIdForProfile(
   return ShellUtil::BuildAppModelId(components);
 }
 
-string16 ShellIntegration::GetChromiumModelIdForProfile(
+base::string16 ShellIntegration::GetChromiumModelIdForProfile(
     const base::FilePath& profile_path) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::FilePath chrome_exe;
@@ -357,7 +357,7 @@ string16 ShellIntegration::GetChromiumModelIdForProfile(
       profile_path);
 }
 
-string16 ShellIntegration::GetAppListAppModelIdForProfile(
+base::string16 ShellIntegration::GetAppListAppModelIdForProfile(
     const base::FilePath& profile_path) {
   return ShellIntegration::GetAppModelIdForProfile(
       GetAppListAppName(), profile_path);

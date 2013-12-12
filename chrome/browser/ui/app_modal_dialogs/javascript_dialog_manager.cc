@@ -244,9 +244,10 @@ void ChromeJavaScriptDialogManager::Observe(
   extension_host_ = NULL;
 }
 
-string16 ChromeJavaScriptDialogManager::GetTitle(const GURL& origin_url,
-                                                 const std::string& accept_lang,
-                                                 bool is_alert) {
+base::string16 ChromeJavaScriptDialogManager::GetTitle(
+    const GURL& origin_url,
+    const std::string& accept_lang,
+    bool is_alert) {
   // If the URL hasn't any host, return the default string.
   if (!origin_url.has_host()) {
       return l10n_util::GetStringUTF16(

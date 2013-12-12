@@ -67,6 +67,6 @@ const BookmarkNode* CommitTreeStoreDifferencesBetween(
 int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
 
 // Returns the title field in utf8 of the row pointed to by |iter|.
-string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
+base::string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
 
 #endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_TREE_MODEL_H_

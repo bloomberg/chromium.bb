@@ -43,7 +43,7 @@ ConfirmBubbleViews::ConfirmBubbleViews(ConfirmBubbleModel* model)
 ConfirmBubbleViews::~ConfirmBubbleViews() {
 }
 
-string16 ConfirmBubbleViews::GetDialogButtonLabel(
+base::string16 ConfirmBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
@@ -86,7 +86,7 @@ ui::ModalType ConfirmBubbleViews::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 ConfirmBubbleViews::GetWindowTitle() const {
+base::string16 ConfirmBubbleViews::GetWindowTitle() const {
   return model_->GetTitle();
 }
 

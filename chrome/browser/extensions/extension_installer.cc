@@ -27,7 +27,7 @@ void ExtensionInstaller::CheckRequirements(
   requirements_checker_->Check(extension_, callback);
 }
 
-string16 ExtensionInstaller::CheckManagementPolicy() {
+base::string16 ExtensionInstaller::CheckManagementPolicy() {
   base::string16 error;
   bool allowed = ExtensionSystem::Get(profile_)->management_policy()
       ->UserMayLoad(extension_.get(), &error);

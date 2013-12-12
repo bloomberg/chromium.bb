@@ -28,10 +28,10 @@ int GetMessagePrefixID(bool is_app,
                        bool is_background);
 
 // Returns the name of profle from InfoCache.
-string16 GetProfileNameFromInfoCache(Profile* profile);
+base::string16 GetProfileNameFromInfoCache(Profile* profile);
 
 // Returns the title from web contents.
-string16 GetTitleFromWebContents(content::WebContents* web_contents);
+base::string16 GetTitleFromWebContents(content::WebContents* web_contents);
 
 }  // namespace util
 

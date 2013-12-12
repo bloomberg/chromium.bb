@@ -167,8 +167,8 @@ std::set<MenuItem::Id> MenuItem::RemoveAllDescendants() {
   return result;
 }
 
-string16 MenuItem::TitleWithReplacement(
-    const base::string16& selection, size_t max_length) const {
+base::string16 MenuItem::TitleWithReplacement(const base::string16& selection,
+                                              size_t max_length) const {
   base::string16 result = UTF8ToUTF16(title_);
   // TODO(asargent) - Change this to properly handle %% escaping so you can
   // put "%s" in titles that won't get substituted.

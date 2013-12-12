@@ -136,7 +136,7 @@ void FindBarHost::SetFindTextAndSelectedRange(
   find_bar_view()->SetFindTextAndSelectedRange(find_text, selected_range);
 }
 
-string16 FindBarHost::GetFindText() {
+base::string16 FindBarHost::GetFindText() {
   return find_bar_view()->GetFindText();
 }
 
@@ -245,11 +245,11 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
   return true;
 }
 
-string16 FindBarHost::GetFindSelectedText() {
+base::string16 FindBarHost::GetFindSelectedText() {
   return find_bar_view()->GetFindSelectedText();
 }
 
-string16 FindBarHost::GetMatchCountText() {
+base::string16 FindBarHost::GetMatchCountText() {
   return find_bar_view()->GetMatchCountText();
 }
 

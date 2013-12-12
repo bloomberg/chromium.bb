@@ -41,7 +41,7 @@ int SyncGlobalError::MenuItemCommandID() {
   return IDC_SHOW_SIGNIN_ERROR;
 }
 
-string16 SyncGlobalError::MenuItemLabel() {
+base::string16 SyncGlobalError::MenuItemLabel() {
   return menu_label_;
 }
 
@@ -60,7 +60,7 @@ bool SyncGlobalError::HasBubbleView() {
   return !bubble_message_.empty() && !bubble_accept_label_.empty();
 }
 
-string16 SyncGlobalError::GetBubbleViewTitle() {
+base::string16 SyncGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE);
 }
 
@@ -68,11 +68,11 @@ std::vector<string16> SyncGlobalError::GetBubbleViewMessages() {
   return std::vector<string16>(1, bubble_message_);
 }
 
-string16 SyncGlobalError::GetBubbleViewAcceptButtonLabel() {
+base::string16 SyncGlobalError::GetBubbleViewAcceptButtonLabel() {
   return bubble_accept_label_;
 }
 
-string16 SyncGlobalError::GetBubbleViewCancelButtonLabel() {
+base::string16 SyncGlobalError::GetBubbleViewCancelButtonLabel() {
   return base::string16();
 }
 

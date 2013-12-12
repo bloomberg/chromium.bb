@@ -31,11 +31,11 @@ SpellingBubbleModel::SpellingBubbleModel(Profile* profile,
 SpellingBubbleModel::~SpellingBubbleModel() {
 }
 
-string16 SpellingBubbleModel::GetTitle() const {
+base::string16 SpellingBubbleModel::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
 }
 
-string16 SpellingBubbleModel::GetMessageText() const {
+base::string16 SpellingBubbleModel::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT);
 }
 
@@ -44,7 +44,7 @@ gfx::Image* SpellingBubbleModel::GetIcon() const {
       IDR_PRODUCT_LOGO_16);
 }
 
-string16 SpellingBubbleModel::GetButtonLabel(BubbleButton button) const {
+base::string16 SpellingBubbleModel::GetButtonLabel(BubbleButton button) const {
   return l10n_util::GetStringUTF16(button == BUTTON_OK ?
       IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE :
       IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE);
@@ -58,7 +58,7 @@ void SpellingBubbleModel::Cancel() {
   SetPref(false);
 }
 
-string16 SpellingBubbleModel::GetLinkText() const {
+base::string16 SpellingBubbleModel::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

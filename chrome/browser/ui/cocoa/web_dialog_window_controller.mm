@@ -150,7 +150,7 @@ ui::ModalType WebDialogWindowDelegateBridge::GetDialogModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-string16 WebDialogWindowDelegateBridge::GetDialogTitle() const {
+base::string16 WebDialogWindowDelegateBridge::GetDialogTitle() const {
   return delegate_ ? delegate_->GetDialogTitle() : base::string16();
 }
 

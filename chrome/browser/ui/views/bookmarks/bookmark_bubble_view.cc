@@ -276,7 +276,7 @@ BookmarkBubbleView::BookmarkBubbleView(
   set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
 }
 
-string16 BookmarkBubbleView::GetTitle() {
+base::string16 BookmarkBubbleView::GetTitle() {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(profile_);
   const BookmarkNode* node =

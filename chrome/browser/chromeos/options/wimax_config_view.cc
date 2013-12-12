@@ -69,7 +69,7 @@ WimaxConfigView::~WimaxConfigView() {
   RemoveAllChildViews(true);  // Destroy children before models
 }
 
-string16 WimaxConfigView::GetTitle() const {
+base::string16 WimaxConfigView::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIMAX_NETWORKS);
 }
 

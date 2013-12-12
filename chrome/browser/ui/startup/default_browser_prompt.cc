@@ -137,11 +137,11 @@ int DefaultBrowserInfoBarDelegate::GetIconID() const {
   return IDR_PRODUCT_LOGO_32;
 }
 
-string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {
+base::string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
 }
 
-string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
+base::string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL :

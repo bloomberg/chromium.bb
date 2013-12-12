@@ -39,7 +39,7 @@ int TranslateBubbleModelImpl::GetNumberOfLanguages() const {
   return ui_delegate_->GetNumberOfLanguages();
 }
 
-string16 TranslateBubbleModelImpl::GetLanguageNameAt(int index) const {
+base::string16 TranslateBubbleModelImpl::GetLanguageNameAt(int index) const {
   return ui_delegate_->GetLanguageNameAt(index);
 }
 

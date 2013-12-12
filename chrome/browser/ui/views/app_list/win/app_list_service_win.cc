@@ -116,7 +116,7 @@ int GetAppListIconIndex() {
   return dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
 }
 
-string16 GetAppListIconPath() {
+base::string16 GetAppListIconPath() {
   base::FilePath icon_path;
   if (!PathService::Get(base::FILE_EXE, &icon_path)) {
     NOTREACHED();
@@ -130,7 +130,7 @@ string16 GetAppListIconPath() {
   return result;
 }
 
-string16 GetAppListShortcutName() {
+base::string16 GetAppListShortcutName() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   return dist->GetShortcutName(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
 }
@@ -150,7 +150,7 @@ CommandLine GetAppListCommandLine() {
   return command_line;
 }
 
-string16 GetAppModelId() {
+base::string16 GetAppModelId() {
   // The AppModelId should be the same for all profiles in a user data directory
   // but different for different user data directories, so base it on the
   // initial profile in the current user data directory.

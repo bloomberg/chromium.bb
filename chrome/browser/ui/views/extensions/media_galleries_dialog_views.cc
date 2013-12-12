@@ -262,7 +262,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   return true;
 }
 
-string16 MediaGalleriesDialogViews::GetWindowTitle() const {
+base::string16 MediaGalleriesDialogViews::GetWindowTitle() const {
   return controller_->GetHeader();
 }
 
@@ -282,7 +282,7 @@ views::View* MediaGalleriesDialogViews::GetContentsView() {
   return contents_;
 }
 
-string16 MediaGalleriesDialogViews::GetDialogButtonLabel(
+base::string16 MediaGalleriesDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
       IDS_MEDIA_GALLERIES_DIALOG_CONFIRM :

@@ -52,14 +52,14 @@ AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
 // AlternateNavInfoBarDelegate::CreateInfoBar() is implemented in
 // platform-specific files.
 
-string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
+base::string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
     size_t* link_offset) const {
   const base::string16 label = l10n_util::GetStringFUTF16(
       IDS_ALTERNATE_NAV_URL_VIEW_LABEL, base::string16(), link_offset);
   return label;
 }
 
-string16 AlternateNavInfoBarDelegate::GetLinkText() const {
+base::string16 AlternateNavInfoBarDelegate::GetLinkText() const {
   return UTF8ToUTF16(match_.destination_url.spec());
 }
 

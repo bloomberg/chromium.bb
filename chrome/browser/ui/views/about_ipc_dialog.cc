@@ -255,7 +255,7 @@ int AboutIPCDialog::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-string16 AboutIPCDialog::GetWindowTitle() const {
+base::string16 AboutIPCDialog::GetWindowTitle() const {
   return ASCIIToUTF16("about:ipc");
 }
 

@@ -149,7 +149,7 @@ bool ExtensionDialog::ShouldShowWindowTitle() const {
   return !window_title_.empty();
 }
 
-string16 ExtensionDialog::GetWindowTitle() const {
+base::string16 ExtensionDialog::GetWindowTitle() const {
   return window_title_;
 }
 

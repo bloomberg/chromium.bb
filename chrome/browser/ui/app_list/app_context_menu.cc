@@ -163,7 +163,7 @@ bool AppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == TOGGLE_PIN || command_id == LAUNCH_NEW;
 }
 
-string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
+base::string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
   if (command_id == TOGGLE_PIN) {
     return controller_->IsAppPinned(app_id_) ?
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN) :

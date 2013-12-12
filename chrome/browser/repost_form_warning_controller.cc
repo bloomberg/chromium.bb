@@ -22,15 +22,15 @@ RepostFormWarningController::RepostFormWarningController(
 RepostFormWarningController::~RepostFormWarningController() {
 }
 
-string16 RepostFormWarningController::GetTitle() {
+base::string16 RepostFormWarningController::GetTitle() {
   return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_TITLE);
 }
 
-string16 RepostFormWarningController::GetMessage() {
+base::string16 RepostFormWarningController::GetMessage() {
   return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING);
 }
 
-string16 RepostFormWarningController::GetAcceptButtonTitle() {
+base::string16 RepostFormWarningController::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_RESEND);
 }
 

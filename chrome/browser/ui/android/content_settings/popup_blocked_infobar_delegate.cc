@@ -55,7 +55,7 @@ PopupBlockedInfoBarDelegate::PopupBlockedInfoBarDelegate(int num_popups)
       num_popups_(num_popups) {
 }
 
-string16 PopupBlockedInfoBarDelegate::GetMessageText() const {
+base::string16 PopupBlockedInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16Int(IDS_POPUPS_BLOCKED_INFOBAR_TEXT,
                                        num_popups_);
 }
@@ -64,7 +64,7 @@ int PopupBlockedInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 PopupBlockedInfoBarDelegate::GetButtonLabel(
+base::string16 PopupBlockedInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW);
 }

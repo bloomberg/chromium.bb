@@ -134,7 +134,7 @@ std::string TranslateUIDelegate::GetLanguageCodeAt(size_t index) const {
   return languages_[index].first;
 }
 
-string16 TranslateUIDelegate::GetLanguageNameAt(size_t index) const {
+base::string16 TranslateUIDelegate::GetLanguageNameAt(size_t index) const {
   if (index == static_cast<size_t>(NO_INDEX))
     return base::string16();
   DCHECK_LT(index, GetNumberOfLanguages());

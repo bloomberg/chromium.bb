@@ -130,12 +130,12 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
     select_folder_dialog_->ListenerDestroyed();
 }
 
-string16 MediaGalleriesDialogController::GetHeader() const {
+base::string16 MediaGalleriesDialogController::GetHeader() const {
   return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER,
                                     UTF8ToUTF16(extension_->name()));
 }
 
-string16 MediaGalleriesDialogController::GetSubtext() const {
+base::string16 MediaGalleriesDialogController::GetSubtext() const {
   extensions::MediaGalleriesPermission::CheckParam copy_to_param(
       extensions::MediaGalleriesPermission::kCopyToPermission);
   extensions::MediaGalleriesPermission::CheckParam delete_param(
@@ -158,7 +158,8 @@ string16 MediaGalleriesDialogController::GetSubtext() const {
   return l10n_util::GetStringFUTF16(id, UTF8ToUTF16(extension_->name()));
 }
 
-string16 MediaGalleriesDialogController::GetUnattachedLocationsHeader() const {
+base::string16 MediaGalleriesDialogController::GetUnattachedLocationsHeader()
+    const {
   return l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNATTACHED_LOCATIONS);
 }
 

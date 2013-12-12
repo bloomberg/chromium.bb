@@ -56,7 +56,7 @@ int SessionCrashedInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_RESTORE_SESSION;
 }
 
-string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
+base::string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE);
 }
 
@@ -64,7 +64,7 @@ int SessionCrashedInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
+base::string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);

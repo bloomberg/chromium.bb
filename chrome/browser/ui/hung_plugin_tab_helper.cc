@@ -187,7 +187,7 @@ int HungPluginInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PLUGIN_CRASHED;
 }
 
-string16 HungPluginInfoBarDelegate::GetMessageText() const {
+base::string16 HungPluginInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
@@ -195,7 +195,8 @@ int HungPluginInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 HungPluginInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
+base::string16 HungPluginInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
   return button_text_;
 }
 

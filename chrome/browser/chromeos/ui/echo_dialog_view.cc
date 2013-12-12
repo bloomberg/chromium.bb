@@ -130,7 +130,8 @@ bool EchoDialogView::Cancel() {
   return true;
 }
 
-string16 EchoDialogView::GetDialogButtonLabel(ui::DialogButton button) const {
+base::string16 EchoDialogView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK && ok_button_label_id_)
     return l10n_util::GetStringUTF16(ok_button_label_id_);
   if (button == ui::DIALOG_BUTTON_CANCEL && cancel_button_label_id_)

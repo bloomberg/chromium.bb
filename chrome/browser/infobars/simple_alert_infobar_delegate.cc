@@ -35,7 +35,7 @@ int SimpleAlertInfoBarDelegate::GetIconID() const {
   return icon_id_;
 }
 
-string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
+base::string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 

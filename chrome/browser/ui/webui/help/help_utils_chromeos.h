@@ -15,7 +15,7 @@ namespace help_utils_chromeos {
 bool IsUpdateOverCellularAllowed();
 
 // Returns localized name for the connection |type|.
-string16 GetConnectionTypeAsUTF16(const std::string& type);
+base::string16 GetConnectionTypeAsUTF16(const std::string& type);
 
 }  // namespace help_utils_chromeos
 

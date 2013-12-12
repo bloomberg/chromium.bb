@@ -72,7 +72,7 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 }
 
 // Creates shortcut text from the given index and the orientation.
-string16 CreateShortcutText(size_t index,
+base::string16 CreateShortcutText(size_t index,
                             const CandidateWindow& candidate_window) {
   if (index >= candidate_window.candidates().size())
     return UTF8ToUTF16("");

@@ -22,7 +22,7 @@
 
 using content::BrowserThread;
 
-string16 GetDefaultSearchEngineName(Profile* profile) {
+base::string16 GetDefaultSearchEngineName(Profile* profile) {
   if (!profile) {
     NOTREACHED();
     return base::string16();

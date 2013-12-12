@@ -227,7 +227,7 @@ int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   return ret_val;
 }
 
-string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
+base::string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   GValue value = { 0, };
   base::string16 ret_val;
   gtk_tree_model_get_value(model, iter, FOLDER_NAME, &value);

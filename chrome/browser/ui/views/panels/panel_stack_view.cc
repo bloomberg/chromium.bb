@@ -73,7 +73,7 @@ PanelStackWindow::PanelStackWindow(const gfx::Rect& bounds,
 PanelStackWindow::~PanelStackWindow() {
 }
 
-string16 PanelStackWindow::GetWindowTitle() const {
+base::string16 PanelStackWindow::GetWindowTitle() const {
   return delegate_ ? delegate_->GetTitle() : base::string16();
 }
 

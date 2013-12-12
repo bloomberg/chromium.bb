@@ -62,7 +62,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kProfilesLastActive);
 }
 
-string16 GetActiveProfileDisplayName(Browser* browser) {
+base::string16 GetActiveProfileDisplayName(Browser* browser) {
   base::string16 profile_name;
   Profile* profile = browser->profile();
 

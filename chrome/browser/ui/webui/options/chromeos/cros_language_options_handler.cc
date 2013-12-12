@@ -311,7 +311,7 @@ base::ListValue*
   return ime_ids_list.release();
 }
 
-string16 CrosLanguageOptionsHandler::GetProductName() {
+base::string16 CrosLanguageOptionsHandler::GetProductName() {
   return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
 }
 

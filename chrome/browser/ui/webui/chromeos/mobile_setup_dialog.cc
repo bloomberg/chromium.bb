@@ -109,7 +109,7 @@ ui::ModalType MobileSetupDialogDelegate::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 MobileSetupDialogDelegate::GetDialogTitle() const {
+base::string16 MobileSetupDialogDelegate::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE);
 }
 

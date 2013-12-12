@@ -148,7 +148,7 @@ bool UserManagerView::CanMaximize() const {
   return true;
 }
 
-string16 UserManagerView::GetWindowTitle() const {
+base::string16 UserManagerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_USER_MANAGER_SCREEN_TITLE);
 }
 

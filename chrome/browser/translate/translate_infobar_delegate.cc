@@ -168,7 +168,7 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
     infobar()->RemoveSelf();
 }
 
-string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
+base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   if (infobar_type_ == TRANSLATING) {
     base::string16 target_language_name =
         language_name_at(target_language_index());
@@ -206,7 +206,7 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   }
 }
 
-string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
+base::string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
   if (infobar_type_ != TRANSLATION_ERROR) {
     DCHECK_EQ(TRANSLATING, infobar_type_);
   } else if ((error_type_ != TranslateErrors::IDENTICAL_LANGUAGES) &&
@@ -248,7 +248,7 @@ bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
 }
 
 // static
-string16 TranslateInfoBarDelegate::GetLanguageDisplayableName(
+base::string16 TranslateInfoBarDelegate::GetLanguageDisplayableName(
     const std::string& language_code) {
   return l10n_util::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);

@@ -689,7 +689,7 @@ bool NativeAppWindowViews::CanMaximize() const {
       !shell_window_->window_type_is_panel();
 }
 
-string16 NativeAppWindowViews::GetWindowTitle() const {
+base::string16 NativeAppWindowViews::GetWindowTitle() const {
   return shell_window_->GetTitle();
 }
 

@@ -64,11 +64,11 @@ InsecureContentInfoBarDelegate*
   return this;
 }
 
-string16 InsecureContentInfoBarDelegate::GetMessageText() const {
+base::string16 InsecureContentInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT);
 }
 
-string16 InsecureContentInfoBarDelegate::GetButtonLabel(
+base::string16 InsecureContentInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(button == BUTTON_OK ?
       IDS_BLOCK_INSECURE_CONTENT_BUTTON : IDS_ALLOW_INSECURE_CONTENT_BUTTON);
@@ -99,7 +99,7 @@ bool InsecureContentInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 InsecureContentInfoBarDelegate::GetLinkText() const {
+base::string16 InsecureContentInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

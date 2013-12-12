@@ -241,11 +241,11 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
   }
 }
 
-string16 ProfileDownloader::GetProfileFullName() const {
+base::string16 ProfileDownloader::GetProfileFullName() const {
   return profile_full_name_;
 }
 
-string16 ProfileDownloader::GetProfileGivenName() const {
+base::string16 ProfileDownloader::GetProfileGivenName() const {
   return profile_given_name_;
 }
 

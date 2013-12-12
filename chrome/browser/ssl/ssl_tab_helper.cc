@@ -103,7 +103,7 @@ InfoBarDelegate::Type SSLCertResultInfoBarDelegate::GetInfoBarType() const {
   return cert_.get() ? PAGE_ACTION_TYPE : WARNING_TYPE;
 }
 
-string16 SSLCertResultInfoBarDelegate::GetMessageText() const {
+base::string16 SSLCertResultInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
@@ -111,7 +111,7 @@ int SSLCertResultInfoBarDelegate::GetButtons() const {
   return cert_.get() ? BUTTON_OK : BUTTON_NONE;
 }
 
-string16 SSLCertResultInfoBarDelegate::GetButtonLabel(
+base::string16 SSLCertResultInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);

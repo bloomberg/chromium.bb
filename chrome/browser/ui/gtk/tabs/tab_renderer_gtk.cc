@@ -629,7 +629,7 @@ void TabRendererGtk::Raise() const {
         GTK_BUTTON(close_button_->widget())));
 }
 
-string16 TabRendererGtk::GetTitle() const {
+base::string16 TabRendererGtk::GetTitle() const {
   return data_.title;
 }
 

@@ -250,8 +250,8 @@ void ParseEncodingListSeparatedWithComma(
   }
 }
 
-string16 GetEncodingDisplayName(const std::string& encoding_name,
-                                int category_string_id) {
+base::string16 GetEncodingDisplayName(const std::string& encoding_name,
+                                      int category_string_id) {
   base::string16 category_name = l10n_util::GetStringUTF16(category_string_id);
   if (category_string_id != IDS_ENCODING_KOREAN &&
       category_string_id != IDS_ENCODING_THAI &&
@@ -324,7 +324,7 @@ std::string CharacterEncoding::GetCanonicalEncodingNameByCommandId(int id) {
 }
 
 // Static.
-string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
+base::string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
     int id) {
   const IdToCanonicalEncodingNameMapType* map =
       CanonicalEncodingMapSingleton()->GetIdToCanonicalEncodingNameMapData();
@@ -351,7 +351,7 @@ std::string CharacterEncoding::GetCanonicalEncodingNameByIndex(int index) {
 }
 
 // Static.
-string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByIndex(
+base::string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByIndex(
     int index) {
   if (index < kCanonicalEncodingNamesLength)
     return GetEncodingDisplayName(kCanonicalEncodingNames[index].name,

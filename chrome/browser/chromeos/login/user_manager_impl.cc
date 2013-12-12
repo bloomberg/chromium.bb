@@ -663,7 +663,7 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& user_id,
   }
 }
 
-string16 UserManagerImpl::GetUserDisplayName(
+base::string16 UserManagerImpl::GetUserDisplayName(
     const std::string& user_id) const {
   const User* user = FindUser(user_id);
   return user ? user->display_name() : base::string16();

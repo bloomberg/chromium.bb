@@ -96,7 +96,7 @@ int SigninGlobalError::MenuItemCommandID() {
   return IDC_SHOW_SIGNIN_ERROR;
 }
 
-string16 SigninGlobalError::MenuItemLabel() {
+base::string16 SigninGlobalError::MenuItemLabel() {
   if (account_id_.empty() ||
       auth_error_.state() == GoogleServiceAuthError::NONE ||
       auth_error_.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
@@ -139,7 +139,7 @@ bool SigninGlobalError::HasBubbleView() {
   return !GetBubbleViewMessages().empty();
 }
 
-string16 SigninGlobalError::GetBubbleViewTitle() {
+base::string16 SigninGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE);
 }
 
@@ -190,7 +190,7 @@ std::vector<string16> SigninGlobalError::GetBubbleViewMessages() {
   return messages;
 }
 
-string16 SigninGlobalError::GetBubbleViewAcceptButtonLabel() {
+base::string16 SigninGlobalError::GetBubbleViewAcceptButtonLabel() {
   // If the service is unavailable, don't give the user the option to try
   // signing in again.
   if (auth_error_.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
@@ -201,7 +201,7 @@ string16 SigninGlobalError::GetBubbleViewAcceptButtonLabel() {
   }
 }
 
-string16 SigninGlobalError::GetBubbleViewCancelButtonLabel() {
+base::string16 SigninGlobalError::GetBubbleViewCancelButtonLabel() {
   return base::string16();
 }
 

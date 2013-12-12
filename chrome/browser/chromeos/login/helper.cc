@@ -45,7 +45,7 @@ namespace login {
 NetworkStateHelper::NetworkStateHelper() {}
 NetworkStateHelper::~NetworkStateHelper() {}
 
-string16 NetworkStateHelper::GetCurrentNetworkName() const {
+base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
   NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
   const NetworkState* network =
       nsh->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());

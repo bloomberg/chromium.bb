@@ -207,7 +207,7 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
   return AutofillMetrics::NUM_DIALOG_UI_EVENTS;
 }
 
-string16 GetHardcodedValueForType(ServerFieldType type) {
+base::string16 GetHardcodedValueForType(ServerFieldType type) {
   if (AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY) {
     AutofillCountry country("US", g_browser_process->GetApplicationLocale());
     return country.name();

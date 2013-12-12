@@ -551,8 +551,7 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 // CookieTreeHostNode, public:
 
 // static
-string16 CookieTreeHostNode::TitleForUrl(
-    const GURL& url) {
+base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
   const std::string file_origin_node_name(
       std::string(chrome::kFileScheme) + content::kStandardSchemeSeparator);
   return UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name : url.host());

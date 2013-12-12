@@ -35,7 +35,7 @@ InfoBarDelegate::Type CollectedCookiesInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-string16 CollectedCookiesInfoBarDelegate::GetMessageText() const {
+base::string16 CollectedCookiesInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_INFOBAR_MESSAGE);
 }
 
@@ -43,7 +43,7 @@ int CollectedCookiesInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(
+base::string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_INFOBAR_BUTTON);

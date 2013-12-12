@@ -27,7 +27,7 @@ ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
 }
 
-string16 ExternalProtocolDialogDelegate::GetMessageText() const {
+base::string16 ExternalProtocolDialogDelegate::GetMessageText() const {
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
   // TODO(calamity): Look up the command in ExternalProtocolHandler and pass it
@@ -54,11 +54,11 @@ string16 ExternalProtocolDialogDelegate::GetMessageText() const {
   return message_text;
 }
 
-string16 ExternalProtocolDialogDelegate::GetCheckboxText() const {
+base::string16 ExternalProtocolDialogDelegate::GetCheckboxText() const {
   return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT);
 }
 
-string16 ExternalProtocolDialogDelegate::GetTitleText() const {
+base::string16 ExternalProtocolDialogDelegate::GetTitleText() const {
   return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE);
 }
 

@@ -88,17 +88,17 @@ ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
       plugin_metadata_(plugin_metadata.Pass()) {
 }
 
-string16 ConfirmInstallDialogDelegate::GetTitle() {
+base::string16 ConfirmInstallDialogDelegate::GetTitle() {
   return l10n_util::GetStringFUTF16(
       IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE, plugin_metadata_->name());
 }
 
-string16 ConfirmInstallDialogDelegate::GetMessage() {
+base::string16 ConfirmInstallDialogDelegate::GetMessage() {
   return l10n_util::GetStringFUTF16(IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG,
                                     plugin_metadata_->name());
 }
 
-string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
+base::string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(
       IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON);
 }

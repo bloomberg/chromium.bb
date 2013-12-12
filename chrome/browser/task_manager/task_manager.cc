@@ -91,7 +91,7 @@ int ValueCompareMember(const TaskManagerModel* model,
       OrderUnavailableValue(value1_valid, value2_valid);
 }
 
-string16 FormatStatsSize(const blink::WebCache::ResourceTypeStat& stat) {
+base::string16 FormatStatsSize(const blink::WebCache::ResourceTypeStat& stat) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
       ui::FormatBytesWithUnits(stat.size, ui::DATA_UNITS_KIBIBYTE, false),
       ui::FormatBytesWithUnits(stat.liveSize, ui::DATA_UNITS_KIBIBYTE, false));
@@ -314,7 +314,7 @@ int TaskManagerModel::GetResourceIndexByUniqueId(const int unique_id) const {
   return -1;
 }
 
-string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
+base::string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
   if (IsSharedByGroup(col_id) && !IsResourceFirstInGroup(index))
     return base::string16();
 
@@ -398,7 +398,7 @@ const base::string16& TaskManagerModel::GetResourceProfileName(
   return values.profile_name;
 }
 
-string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
+base::string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
   int64 net_usage = GetNetworkUsage(index);
   if (net_usage == -1)
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
@@ -409,7 +409,7 @@ string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
   return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
 }
 
-string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
+base::string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
   return UTF8ToUTF16(base::StringPrintf(
 #if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
@@ -421,59 +421,59 @@ string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
       GetCPUUsage(GetResource(index))));
 }
 
-string16 TaskManagerModel::GetResourcePrivateMemory(int index) const {
+base::string16 TaskManagerModel::GetResourcePrivateMemory(int index) const {
   size_t private_mem;
   if (!GetPrivateMemory(index, &private_mem))
     return ASCIIToUTF16("N/A");
   return GetMemCellText(private_mem);
 }
 
-string16 TaskManagerModel::GetResourceSharedMemory(int index) const {
+base::string16 TaskManagerModel::GetResourceSharedMemory(int index) const {
   size_t shared_mem;
   if (!GetSharedMemory(index, &shared_mem))
     return ASCIIToUTF16("N/A");
   return GetMemCellText(shared_mem);
 }
 
-string16 TaskManagerModel::GetResourcePhysicalMemory(int index) const {
+base::string16 TaskManagerModel::GetResourcePhysicalMemory(int index) const {
   size_t phys_mem;
   GetPhysicalMemory(index, &phys_mem);
   return GetMemCellText(phys_mem);
 }
 
-string16 TaskManagerModel::GetResourceProcessId(int index) const {
+base::string16 TaskManagerModel::GetResourceProcessId(int index) const {
   return base::IntToString16(GetProcessId(index));
 }
 
-string16 TaskManagerModel::GetResourceGDIHandles(int index) const {
+base::string16 TaskManagerModel::GetResourceGDIHandles(int index) const {
   size_t current, peak;
   GetGDIHandles(index, &current, &peak);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
       base::IntToString16(current), base::IntToString16(peak));
 }
 
-string16 TaskManagerModel::GetResourceUSERHandles(int index) const {
+base::string16 TaskManagerModel::GetResourceUSERHandles(int index) const {
   size_t current, peak;
   GetUSERHandles(index, &current, &peak);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
       base::IntToString16(current), base::IntToString16(peak));
 }
 
-string16 TaskManagerModel::GetResourceWebCoreImageCacheSize(
+base::string16 TaskManagerModel::GetResourceWebCoreImageCacheSize(
     int index) const {
   if (!CacheWebCoreStats(index))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return FormatStatsSize(GetPerResourceValues(index).webcore_stats.images);
 }
 
-string16 TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
+base::string16 TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
     int index) const {
   if (!CacheWebCoreStats(index))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return FormatStatsSize(GetPerResourceValues(index).webcore_stats.scripts);
 }
 
-string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
+base::string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
     int index) const {
   if (!CacheWebCoreStats(index))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
@@ -481,7 +481,7 @@ string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
       GetPerResourceValues(index).webcore_stats.cssStyleSheets);
 }
 
-string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
+base::string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
   size_t video_memory;
   bool has_duplicates;
   if (!GetVideoMemory(index, &video_memory, &has_duplicates) || !video_memory)
@@ -492,7 +492,7 @@ string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
   return GetMemCellText(video_memory);
 }
 
-string16 TaskManagerModel::GetResourceFPS(
+base::string16 TaskManagerModel::GetResourceFPS(
     int index) const {
   float fps = 0;
   if (!GetFPS(index, &fps))
@@ -500,19 +500,19 @@ string16 TaskManagerModel::GetResourceFPS(
   return UTF8ToUTF16(base::StringPrintf("%.0f", fps));
 }
 
-string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
+base::string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
   size_t bytes = 0;
   if (!GetSqliteMemoryUsedBytes(index, &bytes))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return GetMemCellText(bytes);
 }
 
-string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
+base::string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
   CHECK_LT(index, ResourceCount());
   return base::FormatNumber(GetGoatsTeleported(index));
 }
 
-string16 TaskManagerModel::GetResourceV8MemoryAllocatedSize(
+base::string16 TaskManagerModel::GetResourceV8MemoryAllocatedSize(
     int index) const {
   size_t memory_allocated = 0, memory_used = 0;
   if (!GetV8MemoryUsed(index, &memory_used) ||
@@ -1409,7 +1409,7 @@ double TaskManagerModel::GetCPUUsage(Resource* resource) const {
   return values.cpu_usage;
 }
 
-string16 TaskManagerModel::GetMemCellText(int64 number) const {
+base::string16 TaskManagerModel::GetMemCellText(int64 number) const {
 #if !defined(OS_MACOSX)
   base::string16 str = base::FormatNumber(number / 1024);
 

@@ -76,7 +76,7 @@ ui::ModalType IdleActionWarningDialogView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 IdleActionWarningDialogView::GetWindowTitle() const {
+base::string16 IdleActionWarningDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_IDLE_WARNING_TITLE);
 }
 

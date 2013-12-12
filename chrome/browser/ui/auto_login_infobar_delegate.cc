@@ -179,12 +179,12 @@ AutoLoginInfoBarDelegate*
   return this;
 }
 
-string16 AutoLoginInfoBarDelegate::GetMessageText() const {
+base::string16 AutoLoginInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
                                     UTF8ToUTF16(params_.username));
 }
 
-string16 AutoLoginInfoBarDelegate::GetButtonLabel(
+base::string16 AutoLoginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_AUTOLOGIN_INFOBAR_OK_BUTTON : IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON);

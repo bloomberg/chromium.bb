@@ -17,7 +17,8 @@ namespace {
 
 const char kDiskImageModelName[] = "Disk Image";
 
-string16 GetUTF16FromDictionary(CFDictionaryRef dictionary, CFStringRef key) {
+base::string16 GetUTF16FromDictionary(CFDictionaryRef dictionary,
+                                      CFStringRef key) {
   CFStringRef value =
       base::mac::GetValueFromDictionary<CFStringRef>(dictionary, key);
   if (!value)
@@ -25,7 +26,8 @@ string16 GetUTF16FromDictionary(CFDictionaryRef dictionary, CFStringRef key) {
   return base::SysCFStringRefToUTF16(value);
 }
 
-string16 JoinName(const base::string16& name, const base::string16& addition) {
+base::string16 JoinName(const base::string16& name,
+                        const base::string16& addition) {
   if (addition.empty())
     return name;
   if (name.empty())

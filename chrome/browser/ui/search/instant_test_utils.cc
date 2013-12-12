@@ -190,7 +190,7 @@ bool InstantTestBase::LoadImage(content::RenderViewHost* rvh,
   return content::ExecuteScriptAndExtractBool(rvh, js_chrome, loaded);
 }
 
-string16 InstantTestBase::GetBlueText() {
+base::string16 InstantTestBase::GetBlueText() {
   size_t start = 0, end = 0;
   omnibox()->GetSelectionBounds(&start, &end);
   if (start > end)

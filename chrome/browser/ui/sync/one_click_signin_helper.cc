@@ -221,28 +221,28 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
 ConfirmEmailDialogDelegate::~ConfirmEmailDialogDelegate() {
 }
 
-string16 ConfirmEmailDialogDelegate::GetTitle() {
+base::string16 ConfirmEmailDialogDelegate::GetTitle() {
   return l10n_util::GetStringUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
 }
 
-string16 ConfirmEmailDialogDelegate::GetMessage() {
+base::string16 ConfirmEmailDialogDelegate::GetMessage() {
   return l10n_util::GetStringFUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
       UTF8ToUTF16(last_email_), UTF8ToUTF16(email_));
 }
 
-string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
+base::string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
 }
 
-string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
+base::string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
   return l10n_util::GetStringUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
 }
 
-string16 ConfirmEmailDialogDelegate::GetLinkText() const {
+base::string16 ConfirmEmailDialogDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

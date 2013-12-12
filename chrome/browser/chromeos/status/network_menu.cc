@@ -236,7 +236,7 @@ ui::MenuSeparatorType NetworkMenuModel::GetSeparatorTypeAt(int index) const {
   return ui::NORMAL_SEPARATOR;
 }
 
-string16 NetworkMenuModel::GetLabelAt(int index) const {
+base::string16 NetworkMenuModel::GetLabelAt(int index) const {
   return menu_items_[index].label;
 }
 

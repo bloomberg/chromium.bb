@@ -122,7 +122,7 @@ int HungPagesTableModel::RowCount() {
   return static_cast<int>(tab_observers_.size());
 }
 
-string16 HungPagesTableModel::GetText(int row, int column_id) {
+base::string16 HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
   base::string16 title = tab_observers_[row]->web_contents()->GetTitle();
   if (title.empty())
@@ -303,7 +303,7 @@ void HungRendererDialogView::EndForWebContents(WebContents* contents) {
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, views::DialogDelegate implementation:
 
-string16 HungRendererDialogView::GetWindowTitle() const {
+base::string16 HungRendererDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE);
 }
 
@@ -322,7 +322,7 @@ int HungRendererDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-string16 HungRendererDialogView::GetDialogButtonLabel(
+base::string16 HungRendererDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);

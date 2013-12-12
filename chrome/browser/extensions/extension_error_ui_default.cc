@@ -60,7 +60,7 @@ int ExtensionErrorUIDefault::ExtensionGlobalError::MenuItemCommandID() {
   return 0;
 }
 
-string16 ExtensionErrorUIDefault::ExtensionGlobalError::MenuItemLabel() {
+base::string16 ExtensionErrorUIDefault::ExtensionGlobalError::MenuItemLabel() {
   NOTREACHED();
   return NULL;
 }
@@ -70,21 +70,22 @@ void ExtensionErrorUIDefault::ExtensionGlobalError::ExecuteMenuItem(
   NOTREACHED();
 }
 
-string16 ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewTitle() {
+base::string16
+ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewTitle() {
   return error_ui_->GetBubbleViewTitle();
 }
 
-std::vector<string16>
+std::vector<base::string16>
 ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewMessages() {
   return error_ui_->GetBubbleViewMessages();
 }
 
-string16 ExtensionErrorUIDefault::ExtensionGlobalError::
+base::string16 ExtensionErrorUIDefault::ExtensionGlobalError::
     GetBubbleViewAcceptButtonLabel() {
   return error_ui_->GetBubbleViewAcceptButtonLabel();
 }
 
-string16 ExtensionErrorUIDefault::ExtensionGlobalError::
+base::string16 ExtensionErrorUIDefault::ExtensionGlobalError::
     GetBubbleViewCancelButtonLabel() {
   return error_ui_->GetBubbleViewCancelButtonLabel();
 }

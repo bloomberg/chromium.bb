@@ -57,7 +57,7 @@ bool UpdateRecommendedMessageBox::Accept() {
   return true;
 }
 
-string16 UpdateRecommendedMessageBox::GetDialogButtonLabel(
+base::string16 UpdateRecommendedMessageBox::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
       IDS_RELAUNCH_AND_UPDATE : IDS_NOT_NOW);
@@ -71,7 +71,7 @@ bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
 #endif
 }
 
-string16 UpdateRecommendedMessageBox::GetWindowTitle() const {
+base::string16 UpdateRecommendedMessageBox::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 

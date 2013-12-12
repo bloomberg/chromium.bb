@@ -40,7 +40,7 @@ std::string FakeSupervisedUserManager::GetUserSyncId(
   return std::string();
 }
 
-string16 FakeSupervisedUserManager::GetManagerDisplayName(
+base::string16 FakeSupervisedUserManager::GetManagerDisplayName(
     const std::string& managed_user_id) const {
   return base::string16();
 }

@@ -59,7 +59,7 @@ using content::BrowserThread;
 namespace {
 
 // Returns the browser version as a string.
-string16 BuildBrowserVersionString() {
+base::string16 BuildBrowserVersionString() {
   chrome::VersionInfo version_info;
   DCHECK(version_info.is_valid());
 
@@ -82,7 +82,7 @@ string16 BuildBrowserVersionString() {
 
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
-string16 GetAllowedConnectionTypesMessage() {
+base::string16 GetAllowedConnectionTypesMessage() {
   if (help_utils_chromeos::IsUpdateOverCellularAllowed()) {
     return l10n_util::GetStringUTF16(IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED);
   } else {

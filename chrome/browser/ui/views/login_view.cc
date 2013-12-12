@@ -88,11 +88,11 @@ LoginView::~LoginView() {
     login_model_->RemoveObserver(this);
 }
 
-string16 LoginView::GetUsername() {
+base::string16 LoginView::GetUsername() {
   return username_field_->text();
 }
 
-string16 LoginView::GetPassword() {
+base::string16 LoginView::GetPassword() {
   return password_field_->text();
 }
 

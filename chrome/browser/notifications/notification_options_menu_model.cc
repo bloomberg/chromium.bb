@@ -176,8 +176,8 @@ bool NotificationOptionsMenuModel::IsItemForCommandIdDynamic(int command_id)
          command_id == kToggleExtensionCommand;
 }
 
-string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
-    const {
+base::string16 NotificationOptionsMenuModel::GetLabelForCommandId(
+    int command_id) const {
   // TODO(tfarina,johnnyg): Remove this code if we decide to close notifications
   // after permissions are revoked.
   if (command_id == kTogglePermissionCommand ||

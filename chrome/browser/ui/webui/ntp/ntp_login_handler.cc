@@ -69,8 +69,8 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
 }
 
 // Puts the |content| into a span with the given CSS class.
-string16 CreateSpanWithClass(const base::string16& content,
-                             const std::string& css_class) {
+base::string16 CreateSpanWithClass(const base::string16& content,
+                                   const std::string& css_class) {
   return ASCIIToUTF16("<span class='" + css_class + "'>") +
       net::EscapeForHTML(content) + ASCIIToUTF16("</span>");
 }

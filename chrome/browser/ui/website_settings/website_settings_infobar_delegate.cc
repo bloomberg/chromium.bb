@@ -36,7 +36,7 @@ InfoBarDelegate::Type WebsiteSettingsInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-string16 WebsiteSettingsInfoBarDelegate::GetMessageText() const {
+base::string16 WebsiteSettingsInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INFOBAR_TEXT);
 }
 
@@ -44,7 +44,7 @@ int WebsiteSettingsInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 WebsiteSettingsInfoBarDelegate::GetButtonLabel(
+base::string16 WebsiteSettingsInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INFOBAR_BUTTON);

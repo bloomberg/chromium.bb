@@ -80,15 +80,15 @@ gfx::Image* TabModalConfirmDialogDelegate::GetIcon() {
   return NULL;
 }
 
-string16 TabModalConfirmDialogDelegate::GetAcceptButtonTitle() {
+base::string16 TabModalConfirmDialogDelegate::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_OK);
 }
 
-string16 TabModalConfirmDialogDelegate::GetCancelButtonTitle() {
+base::string16 TabModalConfirmDialogDelegate::GetCancelButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
-string16 TabModalConfirmDialogDelegate::GetLinkText() const {
+base::string16 TabModalConfirmDialogDelegate::GetLinkText() const {
   return base::string16();
 }
 

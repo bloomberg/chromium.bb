@@ -33,7 +33,7 @@ static base::LazyInstance<base::Lock>::Leaky
     g_timezone_bundle_lock = LAZY_INSTANCE_INITIALIZER;
 
 // Returns an exemplary city in the given timezone.
-string16 GetExemplarCity(const icu::TimeZone& zone) {
+base::string16 GetExemplarCity(const icu::TimeZone& zone) {
   // TODO(jungshik): After upgrading to ICU 4.6, use U_ICUDATA_ZONE
   static const char* zone_bundle_name = NULL;
 
@@ -82,7 +82,7 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
 }
 
 // Gets the given timezone's name for visualization.
-string16 GetTimezoneName(const icu::TimeZone& timezone) {
+base::string16 GetTimezoneName(const icu::TimeZone& timezone) {
   // Instead of using the raw_offset, use the offset in effect now.
   // For instance, US Pacific Time, the offset shown will be -7 in summer
   // while it'll be -8 in winter.

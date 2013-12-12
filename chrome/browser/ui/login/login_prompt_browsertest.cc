@@ -214,8 +214,8 @@ const char kSingleRealmTestPage[] = "files/login/single_realm.html";
 const char* kAuthBasicPage = "auth-basic";
 const char* kAuthDigestPage = "auth-digest";
 
-string16 ExpectedTitleFromAuth(const base::string16& username,
-                               const base::string16& password) {
+base::string16 ExpectedTitleFromAuth(const base::string16& username,
+                                     const base::string16& password) {
   // The TestServer sets the title to username/password on successful login.
   return username + UTF8ToUTF16("/") + password;
 }

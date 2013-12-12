@@ -265,7 +265,7 @@ void ExtensionInstallPrompt::Prompt::SetInlineInstallWebstoreData(
   rating_count_ = rating_count;
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
   int resource_id = kTitleIds[type_];
 
   if (type_ == INSTALL_PROMPT) {
@@ -283,7 +283,7 @@ string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(resource_id);
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
   if (type_ == INLINE_INSTALL_PROMPT) {
     return UTF8ToUTF16(extension_->name());
   } else if (type_ == BUNDLE_INSTALL_PROMPT) {
@@ -322,7 +322,7 @@ bool ExtensionInstallPrompt::Prompt::HasAcceptButtonLabel() const {
   return true;
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
   if (type_ == EXTERNAL_INSTALL_PROMPT) {
     int id = -1;
     if (extension_->is_app())
@@ -340,20 +340,20 @@ bool ExtensionInstallPrompt::Prompt::HasAbortButtonLabel() const {
   return kAbortButtonIds[type_] > 0;
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetAbortButtonLabel() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetAbortButtonLabel() const {
   CHECK(HasAbortButtonLabel());
   return l10n_util::GetStringUTF16(kAbortButtonIds[type_]);
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
   return l10n_util::GetStringUTF16(kPermissionsHeaderIds[type_]);
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
   return l10n_util::GetStringFUTF16(kOAuthHeaderIds[type_], oauth_user_name_);
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
   const int kRetainedFilesMessageIDs[6] = {
       IDS_EXTENSION_PROMPT_RETAINED_FILES_DEFAULT,
       IDS_EXTENSION_PROMPT_RETAINED_FILE_SINGULAR,
@@ -402,13 +402,13 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
   }
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_RATING_COUNT,
                                     base::IntToString16(rating_count_));
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
+base::string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
 
   if (show_user_count_) {
@@ -426,12 +426,13 @@ size_t ExtensionInstallPrompt::Prompt::GetPermissionsDetailsCount() const {
   return details_.size();
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetPermission(size_t index) const {
+base::string16 ExtensionInstallPrompt::Prompt::GetPermission(size_t index)
+    const {
   CHECK_LT(index, permissions_.size());
   return permissions_[index];
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetPermissionsDetails(
+base::string16 ExtensionInstallPrompt::Prompt::GetPermissionsDetails(
     size_t index) const {
   CHECK_LT(index, details_.size());
   return details_[index];
@@ -466,7 +467,8 @@ size_t ExtensionInstallPrompt::Prompt::GetRetainedFileCount() const {
   return retained_files_.size();
 }
 
-string16 ExtensionInstallPrompt::Prompt::GetRetainedFile(size_t index) const {
+base::string16 ExtensionInstallPrompt::Prompt::GetRetainedFile(size_t index)
+    const {
   CHECK_LT(index, retained_files_.size());
   return retained_files_[index].AsUTF16Unsafe();
 }

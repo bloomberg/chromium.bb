@@ -23,7 +23,7 @@ ui::ModalType InlineLoginDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 InlineLoginDialog::GetDialogTitle() const {
+base::string16 InlineLoginDialog::GetDialogTitle() const {
   return base::string16();
 }
 

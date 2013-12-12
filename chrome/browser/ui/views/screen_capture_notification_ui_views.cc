@@ -247,7 +247,7 @@ ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
   return frame;
 }
 
-string16 ScreenCaptureNotificationUIViews::GetWindowTitle() const {
+base::string16 ScreenCaptureNotificationUIViews::GetWindowTitle() const {
   return text_;
 }
 

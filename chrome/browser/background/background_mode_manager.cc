@@ -157,7 +157,7 @@ void BackgroundModeManager::BackgroundModeData::SetName(
   name_ = new_profile_name;
 }
 
-string16 BackgroundModeManager::BackgroundModeData::name() {
+base::string16 BackgroundModeManager::BackgroundModeData::name() {
   return name_;
 }
 

@@ -48,7 +48,7 @@ ui::ModalType CaptivePortalView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 CaptivePortalView::GetWindowTitle() const {
+base::string16 CaptivePortalView::GetWindowTitle() const {
   base::string16 network_name;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();

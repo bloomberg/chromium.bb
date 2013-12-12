@@ -61,7 +61,7 @@ std::string SearchTermsData::GetApplicationLocale() const {
   return "en";
 }
 
-string16 SearchTermsData::GetRlzParameterValue() const {
+base::string16 SearchTermsData::GetRlzParameterValue() const {
   return base::string16();
 }
 
@@ -116,7 +116,7 @@ std::string UIThreadSearchTermsData::GetApplicationLocale() const {
 
 // Android implementations are located in search_terms_data_android.cc.
 #if !defined(OS_ANDROID)
-string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
+base::string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::string16 rlz_string;

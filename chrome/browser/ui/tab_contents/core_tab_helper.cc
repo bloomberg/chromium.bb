@@ -44,11 +44,11 @@ CoreTabHelper::CoreTabHelper(WebContents* web_contents)
 CoreTabHelper::~CoreTabHelper() {
 }
 
-string16 CoreTabHelper::GetDefaultTitle() {
+base::string16 CoreTabHelper::GetDefaultTitle() {
   return l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
 }
 
-string16 CoreTabHelper::GetStatusText() const {
+base::string16 CoreTabHelper::GetStatusText() const {
   if (!web_contents()->IsLoading() ||
       web_contents()->GetLoadState().state == net::LOAD_STATE_IDLE) {
     return base::string16();

@@ -115,7 +115,7 @@ ThemeInstalledInfoBarDelegate*
   return this;
 }
 
-string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
+base::string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_THEME_INSTALL_INFOBAR_LABEL,
                                     UTF8ToUTF16(name_));
 }
@@ -124,7 +124,7 @@ int ThemeInstalledInfoBarDelegate::GetButtons() const {
   return BUTTON_CANCEL;
 }
 
-string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
+base::string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_CANCEL, button);
   return l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);

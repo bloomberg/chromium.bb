@@ -41,7 +41,8 @@ bool SystemMenuModelDelegate::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_RESTORE_TAB;
 }
 
-string16 SystemMenuModelDelegate::GetLabelForCommandId(int command_id) const {
+base::string16 SystemMenuModelDelegate::GetLabelForCommandId(
+    int command_id) const {
   DCHECK_EQ(command_id, IDC_RESTORE_TAB);
 
   int string_id = IDS_RESTORE_TAB;

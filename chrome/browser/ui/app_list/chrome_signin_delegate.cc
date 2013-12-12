@@ -77,27 +77,27 @@ void ChromeSigninDelegate::OpenSettings() {
   OpenApplication(AppLaunchParams(profile_, extension, NEW_FOREGROUND_TAB));
 }
 
-string16 ChromeSigninDelegate::GetSigninHeading() {
+base::string16 ChromeSigninDelegate::GetSigninHeading() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_HEADING);
 }
 
-string16 ChromeSigninDelegate::GetSigninText() {
+base::string16 ChromeSigninDelegate::GetSigninText() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_TEXT);
 }
 
-string16 ChromeSigninDelegate::GetSigninButtonText() {
+base::string16 ChromeSigninDelegate::GetSigninButtonText() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_BUTTON);
 }
 
-string16 ChromeSigninDelegate::GetLearnMoreLinkText() {
+base::string16 ChromeSigninDelegate::GetLearnMoreLinkText() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT);
 }
 
-string16 ChromeSigninDelegate::GetSettingsLinkText() {
+base::string16 ChromeSigninDelegate::GetSettingsLinkText() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_SETTINGS_TEXT);
 }

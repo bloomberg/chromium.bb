@@ -587,7 +587,8 @@ bool HasAnyProfileShortcuts(const base::FilePath& profile_path) {
 // TODO(macourteau): find a way to limit the total path's length to MAX_PATH
 // instead of limiting the profile's name to |kMaxProfileShortcutFileNameLength|
 // characters.
-string16 SanitizeShortcutProfileNameString(const base::string16& profile_name) {
+base::string16 SanitizeShortcutProfileNameString(
+    const base::string16& profile_name) {
   base::string16 sanitized = profile_name;
   size_t pos = sanitized.find_first_of(kReservedCharacters);
   while (pos != base::string16::npos) {
@@ -625,8 +626,9 @@ base::FilePath GetProfileIconPath(const base::FilePath& profile_path) {
   return profile_path.AppendASCII(kProfileIconFileName);
 }
 
-string16 GetShortcutFilenameForProfile(const base::string16& profile_name,
-                                       BrowserDistribution* distribution) {
+base::string16 GetShortcutFilenameForProfile(
+    const base::string16& profile_name,
+    BrowserDistribution* distribution) {
   base::string16 shortcut_name;
   if (!profile_name.empty()) {
     shortcut_name.append(SanitizeShortcutProfileNameString(profile_name));
@@ -639,7 +641,7 @@ string16 GetShortcutFilenameForProfile(const base::string16& profile_name,
   return shortcut_name + installer::kLnkExt;
 }
 
-string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
+base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
   return base::StringPrintf(L"--%ls=\"%ls\"",
                             ASCIIToUTF16(switches::kProfileDirectory).c_str(),
                             profile_path.BaseName().value().c_str());

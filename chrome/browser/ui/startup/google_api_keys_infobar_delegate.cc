@@ -29,7 +29,7 @@ GoogleApiKeysInfoBarDelegate::GoogleApiKeysInfoBarDelegate()
 GoogleApiKeysInfoBarDelegate::~GoogleApiKeysInfoBarDelegate() {
 }
 
-string16 GoogleApiKeysInfoBarDelegate::GetMessageText() const {
+base::string16 GoogleApiKeysInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MISSING_GOOGLE_API_KEYS);
 }
 
@@ -37,7 +37,7 @@ int GoogleApiKeysInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
 }
 
-string16 GoogleApiKeysInfoBarDelegate::GetLinkText() const {
+base::string16 GoogleApiKeysInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

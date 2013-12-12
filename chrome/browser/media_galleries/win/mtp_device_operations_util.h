@@ -73,9 +73,9 @@ DWORD CopyDataChunkToLocalFile(IStream* stream,
 // Returns the identifier of the object specified by the |object_name|.
 // |parent_id| specifies the object's parent identifier.
 // |object_name| specifies the friendly name of the object.
-string16 GetObjectIdFromName(IPortableDevice* device,
-                             const base::string16& parent_id,
-                             const base::string16& object_name);
+base::string16 GetObjectIdFromName(IPortableDevice* device,
+                                   const base::string16& parent_id,
+                                   const base::string16& object_name);
 
 }  // namespace media_transfer_protocol
 

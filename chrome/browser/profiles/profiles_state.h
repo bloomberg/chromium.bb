@@ -31,7 +31,7 @@ base::FilePath GetProfilePrefsPath(const base::FilePath& profile_dir);
 void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Returns the display name of the active on-the-record profile (or guest).
-string16 GetActiveProfileDisplayName(Browser* browser);
+base::string16 GetActiveProfileDisplayName(Browser* browser);
 
 // Update the name of |profile| to |new_profile_name|. This updates the
 // profile preferences, which triggers an update in the ProfileInfoCache.

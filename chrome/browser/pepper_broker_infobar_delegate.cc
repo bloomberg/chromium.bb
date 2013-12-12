@@ -137,7 +137,7 @@ int PepperBrokerInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }
 
-string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
+base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
   content::WebPluginInfo plugin;
@@ -151,7 +151,7 @@ string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
                                                    languages_));
 }
 
-string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
+base::string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PEPPER_BROKER_ALLOW_BUTTON : IDS_PEPPER_BROKER_DENY_BUTTON);
@@ -167,7 +167,7 @@ bool PepperBrokerInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 PepperBrokerInfoBarDelegate::GetLinkText() const {
+base::string16 PepperBrokerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

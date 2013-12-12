@@ -100,11 +100,11 @@ void SharedWorkerResource::UpdateProcessHandle(base::ProcessHandle handle) {
   handle_ = handle;
 }
 
-string16 SharedWorkerResource::GetTitle() const {
+base::string16 SharedWorkerResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WORKER_PREFIX, title_);
 }
 
-string16 SharedWorkerResource::GetProfileName() const {
+base::string16 SharedWorkerResource::GetProfileName() const {
   return base::string16();
 }
 

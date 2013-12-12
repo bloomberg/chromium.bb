@@ -80,7 +80,8 @@ int CertificateSelectorTableModel::RowCount() {
   return items_.size();
 }
 
-string16 CertificateSelectorTableModel::GetText(int index, int column_id) {
+base::string16 CertificateSelectorTableModel::GetText(int index,
+                                                      int column_id) {
   DCHECK_EQ(column_id, 0);
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(items_.size()));
@@ -184,7 +185,7 @@ bool SSLClientCertificateSelector::CanResize() const {
   return true;
 }
 
-string16 SSLClientCertificateSelector::GetWindowTitle() const {
+base::string16 SSLClientCertificateSelector::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CLIENT_CERT_DIALOG_TITLE);
 }
 

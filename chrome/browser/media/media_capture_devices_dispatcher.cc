@@ -99,8 +99,8 @@ bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
 
 // Helper to get title of the calling application shown in the screen capture
 // notification.
-string16 GetApplicationTitle(content::WebContents* web_contents,
-                             const extensions::Extension* extension) {
+base::string16 GetApplicationTitle(content::WebContents* web_contents,
+                                   const extensions::Extension* extension) {
   // Use extension name as title for extensions and origin for drive-by web.
   std::string title;
   if (extension) {

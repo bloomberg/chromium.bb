@@ -33,7 +33,8 @@ bool IsFormSubmit(const NavigationEntry* entry) {
           content::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
-string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry) {
+base::string16 GenerateKeywordFromNavigationEntry(
+    const NavigationEntry* entry) {
   // Don't autogenerate keywords for pages that are the result of form
   // submissions.
   if (IsFormSubmit(entry))

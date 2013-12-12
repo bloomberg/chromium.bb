@@ -715,7 +715,7 @@ void OmniboxViewGtk::SetGrayTextAutocompletion(
   UpdateGrayTextViewColors();
 }
 
-string16 OmniboxViewGtk::GetGrayTextAutocompletion() const {
+base::string16 OmniboxViewGtk::GetGrayTextAutocompletion() const {
   const gchar* suggestion = gtk_label_get_text(GTK_LABEL(gray_text_view_));
   return suggestion ? UTF8ToUTF16(suggestion) : base::string16();
 }

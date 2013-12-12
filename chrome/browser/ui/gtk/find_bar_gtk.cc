@@ -382,7 +382,7 @@ void FindBarGtk::SetFindTextAndSelectedRange(const base::string16& find_text,
   ignore_changed_signal_ = false;
 }
 
-string16 FindBarGtk::GetFindText() {
+base::string16 FindBarGtk::GetFindText() {
   std::string contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
   return UTF8ToUTF16(contents);
 }
@@ -586,7 +586,7 @@ bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,
   return true;
 }
 
-string16 FindBarGtk::GetFindSelectedText() {
+base::string16 FindBarGtk::GetFindSelectedText() {
   gint cursor_pos;
   gint selection_bound;
   g_object_get(G_OBJECT(text_entry_), "cursor-position", &cursor_pos,
@@ -597,7 +597,7 @@ string16 FindBarGtk::GetFindSelectedText() {
   return UTF8ToUTF16(contents.substr(cursor_pos, selection_bound));
 }
 
-string16 FindBarGtk::GetMatchCountText() {
+base::string16 FindBarGtk::GetMatchCountText() {
   std::string contents(gtk_label_get_text(GTK_LABEL(match_count_label_)));
   return UTF8ToUTF16(contents);
 }

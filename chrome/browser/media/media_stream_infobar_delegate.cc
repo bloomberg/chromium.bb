@@ -95,7 +95,7 @@ MediaStreamInfoBarDelegate*
   return this;
 }
 
-string16 MediaStreamInfoBarDelegate::GetMessageText() const {
+base::string16 MediaStreamInfoBarDelegate::GetMessageText() const {
   int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
   if (!controller_->HasAudio())
     message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
@@ -105,7 +105,7 @@ string16 MediaStreamInfoBarDelegate::GetMessageText() const {
       message_id, UTF8ToUTF16(controller_->GetSecurityOriginSpec()));
 }
 
-string16 MediaStreamInfoBarDelegate::GetButtonLabel(
+base::string16 MediaStreamInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_MEDIA_CAPTURE_ALLOW : IDS_MEDIA_CAPTURE_DENY);
@@ -131,7 +131,7 @@ bool MediaStreamInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 MediaStreamInfoBarDelegate::GetLinkText() const {
+base::string16 MediaStreamInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

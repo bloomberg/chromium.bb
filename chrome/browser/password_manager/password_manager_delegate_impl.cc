@@ -162,11 +162,11 @@ InfoBarDelegate::Type SavePasswordInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-string16 SavePasswordInfoBarDelegate::GetMessageText() const {
+base::string16 SavePasswordInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
 }
 
-string16 SavePasswordInfoBarDelegate::GetButtonLabel(
+base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PASSWORD_MANAGER_SAVE_BUTTON : IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);

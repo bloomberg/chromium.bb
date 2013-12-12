@@ -71,13 +71,13 @@ bool IsQueryExtractionEnabled();
 // consider IsQueryExtractionEnabled() and Instant support state of the page and
 // does not check for a privileged process, so most callers should use
 // GetSearchTerms() below instead.
-string16 GetSearchTermsFromURL(Profile* profile, const GURL& url);
+base::string16 GetSearchTermsFromURL(Profile* profile, const GURL& url);
 
 // Returns the search terms attached to a specific NavigationEntry, or empty
 // string otherwise. Does not consider IsQueryExtractionEnabled() and does not
 // check Instant support, so most callers should use GetSearchTerms() below
 // instead.
-string16 GetSearchTermsFromNavigationEntry(
+base::string16 GetSearchTermsFromNavigationEntry(
     const content::NavigationEntry* entry);
 
 // Returns search terms if this WebContents is a search results page. It looks
@@ -87,7 +87,7 @@ string16 GetSearchTermsFromNavigationEntry(
 // Returns a blank string if search terms were not found, or if search terms
 // extraction is disabled for this WebContents or profile, or if |contents|
 // does not support Instant.
-string16 GetSearchTerms(const content::WebContents* contents);
+base::string16 GetSearchTerms(const content::WebContents* contents);
 
 // Returns true if |url| should be rendered in the Instant renderer process.
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);

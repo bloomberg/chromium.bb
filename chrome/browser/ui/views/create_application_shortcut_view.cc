@@ -339,7 +339,7 @@ gfx::Size CreateApplicationShortcutView::GetPreferredSize() {
   return gfx::Size(kDialogWidth, height);
 }
 
-string16 CreateApplicationShortcutView::GetDialogButtonLabel(
+base::string16 CreateApplicationShortcutView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT);
@@ -362,7 +362,7 @@ ui::ModalType CreateApplicationShortcutView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 CreateApplicationShortcutView::GetWindowTitle() const {
+base::string16 CreateApplicationShortcutView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_TITLE);
 }
 

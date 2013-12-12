@@ -12,7 +12,7 @@ namespace test {
 
 namespace {
 
-string16 GetContent(const TokenizedString& tokenized) {
+base::string16 GetContent(const TokenizedString& tokenized) {
   const TokenizedString::Tokens& tokens = tokenized.tokens();
   const TokenizedString::Mappings& mappings = tokenized.mappings();
 

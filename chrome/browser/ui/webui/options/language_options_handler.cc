@@ -114,7 +114,7 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   return language_list;
 }
 
-string16 LanguageOptionsHandler::GetProductName() {
+base::string16 LanguageOptionsHandler::GetProductName() {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 

@@ -36,7 +36,7 @@ InfoBarDelegate::Type
   return PAGE_ACTION_TYPE;
 }
 
-string16 MediaSettingChangedInfoBarDelegate::GetMessageText() const {
+base::string16 MediaSettingChangedInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(
       IDS_MEDIASTREAM_SETTING_CHANGED_INFOBAR_MESSAGE);
 }
@@ -45,7 +45,7 @@ int MediaSettingChangedInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 MediaSettingChangedInfoBarDelegate::GetButtonLabel(
+base::string16 MediaSettingChangedInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_CONTENT_SETTING_CHANGED_INFOBAR_BUTTON);

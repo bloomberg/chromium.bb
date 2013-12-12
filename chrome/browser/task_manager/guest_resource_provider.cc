@@ -61,7 +61,7 @@ Resource::Type GuestResource::GetType() const {
   return GUEST;
 }
 
-string16 GuestResource::GetTitle() const {
+base::string16 GuestResource::GetTitle() const {
   WebContents* web_contents = GetWebContents();
   const int message_id = IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
   if (web_contents) {
@@ -71,7 +71,7 @@ string16 GuestResource::GetTitle() const {
   return l10n_util::GetStringFUTF16(message_id, base::string16());
 }
 
-string16 GuestResource::GetProfileName() const {
+base::string16 GuestResource::GetProfileName() const {
   WebContents* web_contents = GetWebContents();
   if (web_contents) {
     Profile* profile = Profile::FromBrowserContext(

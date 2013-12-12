@@ -1353,7 +1353,7 @@ gfx::Image ChromeLauncherController::GetAppListIcon(
   return result;
 }
 
-string16 ChromeLauncherController::GetAppListTitle(
+base::string16 ChromeLauncherController::GetAppListTitle(
     content::WebContents* web_contents) const {
   base::string16 title = web_contents->GetTitle();
   if (!title.empty())

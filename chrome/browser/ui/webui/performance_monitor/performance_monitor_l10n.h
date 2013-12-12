@@ -15,26 +15,29 @@
 namespace performance_monitor {
 
 // Aggregation-Related
-string16 GetLocalizedStringFromAggregationMethod(
+base::string16 GetLocalizedStringFromAggregationMethod(
     const AggregationMethod method);
-string16 GetLocalizedStringForAggregationMethodDescription(
+base::string16 GetLocalizedStringForAggregationMethodDescription(
     const AggregationMethod method);
 
 // Event-Related
-string16 GetLocalizedStringFromEventCategory(const EventCategory category);
-string16 GetLocalizedStringForEventCategoryDescription(
+base::string16 GetLocalizedStringFromEventCategory(
     const EventCategory category);
-string16 GetLocalizedStringFromEventType(const EventType type);
-string16 GetLocalizedStringForEventTypeDescription(const EventType type);
-string16 GetLocalizedStringForEventTypeMouseover(const EventType type);
-string16 GetLocalizedStringFromEventProperty(const std::string& key);
+base::string16 GetLocalizedStringForEventCategoryDescription(
+    const EventCategory category);
+base::string16 GetLocalizedStringFromEventType(const EventType type);
+base::string16 GetLocalizedStringForEventTypeDescription(const EventType type);
+base::string16 GetLocalizedStringForEventTypeMouseover(const EventType type);
+base::string16 GetLocalizedStringFromEventProperty(const std::string& key);
 
 // Metric-Related
-string16 GetLocalizedStringFromMetricCategory(const MetricCategory category);
-string16 GetLocalizedStringForMetricCategoryDescription(
+base::string16 GetLocalizedStringFromMetricCategory(
     const MetricCategory category);
-string16 GetLocalizedStringFromMetricType(const MetricType type);
-string16 GetLocalizedStringForMetricTypeDescription(const MetricType type);
+base::string16 GetLocalizedStringForMetricCategoryDescription(
+    const MetricCategory category);
+base::string16 GetLocalizedStringFromMetricType(const MetricType type);
+base::string16 GetLocalizedStringForMetricTypeDescription(
+    const MetricType type);
 
 // Miscellaneous
 string16 GetLocalizedStringFromUnit(const Unit unit);

@@ -30,7 +30,7 @@ const std::string& LauncherItemController::app_id() const {
   return app_id_;
 }
 
-string16 LauncherItemController::GetAppTitle() const {
+base::string16 LauncherItemController::GetAppTitle() const {
   if (app_id_.empty())
     return base::string16();
   const extensions::Extension* extension =

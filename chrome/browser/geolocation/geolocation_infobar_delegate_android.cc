@@ -67,7 +67,7 @@ bool GeolocationInfoBarDelegateAndroid::Accept() {
   return true;
 }
 
-string16 GeolocationInfoBarDelegateAndroid::GetButtonLabel(
+base::string16 GeolocationInfoBarDelegateAndroid::GetButtonLabel(
     InfoBarButton button) const {
   return (button == BUTTON_OK) ?
       UTF8ToUTF16(google_location_settings_helper_->GetAcceptButtonLabel()) :

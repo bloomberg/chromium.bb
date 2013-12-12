@@ -11,7 +11,7 @@
 namespace performance_monitor {
 
 // Aggregation-Related
-string16 GetLocalizedStringFromAggregationMethod(
+base::string16 GetLocalizedStringFromAggregationMethod(
     const AggregationMethod method) {
   int string_id = 0;
   switch (method) {
@@ -31,7 +31,7 @@ string16 GetLocalizedStringFromAggregationMethod(
   return l10n_util::GetStringUTF16(string_id);
 }
 
-string16 GetLocalizedStringForAggregationMethodDescription(
+base::string16 GetLocalizedStringForAggregationMethodDescription(
     const AggregationMethod method) {
   int string_id = 0;
   switch (method) {
@@ -52,7 +52,8 @@ string16 GetLocalizedStringForAggregationMethodDescription(
 }
 
 // Event-Related
-string16 GetLocalizedStringFromEventCategory(const EventCategory category) {
+base::string16 GetLocalizedStringFromEventCategory(
+    const EventCategory category) {
   int string_id = 0;
   switch (category) {
     case EVENT_CATEGORY_CHROME:
@@ -71,7 +72,7 @@ string16 GetLocalizedStringFromEventCategory(const EventCategory category) {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-string16 GetLocalizedStringForEventCategoryDescription(
+base::string16 GetLocalizedStringForEventCategoryDescription(
     const EventCategory category) {
   int string_id = 0;
   switch (category) {
@@ -92,7 +93,7 @@ string16 GetLocalizedStringForEventCategoryDescription(
       string_id, l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
-string16 GetLocalizedStringFromEventType(const EventType type) {
+base::string16 GetLocalizedStringFromEventType(const EventType type) {
   int string_id = 0;
 
   switch (type) {
@@ -133,7 +134,7 @@ string16 GetLocalizedStringFromEventType(const EventType type) {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-string16 GetLocalizedStringForEventTypeDescription(const EventType type) {
+base::string16 GetLocalizedStringForEventTypeDescription(const EventType type) {
   int string_id1 = 0;
   int string_id2 = 0;
 
@@ -183,7 +184,7 @@ string16 GetLocalizedStringForEventTypeDescription(const EventType type) {
          l10n_util::GetStringUTF16(string_id1);
 }
 
-string16 GetLocalizedStringForEventTypeMouseover(const EventType type) {
+base::string16 GetLocalizedStringForEventTypeMouseover(const EventType type) {
   if (type == EVENT_CHROME_UPDATE) {
     return l10n_util::GetStringFUTF16(
         IDS_PERFORMANCE_MONITOR_CHROME_UPDATE_EVENT_MOUSEOVER,
@@ -226,7 +227,8 @@ string16 GetLocalizedStringForEventTypeMouseover(const EventType type) {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-string16 GetLocalizedStringFromEventProperty(const std::string& property) {
+base::string16 GetLocalizedStringFromEventProperty(
+    const std::string& property) {
   int string_id = 0;
 
   if (property == "extensionId")
@@ -256,7 +258,7 @@ string16 GetLocalizedStringFromEventProperty(const std::string& property) {
 }
 
 // Metric-Related
-string16 GetLocalizedStringFromMetricCategory(
+base::string16 GetLocalizedStringFromMetricCategory(
     const MetricCategory category) {
   int string_id = 0;
 
@@ -280,7 +282,7 @@ string16 GetLocalizedStringFromMetricCategory(
   return l10n_util::GetStringUTF16(string_id);
 }
 
-string16 GetLocalizedStringForMetricCategoryDescription(
+base::string16 GetLocalizedStringForMetricCategoryDescription(
     const MetricCategory category) {
   int string_id = 0;
 
@@ -305,7 +307,7 @@ string16 GetLocalizedStringForMetricCategoryDescription(
       string_id, l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
-string16 GetLocalizedStringFromMetricType(const MetricType type) {
+base::string16 GetLocalizedStringFromMetricType(const MetricType type) {
   int string_id = 0;
 
   switch (type) {
@@ -340,7 +342,8 @@ string16 GetLocalizedStringFromMetricType(const MetricType type) {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-string16 GetLocalizedStringForMetricTypeDescription(const MetricType type) {
+base::string16 GetLocalizedStringForMetricTypeDescription(
+    const MetricType type) {
   int string_id = 0;
 
   switch (type) {
@@ -389,7 +392,7 @@ string16 GetLocalizedStringForMetricTypeDescription(const MetricType type) {
 }
 
 // Miscellaneous
-string16 GetLocalizedStringFromUnit(const Unit unit) {
+base::string16 GetLocalizedStringFromUnit(const Unit unit) {
   int string_id = 0;
 
   switch (unit) {

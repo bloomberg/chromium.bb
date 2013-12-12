@@ -531,7 +531,7 @@ ui::ModalType CloudPrintWebDialogDelegate::GetDialogModalType() const {
     return modal_parent_ ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE;
 }
 
-string16 CloudPrintWebDialogDelegate::GetDialogTitle() const {
+base::string16 CloudPrintWebDialogDelegate::GetDialogTitle() const {
   return base::string16();
 }
 

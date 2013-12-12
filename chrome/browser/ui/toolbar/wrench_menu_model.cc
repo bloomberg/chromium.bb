@@ -80,7 +80,7 @@ using content::WebContents;
 namespace {
 // Conditionally return the update app menu item title based on upgrade detector
 // state.
-string16 GetUpgradeDialogMenuItemName() {
+base::string16 GetUpgradeDialogMenuItemName() {
   if (UpgradeDetector::GetInstance()->is_outdated_install()) {
     return l10n_util::GetStringFUTF16(
         IDS_UPGRADE_BUBBLE_MENU_ITEM,
@@ -283,7 +283,7 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_SHOW_SIGNIN;
 }
 
-string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
+base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;

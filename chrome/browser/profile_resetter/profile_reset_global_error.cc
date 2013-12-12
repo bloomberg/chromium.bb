@@ -62,7 +62,7 @@ int ProfileResetGlobalError::MenuItemCommandID() {
   return IDC_SHOW_SETTINGS_RESET_BUBBLE;
 }
 
-string16 ProfileResetGlobalError::MenuItemLabel() {
+base::string16 ProfileResetGlobalError::MenuItemLabel() {
   return l10n_util::GetStringFUTF16(
       IDS_RESET_SETTINGS_MENU_ITEM,
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));

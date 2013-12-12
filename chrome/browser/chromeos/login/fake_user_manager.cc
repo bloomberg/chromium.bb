@@ -177,7 +177,7 @@ Profile* FakeUserManager::GetProfileByUser(const User* user) const {
   return NULL;
 }
 
-string16 FakeUserManager::GetUserDisplayName(
+base::string16 FakeUserManager::GetUserDisplayName(
     const std::string& username) const {
   return base::string16();
 }

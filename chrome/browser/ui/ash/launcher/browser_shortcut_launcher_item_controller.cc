@@ -227,7 +227,7 @@ bool BrowserShortcutLauncherItemController::ItemSelected(
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
-string16 BrowserShortcutLauncherItemController::GetTitle() {
+base::string16 BrowserShortcutLauncherItemController::GetTitle() {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
@@ -259,7 +259,7 @@ gfx::Image BrowserShortcutLauncherItemController::GetBrowserListIcon(
       IDR_AURA_LAUNCHER_LIST_BROWSER);
 }
 
-string16 BrowserShortcutLauncherItemController::GetBrowserListTitle(
+base::string16 BrowserShortcutLauncherItemController::GetBrowserListTitle(
     content::WebContents* web_contents) const {
   base::string16 title = web_contents->GetTitle();
   if (!title.empty())

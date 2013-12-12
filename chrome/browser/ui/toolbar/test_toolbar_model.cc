@@ -16,11 +16,11 @@ TestToolbarModel::TestToolbarModel()
 
 TestToolbarModel::~TestToolbarModel() {}
 
-string16 TestToolbarModel::GetText() const {
+base::string16 TestToolbarModel::GetText() const {
   return text_;
 }
 
-string16 TestToolbarModel::GetCorpusNameForMobile() const {
+base::string16 TestToolbarModel::GetCorpusNameForMobile() const {
   return base::string16();
 }
 
@@ -50,7 +50,7 @@ int TestToolbarModel::GetIconForSecurityLevel(SecurityLevel level) const {
   return icon_;
 }
 
-string16 TestToolbarModel::GetEVCertName() const {
+base::string16 TestToolbarModel::GetEVCertName() const {
   return ev_cert_name_;
 }
 

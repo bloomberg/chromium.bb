@@ -20,7 +20,8 @@ int ConfirmInfoBarDelegate::GetButtons() const {
   return BUTTON_OK | BUTTON_CANCEL;
 }
 
-string16 ConfirmInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
+base::string16 ConfirmInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_OK : IDS_CANCEL);
 }
 
@@ -36,7 +37,7 @@ bool ConfirmInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 ConfirmInfoBarDelegate::GetLinkText() const {
+base::string16 ConfirmInfoBarDelegate::GetLinkText() const {
   return base::string16();
 }
 

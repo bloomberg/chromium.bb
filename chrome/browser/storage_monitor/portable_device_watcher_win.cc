@@ -51,7 +51,7 @@ bool IsPortableDeviceStructure(LPARAM data) {
 }
 
 // Returns the portable device plug and play device ID string.
-string16 GetPnpDeviceId(LPARAM data) {
+base::string16 GetPnpDeviceId(LPARAM data) {
   DEV_BROADCAST_DEVICEINTERFACE* dev_interface =
       reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(data);
   if (!dev_interface)
@@ -310,7 +310,7 @@ bool IsMassStoragePortableDevice(const base::string16& pnp_device_id,
 }
 
 // Returns the name of the device specified by |pnp_device_id|.
-string16 GetDeviceNameOnBlockingThread(
+base::string16 GetDeviceNameOnBlockingThread(
     IPortableDeviceManager* portable_device_manager,
     const base::string16& pnp_device_id) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
@@ -537,7 +537,7 @@ bool PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
 }
 
 // static
-string16 PortableDeviceWatcherWin::GetStoragePathFromStorageId(
+base::string16 PortableDeviceWatcherWin::GetStoragePathFromStorageId(
     const std::string& storage_unique_id) {
   // Construct a dummy device path using the storage name. This is only used
   // for registering the device media file system.

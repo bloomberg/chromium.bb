@@ -281,7 +281,7 @@ ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {
   return ash::RootWindowHostFactory::Create();
 }
 
-string16 ChromeShellDelegate::GetProductName() const {
+base::string16 ChromeShellDelegate::GetProductName() const {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 

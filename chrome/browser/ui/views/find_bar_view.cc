@@ -173,7 +173,7 @@ void FindBarView::SetFindTextAndSelectedRange(
   find_text_->SelectRange(selected_range);
 }
 
-string16 FindBarView::GetFindText() const {
+base::string16 FindBarView::GetFindText() const {
   return find_text_->text();
 }
 
@@ -181,11 +181,11 @@ gfx::Range FindBarView::GetSelectedRange() const {
   return find_text_->GetSelectedRange();
 }
 
-string16 FindBarView::GetFindSelectedText() const {
+base::string16 FindBarView::GetFindSelectedText() const {
   return find_text_->GetSelectedText();
 }
 
-string16 FindBarView::GetMatchCountText() const {
+base::string16 FindBarView::GetMatchCountText() const {
   return match_count_text_->text();
 }
 

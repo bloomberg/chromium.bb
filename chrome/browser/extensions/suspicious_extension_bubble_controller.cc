@@ -113,16 +113,16 @@ void SuspiciousExtensionBubbleController::Show(
   bubble->Show();
 }
 
-string16 SuspiciousExtensionBubbleController::GetTitle() {
+base::string16 SuspiciousExtensionBubbleController::GetTitle() {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE);
 }
 
-string16 SuspiciousExtensionBubbleController::GetMessageBody() {
+base::string16 SuspiciousExtensionBubbleController::GetMessageBody() {
   return l10n_util::GetStringFUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY,
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
 }
 
-string16 SuspiciousExtensionBubbleController::GetOverflowText(
+base::string16 SuspiciousExtensionBubbleController::GetOverflowText(
     const base::string16& overflow_count) {
   base::string16 overflow_string = l10n_util::GetStringUTF16(
       IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE);
@@ -143,11 +143,11 @@ string16 SuspiciousExtensionBubbleController::GetOverflowText(
   return new_string;
 }
 
-string16 SuspiciousExtensionBubbleController::GetLearnMoreLabel() {
+base::string16 SuspiciousExtensionBubbleController::GetLearnMoreLabel() {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-string16 SuspiciousExtensionBubbleController::GetDismissButtonLabel() {
+base::string16 SuspiciousExtensionBubbleController::GetDismissButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BUTTON);
 }
 

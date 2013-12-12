@@ -73,13 +73,13 @@ bool MIDIPermissionInfoBarDelegate::ShouldExpireInternal(
               content::PAGE_TRANSITION_RELOAD);
 }
 
-string16 MIDIPermissionInfoBarDelegate::GetMessageText() const {
+base::string16 MIDIPermissionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_MIDI_SYSEX_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
 }
 
-string16 MIDIPermissionInfoBarDelegate::GetButtonLabel(
+base::string16 MIDIPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_MIDI_SYSEX_ALLOW_BUTTON : IDS_MIDI_SYSEX_DENY_BUTTON);

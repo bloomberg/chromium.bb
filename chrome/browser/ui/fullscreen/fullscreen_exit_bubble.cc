@@ -128,20 +128,20 @@ void FullscreenExitBubble::Cancel() {
   browser_->fullscreen_controller()->OnDenyFullscreenPermission();
 }
 
-string16 FullscreenExitBubble::GetCurrentMessageText() const {
+base::string16 FullscreenExitBubble::GetCurrentMessageText() const {
   return fullscreen_bubble::GetLabelTextForType(
       bubble_type_, url_, browser_->profile()->GetExtensionService());
 }
 
-string16 FullscreenExitBubble::GetCurrentDenyButtonText() const {
+base::string16 FullscreenExitBubble::GetCurrentDenyButtonText() const {
   return fullscreen_bubble::GetDenyButtonTextForType(bubble_type_);
 }
 
-string16 FullscreenExitBubble::GetAllowButtonText() const {
+base::string16 FullscreenExitBubble::GetAllowButtonText() const {
   return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
 }
 
-string16 FullscreenExitBubble::GetInstructionText() const {
+base::string16 FullscreenExitBubble::GetInstructionText() const {
   return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
       l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
 }

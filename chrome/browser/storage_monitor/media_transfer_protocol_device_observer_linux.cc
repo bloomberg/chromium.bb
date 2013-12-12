@@ -63,7 +63,8 @@ std::string GetFormattedIdString(const std::string& data_store_id) {
 }
 
 // Helper function to get device label from storage information.
-string16 GetDeviceLabelFromStorageInfo(const MtpStorageInfo& storage_info) {
+base::string16 GetDeviceLabelFromStorageInfo(
+    const MtpStorageInfo& storage_info) {
   std::string device_label;
   const std::string& vendor_name = storage_info.vendor();
   device_label = vendor_name;
