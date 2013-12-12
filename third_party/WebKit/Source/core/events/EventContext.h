@@ -38,23 +38,47 @@ namespace WebCore {
 class Event;
 class TouchList;
 
+class TouchEventContext : public RefCounted<TouchEventContext> {
+public:
+    static PassRefPtr<TouchEventContext> create();
+    ~TouchEventContext();
+    void handleLocalEvents(Event*) const;
+    TouchList* touches() { return m_touches.get(); }
+    TouchList* targetTouches() { return m_targetTouches.get(); }
+    TouchList* changedTouches() { return m_changedTouches.get(); }
+
+private:
+    TouchEventContext();
+
+    RefPtr<TouchList> m_touches;
+    RefPtr<TouchList> m_targetTouches;
+    RefPtr<TouchList> m_changedTouches;
+};
+
 class EventContext {
 public:
     // FIXME: Use ContainerNode instead of Node.
-    EventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget, PassRefPtr<EventTarget> target);
-    virtual ~EventContext();
+    EventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget);
+    ~EventContext();
 
     Node* node() const { return m_node.get(); }
+    EventTarget* currentTarget() const { return m_currentTarget.get(); }
+
     EventTarget* target() const { return m_target.get(); }
-    void setTarget(PassRefPtr<EventTarget> target) { m_target = target; }
+    void setTarget(PassRefPtr<EventTarget>);
+
+    EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
+    void setRelatedTarget(PassRefPtr<EventTarget>);
+
+    TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
+    TouchEventContext* ensureTouchEventContext();
+
     PassRefPtr<NodeList> eventPath() const { return m_eventPath; }
     void adoptEventPath(Vector<RefPtr<Node> >&);
     void setEventPath(PassRefPtr<NodeList> nodeList) { m_eventPath = nodeList; }
 
     bool currentTargetSameAsTarget() const { return m_currentTarget.get() == m_target.get(); }
-    virtual void handleLocalEvents(Event*) const;
-    virtual bool isMouseOrFocusEventContext() const;
-    virtual bool isTouchEventContext() const;
+    void handleLocalEvents(Event*) const;
 
 protected:
 #ifndef NDEBUG
@@ -63,49 +87,10 @@ protected:
     RefPtr<Node> m_node;
     RefPtr<EventTarget> m_currentTarget;
     RefPtr<EventTarget> m_target;
-    RefPtr<NodeList> m_eventPath;
-};
-
-class MouseOrFocusEventContext : public EventContext {
-public:
-    MouseOrFocusEventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget, PassRefPtr<EventTarget> target);
-    virtual ~MouseOrFocusEventContext();
-    EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(PassRefPtr<EventTarget>);
-    virtual void handleLocalEvents(Event*) const OVERRIDE;
-    virtual bool isMouseOrFocusEventContext() const OVERRIDE;
-
-private:
     RefPtr<EventTarget> m_relatedTarget;
+    RefPtr<NodeList> m_eventPath;
+    RefPtr<TouchEventContext> m_touchEventContext;
 };
-
-
-class TouchEventContext : public EventContext {
-public:
-    TouchEventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget, PassRefPtr<EventTarget> target);
-    virtual ~TouchEventContext();
-
-    virtual void handleLocalEvents(Event*) const OVERRIDE;
-    virtual bool isTouchEventContext() const OVERRIDE;
-
-    TouchList* touches() { return m_touches.get(); }
-    TouchList* targetTouches() { return m_targetTouches.get(); }
-    TouchList* changedTouches() { return m_changedTouches.get(); }
-
-private:
-    RefPtr<TouchList> m_touches;
-    RefPtr<TouchList> m_targetTouches;
-    RefPtr<TouchList> m_changedTouches;
-#ifndef NDEBUG
-    void checkReachability(TouchList*) const;
-#endif
-};
-
-inline TouchEventContext& toTouchEventContext(EventContext& eventContext)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(eventContext.isTouchEventContext());
-    return static_cast<TouchEventContext&>(eventContext);
-}
 
 #ifndef NDEBUG
 inline bool EventContext::isUnreachableNode(EventTarget* target)
@@ -115,7 +100,13 @@ inline bool EventContext::isUnreachableNode(EventTarget* target)
 }
 #endif
 
-inline void MouseOrFocusEventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
+inline void EventContext::setTarget(PassRefPtr<EventTarget> target)
+{
+    ASSERT(!isUnreachableNode(target.get()));
+    m_target = target;
+}
+
+inline void EventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
 {
     ASSERT(!isUnreachableNode(relatedTarget.get()));
     m_relatedTarget = relatedTarget;

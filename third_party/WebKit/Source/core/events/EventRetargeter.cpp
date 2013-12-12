@@ -57,17 +57,32 @@ void EventRetargeter::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
     EventPathTouchLists eventPathChangedTouches(eventPathSize);
 
     for (size_t i = 0; i < eventPathSize; ++i) {
-        ASSERT(eventPath[i].isTouchEventContext());
-        TouchEventContext& touchEventContext = toTouchEventContext(eventPath[i]);
-        eventPathTouches[i] = touchEventContext.touches();
-        eventPathTargetTouches[i] = touchEventContext.targetTouches();
-        eventPathChangedTouches[i] = touchEventContext.changedTouches();
+        TouchEventContext* touchEventContext = eventPath[i].ensureTouchEventContext();
+        eventPathTouches[i] = touchEventContext->touches();
+        eventPathTargetTouches[i] = touchEventContext->targetTouches();
+        eventPathChangedTouches[i] = touchEventContext->changedTouches();
     }
 
     adjustTouchList(node, touchEvent.touches(), eventPath, eventPathTouches);
     adjustTouchList(node, touchEvent.targetTouches(), eventPath, eventPathTargetTouches);
     adjustTouchList(node, touchEvent.changedTouches(), eventPath, eventPathChangedTouches);
+
+#ifndef NDEBUG
+    for (size_t i = 0; i < eventPathSize; ++i) {
+        checkReachability(node, eventPath[i].touchEventContext()->touches());
+        checkReachability(node, eventPath[i].touchEventContext()->targetTouches());
+        checkReachability(node, eventPath[i].touchEventContext()->changedTouches());
+    }
+#endif
 }
+
+#ifndef NDEBUG
+void EventRetargeter::checkReachability(Node* node, TouchList* touchList)
+{
+    for (size_t i = 0; i < touchList->length(); ++i)
+        ASSERT(touchList->item(i)->target()->toNode()->treeScope().isInclusiveAncestorOf(node->treeScope()));
+}
+#endif
 
 void EventRetargeter::adjustTouchList(const Node* node, const TouchList* touchList, const EventPath& eventPath, EventPathTouchLists& eventPathTouchLists)
 {
@@ -98,9 +113,7 @@ void EventRetargeter::adjustForRelatedTarget(const Node* node, EventTarget* rela
     calculateAdjustedNodes(node, relatedNode, StopAtBoundaryIfNeeded, eventPath, adjustedNodes);
     ASSERT(adjustedNodes.size() <= eventPath.size());
     for (size_t i = 0; i < adjustedNodes.size(); ++i) {
-        ASSERT(eventPath[i].isMouseOrFocusEventContext());
-        MouseOrFocusEventContext& mouseOrFocusEventContext = static_cast<MouseOrFocusEventContext&>(eventPath[i]);
-        mouseOrFocusEventContext.setRelatedTarget(adjustedNodes[i]);
+        eventPath[i].setRelatedTarget(adjustedNodes[i]);
     }
 }
 

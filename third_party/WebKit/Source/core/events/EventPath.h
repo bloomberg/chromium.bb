@@ -27,13 +27,14 @@
 #ifndef EventPath_h
 #define EventPath_h
 
+#include "core/events/EventContext.h"
+
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 class Event;
-class EventContext;
 class EventTarget;
 class Node;
 
@@ -48,9 +49,9 @@ public:
     explicit EventPath(Node*);
     void resetWith(Node*);
 
-    EventContext& operator[](size_t index) { return *m_eventContexts[index]; }
-    const EventContext& operator[](size_t index) const { return *m_eventContexts[index]; }
-    EventContext& last() const { return *m_eventContexts[size() - 1]; }
+    EventContext& operator[](size_t index) { return m_eventContexts[index]; }
+    const EventContext& operator[](size_t index) const { return m_eventContexts[index]; }
+    const EventContext& last() const { return m_eventContexts[size() - 1]; }
 
     bool isEmpty() const { return m_eventContexts.isEmpty(); }
     size_t size() const { return m_eventContexts.size(); }
@@ -63,15 +64,15 @@ public:
 private:
     EventPath();
 
-    EventContext& at(size_t index) { return *m_eventContexts[index]; }
+    EventContext& at(size_t index) { return m_eventContexts[index]; }
 
-    void addEventContext(Node*, bool isMouseOrFocusEvent, bool isTouchEvent);
+    void addEventContext(Node*);
 
     void calculatePath();
     void calculateAdjustedTargets();
     void calculateAdjustedEventPathForEachNode();
 
-    Vector<OwnPtr<EventContext>, 32> m_eventContexts;
+    Vector<EventContext, 64> m_eventContexts;
     Node* m_node;
     Event* m_event;
 };

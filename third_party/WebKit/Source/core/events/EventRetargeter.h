@@ -54,6 +54,9 @@ private:
     static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);
     static EventTarget* findRelatedNode(TreeScope*, RelatedTargetMap&);
     static void adjustTouchList(const Node*, const TouchList*, const EventPath&, EventPathTouchLists&);
+#ifndef NDEBUG
+    static void checkReachability(Node*, TouchList*);
+#endif
 };
 
 }

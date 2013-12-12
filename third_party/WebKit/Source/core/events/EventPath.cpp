@@ -128,14 +128,9 @@ void EventPath::resetWith(Node* node)
     calculateAdjustedEventPathForEachNode();
 }
 
-void EventPath::addEventContext(Node* node, bool isMouseOrFocusEvent, bool isTouchEvent)
+void EventPath::addEventContext(Node* node)
 {
-    if (isMouseOrFocusEvent)
-        m_eventContexts.append(adoptPtr(new MouseOrFocusEventContext(node, eventTargetRespectingTargetRules(node), 0)));
-    else if (isTouchEvent)
-        m_eventContexts.append(adoptPtr(new TouchEventContext(node, eventTargetRespectingTargetRules(node), 0)));
-    else
-        m_eventContexts.append(adoptPtr(new EventContext(node, eventTargetRespectingTargetRules(node), 0)));
+    m_eventContexts.append(EventContext(node, eventTargetRespectingTargetRules(node)));
 }
 
 void EventPath::calculatePath()
@@ -144,11 +139,8 @@ void EventPath::calculatePath()
     ASSERT(m_eventContexts.isEmpty());
     m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node));
 
-    bool isMouseOrFocusEvent = m_event && (m_event->isMouseEvent() || m_event->isFocusEvent());
-    bool isTouchEvent = m_event && m_event->isTouchEvent();
-
     Node* current = m_node;
-    addEventContext(current, isMouseOrFocusEvent, isTouchEvent);
+    addEventContext(current);
     if (!m_node->inDocument())
         return;
     while (current) {
@@ -163,20 +155,20 @@ void EventPath::calculatePath()
                     ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
                     ASSERT(containingShadowRoot);
                     if (!containingShadowRoot->isOldest())
-                        addEventContext(containingShadowRoot->olderShadowRoot(), isMouseOrFocusEvent, isTouchEvent);
+                        addEventContext(containingShadowRoot->olderShadowRoot());
                 }
-                addEventContext(insertionPoint, isMouseOrFocusEvent, isTouchEvent);
+                addEventContext(insertionPoint);
             }
             current = insertionPoints.last();
             continue;
         }
         if (current->isShadowRoot()) {
             current = current->shadowHost();
-            addEventContext(current, isMouseOrFocusEvent, isTouchEvent);
+            addEventContext(current);
         } else {
             current = current->parentNode();
             if (current)
-                addEventContext(current, isMouseOrFocusEvent, isTouchEvent);
+                addEventContext(current);
         }
     }
 }
@@ -195,6 +187,7 @@ void EventPath::calculateAdjustedEventPathForEachNode()
         }
         lastScope = currentScope;
         Vector<RefPtr<Node> > nodes;
+        nodes.reserveInitialCapacity(size());
         for (size_t j = 0; j < size(); ++j) {
             if (at(j).node()->treeScope().isInclusiveAncestorOf(*currentScope))
                 nodes.append(at(j).node());
