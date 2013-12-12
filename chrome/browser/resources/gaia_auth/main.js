@@ -59,6 +59,7 @@ Authenticator.prototype = {
     this.partitionId_ = params.partitionId || '';
     this.initialFrameUrl_ = params.frameUrl || this.constructInitialFrameUrl_();
     this.initialFrameUrlWithoutParams_ = stripParams(this.initialFrameUrl_);
+    this.loaded_ = false;
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
     document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
@@ -120,9 +121,7 @@ Authenticator.prototype = {
       });
     }
 
-    if (gaiaFrame.src.lastIndexOf(this.initialFrameUrlWithoutParams_, 0) == 0) {
-      this.onLoginUILoaded();
-    }
+    this.loaded_ || this.onLoginUILoaded();
   },
 
   /**
@@ -221,6 +220,7 @@ Authenticator.prototype = {
     if (this.inlineMode_) {
       $('gaia-frame').focus();
     }
+    this.loaded_ = true;
   },
 
   onConfirmLogin_: function() {
