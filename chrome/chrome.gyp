@@ -23,8 +23,6 @@
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
-    # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
     'conditions': [
       ['OS!="ios"', {
         'chromium_browser_dependencies': [
@@ -81,19 +79,6 @@
         'tweak_info_plist_path': '../build/mac/tweak_info_plist.py',
         'platform_locale_settings_grd':
             'app/resources/locale_settings_mac.grd',
-        'conditions': [
-          ['branding=="Chrome"', {
-            'mac_bundle_id': 'com.google.Chrome',
-            'mac_creator': 'rimZ',
-            # The policy .grd file also needs the bundle id.
-            'grit_defines': ['-D', 'mac_bundle_id=com.google.Chrome'],
-          }, {  # else: branding!="Chrome"
-            'mac_bundle_id': 'org.chromium.Chromium',
-            'mac_creator': 'Cr24',
-            # The policy .grd file also needs the bundle id.
-            'grit_defines': ['-D', 'mac_bundle_id=org.chromium.Chromium'],
-          }],  # branding
-        ],  # conditions
       }],  # OS=="mac"
     ],  # conditions
   },  # variables
@@ -104,6 +89,7 @@
     # on 64-bit Windows only. Targets that end with nacl_win64 should be used
     # by Native Client only.
     # NOTE: Most new includes should go in the OS!="ios" condition below.
+    '../build/chrome_settings.gypi',
     '../build/win_precompile.gypi',
     'chrome_browser.gypi',
     'chrome_browser_ui.gypi',
