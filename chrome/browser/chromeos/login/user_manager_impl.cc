@@ -584,9 +584,17 @@ User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
 }
 
 Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
+  Profile* profile = NULL;
   if (IsMultipleProfilesAllowed())
-    return ProfileHelper::GetProfileByUserIdHash(user->username_hash());
-  return g_browser_process->profile_manager()->GetDefaultProfile();
+    profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+  else
+    profile = g_browser_process->profile_manager()->GetDefaultProfile();
+
+  // GetDefaultProfile() or GetProfileByUserIdHash() returns a new instance of
+  // ProfileImpl(), but actually its OffTheRecordProfile() should be used.
+  if (profile && IsLoggedInAsGuest())
+    profile = profile->GetOffTheRecordProfile();
+  return profile;
 }
 
 void UserManagerImpl::SaveUserOAuthStatus(
