@@ -1511,6 +1511,12 @@ internal_arm_paladin.add_config('peach_pit-paladin',
   paladin_builder_name='peach_pit paladin',
 )
 
+internal_arm_paladin.add_config('nyan-paladin',
+  boards=['nyan'],
+  paladin_builder_name='nyan paladin',
+  important=False,
+)
+
 
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
@@ -1788,6 +1794,10 @@ _arm_release.add_config('daisy_spring-release',
 
 _arm_release.add_config('peach_pit-release',
   boards=['peach_pit'],
+)
+
+_arm_release.add_config('nyan-release',
+  boards=['nyan'],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
