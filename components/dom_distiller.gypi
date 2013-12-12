@@ -61,6 +61,9 @@
           'include_dirs': [
             '..',
           ],
+          'export_dependent_settings': [
+            'distilled_page_proto',
+          ],
           'sources': [
             'dom_distiller/core/article_entry.cc',
             'dom_distiller/core/article_entry.h',

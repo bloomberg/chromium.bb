@@ -62,6 +62,7 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'export_dependent_settings': [
+        '../components/components.gyp:dom_distiller_core',
         '../sync/sync.gyp:sync',
       ],
       'sources': [
