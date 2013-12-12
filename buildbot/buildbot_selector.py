@@ -190,8 +190,7 @@ BOT_ASSIGNMENT = {
 
     # MIPS toolchain buildbot.
     'linux-pnacl-x86_32-tests-mips':
-        bash + ' tools/trusted_cross_toolchains/'
-        'trusted-toolchain-creator.mipsel.debian.sh nacl_sdk',
+        bash + ' buildbot/buildbot_toolchain_mips_trusted.sh',
 
     # Toolchain trybots.
     'nacl-toolchain-precise64-newlib':

@@ -160,7 +160,7 @@ ShowRecentArmTrustedToolchains() {
 #@ pnacl_mac_x86
 #@ pnacl_win_x86
 
-UploadPnaclToolchains() {
+UploadToolchainTarball() {
   local rev=$1
   local label=$2
   local tarball=$3
