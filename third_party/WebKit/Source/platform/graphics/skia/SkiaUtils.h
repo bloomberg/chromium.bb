@@ -73,6 +73,11 @@ inline SkRect WebCoreFloatRectToSKRect(const FloatRect& rect)
         SkFloatToScalar(rect.maxX()), SkFloatToScalar(rect.maxY()));
 }
 
+inline bool WebCoreFloatNearlyEqual(float a, float b)
+{
+    return SkScalarNearlyEqual(WebCoreFloatToSkScalar(a), WebCoreFloatToSkScalar(b));
+}
+
 // Computes the smallest rectangle that, which when drawn to the given canvas,
 // will cover the same area as the source rectangle. It will clip to the canvas'
 // clip, doing the necessary coordinate transforms.

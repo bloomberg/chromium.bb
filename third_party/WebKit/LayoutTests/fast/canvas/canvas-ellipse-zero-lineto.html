@@ -189,7 +189,7 @@ shouldBe("imageData.data[1]", "0");
 imageData = ctx.getImageData(127, 106, 1, 1);
 shouldBe("imageData.data[1]", "0");
 imageData = ctx.getImageData(127, 121, 1, 1);
-shouldBe("imageData.data[1]", "0");
+shouldBe("imageData.data[1]", "255");
 
 debug(" 5. sweepAngle > 4PI");
 ctx.translate(0, 30);
@@ -208,7 +208,7 @@ shouldBe("imageData.data[1]", "0");
 imageData = ctx.getImageData(127, 136, 1, 1);
 shouldBe("imageData.data[1]", "0");
 imageData = ctx.getImageData(127, 151, 1, 1);
-shouldBe("imageData.data[1]", "0");
+shouldBe("imageData.data[1]", "255");
 
 ctx.restore();
 
@@ -286,7 +286,7 @@ imageData = ctx.getImageData(235, 130, 1, 1);
 shouldBe("imageData.data[1]", "0");
 imageData = ctx.getImageData(210, 120, 1, 1);
 shouldBe("imageData.data[1]", "0");
-imageData = ctx.getImageData(252, 126, 1, 1);
+imageData = ctx.getImageData(252, 124, 1, 1);
 shouldBe("imageData.data[1]", "0");
 
 debug(" 5. sweepAngle > 4PI");
@@ -305,7 +305,7 @@ imageData = ctx.getImageData(235, 160, 1, 1);
 shouldBe("imageData.data[1]", "0");
 imageData = ctx.getImageData(210, 150, 1, 1);
 shouldBe("imageData.data[1]", "0");
-imageData = ctx.getImageData(252, 156, 1, 1);
+imageData = ctx.getImageData(252, 154, 1, 1);
 shouldBe("imageData.data[1]", "0");
 
 </script>

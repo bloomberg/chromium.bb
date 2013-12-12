@@ -140,12 +140,13 @@ float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
     /* http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-arc
      * If the anticlockwise argument is false and endAngle-startAngle is equal to or greater than 2pi, or,
      * if the anticlockwise argument is true and startAngle-endAngle is equal to or greater than 2pi,
-     * then the arc is the whole circumference of this ellipse.
+     * then the arc is the whole circumference of this ellipse, and the point at startAngle along this circle's circumference,
+     * measured in radians clockwise from the ellipse's semi-major axis, acts as both the start point and the end point.
      */
     if (!anticlockwise && endAngle - startAngle >= twoPi)
-        newEndAngle = startAngle + twoPi + fmodf(endAngle - startAngle, twoPi);
+        newEndAngle = startAngle + twoPi;
     else if (anticlockwise && startAngle - endAngle >= twoPi)
-        newEndAngle = startAngle - twoPi - fmodf(startAngle - endAngle, twoPi);
+        newEndAngle = startAngle - twoPi;
 
     /*
      * Otherwise, the arc is the path along the circumference of this ellipse from the start point to the end point,
@@ -162,7 +163,7 @@ float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
     else if (anticlockwise && startAngle < endAngle)
         newEndAngle = startAngle - (twoPi - fmodf(endAngle - startAngle, twoPi));
 
-    ASSERT(std::abs(newEndAngle - startAngle) < 4 * piFloat);
+    ASSERT(ellipseIsRenderable(startAngle, newEndAngle));
     return newEndAngle;
 }
 
@@ -221,11 +222,11 @@ void canonicalizeAngle(float* startAngle, float* endAngle)
  * Angles for P are 0 and Pi in the ellipse coordinates.
  *
  * To handle both cases, degenerateEllipse() lines to start angle, local maximum points(every 0.5Pi), and end angle.
- * NOTE: Before ellipse() calls this function, adjustEndAngle() is called, so endAngle - startAngle must be less than 4Pi.
+ * NOTE: Before ellipse() calls this function, adjustEndAngle() is called, so endAngle - startAngle must be equal to or less than 2Pi.
  */
 void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
 {
-    ASSERT(std::abs(endAngle - startAngle) < 4 * piFloat);
+    ASSERT(ellipseIsRenderable(startAngle, endAngle));
     ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
     ASSERT((anticlockwise && (startAngle - endAngle) >= 0) || (!anticlockwise && (endAngle - startAngle) >= 0));
 

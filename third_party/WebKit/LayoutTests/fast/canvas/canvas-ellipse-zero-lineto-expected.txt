@@ -45,12 +45,12 @@ PASS imageData.data[1] is 0
 PASS imageData.data[1] is 0
 PASS imageData.data[1] is 0
 PASS imageData.data[1] is 0
-PASS imageData.data[1] is 0
+PASS imageData.data[1] is 255
  5. sweepAngle > 4PI
 PASS imageData.data[1] is 0
 PASS imageData.data[1] is 0
 PASS imageData.data[1] is 0
-PASS imageData.data[1] is 0
+PASS imageData.data[1] is 255
 lineTo + empty ellipse (radiusY == 0) + lineTo
  1. sweepAngle < PI / 2
 PASS imageData.data[1] is 0

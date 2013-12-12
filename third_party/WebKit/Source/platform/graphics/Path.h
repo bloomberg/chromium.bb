@@ -130,6 +130,10 @@ private:
     SkPath m_path;
 };
 
+#if !ASSERT_DISABLED
+PLATFORM_EXPORT bool ellipseIsRenderable(float startAngle, float endAngle);
+#endif
+
 }
 
 #endif
