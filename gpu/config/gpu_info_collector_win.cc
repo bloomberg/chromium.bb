@@ -182,7 +182,7 @@ Version DisplayLinkVersion() {
   if (key.OpenKey(L"Core", KEY_READ | KEY_WOW64_64KEY))
     return Version();
 
-  string16 version;
+  base::string16 version;
   if (key.ReadValue(L"Version", &version))
     return Version();
 
@@ -590,8 +590,8 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
     return false;
 
   int vendor_id = 0, device_id = 0;
-  string16 vendor_id_string = id.substr(8, 4);
-  string16 device_id_string = id.substr(17, 4);
+  base::string16 vendor_id_string = id.substr(8, 4);
+  base::string16 device_id_string = id.substr(17, 4);
   base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
   base::HexStringToInt(WideToASCII(device_id_string), &device_id);
   gpu_info->gpu.vendor_id = vendor_id;

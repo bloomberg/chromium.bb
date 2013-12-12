@@ -32,7 +32,7 @@ std::string ConvertSidToString(SID* sid) {
   if (!ConvertSidToStringSid(sid, &c_sid_string))
     return std::string();
 
-  string16 sid_string(c_sid_string);
+  base::string16 sid_string(c_sid_string);
   LocalFree(c_sid_string);
   return UTF16ToUTF8(sid_string);
 }

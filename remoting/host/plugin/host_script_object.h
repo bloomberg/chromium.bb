@@ -182,7 +182,7 @@ class HostNPScriptObject : public It2MeHost::Observer {
   // |result| and returns true on success, or leaves it unchanged and returns
   // false on failure.
   bool LocalizeString(NPObject* localize_func, const char* tag,
-                      string16* result);
+                      base::string16* result);
 
   // Helper function for executing InvokeDefault on an NPObject that performs
   // a string->string mapping with one substitution. Stores the translation in
@@ -191,7 +191,7 @@ class HostNPScriptObject : public It2MeHost::Observer {
   bool LocalizeStringWithSubstitution(NPObject* localize_func,
                                       const char* tag,
                                       const char* substitution,
-                                      string16* result);
+                                      base::string16* result);
 
   //////////////////////////////////////////////////////////
   // Helper methods for Me2Me host.

@@ -27,7 +27,7 @@ class MockAudioManager : public media::AudioManager {
 
   virtual bool HasAudioInputDevices() OVERRIDE;
 
-  virtual string16 GetAudioInputDeviceModel() OVERRIDE;
+  virtual base::string16 GetAudioInputDeviceModel() OVERRIDE;
 
   virtual void ShowAudioInputSettings() OVERRIDE;
 

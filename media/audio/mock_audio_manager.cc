@@ -25,8 +25,8 @@ bool MockAudioManager::HasAudioInputDevices() {
   return true;
 }
 
-string16 MockAudioManager::GetAudioInputDeviceModel() {
-  return string16();
+base::string16 MockAudioManager::GetAudioInputDeviceModel() {
+  return base::string16();
 }
 
 void MockAudioManager::ShowAudioInputSettings() {

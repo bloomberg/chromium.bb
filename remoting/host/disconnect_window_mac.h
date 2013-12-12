@@ -15,7 +15,7 @@
 @interface DisconnectWindowController : NSWindowController {
  @private
   base::Closure disconnect_callback_;
-  string16 username_;
+  base::string16 username_;
   IBOutlet NSTextField* connectedToField_;
   IBOutlet NSButton* disconnectButton_;
 }

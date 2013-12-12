@@ -121,8 +121,8 @@ AudioManagerBase::~AudioManagerBase() {
   DCHECK_EQ(0, num_input_streams_);
 }
 
-string16 AudioManagerBase::GetAudioInputDeviceModel() {
-  return string16();
+base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
+  return base::string16();
 }
 
 scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetMessageLoop() {

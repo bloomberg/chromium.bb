@@ -54,7 +54,7 @@ void CloseHandlesAndTerminateProcess(PROCESS_INFORMATION* process_information) {
 // Connects to the executor server corresponding to |session_id|.
 bool ConnectToExecutionServer(uint32 session_id,
                               base::win::ScopedHandle* pipe_out) {
-  string16 pipe_name;
+  base::string16 pipe_name;
 
   // Use winsta!WinStationQueryInformationW() to determine the process creation
   // pipe name for the session.
@@ -313,7 +313,7 @@ bool SendCreateProcessRequest(
     PROCESS_INFORMATION process_information;
   };
 
-  string16 desktop;
+  base::string16 desktop;
   if (desktop_name)
     desktop = desktop_name;
 

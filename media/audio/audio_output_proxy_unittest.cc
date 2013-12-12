@@ -93,7 +93,7 @@ class MockAudioManager : public AudioManagerBase {
 
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
-  MOCK_METHOD0(GetAudioInputDeviceModel, string16());
+  MOCK_METHOD0(GetAudioInputDeviceModel, base::string16());
   MOCK_METHOD3(MakeAudioOutputStream, AudioOutputStream*(
       const AudioParameters& params,
       const std::string& device_id,

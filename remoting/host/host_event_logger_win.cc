@@ -120,7 +120,7 @@ void HostEventLoggerWin::Log(WORD type,
   // ReportEventW() takes an array of raw string pointers. They should stay
   // valid for the duration of the call.
   std::vector<const WCHAR*> raw_strings(strings.size());
-  std::vector<string16> utf16_strings(strings.size());
+  std::vector<base::string16> utf16_strings(strings.size());
   for (size_t i = 0; i < strings.size(); ++i) {
     utf16_strings[i] = UTF8ToUTF16(strings[i]);
     raw_strings[i] = utf16_strings[i].c_str();

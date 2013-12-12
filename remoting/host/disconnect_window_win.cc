@@ -78,7 +78,7 @@ class DisconnectWindowWin : public HostWindow {
 };
 
 // Returns the text for the given dialog control window.
-bool GetControlText(HWND control, string16* text) {
+bool GetControlText(HWND control, base::string16* text) {
   // GetWindowText truncates the text if it is longer than can fit into
   // the buffer.
   WCHAR buffer[256];
@@ -91,7 +91,9 @@ bool GetControlText(HWND control, string16* text) {
 }
 
 // Returns width |text| rendered in |control| window.
-bool GetControlTextWidth(HWND control, const string16& text, LONG* width) {
+bool GetControlTextWidth(HWND control,
+                         const base::string16& text,
+                         LONG* width) {
   RECT rect = {0, 0, 0, 0};
   base::win::ScopedGetDC dc(control);
   base::win::ScopedSelectObject font(
@@ -306,8 +308,8 @@ bool DisconnectWindowWin::SetStrings() {
   if (!hwnd_button || !hwnd_message)
     return false;
 
-  string16 button_text;
-  string16 message_text;
+  base::string16 button_text;
+  base::string16 message_text;
   if (!GetControlText(hwnd_button, &button_text) ||
       !GetControlText(hwnd_message, &message_text)) {
     return false;
