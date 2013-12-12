@@ -36,7 +36,7 @@ def main(argv):
     results with reference files.
 
     Options:
-       --reset-results: Overwrites the reference files with the generated results.
+       --reset-results: Overwrites reference files with the generated results.
        --test-python: Run tests for Python compiler as well.
        --verbose: Show output on success and logging messages (not just failure)
     """
