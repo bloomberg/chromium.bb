@@ -5,6 +5,7 @@
 import logging
 from operator import itemgetter
 import posixpath
+import traceback
 
 from chroot_file_system import ChrootFileSystem
 from content_provider import ContentProvider
@@ -100,6 +101,20 @@ class ContentProviders(object):
                            supports_zip=supports_zip)
 
   def Cron(self):
-    futures = [self._CreateContentProvider(name, config).Cron()
+    def safe(name, action, callback):
+      '''Safely runs |callback| for a ContentProvider called |name|. It's
+      important to run all ContentProvider Cron's even if some of them fail.
+      '''
+      try:
+        return callback()
+      except:
+        logging.error('Error %s Cron for ContentProvider "%s": %s' %
+                      (action, name, traceback.format_exc()))
+        return None
+
+    futures = [(name, safe(name,
+                           'initializing',
+                           self._CreateContentProvider(name, config).Cron))
                for name, config in self._GetConfig().iteritems()]
-    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
+    return Future(delegate=Gettable(
+        lambda: [safe(name, 'resolving', f.Get) for name, f in futures if f]))
