@@ -48,8 +48,6 @@
         'mojo_system_impl',
       ],
       'sources': [
-        'common/test/multiprocess_test_base.cc',
-        'common/test/multiprocess_test_base.h',
         'common/test/run_all_unittests.cc',
       ],
     },
@@ -119,6 +117,7 @@
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
+        'mojo_common_test_support',
         'mojo_system',
         'mojo_system_impl',
       ],
@@ -129,6 +128,7 @@
         'system/dispatcher_unittest.cc',
         'system/message_pipe_dispatcher_unittest.cc',
         'system/message_pipe_unittest.cc',
+        'system/multiprocess_message_pipe_unittest.cc',
         'system/raw_channel_posix_unittest.cc',
         'system/remote_message_pipe_posix_unittest.cc',
         'system/simple_dispatcher_unittest.cc',
@@ -188,6 +188,21 @@
       ],
     },
     {
+      'target_name': 'mojo_common_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_system',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'common/test/multiprocess_test_base.cc',
+        'common/test/multiprocess_test_base.h',
+      ],
+    },
+    {
       'target_name': 'mojo_common_unittests',
       'type': 'executable',
       'dependencies': [
@@ -196,6 +211,7 @@
         '../testing/gtest.gyp:gtest',
         'mojo_bindings',
         'mojo_common_lib',
+        'mojo_common_test_support',
         'mojo_public_test_support',
         'mojo_run_all_unittests',
         'mojo_system',

@@ -5,8 +5,6 @@
 // TODO(vtl): The POSIX-specific bits have been factored out. Apply this test to
 // non-POSIX once we have a non-POSIX implementation.
 
-#include "mojo/system/message_pipe.h"
-
 #include <stdint.h>
 #include <string.h>
 
@@ -19,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
+#include "mojo/system/message_pipe.h"
 #include "mojo/system/platform_channel.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/test_utils.h"
@@ -208,7 +207,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK,
             mp_1->ReadMessage(1,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(buffer_size));
   EXPECT_EQ(0, strcmp(buffer, hello));
@@ -232,7 +231,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK,
             mp_0->ReadMessage(0,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(world), static_cast<size_t>(buffer_size));
   EXPECT_EQ(0, strcmp(buffer, world));
@@ -304,19 +303,19 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             mp_0->ReadMessage(0,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             mp_1->ReadMessage(1,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             mp_2->ReadMessage(0,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Read from MP 3, port 1.
@@ -324,7 +323,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   EXPECT_EQ(MOJO_RESULT_OK,
             mp_3->ReadMessage(1,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(buffer_size));
   EXPECT_EQ(0, strcmp(buffer, hello));
@@ -349,26 +348,26 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             mp_0->ReadMessage(0,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             mp_2->ReadMessage(0,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             mp_3->ReadMessage(1,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
             mp_1->ReadMessage(1,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(world), static_cast<size_t>(buffer_size));
   EXPECT_EQ(0, strcmp(buffer, world));
@@ -421,7 +420,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   EXPECT_EQ(MOJO_RESULT_OK,
             mp_1->ReadMessage(1,
                               buffer, &buffer_size,
-                              0, NULL,
+                              NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(buffer_size));
   EXPECT_EQ(0, strcmp(buffer, hello));
