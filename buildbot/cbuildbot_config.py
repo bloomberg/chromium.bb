@@ -1269,11 +1269,10 @@ internal_incremental = internal.derive(
 )
 
 sonic = _config(
-  manifest='sonic.xml',
   boards=['sonic'],
   # Until these are configured and ready, disable them.
   images=['base', 'dev',],
-  unittests=False,
+  unittests=True,
   upload_hw_test_artifacts=False,
   build_tests=False,
   vm_tests=None,
