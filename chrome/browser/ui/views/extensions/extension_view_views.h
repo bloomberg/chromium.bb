@@ -45,6 +45,9 @@ class ExtensionViewViews : public views::NativeViewHost {
   void DidStopLoading();
   void SetIsClipped(bool is_clipped);
 
+  // Sets a minimum size for the native view attached to this View.
+  void SetMinimumSize(const gfx::Size& min_size);
+
   // Notification from ExtensionHost.
   void ResizeDueToAutoResize(const gfx::Size& new_size);
 
@@ -70,6 +73,7 @@ class ExtensionViewViews : public views::NativeViewHost {
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void PreferredSizeChanged() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
  private:
   friend class extensions::ExtensionHost;
@@ -97,6 +101,7 @@ class ExtensionViewViews : public views::NativeViewHost {
   // What we should set the preferred width to once the ExtensionViewViews has
   // loaded.
   gfx::Size pending_preferred_size_;
+  gfx::Size minimum_size_;
 
   // The container this view is in (not necessarily its direct superview).
   // Note: the view does not own its container.

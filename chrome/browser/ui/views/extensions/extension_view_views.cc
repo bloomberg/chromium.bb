@@ -98,6 +98,16 @@ void ExtensionViewViews::ShowIfCompletelyLoaded() {
   }
 }
 
+void ExtensionViewViews::SetMinimumSize(const gfx::Size& size) {
+  minimum_size_ = size;
+}
+
+gfx::Size ExtensionViewViews::GetMinimumSize() {
+  // If the minimum size has never been set, returns the preferred size (same
+  // behavior as views::View).
+  return (minimum_size_ == gfx::Size()) ? GetPreferredSize() : minimum_size_;
+}
+
 void ExtensionViewViews::CleanUp() {
   if (!initialized_)
     return;
