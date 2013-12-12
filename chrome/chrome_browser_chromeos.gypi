@@ -816,6 +816,8 @@
         'browser/chromeos/status/data_promo_notification.h',
         'browser/chromeos/status/network_menu.cc',
         'browser/chromeos/status/network_menu.h',
+        'browser/chromeos/system/ash_system_tray_delegate.cc',
+        'browser/chromeos/system/ash_system_tray_delegate.h',
         'browser/chromeos/system/automatic_reboot_manager.cc',
         'browser/chromeos/system/automatic_reboot_manager.h',
         'browser/chromeos/system/automatic_reboot_manager_observer.h',

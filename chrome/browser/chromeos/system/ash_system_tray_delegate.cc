@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
+#include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 
 #include <algorithm>
 #include <set>
@@ -439,8 +439,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
-  virtual const base::string16 GetLocallyManagedUserManagerName()
-      const OVERRIDE {
+  virtual const base::string16 GetLocallyManagedUserManagerName() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
       return base::string16();
     return UserManager::Get()->GetSupervisedUserManager()->
