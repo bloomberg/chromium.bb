@@ -17,8 +17,10 @@ namespace message_center {
 // Square image sizes in DIPs.
 const int kNotificationButtonIconSize = 16;
 const int kNotificationIconSize = 80;
-const int kNotificationPreferredImageSize = 360;
-const float kNotificationPreferredImageRatio = 1.5;
+// A border is applied to images that have a non-preferred aspect ratio.
+const int kNotificationImageBorderSize = 10;
+const int kNotificationPreferredImageWidth = 360;
+const int kNotificationPreferredImageHeight = 240;
 const int kSettingsIconSize = 16;
 
 // Limits.
@@ -66,7 +68,8 @@ const int kMessageLineHeight = 18;         // In DIPs.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.
-extern const SkColor kIconBackgroundColor;         // Used behind icons smaller.
+extern const SkColor kImageBackgroundColor;        // Background of the image.
+extern const SkColor kIconBackgroundColor;         // Used behind icons smaller
                                                    // than the icon view.
 extern const SkColor kRegularTextColor;            // Title, message, ...
 extern const SkColor kDimTextColor;

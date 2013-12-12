@@ -269,9 +269,10 @@ TEST_F(NotificationControllerTest, Image) {
   [controller view];
 
   ASSERT_EQ(1u, [[controller bottomSubviews] count]);
-  ASSERT_TRUE([[[controller bottomSubviews] lastObject]
+  ASSERT_TRUE([[[[controller bottomSubviews] lastObject] contentView]
       isKindOfClass:[NSImageView class]]);
-  EXPECT_EQ(image, [[[controller bottomSubviews] lastObject] image]);
+  EXPECT_EQ(image,
+      [[[[controller bottomSubviews] lastObject] contentView] image]);
 }
 
 TEST_F(NotificationControllerTest, List) {

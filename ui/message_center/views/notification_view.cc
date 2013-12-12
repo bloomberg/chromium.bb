@@ -211,19 +211,24 @@ ProportionalImageView::~ProportionalImageView() {
 }
 
 gfx::Size ProportionalImageView::GetPreferredSize() {
-  gfx::Size size = GetImageSizeForWidth(image_.width());
-  return gfx::Size(size.width() + GetInsets().width(),
-                   size.height() + GetInsets().height());
+  gfx::Insets insets = GetInsets();
+  gfx::Rect rect = gfx::Rect(GetImageSizeForWidth(image_.width()));
+  rect.Inset(-insets);
+  return rect.size();
 }
 
 int ProportionalImageView::GetHeightForWidth(int width) {
-  return GetImageSizeForWidth(width).height();
+  // The border will count against the width available for the image
+  // and towards the height taken by the image.
+  gfx::Insets insets = GetInsets();
+  int inset_width = width - insets.width();
+  return GetImageSizeForWidth(inset_width).height() + insets.height();
 }
 
 void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  gfx::Size draw_size(GetImageSizeForWidth(width()));
+  gfx::Size draw_size(GetImageSizeForWidth(width() - GetInsets().width()));
   if (!draw_size.IsEmpty()) {
     gfx::Rect draw_bounds = GetContentsBounds();
     draw_bounds.ClampToCenteredSize(draw_size);
@@ -247,6 +252,38 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
 gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
   gfx::Size size = visible() ? image_.size() : gfx::Size();
   return message_center::GetImageSizeForWidth(width, size);
+}
+
+// The NotificationImage is the view representing the area covered by the
+// notification's image, including background and border.  Its size can be
+// specified in advance and images will be scaled to fit including a border if
+// necessary.
+
+// static
+views::View* MakeNotificationImage(const gfx::Image& image, gfx::Size size) {
+  views::View* container = new views::View();
+  container->SetLayoutManager(new views::FillLayout());
+  container->set_background(views::Background::CreateSolidBackground(
+      message_center::kImageBackgroundColor));
+
+  views::View* proportional_image_view =
+      new ProportionalImageView(image.AsImageSkia());
+
+  gfx::Size ideal_size(
+      message_center::kNotificationPreferredImageWidth,
+      message_center::kNotificationPreferredImageHeight);
+  gfx::Size scaled_size = message_center::GetImageSizeForWidth(
+      message_center::kNotificationPreferredImageWidth, image.Size());
+
+  // This calculation determines that the new image would have the correct
+  // height for width.
+  if (ideal_size != scaled_size) {
+    proportional_image_view->set_border(views::Border::CreateSolidBorder(
+        message_center::kNotificationImageBorderSize, SK_ColorTRANSPARENT));
+  }
+
+  container->AddChildView(proportional_image_view);
+  return container;
 }
 
 // NotificationProgressBar /////////////////////////////////////////////////////
@@ -604,7 +641,9 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the image view if appropriate.
   image_view_ = NULL;
   if (!notification.image().IsEmpty()) {
-    image_view_ = new ProportionalImageView(notification.image().AsImageSkia());
+    gfx::Size image_size(
+        kNotificationPreferredImageWidth, kNotificationPreferredImageHeight);
+    image_view_ = MakeNotificationImage(notification.image(), image_size);
     image_view_->SetVisible(is_expanded_);
     bottom_view_->AddChildView(image_view_);
   }

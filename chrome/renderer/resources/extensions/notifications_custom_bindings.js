@@ -42,7 +42,7 @@ function replaceNotificationOptionURLs(notification_details, callback) {
     $Array.push(url_specs, {
       path: notification_details.imageUrl,
       width: 360,
-      height: 540,
+      height: 240,
       callback: image_data_setter(notification_details, 'imageBitmap')
     });
   }

@@ -55,9 +55,8 @@ bool NotificationBitmapToGfxImage(
     return false;
 
   // Ensure a sane set of dimensions.
-  const int max_width = message_center::kNotificationPreferredImageSize;
-  const int max_height =
-      message_center::kNotificationPreferredImageRatio * max_width;
+  const int max_width = message_center::kNotificationPreferredImageWidth;
+  const int max_height = message_center::kNotificationPreferredImageHeight;
   const int BYTES_PER_PIXEL = 4;
 
   const int width = notification_bitmap->width;
