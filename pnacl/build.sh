@@ -109,7 +109,7 @@ readonly TC_SRC_LIBCXX="${PNACL_GIT_ROOT}/libcxx"
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
-readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/include"
+readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/sys/nacl"
 
 # The location of each project. These should be absolute paths.
 readonly TC_BUILD="${PNACL_ROOT}/build"
@@ -156,7 +156,6 @@ readonly BINUTILS_INSTALL_DIR="${INSTALL_HOST}"
 readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 readonly FAKE_INSTALL_DIR="${INSTALL_HOST}/fake"
 NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr"
-readonly SYSROOT_DIR="${INSTALL_ROOT}/sysroot"
 
 # Location of the PNaCl tools defined for configure invocations.
 readonly PNACL_CC="${INSTALL_BIN}/pnacl-clang"
@@ -1177,19 +1176,6 @@ libgcc_eh() {
 
   StepBanner "LIBGCC_EH" "Install ${label}"
   cp ${subdir}/libgcc_eh.a "${installdir}"
-}
-
-#+ sysroot               - setup initial sysroot
-sysroot() {
-  StepBanner "SYSROOT" "Setting up initial sysroot"
-
-  local sys_include="${SYSROOT_DIR}/include"
-  local sys_include2="${SYSROOT_DIR}/sys-include"
-
-  rm -rf "${sys_include}" "${sys_include2}"
-  mkdir -p "${sys_include}"
-  ln -sf "${sys_include}" "${sys_include2}"
-  cp -r "${NEWLIB_INCLUDE_DIR}"/* "${sys_include}"
 }
 
 install-unwind-header() {
@@ -2280,9 +2266,6 @@ newlib() {
   setup-newlib-env ${arch}
   StepBanner "NEWLIB (${arch})"
 
-  # TODO(pdox): Why is this step needed?
-  sysroot
-
   if newlib-needs-configure; then
     newlib-clean
     newlib-configure ${arch}
@@ -2405,19 +2388,11 @@ newlib-install() {
   rmdir ${NEWLIB_TARGET}/include
   rmdir ${NEWLIB_TARGET}
 
-  StepBanner "NEWLIB" "Extra-install"
-  local sys_include=${SYSROOT_DIR}/include
   pushd "${NEWLIB_INSTALL_DIR}"
   # NOTE: we provide a new pthread.h via extra-sdk
   rm include/pthread.h
-  cp include/machine/endian.h ${sys_include}
-  cp include/sys/param.h ${sys_include}
-  cp include/newlib.h ${sys_include}
   popd
 
-  # NOTE: we provide our own pthread.h via extra-sdk
-  StepBanner "NEWLIB" "Removing old pthreads headers"
-  rm -f "${sys_include}/pthread.h"
 
   if [[ ${arch} != "portable" ]]; then
     # Do not populate the sdk directory for flavored bitcode

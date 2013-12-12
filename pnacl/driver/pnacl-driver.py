@@ -101,9 +101,7 @@ EXTRA_ENV = {
     '${ISYSTEM_CLANG} ' +
     '${ISYSTEM_CXX} ' +
     '${BASE_USR}/include ' +
-    '${BASE_SDK}/include ' +
-    # This is used only for newlib bootstrapping.
-    '${BASE}/sysroot/include',
+    '${BASE_SDK}/include ',
 
   'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.3/include',
 
