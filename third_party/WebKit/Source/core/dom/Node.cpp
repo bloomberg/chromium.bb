@@ -298,26 +298,28 @@ Node::~Node()
     if (m_next)
         m_next->setPreviousSibling(0);
 
-    m_treeScope->guardDeref();
+    if (m_treeScope)
+        m_treeScope->guardDeref();
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
 }
 
 void Node::willBeDeletedFromDocument()
 {
-    Document* document = documentInternal();
-    if (!document)
+    if (!isTreeScopeInitialized())
         return;
 
+    Document& document = this->document();
+
     if (hasEventTargetData()) {
-        document->didRemoveEventTargetNode(this);
+        document.didRemoveEventTargetNode(this);
         clearEventTargetData();
     }
 
-    if (AXObjectCache* cache = document->existingAXObjectCache())
+    if (AXObjectCache* cache = document.existingAXObjectCache())
         cache->remove(this);
 
-    document->markers()->removeMarkers(this);
+    document.markers()->removeMarkers(this);
 }
 
 NodeRareData* Node::rareData() const

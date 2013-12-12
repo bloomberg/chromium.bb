@@ -98,7 +98,7 @@ TreeScope::TreeScope()
 TreeScope::~TreeScope()
 {
     ASSERT(!m_guardRefCount);
-    m_rootNode->setTreeScope(noDocumentInstance());
+    m_rootNode->setTreeScope(0);
 
     if (m_selection) {
         m_selection->clearTreeScope();
@@ -459,7 +459,6 @@ bool TreeScope::deletionHasBegun()
 
 void TreeScope::beginDeletion()
 {
-    ASSERT(this != noDocumentInstance());
     rootNode()->m_deletionHasBegun = true;
 }
 #endif

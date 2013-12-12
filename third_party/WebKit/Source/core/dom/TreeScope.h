@@ -96,12 +96,6 @@ public:
 
     IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
 
-    static TreeScope* noDocumentInstance()
-    {
-        DEFINE_STATIC_LOCAL(TreeScope, instance, ());
-        return &instance;
-    }
-
     // Nodes belonging to this scope hold guard references -
     // these are enough to keep the scope from being destroyed, but
     // not enough to keep it from removing its children. This allows a
@@ -117,7 +111,7 @@ public:
     {
         ASSERT(!deletionHasBegun());
         --m_guardRefCount;
-        if (!m_guardRefCount && !refCount() && this != noDocumentInstance() && !rootNodeHasTreeSharedParent()) {
+        if (!m_guardRefCount && !refCount() && !rootNodeHasTreeSharedParent()) {
             beginDeletion();
             delete this;
         }
@@ -140,7 +134,6 @@ protected:
     void setDocumentScope(Document* document)
     {
         ASSERT(document);
-        ASSERT(this != noDocumentInstance());
         m_documentScope = document;
     }
 

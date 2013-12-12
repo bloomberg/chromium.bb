@@ -473,7 +473,11 @@ public:
         return *documentInternal();
     }
 
-    TreeScope& treeScope() const { return *m_treeScope; }
+    TreeScope& treeScope() const
+    {
+        ASSERT(m_treeScope);
+        return *m_treeScope;
+    }
 
     bool inActiveDocument() const;
 
@@ -774,10 +778,10 @@ protected:
         , m_previous(0)
         , m_next(0)
     {
+        ASSERT(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
         ScriptWrappable::init(this);
-        if (!m_treeScope)
-            m_treeScope = TreeScope::noDocumentInstance();
-        m_treeScope->guardRef();
+        if (m_treeScope)
+            m_treeScope->guardRef();
 
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
         trackForDebugging();
@@ -805,6 +809,11 @@ protected:
 
     Document* documentInternal() const { return treeScope().documentScope(); }
     void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
+
+    // isTreeScopeInitialized() can be false
+    // - in the destruction of Document or ShadowRoot where m_treeScope is set to null or
+    // - in the Node constructor called by these two classes where m_treeScope is set by TreeScope ctor.
+    bool isTreeScopeInitialized() const { return m_treeScope; }
 
     void markAncestorsWithChildNeedsStyleRecalc();
 
