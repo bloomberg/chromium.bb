@@ -8,7 +8,7 @@ import sys
 
 import cloudstorage
 
-from ..common import cloud_bucket
+from common import cloud_bucket
 
 
 class GoogleCloudStorageBucket(cloud_bucket.BaseCloudBucket):

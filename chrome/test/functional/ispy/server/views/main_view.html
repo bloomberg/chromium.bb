@@ -24,8 +24,25 @@
         height: 350px;
       }
     </style>
+
+    <script language="javascript">
+    var confirmSubmit = function() {
+      return confirm("The screenshots generated with this version of chrome will be used as the expected images for future comparisions. Are you sure?");
+    }
+    </script>
   </head>
   <body>
+    <h3>Test Run: {{ test_run }}</h3>
+    {% if can_rebaseline and comparisons %}
+      <form action="/rebaseline" method="post" onsubmit="return confirmSubmit();">
+        <input type="hidden" name="test_run" value="{{ test_run }}"/>
+        <input type="submit" value="This Chrome version looks good!"/>
+      </form>
+      <br>
+    {% endif %}
+    {% if not comparisons %}
+      <h2>No failures.</h2>
+    {% endif %}
     {% for comp in comparisons %}
       <div class="row">
         <div class="cell">

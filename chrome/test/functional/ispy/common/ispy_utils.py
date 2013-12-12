@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utilities for managing I-Spy test results in Google Cloud Storage."""
+"""Internal utilities for managing I-Spy test results in Google Cloud Storage.
+
+See the ispy.client.chrome_utils module for the external API.
+"""
 
 import collections
 import itertools
@@ -44,7 +47,20 @@ def GetFailurePath(test_run, expectation, file_name=''):
   Returns:
     the path as a string relative to the bucket.
   """
-  return 'failures/%s/%s/%s' % (test_run, expectation, file_name)
+  return GetTestRunPath(test_run, '%s/%s' % (expectation, file_name))
+
+
+def GetTestRunPath(test_run, file_name=''):
+  """Get the path to a the given test run.
+
+  Args:
+    test_run: name of the test run.
+    file_name: name of the file.
+
+  Returns:
+    the path as a string relative to the bucket.
+  """
+  return 'failures/%s/%s' % (test_run, file_name)
 
 
 class ISpyUtils(object):
@@ -91,7 +107,6 @@ class ISpyUtils(object):
       image: a RGB PIL.Image.
     """
     self.cloud_bucket.UpdateFile(full_path, image_tools.EncodePNG(image))
-
 
   def GenerateExpectation(self, expectation, images):
     """Creates and uploads an expectation to GS from a set of images and name.

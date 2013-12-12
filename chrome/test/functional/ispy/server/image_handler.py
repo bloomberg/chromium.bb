@@ -9,8 +9,8 @@ import os
 import sys
 import webapp2
 
-from ..common import cloud_bucket
-from ..common import constants
+from common import cloud_bucket
+from common import constants
 
 import gs_bucket
 

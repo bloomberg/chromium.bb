@@ -9,9 +9,9 @@ import re
 import sys
 import os
 
-from ..common import constants
-from ..common import image_tools
-from ..common import ispy_utils
+from common import constants
+from common import image_tools
+from common import ispy_utils
 
 import gs_bucket
 
