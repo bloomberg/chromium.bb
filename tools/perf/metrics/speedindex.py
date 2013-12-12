@@ -155,9 +155,10 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
 
   def Stop(self):
     self._time_completeness_list = []
-    self.tab.StopVideoCapture()
-    # TODO(tonyg/szym): Implement this.
-    raise NotImplementedError('SpeedIndex video calculation not implemented.')
+    for timestamp, bitmap in self.tab.StopVideoCapture():
+      print timestamp, bitmap
+      # TODO(tonyg/szym): Implement this.
+      raise NotImplementedError('SpeedIndex video calculation not implemented.')
 
   def GetTimeCompletenessList(self):
     assert self._time_completeness_list, 'Must call Stop() first.'
