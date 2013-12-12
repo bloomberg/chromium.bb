@@ -2079,14 +2079,14 @@ PassRefPtr<Range> findPlainText(const Range* range, const String& target, FindOp
     size_t matchStart;
     size_t matchLength;
     {
-        CharacterIterator findIterator(range, TextIteratorEntersTextControls);
+        CharacterIterator findIterator(range, static_cast<TextIteratorBehavior>(TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots));
         matchLength = findPlainText(findIterator, target, options, matchStart);
         if (!matchLength)
             return collapsedToBoundary(range, !(options & Backwards));
     }
 
     // Then, find the document position of the start and the end of the text.
-    CharacterIterator computeRangeIterator(range, TextIteratorEntersTextControls);
+    CharacterIterator computeRangeIterator(range, static_cast<TextIteratorBehavior>(TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots));
     return characterSubrange(computeRangeIterator, matchStart, matchLength);
 }
 
