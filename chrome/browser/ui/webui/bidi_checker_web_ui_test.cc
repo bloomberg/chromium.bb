@@ -381,15 +381,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
-#if defined(OS_WIN)
-// Times out on Windows. http://crbug.com/171938
-#define MAYBE_TestSettingsLanguageOptionsPage \
-    DISABLED_TestSettingsLanguageOptionsPage
-#else
-#define MAYBE_TestSettingsLanguageOptionsPage TestSettingsLanguageOptionsPage
-#endif
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsLanguageOptionsPage) {
+                       TestSettingsLanguageOptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kLanguageOptionsSubPage);
   RunBidiCheckerOnPage(url);
