@@ -42,6 +42,8 @@ FirstRunHelperImpl::FirstRunHelperImpl()
 
 FirstRunHelperImpl::~FirstRunHelperImpl() {
   Shell::GetInstance()->overlay_filter()->Deactivate();
+  if (IsTrayBubbleOpened())
+    CloseTrayBubble();
   widget_->Close();
 }
 
@@ -78,11 +80,11 @@ gfx::Rect FirstRunHelperImpl::GetAppListBounds() {
 }
 
 void FirstRunHelperImpl::Cancel() {
-  NOTIMPLEMENTED();
+  FOR_EACH_OBSERVER(Observer, observers(), OnCancelled());
 }
 
 bool FirstRunHelperImpl::IsCancelingKeyEvent(ui::KeyEvent* event) {
-  return false;
+  return event->key_code() == ui::VKEY_ESCAPE;
 }
 
 aura::Window* FirstRunHelperImpl::GetWindow() {

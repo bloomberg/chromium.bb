@@ -137,6 +137,8 @@
         'drag_drop/drag_image_view.cc',
         'drag_drop/drag_image_view.h',
         'event_rewriter_delegate.h',
+        'first_run/desktop_cleaner.cc',
+        'first_run/desktop_cleaner.h',
         'first_run/first_run_helper.cc',
         'first_run/first_run_helper.h',
         'first_run/first_run_helper_impl.cc',
@@ -908,6 +910,9 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:power_manager_proto',
+          ],
+          'sources': [
+            'first_run/first_run_helper_unittest.cc',
           ],
         }],
         ['OS=="linux" and component=="shared_library" and linux_use_tcmalloc==1', {

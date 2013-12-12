@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/first_run/first_run_helper.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
@@ -15,10 +16,6 @@
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 
 class Profile;
-
-namespace ash {
-class FirstRunHelper;
-}
 
 namespace chromeos {
 
@@ -29,7 +26,8 @@ class Step;
 // FirstRunController creates and manages first-run tutorial.
 // Object manages its lifetime and deletes itself after completion of the
 // tutorial.
-class FirstRunController : public FirstRunActor::Delegate {
+class FirstRunController : public FirstRunActor::Delegate,
+                           public ash::FirstRunHelper::Observer {
   typedef std::vector<linked_ptr<first_run::Step> > Steps;
 
  public:
@@ -52,6 +50,9 @@ class FirstRunController : public FirstRunActor::Delegate {
   virtual void OnHelpButtonClicked() OVERRIDE;
   virtual void OnCloseButtonClicked() OVERRIDE;
   virtual void OnActorDestroyed() OVERRIDE;
+
+  // Overriden from ash::FirstRunHelper::Observer.
+  virtual void OnCancelled() OVERRIDE;
 
   void RegisterSteps();
   void ShowNextStep();

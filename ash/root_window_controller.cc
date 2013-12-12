@@ -252,6 +252,15 @@ RootWindowController* RootWindowController::ForTargetRootWindow() {
   return internal::GetRootWindowController(Shell::GetTargetRootWindow());
 }
 
+// static
+aura::Window* RootWindowController::GetContainerForWindow(
+    aura::Window* window) {
+  aura::Window* container = window->parent();
+  while (container && container->type() != aura::client::WINDOW_TYPE_UNKNOWN)
+    container = container->parent();
+  return container;
+}
+
 RootWindowController::~RootWindowController() {
   Shutdown();
   root_window_.reset();
@@ -306,22 +315,23 @@ void RootWindowController::Shutdown() {
 
 SystemModalContainerLayoutManager*
 RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
-  aura::Window* container = NULL;
+  aura::Window* modal_container = NULL;
   if (window) {
-    if (window->parent() &&
-        window->parent()->id() >= kShellWindowId_LockScreenContainer) {
-      container = GetContainer(kShellWindowId_LockSystemModalContainer);
+    aura::Window* window_container = GetContainerForWindow(window);
+    if (window_container &&
+        window_container->id() >= kShellWindowId_LockScreenContainer) {
+      modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);
     } else {
-      container = GetContainer(kShellWindowId_SystemModalContainer);
+      modal_container = GetContainer(kShellWindowId_SystemModalContainer);
     }
   } else {
     int modal_window_id = Shell::GetInstance()->session_state_delegate()
         ->IsUserSessionBlocked() ? kShellWindowId_LockSystemModalContainer :
                                    kShellWindowId_SystemModalContainer;
-    container = GetContainer(modal_window_id);
+    modal_container = GetContainer(modal_window_id);
   }
-  return container ? static_cast<SystemModalContainerLayoutManager*>(
-      container->layout_manager()) : NULL;
+  return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
+      modal_container->layout_manager()) : NULL;
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {

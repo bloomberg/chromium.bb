@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 
-#include "ash/first_run/first_run_helper.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -62,6 +61,7 @@ void FirstRunController::Init() {
   user_profile_ = user_manager->GetProfileByUser(user_manager->GetActiveUser());
 
   shell_helper_.reset(ash::Shell::GetInstance()->CreateFirstRunHelper());
+  shell_helper_->AddObserver(this);
 
   FirstRunView* view = new FirstRunView();
   view->Init(user_profile_);
@@ -79,6 +79,7 @@ void FirstRunController::Finalize() {
   if (actor_)
     actor_->set_delegate(NULL);
   actor_ = NULL;
+  shell_helper_->RemoveObserver(this);
   shell_helper_.reset();
 }
 
@@ -111,6 +112,10 @@ void FirstRunController::OnActorDestroyed() {
   // actor's lifetime.
   NOTREACHED() <<
     "FirstRunActor destroyed before FirstRunController::Finalize.";
+}
+
+void FirstRunController::OnCancelled() {
+  Stop();
 }
 
 void FirstRunController::RegisterSteps() {

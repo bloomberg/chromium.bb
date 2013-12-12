@@ -6,6 +6,7 @@
 #define ASH_FIRST_RUN_FIRST_RUN_HELPER_IMPL_H_
 
 #include "ash/first_run/first_run_helper.h"
+#include "ash/first_run/desktop_cleaner.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "base/compiler_specific.h"
 
@@ -39,6 +40,7 @@ class FirstRunHelperImpl : public FirstRunHelper,
 
  private:
   views::Widget* widget_;
+  internal::DesktopCleaner cleaner_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelperImpl);
 };

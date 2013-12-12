@@ -33,13 +33,6 @@ aura::Window* GetContainerById(aura::Window* root, int id) {
   return Shell::GetContainer(root, id);
 }
 
-aura::Window* GetContainerForWindow(aura::Window* window) {
-  aura::Window* container = window->parent();
-  while (container && container->type() != aura::client::WINDOW_TYPE_UNKNOWN)
-    container = container->parent();
-  return container;
-}
-
 bool IsSystemModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
@@ -86,7 +79,8 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       if (IsSystemModal(window))
         return GetSystemModalContainer(target_root, window);
       else if (HasTransientParentWindow(window))
-        return GetContainerForWindow(window->transient_parent());
+        return internal::RootWindowController::GetContainerForWindow(
+            window->transient_parent());
       return GetAlwaysOnTopController(target_root)->GetContainer(window);
     case aura::client::WINDOW_TYPE_CONTROL:
       return GetContainerById(

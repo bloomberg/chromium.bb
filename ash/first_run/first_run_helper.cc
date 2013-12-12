@@ -9,5 +9,13 @@ namespace ash {
 FirstRunHelper::FirstRunHelper() {}
 FirstRunHelper::~FirstRunHelper() {}
 
+void FirstRunHelper::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FirstRunHelper::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 }  // namespace chromeos
 

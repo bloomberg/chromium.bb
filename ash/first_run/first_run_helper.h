@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 
 namespace gfx {
 class Rect;
@@ -23,8 +24,19 @@ namespace ash {
 // All returned coordinates are in screen coordinate system.
 class ASH_EXPORT FirstRunHelper {
  public:
+  class Observer {
+   public:
+    // Called when first-run UI was cancelled.
+    virtual void OnCancelled() = 0;
+    virtual ~Observer() {}
+  };
+
+ public:
   FirstRunHelper();
   virtual ~FirstRunHelper();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns widget to place tutorial UI into it.
   virtual views::Widget* GetOverlayWidget() = 0;
@@ -58,7 +70,12 @@ class ASH_EXPORT FirstRunHelper {
   // bubble before calling this method.
   virtual gfx::Rect GetHelpButtonBounds() = 0;
 
+ protected:
+  ObserverList<Observer>& observers() { return observers_; }
+
  private:
+  ObserverList<Observer> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelper);
 };
 
