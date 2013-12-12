@@ -941,9 +941,7 @@ def _GenerateMSVSProject(project, options, version, generator_flags):
     generator_flags: dict of generator-specific flags.
   """
   spec = project.spec
-  vcproj_dir = os.path.dirname(project.path)
-  if vcproj_dir and not os.path.exists(vcproj_dir):
-    os.makedirs(vcproj_dir)
+  gyp.common.EnsureDirExists(project.path)
 
   platforms = _GetUniquePlatforms(spec)
   p = MSVSProject.Writer(project.path, version, spec['target_name'],
@@ -3096,9 +3094,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   spec = project.spec
   configurations = spec['configurations']
   project_dir, project_file_name = os.path.split(project.path)
-  msbuildproj_dir = os.path.dirname(project.path)
-  if msbuildproj_dir and not os.path.exists(msbuildproj_dir):
-    os.makedirs(msbuildproj_dir)
+  gyp.common.EnsureDirExists(project.path)
   # Prepare list of sources and excluded sources.
   gyp_path = _NormalizedSource(project.build_file)
   relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, project_dir)
