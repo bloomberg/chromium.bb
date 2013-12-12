@@ -244,6 +244,9 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     case blink::WebAXRoleListBox:
       class_name = "android.widget.ListView";
       break;
+    case blink::WebAXRoleDialog:
+      class_name = "android.app.Dialog";
+      break;
     default:
       class_name = "android.view.View";
       break;

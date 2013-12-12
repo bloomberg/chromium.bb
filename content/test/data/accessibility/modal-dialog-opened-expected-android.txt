@@ -2,6 +2,6 @@ android.view.View focusable focused scrollable
     android.view.View
     android.view.View
     android.view.View
-    android.view.View
+    android.app.Dialog
         android.view.View clickable name='The dialog subtree should be the only text content in the accessibility tree. '
         android.view.View clickable focusable name='Link inside the dialog. Link'
