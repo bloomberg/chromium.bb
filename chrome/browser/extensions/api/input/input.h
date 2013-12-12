@@ -65,6 +65,20 @@ class VirtualKeyboardPrivateHideKeyboardFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class VirtualKeyboardPrivateLockKeyboardFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "virtualKeyboardPrivate.lockKeyboard",
+      VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD);
+
+ protected:
+  virtual ~VirtualKeyboardPrivateLockKeyboardFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class VirtualKeyboardPrivateKeyboardLoadedFunction
     : public SyncExtensionFunction {
  public:

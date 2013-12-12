@@ -71,6 +71,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   KeyboardControllerProxy* proxy() { return proxy_.get(); }
 
+  void set_lock_keyboard(bool lock) { lock_keyboard_ = lock; }
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -98,6 +100,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   scoped_ptr<aura::Window> container_;
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
+  bool lock_keyboard_;
 
   ObserverList<KeyboardControllerObserver> observer_list_;
 

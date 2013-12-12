@@ -31,9 +31,8 @@ const char kNotYetImplementedError[] =
 namespace extensions {
 
 bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
-#if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
+#if defined(USE_ASH)
   base::string16 text;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
 
@@ -44,9 +43,8 @@ bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
 }
 
 bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
-#if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
+#if defined(USE_ASH)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kEnableSwipeSelection)) {
     return false;
@@ -67,9 +65,8 @@ bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
 }
 
 bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
-#if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
+#if defined(USE_ASH)
   base::Value* options_value = NULL;
   base::DictionaryValue* params = NULL;
   std::string type;
@@ -99,9 +96,8 @@ bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
 }
 
 bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
-#if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
+#if defined(USE_ASH)
   UMA_HISTOGRAM_ENUMERATION(
       "VirtualKeyboard.KeyboardControlEvent",
       keyboard::KEYBOARD_CONTROL_HIDE_USER,
@@ -118,10 +114,23 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
   return false;
 }
 
-bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
-#if defined(USE_ASH)
+bool VirtualKeyboardPrivateLockKeyboardFunction::RunImpl() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(USE_ASH)
+  bool lock;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &lock));
 
+  ash::Shell::GetInstance()->keyboard_controller()->set_lock_keyboard(lock);
+
+  return true;
+#endif
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
+bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(USE_ASH)
   keyboard::MarkKeyboardLoadFinished();
 
   content::UserMetricsAction("VirtualKeyboardLoaded");

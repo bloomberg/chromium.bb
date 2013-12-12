@@ -93,6 +93,17 @@
         ]
       },
       {
+        "name": "lockKeyboard",
+        "type": "function",
+        "description": "Sets the lock state of the virtual keyboard. A locked keyboard remains visible even after a text area loses input focus.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "lock"
+          }
+        ]
+      },
+      {
         "name": "keyboardLoaded",
         "type": "function",
         "description": "Inform the system that the keyboard has loaded.",

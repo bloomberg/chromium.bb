@@ -143,6 +143,7 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
     : proxy_(proxy),
       input_method_(NULL),
       keyboard_visible_(false),
+      lock_keyboard_(false),
       weak_factory_(this) {
   CHECK(proxy);
   input_method_ = proxy_->GetInputMethod();
@@ -224,7 +225,8 @@ void KeyboardController::OnTextInputStateChanged(
   ui::TextInputType type =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
   if (type == ui::TEXT_INPUT_TYPE_NONE &&
-      !IsKeyboardUsabilityExperimentEnabled()) {
+      !IsKeyboardUsabilityExperimentEnabled() &&
+      !lock_keyboard_) {
     should_show = false;
   } else {
     if (container_->children().empty()) {
