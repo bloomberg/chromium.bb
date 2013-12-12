@@ -86,7 +86,7 @@ class ScopedPoolTest(GitCommonTestBase):
     with self.assertRaises(KeyboardInterrupt):
       with self.gc.ScopedPool(kind='threads') as pool:
         # Make sure this pool is interrupted in mid-swing
-        for i in pool.imap(slow_square, xrange(1000000)):
+        for i in pool.imap(slow_square, xrange(20)):
           if i > 32:
             os.kill(os.getpid(), self.CTRL_C)
           result.append(i)
@@ -103,7 +103,7 @@ class ScopedPoolTest(GitCommonTestBase):
     with self.assertRaises(KeyboardInterrupt):
       with self.gc.ScopedPool() as pool:
         # Make sure this pool is interrupted in mid-swing
-        for i in pool.imap(slow_square, xrange(1000000)):
+        for i in pool.imap(slow_square, xrange(20)):
           if i > 32:
             os.kill(os.getpid(), self.CTRL_C)
           result.append(i)
