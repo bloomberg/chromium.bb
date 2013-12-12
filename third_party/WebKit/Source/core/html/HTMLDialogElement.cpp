@@ -39,11 +39,21 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static void runAutofocus(HTMLDialogElement* dialog)
+// This function chooses the focused element when showModal() is invoked, as described in the spec for showModal().
+static void setFocusForModalDialog(HTMLDialogElement* dialog)
 {
+    Element* focusableDescendant = 0;
     Node* next = 0;
     for (Node* node = dialog->firstChild(); node; node = next) {
-        if (node->isElementNode() && toElement(node)->isFormControlElement()) {
+        if (node->hasTagName(dialogTag))
+            next = NodeTraversal::nextSkippingChildren(*node, dialog);
+        else
+            next = NodeTraversal::next(*node, dialog);
+
+        if (!node->isElementNode())
+            continue;
+        Element* element = toElement(node);
+        if (element->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(node);
             if (control->isAutofocusable()) {
                 control->focus();
@@ -51,11 +61,21 @@ static void runAutofocus(HTMLDialogElement* dialog)
                 return;
             }
         }
-        if (node->hasTagName(dialogTag))
-            next = NodeTraversal::nextSkippingChildren(*node, dialog);
-        else
-            next = NodeTraversal::next(*node, dialog);
+        if (!focusableDescendant && element->isFocusable())
+            focusableDescendant = element;
     }
+
+    if (focusableDescendant) {
+        focusableDescendant->focus();
+        return;
+    }
+
+    if (dialog->isFocusable()) {
+        dialog->focus();
+        return;
+    }
+
+    dialog->document().setFocusedElement(0);
 }
 
 static void inertSubtreesChanged(Document& document)
@@ -140,9 +160,12 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState)
     document().addToTopLayer(this);
     setBooleanAttribute(openAttr, true);
 
-    runAutofocus(this);
-    forceLayoutForCentering();
+    // Throw away the AX cache first, so the subsequent steps don't have a chance of queuing up
+    // AX events on objects that would be invalidated when the cache is thrown away.
     inertSubtreesChanged(document());
+
+    forceLayoutForCentering();
+    setFocusForModalDialog(this);
 }
 
 void HTMLDialogElement::setCentered(LayoutUnit centeredPosition)
