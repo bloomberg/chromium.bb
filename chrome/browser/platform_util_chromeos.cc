@@ -4,12 +4,8 @@
 
 #include "chrome/browser/platform_util.h"
 
-#include "base/bind.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -19,17 +15,6 @@ namespace {
 
 const char kGmailComposeUrl[] =
     "https://mail.google.com/mail/?extsrc=mailto&url=";
-
-void OpenURL(const std::string& url) {
-  // TODO(beng): improve this to locate context from call stack.
-  chrome::NavigateParams params(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      GURL(url),
-      content::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
-  chrome::Navigate(&params);
-}
 
 }  // namespace
 
@@ -45,7 +30,9 @@ void OpenItem(const base::FilePath& full_path) {
   file_manager::util::OpenItem(full_path);
 }
 
-void OpenExternal(const GURL& url) {
+void OpenExternal(Profile* profile, const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // This code should be obsolete since we have default handlers in ChromeOS
   // which should handle this. However - there are two things which make it
   // necessary to keep it in:
@@ -55,15 +42,17 @@ void OpenExternal(const GURL& url) {
   //     this function directly and which would therefore break (e.g.
   //     "Browser::EmailPageLocation" (to name only one).
   // As such we should keep this code here.
+  chrome::NavigateParams params(profile, url, content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
+
   if (url.SchemeIs("mailto")) {
     std::string string_url = kGmailComposeUrl;
     string_url.append(url.spec());
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(OpenURL, string_url));
-  } else if (url.is_valid()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(OpenURL, url.spec()));
+    params.url = GURL(url);
   }
+
+  chrome::Navigate(&params);
 }
 
 }  // namespace platform_util

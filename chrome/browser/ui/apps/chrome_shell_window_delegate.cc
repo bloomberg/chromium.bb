@@ -47,7 +47,10 @@ ShellWindowLinkDelegate::~ShellWindowLinkDelegate() {}
 content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  platform_util::OpenExternal(params.url);
+  if (source) {
+    platform_util::OpenExternal(
+        Profile::FromBrowserContext(source->GetBrowserContext()), params.url);
+  }
   delete source;
   return NULL;
 }

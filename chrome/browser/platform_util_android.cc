@@ -18,7 +18,7 @@ void OpenItem(const base::FilePath& full_path) {
   NOTIMPLEMENTED();
 }
 
-void OpenExternal(const GURL& url) {
+void OpenExternal(Profile* profile, const GURL& url) {
   NOTIMPLEMENTED();
 }
 
@@ -47,4 +47,3 @@ bool IsVisible(gfx::NativeView view) {
 }
 
 } // namespace platform_util
-

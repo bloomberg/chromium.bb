@@ -11,10 +11,6 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace views {
 class MessageBoxView;
 }
@@ -22,8 +18,9 @@ class MessageBoxView;
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
   // RunExternalProtocolDialog calls this private constructor.
-  ExternalProtocolDialog(content::WebContents* web_contents,
-                         const GURL& url,
+  ExternalProtocolDialog(const GURL& url,
+                         int render_process_host_id,
+                         int routing_id,
                          const std::wstring& command);
 
   // Returns the path of the application to be launched given the protocol
@@ -48,11 +45,12 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  // The associated WebContents.
-  content::WebContents* web_contents_;
-
   // URL of the external protocol request.
   GURL url_;
+
+  // IDs of the associated WebContents.
+  int render_process_host_id_;
+  int routing_id_;
 
   // The time at which this dialog was created.
   base::TimeTicks creation_time_;

@@ -129,35 +129,7 @@ bool ValidateShellCommandForScheme(const std::string& scheme) {
   return true;
 }
 
-}  // namespace
-
-namespace platform_util {
-
-void ShowItemInFolder(const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
-
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ShowItemInFolderOnFileThread, full_path));
-}
-
-void OpenItem(const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ui::win::OpenItemViaShell), full_path));
-}
-
-void OpenExternal(const GURL& url) {
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
-
+void OpenExternalOnFileThread(const GURL& url) {
   // Quote the input scheme to be sure that the command does not have
   // parameters unexpected by the external program. This url should already
   // have been escaped.
@@ -188,6 +160,41 @@ void OpenExternal(const GURL& url) {
     // bug 1136923.
     return;
   }
+}
+
+}  // namespace
+
+namespace platform_util {
+
+void ShowItemInFolder(const base::FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
+
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ShowItemInFolderOnFileThread, full_path));
+}
+
+void OpenItem(const base::FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ui::win::OpenItemViaShell), full_path));
+}
+
+void OpenExternal(Profile* profile, const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
+
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&OpenExternalOnFileThread, url));
 }
 
 #if !defined(USE_AURA)

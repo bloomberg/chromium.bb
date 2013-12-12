@@ -16,10 +16,10 @@ class FirstRunDialog {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
   // Returns true if the dialog was shown.
-  static bool Show();
+  static bool Show(Profile* profile);
 
  private:
-  FirstRunDialog();
+  explicit FirstRunDialog(Profile* profile);
   virtual ~FirstRunDialog();
 
   CHROMEGTK_CALLBACK_1(FirstRunDialog, void, OnResponseDialog, int);
@@ -31,6 +31,8 @@ class FirstRunDialog {
   // the Chrome startup can continue. This should be called when all the
   // first run tasks are done.
   void FirstRunDone();
+
+  Profile* profile_;
 
   // Dialog that holds the bug reporting and default browser checkboxes.
   GtkWidget* dialog_;

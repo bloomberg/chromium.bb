@@ -32,7 +32,9 @@ const int kMessageWidth = 400;
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
   new ProtocolDialogGtk(scoped_ptr<const ProtocolDialogDelegate>(
-        new ExternalProtocolDialogDelegate(url)));
+      new ExternalProtocolDialogDelegate(url,
+                                         render_process_host_id,
+                                         routing_id)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -88,8 +88,9 @@ class ExternalProtocolHandler {
   // NOTE: You should Not call this function directly unless you are sure the
   // url you have has been checked against the blacklist, and has been escaped.
   // All calls to this function should originate in some way from LaunchUrl.
-  // This will execute on the file thread.
-  static void LaunchUrlWithoutSecurityCheck(const GURL& url);
+  static void LaunchUrlWithoutSecurityCheck(const GURL& url,
+                                            int render_process_host_id,
+                                            int tab_contents_id);
 
   // Prepopulates the dictionary with known protocols to deny or allow, if
   // preferences for them do not already exist.

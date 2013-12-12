@@ -37,13 +37,13 @@
 namespace first_run {
 
 bool ShowFirstRunDialog(Profile* profile) {
-  return FirstRunDialog::Show();
+  return FirstRunDialog::Show(profile);
 }
 
 }  // namespace first_run
 
 // static
-bool FirstRunDialog::Show() {
+bool FirstRunDialog::Show(Profile* profile) {
   bool dialog_shown = false;
 #if defined(GOOGLE_CHROME_BUILD)
   // If the metrics reporting is managed, we won't ask.
@@ -55,7 +55,7 @@ bool FirstRunDialog::Show() {
 
   if (show_reporting_dialog) {
     // Object deletes itself.
-    new FirstRunDialog();
+    new FirstRunDialog(profile);
     dialog_shown = true;
 
     // TODO(port): it should be sufficient to just run the dialog:
@@ -69,8 +69,9 @@ bool FirstRunDialog::Show() {
   return dialog_shown;
 }
 
-FirstRunDialog::FirstRunDialog()
-    : dialog_(NULL),
+FirstRunDialog::FirstRunDialog(Profile* profile)
+    : profile_(profile),
+      dialog_(NULL),
       report_crashes_(NULL),
       make_default_(NULL) {
   ShowReportingDialog();
@@ -150,7 +151,7 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
 }
 
 void FirstRunDialog::OnLearnMoreLinkClicked(GtkButton* button) {
-  platform_util::OpenExternal(GURL(chrome::kLearnMoreReportingURL));
+  platform_util::OpenExternal(profile_, GURL(chrome::kLearnMoreReportingURL));
 }
 
 void FirstRunDialog::FirstRunDone() {

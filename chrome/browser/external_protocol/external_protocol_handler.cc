@@ -17,8 +17,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
@@ -70,11 +73,15 @@ void RunExternalProtocolDialogWithDelegate(
 
 void LaunchUrlWithoutSecurityCheckWithDelegate(
     const GURL& url,
+    int render_process_host_id,
+    int tab_contents_id,
     ExternalProtocolHandler::Delegate* delegate) {
-  if (!delegate)
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url);
-  else
+  if (!delegate) {
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+        url, render_process_host_id, tab_contents_id);
+  } else {
     delegate->LaunchUrlWithoutSecurityCheck(url);
+  }
 }
 
 // When we are about to launch a URL with the default OS level application,
@@ -124,7 +131,8 @@ class ExternalDefaultProtocolObserver
       return;
     }
 
-    LaunchUrlWithoutSecurityCheckWithDelegate(escaped_url_, delegate_);
+    LaunchUrlWithoutSecurityCheckWithDelegate(
+        escaped_url_, render_process_host_id_, tab_contents_id_, delegate_);
   }
 
   virtual bool IsOwnedByWorker() OVERRIDE { return true; }
@@ -282,18 +290,17 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
 }
 
 // static
-void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
-#if defined(OS_MACOSX)
-  // This must run on the UI thread on OS X.
-  platform_util::OpenExternal(url);
-#else
-  // Otherwise put this work on the file thread. On Windows ShellExecute may
-  // block for a significant amount of time, and it shouldn't hurt on Linux.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&platform_util::OpenExternal, url));
-#endif
+void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+    const GURL& url,
+    int render_process_host_id,
+    int tab_contents_id) {
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, tab_contents_id);
+  if (!web_contents)
+    return;
+
+  platform_util::OpenExternal(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
 }
 
 // static

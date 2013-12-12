@@ -15,8 +15,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
-ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(const GURL& url)
-    : ProtocolDialogDelegate(url) {
+ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
+    const GURL& url,
+    int render_process_host_id,
+    int tab_contents_id)
+    : ProtocolDialogDelegate(url),
+      render_process_host_id_(render_process_host_id),
+      tab_contents_id_(tab_contents_id) {
 }
 
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
@@ -65,7 +70,8 @@ void ExternalProtocolDialogDelegate::DoAccept(
           url.scheme(), ExternalProtocolHandler::DONT_BLOCK);
   }
 
-  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url);
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+      url, render_process_host_id_, tab_contents_id_);
 }
 
 void ExternalProtocolDialogDelegate::DoCancel(

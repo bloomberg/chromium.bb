@@ -11,6 +11,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
+class Profile;
 
 namespace base {
 class FilePath;
@@ -28,7 +29,8 @@ void OpenItem(const base::FilePath& full_path);
 
 // Open the given external protocol URL in the desktop's default manner.
 // (For example, mailto: URLs in the default mail user agent.)
-void OpenExternal(const GURL& url);
+// Must be called from the UI thread.
+void OpenExternal(Profile* profile, const GURL& url);
 
 // Get the top level window for the native view. This can return NULL.
 gfx::NativeWindow GetTopLevel(gfx::NativeView view);
@@ -54,6 +56,6 @@ bool IsVisible(gfx::NativeView view);
 bool IsSwipeTrackingFromScrollEventsEnabled();
 #endif
 
-}  // platform_util
+}  // namespace platform_util
 
 #endif  // CHROME_BROWSER_PLATFORM_UTIL_H_

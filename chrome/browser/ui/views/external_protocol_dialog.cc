@@ -42,11 +42,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     // ShellExecute won't do anything. Don't bother warning the user.
     return;
   }
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, routing_id);
-  DCHECK(web_contents);
   // Windowing system takes ownership.
-  new ExternalProtocolDialog(web_contents, url, command);
+  new ExternalProtocolDialog(url, render_process_host_id, routing_id, command);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +101,8 @@ bool ExternalProtocolDialog::Accept() {
         url_.scheme(), ExternalProtocolHandler::DONT_BLOCK);
   }
 
-  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_);
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+      url_, render_process_host_id_, routing_id_);
   // Returning true closes the dialog.
   return true;
 }
@@ -124,11 +122,13 @@ const views::Widget* ExternalProtocolDialog::GetWidget() const {
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog, private:
 
-ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
-                                               const GURL& url,
+ExternalProtocolDialog::ExternalProtocolDialog(const GURL& url,
+                                               int render_process_host_id,
+                                               int routing_id,
                                                const std::wstring& command)
-    : web_contents_(web_contents),
-      url_(url),
+    : url_(url),
+      render_process_host_id_(render_process_host_id),
+      routing_id_(routing_id),
       creation_time_(base::TimeTicks::Now()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
@@ -156,9 +156,11 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 
   // Dialog is top level if we don't have a web_contents associated with us.
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id_, routing_id_);
   gfx::NativeWindow parent_window = NULL;
-  if (web_contents_)
-    parent_window = web_contents_->GetView()->GetTopLevelNativeWindow();
+  if (web_contents)
+    parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
   CreateBrowserModalDialogViews(this, parent_window)->Show();
 }
 

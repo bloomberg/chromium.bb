@@ -76,7 +76,8 @@ void OpenItem(const base::FilePath& full_path) {
       base::Bind(&XDGOpen, full_path.value()));
 }
 
-void OpenExternal(const GURL& url) {
+void OpenExternal(Profile* profile, const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (url.SchemeIs("mailto"))
     XDGEmail(url.spec());
   else
