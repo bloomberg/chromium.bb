@@ -393,12 +393,12 @@ TEST_F(JobSchedulerTest, GetShareUrl) {
   ASSERT_FALSE(share_url.is_empty());
 }
 
-TEST_F(JobSchedulerTest, DeleteResource) {
+TEST_F(JobSchedulerTest, TrashResource) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
-  scheduler_->DeleteResource(
+  scheduler_->TrashResource(
       "file:2_file_resource_id",
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));

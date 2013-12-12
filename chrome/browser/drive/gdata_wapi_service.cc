@@ -370,7 +370,7 @@ CancelCallback GDataWapiService::DownloadFile(
                               local_cache_path));
 }
 
-CancelCallback GDataWapiService::DeleteResource(
+CancelCallback GDataWapiService::TrashResource(
     const std::string& resource_id,
     const std::string& etag,
     const EntryActionCallback& callback) {

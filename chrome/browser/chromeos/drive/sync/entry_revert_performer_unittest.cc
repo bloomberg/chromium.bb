@@ -107,16 +107,16 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
       util::GetDriveMyDriveRootPath()));
 }
 
-TEST_F(EntryRevertPerformerTest, RevertEntry_DeletedOnServer) {
+TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
   base::FilePath path(
       FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
 
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(path, &entry));
 
-  // Delete the entry on the server.
+  // Trash the entry on the server.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
-  fake_service()->DeleteResource(
+  fake_service()->TrashResource(
       entry.resource_id(),
       std::string(),  // etag
       google_apis::test_util::CreateCopyResultCallback(&gdata_error));

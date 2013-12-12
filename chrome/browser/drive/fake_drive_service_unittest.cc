@@ -269,14 +269,14 @@ TEST_F(FakeDriveServiceTest, Search_Offline) {
   EXPECT_FALSE(resource_list);
 }
 
-TEST_F(FakeDriveServiceTest, Search_Deleted) {
+TEST_F(FakeDriveServiceTest, Search_Trashed) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
-                               test_util::CreateCopyResultCallback(&error));
+  fake_service_.TrashResource("file:2_file_resource_id",
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -421,7 +421,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
   EXPECT_FALSE(resource_list);
 }
 
-TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
+TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   // Load the account_metadata.json as well to add the largest changestamp
@@ -433,9 +433,9 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
-                               test_util::CreateCopyResultCallback(&error));
+  fake_service_.TrashResource("file:2_file_resource_id",
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(HTTP_SUCCESS, error);
   ASSERT_FALSE(Exists("file:2_file_resource_id"));
@@ -821,7 +821,7 @@ TEST_F(FakeDriveServiceTest, GetShareUrl) {
   EXPECT_FALSE(share_url.is_empty());
 }
 
-TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
+TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
@@ -829,9 +829,9 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
-                               test_util::CreateCopyResultCallback(&error));
+  fake_service_.TrashResource("file:2_file_resource_id",
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -839,36 +839,36 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   EXPECT_FALSE(Exists("file:2_file_resource_id"));
 
   error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
-                               test_util::CreateCopyResultCallback(&error));
+  fake_service_.TrashResource("file:2_file_resource_id",
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_FALSE(Exists("file:2_file_resource_id"));
 }
 
-TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
+TEST_F(FakeDriveServiceTest, TrashResource_NonexistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:nonexisting_resource_id",
-                               std::string(),  // etag
-                               test_util::CreateCopyResultCallback(&error));
+  fake_service_.TrashResource("file:nonexisting_resource_id",
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
 
-TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
+TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
-                               test_util::CreateCopyResultCallback(&error));
+  fake_service_.TrashResource("file:2_file_resource_id",
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);

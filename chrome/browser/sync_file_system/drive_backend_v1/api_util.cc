@@ -598,7 +598,7 @@ void APIUtil::DeleteFile(const std::string& resource_id,
   }
 
   // Expected remote_file_md5 is empty so do a force delete.
-  drive_service_->DeleteResource(
+  drive_service_->TrashResource(
       resource_id,
       std::string(),
       base::Bind(&APIUtil::DidDeleteFile, AsWeakPtr(), callback));
@@ -951,7 +951,7 @@ void APIUtil::DeleteFileInternal(const std::string& remote_file_md5,
   DVLOG(2) << "Got resource entry for deleting file";
 
   // Move the file to trash (don't delete it completely).
-  drive_service_->DeleteResource(
+  drive_service_->TrashResource(
       entry->resource_id(),
       entry->etag(),
       base::Bind(&APIUtil::DidDeleteFile, AsWeakPtr(), callback));
@@ -1071,7 +1071,7 @@ void APIUtil::DeleteEntriesForEnsuringTitleUniqueness(
 
   // We don't care conflicts here as other clients may be also deleting this
   // file, so passing an empty etag.
-  drive_service_->DeleteResource(
+  drive_service_->TrashResource(
       entry->resource_id(),
       std::string(),  // empty etag
       base::Bind(&APIUtil::DidDeleteEntriesForEnsuringTitleUniqueness,

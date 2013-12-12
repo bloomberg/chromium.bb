@@ -58,7 +58,7 @@ void UninstallAppTask::Run(const SyncStatusCallback& callback) {
   app_root_tracker_id_ = app_root_tracker->tracker_id();
   DCHECK(app_root_tracker->has_synced_details());
 
-  drive_service()->DeleteResource(
+  drive_service()->TrashResource(
       app_root_tracker->file_id(),
       std::string(),  // etag
       base::Bind(&UninstallAppTask::DidDeleteAppRoot,

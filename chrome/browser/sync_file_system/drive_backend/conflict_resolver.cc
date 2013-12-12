@@ -195,7 +195,7 @@ void ConflictResolver::RemoveNonPrimaryFiles(
 
   // TODO(tzik): Check if the file is a folder, and merge its contents into
   // the folder identified by |target_file_id_|.
-  drive_service()->DeleteResource(
+  drive_service()->TrashResource(
       file_id, etag,
       base::Bind(&ConflictResolver::DidRemoveFile,
                  weak_ptr_factory_.GetWeakPtr(),

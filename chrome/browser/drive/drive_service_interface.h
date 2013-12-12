@@ -192,12 +192,12 @@ class DriveServiceInterface {
   virtual google_apis::CancelCallback GetAppList(
       const google_apis::AppListCallback& callback) = 0;
 
-  // Deletes a resource identified by its |resource_id|.
-  // If |etag| is not empty and did not match, the deletion fails with
+  // Trashes a resource identified by its |resource_id|.
+  // If |etag| is not empty and did not match, the trash operation fails with
   // HTTP_PRECONDITION error.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual google_apis::CancelCallback DeleteResource(
+  virtual google_apis::CancelCallback TrashResource(
       const std::string& resource_id,
       const std::string& etag,
       const google_apis::EntryActionCallback& callback) = 0;

@@ -107,24 +107,24 @@ void RemovePerformer::RemoveAfterGetResourceEntry(
     UnparentResource(callback, entry->resource_id(), entry->local_id());
   } else {
     // Otherwise try sending the entry to trash.
-    DeleteResource(callback, entry->resource_id(), entry->local_id());
+    TrashResource(callback, entry->resource_id(), entry->local_id());
   }
 }
 
-void RemovePerformer::DeleteResource(const FileOperationCallback& callback,
-                                     const std::string& resource_id,
-                                     const std::string& local_id) {
+void RemovePerformer::TrashResource(const FileOperationCallback& callback,
+                                    const std::string& resource_id,
+                                    const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scheduler_->DeleteResource(
+  scheduler_->TrashResource(
       resource_id,
       ClientContext(BACKGROUND),
-      base::Bind(&RemovePerformer::DeleteResourceAfterUpdateRemoteState,
+      base::Bind(&RemovePerformer::TrashResourceAfterUpdateRemoteState,
                  weak_ptr_factory_.GetWeakPtr(), callback, local_id));
 }
 
-void RemovePerformer::DeleteResourceAfterUpdateRemoteState(
+void RemovePerformer::TrashResourceAfterUpdateRemoteState(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::GDataErrorCode status) {
@@ -144,7 +144,7 @@ void RemovePerformer::DeleteResourceAfterUpdateRemoteState(
     return;
   }
 
-  // Now we're done. If the entry is deleted on the server, it'll be also
+  // Now we're done. If the entry is trashed on the server, it'll be also
   // deleted locally on the next update.
   callback.Run(error);
 }

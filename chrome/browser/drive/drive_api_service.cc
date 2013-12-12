@@ -554,7 +554,7 @@ CancelCallback DriveAPIService::DownloadFile(
                               progress_callback));
 }
 
-CancelCallback DriveAPIService::DeleteResource(
+CancelCallback DriveAPIService::TrashResource(
     const std::string& resource_id,
     const std::string& etag,
     const EntryActionCallback& callback) {

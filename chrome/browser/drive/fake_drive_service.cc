@@ -555,7 +555,7 @@ CancelCallback FakeDriveService::GetAppList(const AppListCallback& callback) {
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::DeleteResource(
+CancelCallback FakeDriveService::TrashResource(
     const std::string& resource_id,
     const std::string& etag,
     const EntryActionCallback& callback) {

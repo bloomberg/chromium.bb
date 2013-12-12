@@ -141,7 +141,7 @@ GDataErrorCode FakeDriveServiceHelper::UpdateFile(
 GDataErrorCode FakeDriveServiceHelper::RemoveResource(
     const std::string& file_id) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  fake_drive_service_->DeleteResource(
+  fake_drive_service_->TrashResource(
       file_id,
       std::string(),  // etag
       CreateResultReceiver(&error));

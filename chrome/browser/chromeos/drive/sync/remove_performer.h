@@ -58,12 +58,12 @@ class RemovePerformer {
                                    FileError error);
 
   // Requests the server to move the specified resource to the trash.
-  void DeleteResource(const FileOperationCallback& callback,
-                      const std::string& resource_id,
-                      const std::string& local_id);
+  void TrashResource(const FileOperationCallback& callback,
+                     const std::string& resource_id,
+                     const std::string& local_id);
 
-  // Part of DeleteResource(). Called after server-side removal is done.
-  void DeleteResourceAfterUpdateRemoteState(
+  // Part of TrashResource(). Called after server-side removal is done.
+  void TrashResourceAfterUpdateRemoteState(
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::GDataErrorCode status);
