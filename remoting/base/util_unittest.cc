@@ -152,12 +152,13 @@ TEST(YuvToRgbTest, Clipping) {
   webrtc::DesktopSize dest_size = webrtc::DesktopSize(kWidth, kHeight);
   webrtc::DesktopRect rect =
       webrtc::DesktopRect::MakeLTRB(0, 0, kWidth - 1, kHeight - 1);
+  // TODO(fbarchard): Allow top/left clipping to odd boundary.
   for (int i = 0; i < 16; ++i) {
     webrtc::DesktopRect dest_rect = webrtc::DesktopRect::MakeLTRB(
-        rect.left() + ((i & 1) ? 1 : 0),
-        rect.top() + ((i & 2) ? 1 : 0),
-        rect.right() + ((i & 4) ? 1 : 0),
-        rect.bottom() + ((i & 8) ? 1 : 0));
+        rect.left() + ((i & 1) ? 2 : 0),
+        rect.top() + ((i & 2) ? 2 : 0),
+        rect.right() - ((i & 4) ? 1 : 0),
+        rect.bottom() - ((i & 8) ? 1 : 0));
 
     tester.RunTest(dest_size, dest_rect);
   }
@@ -169,13 +170,13 @@ TEST(YuvToRgbTest, ClippingAndScaling) {
   webrtc::DesktopSize dest_size =
       webrtc::DesktopSize(kWidth - 10, kHeight - 10);
   webrtc::DesktopRect rect =
-      webrtc::DesktopRect::MakeLTRB(5, 5, kWidth - 11, kHeight - 11);
+      webrtc::DesktopRect::MakeLTRB(6, 6, kWidth - 11, kHeight - 11);
   for (int i = 0; i < 16; ++i) {
     webrtc::DesktopRect dest_rect = webrtc::DesktopRect::MakeLTRB(
-        rect.left() + ((i & 1) ? 1 : 0),
-        rect.top() + ((i & 2) ? 1 : 0),
-        rect.right() + ((i & 4) ? 1 : 0),
-        rect.bottom() + ((i & 8) ? 1 : 0));
+        rect.left() + ((i & 1) ? 2 : 0),
+        rect.top() + ((i & 2) ? 2 : 0),
+        rect.right() - ((i & 4) ? 1 : 0),
+        rect.bottom() - ((i & 8) ? 1 : 0));
 
     tester.RunTest(dest_size, dest_rect);
   }
