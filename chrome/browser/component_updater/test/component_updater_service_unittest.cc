@@ -1198,19 +1198,15 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
       << post_interceptor_->GetRequestsAsString();
 }
 
-void RequestAndDeleteResourceThrottle(
-    ComponentUpdateService* cus, const char* crx_id) {
-  // By requesting a throttle and deleting it immediately we ensure that we
-  // hit the case where the component updater tries to use the weak
-  // pointer to a dead Resource throttle.
-  class  NoCallResourceController : public content::ResourceController {
-   public:
-    virtual ~NoCallResourceController() {}
-    virtual void Cancel() OVERRIDE { CHECK(false); }
-    virtual void CancelAndIgnore() OVERRIDE { CHECK(false); }
-    virtual void CancelWithError(int error_code) OVERRIDE { CHECK(false); }
-    virtual void Resume() OVERRIDE { CHECK(false); }
-  };
+class TestResourceController : public content::ResourceController {
+ public:
+  virtual void SetThrottle(content::ResourceThrottle* throttle) {}
+};
+
+content::ResourceThrottle* RequestTestResourceThrottle(
+    ComponentUpdateService* cus,
+    TestResourceController* controller,
+    const char* crx_id) {
 
   net::TestURLRequestContext context;
   net::TestURLRequest url_request(
@@ -1221,12 +1217,29 @@ void RequestAndDeleteResourceThrottle(
 
   content::ResourceThrottle* rt =
       cus->GetOnDemandResourceThrottle(&url_request, crx_id);
-  NoCallResourceController controller;
-  rt->set_controller_for_testing(&controller);
-  delete rt;
+  rt->set_controller_for_testing(controller);
+  controller->SetThrottle(rt);
+  return rt;
 }
 
-TEST_F(ComponentUpdaterTest, ResourceThrottleNoUpdate) {
+void RequestAndDeleteResourceThrottle(
+    ComponentUpdateService* cus, const char* crx_id) {
+  // By requesting a throttle and deleting it immediately we ensure that we
+  // hit the case where the component updater tries to use the weak
+  // pointer to a dead Resource throttle.
+  class  NoCallResourceController : public TestResourceController {
+   public:
+    virtual ~NoCallResourceController() {}
+    virtual void Cancel() OVERRIDE { CHECK(false); }
+    virtual void CancelAndIgnore() OVERRIDE { CHECK(false); }
+    virtual void CancelWithError(int error_code) OVERRIDE { CHECK(false); }
+    virtual void Resume() OVERRIDE { CHECK(false); }
+  } controller;
+
+  delete RequestTestResourceThrottle(cus, &controller, crx_id);
+}
+
+TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
   MockComponentObserver observer;
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
@@ -1234,10 +1247,12 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleNoUpdate) {
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
               .Times(1);
-
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
               .Times(1);
+
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
+      "updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   TestInstaller installer;
   CrxComponent com;
@@ -1247,11 +1262,6 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleNoUpdate) {
                               kTestComponent_abag,
                               Version("1.1"),
                               &installer));
-
-  const GURL expected_update_url(
-      "http://localhost/upd?extra=foo"
-      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D1.1%26fp%3D%26uc"
-      "%26installsource%3Dondemand");
   // The following two calls ensure that we don't do an update check via the
   // timer, so the only update check should be the on-demand one.
   test_configurator()->SetInitialDelay(1000000);
@@ -1262,9 +1272,6 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleNoUpdate) {
   RunThreadsUntilIdle();
 
   EXPECT_EQ(0, post_interceptor_->GetHitCount());
-
-  EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
-      "updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -1281,6 +1288,95 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleNoUpdate) {
 
   component_updater()->Stop();
 }
+
+class  CancelResourceController: public TestResourceController {
+  public:
+  CancelResourceController() : throttle_(NULL), resume_called_(0) {}
+  virtual ~CancelResourceController() {
+    // Check that the throttle has been resumed by the time we
+    // exit the test.
+    CHECK(resume_called_ == 1);
+    delete throttle_;
+  }
+  virtual void Cancel() OVERRIDE { CHECK(false); }
+  virtual void CancelAndIgnore() OVERRIDE { CHECK(false); }
+  virtual void CancelWithError(int error_code) OVERRIDE { CHECK(false); }
+  virtual void Resume() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&CancelResourceController::ResumeCalled,
+                    base::Unretained(this)));
+  }
+  virtual void SetThrottle(content::ResourceThrottle* throttle) OVERRIDE {
+    throttle_ = throttle;
+    bool defer = false;
+    // Initially the throttle is blocked. The CUS needs to run a
+    // task on the UI thread to  decide if it should unblock.
+    throttle_->WillStartRequest(&defer);
+    CHECK(defer);
+  }
+
+  private:
+  void ResumeCalled() { ++resume_called_; }
+
+  content::ResourceThrottle* throttle_;
+  int resume_called_;
+};
+
+TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
+  MockComponentObserver observer;
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+              .Times(1);
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              .Times(1);
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+              .Times(1);
+
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
+      "updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  TestInstaller installer;
+  CrxComponent com;
+  com.observer = &observer;
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            RegisterComponent(&com,
+                              kTestComponent_abag,
+                              Version("1.1"),
+                              &installer));
+  // The following two calls ensure that we don't do an update check via the
+  // timer, so the only update check should be the on-demand one.
+  test_configurator()->SetInitialDelay(1000000);
+  test_configurator()->SetRecheckTime(1000000);
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+
+  RunThreadsUntilIdle();
+
+  EXPECT_EQ(0, post_interceptor_->GetHitCount());
+
+  CancelResourceController controller;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
+                 component_updater(),
+                 &controller,
+                 "abagagagagagagagagagagagagagagag"));
+
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_->GetHitCount());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  component_updater()->Stop();
+}
+
 
 }  // namespace component_updater
 
