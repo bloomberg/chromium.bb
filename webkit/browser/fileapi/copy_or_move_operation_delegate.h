@@ -48,6 +48,7 @@ class CopyOrMoveOperationDelegate
     StreamCopyHelper(
         scoped_ptr<webkit_blob::FileStreamReader> reader,
         scoped_ptr<FileStreamWriter> writer,
+        bool need_flush,
         int buffer_size,
         const FileSystemOperation::CopyFileProgressCallback&
             file_progress_callback,
@@ -71,8 +72,13 @@ class CopyOrMoveOperationDelegate
     void DidWrite(const StatusCallback& callback,
                   scoped_refptr<net::DrainableIOBuffer> buffer, int result);
 
+    // Flushes the written content in |writer_|.
+    void Flush(const StatusCallback& callback);
+    void DidFlush(const StatusCallback& callback, int result);
+
     scoped_ptr<webkit_blob::FileStreamReader> reader_;
     scoped_ptr<FileStreamWriter> writer_;
+    const bool need_flush_;
     FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
     scoped_refptr<net::IOBufferWithSize> io_buffer_;
     int64 num_copied_bytes_;

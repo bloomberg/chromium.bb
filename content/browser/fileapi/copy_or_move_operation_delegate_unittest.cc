@@ -732,6 +732,65 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   std::vector<int64> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
       reader.Pass(), writer.Pass(),
+      false,  // don't need flush
+      10,  // buffer size
+      base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
+      base::TimeDelta());  // For testing, we need all the progress.
+
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
+  run_loop.Run();
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  ASSERT_EQ(5U, progress.size());
+  EXPECT_EQ(0, progress[0]);
+  EXPECT_EQ(10, progress[1]);
+  EXPECT_EQ(20, progress[2]);
+  EXPECT_EQ(30, progress[3]);
+  EXPECT_EQ(36, progress[4]);
+
+  std::string content;
+  ASSERT_TRUE(base::ReadFileToString(dest_path, &content));
+  EXPECT_EQ(kTestData, content);
+}
+
+TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
+  // Testing the same configuration as StreamCopyHelper, but with |need_flush|
+  // parameter set to true. Since it is hard to test that the flush is indeed
+  // taking place, this test just only verifies that the file is correctly
+  // written with or without the flag.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath source_path = temp_dir.path().AppendASCII("source");
+  const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+  file_util::WriteFile(source_path, kTestData,
+                       arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+
+  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  // LocalFileWriter requires the file exists. So create an empty file here.
+  file_util::WriteFile(dest_path, "", 0);
+
+  base::MessageLoopForIO message_loop;
+  base::Thread file_thread("file_thread");
+  ASSERT_TRUE(file_thread.Start());
+  ScopedThreadStopper thread_stopper(&file_thread);
+  ASSERT_TRUE(thread_stopper.is_valid());
+
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      file_thread.message_loop_proxy();
+
+  scoped_ptr<webkit_blob::FileStreamReader> reader(
+      webkit_blob::FileStreamReader::CreateForLocalFile(
+          task_runner.get(), source_path, 0, base::Time()));
+
+  scoped_ptr<FileStreamWriter> writer(
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0));
+
+  std::vector<int64> progress;
+  CopyOrMoveOperationDelegate::StreamCopyHelper helper(
+      reader.Pass(), writer.Pass(),
+      true,  // need flush
       10,  // buffer size
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.
@@ -785,6 +844,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   std::vector<int64> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
       reader.Pass(), writer.Pass(),
+      false,  // need_flush
       10,  // buffer size
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.

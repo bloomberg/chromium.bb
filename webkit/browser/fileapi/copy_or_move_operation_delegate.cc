@@ -440,10 +440,14 @@ class StreamCopyOrMoveImpl
       return;
     }
 
+    const bool need_flush = dest_url_.mount_option().copy_sync_option() ==
+        fileapi::COPY_SYNC_OPTION_SYNC;
+
     DCHECK(!copy_helper_);
     copy_helper_.reset(
         new CopyOrMoveOperationDelegate::StreamCopyHelper(
             reader_.Pass(), writer_.Pass(),
+            need_flush,
             kReadBufferSize,
             file_progress_callback_,
             base::TimeDelta::FromMilliseconds(
@@ -528,12 +532,14 @@ class StreamCopyOrMoveImpl
 CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
     scoped_ptr<webkit_blob::FileStreamReader> reader,
     scoped_ptr<FileStreamWriter> writer,
+    bool need_flush,
     int buffer_size,
     const FileSystemOperation::CopyFileProgressCallback&
         file_progress_callback,
     const base::TimeDelta& min_progress_callback_invocation_span)
     : reader_(reader.Pass()),
       writer_(writer.Pass()),
+      need_flush_(need_flush),
       file_progress_callback_(file_progress_callback),
       io_buffer_(new net::IOBufferWithSize(buffer_size)),
       num_copied_bytes_(0),
@@ -581,7 +587,10 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
 
   if (result == 0) {
     // Here is the EOF.
-    callback.Run(base::PLATFORM_FILE_OK);
+    if (need_flush_)
+      Flush(callback);
+    else
+      callback.Run(base::PLATFORM_FILE_OK);
     return;
   }
 
@@ -632,6 +641,26 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
   }
 
   Read(callback);
+}
+
+void CopyOrMoveOperationDelegate::StreamCopyHelper::Flush(
+    const StatusCallback& callback) {
+  int result = writer_->Flush(
+      base::Bind(&StreamCopyHelper::DidFlush,
+                 weak_factory_.GetWeakPtr(), callback));
+  if (result != net::ERR_IO_PENDING)
+    DidFlush(callback, result);
+}
+
+void CopyOrMoveOperationDelegate::StreamCopyHelper::DidFlush(
+    const StatusCallback& callback,
+    int result) {
+  if (cancel_requested_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    return;
+  }
+
+  callback.Run(NetErrorToPlatformFileError(result));
 }
 
 CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
