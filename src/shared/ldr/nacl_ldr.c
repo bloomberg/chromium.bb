@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/public/secure_service.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_message.h"
@@ -107,7 +108,7 @@ int NaClLdrLoadModule(struct NaClSrpcChannel  *command_channel,
 
   /* Load nexe module. */
   rpc_result = NaClSrpcInvokeBySignature(command_channel,
-                                         "load_module:hs:",
+                                         NACL_SECURE_SERVICE_LOAD_MODULE,
                                          nexe,
                                          kLoadModulePlaceHolderString);
   NaClLog(4, "NaClLdrLoadModule: load_module RPC result %d\n",
@@ -134,9 +135,10 @@ int NaClLdrSetupReverseSetup(struct NaClSrpcChannel   *command_channel,
           (uintptr_t) reverse_addr);
 
   /* Hook up the reverse service channel. */
-  rpc_result = NaClSrpcInvokeBySignature(command_channel,
-                                         "reverse_setup::h",
-                                         reverse_addr);
+  rpc_result = NaClSrpcInvokeBySignature(
+      command_channel,
+      NACL_SECURE_SERVICE_REVERSE_SETUP,
+      reverse_addr);
   NaClLog(4, "NaClLdrSetupReverseSetup: reverse_setup RPC result %d\n",
           (int) rpc_result);
   if (NACL_SRPC_RESULT_OK != rpc_result) {
@@ -156,9 +158,10 @@ int NaClLdrStartModule(struct NaClSrpcChannel *command_channel) {
   int             start_result;
 
   /* Start untrusted code module. */
-  rpc_result = NaClSrpcInvokeBySignature(command_channel,
-                                         "start_module::i",
-                                         &start_result);
+  rpc_result = NaClSrpcInvokeBySignature(
+      command_channel,
+      NACL_SECURE_SERVICE_START_MODULE,
+      &start_result);
   NaClLog(4, "NaClLdrStartModule: start_module RPC result %d\n",
           (int) rpc_result);
   if (NACL_SRPC_RESULT_OK != rpc_result || 0 != start_result) {

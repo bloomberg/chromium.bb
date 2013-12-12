@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/public/secure_service.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -126,7 +127,9 @@ bool ReverseEmulateInit(NaClSrpcChannel* command_channel,
   NaClLog(1, "ReverseEmulateInit: launching reverse RPC service\n");
   NaClDesc* h;
   NaClSrpcResultCodes rpc_result =
-      NaClSrpcInvokeBySignature(command_channel, "reverse_setup::h", &h);
+      NaClSrpcInvokeBySignature(command_channel,
+                                NACL_SECURE_SERVICE_REVERSE_SETUP,
+                                &h);
   if (NACL_SRPC_RESULT_OK != rpc_result) {
     NaClLog(LOG_ERROR, "ReverseEmulateInit: reverse setup failed\n");
     return false;

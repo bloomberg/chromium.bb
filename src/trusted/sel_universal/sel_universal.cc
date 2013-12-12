@@ -19,6 +19,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/public/secure_service.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -183,7 +184,8 @@ static bool HandlerHardShutdown(NaClCommandLoop* ncl,
                                const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
   UNREFERENCED_PARAMETER(args);
-  NaClSrpcInvokeBySignature(&command_channel, "hard_shutdown::");
+  NaClSrpcInvokeBySignature(&command_channel,
+                            NACL_SECURE_SERVICE_HARD_SHUTDOWN);
   return true;
 }
 

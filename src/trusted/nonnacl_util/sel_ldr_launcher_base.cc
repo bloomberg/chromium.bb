@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/public/secure_service.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
@@ -117,7 +118,7 @@ bool SelLdrLauncherBase::LoadModule(NaClSrpcChannel* command,
   // Load module over command channel.
   NaClSrpcResultCodes rpc_result =
       NaClSrpcInvokeBySignature(command,
-                                "load_module:hs:",
+                                NACL_SECURE_SERVICE_LOAD_MODULE,
                                 nexe->desc(),
                                 kLoadModulePlaceHolderString);
   if (NACL_SRPC_RESULT_OK != rpc_result) {
@@ -146,9 +147,10 @@ bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
 bool SelLdrLauncherBase::StartModule(NaClSrpcChannel* command) {
   // Start untrusted code module.
   int start_result;
-  NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(command,
-                                                             "start_module::i",
-                                                             &start_result);
+  NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(
+      command,
+      NACL_SECURE_SERVICE_START_MODULE,
+      &start_result);
   NaClLog(4, "SelLdrLauncher::StartModule rpc result %d\n",
           static_cast<int>(rpc_result));
   if (NACL_SRPC_RESULT_OK != rpc_result || LOAD_OK != start_result) {
