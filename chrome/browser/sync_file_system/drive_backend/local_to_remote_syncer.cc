@@ -44,6 +44,12 @@ void ReturnRetryOnSuccess(const SyncStatusCallback& callback,
   callback.Run(status);
 }
 
+bool IsLocalFileMissing(const SyncFileMetadata& local_metadata,
+                        const FileChange& local_change) {
+  return local_metadata.file_type == SYNC_FILE_TYPE_UNKNOWN ||
+         local_change.IsDelete();
+}
+
 }  // namespace
 
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
@@ -52,12 +58,15 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
                                          const base::FilePath& local_path,
                                          const fileapi::FileSystemURL& url)
     : sync_context_(sync_context),
-      local_metadata_(local_metadata),
       local_change_(local_change),
+      local_is_missing_(IsLocalFileMissing(local_metadata, local_change)),
       local_path_(local_path),
       url_(url),
       sync_action_(SYNC_ACTION_NONE),
       weak_ptr_factory_(this) {
+  DCHECK(local_is_missing_ ||
+         local_change.file_type() == local_metadata.file_type)
+      << local_change.DebugString() << " metadata:" << local_metadata.file_type;
 }
 
 LocalToRemoteSyncer::~LocalToRemoteSyncer() {
@@ -73,6 +82,12 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
   SyncStatusCallback wrapped_callback = base::Bind(
       &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
       callback);
+
+  if (local_is_missing_ && !local_change_.IsDelete()) {
+    // Stray file, we can just return.
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
 
   std::string app_id = url_.origin().host();
   base::FilePath path = url_.path();
@@ -114,8 +129,7 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
   fileapi::VirtualPath::GetComponents(missing_entries, &missing_components);
 
   if (!missing_components.empty()) {
-    if (local_change_.IsDelete() ||
-        local_metadata_.file_type == SYNC_FILE_TYPE_UNKNOWN) {
+    if (local_is_missing_) {
       // !IsDelete() but SYNC_FILE_TYPE_UNKNOWN could happen when a file is
       // deleted by recursive deletion (which is not recorded by tracker)
       // but there're remaining changes for the same file in the tracker.
@@ -201,6 +215,11 @@ void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_->active());
   DCHECK(remote_file_tracker_->dirty());
 
+  if (local_is_missing_) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
   if (local_change_.IsFile()) {
     UploadNewFile(callback);
     return;
@@ -240,21 +259,19 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   DCHECK(remote_file_tracker_->active());
   DCHECK(remote_file_tracker_->has_synced_details());
 
-  if (local_change_.IsDelete() ||
-      local_metadata_.file_type == SYNC_FILE_TYPE_UNKNOWN) {
+  if (local_is_missing_) {
     // Local file deletion for existing remote file.
     DeleteRemoteFile(callback);
     return;
   }
 
   DCHECK(local_change_.IsAddOrUpdate());
-  DCHECK(local_change_.file_type() == SYNC_FILE_TYPE_FILE ||
-         local_change_.file_type() == SYNC_FILE_TYPE_DIRECTORY);
+  DCHECK(local_change_.IsFile() || local_change_.IsDirectory());
 
   const FileDetails& synced_details = remote_file_tracker_->synced_details();
   DCHECK(synced_details.file_kind() == FILE_KIND_FILE ||
          synced_details.file_kind() == FILE_KIND_FOLDER);
-  if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
+  if (local_change_.IsFile()) {
     if (synced_details.file_kind() == FILE_KIND_FILE) {
       // Non-conflicting local file update to existing remote regular file.
       UploadExistingFile(callback);
@@ -271,7 +288,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     return;
   }
 
-  DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_change_.file_type());
+  DCHECK(local_change_.IsDirectory());
   if (synced_details.file_kind() == FILE_KIND_FILE) {
     // Non-conflicting local folder creation to existing remote *file*.
     // Assuming this case as local file deletion + local folder creation, delete

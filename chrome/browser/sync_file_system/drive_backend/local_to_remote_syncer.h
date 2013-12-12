@@ -103,8 +103,8 @@ class LocalToRemoteSyncer : public SyncTask {
 
   SyncEngineContext* sync_context_;  // Not owned.
 
-  SyncFileMetadata local_metadata_;
   FileChange local_change_;
+  bool local_is_missing_;
   base::FilePath local_path_;
   fileapi::FileSystemURL url_;
   SyncAction sync_action_;
