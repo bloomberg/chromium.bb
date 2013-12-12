@@ -67,7 +67,7 @@ class MacPort(base.Port):
             else:
                 version = host.platform.os_version
             if host.platform.is_highdpi():
-                return 'retina'
+                version = 'retina'
             return port_name + '-' + version
         return port_name
 
