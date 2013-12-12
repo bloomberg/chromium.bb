@@ -413,6 +413,7 @@ cr.define('print_preview', function() {
         this.uiState_ = PrintPreview.UiState_.PRINTING;
       }
       this.setIsEnabled_(false);
+      this.printHeader_.isCancelButtonEnabled = true;
       if (this.printIfReady_() &&
           ((this.destinationStore_.selectedDestination.isLocal &&
             !this.destinationStore_.selectedDestination.isPrivet &&

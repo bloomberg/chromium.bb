@@ -62,12 +62,16 @@ cr.define('print_preview', function() {
     set isEnabled(isEnabled) {
       this.isEnabled_ = isEnabled;
       this.updatePrintButtonEnabledState_();
-      this.getChildElement('button.cancel').disabled = !isEnabled;
+      this.isCancelButtonEnabled = isEnabled;
     },
 
     set isPrintButtonEnabled(isEnabled) {
       this.isPrintButtonEnabled_ = isEnabled;
       this.updatePrintButtonEnabledState_();
+    },
+
+    set isCancelButtonEnabled(isEnabled) {
+      this.getChildElement('button.cancel').disabled = !isEnabled;
     },
 
     /** @param {string} message Error message to display in the print header. */
