@@ -108,12 +108,9 @@ NSString* GetPlatform() {
   self = [super init];
   if (self) {
     queue_ = dispatch_queue_create("com.google.BreakpadQueue", NULL);
-    configuration_ = [[[NSBundle mainBundle] infoDictionary] mutableCopy];
     enableUploads_ = NO;
     started_ = NO;
-    NSString* uploadInterval =
-        [configuration_ valueForKey:@BREAKPAD_REPORT_INTERVAL];
-    [self setUploadInterval:[uploadInterval intValue]];
+    [self resetConfiguration];
   }
   return self;
 }
@@ -185,6 +182,16 @@ NSString* GetPlatform() {
       [configuration_ valueForKey:@BREAKPAD_REPORT_INTERVAL];
   if (uploadInterval)
     [self setUploadInterval:[uploadInterval intValue]];
+}
+
+- (void)resetConfiguration {
+  NSAssert(!started_,
+      @"The controller must not be started when resetConfiguration is called");
+  [configuration_ autorelease];
+  configuration_ = [[[NSBundle mainBundle] infoDictionary] mutableCopy];
+  NSString* uploadInterval =
+      [configuration_ valueForKey:@BREAKPAD_REPORT_INTERVAL];
+  [self setUploadInterval:[uploadInterval intValue]];
 }
 
 - (void)setUploadingURL:(NSString*)url {

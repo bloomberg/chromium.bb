@@ -71,6 +71,10 @@
 // new one. Merge is done by replacing the old values by the new values.
 - (void)updateConfiguration:(NSDictionary*)configuration;
 
+// Reset the controller configuration to its initial value, which is the
+// infoDictionary of the bundle of the application.
+- (void)resetConfiguration;
+
 // Configure the URL to upload the report to. This must be called at least once
 // if the URL is not in the bundle information.
 - (void)setUploadingURL:(NSString*)url;
