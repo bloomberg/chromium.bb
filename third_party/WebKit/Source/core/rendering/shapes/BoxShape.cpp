@@ -34,36 +34,57 @@
 
 namespace WebCore {
 
-BoxShape::BoxShape(const FloatRoundedRect& bounds, float shapeMargin, float shapePadding)
-    : Shape()
-    , m_bounds(bounds)
-    , m_marginBounds(bounds)
-    , m_paddingBounds(bounds)
+LayoutRect BoxShape::shapeMarginLogicalBoundingBox() const
 {
-    if (shapeMargin > 0) {
-        m_marginBounds.inflate(shapeMargin);
-        m_marginBounds.expandRadii(shapeMargin);
+    FloatRect marginBounds(m_bounds.rect());
+    if (shapeMargin() > 0)
+        marginBounds.inflate(shapeMargin());
+    return static_cast<LayoutRect>(marginBounds);
+}
+
+LayoutRect BoxShape::shapePaddingLogicalBoundingBox() const
+{
+    FloatRect paddingBounds(m_bounds.rect());
+    if (shapePadding() > 0)
+        paddingBounds.inflate(-shapePadding());
+    return static_cast<LayoutRect>(paddingBounds);
+}
+
+FloatRoundedRect BoxShape::shapeMarginBounds() const
+{
+    FloatRoundedRect marginBounds(m_bounds);
+    if (shapeMargin() > 0) {
+        marginBounds.inflate(shapeMargin());
+        marginBounds.expandRadii(shapeMargin());
     }
-    if (shapePadding > 0) {
-        m_paddingBounds.inflate(-shapePadding);
-        m_paddingBounds.expandRadii(-shapePadding);
+    return marginBounds;
+}
+
+FloatRoundedRect BoxShape::shapePaddingBounds() const
+{
+    FloatRoundedRect paddingBounds(m_bounds);
+    if (shapePadding() > 0) {
+        paddingBounds.inflate(-shapePadding());
+        paddingBounds.expandRadii(-shapePadding());
     }
+    return paddingBounds;
 }
 
 void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
 {
-    if (m_marginBounds.isEmpty())
+    const FloatRoundedRect& marginBounds = shapeMarginBounds();
+    if (marginBounds.isEmpty())
         return;
 
     float y1 = logicalTop;
     float y2 = logicalTop + logicalHeight;
-    const FloatRect& rect = m_marginBounds.rect();
+    const FloatRect& rect = marginBounds.rect();
 
     if (y2 <= rect.y() || y1 >= rect.maxY())
         return;
 
-    if (!m_marginBounds.isRounded()) {
-        result.append(LineSegment(m_marginBounds.rect().x(), m_marginBounds.rect().maxX()));
+    if (!marginBounds.isRounded()) {
+        result.append(LineSegment(marginBounds.rect().x(), marginBounds.rect().maxX()));
         return;
     }
 
@@ -72,12 +93,12 @@ void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
     float minXIntercept;
     float maxXIntercept;
 
-    if (m_marginBounds.xInterceptsAtY(y1, minXIntercept, maxXIntercept)) {
+    if (marginBounds.xInterceptsAtY(y1, minXIntercept, maxXIntercept)) {
         x1 = std::min<float>(x1, minXIntercept);
         x2 = std::max<float>(x2, maxXIntercept);
     }
 
-    if (m_marginBounds.xInterceptsAtY(y2, minXIntercept, maxXIntercept)) {
+    if (marginBounds.xInterceptsAtY(y2, minXIntercept, maxXIntercept)) {
         x1 = std::min<float>(x1, minXIntercept);
         x2 = std::max<float>(x2, maxXIntercept);
     }
@@ -88,10 +109,11 @@ void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
 
 void BoxShape::getIncludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
 {
-    if (m_paddingBounds.isEmpty())
+    const FloatRoundedRect& paddingBounds = shapePaddingBounds();
+    if (paddingBounds.isEmpty())
         return;
 
-    const FloatRect& rect = m_paddingBounds.rect();
+    const FloatRect& rect = paddingBounds.rect();
     if (logicalTop < rect.y() || logicalTop + logicalHeight > rect.maxY())
         return;
 

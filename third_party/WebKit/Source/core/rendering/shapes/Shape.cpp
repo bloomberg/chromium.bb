@@ -45,10 +45,10 @@
 
 namespace WebCore {
 
-static PassOwnPtr<Shape> createBoxShape(const FloatRoundedRect& bounds, float shapeMargin, float shapePadding)
+static PassOwnPtr<Shape> createBoxShape(const FloatRoundedRect& bounds)
 {
     ASSERT(bounds.rect().width() >= 0 && bounds.rect().height() >= 0);
-    return adoptPtr(new BoxShape(bounds, shapeMargin, shapePadding));
+    return adoptPtr(new BoxShape(bounds));
 }
 
 static PassOwnPtr<Shape> createRectangleShape(const FloatRect& bounds, const FloatSize& radii)
@@ -257,13 +257,10 @@ PassOwnPtr<Shape> Shape::createLayoutBoxShape(const LayoutSize& logicalSize, Wri
     FloatRect rect(0, 0, logicalSize.width(), logicalSize.height());
     FloatSize radii(0, 0);
     FloatRoundedRect bounds(rect, radii, radii, radii, radii);
-    float shapeMargin = floatValueForLength(margin, 0);
-    float shapePadding = floatValueForLength(padding, 0);
-
-    OwnPtr<Shape> shape = createBoxShape(bounds, shapeMargin, shapePadding);
+    OwnPtr<Shape> shape = createBoxShape(bounds);
     shape->m_writingMode = writingMode;
-    shape->m_margin = shapeMargin;
-    shape->m_padding = shapePadding;
+    shape->m_margin = floatValueForLength(margin, 0);
+    shape->m_padding = floatValueForLength(padding, 0);
 
     return shape.release();
 }
