@@ -70,10 +70,10 @@ class SourceState {
   }
   void set_append_window_end(TimeDelta end) { append_window_end_ = end; }
 
-  void TextStartReturningData();
-  void TextAbortReads();
-  void TextSeek(TimeDelta seek_time);
-  void TextCompletePendingReadIfPossible();
+  void StartReturningData();
+  void AbortReads();
+  void Seek(TimeDelta seek_time);
+  void CompletePendingReadIfPossible();
 
  private:
   // Called by the |stream_parser_| when a new initialization segment is
@@ -278,6 +278,12 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
 }
 
 SourceState::~SourceState() {
+  if (audio_)
+    audio_->Shutdown();
+
+  if (video_)
+    video_->Shutdown();
+
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
     itr->second->Shutdown();
@@ -335,28 +341,52 @@ void SourceState::Abort() {
 }
 
 
-void SourceState::TextStartReturningData() {
+void SourceState::StartReturningData() {
+  if (audio_)
+    audio_->StartReturningData();
+
+  if (video_)
+    video_->StartReturningData();
+
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
     itr->second->StartReturningData();
   }
 }
 
-void SourceState::TextAbortReads() {
+void SourceState::AbortReads() {
+  if (audio_)
+    audio_->AbortReads();
+
+  if (video_)
+    video_->AbortReads();
+
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
     itr->second->AbortReads();
   }
 }
 
-void SourceState::TextSeek(TimeDelta seek_time) {
+void SourceState::Seek(TimeDelta seek_time) {
+  if (audio_)
+    audio_->Seek(seek_time);
+
+  if (video_)
+    video_->Seek(seek_time);
+
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
     itr->second->Seek(seek_time);
   }
 }
 
-void SourceState::TextCompletePendingReadIfPossible() {
+void SourceState::CompletePendingReadIfPossible() {
+  if (audio_)
+    audio_->CompletePendingReadIfPossible();
+
+  if (video_)
+    video_->CompletePendingReadIfPossible();
+
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
     itr->second->CompletePendingReadIfPossible();
@@ -1074,17 +1104,11 @@ void ChunkDemuxer::RemoveId(const std::string& id) {
   delete source_state_map_[id];
   source_state_map_.erase(id);
 
-  if (source_id_audio_ == id) {
-    if (audio_)
-      audio_->Shutdown();
+  if (source_id_audio_ == id)
     source_id_audio_.clear();
-  }
 
-  if (source_id_video_ == id) {
-    if (video_)
-      video_->Shutdown();
+  if (source_id_video_ == id)
     source_id_video_.clear();
-  }
 }
 
 Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
@@ -1564,54 +1588,30 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges_Locked() const {
 }
 
 void ChunkDemuxer::StartReturningData() {
-  if (audio_)
-    audio_->StartReturningData();
-
-  if (video_)
-    video_->StartReturningData();
-
   for (SourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
-    itr->second->TextStartReturningData();
+    itr->second->StartReturningData();
   }
 }
 
 void ChunkDemuxer::AbortPendingReads() {
-  if (audio_)
-    audio_->AbortReads();
-
-  if (video_)
-    video_->AbortReads();
-
   for (SourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
-    itr->second->TextAbortReads();
+    itr->second->AbortReads();
   }
 }
 
 void ChunkDemuxer::SeekAllSources(TimeDelta seek_time) {
-  if (audio_)
-    audio_->Seek(seek_time);
-
-  if (video_)
-    video_->Seek(seek_time);
-
   for (SourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
-    itr->second->TextSeek(seek_time);
+    itr->second->Seek(seek_time);
   }
 }
 
 void ChunkDemuxer::CompletePendingReadsIfPossible() {
-  if (audio_)
-    audio_->CompletePendingReadIfPossible();
-
-  if (video_)
-    video_->CompletePendingReadIfPossible();
-
   for (SourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
-    itr->second->TextCompletePendingReadIfPossible();
+    itr->second->CompletePendingReadIfPossible();
   }
 }
 
