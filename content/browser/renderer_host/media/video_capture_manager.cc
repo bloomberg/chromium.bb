@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
@@ -44,10 +45,20 @@ VideoCaptureManager::DeviceEntry::DeviceEntry(
 
 VideoCaptureManager::DeviceEntry::~DeviceEntry() {}
 
+VideoCaptureManager::DeviceInfo::DeviceInfo() {}
+
+VideoCaptureManager::DeviceInfo::DeviceInfo(
+    const media::VideoCaptureDevice::Name& name,
+    const media::VideoCaptureFormats& supported_formats)
+    : name(name),
+      supported_formats(supported_formats) {}
+
+VideoCaptureManager::DeviceInfo::~DeviceInfo() {}
+
 VideoCaptureManager::VideoCaptureManager()
     : listener_(NULL),
       new_capture_session_id_(1),
-      artificial_device_source_for_testing_ (DISABLED) {
+      artificial_device_source_for_testing_(DISABLED) {
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
@@ -74,9 +85,10 @@ void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   DCHECK(listener_);
   base::PostTaskAndReplyWithResult(
       device_loop_, FROM_HERE,
-      base::Bind(&VideoCaptureManager::GetAvailableDevicesOnDeviceThread, this,
-                 stream_type),
-      base::Bind(&VideoCaptureManager::OnDevicesEnumerated, this, stream_type));
+      base::Bind(&VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread,
+                 this, stream_type, devices_info_cache_),
+      base::Bind(&VideoCaptureManager::OnDevicesInfoEnumerated, this,
+                 stream_type));
 }
 
 int VideoCaptureManager::Open(const StreamDeviceInfo& device_info) {
@@ -154,21 +166,20 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
       // We look up the device id from the renderer in our local enumeration
       // since the renderer does not have all the information that might be
       // held in the browser-side VideoCaptureDevice::Name structure.
-      media::VideoCaptureDevice::Name* found =
-          video_capture_devices_.FindById(entry->id);
+      DeviceInfo* found = FindDeviceInfoById(entry->id, devices_info_cache_);
       if (found) {
         switch (artificial_device_source_for_testing_) {
           case DISABLED:
             video_capture_device.reset(
-                media::VideoCaptureDevice::Create(*found));
+                media::VideoCaptureDevice::Create(found->name));
             break;
           case TEST_PATTERN:
             video_capture_device.reset(
-                media::FakeVideoCaptureDevice::Create(*found));
+                media::FakeVideoCaptureDevice::Create(found->name));
             break;
           case Y4M_FILE:
             video_capture_device.reset(
-                media::FileVideoCaptureDevice::Create(*found));
+                media::FileVideoCaptureDevice::Create(found->name));
             break;
         }
       }
@@ -271,6 +282,34 @@ void VideoCaptureManager::StopCaptureForClient(
   DestroyDeviceEntryIfNoClients(entry);
 }
 
+void VideoCaptureManager::GetDeviceSupportedFormats(
+    int capture_session_id,
+    media::VideoCaptureFormats* supported_formats) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  supported_formats->clear();
+
+  std::map<int, MediaStreamDevice>::iterator it =
+      sessions_.find(capture_session_id);
+  DCHECK(it != sessions_.end());
+  DVLOG(1) << "GetDeviceSupportedFormats for device: " << it->second.name;
+
+  DeviceInfo* device_in_use =
+      FindDeviceInfoById(it->second.id, devices_info_cache_);
+  if (device_in_use) {
+    DeviceEntry* const existing_device =
+        GetDeviceEntryForMediaStreamDevice(it->second);
+    if (!existing_device) {
+      // If the device is not in use, return all its cached supported formats.
+      *supported_formats = device_in_use->supported_formats;
+      return;
+    }
+    // Otherwise, get the video capture parameters in use from the controller
+    // associated to the device.
+    supported_formats->push_back(
+        existing_device->video_capture_controller->GetVideoCaptureFormat());
+  }
+}
+
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(DeviceEntry* entry) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StopDeviceTime");
   DCHECK(IsOnDeviceThread());
@@ -300,24 +339,25 @@ void VideoCaptureManager::OnClosed(MediaStreamType stream_type,
   listener_->Closed(stream_type, capture_session_id);
 }
 
-void VideoCaptureManager::OnDevicesEnumerated(
+void VideoCaptureManager::OnDevicesInfoEnumerated(
     MediaStreamType stream_type,
-    const media::VideoCaptureDevice::Names& device_names) {
+    const DeviceInfos& new_devices_info_cache) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!listener_) {
     // Listener has been removed.
     return;
   }
+  devices_info_cache_ = new_devices_info_cache;
 
-  // Transform from VCD::Name to StreamDeviceInfo.
+  // Walk the |devices_info_cache_| and transform from VCD::Name to
+  // StreamDeviceInfo for return purposes.
   StreamDeviceInfoArray devices;
-  for (media::VideoCaptureDevice::Names::const_iterator it =
-           device_names.begin(); it != device_names.end(); ++it) {
+  for (DeviceInfos::const_iterator it = devices_info_cache_.begin();
+       it != devices_info_cache_.end(); ++it) {
     devices.push_back(StreamDeviceInfo(
-        stream_type, it->GetNameAndModel(), it->id()));
+        stream_type, it->name.GetNameAndModel(), it->name.id()));
   }
-
   listener_->DevicesEnumerated(stream_type, devices);
 }
 
@@ -325,14 +365,14 @@ bool VideoCaptureManager::IsOnDeviceThread() const {
   return device_loop_->BelongsToCurrentThread();
 }
 
-media::VideoCaptureDevice::Names
-VideoCaptureManager::GetAvailableDevicesOnDeviceThread(
-    MediaStreamType stream_type) {
+VideoCaptureManager::DeviceInfos
+VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
+    MediaStreamType stream_type,
+    const DeviceInfos& old_device_info_cache) {
   SCOPED_UMA_HISTOGRAM_TIMER(
-      "Media.VideoCaptureManager.GetAvailableDevicesTime");
+      "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime");
   DCHECK(IsOnDeviceThread());
-  media::VideoCaptureDevice::Names result;
-
+  media::VideoCaptureDevice::Names names_snapshot;
   switch (stream_type) {
     case MEDIA_DEVICE_VIDEO_CAPTURE:
       // Cache the latest enumeration of video capture devices.
@@ -340,20 +380,15 @@ VideoCaptureManager::GetAvailableDevicesOnDeviceThread(
       // enumerate the devices again.
       switch (artificial_device_source_for_testing_) {
         case DISABLED:
-          media::VideoCaptureDevice::GetDeviceNames(&result);
+          media::VideoCaptureDevice::GetDeviceNames(&names_snapshot);
           break;
         case TEST_PATTERN:
-          media::FakeVideoCaptureDevice::GetDeviceNames(&result);
+          media::FakeVideoCaptureDevice::GetDeviceNames(&names_snapshot);
           break;
         case Y4M_FILE:
-          media::FileVideoCaptureDevice::GetDeviceNames(&result);
+          media::FileVideoCaptureDevice::GetDeviceNames(&names_snapshot);
           break;
       }
-
-      // TODO(nick): The correctness of device start depends on this cache being
-      // maintained, but it seems a little odd to keep a cache here. Can we
-      // eliminate it?
-      video_capture_devices_ = result;
       break;
 
     case MEDIA_DESKTOP_VIDEO_CAPTURE:
@@ -364,7 +399,48 @@ VideoCaptureManager::GetAvailableDevicesOnDeviceThread(
       NOTREACHED();
       break;
   }
-  return result;
+
+  // Construct |new_devices_info_cache| with the cached devices that are still
+  // present in the system, and remove their names from |names_snapshot|, so we
+  // keep there the truly new devices.
+  DeviceInfos new_devices_info_cache;
+  for (DeviceInfos::const_iterator it_device_info =
+           old_device_info_cache.begin();
+       it_device_info != old_device_info_cache.end(); ++it_device_info) {
+     for (media::VideoCaptureDevice::Names::iterator it =
+              names_snapshot.begin();
+          it != names_snapshot.end(); ++it) {
+      if (it_device_info->name.id() == it->id()) {
+        new_devices_info_cache.push_back(*it_device_info);
+        names_snapshot.erase(it);
+        break;
+      }
+    }
+  }
+
+  // Get the supported capture formats for the new devices in |names_snapshot|.
+  for (media::VideoCaptureDevice::Names::const_iterator it =
+           names_snapshot.begin();
+       it != names_snapshot.end(); ++it) {
+    media::VideoCaptureFormats supported_formats;
+    DeviceInfo device_info(*it, media::VideoCaptureFormats());
+    switch (artificial_device_source_for_testing_) {
+      case DISABLED:
+        media::VideoCaptureDevice::GetDeviceSupportedFormats(
+            *it, &(device_info.supported_formats));
+        break;
+      case TEST_PATTERN:
+        media::FakeVideoCaptureDevice::GetDeviceSupportedFormats(
+            *it, &(device_info.supported_formats));
+        break;
+      case Y4M_FILE:
+        media::FileVideoCaptureDevice::GetDeviceSupportedFormats(
+            *it, &(device_info.supported_formats));
+        break;
+    }
+    new_devices_info_cache.push_back(device_info);
+  }
+  return new_devices_info_cache;
 }
 
 VideoCaptureManager::DeviceEntry*
@@ -430,7 +506,7 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
   // Check if another session has already opened this device. If so, just
   // use that opened device.
   DeviceEntry* const existing_device =
-       GetDeviceEntryForMediaStreamDevice(device_info);
+      GetDeviceEntryForMediaStreamDevice(device_info);
   if (existing_device) {
     DCHECK_EQ(device_info.type, existing_device->stream_type);
     return existing_device;
@@ -443,6 +519,17 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
                                             video_capture_controller.Pass());
   devices_.insert(new_device);
   return new_device;
+}
+
+VideoCaptureManager::DeviceInfo* VideoCaptureManager::FindDeviceInfoById(
+    const std::string& id,
+    DeviceInfos& device_vector) {
+  for (DeviceInfos::iterator it = device_vector.begin();
+       it != device_vector.end(); ++it) {
+    if (it->name.id() == id)
+      return &(*it);
+  }
+  return NULL;
 }
 
 }  // namespace content

@@ -31,6 +31,4 @@ bool VideoCaptureFormat::IsValid() const {
 
 VideoCaptureParams::VideoCaptureParams() : allow_resolution_change(false) {}
 
-VideoCaptureCapability::VideoCaptureCapability() {}
-
 }  // namespace media

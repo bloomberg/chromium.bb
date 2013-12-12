@@ -31,7 +31,7 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   static VideoCaptureDevice* Create(const Name& device_name);
   static void GetDeviceNames(Names* device_names);
   static void GetDeviceSupportedFormats(const Name& device,
-                                        VideoCaptureCapabilities* formats);
+                                        VideoCaptureFormats* supported_formats);
 
   // VideoCaptureDevice implementation, class methods.
   virtual ~FileVideoCaptureDevice();

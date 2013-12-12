@@ -32,7 +32,8 @@ enum VideoPixelFormat {
 
 // Video capture format specification.
 // This class is used by the video capture device to specify the format of every
-// frame captured and returned to a client.
+// frame captured and returned to a client. It is also used to specify a
+// supported capture format by a device.
 class MEDIA_EXPORT VideoCaptureFormat {
  public:
   VideoCaptureFormat();
@@ -49,6 +50,8 @@ class MEDIA_EXPORT VideoCaptureFormat {
   VideoPixelFormat pixel_format;
 };
 
+typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
+
 // Parameters for starting video capture.
 // This class is used by the client of a video capture device to specify the
 // format of frames in which the client would like to have captured frames
@@ -63,19 +66,6 @@ class MEDIA_EXPORT VideoCaptureParams {
   // Allow mid-capture resolution change.
   bool allow_resolution_change;
 };
-
-// Capabilities describe the format a camera captures video in.
-// This class is used by the video capture device to report the formats in which
-// it is capable of capturing frames.
-class MEDIA_EXPORT VideoCaptureCapability {
- public:
-  VideoCaptureCapability();
-
-  // Supported resolution and format.
-  VideoCaptureFormat supported_format;
-};
-
-typedef std::vector<VideoCaptureCapability> VideoCaptureCapabilities;
 
 }  // namespace media
 

@@ -367,12 +367,12 @@ TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
-  VideoCaptureCapabilities capture_capabilities;
+  VideoCaptureFormats supported_formats;
   VideoCaptureDevice::Names::iterator names_iterator;
   for (names_iterator = names_.begin(); names_iterator != names_.end();
        ++names_iterator) {
     VideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
-                                                  &capture_capabilities);
+                                                  &supported_formats);
     // Nothing to test here since we cannot forecast the hardware capabilities.
   }
 }
@@ -411,20 +411,22 @@ TEST_F(VideoCaptureDeviceTest, FakeGetDeviceSupportedFormats) {
   VideoCaptureDevice::Names names;
   FakeVideoCaptureDevice::GetDeviceNames(&names);
 
-  VideoCaptureCapabilities capture_capabilities;
+  VideoCaptureFormats supported_formats;
   VideoCaptureDevice::Names::iterator names_iterator;
 
   for (names_iterator = names.begin(); names_iterator != names.end();
        ++names_iterator) {
     FakeVideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
-                                                      &capture_capabilities);
-    EXPECT_GE(capture_capabilities.size(), 1u);
-    EXPECT_EQ(capture_capabilities[0].supported_format.frame_size.width(), 640);
-    EXPECT_EQ(capture_capabilities[0].supported_format.frame_size.height(),
-              480);
-    EXPECT_EQ(capture_capabilities[0].supported_format.pixel_format,
-              media::PIXEL_FORMAT_I420);
-    EXPECT_GE(capture_capabilities[0].supported_format.frame_rate, 20);
+                                                      &supported_formats);
+    EXPECT_EQ(supported_formats.size(), 2u);
+    EXPECT_EQ(supported_formats[0].frame_size.width(), 640);
+    EXPECT_EQ(supported_formats[0].frame_size.height(), 480);
+    EXPECT_EQ(supported_formats[0].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_GE(supported_formats[0].frame_rate, 20);
+    EXPECT_EQ(supported_formats[1].frame_size.width(), 320);
+    EXPECT_EQ(supported_formats[1].frame_size.height(), 240);
+    EXPECT_EQ(supported_formats[1].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_GE(supported_formats[1].frame_rate, 20);
   }
 }
 

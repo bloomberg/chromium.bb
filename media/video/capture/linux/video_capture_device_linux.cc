@@ -146,29 +146,23 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 
 void VideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
-    VideoCaptureCapabilities* formats) {
-
+    VideoCaptureFormats* supported_formats) {
   if (device.id().empty())
     return;
   int fd;
-  VideoCaptureCapabilities capture_formats;
-  if ((fd = open(device.id().c_str(), O_RDONLY)) < 0) {
-    // Failed to open this device.
+  if ((fd = open(device.id().c_str(), O_RDONLY)) < 0)
     return;
-  }
 
-  formats->clear();
-
-  VideoCaptureCapability capture_capability;
-  // Retrieve the caps one by one, first get colorspace, then sizes, then
-  // framerates. See http://linuxtv.org/downloads/v4l-dvb-apis for reference.
+  supported_formats->clear();
+  // Retrieve the caps one by one, first get pixel format, then sizes, then
+  // frame rates. See http://linuxtv.org/downloads/v4l-dvb-apis for reference.
   v4l2_fmtdesc pixel_format = {};
   pixel_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   while (ioctl(fd, VIDIOC_ENUM_FMT, &pixel_format) == 0) {
-    capture_capability.supported_format.pixel_format =
+    VideoCaptureFormat supported_format;
+    supported_format.pixel_format =
         V4l2ColorToVideoCaptureColorFormat((int32)pixel_format.pixelformat);
-    if (capture_capability.supported_format.pixel_format ==
-        PIXEL_FORMAT_UNKNOWN) {
+    if (supported_format.pixel_format == PIXEL_FORMAT_UNKNOWN) {
       continue;
     }
 
@@ -176,7 +170,7 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
     frame_size.pixel_format = pixel_format.pixelformat;
     while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0) {
       if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
-        capture_capability.supported_format.frame_size.SetSize(
+        supported_format.frame_size.SetSize(
             frame_size.discrete.width, frame_size.discrete.height);
       } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
         // TODO(mcasas): see http://crbug.com/249953, support these devices.
@@ -192,11 +186,11 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
       while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval) == 0) {
         if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
           if (frame_interval.discrete.numerator != 0) {
-            capture_capability.supported_format.frame_rate =
+            supported_format.frame_rate =
                 static_cast<float>(frame_interval.discrete.denominator) /
                 static_cast<float>(frame_interval.discrete.numerator);
           } else {
-            capture_capability.supported_format.frame_rate = 0;
+            supported_format.frame_rate = 0;
           }
         } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
           // TODO(mcasas): see http://crbug.com/249953, support these devices.
@@ -207,7 +201,7 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
           NOTIMPLEMENTED();
           break;
         }
-        formats->push_back(capture_capability);
+        supported_formats->push_back(supported_format);
         ++frame_interval.index;
       }
       ++frame_size.index;

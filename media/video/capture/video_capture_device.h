@@ -112,14 +112,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
   };
 
   // Manages a list of Name entries.
-  class MEDIA_EXPORT Names
-      : public NON_EXPORTED_BASE(std::list<Name>) {
-   public:
-    // Returns NULL if no entry was found by that ID.
-    Name* FindById(const std::string& id);
-
-    // Allow generated copy constructor and assignment.
-  };
+  typedef std::list<Name> Names;
 
   class MEDIA_EXPORT Client {
    public:
@@ -199,14 +192,14 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // Gets the names of all video capture devices connected to this computer.
   static void GetDeviceNames(Names* device_names);
 
-  // Gets the capabilities of a particular device attached to the system. This
-  // method should be called before allocating or starting a device. In case
-  // format enumeration is not supported, or there was a problem, the formats
-  // array will be empty.
+  // Gets the supported formats of a particular device attached to the system.
+  // This method should be called before allocating or starting a device. In
+  // case format enumeration is not supported, or there was a problem, the
+  // formats array will be empty.
   static void GetDeviceSupportedFormats(const Name& device,
-                                        VideoCaptureCapabilities* formats);
+                                        VideoCaptureFormats* supported_formats);
 
-  // Prepare the camera for use. After this function has been called no other
+  // Prepares the camera for use. After this function has been called no other
   // applications can use the camera. StopAndDeAllocate() must be called before
   // the object is deleted.
   virtual void AllocateAndStart(const VideoCaptureParams& params,

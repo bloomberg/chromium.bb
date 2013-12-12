@@ -83,9 +83,27 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                             VideoCaptureControllerID client_id,
                             VideoCaptureControllerEventHandler* client_handler);
 
+  // Retrieves the available capture supported formats for a particular device.
+  // The supported formats are cached during device(s) enumeration.
+  void GetDeviceSupportedFormats(int capture_session_id,
+                                 media::VideoCaptureFormats* supported_formats);
+
  private:
   virtual ~VideoCaptureManager();
   struct DeviceEntry;
+
+  // This data structure is a convenient wrap of a devices' name and associated
+  // video capture supported formats.
+  struct DeviceInfo {
+    DeviceInfo();
+    DeviceInfo(const media::VideoCaptureDevice::Name& name,
+               const media::VideoCaptureFormats& supported_formats);
+    ~DeviceInfo();
+
+    media::VideoCaptureDevice::Name name;
+    media::VideoCaptureFormats supported_formats;
+  };
+  typedef std::vector<DeviceInfo> DeviceInfos;
 
   // Check to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|
@@ -95,8 +113,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Helpers to report an event to our Listener.
   void OnOpened(MediaStreamType type, int capture_session_id);
   void OnClosed(MediaStreamType type, int capture_session_id);
-  void OnDevicesEnumerated(MediaStreamType stream_type,
-                           const media::VideoCaptureDevice::Names& names);
+  void OnDevicesInfoEnumerated(
+      MediaStreamType stream_type,
+      const DeviceInfos& new_devices_info_cache);
 
   // Find a DeviceEntry by its device ID and type, if it is already opened.
   DeviceEntry* GetDeviceEntryForMediaStreamDevice(
@@ -112,9 +131,13 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   bool IsOnDeviceThread() const;
 
-  // Queries and returns the available device IDs.
-  media::VideoCaptureDevice::Names GetAvailableDevicesOnDeviceThread(
-      MediaStreamType stream_type);
+  // Queries the Names of the devices in the system; the formats supported by
+  // the new devices are also queried, and consolidated with the copy of the
+  // local device info cache passed. The consolidated list of devices and
+  // supported formats is returned.
+  DeviceInfos GetAvailableDevicesInfoOnDeviceThread(
+      MediaStreamType stream_type,
+      const DeviceInfos& old_device_info_cache);
 
   // Create and Start a new VideoCaptureDevice, storing the result in
   // |entry->video_capture_device|. Ownership of |client| passes to
@@ -127,6 +150,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Stop and destroy the VideoCaptureDevice held in
   // |entry->video_capture_device|.
   void DoStopDeviceOnDeviceThread(DeviceEntry* entry);
+
+  DeviceInfo* FindDeviceInfoById(const std::string& id,
+                                 DeviceInfos& device_vector);
 
   // The message loop of media stream device thread, where VCD's live.
   scoped_refptr<base::MessageLoopProxy> device_loop_;
@@ -168,6 +194,15 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef std::set<DeviceEntry*> DeviceEntries;
   DeviceEntries devices_;
 
+  // Local cache of the enumerated video capture devices' names and capture
+  // supported formats. A snapshot of the current devices and their capabilities
+  // is composed in GetAvailableDevicesInfoOnDeviceThread() --coming
+  // from EnumerateDevices()--, and this snapshot is used to update this list in
+  // OnDevicesInfoEnumerated(). GetDeviceSupportedFormats() will
+  // use this list if the device is not started, otherwise it will retrieve the
+  // active device capture format from the VideoCaptureController associated.
+  DeviceInfos devices_info_cache_;
+
   // For unit testing and for performance/quality tests, a test device can be
   // used instead of a real one. The device can be a simple fake device (a
   // rolling pacman), or a file that is played in a loop continuously. This only
@@ -177,12 +212,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
     TEST_PATTERN,
     Y4M_FILE
   } artificial_device_source_for_testing_;
-
-  // We cache the enumerated video capture devices in
-  // GetAvailableDevicesOnDeviceThread() and then later look up the requested ID
-  // when a device is created in DoStartDeviceOnDeviceThread(). Used only on the
-  // device thread.
-  media::VideoCaptureDevice::Names video_capture_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureManager);
 };

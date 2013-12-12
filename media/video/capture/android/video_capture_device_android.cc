@@ -55,7 +55,7 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
-    VideoCaptureCapabilities* formats) {
+    VideoCaptureFormats* formats) {
   NOTIMPLEMENTED();
 }
 

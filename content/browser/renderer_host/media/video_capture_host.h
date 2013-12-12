@@ -61,10 +61,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 
-namespace media {
-class VideoCaptureCapability;
-}
-
 namespace content {
 class MediaStreamManager;
 

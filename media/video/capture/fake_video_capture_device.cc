@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -26,30 +25,43 @@ bool FakeVideoCaptureDevice::fail_next_create_ = false;
 base::subtle::Atomic32 FakeVideoCaptureDevice::number_of_devices_ =
     kNumberOfFakeDevices;
 
+// static
+size_t FakeVideoCaptureDevice::NumberOfFakeDevices(void) {
+  return number_of_devices_;
+}
+
+// static
 void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
   // Empty the name list.
   device_names->erase(device_names->begin(), device_names->end());
 
   int number_of_devices = base::subtle::NoBarrier_Load(&number_of_devices_);
   for (int32 n = 0; n < number_of_devices; n++) {
-    Name name("fake_device_" + base::IntToString(n),
-              "/dev/video" + base::IntToString(n));
+    Name name(base::StringPrintf("fake_device_%d", n),
+              base::StringPrintf("/dev/video%d", n));
     device_names->push_back(name);
   }
 }
 
+// static
 void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
-    VideoCaptureCapabilities* formats) {
-  VideoCaptureCapability capture_format_640x480;
-  capture_format_640x480.supported_format.frame_size.SetSize(640, 480);
-  capture_format_640x480.supported_format.frame_rate =
-      1000 / kFakeCaptureTimeoutMs;
-  capture_format_640x480.supported_format.pixel_format =
-      media::PIXEL_FORMAT_I420;
-  formats->push_back(capture_format_640x480);
+    VideoCaptureFormats* supported_formats) {
+
+  supported_formats->clear();
+  VideoCaptureFormat capture_format_640x480;
+  capture_format_640x480.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_format_640x480.frame_size.SetSize(640, 480);
+  capture_format_640x480.frame_rate = 1000 / kFakeCaptureTimeoutMs;
+  supported_formats->push_back(capture_format_640x480);
+  VideoCaptureFormat capture_format_320x240;
+  capture_format_320x240.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_format_320x240.frame_size.SetSize(320, 240);
+  capture_format_320x240.frame_rate = 1000 / kFakeCaptureTimeoutMs;
+  supported_formats->push_back(capture_format_320x240);
 }
 
+// static
 VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
   if (fail_next_create_) {
     fail_next_create_ = false;
@@ -57,7 +69,7 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
   }
   int number_of_devices = base::subtle::NoBarrier_Load(&number_of_devices_);
   for (int32 n = 0; n < number_of_devices; ++n) {
-    std::string possible_id = "/dev/video" + base::IntToString(n);
+    std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0) {
       return new FakeVideoCaptureDevice();
     }
@@ -65,10 +77,12 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
   return NULL;
 }
 
+// static
 void FakeVideoCaptureDevice::SetFailNextCreate() {
   fail_next_create_ = true;
 }
 
+// static
 void FakeVideoCaptureDevice::SetNumberOfFakeDevices(size_t number_of_devices) {
   base::subtle::NoBarrier_AtomicExchange(&number_of_devices_,
                                          number_of_devices);
