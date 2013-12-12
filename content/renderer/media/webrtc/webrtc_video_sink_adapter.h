@@ -50,6 +50,7 @@ class CONTENT_EXPORT WebRtcVideoSinkAdapter
   // The video track the renderer is connected to.
   scoped_refptr<webrtc::VideoTrackInterface> video_track_;
   webrtc::MediaStreamTrackInterface::TrackState state_;
+  bool track_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoSinkAdapter);
 };

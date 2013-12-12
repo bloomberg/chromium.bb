@@ -19,6 +19,7 @@ class MediaStreamSink {
  public:
   virtual void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) {}
+  virtual void OnEnabledChanged(bool enabled) {}
 
  protected:
   virtual ~MediaStreamSink() {}

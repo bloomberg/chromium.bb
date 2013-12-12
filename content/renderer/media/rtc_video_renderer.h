@@ -47,9 +47,9 @@ class CONTENT_EXPORT RTCVideoRenderer
 
  private:
   enum State {
-    kStarted,
-    kPaused,
-    kStopped,
+    STARTED,
+    PAUSED,
+    STOPPED,
   };
 
   // VideoTrackSink implementation. Called on the main thread.
@@ -57,14 +57,15 @@ class CONTENT_EXPORT RTCVideoRenderer
       const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
   virtual void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
+  virtual void OnEnabledChanged(bool enabled) OVERRIDE;
 
-  void MaybeRenderSignalingFrame(
-      blink::WebMediaStreamSource::ReadyState state);
+  void MaybeRenderSignalingFrame();
 
   base::Closure error_cb_;
   RepaintCB repaint_cb_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   State state_;
+  bool first_frame_rendered_;
   blink::WebMediaStreamTrack video_track_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoRenderer);

@@ -26,11 +26,12 @@ WebRtcVideoSinkAdapter::WebRtcVideoSinkAdapter(
     MediaStreamVideoSink* sink)
     : message_loop_proxy_(base::MessageLoopProxy::current()),
       sink_(sink),
-      video_track_(video_track) {
+      video_track_(video_track),
+      state_(video_track->state()),
+      track_enabled_(video_track->enabled()) {
   DCHECK(sink);
   video_track_->AddRenderer(this);
   video_track_->RegisterObserver(this);
-  state_ = video_track_->state();
   DVLOG(1) << "WebRtcVideoSinkAdapter";
 }
 
@@ -81,26 +82,31 @@ void WebRtcVideoSinkAdapter::RenderFrame(const cricket::VideoFrame* frame) {
 void WebRtcVideoSinkAdapter::OnChanged() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  // TODO(perkj) OnChanged belong to base class of WebRtcVideoSinkAdapter
+  // TODO(perkj): OnChanged belongs to the base class of WebRtcVideoSinkAdapter
   // common for both webrtc audio and video.
   webrtc::MediaStreamTrackInterface::TrackState state = video_track_->state();
-  if (state == state_)
-    return;
-  state_ = state;
-  switch (state) {
-    case webrtc::MediaStreamTrackInterface::kInitializing:
-      // Ignore the kInitializing state since there is no match in
-      // WebMediaStreamSource::ReadyState.
-      break;
-    case webrtc::MediaStreamTrackInterface::kLive:
-      sink_->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateLive);
-      break;
-    case webrtc::MediaStreamTrackInterface::kEnded:
-      sink_->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateEnded);
-      break;
-    default:
-      NOTREACHED();
-      break;
+  if (state != state_) {
+    state_ = state;
+    switch (state) {
+      case webrtc::MediaStreamTrackInterface::kInitializing:
+        // Ignore the kInitializing state since there is no match in
+        // WebMediaStreamSource::ReadyState.
+        break;
+      case webrtc::MediaStreamTrackInterface::kLive:
+        sink_->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateLive);
+        break;
+      case webrtc::MediaStreamTrackInterface::kEnded:
+        sink_->OnReadyStateChanged(
+            blink::WebMediaStreamSource::ReadyStateEnded);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  if (track_enabled_ != video_track_->enabled()) {
+    track_enabled_ = video_track_->enabled();
+    sink_->OnEnabledChanged(track_enabled_);
   }
 }
 
