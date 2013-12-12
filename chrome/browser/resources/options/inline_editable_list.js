@@ -269,7 +269,10 @@ cr.define('options', function() {
       // To make sure revalidation is triggered we postpone 'focus' handling.
       var handler = this.handleFocus_.bind(this);
       inputEl.addEventListener('focus', function() {
-         window.setTimeout(handler, 0);
+        window.setTimeout(function() {
+          if (inputEl.ownerDocument.activeElement == inputEl)
+            handler();
+        }, 0);
       });
       container.appendChild(inputEl);
       this.addEditField(inputEl, textEl);
