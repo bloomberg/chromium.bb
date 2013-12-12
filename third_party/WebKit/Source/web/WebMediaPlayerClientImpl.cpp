@@ -476,7 +476,7 @@ void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& re
     }
 }
 
-bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D* context, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY)
+bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY)
 {
     if (!context || !m_webMediaPlayer)
         return false;

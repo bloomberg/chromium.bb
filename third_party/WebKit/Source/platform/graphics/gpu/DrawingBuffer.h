@@ -86,7 +86,7 @@ public:
 
     // Issues a glClear() on all framebuffers associated with this DrawingBuffer. The caller is responsible for
     // making the context current and setting the clear values and masks. Modifies the framebuffer binding.
-    void clearFramebuffers(GC3Dbitfield clearMask);
+    void clearFramebuffers(GLbitfield clearMask);
 
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     IntSize adjustSize(const IntSize&);
@@ -113,7 +113,7 @@ public:
 
     // Track the currently active texture unit. Texture unit 0 is used as host for a scratch
     // texture.
-    void setActiveTextureUnit(GC3Dint textureUnit) { m_activeTextureUnit = textureUnit; }
+    void setActiveTextureUnit(GLint textureUnit) { m_activeTextureUnit = textureUnit; }
 
     bool multisample() const;
 
@@ -129,8 +129,8 @@ public:
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
 
-    bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject texture, GC3Denum internalFormat,
-        GC3Denum destType, GC3Dint level, bool premultiplyAlpha, bool flipY);
+    bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject texture, GLenum internalFormat,
+        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY);
 
 private:
     DrawingBuffer(GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
@@ -170,7 +170,7 @@ private:
     bool m_scissorEnabled;
     Platform3DObject m_texture2DBinding;
     Platform3DObject m_framebufferBinding;
-    GC3Denum m_activeTextureUnit;
+    GLenum m_activeTextureUnit;
 
     RefPtr<GraphicsContext3D> m_context;
     IntSize m_size;

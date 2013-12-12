@@ -150,7 +150,7 @@ void CustomFilterRenderer::unbindVertexAttribute(int attributeLocation)
 void CustomFilterRenderer::bindProgramArrayParameters(int uniformLocation, CustomFilterArrayParameter* arrayParameter)
 {
     unsigned parameterSize = arrayParameter->size();
-    Vector<GC3Dfloat> floatVector;
+    Vector<GLfloat> floatVector;
 
     for (unsigned i = 0; i < parameterSize; ++i)
         floatVector.append(arrayParameter->valueAt(i));

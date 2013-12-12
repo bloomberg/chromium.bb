@@ -36,18 +36,18 @@ namespace WebCore {
 
 class WebGLUniformLocation FINAL : public RefCounted<WebGLUniformLocation>, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLUniformLocation> create(WebGLProgram*, GC3Dint location);
+    static PassRefPtr<WebGLUniformLocation> create(WebGLProgram*, GLint location);
 
     WebGLProgram* program() const;
 
-    GC3Dint location() const;
+    GLint location() const;
 
 protected:
-    WebGLUniformLocation(WebGLProgram*, GC3Dint location);
+    WebGLUniformLocation(WebGLProgram*, GLint location);
 
 private:
     RefPtr<WebGLProgram> m_program;
-    GC3Dint m_location;
+    GLint m_location;
     unsigned m_linkCount;
 };
 

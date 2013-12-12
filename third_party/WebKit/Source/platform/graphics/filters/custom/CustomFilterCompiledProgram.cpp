@@ -73,7 +73,7 @@ CustomFilterCompiledProgram::CustomFilterCompiledProgram(PassRefPtr<GraphicsCont
     m_isInitialized = true;
 }
 
-Platform3DObject CustomFilterCompiledProgram::compileShader(GC3Denum shaderType, const String& shaderString)
+Platform3DObject CustomFilterCompiledProgram::compileShader(GLenum shaderType, const String& shaderString)
 {
     ASSERT(!shaderString.isNull());
 

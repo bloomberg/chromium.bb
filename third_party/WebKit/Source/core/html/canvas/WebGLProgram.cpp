@@ -70,7 +70,7 @@ unsigned WebGLProgram::numActiveAttribLocations()
     return m_activeAttribLocations.size();
 }
 
-GC3Dint WebGLProgram::getActiveAttribLocation(GC3Duint index)
+GLint WebGLProgram::getActiveAttribLocation(GLuint index)
 {
     cacheInfoIfNeeded();
     if (index >= numActiveAttribLocations())
@@ -106,7 +106,7 @@ void WebGLProgram::increaseLinkCount()
     m_infoValid = false;
 }
 
-WebGLShader* WebGLProgram::getAttachedShader(GC3Denum type)
+WebGLShader* WebGLProgram::getAttachedShader(GLenum type)
 {
     switch (type) {
     case GL_VERTEX_SHADER:
@@ -162,7 +162,7 @@ void WebGLProgram::cacheActiveAttribLocations(GraphicsContext3D* context3d)
 {
     m_activeAttribLocations.clear();
 
-    GC3Dint numAttribs = 0;
+    GLint numAttribs = 0;
     context3d->getProgramiv(object(), GL_ACTIVE_ATTRIBUTES, &numAttribs);
     m_activeAttribLocations.resize(static_cast<size_t>(numAttribs));
     for (int i = 0; i < numAttribs; ++i) {
@@ -183,7 +183,7 @@ void WebGLProgram::cacheInfoIfNeeded()
     GraphicsContext3D* context = getAGraphicsContext3D();
     if (!context)
         return;
-    GC3Dint linkStatus = 0;
+    GLint linkStatus = 0;
     context->getProgramiv(object(), GL_LINK_STATUS, &linkStatus);
     m_linkStatus = linkStatus;
     if (m_linkStatus)

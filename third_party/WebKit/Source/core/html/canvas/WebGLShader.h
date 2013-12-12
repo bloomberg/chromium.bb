@@ -36,21 +36,21 @@ class WebGLShader : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLShader();
 
-    static PassRefPtr<WebGLShader> create(WebGLRenderingContext*, GC3Denum);
+    static PassRefPtr<WebGLShader> create(WebGLRenderingContext*, GLenum);
 
-    GC3Denum type() const { return m_type; }
+    GLenum type() const { return m_type; }
     const String& source() const { return m_source; }
 
     void setSource(const String& source) { m_source = source; }
 
 private:
-    WebGLShader(WebGLRenderingContext*, GC3Denum);
+    WebGLShader(WebGLRenderingContext*, GLenum);
 
     virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
 
     virtual bool isShader() const { return true; }
 
-    GC3Denum m_type;
+    GLenum m_type;
     String m_source;
 };
 

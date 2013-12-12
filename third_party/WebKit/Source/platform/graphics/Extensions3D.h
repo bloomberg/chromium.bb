@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 #include "wtf/text/WTFString.h"
 
@@ -252,7 +253,7 @@ public:
     // GL_OES_vertex_array_object
     Platform3DObject createVertexArrayOES();
     void deleteVertexArrayOES(Platform3DObject);
-    GC3Dboolean isVertexArrayOES(Platform3DObject);
+    GLboolean isVertexArrayOES(Platform3DObject);
     void bindVertexArrayOES(Platform3DObject);
 
     // GL_ANGLE_translated_shader_source
@@ -261,8 +262,8 @@ public:
     // GL_CHROMIUM_copy_texture
     // canUseCopyTextureCHROMIUM(...) is used to check if copyTextureCHROMIUM(...) can work for the specified
     // format, type and level for the destination texture.
-    bool canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destType, GC3Dint level);
-    void copyTextureCHROMIUM(GC3Denum, Platform3DObject, Platform3DObject, GC3Dint, GC3Denum, GC3Denum);
+    bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
+    void copyTextureCHROMIUM(GLenum, Platform3DObject, Platform3DObject, GLint, GLenum, GLenum);
 
     // GL_EXT_debug_marker
     void insertEventMarkerEXT(const String&);
@@ -270,7 +271,7 @@ public:
     void popGroupMarkerEXT(void);
 
     // GL_ARB_draw_buffers / GL_EXT_draw_buffers
-    void drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs);
+    void drawBuffersEXT(GLsizei n, const GLenum* bufs);
 
     // GL_CHROMIUM_map_sub
     void* mapBufferSubDataCHROMIUM(unsigned target, int offset, int size, unsigned access);
@@ -295,22 +296,22 @@ public:
     // GL_EXT_occlusion_query
     Platform3DObject createQueryEXT();
     void deleteQueryEXT(Platform3DObject);
-    GC3Dboolean isQueryEXT(Platform3DObject);
-    void beginQueryEXT(GC3Denum, Platform3DObject);
-    void endQueryEXT(GC3Denum);
-    void getQueryivEXT(GC3Denum, GC3Denum, GC3Dint*);
-    void getQueryObjectuivEXT(Platform3DObject, GC3Denum, GC3Duint*);
+    GLboolean isQueryEXT(Platform3DObject);
+    void beginQueryEXT(GLenum, Platform3DObject);
+    void endQueryEXT(GLenum);
+    void getQueryivEXT(GLenum, GLenum, GLint*);
+    void getQueryObjectuivEXT(Platform3DObject, GLenum, GLuint*);
 
     // GL_CHROMIUM_shallow_flush
     void shallowFlushCHROMIUM();
 
     // GL_ANGLE_instanced_arrays
-    void drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount);
-    void drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount);
-    void vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor);
+    void drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
+    void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount);
+    void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
     // GL_CHROMIUM_lose_context
-    void loseContextCHROMIUM(GC3Denum, GC3Denum);
+    void loseContextCHROMIUM(GLenum, GLenum);
 
 private:
     // Instances of this class are strictly owned by the GraphicsContext3D implementation and do not
