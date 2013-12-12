@@ -51,6 +51,8 @@
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_problem.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui_component.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/address_validator.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/load_rules_delegate.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/localization.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/basictypes.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/scoped_ptr.h',
@@ -60,6 +62,7 @@
         '<(libaddressinput_dir)/cpp/src/address_field_util.h',
         '<(libaddressinput_dir)/cpp/src/address_problem.cc',
         '<(libaddressinput_dir)/cpp/src/address_ui.cc',
+        '<(libaddressinput_dir)/cpp/src/address_validator.cc',
         '<(libaddressinput_dir)/cpp/src/grit.h',
         '<(libaddressinput_dir)/cpp/src/localization.cc',
         '<(libaddressinput_dir)/cpp/src/lookup_key_util.cc',
@@ -79,6 +82,9 @@
         '<(libaddressinput_dir)/cpp/src/validating_storage.h',
         '<(libaddressinput_dir)/cpp/src/validating_util.cc',
         '<(libaddressinput_dir)/cpp/src/validating_util.h',
+      ],
+      'defines': [
+        'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-address/"',
       ],
       'dependencies': [
         'generated_messages',

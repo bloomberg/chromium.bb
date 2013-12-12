@@ -35,6 +35,7 @@
         'src/address_field_util.cc',
         'src/address_problem.cc',
         'src/address_ui.cc',
+        'src/address_validator.cc',
         'src/localization.cc',
         'src/lookup_key_util.cc',
         'src/region_data_constants.cc',
@@ -45,6 +46,9 @@
         'src/util/md5.cc',
         'src/validating_storage.cc',
         'src/validating_util.cc',
+      ],
+      'defines': [
+        'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-address/"',
       ],
       'dependencies': [
         'grit.gyp:generated_messages',
