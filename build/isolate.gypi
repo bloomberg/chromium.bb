@@ -33,6 +33,9 @@
 #
 # The generated .isolated file will be:
 #   <(PRODUCT_DIR)/foo_test.isolated
+#
+# See http://dev.chromium.org/developers/testing/isolated-testing/for-swes
+# for more information.
 
 {
   'rules': [
@@ -43,7 +46,6 @@
         # Files that are known to be involved in this step.
         '<(DEPTH)/tools/swarming_client/isolate.py',
         '<(DEPTH)/tools/swarming_client/run_isolated.py',
-        '<(DEPTH)/tools/swarming_client/googletest/run_test_cases.py',
 
         # Disable file tracking by the build driver for now. This means the
         # project must have the proper build-time dependency for their runtime
@@ -66,8 +68,8 @@
         '<(test_isolation_mode)',
         # Variables should use the -V FOO=<(FOO) form so frequent values,
         # like '0' or '1', aren't stripped out by GYP.
-        '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
-        '--variable', 'OS=<(OS)',
+        '--path-variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
+        '--config-variable', 'OS=<(OS)',
         '--result', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
       ],
@@ -76,7 +78,9 @@
         ['OS=="mac"', {
           # <(mac_product_name) can contain a space, so don't use FOO=<(FOO)
           # form.
-          'action': [ '--variable', 'mac_product_name', '<(mac_product_name)' ],
+          'action': [
+            '--extra-variable', 'mac_product_name', '<(mac_product_name)',
+          ],
         }],
         ["test_isolation_outdir==''", {
           # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
