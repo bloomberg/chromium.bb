@@ -126,6 +126,10 @@ class ChromeTests:
       cmd.append("--gtest_repeat=%s" % self._options.gtest_repeat)
     if self._options.gtest_shuffle:
       cmd.append("--gtest_shuffle")
+    if self._options.brave_new_test_launcher:
+      cmd.append("--brave-new-test-launcher")
+    if self._options.test_launcher_bot_mode:
+      cmd.append("--test-launcher-bot-mode")
     return cmd
 
   def Run(self):
@@ -608,6 +612,10 @@ def _main():
   # TODO(thestig) Remove this if we can.
   parser.add_option("--gtest_color", dest="gtest_color", default="no",
                     help="dummy compatibility flag for sharding_supervisor.")
+  parser.add_option("--brave-new-test-launcher", action="store_true",
+                    help="run the tests with --brave-new-test-launcher")
+  parser.add_option("--test-launcher-bot-mode", action="store_true",
+                    help="run the tests with --test-launcher-bot-mode")
 
   options, args = parser.parse_args()
 
