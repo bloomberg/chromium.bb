@@ -8,9 +8,9 @@ See http://crbug.com/316974 for details
 
 Verify hover, active aren't initially set
 PASS isBoxDefault() is true
-tapcancel on element when it is Active should clear it
+tapcancel on element when it is Active should keep hover
 PASS isBoxHoverActive() is true
-PASS isBoxDefault() is true
+PASS isBoxHovered() is true
 tapcancel outside element when it is Active should clear it
 PASS isBoxHoverActive() is true
 PASS isBoxDefault() is true

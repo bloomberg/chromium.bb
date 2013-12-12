@@ -5010,11 +5010,6 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     RefPtr<Node> oldHoverNode = hoverNode();
 
-    // A touch release does not set a new hover target; setting the element we're working with to 0
-    // will clear the chain of hovered elements all the way to the top of the tree.
-    if (request.touchRelease())
-        innerElementInDocument = 0;
-
     // Check to see if the hovered node has changed.
     // If it hasn't, we do not need to do anything.
     Node* newHoverNode = innerElementInDocument;

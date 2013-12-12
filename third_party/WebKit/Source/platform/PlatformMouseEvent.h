@@ -36,10 +36,38 @@ enum MouseButton { NoButton = -1, LeftButton, MiddleButton, RightButton };
 
 class PlatformMouseEvent : public PlatformEvent {
 public:
+    enum SyntheticEventType {
+        NotFromTouch,
+        FromTouch,
+    };
+
     PlatformMouseEvent()
         : PlatformEvent(PlatformEvent::MouseMoved)
         , m_button(NoButton)
         , m_clickCount(0)
+        , m_synthesized(NotFromTouch)
+        , m_modifierFlags(0)
+    {
+    }
+
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, Modifiers modifiers, double timestamp)
+        : PlatformEvent(type, modifiers, timestamp)
+        , m_position(position)
+        , m_globalPosition(globalPosition)
+        , m_button(button)
+        , m_clickCount(clickCount)
+        , m_synthesized(NotFromTouch)
+        , m_modifierFlags(0)
+    {
+    }
+
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp)
+        : PlatformEvent(type, modifiers, timestamp)
+        , m_position(position)
+        , m_globalPosition(globalPosition)
+        , m_button(button)
+        , m_clickCount(clickCount)
+        , m_synthesized(synthesized)
         , m_modifierFlags(0)
     {
     }
@@ -50,6 +78,7 @@ public:
         , m_globalPosition(globalPosition)
         , m_button(button)
         , m_clickCount(clickCount)
+        , m_synthesized(NotFromTouch)
         , m_modifierFlags(0)
     {
     }
@@ -61,6 +90,7 @@ public:
     MouseButton button() const { return m_button; }
     int clickCount() const { return m_clickCount; }
     unsigned modifierFlags() const { return m_modifierFlags; }
+    bool fromTouch() const { return m_synthesized == FromTouch; }
 
 protected:
     IntPoint m_position;
@@ -68,6 +98,7 @@ protected:
     IntPoint m_movementDelta;
     MouseButton m_button;
     int m_clickCount;
+    SyntheticEventType m_synthesized;
     unsigned m_modifierFlags;
 };
 

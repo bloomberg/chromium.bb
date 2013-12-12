@@ -71,6 +71,15 @@ function runTests()
     debug("The Don't Click Me div should not be visible after a GestureTap on the Click Me div.");
     shouldBe(document.elementFromPoint(250, 250).id, "clickme");
     eventSender.gestureTap(250, 250);
+    waitUntilActiveCleared();
+}
+
+function waitUntilActiveCleared()
+{
+    if (dontClickMe.offsetTop != 0) {
+        return setTimeout(waitUntilActiveCleared, 10);
+    }
+
     shouldBe("dontClickMe.offsetTop", "0");
 
     debug("The Don't Click Me div should be visible after a GestureShowPress on the Hover Over Me div.");
@@ -81,6 +90,13 @@ function runTests()
     debug("The Don't Click Me div should not be visible after a mouse move to below the Click Me div.");
     eventSender.mouseMoveTo(350, 350);
     shouldBe("dontClickMe.offsetTop", "0");
+
+    finishJSTest();
+}
+
+if (window.testRunner) {
+    window.jsTestIsAsync = true;
+    testRunner.waitUntilDone();
 }
 
 runTests();

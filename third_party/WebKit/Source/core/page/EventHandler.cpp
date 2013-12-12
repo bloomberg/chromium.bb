@@ -337,7 +337,6 @@ EventHandler::EventHandler(Frame* frame)
     , m_syntheticPageScaleFactor(0)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
-    , m_shouldKeepActiveForMinInterval(false)
 {
 }
 
@@ -394,7 +393,6 @@ void EventHandler::clear()
     m_mouseDownMayStartSelect = false;
     m_mouseDownMayStartDrag = false;
     m_lastShowPressTimestamp = 0;
-    m_shouldKeepActiveForMinInterval = false;
     m_lastDeferredTapElement = 0;
 }
 
@@ -1327,7 +1325,10 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     }
     m_mouseDownWasInSubframe = false;
 
-    HitTestRequest request(HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent;
+    if (mouseEvent.fromTouch())
+        hitType |= HitTestRequest::ReadOnly;
+    HitTestRequest request(hitType);
     // Save the document point we generate in case the window coordinate is invalidated by what happens
     // when we dispatch the event.
     LayoutPoint documentPoint = documentPointForWindowPoint(m_frame, mouseEvent.position());
@@ -1530,6 +1531,9 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     }
 
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent;
+    if (mouseEvent.fromTouch())
+        hitType |= HitTestRequest::ReadOnly;
+
     if (m_mousePressed)
         hitType |= HitTestRequest::Active;
     else if (onlyUpdateScrollbars) {
@@ -1652,7 +1656,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     }
 
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Release | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent;
-    if (m_shouldKeepActiveForMinInterval)
+    if (mouseEvent.fromTouch())
         hitType |= HitTestRequest::ReadOnly;
     HitTestRequest request(hitType);
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
@@ -1661,9 +1665,6 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
         m_capturingMouseEventsNode = 0;
     if (subframe && passMouseReleaseEventToSubframe(mev, subframe))
         return true;
-
-    if (m_shouldKeepActiveForMinInterval)
-        m_lastDeferredTapElement = mev.hitTestResult().innerElement();
 
     bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, mev.targetNode(), true, m_clickCount, mouseEvent, false);
 
@@ -2290,6 +2291,8 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     }
 
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
+    double activeInterval = 0;
+    bool shouldKeepActiveForMinInterval = false;
     if (gestureEvent.type() == PlatformEvent::GestureShowPress
         || gestureEvent.type() == PlatformEvent::GestureTapUnconfirmed) {
         hitType |= HitTestRequest::Active;
@@ -2299,9 +2302,13 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
         if (!m_frame->document()->activeElement())
             hitType |= HitTestRequest::ReadOnly;
     } else if (gestureEvent.type() == PlatformEvent::GestureTap) {
-        // The mouseup event synthesized for this gesture will clear the active state of the
-        // targeted node, so performing a ReadOnly hit test here is fine.
-        hitType |= HitTestRequest::ReadOnly;
+        hitType |= HitTestRequest::Release;
+        // If the Tap is received very shortly after ShowPress, we want to delay clearing
+        // of the active state so that it's visible to the user for at least one frame.
+        activeInterval = WTF::currentTime() - m_lastShowPressTimestamp;
+        shouldKeepActiveForMinInterval = m_lastShowPressTimestamp && activeInterval < minimumActiveInterval;
+        if (shouldKeepActiveForMinInterval)
+            hitType |= HitTestRequest::ReadOnly;
     }
     else
         hitType |= HitTestRequest::Active | HitTestRequest::ReadOnly;
@@ -2309,6 +2316,12 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     if ((!scrollbar && !eventTarget) || !(hitType & HitTestRequest::ReadOnly)) {
         IntPoint hitTestPoint = m_frame->view()->windowToContents(adjustedPoint);
         HitTestResult result = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::AllowFrameScrollbars);
+
+        if (shouldKeepActiveForMinInterval) {
+            m_lastDeferredTapElement = result.innerElement();
+            m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval);
+        }
+
         eventTarget = result.targetNode();
         if (!scrollbar) {
             FrameView* view = m_frame->view();
@@ -2388,30 +2401,32 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent, co
 {
     // FIXME: Refactor this code to not hit test multiple times. We use the adjusted position to ensure that the correct node is targeted by the later redundant hit tests.
 
+    unsigned modifierFlags = 0;
+    if (gestureEvent.altKey())
+        modifierFlags |= PlatformEvent::AltKey;
+    if (gestureEvent.ctrlKey())
+        modifierFlags |= PlatformEvent::CtrlKey;
+    if (gestureEvent.metaKey())
+        modifierFlags |= PlatformEvent::MetaKey;
+    if (gestureEvent.shiftKey())
+        modifierFlags |= PlatformEvent::ShiftKey;
+    PlatformEvent::Modifiers modifiers = static_cast<PlatformEvent::Modifiers>(modifierFlags);
+
     PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
-        gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
+        modifiers, PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
     handleMouseMoveEvent(fakeMouseMove);
 
     bool defaultPrevented = false;
     PlatformMouseEvent fakeMouseDown(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
-        gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
+        modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     defaultPrevented |= handleMousePressEvent(fakeMouseDown);
 
     PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
-        gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
-
-    // If the Tap is received very shortly after ShowPress, we want to delay clearing
-    // of the active state so that it's visible to the user for at least one frame.
-    double activeInterval = WTF::currentTime() - m_lastShowPressTimestamp;
-    m_shouldKeepActiveForMinInterval = m_lastShowPressTimestamp && activeInterval < minimumActiveInterval;
+        modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     defaultPrevented |= handleMouseReleaseEvent(fakeMouseUp);
-
-    if (m_shouldKeepActiveForMinInterval)
-        m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval);
-    m_shouldKeepActiveForMinInterval = false;
 
     return defaultPrevented;
 }
@@ -2998,9 +3013,10 @@ void EventHandler::activeIntervalTimerFired(Timer<EventHandler>*)
 
     if (m_frame
         && m_frame->document()
-        && m_lastDeferredTapElement
-        && m_lastDeferredTapElement.get() == m_frame->document()->activeElement()) {
-        HitTestRequest request(HitTestRequest::Release | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+        && m_lastDeferredTapElement) {
+        // FIXME: Enable condition when http://crbug.com/226842 lands
+        // m_lastDeferredTapElement.get() == m_frame->document()->activeElement()
+        HitTestRequest request(HitTestRequest::TouchEvent | HitTestRequest::Release);
         m_frame->document()->updateHoverActiveState(request, m_lastDeferredTapElement.get());
     }
     m_lastDeferredTapElement = 0;

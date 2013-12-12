@@ -380,7 +380,6 @@ private:
 
     Timer<EventHandler> m_activeIntervalTimer;
     double m_lastShowPressTimestamp;
-    bool m_shouldKeepActiveForMinInterval;
     RefPtr<Element> m_lastDeferredTapElement;
 };
 

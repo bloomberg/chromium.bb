@@ -81,11 +81,11 @@ function runTests()
     debug("Verify hover, active aren't initially set");
     shouldBeTrue("isBoxDefault()");
 
-    debug("tapcancel on element when it is Active should clear it");
+    debug("tapcancel on element when it is Active should keep hover");
     eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxHoverActive()");
     eventSender.gestureTapCancel(50, 50);
-    shouldBeTrue("isBoxDefault()");
+    shouldBeTrue("isBoxHovered()");
 
     debug("tapcancel outside element when it is Active should clear it");
     eventSender.gestureShowPress(50, 50);

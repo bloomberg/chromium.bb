@@ -71,7 +71,7 @@ function runTests()
 
 function waitUntilActiveCleared()
 {
-    if(isBoxActive()) {
+    if (isBoxActive()) {
         return setTimeout(waitUntilActiveCleared, 10);
     }
 
@@ -87,6 +87,16 @@ function waitUntilActiveCleared()
     eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTap(400, 250);
+    // FIXME: Remove after mocked timers added  (http://crbug.com/319529)
+    waitUntilAnotherActiveCleared();
+}
+
+function waitUntilAnotherActiveCleared()
+{
+    if (isBoxActive()) {
+        return setTimeout(waitUntilAnotherActiveCleared, 10);
+    }
+
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tapCancel elsewhere still clears active");
