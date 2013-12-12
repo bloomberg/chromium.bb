@@ -37,8 +37,8 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "public/platform/android/WebThemeEngine.h"
 #include "public/platform/Platform.h"
+#include "public/platform/default/WebThemeEngine.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

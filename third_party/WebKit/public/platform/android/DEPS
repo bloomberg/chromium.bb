@@ -1,0 +1,4 @@
+# FIXME: crbug.com/327471. Remove this file when android/WebThemeEngine.h is removed.
+include_rules = [
+    "+../default",
+]
