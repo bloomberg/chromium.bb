@@ -115,6 +115,10 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
             return false;
         }
     } else {
+        if (namespaceURI == SVGNames::svgNamespaceURI) {
+            CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, exceptionState);
+            return false;
+        }
         localName = type;
     }
 

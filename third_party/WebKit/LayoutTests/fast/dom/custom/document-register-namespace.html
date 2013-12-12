@@ -22,7 +22,7 @@ function createElementFromSVG(svg)
 }
 
 CustomHTMLElement = document.register('html-foo', { prototype: Object.create(HTMLElement.prototype) });
-CustomSVGElement = document.register('svg-foo', { prototype: Object.create(SVGElement.prototype) });
+CustomSVGElement = document.register('svg-foo', { prototype: Object.create(SVGGElement.prototype), extends: 'g' });
 
 var html1 = new CustomHTMLElement();
 shouldBe('html1.namespaceURI', '"http://www.w3.org/1999/xhtml"');
@@ -39,7 +39,9 @@ shouldBeFalse('notHTML instanceof CustomHTMLElement');
 shouldBeFalse('notHTML instanceof HTMLElement');
 
 var svg1 = new CustomSVGElement();
-shouldBe('svg1.tagName', '"svg-foo"');
+shouldBe('svg1.tagName', '"g"');
+shouldBeTrue('svg1 instanceof SVGGElement');
+shouldBeTrue('svg1 instanceof CustomSVGElement');
 shouldBe('svg1.namespaceURI', '"http://www.w3.org/2000/svg"');
 var svg2 = document.createElementNS('http://www.w3.org/2000/svg', 'svg-foo');
 shouldBe('svg2.tagName', '"svg-foo"');

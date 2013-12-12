@@ -1,0 +1,3 @@
+
+PASS registration of SVG types 
+
