@@ -39,17 +39,33 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // written, in which case this will be called with all the dispatchers' locks
   // held. On success, all the dispatchers must have been moved to a closed
   // state; on failure, they should remain in their original state.
-  MojoResult WriteMessage(const void* bytes, uint32_t num_bytes,
+  MojoResult WriteMessage(const void* bytes,
+                          uint32_t num_bytes,
                           const std::vector<Dispatcher*>* dispatchers,
                           MojoWriteMessageFlags flags);
   // |dispatchers| must be non-null but empty, if |num_dispatchers| is non-null
   // and nonzero. On success, it will be set to the dispatchers to be received
   // (and assigned handles) as part of the message.
   MojoResult ReadMessage(
-      void* bytes, uint32_t* num_bytes,
+      void* bytes,
+      uint32_t* num_bytes,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
       uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
+  MojoResult WriteData(const void* elements,
+                       uint32_t* num_elements,
+                       MojoWriteDataFlags flags);
+  MojoResult BeginWriteData(void** buffer,
+                            uint32_t* buffer_num_elements,
+                            MojoWriteDataFlags flags);
+  MojoResult EndWriteData(uint32_t num_elements_written);
+  MojoResult ReadData(void* elements,
+                      uint32_t* num_elements,
+                      MojoReadDataFlags flags);
+  MojoResult BeginReadData(const void** buffer,
+                           uint32_t* buffer_num_elements,
+                           MojoReadDataFlags flags);
+  MojoResult EndReadData(uint32_t num_elements_read);
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
   // object changes state to satisfy |flags| with result |wake_result| (which
@@ -92,14 +108,30 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // See the descriptions of the methods without the "ImplNoLock" for more
   // information.
   virtual MojoResult WriteMessageImplNoLock(
-      const void* bytes, uint32_t num_bytes,
+      const void* bytes,
+      uint32_t num_bytes,
       const std::vector<Dispatcher*>* dispatchers,
       MojoWriteMessageFlags flags);
   virtual MojoResult ReadMessageImplNoLock(
-      void* bytes, uint32_t* num_bytes,
+      void* bytes,
+      uint32_t* num_bytes,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
       uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
+  virtual MojoResult WriteDataImplNoLock(const void* elements,
+                                         uint32_t* num_elements,
+                                         MojoWriteDataFlags flags);
+  virtual MojoResult BeginWriteDataImplNoLock(void** buffer,
+                                              uint32_t* buffer_num_elements,
+                                              MojoWriteDataFlags flags);
+  virtual MojoResult EndWriteDataImplNoLock(uint32_t num_elements_written);
+  virtual MojoResult ReadDataImplNoLock(void* elements,
+                                        uint32_t* num_elements,
+                                        MojoReadDataFlags flags);
+  virtual MojoResult BeginReadDataImplNoLock(const void** buffer,
+                                             uint32_t* buffer_num_elements,
+                                             MojoReadDataFlags flags);
+  virtual MojoResult EndReadDataImplNoLock(uint32_t num_elements_read);
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result);

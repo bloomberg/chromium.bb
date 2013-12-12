@@ -39,8 +39,20 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->WriteMessage(NULL, 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadMessage(NULL, NULL, 0, NULL,
+            d->ReadMessage(NULL, NULL, NULL, NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->WriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->BeginWriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->EndWriteData(0));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->ReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->BeginReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->EndReadData(0));
   Waiter w;
   w.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -54,8 +66,20 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->WriteMessage(NULL, 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadMessage(NULL, NULL, 0, NULL,
+            d->ReadMessage(NULL, NULL, NULL, NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->WriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->BeginWriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->EndWriteData(0));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->ReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->BeginReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d->EndReadData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->AddWaiter(&w, MOJO_WAIT_FLAG_EVERYTHING, 0));
   d->RemoveWaiter(&w);
@@ -67,6 +91,12 @@ class ThreadSafetyStressThread : public base::SimpleThread {
     CLOSE = 0,
     WRITE_MESSAGE,
     READ_MESSAGE,
+    WRITE_DATA,
+    BEGIN_WRITE_DATA,
+    END_WRITE_DATA,
+    READ_DATA,
+    BEGIN_READ_DATA,
+    END_READ_DATA,
     ADD_WAITER,
     REMOVE_WAITER,
 
@@ -107,8 +137,35 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       case READ_MESSAGE:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->ReadMessage(NULL, NULL, 0, NULL,
+                  dispatcher_->ReadMessage(NULL, NULL, NULL, NULL,
                                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+        break;
+      case WRITE_DATA:
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->WriteData(NULL, NULL,
+                                         MOJO_WRITE_DATA_FLAG_NONE));
+        break;
+      case BEGIN_WRITE_DATA:
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->BeginWriteData(NULL, NULL,
+                                              MOJO_WRITE_DATA_FLAG_NONE));
+        break;
+      case END_WRITE_DATA:
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->EndWriteData(0));
+        break;
+      case READ_DATA:
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->ReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+        break;
+      case BEGIN_READ_DATA:
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->BeginReadData(NULL, NULL,
+                                             MOJO_READ_DATA_FLAG_NONE));
+        break;
+      case END_READ_DATA:
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->EndReadData(0));
         break;
       case ADD_WAITER: {
         MojoResult r = dispatcher_->AddWaiter(&waiter_,
