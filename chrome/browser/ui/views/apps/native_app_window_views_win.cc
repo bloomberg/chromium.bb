@@ -13,10 +13,8 @@
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
-NativeAppWindowViewsWin::NativeAppWindowViewsWin(
-    apps::ShellWindow* shell_window,
-    const apps::ShellWindow::CreateParams& params)
-    : NativeAppWindowViews(shell_window, params) {}
+NativeAppWindowViewsWin::NativeAppWindowViewsWin() {
+}
 
 void NativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
   if (!ash::Shell::HasInstance())

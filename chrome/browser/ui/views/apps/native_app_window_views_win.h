@@ -11,8 +11,7 @@
 // for packaged apps.
 class NativeAppWindowViewsWin : public NativeAppWindowViews {
  public:
-  NativeAppWindowViewsWin(apps::ShellWindow* shell_window,
-                          const apps::ShellWindow::CreateParams& params);
+  NativeAppWindowViewsWin();
 
  private:
   void ActivateParentDesktopIfNecessary();

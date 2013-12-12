@@ -206,17 +206,20 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 
 }  // namespace
 
-NativeAppWindowViews::NativeAppWindowViews(
-    ShellWindow* shell_window,
-    const ShellWindow::CreateParams& create_params)
-    : shell_window_(shell_window),
-      web_view_(NULL),
+NativeAppWindowViews::NativeAppWindowViews()
+    : web_view_(NULL),
       window_(NULL),
       is_fullscreen_(false),
-      frameless_(create_params.frame == ShellWindow::FRAME_NONE),
-      transparent_background_(create_params.transparent_background),
-      resizable_(create_params.resizable),
       weak_ptr_factory_(this) {
+}
+
+void NativeAppWindowViews::Init(
+    apps::ShellWindow* shell_window,
+    const ShellWindow::CreateParams& create_params) {
+  shell_window_ = shell_window;
+  frameless_ = create_params.frame == ShellWindow::FRAME_NONE;
+  transparent_background_ = create_params.transparent_background;
+  resizable_ = create_params.resizable;
   Observe(web_contents());
 
   window_ = new views::Widget;

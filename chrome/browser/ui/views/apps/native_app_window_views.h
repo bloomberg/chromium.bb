@@ -59,9 +59,10 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
                              public views::WidgetDelegateView,
                              public views::WidgetObserver {
  public:
-  NativeAppWindowViews(apps::ShellWindow* shell_window,
-                       const apps::ShellWindow::CreateParams& params);
+  NativeAppWindowViews();
   virtual ~NativeAppWindowViews();
+  void Init(apps::ShellWindow* shell_window,
+            const apps::ShellWindow::CreateParams& create_params);
 
  protected:
   // Called before views::Widget::Init() to allow subclasses to customize
@@ -211,8 +212,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
 
   scoped_ptr<SkRegion> draggable_region_;
 
-  const bool frameless_;
-  const bool transparent_background_;
+  bool frameless_;
+  bool transparent_background_;
   gfx::Size preferred_size_;
   bool resizable_;
 
