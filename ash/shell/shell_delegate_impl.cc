@@ -113,7 +113,7 @@ keyboard::KeyboardControllerProxy*
   return new KeyboardControllerProxyStub();
 }
 
-content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
+content::BrowserContext* ShellDelegateImpl::GetActiveBrowserContext() {
   return browser_context_;
 }
 

@@ -95,8 +95,11 @@ void ChromeShellDelegate::Exit() {
   chrome::AttemptUserExit();
 }
 
-content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
-  return ProfileManager::GetDefaultProfileOrOffTheRecord();
+content::BrowserContext* ChromeShellDelegate::GetActiveBrowserContext() {
+#if defined(OS_CHROMEOS)
+  DCHECK(chromeos::UserManager::Get()->GetLoggedInUsers().size());
+#endif
+  return ProfileManager::GetActiveUserProfileOrOffTheRecord();
 }
 
 app_list::AppListViewDelegate*
@@ -105,7 +108,7 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate, and the delegate will own
   // the controller.
   return new AppListViewDelegate(
-      Profile::FromBrowserContext(GetCurrentBrowserContext()),
+      Profile::FromBrowserContext(GetActiveBrowserContext()),
       AppListService::Get(chrome::HOST_DESKTOP_TYPE_ASH)->
       GetControllerDelegate());
 }

@@ -214,10 +214,11 @@ void ChromeShellDelegate::Observe(int type,
             base::FilePath(),
             dummy,
             chrome::startup::IS_NOT_FIRST_RUN);
-        startup_impl.Launch(ProfileManager::GetDefaultProfileOrOffTheRecord(),
-                            std::vector<GURL>(),
-                            true,
-                            chrome::HOST_DESKTOP_TYPE_ASH);
+        startup_impl.Launch(
+            ProfileManager::GetActiveUserProfileOrOffTheRecord(),
+            std::vector<GURL>(),
+            true,
+            chrome::HOST_DESKTOP_TYPE_ASH);
       } else {
         Browser* browser =
             chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
@@ -227,7 +228,7 @@ void ChromeShellDelegate::Observe(int type,
         }
 
         chrome::ScopedTabbedBrowserDisplayer displayer(
-            ProfileManager::GetDefaultProfileOrOffTheRecord(),
+            ProfileManager::GetActiveUserProfileOrOffTheRecord(),
             chrome::HOST_DESKTOP_TYPE_ASH);
         chrome::AddTabAt(displayer.browser(), GURL(), -1, true);
       }

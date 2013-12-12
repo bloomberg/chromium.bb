@@ -86,7 +86,7 @@ void AshKeyboardControllerProxy::OnRequest(
 }
 
 content::BrowserContext* AshKeyboardControllerProxy::GetBrowserContext() {
-  return ProfileManager::GetDefaultProfile();
+  return ProfileManager::GetActiveUserProfileOrOffTheRecord();
 }
 
 ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
@@ -103,8 +103,8 @@ void AshKeyboardControllerProxy::RequestAudioInput(
   GURL origin(request.security_origin);
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     ExtensionService* extensions_service =
-        extensions::ExtensionSystem::Get(ProfileManager::GetDefaultProfile())->
-            extension_service();
+        extensions::ExtensionSystem::GetForBrowserContext(
+            GetBrowserContext())->extension_service();
     extension = extensions_service->extensions()->GetByID(origin.host());
     DCHECK(extension);
   }
@@ -116,8 +116,7 @@ void AshKeyboardControllerProxy::RequestAudioInput(
 void AshKeyboardControllerProxy::SetupWebContents(
     content::WebContents* contents) {
   extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(ProfileManager::GetDefaultProfile(),
-                                      this));
+      new ExtensionFunctionDispatcher(GetBrowserContext(), this));
   extensions::SetViewType(contents, extensions::VIEW_TYPE_VIRTUAL_KEYBOARD);
   extensions::ExtensionWebContentsObserver::CreateForWebContents(contents);
   Observe(contents);
@@ -207,9 +206,10 @@ void AshKeyboardControllerProxy::HideKeyboardContainer(
 void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   // TODO(bshe): Need to check the affected window's profile once multi-profile
   // is supported.
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  content::BrowserContext* context = GetBrowserContext();
   extensions::EventRouter* router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
+      extensions::ExtensionSystem::GetForBrowserContext(context)->
+      event_router();
 
   if (!router->HasEventListener(
           virtual_keyboard_private::OnTextInputBoxFocused::kEventName)) {
@@ -225,6 +225,6 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
       event_args.Pass()));
-  event->restrict_to_browser_context = profile;
+  event->restrict_to_browser_context = context;
   router->DispatchEventToExtension(kVirtualKeyboardExtensionID, event.Pass());
 }

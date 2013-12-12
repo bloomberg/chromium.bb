@@ -137,8 +137,9 @@ class ASH_EXPORT ShellDelegate {
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() = 0;
 
-  // Get the current browser context. This will get us the current profile.
-  virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
+  // Get the active browser context. This will get us the active profile
+  // in chrome.
+  virtual content::BrowserContext* GetActiveBrowserContext() = 0;
 
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.

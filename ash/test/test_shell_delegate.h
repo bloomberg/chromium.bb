@@ -39,7 +39,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() OVERRIDE;
-  virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
+  virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
@@ -63,7 +63,7 @@ class TestShellDelegate : public ShellDelegate {
   int num_exit_requests_;
   bool multi_profiles_enabled_;
 
-  scoped_ptr<content::BrowserContext> current_browser_context_;
+  scoped_ptr<content::BrowserContext> active_browser_context_;
 
   TestSessionStateDelegate* test_session_state_delegate_;  // Not owned.
 

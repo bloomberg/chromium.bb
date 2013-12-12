@@ -128,7 +128,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
       case EXAMPLES_WINDOW: {
         views::examples::ShowExamplesWindowWithContent(
             views::examples::DO_NOTHING_ON_CLOSE,
-            Shell::GetInstance()->delegate()->GetCurrentBrowserContext(),
+            Shell::GetInstance()->delegate()->GetActiveBrowserContext(),
             NULL);
         break;
       }

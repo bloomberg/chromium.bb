@@ -141,9 +141,9 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
@@ -337,7 +337,7 @@ void DownloadAndVerifyFile(
 
 int CountScreenshots() {
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-      ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
+      ProfileManager::GetActiveUserProfileOrOffTheRecord());
   base::FileEnumerator enumerator(download_prefs->DownloadPath(),
                                   false, base::FileEnumerator::FILES,
                                   "Screenshot*");

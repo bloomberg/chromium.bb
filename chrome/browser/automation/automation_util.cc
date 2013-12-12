@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,6 +45,7 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #endif
 
@@ -194,13 +193,7 @@ Profile* GetCurrentProfileOnChromeOS(std::string* error_message) {
     }
     return Profile::FromWebUI(web_ui);
   } else {
-    ash::Shell* shell = ash::Shell::GetInstance();
-    if (!shell || !shell->delegate()) {
-      *error_message = "Unable to get shell delegate.";
-      return NULL;
-    }
-    return Profile::FromBrowserContext(
-        shell->delegate()->GetCurrentBrowserContext());
+    return ProfileManager::GetActiveUserProfileOrOffTheRecord();
   }
   return NULL;
 }

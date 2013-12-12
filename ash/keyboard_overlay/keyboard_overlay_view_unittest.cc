@@ -27,7 +27,7 @@ bool operator==(const KeyboardOverlayView::KeyEventData& lhs,
 TEST_F(KeyboardOverlayViewTest, OpenAcceleratorsClose) {
   ui::test::TestWebDialogDelegate delegate(GURL("chrome://keyboardoverlay"));
   KeyboardOverlayView view(
-      Shell::GetInstance()->delegate()->GetCurrentBrowserContext(),
+      Shell::GetInstance()->delegate()->GetActiveBrowserContext(),
       &delegate,
       new ui::test::TestWebContentsHandler);
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {

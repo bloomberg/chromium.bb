@@ -92,9 +92,9 @@ keyboard::KeyboardControllerProxy*
   return new KeyboardControllerProxyStub();
 }
 
-content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
-  current_browser_context_.reset(new content::TestBrowserContext());
-  return current_browser_context_.get();
+content::BrowserContext* TestShellDelegate::GetActiveBrowserContext() {
+  active_browser_context_.reset(new content::TestBrowserContext());
+  return active_browser_context_.get();
 }
 
 app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {

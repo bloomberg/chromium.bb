@@ -28,7 +28,8 @@ aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
 }
 
 BrowserContext* KeyboardControllerProxyStub::GetBrowserContext() {
-  return Shell::GetInstance()->delegate()->GetCurrentBrowserContext();
+  // TODO(oshima): investigate which profile to use.
+  return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
 }
 
 ui::InputMethod* KeyboardControllerProxyStub::GetInputMethod() {
