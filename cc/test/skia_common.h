@@ -21,7 +21,7 @@ class Picture;
 
 class TestPixelRef : public SkPixelRef {
  public:
-  TestPixelRef(int width, int height);
+  explicit TestPixelRef(const SkImageInfo& info);
   virtual ~TestPixelRef();
 
   virtual SkFlattenable::Factory getFactory() const OVERRIDE;
@@ -36,7 +36,7 @@ class TestPixelRef : public SkPixelRef {
 
 class TestLazyPixelRef : public skia::LazyPixelRef {
  public:
-  TestLazyPixelRef(int width, int height);
+  explicit TestLazyPixelRef(const SkImageInfo& info);
   virtual ~TestLazyPixelRef();
 
   virtual SkFlattenable::Factory getFactory() const OVERRIDE;

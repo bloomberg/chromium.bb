@@ -12,8 +12,8 @@
 
 namespace cc {
 
-TestPixelRef::TestPixelRef(int width, int height)
-    : pixels_(new char[4 * width * height]) {}
+TestPixelRef::TestPixelRef(const SkImageInfo& info)
+    : SkPixelRef(info), pixels_(new char[4 * info.fWidth * info.fHeight]) {}
 
 TestPixelRef::~TestPixelRef() {}
 
@@ -31,8 +31,9 @@ SkPixelRef* TestPixelRef::deepCopy(
 }
 
 
-TestLazyPixelRef::TestLazyPixelRef(int width, int height)
-    : pixels_(new char[4 * width * height]) {}
+TestLazyPixelRef::TestLazyPixelRef(const SkImageInfo& info)
+    : skia::LazyPixelRef(info),
+      pixels_(new char[4 * info.fWidth * info.fHeight]) {}
 
 TestLazyPixelRef::~TestLazyPixelRef() {}
 
@@ -72,13 +73,18 @@ void DrawPicture(unsigned char* buffer,
 }
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
+  SkImageInfo info = {
+    size.width(),
+    size.height(),
+    kPMColor_SkColorType,
+    kPremul_SkAlphaType
+  };
+
   skia::RefPtr<TestLazyPixelRef> lazy_pixel_ref =
-      skia::AdoptRef(new TestLazyPixelRef(size.width(), size.height()));
+      skia::AdoptRef(new TestLazyPixelRef(info));
   lazy_pixel_ref->setURI(uri);
 
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    size.width(),
-                    size.height());
+  bitmap->setConfig(info);
   bitmap->setPixelRef(lazy_pixel_ref.get());
 }
 
