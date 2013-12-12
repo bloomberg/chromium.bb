@@ -671,6 +671,7 @@
     { "name": "payroll.xero.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "in.xero.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "api.xero.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "eff.org", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
