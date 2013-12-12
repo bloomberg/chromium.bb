@@ -136,10 +136,10 @@ public:
     Status status() const { return static_cast<Status>(m_status); }
     void setStatus(Status status) { m_status = status; }
 
-    unsigned size() const { return encodedSize() + decodedSize() + overheadSize(); }
-    unsigned encodedSize() const { return m_encodedSize; }
-    unsigned decodedSize() const { return m_decodedSize; }
-    unsigned overheadSize() const;
+    size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
+    size_t encodedSize() const { return m_encodedSize; }
+    size_t decodedSize() const { return m_decodedSize; }
+    size_t overheadSize() const;
 
     bool isLoaded() const { return !m_loading; } // FIXME. Method name is inaccurate. Loading might not have started yet.
 
@@ -252,8 +252,8 @@ protected:
     virtual void checkNotify();
     virtual void finishOnePart();
 
-    void setEncodedSize(unsigned);
-    void setDecodedSize(unsigned);
+    void setEncodedSize(size_t);
+    void setDecodedSize(size_t);
     void didAccessDecodedData(double timeStamp);
 
     bool isSafeToMakePurgeable() const;
@@ -316,8 +316,8 @@ private:
 
     unsigned long m_identifier;
 
-    unsigned m_encodedSize;
-    unsigned m_decodedSize;
+    size_t m_encodedSize;
+    size_t m_decodedSize;
     unsigned m_accessCount;
     unsigned m_handleCount;
     unsigned m_preloadCount;

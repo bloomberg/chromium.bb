@@ -120,7 +120,7 @@ public:
     //  - minDeadBytes: The maximum number of bytes that dead resources should consume when the cache is under pressure.
     //  - maxDeadBytes: The maximum number of bytes that dead resources should consume when the cache is not under pressure.
     //  - totalBytes: The maximum number of bytes that the cache should consume overall.
-    void setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, unsigned totalBytes);
+    void setCapacities(size_t minDeadBytes, size_t maxDeadBytes, size_t totalBytes);
     void setDelayBeforeLiveDecodedPrune(double seconds) { m_delayBeforeLiveDecodedPrune = seconds; }
     void setMaxPruneDeferralDelay(double seconds) { m_maxPruneDeferralDelay = seconds; }
 
@@ -133,7 +133,7 @@ public:
     void removeFromLRUList(Resource*);
 
     // Called to adjust the cache totals when a resource changes size.
-    void adjustSize(bool live, int delta);
+    void adjustSize(bool live, ptrdiff_t delta);
 
     // Track decoded resources that are in the cache and referenced by a Web page.
     void insertInLiveDecodedResourcesList(Resource*);
@@ -146,11 +146,11 @@ public:
 
     Statistics getStatistics();
 
-    unsigned minDeadCapacity() const { return m_minDeadCapacity; }
-    unsigned maxDeadCapacity() const { return m_maxDeadCapacity; }
-    unsigned capacity() const { return m_capacity; }
-    unsigned liveSize() const { return m_liveSize; }
-    unsigned deadSize() const { return m_deadSize; }
+    size_t minDeadCapacity() const { return m_minDeadCapacity; }
+    size_t maxDeadCapacity() const { return m_maxDeadCapacity; }
+    size_t capacity() const { return m_capacity; }
+    size_t liveSize() const { return m_liveSize; }
+    size_t deadSize() const { return m_deadSize; }
 
     // TaskObserver implementation
     virtual void willProcessTask() OVERRIDE;
@@ -164,8 +164,8 @@ private:
     void dumpLRULists(bool includeLive) const;
 #endif
 
-    unsigned liveCapacity() const;
-    unsigned deadCapacity() const;
+    size_t liveCapacity() const;
+    size_t deadCapacity() const;
 
     // pruneDeadResources() - Flush decoded and encoded data from resources not referenced by Web pages.
     // pruneLiveResources() - Flush decoded data from resources still referenced by Web pages.
@@ -184,15 +184,15 @@ private:
     double m_pruneTimeStamp;
     double m_pruneFrameTimeStamp;
 
-    unsigned m_capacity;
-    unsigned m_minDeadCapacity;
-    unsigned m_maxDeadCapacity;
-    unsigned m_maxDeferredPruneDeadCapacity;
+    size_t m_capacity;
+    size_t m_minDeadCapacity;
+    size_t m_maxDeadCapacity;
+    size_t m_maxDeferredPruneDeadCapacity;
     double m_delayBeforeLiveDecodedPrune;
     double m_deadDecodedDataDeletionInterval;
 
-    unsigned m_liveSize; // The number of bytes currently consumed by "live" resources in the cache.
-    unsigned m_deadSize; // The number of bytes currently consumed by "dead" resources in the cache.
+    size_t m_liveSize; // The number of bytes currently consumed by "live" resources in the cache.
+    size_t m_deadSize; // The number of bytes currently consumed by "dead" resources in the cache.
 
     // Size-adjusted and popularity-aware LRU list collection for cache objects. This collection can hold
     // more resources than the cached resource map, since it can also hold "stale" multiple versions of objects that are

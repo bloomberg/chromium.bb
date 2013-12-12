@@ -499,12 +499,12 @@ bool Resource::deleteIfPossible()
     return false;
 }
 
-void Resource::setDecodedSize(unsigned size)
+void Resource::setDecodedSize(size_t size)
 {
     if (size == m_decodedSize)
         return;
 
-    int delta = size - m_decodedSize;
+    ptrdiff_t delta = size - m_decodedSize;
 
     // The object must now be moved to a different queue, since its size has been changed.
     // We have to remove explicitly before updating m_decodedSize, so that we find the correct previous
@@ -535,12 +535,12 @@ void Resource::setDecodedSize(unsigned size)
     }
 }
 
-void Resource::setEncodedSize(unsigned size)
+void Resource::setEncodedSize(size_t size)
 {
     if (size == m_encodedSize)
         return;
 
-    int delta = size - m_encodedSize;
+    ptrdiff_t delta = size - m_encodedSize;
 
     // The object must now be moved to a different queue, since its size has been changed.
     // We have to remove explicitly before updating m_encodedSize, so that we find the correct previous
@@ -843,7 +843,7 @@ bool Resource::wasPurged() const
     return m_purgeableData && m_purgeableData->wasPurged();
 }
 
-unsigned Resource::overheadSize() const
+size_t Resource::overheadSize() const
 {
     static const int kAverageClientsHashMapSize = 384;
     return sizeof(Resource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().string().length() * 2;

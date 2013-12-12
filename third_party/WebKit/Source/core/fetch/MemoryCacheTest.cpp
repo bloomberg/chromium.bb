@@ -63,6 +63,19 @@ public:
         }
     };
 
+    class FakeResource : public WebCore::Resource {
+    public:
+        FakeResource(const ResourceRequest& request, Type type)
+            : Resource(request, type)
+        {
+        }
+
+        void fakeEncodedSize(size_t size)
+        {
+            setEncodedSize(size);
+        }
+    };
+
 protected:
     virtual void SetUp()
     {
@@ -89,14 +102,43 @@ protected:
 // Verifies that setters and getters for cache capacities work correcty.
 TEST_F(MemoryCacheTest, CapacityAccounting)
 {
-    const unsigned totalCapacity = 100;
-    const unsigned minDeadCapacity = 10;
-    const unsigned maxDeadCapacity = 50;
+    const size_t sizeMax = ~static_cast<size_t>(0);
+    const size_t totalCapacity = sizeMax / 4;
+    const size_t minDeadCapacity = sizeMax / 16;
+    const size_t maxDeadCapacity = sizeMax / 8;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
-
     ASSERT_EQ(totalCapacity, memoryCache()->capacity());
     ASSERT_EQ(minDeadCapacity, memoryCache()->minDeadCapacity());
     ASSERT_EQ(maxDeadCapacity, memoryCache()->maxDeadCapacity());
+}
+
+TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
+{
+    const size_t sizeMax = ~static_cast<size_t>(0);
+    const size_t totalCapacity = sizeMax / 4;
+    const size_t minDeadCapacity = sizeMax / 16;
+    const size_t maxDeadCapacity = sizeMax / 8;
+    const size_t resourceSize1 = sizeMax / 16;
+    const size_t resourceSize2 = sizeMax / 20;
+    memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
+    ResourcePtr<FakeResource> cachedResource =
+        new FakeResource(ResourceRequest(""), Resource::Raw);
+    cachedResource->fakeEncodedSize(resourceSize1);
+
+    ASSERT_EQ(0u, memoryCache()->deadSize());
+    ASSERT_EQ(0u, memoryCache()->liveSize());
+    memoryCache()->add(cachedResource.get());
+    ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
+    ASSERT_EQ(0u, memoryCache()->liveSize());
+
+    MockImageResourceClient client;
+    cachedResource->addClient(&client);
+    ASSERT_EQ(0u, memoryCache()->deadSize());
+    ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
+
+    cachedResource->fakeEncodedSize(resourceSize2);
+    ASSERT_EQ(0u, memoryCache()->deadSize());
+    ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
 }
 
 // Verifies that dead resources that exceed dead resource capacity are evicted

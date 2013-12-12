@@ -145,16 +145,16 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL)
     return resource;
 }
 
-unsigned MemoryCache::deadCapacity() const
+size_t MemoryCache::deadCapacity() const
 {
     // Dead resource capacity is whatever space is not occupied by live resources, bounded by an independent minimum and maximum.
-    unsigned capacity = m_capacity - min(m_liveSize, m_capacity); // Start with available capacity.
+    size_t capacity = m_capacity - min(m_liveSize, m_capacity); // Start with available capacity.
     capacity = max(capacity, m_minDeadCapacity); // Make sure it's above the minimum.
     capacity = min(capacity, m_maxDeadCapacity); // Make sure it's below the maximum.
     return capacity;
 }
 
-unsigned MemoryCache::liveCapacity() const
+size_t MemoryCache::liveCapacity() const
 {
     // Live resource capacity is whatever is left over after calculating dead resource capacity.
     return m_capacity - deadCapacity();
@@ -163,11 +163,11 @@ unsigned MemoryCache::liveCapacity() const
 void MemoryCache::pruneLiveResources()
 {
     ASSERT(!m_prunePending);
-    unsigned capacity = liveCapacity();
+    size_t capacity = liveCapacity();
     if (!m_liveSize || (capacity && m_liveSize <= capacity))
         return;
 
-    unsigned targetSize = static_cast<unsigned>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
+    size_t targetSize = static_cast<size_t>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
 
     // Destroy any decoded data in live objects that we can.
     // Start from the tail, since this is the lowest priority
@@ -206,11 +206,11 @@ void MemoryCache::pruneLiveResources()
 
 void MemoryCache::pruneDeadResources()
 {
-    unsigned capacity = deadCapacity();
+    size_t capacity = deadCapacity();
     if (!m_deadSize || (capacity && m_deadSize <= capacity))
         return;
 
-    unsigned targetSize = static_cast<unsigned>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
+    size_t targetSize = static_cast<size_t>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
 
     int size = m_allResources.size();
 
@@ -280,7 +280,7 @@ void MemoryCache::pruneDeadResources()
     }
 }
 
-void MemoryCache::setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, unsigned totalBytes)
+void MemoryCache::setCapacities(size_t minDeadBytes, size_t maxDeadBytes, size_t totalBytes)
 {
     ASSERT(minDeadBytes <= maxDeadBytes);
     ASSERT(maxDeadBytes <= totalBytes);
@@ -305,7 +305,7 @@ void MemoryCache::evict(Resource* resource)
         // Remove from the appropriate LRU list.
         removeFromLRUList(resource);
         removeFromLiveDecodedResourcesList(resource);
-        adjustSize(resource->hasClients(), -static_cast<int>(resource->size()));
+        adjustSize(resource->hasClients(), -static_cast<ptrdiff_t>(resource->size()));
     } else {
         ASSERT(m_resources.get(resource->url()) != resource);
     }
@@ -476,23 +476,25 @@ void MemoryCache::insertInLiveDecodedResourcesList(Resource* resource)
 
 void MemoryCache::addToLiveResourcesSize(Resource* resource)
 {
+    ASSERT(m_deadSize >= resource->size());
     m_liveSize += resource->size();
     m_deadSize -= resource->size();
 }
 
 void MemoryCache::removeFromLiveResourcesSize(Resource* resource)
 {
+    ASSERT(m_liveSize >= resource->size());
     m_liveSize -= resource->size();
     m_deadSize += resource->size();
 }
 
-void MemoryCache::adjustSize(bool live, int delta)
+void MemoryCache::adjustSize(bool live, ptrdiff_t delta)
 {
     if (live) {
-        ASSERT(delta >= 0 || ((int)m_liveSize + delta >= 0));
+        ASSERT(delta >= 0 || m_liveSize >= static_cast<size_t>(-delta) );
         m_liveSize += delta;
     } else {
-        ASSERT(delta >= 0 || ((int)m_deadSize + delta >= 0));
+        ASSERT(delta >= 0 || m_deadSize >= static_cast<size_t>(-delta) );
         m_deadSize += delta;
     }
 }
@@ -517,7 +519,7 @@ void MemoryCache::TypeStatistic::addResource(Resource* o)
 {
     bool purged = o->wasPurged();
     bool purgeable = o->isPurgeable() && !purged;
-    int pageSize = (o->encodedSize() + o->overheadSize() + 4095) & ~4095;
+    size_t pageSize = (o->encodedSize() + o->overheadSize() + 4095) & ~4095;
     count++;
     size += purged ? 0 : o->size();
     liveSize += o->hasClients() ? o->size() : 0;
