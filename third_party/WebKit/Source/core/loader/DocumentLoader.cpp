@@ -198,7 +198,7 @@ void DocumentLoader::setMainDocumentError(const ResourceError& error)
 void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
-    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
+    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
     m_applicationCacheHost->failedLoadingMainResource();
     if (!frameLoader())
         return;
