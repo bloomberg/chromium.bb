@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -41,6 +42,7 @@ public class BrowserAccessibilityManager {
     private long mNativeObj;
     private int mAccessibilityFocusId;
     private int mCurrentHoverId;
+    private int mCurrentRootId;
     private final int[] mTempLocation = new int[2];
     private final View mView;
     private boolean mUserHasTouchExplored;
@@ -80,6 +82,7 @@ public class BrowserAccessibilityManager {
         mContentViewCore.setBrowserAccessibilityManager(this);
         mAccessibilityFocusId = View.NO_ID;
         mCurrentHoverId = View.NO_ID;
+        mCurrentRootId = View.NO_ID;
         mView = mContentViewCore.getContainerView();
         mRenderCoordinates = mContentViewCore.getRenderCoordinates();
         mAccessibilityManager =
@@ -107,25 +110,32 @@ public class BrowserAccessibilityManager {
      * @see AccessibilityNodeProvider#createAccessibilityNodeInfo(int)
      */
     protected AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0 || !mFrameInfoInitialized) {
+        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0) {
             return null;
         }
 
         int rootId = nativeGetRootId(mNativeObj);
+
         if (virtualViewId == View.NO_ID) {
-            virtualViewId = rootId;
+            return createNodeForHost(rootId);
         }
-        if (mAccessibilityFocusId == View.NO_ID) {
-            mAccessibilityFocusId = rootId;
+
+        if (!mFrameInfoInitialized) {
+            return null;
         }
 
         final AccessibilityNodeInfo info = AccessibilityNodeInfo.obtain(mView);
         info.setPackageName(mContentViewCore.getContext().getPackageName());
         info.setSource(mView, virtualViewId);
 
+        if (virtualViewId == rootId) {
+            info.setParent(mView);
+        }
+
         if (nativePopulateAccessibilityNodeInfo(mNativeObj, info, virtualViewId)) {
             return info;
         } else {
+            info.recycle();
             return null;
         }
     }
@@ -161,6 +171,8 @@ public class BrowserAccessibilityManager {
                 return true;
             case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
                 if (mAccessibilityFocusId == virtualViewId) {
+                    sendAccessibilityEvent(mAccessibilityFocusId,
+                            AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
                     mAccessibilityFocusId = View.NO_ID;
                 }
                 return true;
@@ -219,6 +231,10 @@ public class BrowserAccessibilityManager {
         if (mFrameInfoInitialized) return;
 
         mFrameInfoInitialized = true;
+        // Invalidate the host, since the chrome accessibility tree is now
+        // ready and listed as the child of the host.
+        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+
         // (Re-) focus focused element, since we weren't able to create an
         // AccessibilityNodeInfo for this element before.
         if (mAccessibilityFocusId != View.NO_ID) {
@@ -228,16 +244,21 @@ public class BrowserAccessibilityManager {
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0) return;
+        // If mFrameInfoInitialized is false, then the virtual hierarchy
+        // doesn't exist in the view of the Android framework, so should
+        // never send any events.
+        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0
+                || !mFrameInfoInitialized) {
+            return;
+        }
 
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
         event.setPackageName(mContentViewCore.getContext().getPackageName());
-        int rootId = nativeGetRootId(mNativeObj);
-        if (virtualViewId == rootId) {
-            virtualViewId = View.NO_ID;
-        }
         event.setSource(mView, virtualViewId);
-        if (!nativePopulateAccessibilityEvent(mNativeObj, event, virtualViewId, eventType)) return;
+        if (!nativePopulateAccessibilityEvent(mNativeObj, event, virtualViewId, eventType)) {
+            event.recycle();
+            return;
+        }
 
         // This is currently needed if we want Android to draw the yellow box around
         // the item that has accessibility focus. In practice, this doesn't seem to slow
@@ -257,6 +278,40 @@ public class BrowserAccessibilityManager {
         return bundle;
     }
 
+    private AccessibilityNodeInfo createNodeForHost(int rootId) {
+        // Since we don't want the parent to be focusable, but we can't remove
+        // actions from a node, copy over the necessary fields.
+        final AccessibilityNodeInfo result = AccessibilityNodeInfo.obtain(mView);
+        final AccessibilityNodeInfo source = AccessibilityNodeInfo.obtain(mView);
+        mView.onInitializeAccessibilityNodeInfo(source);
+
+        // Copy over parent and screen bounds.
+        Rect rect = new Rect();
+        source.getBoundsInParent(rect);
+        result.setBoundsInParent(rect);
+        source.getBoundsInScreen(rect);
+        result.setBoundsInScreen(rect);
+
+        // Set up the parent view, if applicable.
+        final ViewParent parent = mView.getParentForAccessibility();
+        if (parent instanceof View) {
+            result.setParent((View) parent);
+        }
+
+        // Populate the minimum required fields.
+        result.setVisibleToUser(source.isVisibleToUser());
+        result.setEnabled(source.isEnabled());
+        result.setPackageName(source.getPackageName());
+        result.setClassName(source.getClassName());
+
+        // Add the Chrome root node.
+        if (mFrameInfoInitialized) {
+            result.addChild(mView, rootId);
+        }
+
+        return result;
+    }
+
     @CalledByNative
     private void handlePageLoaded(int id) {
         if (mUserHasTouchExplored) return;
@@ -265,16 +320,19 @@ public class BrowserAccessibilityManager {
             // Focus the natively focused node (usually document),
             // if this feature is enabled.
             mAccessibilityFocusId = id;
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
         }
     }
 
     @CalledByNative
     private void handleFocusChanged(int id) {
-        if (mAccessibilityFocusId == id) return;
-
-        mAccessibilityFocusId = id;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
+
+        // Update accessibility focus if not already set to this node.
+        if (mAccessibilityFocusId != id) {
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+            mAccessibilityFocusId = id;
+        }
     }
 
     @CalledByNative
@@ -294,7 +352,13 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handleContentChanged(int id) {
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        int rootId = nativeGetRootId(mNativeObj);
+        if (rootId != mCurrentRootId) {
+            mCurrentRootId = rootId;
+            mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        } else {
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        }
     }
 
     @CalledByNative
@@ -302,6 +366,8 @@ public class BrowserAccessibilityManager {
         mAccessibilityFocusId = View.NO_ID;
         mUserHasTouchExplored = false;
         mFrameInfoInitialized = false;
+        // Invalidate the host, since its child is now gone.
+        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     @CalledByNative

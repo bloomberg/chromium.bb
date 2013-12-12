@@ -101,6 +101,9 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (obj.is_null())
     return;
 
+  if (event_type == blink::WebAXEventHide)
+    return;
+
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
   // node has changed.
