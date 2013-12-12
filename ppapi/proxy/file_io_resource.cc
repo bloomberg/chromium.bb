@@ -26,9 +26,10 @@ using ppapi::thunk::PPB_FileRef_API;
 namespace {
 
 // We must allocate a buffer sized according to the request of the plugin. To
-// reduce the chance of out-of-memory errors, we cap the read size to 32MB.
-// This is OK since the API specifies that it may perform a partial read.
-static const int32_t kMaxReadSize = 32 * 1024 * 1024;  // 32MB
+// reduce the chance of out-of-memory errors, we cap the read and write size to
+// 32MB. This is OK since the API specifies that it may perform a partial read
+// or write.
+static const int32_t kMaxReadWriteSize = 32 * 1024 * 1024;  // 32MB
 
 // An adapter to let Read() share the same implementation with ReadToArray().
 void* DummyGetDataBuffer(void* user_data, uint32_t count, uint32_t size) {
@@ -236,6 +237,7 @@ int32_t FileIOResource::Write(int64_t offset,
   // TODO(brettw) it would be nice to use a shared memory buffer for large
   // writes rather than having to copy to a string (which will involve a number
   // of extra copies to serialize over IPC).
+  bytes_to_write = std::min(bytes_to_write, kMaxReadWriteSize);
   Call<PpapiPluginMsg_FileIO_GeneralReply>(BROWSER,
       PpapiHostMsg_FileIO_Write(offset, std::string(buffer, bytes_to_write)),
       base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this,
@@ -330,7 +332,7 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_READ);
 
-  bytes_to_read = std::min(bytes_to_read, kMaxReadSize);
+  bytes_to_read = std::min(bytes_to_read, kMaxReadWriteSize);
   if (callback->is_blocking()) {
     char* buffer = static_cast<char*>(
         array_output.GetDataBuffer(array_output.user_data, bytes_to_read, 1));
