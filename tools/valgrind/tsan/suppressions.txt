@@ -568,7 +568,7 @@
   bug_93932_g
   ThreadSanitizer:Race
   ...
-  fun:frame_thread_free
+  fun:ff_frame_thread_free
   ...
   fun:avcodec_close
 }
