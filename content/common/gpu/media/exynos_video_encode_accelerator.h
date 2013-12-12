@@ -11,6 +11,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "content/common/content_export.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/size.h"
 
@@ -32,7 +33,8 @@ namespace content {
 // V4L2 devices exported by the Multi Format Codec and GScaler hardware blocks
 // on the Exynos platform.  The threading model of this class is the same as the
 // ExynosVideoDecodeAccelerator (from which class this was designed).
-class ExynosVideoEncodeAccelerator : public media::VideoEncodeAccelerator {
+class CONTENT_EXPORT ExynosVideoEncodeAccelerator
+    : public media::VideoEncodeAccelerator {
  public:
   explicit ExynosVideoEncodeAccelerator(
       media::VideoEncodeAccelerator::Client* client);
