@@ -114,7 +114,9 @@ def generate_interface(interface):
         'conditional_string': conditional_string(interface),  # [Conditional]
         'constructor_argument_list': constructor_argument_list(interface),
         'constructor_arguments': constructor_arguments(interface),
-        'constructor_method': {},  # stub for generating arguments
+        'constructor_method': {
+            'is_constructor': True,
+        },
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_constructor': has_constructor,
@@ -339,10 +341,18 @@ def constructor_arguments(interface):
     if not interface.constructors:
         return []
     constructor = interface.constructors[0]  # FIXME: support overloading
-    return [{'v8_value_to_local_cpp_value':
-                v8_methods.v8_value_to_local_cpp_value(argument, index),
-            }
+    return [constructor_argument(argument, index)
             for index, argument in enumerate(constructor.arguments)]
+
+
+def constructor_argument(argument, index):
+    return {
+        'idl_type': argument.idl_type,
+        'index': index,
+        'name': argument.name,
+        'v8_value_to_local_cpp_value':
+            v8_methods.v8_value_to_local_cpp_value(argument, index),
+    }
 
 
 def interface_length(interface):

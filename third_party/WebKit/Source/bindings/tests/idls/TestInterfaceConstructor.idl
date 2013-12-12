@@ -29,7 +29,11 @@
  */
 
 [
-    Constructor(DOMString stringArgument, DOMString stringArgument2),
+    Constructor(double doubleArg,
+                DOMString stringArg,
+                TestInterfaceEmpty testInterfaceEmptyArg,
+                Dictionary dictionaryArg,
+                sequence<DOMString> sequenceStringArg),
     ConstructorCallWith=ExecutionContext&Document,
     MeasureAs=TestFeature,
     RaisesException=Constructor,

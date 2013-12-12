@@ -129,7 +129,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 
 
 {##############################################################################}
-{% from 'methods.cpp' import generate_argument %}
+{% from 'methods.cpp' import generate_argument with context %}
 {% block constructor %}
 {% if has_constructor %}
 {# FIXME: support overloading #}

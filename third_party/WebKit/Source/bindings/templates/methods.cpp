@@ -110,6 +110,13 @@ if (state.hadException()) {
 
 {######################################}
 {% macro generate_argument(method, argument) %}
+{% macro throw_type_error(error_message) %}
+{% if method.is_constructor %}
+throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "{{error_message}}"), info.GetIsolate());
+{%- else %}
+throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "{{error_message}}"), info.GetIsolate());
+{%- endif %}
+{% endmacro %}
 {% if argument.is_optional and not argument.has_default and
       argument.idl_type != 'Dictionary' %}
 {# Optional arguments without a default value generate an early call with
@@ -124,7 +131,8 @@ if (UNLIKELY(info.Length() <= {{argument.index}})) {
 {# Type checking for wrapper interface types (if interface not implemented,
    throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
 if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
-    throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
+    {{throw_type_error("parameter %s is not of type '%s'." %
+                       (argument.index + 1, argument.idl_type))}}
     return;
 }
 {% endif %}
@@ -145,7 +153,8 @@ if ({{argument.name}}DidThrow)
 Vector<{{argument.cpp_type}} > {{argument.name}};
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
+        {{throw_type_error("parameter %s is not of type '%s'." %
+                           (argument.index + 1, argument.idl_type))}}
         return;
     }
     {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(info[i])));
@@ -157,13 +166,14 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
 {# Methods throw on invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
 String string = {{argument.name}};
 if (!({{argument.enum_validation_expression}})) {
-    throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('" + string + "') is not a valid enum value."), info.GetIsolate());
+    {{throw_type_error("parameter %s ('\" + string + \"') is not a valid enum value." % (argument.index + 1))}}
     return;
 }
 {% endif %}
 {% if argument.idl_type in ['Dictionary', 'Promise'] %}
 if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
-    throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('{{argument.name}}') is not an object."), info.GetIsolate());
+    {{throw_type_error("parameter %s ('%s') is not an object." %
+                       (argument.index + 1, argument.name))}}
     return;
 }
 {% endif %}
