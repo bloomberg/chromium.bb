@@ -513,9 +513,8 @@ void AppsGridView::CleanUpSynchronousDrag() {
 
 void AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
-  // EndDrag was called before if |drag_view_| is NULL.
-  if (!drag_view_)
-    return;
+  DCHECK(drag_view_);
+
   gfx::Point drag_point_in_grid_view;
   ExtractDragLocation(event, &drag_point_in_grid_view);
   UpdateDrag(pointer, drag_point_in_grid_view);

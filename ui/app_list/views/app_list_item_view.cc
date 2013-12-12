@@ -407,7 +407,8 @@ void AppListItemView::OnMouseCaptureLost() {
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event);
+  if (apps_grid_view_->IsDraggedView(this))
+    apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event);
 
   // Shows dragging UI when it's confirmed without waiting for the timer.
   if (ui_state_ != UI_STATE_DRAGGING &&
@@ -428,7 +429,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      if (touch_dragging_) {
+      if (touch_dragging_ && apps_grid_view_->IsDraggedView(this)) {
         apps_grid_view_->UpdateDragFromItem(AppsGridView::TOUCH, *event);
         event->SetHandled();
       }
