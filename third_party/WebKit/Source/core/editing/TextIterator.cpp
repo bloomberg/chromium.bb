@@ -238,7 +238,7 @@ static void setUpFullyClippedStack(BitStack& stack, Node* node)
 
 // --------
 
-TextIterator::TextIterator(const Range* range, TextIteratorBehavior behavior)
+TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavior)
     : m_shadowDepth(0)
     , m_startContainer(0)
     , m_startOffset(0)
@@ -1147,7 +1147,7 @@ Node* TextIterator::node() const
 
 // --------
 
-SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r, TextIteratorBehavior behavior)
+SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r, TextIteratorBehaviorFlags behavior)
     : m_node(0)
     , m_offset(0)
     , m_handledNode(false)
@@ -1429,7 +1429,7 @@ PassRefPtr<Range> SimplifiedBackwardsTextIterator::range() const
 
 // --------
 
-CharacterIterator::CharacterIterator(const Range* r, TextIteratorBehavior behavior)
+CharacterIterator::CharacterIterator(const Range* r, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
@@ -1528,7 +1528,7 @@ static PassRefPtr<Range> characterSubrange(CharacterIterator& it, int offset, in
         end->endContainer(), end->endOffset());
 }
 
-BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range, TextIteratorBehavior behavior)
+BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
@@ -1997,7 +1997,7 @@ PassRefPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset
 
 // --------
 
-String plainText(const Range* r, TextIteratorBehavior defaultBehavior)
+String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
 {
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
     static const unsigned initialCapacity = 1 << 15;
@@ -2006,7 +2006,7 @@ String plainText(const Range* r, TextIteratorBehavior defaultBehavior)
     StringBuilder builder;
     builder.reserveCapacity(initialCapacity);
 
-    for (TextIterator it(r, defaultBehavior); !it.atEnd(); it.advance()) {
+    for (TextIterator it(r, behavior); !it.atEnd(); it.advance()) {
         it.appendTextToStringBuilder(builder);
         bufferLength += it.length();
     }
@@ -2079,14 +2079,14 @@ PassRefPtr<Range> findPlainText(const Range* range, const String& target, FindOp
     size_t matchStart;
     size_t matchLength;
     {
-        CharacterIterator findIterator(range, static_cast<TextIteratorBehavior>(TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots));
+        CharacterIterator findIterator(range, TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots);
         matchLength = findPlainText(findIterator, target, options, matchStart);
         if (!matchLength)
             return collapsedToBoundary(range, !(options & Backwards));
     }
 
     // Then, find the document position of the start and the end of the text.
-    CharacterIterator computeRangeIterator(range, static_cast<TextIteratorBehavior>(TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots));
+    CharacterIterator computeRangeIterator(range, TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots);
     return characterSubrange(computeRangeIterator, matchStart, matchLength);
 }
 

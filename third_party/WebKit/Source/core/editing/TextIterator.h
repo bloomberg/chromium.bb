@@ -46,6 +46,7 @@ enum TextIteratorBehavior {
     TextIteratorEmitsImageAltText = 1 << 5,
     TextIteratorEntersAuthorShadowRoots = 1 << 6
 };
+typedef unsigned TextIteratorBehaviorFlags;
 
 // FIXME: Can't really answer this question correctly without knowing the white-space mode.
 // FIXME: Move this somewhere else in the editing directory. It doesn't belong here.
@@ -60,7 +61,7 @@ inline bool isCollapsibleWhitespace(UChar c)
     }
 }
 
-String plainText(const Range*, TextIteratorBehavior defaultBehavior = TextIteratorDefaultBehavior);
+String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 PassRefPtr<Range> findPlainText(const Range*, const String&, FindOptions);
 
 class BitStack {
@@ -85,7 +86,7 @@ private:
 
 class TextIterator {
 public:
-    explicit TextIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
+    explicit TextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     ~TextIterator();
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
@@ -220,7 +221,7 @@ private:
 // chunks so as to optimize for performance of the iteration.
 class SimplifiedBackwardsTextIterator {
 public:
-    explicit SimplifiedBackwardsTextIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
+    explicit SimplifiedBackwardsTextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
@@ -302,7 +303,7 @@ private:
 // character at a time, or faster, as needed. Useful for searching.
 class CharacterIterator {
 public:
-    explicit CharacterIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
+    explicit CharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int numCharacters);
 
@@ -330,7 +331,7 @@ private:
 
 class BackwardsCharacterIterator {
 public:
-    explicit BackwardsCharacterIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
+    explicit BackwardsCharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int);
 
