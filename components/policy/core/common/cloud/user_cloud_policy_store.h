@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_STORE_H_
-#define CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_STORE_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_H_
+#define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_H_
 
 #include <string>
 
@@ -11,7 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
+#include "components/policy/policy_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -22,7 +23,7 @@ namespace policy {
 // Implements a cloud policy store that is stored in a simple file in the user's
 // profile directory. This is used on (non-chromeos) platforms that do not have
 // a secure storage implementation.
-class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
+class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
  public:
   // Creates a policy store associated with a signed-in (or in the progress of
   // it) user.
@@ -89,4 +90,4 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_STORE_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_H_

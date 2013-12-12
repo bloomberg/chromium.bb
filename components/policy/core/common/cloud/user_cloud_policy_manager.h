@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
-#define CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
 
 #include <string>
 
@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
+#include "components/policy/policy_export.h"
 
 class PrefService;
 
@@ -31,7 +32,7 @@ class DeviceManagementService;
 class UserCloudPolicyStore;
 
 // UserCloudPolicyManager handles initialization of user policy.
-class UserCloudPolicyManager : public CloudPolicyManager {
+class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
  public:
   // |task_runner| is the runner for policy refresh tasks.
   // |file_task_runner| is used for file operations. Currently this must be
@@ -93,4 +94,4 @@ class UserCloudPolicyManager : public CloudPolicyManager {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_MANAGER_H_

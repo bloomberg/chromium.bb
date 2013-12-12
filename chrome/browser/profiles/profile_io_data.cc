@@ -83,9 +83,9 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/cloud/policy_header_service.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/browser/policy_header_io_helper.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)

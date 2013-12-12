@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
-#define CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
+#define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
 
 #include <string>
 
@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/policy_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -22,7 +23,7 @@ namespace policy {
 
 // Base class that implements common cross-platform UserCloudPolicyStore
 // functionality.
-class UserCloudPolicyStoreBase : public CloudPolicyStore {
+class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
  public:
   explicit UserCloudPolicyStoreBase(
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
@@ -53,4 +54,4 @@ class UserCloudPolicyStoreBase : public CloudPolicyStore {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_STORE_BASE_H_

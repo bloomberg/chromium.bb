@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 
 namespace base {
 class SequencedTaskRunner;

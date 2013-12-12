@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_MOCK_USER_CLOUD_POLICY_STORE_H_
-#define CHROME_BROWSER_POLICY_CLOUD_MOCK_USER_CLOUD_POLICY_STORE_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_MOCK_USER_CLOUD_POLICY_STORE_H_
+#define COMPONENTS_POLICY_CORE_COMMON_CLOUD_MOCK_USER_CLOUD_POLICY_STORE_H_
 
-#include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
@@ -35,4 +35,4 @@ class MockUserCloudPolicyStore : public UserCloudPolicyStore {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_MOCK_USER_CLOUD_POLICY_STORE_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_MOCK_USER_CLOUD_POLICY_STORE_H_

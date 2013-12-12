@@ -1,14 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
-#include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
 

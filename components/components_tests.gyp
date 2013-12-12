@@ -189,6 +189,9 @@
             }],
             ['configuration_policy==1', {
               'dependencies': [
+                # TODO(joaodasilva): remove this dependency. This is needed to
+                # get the include path for policy_constants.h.
+                '../chrome/app/policy/cloud_policy_codegen.gyp:policy_test_support',
                 'components.gyp:policy_component_test_support',
               ],
               'sources': [
@@ -208,6 +211,8 @@
                 'policy/core/common/cloud/external_policy_data_updater_unittest.cc',
                 'policy/core/common/cloud/rate_limiter_unittest.cc',
                 'policy/core/common/cloud/resource_cache_unittest.cc',
+                'policy/core/common/cloud/user_cloud_policy_manager_unittest.cc',
+                'policy/core/common/cloud/user_cloud_policy_store_unittest.cc',
                 'policy/core/common/cloud/user_info_fetcher_unittest.cc',
                 'policy/core/common/config_dir_policy_loader_unittest.cc',
                 'policy/core/common/forwarding_policy_provider_unittest.cc',
@@ -234,6 +239,12 @@
                     'policy/core/common/cloud/external_policy_data_updater_unittest.cc',
                     'policy/core/common/cloud/resource_cache_unittest.cc',
                     'policy/core/common/config_dir_policy_loader_unittest.cc',
+                  ],
+                }],
+                ['chromeos==1', {
+                  'sources!': [
+                    'policy/core/common/cloud/user_cloud_policy_manager_unittest.cc',
+                    'policy/core/common/cloud/user_cloud_policy_store_unittest.cc',
                   ],
                 }],
               ],
