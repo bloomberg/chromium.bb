@@ -38,9 +38,6 @@
 #import "client/mac/crash_generation/ConfigFile.h"
 #import "client/mac/handler/minidump_generator.h"
 
-extern bool gDebugLog;
-
-#define DEBUGLOG if (gDebugLog) fprintf
 
 // Types of mach messsages (message IDs)
 enum {
@@ -87,7 +84,6 @@ class MinidumpLocation {
     // Ensure that the path exists.  Fallback to /tmp if unable to locate path.
     assert(minidumpDir);
     if (!EnsureDirectoryPathExists(minidumpDir)) {
-      DEBUGLOG(stderr, "Unable to create: %s\n", [minidumpDir UTF8String]);
       minidumpDir = @"/tmp";
     }
 
