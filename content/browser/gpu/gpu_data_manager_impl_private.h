@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -163,6 +164,19 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   typedef ObserverListThreadSafe<GpuDataManagerObserver>
       GpuDataManagerObserverList;
 
+  struct LogMessage {
+    int level;
+    std::string header;
+    std::string message;
+
+    LogMessage(int _level,
+               const std::string& _header,
+               const std::string& _message)
+        : level(_level),
+          header(_header),
+          message(_message) { }
+  };
+
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
 
   void InitializeImpl(const std::string& gpu_blacklist_json,
@@ -211,7 +225,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
-  base::ListValue log_messages_;
+  std::vector<LogMessage> log_messages_;
 
   bool use_swiftshader_;
 
