@@ -13,7 +13,6 @@
 
 #include "base/file_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,6 +42,54 @@ using content::BrowserThread;
 // to do that is: "bitsadmin /list /verbose". Another useful command is
 // "bitsadmin /info" and provide the job id returned by the previous /list
 // command.
+//
+// Ignoring the suspend/resume issues since this code is not using them, the
+// job state machine implemented by BITS is something like this:
+//
+//  Suspended--->Queued--->Connecting---->Transferring--->Transferred
+//       |          ^         |                 |               |
+//       |          |         V                 V               | (complete)
+//       +----------|---------+-----------------+-----+         V
+//                  |         |                 |     |    Acknowledged
+//                  |         V                 V     |
+//                  |  Transient Error------->Error   |
+//                  |         |                 |     |(cancel)
+//                  |         +-------+---------+--->-+
+//                  |                 V               |
+//                  |   (resume)      |               |
+//                  +------<----------+               +---->Cancelled
+//
+// The job is created in the "suspended" state. Once |Resume| is called,
+// BITS queues up the job, then tries to connect, begins transferring the
+// job bytes, and moves the job to the "transferred state, after the job files
+// have been transferred. When calling |Complete| for a job, the job files are
+// made available to the caller, and the job is moved to the "acknowledged"
+// state.
+// At any point, the job can be cancelled, in which case, the job is moved
+// to the "cancelled state" and the job object is removed from the BITS queue.
+// Along the way, the job can encounter recoverable and non-recoverable errors.
+// BITS moves the job to "transient error" or "error", depending on which kind
+// of error has occured.
+// If  the job has reached the "transient error" state, BITS retries the
+// job after a certain programmable delay. If the job can't be completed in a
+// certain time interval, BITS stops retrying and errors the job out. This time
+// interval is also programmable.
+// If the job is in either of the error states, the job parameters can be
+// adjusted to handle the error, after which the job can be resumed, and the
+// whole cycle starts again.
+// Jobs that are not touched in 90 days (or a value set by group policy) are
+// automatically disposed off by BITS. This concludes the brief description of
+// a job lifetime, according to BITS.
+//
+// In addition to how BITS is managing the life time of the job, there are a
+// couple of special cases defined by the BackgroundDownloader.
+// First, if the job encounters any of the 5xx HTTP responses, the job is
+// not retried, in order to avoid DDOS-ing the servers.
+// Second, there is a simple mechanism to detect stuck jobs, and allow the rest
+// of the code to move on to trying other urls or trying other components.
+// Last, after completing a job, irrespective of the outcome, the jobs older
+// than a week are proactively cleaned up.
+
 namespace component_updater {
 
 namespace {
@@ -54,10 +101,25 @@ const char16 kJobDescription[] = L"Chrome Component Updater";
 // How often the code looks for changes in the BITS job state.
 const int kJobPollingIntervalSec = 10;
 
+// How long BITS waits before retrying a job after the job encountered
+// a transient error. If this value is not set, the BITS default is 10 minutes.
+const int kMinimumRetryDelayMin = 1;
+
+// How long to wait for stuck jobs. Stuck jobs could be queued for too long,
+// have trouble connecting, could be suspended for any reason, or they have
+// encountered some transient error.
+const int kJobStuckTimeoutMin = 15;
+
+// How long BITS waits before giving up on a job that could not be completed
+// since the job has encountered its first transient error. If this value is
+// not set, the BITS default is 14 days.
+const int kSetNoProgressTimeoutDays = 1;
+
 // How often the jobs which were started but not completed for any reason
 // are cleaned up. Reasons for jobs to be left behind include browser restarts,
 // system restarts, etc. Also, the check to purge stale jobs only happens
-// at most once a day.
+// at most once a day. If the job clean up code is not running, the BITS
+// default policy is to cancel jobs after 90 days of inactivity.
 const int kPurgeStaleJobsAfterDays = 7;
 const int kPurgeStaleJobsIntervalBetweenChecksDays = 1;
 
@@ -134,6 +196,26 @@ HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
 HRESULT GetJobDescription(IBackgroundCopyJob* job, const base::string16* name) {
   ScopedCoMem<char16> description;
   return job->GetDescription(&description);
+}
+
+// Returns the job error code in |error_code| if the job is in the transient
+// or the final error state. Otherwise, the job error is not available and
+// the function fails.
+HRESULT GetJobError(IBackgroundCopyJob* job, HRESULT* error_code_out) {
+  *error_code_out = S_OK;
+  ScopedComPtr<IBackgroundCopyError> copy_error;
+  HRESULT hr = job->GetError(copy_error.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  BG_ERROR_CONTEXT error_context = BG_ERROR_CONTEXT_NONE;
+  HRESULT error_code = S_OK;
+  hr = copy_error->GetError(&error_context, &error_code);
+  if (FAILED(hr))
+    return hr;
+
+  *error_code_out = FAILED(error_code) ? error_code : E_FAIL;
+  return S_OK;
 }
 
 // Finds the component updater jobs matching the given predicate.
@@ -265,13 +347,11 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
 
   HRESULT hr = QueueBitsJob(url);
   if (FAILED(hr)) {
-    if (job_) {
-      job_->Cancel();
-      job_ = NULL;
-    }
     EndDownload(hr);
     return;
   }
+
+  job_stuck_begin_time_ = base::Time::Now();
 
   // A repeating timer retains the user task. This timer can be stopped and
   // reset multiple times.
@@ -286,7 +366,11 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
 void BackgroundDownloader::OnDownloading() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  timer_->Stop();
+  DCHECK(job_);
+
+  DCHECK(!is_completed_);
+  if (is_completed_)
+    return;
 
   BG_JOB_STATE job_state = BG_JOB_STATE_ERROR;
   HRESULT hr = job_->GetState(&job_state);
@@ -312,18 +396,25 @@ void BackgroundDownloader::OnDownloading() {
       OnStateAcknowledged();
       return;
 
-    // TODO: handle the non-final states, so that the download does not get
-    // stuck if BITS is not able to make progress on a given url.
-    case BG_JOB_STATE_TRANSIENT_ERROR:
     case BG_JOB_STATE_QUEUED:
+      // Fall through.
     case BG_JOB_STATE_CONNECTING:
-    case BG_JOB_STATE_TRANSFERRING:
+      // Fall through.
     case BG_JOB_STATE_SUSPENDED:
+      OnStateQueued();
+      break;
+
+    case BG_JOB_STATE_TRANSIENT_ERROR:
+      OnStateTransientError();
+      break;
+
+    case BG_JOB_STATE_TRANSFERRING:
+      OnStateTransferring();
+      break;
+
     default:
       break;
   }
-
-  timer_->Reset();
 }
 
 // Completes the BITS download, picks up the file path of the response, and
@@ -332,32 +423,35 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DCHECK(!is_completed_);
-  if (is_completed_)
-    return;
-
   is_completed_ = true;
 
-  DCHECK(!timer_->IsRunning());
   timer_.reset();
 
   base::FilePath response;
-  HRESULT hr = error;
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(error)) {
+    DCHECK(job_);
     std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
     GetFilesInJob(job_, &files);
     DCHECK(files.size() == 1);
     base::string16 local_name;
     BG_FILE_PROGRESS progress = {0};
-    hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);
+    HRESULT hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);
     if (SUCCEEDED(hr)) {
       DCHECK(progress.Completed);
       response = base::FilePath(local_name);
+    } else {
+      error = hr;
     }
   }
 
+  if (FAILED(error) && job_)
+    job_->Cancel();
+
+  job_ = NULL;
+
   // Consider the url handled if it has been successfully downloaded or a
   // 5xx has been received.
-  const bool is_handled = SUCCEEDED(hr) ||
+  const bool is_handled = SUCCEEDED(error) ||
                           IsHttpServerError(GetHttpStatusFromBitsError(error));
 
   Result result;
@@ -382,29 +476,50 @@ void BackgroundDownloader::OnStateTransferred() {
   HRESULT hr = job_->Complete();
   if (SUCCEEDED(hr) || hr == BG_S_UNABLE_TO_DELETE_FILES)
     hr = S_OK;
-  else
-    job_->Cancel();
-
   EndDownload(hr);
 }
 
 // Called when the job has encountered an error and no further progress can
 // be made. Cancels this job and removes it from the BITS queue.
 void BackgroundDownloader::OnStateError() {
-  ScopedComPtr<IBackgroundCopyError> copy_error;
-  HRESULT hr = job_->GetError(copy_error.Receive());
-  if (SUCCEEDED(hr)) {
-    BG_ERROR_CONTEXT error_context = BG_ERROR_CONTEXT_NONE;
-    HRESULT error_code = E_FAIL;
-    hr = copy_error->GetError(&error_context, &error_code);
-    if (SUCCEEDED(hr)) {
-      EndDownload(error_code);
-      return;
-    }
+  HRESULT error_code = S_OK;
+  HRESULT hr = GetJobError(job_, &error_code);
+  if (FAILED(hr))
+    error_code = hr;
+  DCHECK(FAILED(error_code));
+  EndDownload(error_code);
+}
+
+// Called when the job has encountered a transient error, such as a
+// network disconnect, a server error, or some other recoverable error.
+void BackgroundDownloader::OnStateTransientError() {
+  // If the job appears to be stuck, handle the transient error as if
+  // it were a final error. This causes the job to be cancelled and a specific
+  // error be returned, if the error was available.
+  if (IsStuck()) {
+    OnStateError();
+    return;
   }
 
-  job_->Cancel();
-  EndDownload(hr);
+  // Don't retry at all if the transient error was a 5xx.
+  HRESULT error_code = S_OK;
+  HRESULT hr = GetJobError(job_, &error_code);
+  if (SUCCEEDED(hr) &&
+      IsHttpServerError(GetHttpStatusFromBitsError(error_code))) {
+    OnStateError();
+    return;
+  }
+}
+
+void BackgroundDownloader::OnStateQueued() {
+  if (IsStuck())
+    EndDownload(E_ABORT);      // Return a generic error for now.
+}
+
+void BackgroundDownloader::OnStateTransferring() {
+  // Resets the baseline for detecting a stuck job since the job is transferring
+  // data and it is making progress.
+  job_stuck_begin_time_ = base::Time::Now();
 }
 
 // Called when the download was cancelled. Since the observer should have
@@ -496,8 +611,24 @@ HRESULT BackgroundDownloader::InitializeNewJob(const GURL& url) {
   if (FAILED(hr))
     return hr;
 
+  hr = job_->SetMinimumRetryDelay(60 * kMinimumRetryDelayMin);
+  if (FAILED(hr))
+    return hr;
+
+  const int kSecondsDay = 60 * 60 * 24;
+  hr = job_->SetNoProgressTimeout(kSecondsDay * kSetNoProgressTimeoutDays);
+  if (FAILED(hr))
+    return hr;
+
   return S_OK;
 }
+
+bool BackgroundDownloader::IsStuck() {
+  const base::TimeDelta job_stuck_timeout(
+      base::TimeDelta::FromMinutes(kJobStuckTimeoutMin));
+  return job_stuck_begin_time_ + job_stuck_timeout < base::Time::Now();
+}
+
 
 // Cleans up incompleted jobs that are too old.
 HRESULT BackgroundDownloader::CleanupStaleJobs(

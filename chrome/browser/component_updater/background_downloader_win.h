@@ -11,6 +11,7 @@
 #include <bits.h>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
 
@@ -45,9 +46,23 @@ class BackgroundDownloader : public CrxDownloader {
   void OnStateCancelled();
   void OnStateAcknowledged();
 
+  // Handles the transition to a transient state where the job is in the
+  // queue but not actively transferring data.
+  void OnStateQueued();
+
+  // Handles the job state transition to a transient, non-final error state.
+  void OnStateTransientError();
+
+  // Handles the job state corresponding to transferring data.
+  void OnStateTransferring();
+
   HRESULT QueueBitsJob(const GURL& url);
   HRESULT CreateOrOpenJob(const GURL& url);
   HRESULT InitializeNewJob(const GURL& url);
+
+  // Returns true if at the time of the call, it appears that the job
+  // has not been making progress toward completion.
+  bool IsStuck();
 
   static HRESULT CleanupStaleJobs(
     base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager);
@@ -60,6 +75,7 @@ class BackgroundDownloader : public CrxDownloader {
   base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager_;
   base::win::ScopedComPtr<IBackgroundCopyJob> job_;
 
+  base::Time job_stuck_begin_time_;
   bool is_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundDownloader);
