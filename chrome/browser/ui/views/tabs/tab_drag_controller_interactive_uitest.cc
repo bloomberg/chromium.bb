@@ -366,9 +366,9 @@ class DetachToBrowserTabDragControllerTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kTabBrowserDragging);
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
-    if (!docked_windows_enabled()) {
+    if (docked_windows_enabled()) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshDisableDockedWindows);
+          ash::switches::kAshEnableDockedWindows);
     }
 #endif
   }

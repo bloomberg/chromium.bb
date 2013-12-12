@@ -91,8 +91,8 @@ const char kAshEnableAlternateFrameCaptionButtonStyle[] =
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
-// Disable ability to dock windows at the desktop edge.
-const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
+// Enable ability to dock windows at the desktop edge.
+const char kAshEnableDockedWindows[] = "ash-enable-docked-windows";
 
 // Disable dragging items off the shelf to unpin them.
 const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
@@ -251,7 +251,7 @@ bool UseOverviewMode() {
 }
 
 bool UseDockedWindows() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableDockedWindows);
+  return CommandLine::ForCurrentProcess()->HasSwitch(kAshEnableDockedWindows);
 }
 
 #if defined(OS_CHROMEOS)
