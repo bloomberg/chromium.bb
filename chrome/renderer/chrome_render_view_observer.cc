@@ -572,6 +572,39 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
   return allowed;
 }
 
+#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
+bool ChromeRenderViewObserver::allowWebComponents(WebFrame* frame,
+                                                  bool defaultValue) {
+  if (defaultValue)
+    return true;
+
+  WebSecurityOrigin origin = frame->document().securityOrigin();
+  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+    return true;
+
+  if (const extensions::Extension* extension = GetExtension(origin)) {
+    if (extension->HasAPIPermission(APIPermission::kExperimental))
+      return true;
+  }
+
+  return false;
+}
+
+bool ChromeRenderViewObserver::allowMutationEvents(WebFrame* frame,
+                                                   bool default_value) {
+  WebSecurityOrigin origin = frame->document().securityOrigin();
+  const extensions::Extension* extension = GetExtension(origin);
+  if (extension && extension->is_platform_app())
+    return false;
+  return default_value;
+}
+
+bool ChromeRenderViewObserver::allowPushState(WebFrame* frame) {
+  WebSecurityOrigin origin = frame->document().securityOrigin();
+  const extensions::Extension* extension = GetExtension(origin);
+  return !extension || !extension->is_platform_app();
+}
+#else
 bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
                                                   bool defaultValue) {
   if (defaultValue)
@@ -603,6 +636,7 @@ bool ChromeRenderViewObserver::allowPushState(const WebDocument& document) {
   const extensions::Extension* extension = GetExtension(origin);
   return !extension || !extension->is_platform_app();
 }
+#endif
 
 static void SendInsecureContentSignal(int signal) {
   UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,
