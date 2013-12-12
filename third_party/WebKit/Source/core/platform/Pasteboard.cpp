@@ -31,14 +31,7 @@
 #include "config.h"
 #include "core/platform/Pasteboard.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#include "core/dom/Element.h"
-#include "core/fetch/ImageResource.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
@@ -85,34 +78,14 @@ void Pasteboard::writePlainText(const String& text, SmartReplaceOption)
 #endif
 }
 
-void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
+void Pasteboard::writeImage(Image* image, const KURL& url, const String& title)
 {
-    ASSERT(node);
-
-    if (!(node->renderer() && node->renderer()->isImage()))
-        return;
-
-    RenderImage* renderer = toRenderImage(node->renderer());
-    ImageResource* cachedImage = renderer->cachedImage();
-    if (!cachedImage || cachedImage->errorOccurred())
-        return;
-    Image* image = cachedImage->imageForRenderer(renderer);
     ASSERT(image);
 
     RefPtr<NativeImageSkia> bitmap = image->nativeImageForCurrentFrame();
     if (!bitmap)
         return;
 
-    // If the image is wrapped in a link, |url| points to the target of the
-    // link. This isn't useful to us, so get the actual image URL.
-    AtomicString urlString;
-    if (node->hasTagName(HTMLNames::imgTag) || node->hasTagName(HTMLNames::inputTag))
-        urlString = toElement(node)->getAttribute(HTMLNames::srcAttr);
-    else if (node->hasTagName(SVGNames::imageTag))
-        urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
-    else if (node->hasTagName(HTMLNames::embedTag) || node->hasTagName(HTMLNames::objectTag))
-        urlString = toElement(node)->imageSourceURL();
-    KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
     blink::WebImage webImage = bitmap->bitmap();
     blink::Platform::current()->clipboard()->writeImage(webImage, blink::WebURL(url), blink::WebString(title));
 }

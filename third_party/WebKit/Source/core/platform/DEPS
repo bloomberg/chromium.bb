@@ -11,7 +11,5 @@ include_rules = [
     # Please don't add anything to this list of exceptions.
     "!core/dom",
     "!core/fileapi",
-    "!core/html",
-    "!core/fetch",
     "!core/rendering",
 ]

@@ -29,6 +29,8 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "SVGNames.h"
+#include "XLinkNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -61,10 +63,12 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/TextEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
@@ -76,7 +80,9 @@
 #include "core/platform/Pasteboard.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderImage.h"
 #include "platform/KillRing.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
@@ -416,6 +422,34 @@ void Editor::writeSelectionToPasteboard(Pasteboard* pasteboard, Range* selectedR
     String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
     KURL url = selectedRange->startContainer()->document().url();
     pasteboard->writeHTML(html, url, plainText, canSmartCopyOrDelete());
+}
+
+static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const String& title)
+{
+    ASSERT(pasteboard);
+    ASSERT(node);
+
+    if (!(node->renderer() && node->renderer()->isImage()))
+        return;
+
+    RenderImage* renderer = toRenderImage(node->renderer());
+    ImageResource* cachedImage = renderer->cachedImage();
+    if (!cachedImage || cachedImage->errorOccurred())
+        return;
+    Image* image = cachedImage->imageForRenderer(renderer);
+    ASSERT(image);
+
+    // FIXME: This should probably be reconciled with HitTestResult::absoluteImageURL.
+    AtomicString urlString;
+    if (node->hasTagName(imgTag) || node->hasTagName(inputTag))
+        urlString = toElement(node)->getAttribute(srcAttr);
+    else if (node->hasTagName(SVGNames::imageTag))
+        urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
+    else if (node->hasTagName(embedTag) || node->hasTagName(objectTag))
+        urlString = toElement(node)->imageSourceURL();
+    KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+
+    pasteboard->writeImage(image, url, title);
 }
 
 // Returns whether caller should continue with "the default processing", which is the same as
@@ -922,7 +956,7 @@ void Editor::copy()
     } else {
         Document* document = m_frame.document();
         if (HTMLImageElement* imageElement = imageElementFromImageDocument(document))
-            Pasteboard::generalPasteboard()->writeImage(imageElement, document->url(), document->title());
+            writeImageNodeToPasteboard(Pasteboard::generalPasteboard(), imageElement, document->title());
         else
             writeSelectionToPasteboard(Pasteboard::generalPasteboard(), selectedRange().get(), m_frame.selectedTextForClipboard());
     }
@@ -968,11 +1002,7 @@ void Editor::performDelete()
 
 void Editor::copyImage(const HitTestResult& result)
 {
-    KURL url = result.absoluteLinkURL();
-    if (url.isEmpty())
-        url = result.absoluteImageURL();
-
-    Pasteboard::generalPasteboard()->writeImage(result.innerNonSharedNode(), url, result.altDisplayString());
+    writeImageNodeToPasteboard(Pasteboard::generalPasteboard(), result.innerNonSharedNode(), result.altDisplayString());
 }
 
 bool Editor::canUndo()
