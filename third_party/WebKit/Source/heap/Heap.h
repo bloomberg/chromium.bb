@@ -32,11 +32,253 @@
 #define Heap_h
 
 #include "heap/HeapExport.h"
+#include "heap/Visitor.h"
+
 #include "wtf/Assertions.h"
 
 #include <stdint.h>
 
 namespace WebCore {
+
+const size_t blinkPageSizeLog2 = 17;
+const size_t blinkPageSize = 1 << blinkPageSizeLog2;
+const size_t blinkPageOffsetMask = blinkPageSize - 1;
+const size_t blinkPageBaseMask = ~blinkPageOffsetMask;
+// Double precision floats are more efficient when 8 byte aligned, so we 8 byte
+// align all allocations even on 32 bit.
+const size_t allocationGranularity = 8;
+const size_t allocationMask = allocationGranularity - 1;
+const size_t objectStartBitMapSize = (blinkPageSize + ((8 * allocationGranularity) - 1)) / (8 * allocationGranularity);
+const size_t reservedForObjectBitMap = ((objectStartBitMapSize + allocationMask) & ~allocationMask);
+const size_t maxHeapObjectSize = 1 << 27;
+
+const size_t markBitMask = 1;
+const size_t freeListMask = 2;
+const size_t debugBitMask = 4;
+const size_t sizeMask = ~7;
+const uint8_t freelistZapValue = 42;
+const uint8_t finalizedZapValue = 24;
+
+typedef uint8_t* Address;
+
+// ASAN integration defintions
+#if COMPILER(CLANG)
+#define USE_ASAN (__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__))
+#else
+#define USE_ASAN 0
+#endif
+
+#if USE_ASAN
+extern "C" {
+    // Marks memory region [addr, addr+size) as unaddressable.
+    // This memory must be previously allocated by the user program. Accessing
+    // addresses in this region from instrumented code is forbidden until
+    // this region is unpoisoned. This function is not guaranteed to poison
+    // the whole region - it may poison only subregion of [addr, addr+size) due
+    // to ASan alignment restrictions.
+    // Method is NOT thread-safe in the sense that no two threads can
+    // (un)poison memory in the same memory region simultaneously.
+    void __asan_poison_memory_region(void const volatile*, size_t);
+    // Marks memory region [addr, addr+size) as addressable.
+    // This memory must be previously allocated by the user program. Accessing
+    // addresses in this region is allowed until this region is poisoned again.
+    // This function may unpoison a superregion of [addr, addr+size) due to
+    // ASan alignment restrictions.
+    // Method is NOT thread-safe in the sense that no two threads can
+    // (un)poison memory in the same memory region simultaneously.
+    void __asan_unpoison_memory_region(void const volatile*, size_t);
+
+    // User code should use macros instead of functions.
+#define ASAN_POISON_MEMORY_REGION(addr, size)   \
+    __asan_poison_memory_region((addr), (size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+    __asan_unpoison_memory_region((addr), (size))
+#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+    const size_t asanMagic = 0xabefeed0;
+    const size_t asanDeferMemoryReuseCount = 2;
+    const size_t asanDeferMemoryReuseMask = 0x3;
+}
+#else
+#define ASAN_POISON_MEMORY_REGION(addr, size)   \
+    ((void)(addr), (void)(size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+    ((void)(addr), (void)(size))
+#define NO_SANITIZE_ADDRESS
+#endif
+
+// The BasicObjectHeader is the minimal object header. It is used when
+// encountering heap space of size allocationGranularity to mark it as
+// as freelist entry.
+class BasicObjectHeader {
+public:
+    NO_SANITIZE_ADDRESS
+    explicit BasicObjectHeader(size_t encodedSize)
+        : m_size(encodedSize) { }
+
+    static size_t freeListEncodedSize(size_t size) { return size | freeListMask; }
+
+    NO_SANITIZE_ADDRESS
+    bool isFree() { return m_size & freeListMask; }
+
+    NO_SANITIZE_ADDRESS
+    size_t size() const { return m_size & sizeMask; }
+
+protected:
+    size_t m_size;
+};
+
+// Our heap object layout is layered with the HeapObjectHeader closest
+// to the payload, this can be wrapped in a FinalizedObjectHeader if the
+// object is on the GeneralHeap and not on a specific TypedHeap.
+// Finally if the object is a large object (> blinkPageSize/2) then it is
+// wrapped with a LargeObjectHeader.
+//
+// Object memory layout:
+// [ LargeObjectHeader | ] [ FinalizedObjectHeader | ] HeapObjectHeader | payload
+// The [ ] notation denotes that the LargeObjectHeader and the FinalizedObjectHeader
+// are independently optional.
+class HeapObjectHeader : public BasicObjectHeader {
+public:
+    NO_SANITIZE_ADDRESS
+    explicit HeapObjectHeader(size_t encodedSize)
+        : BasicObjectHeader(encodedSize)
+#ifndef NDEBUG
+        , m_magic(magic)
+#endif
+    { }
+
+    NO_SANITIZE_ADDRESS
+    HeapObjectHeader(size_t encodedSize, const GCInfo*)
+        : BasicObjectHeader(encodedSize)
+#ifndef NDEBUG
+        , m_magic(magic)
+#endif
+    { }
+
+    inline void checkHeader() const;
+    inline bool isMarked() const;
+
+    inline void mark();
+    inline void unmark();
+
+    inline Address payload();
+    inline size_t payloadSize();
+    inline Address payloadEnd();
+
+    inline void setDebugMark();
+    inline void clearDebugMark();
+    inline bool hasDebugMark() const;
+
+    // Zap magic number with a new magic number that means there was once an
+    // object allocated here, but it was freed because nobody marked it during
+    // GC.
+    void zapMagic();
+
+    static void finalize(const GCInfo*, Address, size_t);
+    static HeapObjectHeader* fromPayload(const void*);
+
+    static const intptr_t magic = 0xc0de247;
+    static const intptr_t zappedMagic = 0xC0DEdead;
+    // The zap value for vtables should be < 4K to ensure it cannot be
+    // used for dispatch.
+    static const intptr_t zappedVTable = 0xd0d;
+
+private:
+#ifndef NDEBUG
+    intptr_t m_magic;
+#endif
+};
+
+const size_t objectHeaderSize = sizeof(HeapObjectHeader);
+
+NO_SANITIZE_ADDRESS
+void HeapObjectHeader::checkHeader() const
+{
+    // FIXME: with ThreadLocalHeaps Heap::contains is not thread safe
+    // but introducing locks in this place does not seem like a good
+    // idea.
+#ifndef NDEBUG
+    ASSERT(m_magic == magic);
+#endif
+}
+
+Address HeapObjectHeader::payload()
+{
+    return reinterpret_cast<Address>(this) + objectHeaderSize;
+}
+
+size_t HeapObjectHeader::payloadSize()
+{
+    return (size() - objectHeaderSize) & ~allocationMask;
+}
+
+Address HeapObjectHeader::payloadEnd()
+{
+    return reinterpret_cast<Address>(this) + size();
+}
+
+NO_SANITIZE_ADDRESS
+void HeapObjectHeader::mark()
+{
+    checkHeader();
+    m_size |= markBitMask;
+}
+
+// Each object on the GeneralHeap needs to carry a pointer to its
+// own GCInfo structure for tracing and potential finalization.
+class FinalizedHeapObjectHeader : public HeapObjectHeader {
+public:
+    NO_SANITIZE_ADDRESS
+    FinalizedHeapObjectHeader(size_t encodedSize, const GCInfo* gcInfo)
+        : HeapObjectHeader(encodedSize)
+        , m_gcInfo(gcInfo)
+    {
+    }
+
+    inline Address payload();
+    inline size_t payloadSize();
+
+    NO_SANITIZE_ADDRESS
+    const GCInfo* gcInfo() { return m_gcInfo; }
+
+    NO_SANITIZE_ADDRESS
+    const char* typeMarker() { return m_gcInfo->m_typeMarker; }
+
+    NO_SANITIZE_ADDRESS
+    TraceCallback traceCallback() { return m_gcInfo->m_trace; }
+
+    void finalize();
+
+    NO_SANITIZE_ADDRESS
+    inline bool hasFinalizer() { return m_gcInfo->hasFinalizer(); }
+
+    static FinalizedHeapObjectHeader* fromPayload(const void*);
+
+#if TRACE_GC_USING_CLASSOF
+    const char* classOf()
+    {
+        const char* className = 0;
+        if (m_gcInfo->m_classOf)
+            className = m_gcInfo->m_classOf(payload());
+        return className ? className : typeMarker();
+    }
+#endif
+
+private:
+    const GCInfo* m_gcInfo;
+};
+
+const size_t finalizedHeaderSize = sizeof(FinalizedHeapObjectHeader);
+
+Address FinalizedHeapObjectHeader::payload()
+{
+    return reinterpret_cast<Address>(this) + finalizedHeaderSize;
+}
+
+size_t FinalizedHeapObjectHeader::payloadSize()
+{
+    return size() - finalizedHeaderSize;
+}
 
 class HEAP_EXPORT Heap {
 public:
