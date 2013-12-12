@@ -71,7 +71,8 @@ def GetTuplesForOverlays(overlays):
 def GetAllTargets():
   """Get the complete list of targets.
 
-  returns the list of cross targets for the current tree
+  Returns:
+    The list of cross targets for the current tree
   """
   targets = GetToolchainsForBoard('all')
 
@@ -83,7 +84,8 @@ def GetAllTargets():
 def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   """Get a list of toolchain tuples for a given board name
 
-  returns the list of toolchain tuples for the given board
+  Returns:
+    The list of toolchain tuples for the given board
   """
   overlays = portage_utilities.FindOverlays(
       constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board,
@@ -101,6 +103,7 @@ def FilterToolchains(targets, key, value):
     targets: dict of toolchains
     key: metadata to examine
     value: expected value for metadata
+
   Returns:
     dict where all targets whose metadata |key| does not match |value|
     have been deleted
@@ -114,6 +117,7 @@ def GetSdkURL(for_gsutil=False, suburl=''):
   Args:
     for_gsutil: Do you want a URL for passing to `gsutil`?
     suburl: A url fragment to tack onto the end
+
   Returns:
     The fully constructed URL
   """

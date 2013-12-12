@@ -27,7 +27,7 @@ def GetNonRootUser():
   ran the emerge command. If running using sudo, returns the username
   of the person who ran the sudo command. If no non-root user is
   found, returns None.
-"""
+  """
   uid = os.getuid()
   if uid == 0:
     user = os.environ.get('PORTAGE_USERNAME', os.environ.get('SUDO_USER'))
@@ -106,7 +106,8 @@ def ReadFile(path, mode='r'):
 def SafeUnlink(path, sudo=False):
   """Unlink a file from disk, ignoring if it doesn't exist.
 
-  Returns True if the file existed and was removed, False if it didn't exist.
+  Returns:
+    True if the file existed and was removed, False if it didn't exist.
   """
   if sudo:
     try:
@@ -136,12 +137,13 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
     mode: The access permissions in the style of chmod.
     sudo: If True, create it via sudo, thus root owned.
     user: If |sudo| is True, run sudo as |user|.
-  Raises:
-    EnvironmentError: if the makedir failed and it was non sudo.
-    RunCommandError: If sudo mode, and the command failed for any reason.
 
   Returns:
     True if the directory had to be created, False if otherwise.
+
+  Raises:
+    EnvironmentError: if the makedir failed and it was non sudo.
+    RunCommandError: If sudo mode, and the command failed for any reason.
   """
   if sudo:
     if os.path.isdir(path):
@@ -222,6 +224,7 @@ def Which(binary, path=None, mode=os.X_OK):
     binary: The binary to look for.
     path: Search path. Defaults to os.environ['PATH'].
     mode: File mode to check on the binary.
+
   Returns:
     The full path to |binary| if found (with the right mode). Otherwise, None.
   """
@@ -601,6 +604,7 @@ def StrSignal(sig_num):
 
   Args:
     sig_num: The numeric signal you wish to convert
+
   Returns:
     A string of the signal name(s)
   """

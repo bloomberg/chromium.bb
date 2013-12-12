@@ -478,9 +478,10 @@ class Upgrader(object):
     This essentially runs emerge with the --pretend option to verify
     that all dependencies for these package versions are satisfied.
 
-    Return tuple with two elements:
-    [0] True if |cpvlist| can be emerged.
-    [1] Output from the emerge command.
+    Returns:
+      Tuple with two elements:
+      [0] True if |cpvlist| can be emerged.
+      [1] Output from the emerge command.
     """
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
     emerge = self._GetBoardCmd(self.EMERGE_CMD)

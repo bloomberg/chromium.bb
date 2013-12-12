@@ -144,12 +144,12 @@ class StatsUploader(object):
   def Upload(cls, stats, url=None, timeout=None):
     """Upload |stats| to |url|.
 
-      Does nothing if upload conditions aren't met.
+    Does nothing if upload conditions aren't met.
 
-      Args:
-        stats: A Stats object to upload.
-        url: The url to send the request to.
-        timeout: A timeout value to set, in seconds.
+    Args:
+      stats: A Stats object to upload.
+      url: The url to send the request to.
+      timeout: A timeout value to set, in seconds.
     """
     if url is None:
       url = cls.URL

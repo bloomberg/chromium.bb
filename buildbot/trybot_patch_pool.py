@@ -38,9 +38,9 @@ class TrybotPatchPool(object):
   def Filter(self, **kwargs):
     """Returns a new pool with only patches that match constraints.
 
-     Args:
-       **kwargs: constraints in the form of attr=value.  I.e.,
-                 project='chromiumos/chromite', tracking_branch='master'.
+    Args:
+      **kwargs: constraints in the form of attr=value.  I.e.,
+                project='chromiumos/chromite', tracking_branch='master'.
     """
     def AttributeFilter(patch):
       for key in kwargs:

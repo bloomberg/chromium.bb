@@ -60,6 +60,7 @@ def OverrideConfigForTrybot(build_config, options):
     build_config:  The build configuration dictionary to override.
       The dictionary is not modified.
     options: The options passed on the commandline.
+
   Returns:
     A build configuration dictionary with the overrides applied.
   """
@@ -1917,8 +1918,9 @@ def _GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
     type_order: A tuple/list of config types in the order they are to be
                 displayed.
 
-  If config name does not contain any of the suffixes, returns the index
-  position after the last element of suffix_order.
+  Returns:
+    If |config_name| does not contain any of the suffixes, returns the index
+    position after the last element of suffix_order.
   """
   for index, config_type in enumerate(type_order):
     if config_name.endswith('-' + config_type) or config_name == config_type:

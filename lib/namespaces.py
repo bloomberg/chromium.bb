@@ -24,6 +24,7 @@ def Unshare(flags):
 
   Args:
     flags: Namespaces to unshare; bitwise OR of CLONE_* flags.
+
   Raises:
     OSError: if unshare failed.
   """

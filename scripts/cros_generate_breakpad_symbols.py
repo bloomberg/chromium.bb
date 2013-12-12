@@ -43,8 +43,10 @@ def ReadSymsHeader(sym_file):
 
   Args:
     sym_file: The symbol file to parse
+
   Returns:
     A SymbolHeader object
+
   Raises:
     ValueError if the first line of |sym_file| is invalid
   """
@@ -71,6 +73,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     board: If |breakpad_dir| is not specified, use |board| to find it
     strip_cfi: Do not generate CFI data
     num_errors: An object to update with the error count (needs a .value member)
+
   Returns:
     The number of errors that were encountered.
   """
@@ -178,6 +181,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     file_list: Only generate symbols for files in this list. Each file must be a
       full path (including |sysroot| prefix).
       TODO(build): Support paths w/o |sysroot|.
+
   Returns:
     The number of errors that were encountered.
   """

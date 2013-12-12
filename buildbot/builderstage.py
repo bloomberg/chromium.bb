@@ -122,6 +122,7 @@ class BuilderStage(object):
 
     Args:
       stage: Link to a specific |stage|, otherwise the general buildbot log
+
     Returns:
       The fully formed URL
     """
@@ -187,7 +188,8 @@ class BuilderStage(object):
   def _GetPortageEnvVar(self, envvar, board):
     """Get a portage environment variable for the configuration's board.
 
-    envvar: The environment variable to get. E.g. 'PORTAGE_BINHOST'.
+    Args:
+      envvar: The environment variable to get. E.g. 'PORTAGE_BINHOST'.
 
     Returns:
       The value of the environment variable, as a string. If no such variable
@@ -211,6 +213,7 @@ class BuilderStage(object):
       build_config: A build config for a master builder.
       configs: Option override of cbuildbot_config.config for the list
         of build configs to look through for slaves.
+
     Returns:
       A list of build configs corresponding to the slaves for the master
         represented by build_config.

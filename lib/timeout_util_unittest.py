@@ -162,7 +162,6 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
     """Mocks out urllib.urlopen commands to simulate a given tree status.
 
     Args:
-
       status_url: The status url that status will be fetched from.
       final_tree_status: The final value of tree status that will be returned
         by urlopen.

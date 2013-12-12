@@ -188,6 +188,7 @@ class Builder(object):
       stage: A BuilderStage class.
       args: args to pass to stage constructor.
       kwargs: kwargs to pass to stage constructor.
+
     Returns:
       Whatever the stage's Run method returns.
     """
@@ -603,8 +604,9 @@ class DistributedBuilder(SimpleBuilder):
   def GetCompletionInstance(self):
     """Returns the completion_stage_class instance that was used for this build.
 
-    Returns None if the completion_stage instance was not yet created (this
-    occurs during Publish).
+    Returns:
+      None if the completion_stage instance was not yet created (this
+      occurs during Publish).
     """
     return self._completion_stage
 

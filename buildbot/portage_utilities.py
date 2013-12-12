@@ -118,6 +118,7 @@ def FindPrimaryOverlay(overlay_type, board, buildroot=constants.SOURCE_ROOT):
       'public': Just the public overlays.
       'both': Both the public and private overlays.
     board: Board to look at.
+
   Raises:
     MissingOverlayException: No primary overlay found.
   """
@@ -245,6 +246,7 @@ class EBuild(object):
     Args:
       message: the commit string to write when committing to git.
       overlay: directory in which to commit the changes.
+
     Raises:
       RunCommandError: Error occurred while committing.
     """
@@ -444,12 +446,13 @@ class EBuild(object):
         it is written using the standard rev'ing logic.  This file must be
         opened and closed by the caller.
 
-    Raises:
-      OSError: Error occurred while creating a new ebuild.
-      IOError: Error occurred while writing to the new revved ebuild file.
     Returns:
       If the revved package is different than the old ebuild, return the full
       revved package name, including the version number. Otherwise, return None.
+
+    Raises:
+      OSError: Error occurred while creating a new ebuild.
+      IOError: Error occurred while writing to the new revved ebuild file.
     """
 
     if self.is_stable:

@@ -56,7 +56,8 @@ class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
 
   def __init__(self, closed_or_throttled=False):
-    """
+    """Initialization.
+
     Args:
       closed_or_throttled: True if the exception is being thrown on a
                            possibly 'throttled' tree. False if only
@@ -273,6 +274,7 @@ class HelperPool(object):
     Args:
       internal: If True, allow access to a GerritHelper for internal.
       external: If True, allow access to a GerritHelper for external.
+
     Returns:
       An appropriately configured HelperPool instance.
     """
@@ -445,11 +447,12 @@ class PatchSeries(object):
     then this function will lie and always return True to avoid the
     admin-level access required of <=gerrit-2.1.
 
+    Returns:
+      True if the change's project has content merging enabled, False if not.
+
     Raises:
       AssertionError: If the gerrit helper requested is disallowed.
       GerritException: If there is a failure in querying gerrit.
-    Returns:
-      True if the change's project has content merging enabled, False if not.
     """
     if self.force_content_merging:
       return True
@@ -520,6 +523,7 @@ class PatchSeries(object):
       limit_to: If non-None, then this must be a mapping (preferably a
         cros_patch.PatchCache for translation reasons) of which non-committed
         changes are allowed to be used for a transaction.
+
     Returns:
       A sequence of cros_patch.GitRepoPatch instances (or derivatives) that
       need to be resolved for this change to be mergable.
@@ -573,6 +577,7 @@ class PatchSeries(object):
         for.
       limit_to: If non-None, limit the allowed uncommitted patches to
         what's in that container/mapping.
+
     Returns:
       A sequence of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
@@ -718,12 +723,12 @@ class PatchSeries(object):
   def GetDepsForChange(self, change):
     """Look up the gerrit/paladin deps for a change
 
+    Returns:
+      A tuple of the change's GerritDependencies(), and PaladinDependencies()
+
     Raises:
       DependencyError: If we could not resolve a dependency.
       GerritException or GOBError: If there is a failure in querying gerrit.
-
-    Returns:
-      A tuple of the change's GerritDependencies(), and PaladinDependencies()
     """
     val = self._change_deps_cache.get(change)
     if val is None:
@@ -803,6 +808,7 @@ class PatchSeries(object):
         changes being inspected, and expand the changes if necessary.
         Primarily this is of use for cbuildbot patching when dealing w/
         uploaded/remote patches.
+
     Returns:
       A tuple of changes-applied, Exceptions for the changes that failed
       against ToT, and Exceptions that failed inflight;  These exceptions
@@ -971,6 +977,7 @@ class PatchSeries(object):
       kwargs: See PatchSeries.__init__ for the various optional args;
         not forced_manifest cannot be used here, and force_content_merging
         defaults to True in this usage.
+
     Returns:
       A PatchSeries instance w/ a forced manifest.
     """
@@ -1092,6 +1099,7 @@ class ValidationFailedMessage(object):
 
     Args:
       changes: List of changes to examine.
+
     Returns:
       Set of changes that likely caused the failure.
     """
@@ -1304,6 +1312,7 @@ class ValidationPool(object):
       builder_name: Builder name on buildbot dashboard.
       build_number: Build number for this validation attempt.
       stage: Link directly to a stage log, else use the general landing page.
+
     Returns:
       The fully formed URL
     """
@@ -1400,8 +1409,10 @@ class ValidationPool(object):
         non_manifest_changes) to filter out unwanted patches.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open.
                     Default: True.
+
     Returns:
       ValidationPool object.
+
     Raises:
       TreeIsClosedException: if the tree is closed (or throttled, if not
                              |throttled_ok|).
@@ -1474,6 +1485,7 @@ class ValidationPool(object):
       is_master: Boolean that indicates whether this is a pool for a master.
         config or not.
       dryrun: Don't submit anything to gerrit.
+
     Returns:
       ValidationPool object.
     """
@@ -1522,8 +1534,9 @@ class ValidationPool(object):
       changes:  List of GerritPatch objects.
       manifest: The manifest to check projects/branches against.
 
-    Returns tuple of
-      relevant reviews in a manifest, relevant reviews not in the manifest.
+    Returns:
+      Tuple of (relevant reviews in a manifest,
+                relevant reviews not in the manifest).
     """
 
     def IsCrosReview(change):
@@ -1623,9 +1636,9 @@ class ValidationPool(object):
 
     This method applies changes in the order specified.  It also respects
     dependency order.
-    Returns:
 
-    True if we managed to apply any changes.
+    Returns:
+      True if we managed to apply any changes.
     """
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
     try:

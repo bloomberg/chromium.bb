@@ -206,10 +206,12 @@ class VersionInfo(object):
 
   def FindValue(self, key, line):
     """Given the key find the value from the line, if it finds key = value
+
     Args:
       key: key to look for
       line: string to search
-    returns:
+
+    Returns:
       None: on a non match
       value: for a matching key
     """
@@ -218,8 +220,9 @@ class VersionInfo(object):
 
   def IncrementVersion(self):
     """Updates the version file by incrementing the patch component.
+
     Args:
-      message:  Commit message to use when incrementing the version.
+      message: Commit message to use when incrementing the version.
       dry_run: Git dry_run.
     """
     if not self.incr_type or self.incr_type not in self.VALID_INCR_TYPES:
@@ -408,6 +411,7 @@ class BuildSpecsManager(object):
 
     Args:
       specs: List of specs.
+
     Returns:
       The latest spec if specs is non-empty.
       None otherwise.
@@ -417,6 +421,7 @@ class BuildSpecsManager(object):
 
   def _LatestSpecFromDir(self, version_info, directory):
     """Returns the latest buildspec that match '*.xml' in a directory.
+
     Args:
       directory: Directory of the buildspecs.
     """
@@ -566,8 +571,9 @@ class BuildSpecsManager(object):
   def GetLocalManifest(self, version=None):
     """Return path to local copy of manifest given by version.
 
-    Returns path of version.  By default if version is not set, returns the path
-    of the current version.
+    Returns:
+      Path of |version|.  By default if version is not set, returns the path
+      of the current version.
     """
     if not self.all_specs_dir:
       raise BuildSpecsValueError('GetLocalManifest failed, BuildSpecsManager '
@@ -603,10 +609,11 @@ class BuildSpecsManager(object):
   def GetNextBuildSpec(self, retries=NUM_RETRIES):
     """Returns a path to the next manifest to build.
 
-      Args:
-        retries: Number of retries for updating the status.
-      Raises:
-        GenerateBuildSpecException in case of failure to generate a buildspec
+    Args:
+      retries: Number of retries for updating the status.
+
+    Raises:
+      GenerateBuildSpecException in case of failure to generate a buildspec
     """
     last_error = None
     for index in range(0, retries + 1):
@@ -673,6 +680,7 @@ class BuildSpecsManager(object):
 
   def UploadStatus(self, success, message=None):
     """Uploads the status of the build for the current build spec.
+
     Args:
       success: True for success, False for failure
       message: Message accompanied with change in status.
@@ -711,6 +719,7 @@ class BuildSpecsManager(object):
 
   def UpdateStatus(self, success, message=None, retries=NUM_RETRIES):
     """Updates the status of the build for the current build spec.
+
     Args:
       success: True for success, False for failure
       message: Message accompanied with change in status.

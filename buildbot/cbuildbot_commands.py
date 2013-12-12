@@ -137,6 +137,7 @@ def ValidateClobber(buildroot):
 
   Args:
     buildroot: buildroot that's potentially clobbered.
+
   Returns:
     True if the clobber is ok.
   """
@@ -526,7 +527,8 @@ def ArchiveTestResults(buildroot, test_results_dir, test_basename):
       This must a subdir of /tmp.
     test_basename: The basename of the tarball.
 
-  Returns the path to the tarball.
+  Returns:
+    The path to the tarball.
   """
   test_results_dir = test_results_dir.lstrip('/')
   chroot = os.path.join(buildroot, 'chroot')
@@ -559,13 +561,13 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   tar file for each of these files, so that each can be downloaded
   independently.
 
-  Arguments:
+  Args:
     images_dir: Directory containing the VM disk images.
     archive_path: Directory the tarballs should be written to.
 
-  Returns the paths to the tarballs.
+  Returns:
+    The paths to the tarballs.
   """
-
   images_dir = os.path.join(buildroot, 'chroot', test_results_dir.lstrip('/'))
   images = []
   for path, _, filenames in os.walk(images_dir):
@@ -1094,7 +1096,8 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
     archive_dir: Directory where tarball should be stored.
     gdb_symbols: Include *.debug files for debugging core files with gdb.
 
-  Returns the filename of the created debug tarball.
+  Returns:
+    The filename of the created debug tarball.
   """
   # Generate debug tarball. This needs to run as root because some of the
   # symbols are only readable by root.
@@ -1277,7 +1280,8 @@ def BuildFactoryTestImage(buildroot, board, extra_env):
     board: Board type that was built on this machine
     extra_env: Flags to be added to the environment for the new process.
 
-  Returns the basename of the symlink created for the image.
+  Returns:
+    The basename of the symlink created for the image.
   """
 
   # We use build_attempt=2 here to ensure that this image uses a different
@@ -1303,7 +1307,8 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
     board: Board type that was built on this machine
     extra_env: Flags to be added to the environment for the new process.
 
-  Returns the basename of the symlink created for the image.
+  Returns:
+    The basename of the symlink created for the image.
   """
 
   # We use build_attempt=3 here to ensure that this image uses a different
@@ -1384,7 +1389,8 @@ def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):
     target: the target directory to search.
     cwd: current working directory.
 
-  Returns a list of paths of the matched files.
+  Returns:
+    A list of paths of the matched files.
   """
   # Backup the current working directory before changing it
   old_cwd = os.getcwd()
@@ -1452,7 +1458,8 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
     board: Board type that was built on this machine.
     tarball_dir: Location for storing autotest tarballs.
 
-  Returns a tuple the path of the full autotest tarball.
+  Returns:
+    A tuple the path of the full autotest tarball.
   """
 
   tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
@@ -1485,7 +1492,8 @@ def BuildImageZip(archive_dir, image_dir):
     archive_dir: Directory to store image.zip.
     image_dir: Directory to zip up.
 
-  Returns the basename of the zipfile.
+  Returns:
+    The basename of the zipfile.
   """
   filename = 'image.zip'
   zipfile = os.path.join(archive_dir, filename)
@@ -1501,7 +1509,8 @@ def BuildStandaloneImageTarball(archive_dir, image_bin):
     archive_dir: Directory to store image zip.
     image_bin: Image to zip up.
 
-    Returns the base name of the tarball.
+  Returns:
+    The base name of the tarball.
   """
   # Strip off the .bin from the filename.
   image_dir, image_filename = os.path.split(image_bin)
@@ -1520,8 +1529,9 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
     board: Board name of build target.
     archive_dir: Directory to store output file.
 
-  Returns the basename of the archived file, or None if the target board does
-  not have firmware from source.
+  Returns:
+    The basename of the archived file, or None if the target board does
+    not have firmware from source.
   """
   patterns = ['*image*.bin', 'updater-*.sh', 'ec.bin', 'dts/*']
   firmware_root = os.path.join(buildroot, 'chroot', 'build', board, 'firmware')
@@ -1547,7 +1557,8 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
     archive_dir: Directory to store image.zip.
     image_root: Directory containing factory_shim and factory_test symlinks.
 
-  Returns the basename of the zipfile.
+  Returns:
+    The basename of the zipfile.
   """
   filename = 'factory_image.zip'
 
@@ -1636,7 +1647,7 @@ def CreateTestRoot(build_root):
   """Returns a temporary directory for test results in chroot.
 
   Returns:
-    Returns the path inside the chroot rather than whole path.
+    The path inside the chroot rather than whole path.
   """
   # Create test directory within tmp in chroot.
   chroot = os.path.join(build_root, 'chroot')
@@ -1732,6 +1743,7 @@ def CheckPGOData(architectures, cpv):
   Args:
     architectures: Set of architectures we're going to build Chrome for.
     cpv: The portage_utilities.CPV object for chromeos-chrome.
+
   Returns:
     True if PGO data is available; false otherwise.
   """

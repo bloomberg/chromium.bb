@@ -43,6 +43,7 @@ def IsInternalRepoCheckout(root):
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
                  mirror=False, depth=None):
   """Clone given git repo
+
   Args:
     working_dir: location where it should be cloned to
     repo_url: git repo to clone
@@ -125,6 +126,7 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
 
 class RepoRepository(object):
   """ A Class that encapsulates a repo repository.
+
   Args:
     repo_url: gitserver URL to fetch repo manifest from.
     directory: local path where to checkout the repository.
@@ -402,6 +404,7 @@ class RepoRepository(object):
         <manifest revision="1234">.
       revisions: If True, then rewrite all branches/tags into a specific
         sha1 revision.  If False, don't.
+
     Returns:
       The manifest as a string.
     """
@@ -427,6 +430,7 @@ class RepoRepository(object):
 
     Args:
       other_manfiest: Second manifest file to compare against.
+
     Returns:
       True: If the manifests are different
       False: If the manifests are same

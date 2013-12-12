@@ -179,7 +179,8 @@ class GerritHelper(object):
       kwargs: A dict of query parameters, as described here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 
-    Returns: A list of python dicts or cros_patch.GerritChange.
+    Returns:
+      A list of python dicts or cros_patch.GerritChange.
     """
     query_kwds = kwargs
     if options:
@@ -248,6 +249,7 @@ class GerritHelper(object):
 
     Args:
       changes: A sequence of gerrit change numbers.
+
     Returns:
       A list of cros_patch.GerritPatch.
     """
@@ -414,6 +416,7 @@ def GetChangeRef(change_number, patchset=None):
     patchset: If given it must either be an integer or '*'.  When given,
       the returned refspec is for that exact patchset.  If '*' is given, it's
       used for pulling down all patchsets for that change.
+
   Returns:
     A git refspec.
   """

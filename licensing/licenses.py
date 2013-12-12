@@ -1136,10 +1136,11 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
     logging_text: what to display for logging depending on file read.
 
   Returns:
-    file content, possibly converted from latin1 to UTF-8.
+    File content, possibly converted from latin1 to UTF-8.
 
-  Raises: Assertion error: if non-whitelisted illegal XML characters
-    are found in the file.
+  Raises:
+    Assertion error: if non-whitelisted illegal XML characters
+      are found in the file.
   """
 
   try:

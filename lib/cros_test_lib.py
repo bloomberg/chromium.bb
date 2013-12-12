@@ -366,6 +366,7 @@ class TruthTable(object):
 
     Args:
       inputs_index: Following must hold: 0 <= inputs_index < self.num_lines.
+
     Returns:
       Tuple of bools representing one line of inputs.
     """
@@ -388,6 +389,7 @@ class TruthTable(object):
 
     Args:
       inputs: Tuple of bools, length must be equal to self.dimension.
+
     Returns:
       bool value representing truth table output for given inputs.
     """
@@ -1614,6 +1616,7 @@ def FindTests(directory, module_namespace=''):
   Args:
     directory: The directory to scan for tests.
     module_namespace: What namespace to prefix all found tests with.
+
   Returns:
     A list of python unittests in python namespace form.
   """

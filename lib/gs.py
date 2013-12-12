@@ -51,6 +51,7 @@ def GetGsURL(bucket, for_gsutil=False, public=True, suburl=''):
     for_gsutil: Do you want a URL for passing to `gsutil`?
     public: Do we want the public or private url
     suburl: A url fragment to tack onto the end
+
   Returns:
     The fully constructed URL
   """
@@ -101,6 +102,7 @@ class GSCounter(object):
                      does not exist.
       operation: Function that takes the current counter value as a
                  parameter, and returns the new desired value.
+
     Returns:
       The new counter value. None if value could not be set.
     """
@@ -132,28 +134,32 @@ class GSCounter(object):
     """Decrement the counter.
 
     Returns:
-      The new counter value. None if value could not be set."""
+      The new counter value. None if value could not be set.
+    """
     return self.AtomicCounterOperation(-1, lambda x: x - 1)
 
   def Reset(self):
     """Reset the counter to zero.
 
     Returns:
-      The new counter value. None if value could not be set."""
+      The new counter value. None if value could not be set.
+    """
     return self.AtomicCounterOperation(0, lambda x: 0)
 
   def StreakIncrement(self):
     """Increment the counter if it is positive, otherwise set it to 1.
 
     Returns:
-      The new counter value. None if value could not be set."""
+      The new counter value. None if value could not be set.
+    """
     return self.AtomicCounterOperation(1, lambda x: x + 1 if x > 0 else 1)
 
   def StreakDecrement(self):
     """Decrement the counter if it is negative, otherwise set it to -1.
 
     Returns:
-      The new counter value. None if value could not be set."""
+      The new counter value. None if value could not be set.
+    """
     return self.AtomicCounterOperation(-1, lambda x: x - 1 if x < 0 else -1)
 
 
@@ -360,6 +366,7 @@ class GSContext(object):
 
     Args:
       dest_path: either a GS path or an absolute local path.
+
     Returns:
       The list of potential tracker filenames.
     """
@@ -392,6 +399,7 @@ class GSContext(object):
       e: Exception object to filter. Exception may be re-raised as
          as different type, if _RetryFilter determines a more appropriate
          exception type based on the contents of e.
+
     Returns:
       True for exceptions thrown by a RunCommand gsutil that should be retried.
     """
@@ -509,10 +517,11 @@ class GSContext(object):
         to ensure you don't overwrite someone else's creation, a version of
         0 states "only update if no version exists".
 
-    Raises:
-      RunCommandError if the command failed despite retries.
     Returns:
       Return the CommandResult from the run.
+
+    Raises:
+      RunCommandError if the command failed despite retries.
     """
     cmd, headers = [], []
 
@@ -596,7 +605,8 @@ class GSContext(object):
   def GetGeneration(self, path):
     """Get the generation and metageneration of the given |path|.
 
-    Returns a tuple of the generation and metageneration.
+    Returns:
+      A tuple of the generation and metageneration.
     """
     def _Header(name):
       if res and res.returncode == 0 and res.output is not None:

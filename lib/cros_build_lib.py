@@ -107,8 +107,10 @@ def SudoRunCommand(cmd, user='root', **kwargs):
     kwargs: See RunCommand options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
           If set to False, it'll suppress strict sudo behavior.
+
   Returns:
     See RunCommand documentation.
+
   Raises:
     This function may immediately raise RunCommandError if we're operating
     in a strict sudo context and the API is being misused.
@@ -300,6 +302,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                   Specified in seconds.
     log_output: Log the command and its output automatically.
     stdout_to_pipe: Redirect stdout to pipe.
+
   Returns:
     A CommandResult object.
 
@@ -630,8 +633,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     sleep: Optional keyword.  Multiplier for how long to sleep between
       retries; will delay (1*sleep) the first time, then (2*sleep),
       continuing via attempt * sleep.
+
   Returns:
     Whatever functor(*args, **kwargs) returns.
+
   Raises:
     Exception: Whatever exceptions functor(*args, **kwargs) throws and
       isn't suppressed is raised.  Note that the first exception encountered
@@ -696,8 +701,10 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
       signal. By default, we retry on all non-negative exit codes.
     args: Positional args passed to RunCommand; see RunCommand for specifics.
     kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
+
   Returns:
     A CommandResult object.
+
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
@@ -729,8 +736,10 @@ def RunCommandWithRetries(max_retry, *args, **kwargs):
 
   Args:
     See RetryCommand and RunCommand; This is just a wrapper around it.
+
   Returns:
     A CommandResult object.
+
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
@@ -804,8 +813,10 @@ def FindCompressor(compression, chroot=None):
   Args:
     compression: The type of compression desired.
     chroot: Optional path to a chroot to search.
+
   Returns:
     Path to a compressor.
+
   Raises:
     ValueError: If compression is unknown.
   """
@@ -883,6 +894,7 @@ def BooleanPrompt(prompt="Do you want to continue?", default=True,
     default: Boolean to return if the user just presses enter.
     true_value: The text to display that represents a True returned.
     false_value: The text to display that represents a False returned.
+
   Returns:
     True or False.
   """
@@ -928,8 +940,10 @@ def BooleanShellValue(sval, default, msg=None):
     default: If we can't figure out if the value is true or false, use this.
     msg: If |sval| is an unknown value, use |msg| to warn the user that we
          could not decode the input.  Otherwise, raise ValueError().
+
   Returns:
     The interpreted boolean value of |sval|.
+
   Raises:
     ValueError() if |sval| is an unknown value and |msg| is not set.
   """
@@ -1144,10 +1158,11 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
       compatibility, and raises an ApiMismatchError when there is an
       incompatibility.
 
+  Returns:
+    The version number in (major, minor) tuple.
+
   Raises:
     May raise an ApiMismatchError if validate_version is set.
-
-  Returns the version number in (major, minor) tuple.
   """
   try:
     api = RunCommandCaptureOutput(
@@ -1217,11 +1232,11 @@ def load_module(name):
   Args:
     name: python dotted namespace path of the module to import
 
-  Raises:
-    FailedImport if importing fails
-
   Returns:
     imported module
+
+  Raises:
+    FailedImport if importing fails
   """
   m = __import__(name)
   # __import__('foo.bar') returns foo, so...
@@ -1392,6 +1407,7 @@ def UserDateTimeFormat(timeval=None):
   Args:
     timeval: Either a datetime object or a floating point time value as accepted
              by gmtime()/localtime().  If None, the current time is used.
+
   Returns:
     A string format such as 'Wed, 20 Feb 2013 15:25:15 -0500 (EST)'
   """

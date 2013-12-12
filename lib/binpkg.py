@@ -94,7 +94,8 @@ class PackageIndex(object):
     Args:
       pkgfile: A python file object.
 
-    Returns the dictionary of key-value pairs that was read from the file.
+    Returns:
+      The dictionary of key-value pairs that was read from the file.
     """
     d = {}
     for line in pkgfile:

@@ -237,9 +237,11 @@ class BaseParser(object):
     """Method called to handle post opts/args setup.
 
     This can be anything from logging setup to positional arg count validation.
+
     Args:
       opts: optparse.Values instance
       args: position arguments unconsumed from parsing.
+
     Returns:
       (opts, args), w/ whatever modification done.
     """

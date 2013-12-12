@@ -94,15 +94,16 @@ class RemoteAccess(object):
                      See ssh_error_ok.
       ssh_error_ok: Does not throw an exception when the ssh command itself
                     fails (return code 255).
-      debug_level:  See cros_build_lib.RunCommand documentation.
+      debug_level: See cros_build_lib.RunCommand documentation.
 
     Returns:
       A CommandResult object.  The returncode is the returncode of the command,
       or 255 if ssh encountered an error (could not connect, connection
       interrupted, etc.)
 
-    Raises:  RunCommandError when error is not ignored through error_code_ok and
-             ssh_error_ok flags.
+    Raises:
+      RunCommandError when error is not ignored through error_code_ok and
+      ssh_error_ok flags.
     """
     if not debug_level:
       debug_level = self.debug_level

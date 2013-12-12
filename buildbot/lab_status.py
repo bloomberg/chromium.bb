@@ -33,6 +33,7 @@ def GetLabStatus(max_attempts=5):
 
   Args:
     max_attempts: max attempts to hit the lab status url.
+
   Returns:
     a dict with keys 'lab_is_up' and 'message'. lab_is_up points
     to a boolean and message points to a string.
@@ -74,6 +75,7 @@ def CheckLabStatus(board=None):
 
   Args:
     board: board name that we want to check the status of.
+
   Raises:
     LabIsDownException if the lab is not up.
     BoardIsDisabledException if the desired board is currently disabled.

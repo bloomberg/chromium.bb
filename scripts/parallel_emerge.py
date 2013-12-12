@@ -226,8 +226,10 @@ class DepGraphGenerator(object):
     We need to be compatible with emerge arg format.  We scrape arguments that
     are specific to parallel_emerge, and pass through the rest directly to
     emerge.
+
     Args:
       argv: arguments list
+
     Returns:
       Arguments that don't belong to parallel_emerge
     """
@@ -525,6 +527,7 @@ class DepGraphGenerator(object):
     Args:
       deps_tree: Dependency tree structure.
       deps_info: More details on the dependencies.
+
     Returns:
       Deps graph in the form of a dict of packages, with each package
       specifying a "needs" list and "provides" list.
@@ -547,8 +550,10 @@ class DepGraphGenerator(object):
 
       Take the tree of package -> requirements and reverse it to a digraph of
       buildable packages -> packages they unblock.
+
       Args:
         packages: Tree(s) of dependencies.
+
       Returns:
         Unsanitized digraph.
       """

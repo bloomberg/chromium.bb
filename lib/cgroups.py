@@ -428,7 +428,7 @@ class Cgroup(object):
   def RemoveGroup(self, name, strict=False):
     """Removes a nested cgroup of ours
 
-    Args
+    Args:
       name: the namespace to remove.
       strict: if False, remove it if possible.  If True, its an error if it
               cannot be removed.

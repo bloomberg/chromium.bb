@@ -76,6 +76,7 @@ def UpdateRemotes(manifest):
 
   Args:
     manifest: Path to manifest file to modify in place.
+
   Returns:
     True if file was modified.
   """
@@ -104,6 +105,7 @@ def GetRemotes(manifest):
 
   Args:
     manifest: Path to manifest file to scan for remotes.
+
   Returns:
     List of Remote tuples.
   """

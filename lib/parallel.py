@@ -526,7 +526,7 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,
     # Blocks until all calls have completed.
   """
   def ReturnWrapper(queue, fn):
-    """A function that """
+    """Put the return value of |fn| into |queue|."""
     queue.put(fn())
 
   full_steps = []

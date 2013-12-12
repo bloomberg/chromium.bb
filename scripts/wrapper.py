@@ -88,6 +88,7 @@ def FindTarget(target):
 
   Args:
     target: Path to the script we're trying to run.
+
   Returns:
     The module main functor.
   """

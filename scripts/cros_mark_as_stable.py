@@ -127,6 +127,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     tracking_branch: The tracking branch of the local branch.
     dryrun: Use git push --dryrun to emulate a push.
     cwd: The directory to run commands in.
+
   Raises:
     OSError: Error occurred while pushing.
   """

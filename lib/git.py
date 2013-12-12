@@ -469,6 +469,7 @@ class ManifestCheckout(Manifest):
       search: If True, the path can point into the repo, and the root will
         be found automatically.  If False, the path *must* be the root, else
         an OSError ENOENT will be thrown.
+
     Raises:
       OSError: if a failure occurs.
     """
@@ -511,6 +512,7 @@ class ManifestCheckout(Manifest):
 
     Returns:
       True if content merging is enabled.
+
     Raises:
       RunCommandError: If the branch can't be fetched due to network
         conditions or if this was invoked against a <gerrit-2.2 server,
@@ -546,12 +548,12 @@ class ManifestCheckout(Manifest):
       branch: The branch that the project is tracking.
       strict: Raise AssertionError if a checkout cannot be found.
 
+    Returns:
+      A ProjectCheckout object.
+
     Raises:
       AssertionError if there is more than one checkout associated with the
       given project/branch combination.
-
-    Returns:
-      A ProjectCheckout object.
     """
     checkouts = self.FindCheckouts(project, branch)
     if len(checkouts) < 1:
@@ -583,7 +585,8 @@ class ManifestCheckout(Manifest):
       strict: If True, fail when no checkout is found.
 
     Returns:
-      None if no checkout is found, else the checkout."""
+      None if no checkout is found, else the checkout.
+    """
     # Realpath everything sans the target to keep people happy about
     # how symlinks are handled; exempt the final node since following
     # through that is unlikely even remotely desired.
@@ -711,6 +714,7 @@ def _GitRepoIsContentMerging(git_repo, remote):
 
   Returns:
     True if content merging is enabled, False if not.
+
   Raises:
     RunCommandError: Thrown if fetching fails due to either the namespace
       not existing, or a network error intervening.
@@ -753,6 +757,7 @@ def RunGit(git_repo, cmd, retry=True, **kwargs):
       this would be ['remote', 'update'] for example.
     retry: If set, retry on transient errors. Defaults to True.
     kwargs: Any RunCommand or GenericRetry options/overrides to use.
+
   Returns:
     A CommandResult object.
   """
@@ -790,6 +795,7 @@ def MatchBranchName(git_repo, pattern, namespace=''):
     git_repo: The git repository to operate upon.
     pattern: The regexp to search with.
     namespace: The namespace to restrict search to (e.g. 'refs/heads/').
+
   Returns:
     List of matching branch names (with |namespace| trimmed).
   """
@@ -809,8 +815,10 @@ def MatchSingleBranchName(*args, **kwargs):
 
   Args:
     See MatchBranchName for more details; all args are passed on.
+
   Returns:
     The branch name.
+
   Raises:
     raise AmbiguousBranchName if we did not match exactly one branch.
   """
@@ -1038,14 +1046,14 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
 def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
   """Create a local branch for pushing changes inside a repo repository.
 
-    Args:
-      branch: Local branch to create.
-      git_repo: Git repository to create the branch in.
-      sync: Update remote before creating push branch.
-      remote_push_branch: A tuple of the (remote, branch) to push to. i.e.,
-                          ('cros', 'master').  By default it tries to
-                          automatically determine which tracking branch to use
-                          (see GetTrackingBranch()).
+  Args:
+    branch: Local branch to create.
+    git_repo: Git repository to create the branch in.
+    sync: Update remote before creating push branch.
+    remote_push_branch: A tuple of the (remote, branch) to push to. i.e.,
+                        ('cros', 'master').  By default it tries to
+                        automatically determine which tracking branch to use
+                        (see GetTrackingBranch()).
   """
   if not remote_push_branch:
     remote, push_branch = GetTrackingBranch(git_repo, for_push=True)
@@ -1062,12 +1070,12 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
 def SyncPushBranch(git_repo, remote, rebase_target):
   """Sync and rebase a local push branch to the latest remote version.
 
-    Args:
-      git_repo: Git repository to rebase in.
-      remote: The remote returned by GetTrackingBranch(for_push=True)
-      rebase_target: The branch name returned by GetTrackingBranch().  Must
-        start with refs/remotes/ (specifically must be a proper remote
-        target rather than an ambiguous name).
+  Args:
+    git_repo: Git repository to rebase in.
+    remote: The remote returned by GetTrackingBranch(for_push=True)
+    rebase_target: The branch name returned by GetTrackingBranch().  Must
+      start with refs/remotes/ (specifically must be a proper remote
+      target rather than an ambiguous name).
   """
   if not rebase_target.startswith("refs/remotes/"):
     raise Exception(
@@ -1091,19 +1099,19 @@ def SyncPushBranch(git_repo, remote, rebase_target):
 def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
   """General method to push local git changes.
 
-    This method only works with branches created via the CreatePushBranch
-    function.
+  This method only works with branches created via the CreatePushBranch
+  function.
 
-    Args:
-      branch: Local branch to push.  Branch should have already been created
-        with a local change committed ready to push to the remote branch.  Must
-        also already be checked out to that branch.
-      git_repo: Git repository to push from.
-      dryrun: Git push --dry-run if set to True.
-      retries: The number of times to retry before giving up, default: 5
+  Args:
+    branch: Local branch to push.  Branch should have already been created
+      with a local change committed ready to push to the remote branch.  Must
+      also already be checked out to that branch.
+    git_repo: Git repository to push from.
+    dryrun: Git push --dry-run if set to True.
+    retries: The number of times to retry before giving up, default: 5
 
-    Raises:
-      GitPushFailed if push was unsuccessful after retries
+  Raises:
+    GitPushFailed if push was unsuccessful after retries
   """
   remote, ref = GetTrackingBranch(git_repo, branch, for_checkout=False,
                                   for_push=True)

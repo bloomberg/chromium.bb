@@ -488,6 +488,7 @@ def ExpandTargets(targets_wanted):
 
   Args:
     targets_wanted: The targets specified by the user.
+
   Returns:
     Full list of tuples with pseudo targets removed.
   """
@@ -605,6 +606,7 @@ def FileIsCrosSdkElf(elf):
 
   Args:
     elf: The file to check
+
   Returns:
     True if we think |elf| is a native ELF
   """
@@ -631,6 +633,7 @@ def IsPathPackagable(ptype, path):
   Args:
     ptype: A string describing the path type (i.e. 'file' or 'dir' or 'sym')
     path: The full path to inspect
+
   Returns:
     True if we want to include this path in the package
   """
@@ -646,6 +649,7 @@ def ReadlinkRoot(path, root):
   Args:
     path: The symlink to read
     root: The path to use for resolving absolute symlinks
+
   Returns:
     A fully resolved symlink path
   """
@@ -662,6 +666,7 @@ def _GetFilesForTarget(target, root='/'):
   Args:
     target: The toolchain target name
     root: The root path to pull all packages from
+
   Returns:
     A tuple of a set of all packable paths, and a set of all paths which
     are also native ELFs
@@ -784,6 +789,7 @@ def _EnvdGetVar(envd, var):
   Args:
     envd: The env.d file to load (may be a glob path)
     var: The var to extract
+
   Returns:
     The value of |var|
   """

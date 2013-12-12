@@ -149,6 +149,7 @@ def ErrorLimitHit(num_errors, watermark_errors):
   Args:
     num_errors: A multiprocessing.Value of the raw number of failures.
     watermark_errors: A multiprocessing.Value of the current rate of failures.
+
   Returns:
     True if our error limits have been exceeded.
   """
@@ -192,6 +193,7 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     num_errors: An object to update with the error count (needs a .value member)
     watermark_errors: An object to track current error behavior (needs a .value)
     failed_queue: When a symbol fails, add it to this queue
+
   Returns:
     The number of errors that were encountered.
   """
@@ -268,6 +270,7 @@ def SymbolFinder(paths):
   Args:
     paths: A list of input paths to walk. Files are returned w/out any checks.
       Dirs are searched for files that end in ".sym".
+
   Returns:
     Yield every viable sym file.
   """
@@ -302,6 +305,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       otherwise search |breakpad_dir|
     root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
     retry: Whether we should retry failures.
+
   Returns:
     The number of errors that were encountered.
   """

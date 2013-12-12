@@ -256,10 +256,11 @@ class MockedCallResults(object):
   def LookupResult(self, args, kwargs=None, hook_args=None, hook_kwargs=None):
     """For a given mocked function call lookup the recorded internal results.
 
-    args: A list containing positional args the function was called with.
-    kwargs: A dict containing keyword args the function was called with.
-    hook_args: A list of positional args to call the hook with.
-    hook_kwargs: A dict of key/value args to call the hook with.
+    Args:
+      args: A list containing positional args the function was called with.
+      kwargs: A dict containing keyword args the function was called with.
+      hook_args: A list of positional args to call the hook with.
+      hook_kwargs: A dict of key/value args to call the hook with.
 
     Returns:
       The recorded result for the invocation.

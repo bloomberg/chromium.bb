@@ -66,13 +66,14 @@ class _Lock(cros_build_lib.MasterPidContextManager):
       fcntl.lockf(self.fd, flags)
 
   def read_lock(self, message="taking read lock"):
-    """
-    Take a read lock (shared), downgrading from write if required.
+    """Take a read lock (shared), downgrading from write if required.
 
     Args:
       message: A description of what/why this lock is being taken.
+
     Returns:
       self, allowing it to be used as a `with` target.
+
     Raises:
       IOError if the operation fails in some way.
     """
@@ -80,8 +81,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     return self
 
   def write_lock(self, message="taking write lock"):
-    """
-    Take a write lock (exclusive), upgrading from read if required.
+    """Take a write lock (exclusive), upgrading from read if required.
 
     Note that if the lock state is being upgraded from read to write,
     a deadlock potential exists- as such we *will* release the lock
@@ -91,8 +91,10 @@ class _Lock(cros_build_lib.MasterPidContextManager):
 
     Args:
       message: A description of what/why this lock is being taken.
+
     Returns:
       self, allowing it to be used as a `with` target.
+
     Raises:
       IOError if the operation fails in some way.
     """
@@ -100,8 +102,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     return self
 
   def unlock(self):
-    """
-    Release any locks held.  Noop if no locks are held.
+    """Release any locks held.  Noop if no locks are held.
 
     Raises:
       IOError if the operation fails in some way.
@@ -115,9 +116,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     self.close()
 
   def close(self):
-    """
-    Release the underlying lock and close the fd.
-    """
+    """Release the underlying lock and close the fd."""
     if self._fd is not None:
       self.unlock()
       os.close(self._fd)
@@ -168,7 +167,6 @@ class FileLock(_Lock):
 
 
 class ProcessLock(_Lock):
-
   """Process level locking visible to parent/child only.
 
   This lock is basically a more robust version of what

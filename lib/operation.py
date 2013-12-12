@@ -406,7 +406,6 @@ class Operation:
 
     Args:
       request: True to request verbose mode if available, False to do nothing.
-
     """
     old_verbose = self.verbose
     if request and not self.explicit_verbose:

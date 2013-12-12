@@ -184,6 +184,7 @@ class Copier(object):
       path: A Path instance that specifies what is to be copied.
       strict: If set, enforce that all optional files are copied.
       sloppy: If set, ignore when mandatory artifacts are missing.
+
     Returns:
       A list of the artifacts copied.
     """

@@ -126,6 +126,7 @@ def _GetLatestRelease(base_url, branch=None):
   Args:
     branch:  If set, gets the latest release for branch, otherwise latest
       release.
+
   Returns:
     Latest version string.
   """
@@ -189,8 +190,10 @@ def FindChromeCandidates(overlay_dir):
 
   Args:
     overlay_dir: The path to chrome's portage overlay dir.
+
   Returns:
     Tuple [unstable_ebuild, stable_ebuilds].
+
   Raises:
     Exception: if no unstable ebuild exists for Chrome.
   """
@@ -230,8 +233,9 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
     sticky_branch:  The the branch that is currently sticky with Major/Minor
       components.  For example: 9.0.553. Can be None but not if chrome_rev
       is CHROME_REV_STICKY.
+
   Returns:
-    Returns the EBuild, otherwise None if none found.
+    The EBuild, otherwise None if none found.
   """
   candidates = []
   if chrome_rev in [constants.CHROME_REV_LOCAL, constants.CHROME_REV_TOT,
@@ -280,6 +284,7 @@ def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):
   Args:
     old_chrome_version: version to diff from
     chrome_version: version to which to diff
+
   Returns:
     The desired URL.
   """
@@ -297,6 +302,7 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
     old_chrome: ebuild for the version to diff from
     new_chrome: ebuild for the version to which to diff
     chrome_rev: one of constants.VALID_CHROME_REVISIONS
+
   Returns:
     The desired URL.
   """
@@ -329,6 +335,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
     chrome_version:  The \d.\d.\d.\d version of Chrome.
     commit:  Used with constants.CHROME_REV_TOT.  The svn revision of chrome.
     overlay_dir:  Path to the chromeos-chrome package dir.
+
   Returns:
     Full portage version atom (including rc's, etc) that was revved.
   """

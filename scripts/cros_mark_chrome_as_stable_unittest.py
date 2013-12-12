@@ -223,8 +223,11 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     self.assertEqual('8.0.224.2', release)
 
   def testLatestChromeRevisionListLink(self):
-    """Tests that we can generate a link to the revision list between the
-    latest Chromium release and the last one we successfully built."""
+    """Tests link generation to rev lists.
+
+    Verifies that we can generate a link to the revision list between the
+    latest Chromium release and the last one we successfully built.
+    """
     _TouchAndWrite(self.latest_new, stable_data)
     expected = cros_mark_chrome_as_stable.GetChromeRevisionLinkFromVersions(
         self.latest_stable_version, self.latest_new_version)

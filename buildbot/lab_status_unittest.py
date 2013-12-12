@@ -34,6 +34,7 @@ class TestLabStatus(cros_test_lib.MockTestCase):
   def _TestGetLabStatusHelper(self, lab_message, general_state, expected_return,
                               max_attempts=5, failed_attempts=0):
     """Tests whether we get correct lab status.
+
     Args:
       lab_message: A message describing lab status and
                    disabled boards, e.g. "Lab is Up [stumpy, kiev]"

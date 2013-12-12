@@ -265,12 +265,11 @@ def identifyLicenseText(workdir, metadata_licenses, stock_licenses):
     license_text = _GetStockLicense(metadata_licenses, stock_licenses)
   if not license_text:
     raise Exception("failed finding a license in both the source, and a "
-      "usable stock license")
+                    "usable stock license")
   return license_text
 
 def EvaluateTemplate(template, env, escape=True):
-  """Expand a template with variables like {{foo}} using a
-  dictionary of expansions."""
+  """Expand |template| with content like {{foo}} using a dict of expansions."""
   for key, val in env.items():
     if escape:
       val = cgi.escape(val)

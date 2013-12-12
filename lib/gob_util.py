@@ -89,6 +89,7 @@ def ReadHttpResponse(conn, ignore_404=True):
     ignore_404: For many requests, gerrit-on-borg will return 404 if the request
                 doesn't match the database contents.  In most such cases, we
                 want the API to return None rather than raise an Exception.
+
   Returns:
     A string buffer containing the connection's reply.
   """
@@ -140,8 +141,7 @@ def ReadHttpJsonResponse(conn, ignore_404=True):
 
 def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
                  sortkey=None):
-  """
-  Queries a gerrit-on-borg server for changes matching query terms.
+  """Queries a gerrit-on-borg server for changes matching query terms.
 
   Args:
     param_dict: A dictionary of search parameters, as documented here:
@@ -150,6 +150,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
     limit: Maximum number of results to return.
     o_params: A list of additional output specifiers, as documented here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+
   Returns:
     A list of json-decoded query results.
   """

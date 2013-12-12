@@ -235,12 +235,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                          retries=manifest_version.NUM_RETRIES):
     """Creates, syncs to, and returns the next candidate manifest.
 
-      Args:
-        validation_pool: Validation pool to apply to the manifest before
-          publishing.
-        retries: Number of retries for updating the status.
-      Raises:
-        GenerateBuildSpecException in case of failure to generate a buildspec
+    Args:
+      validation_pool: Validation pool to apply to the manifest before
+        publishing.
+      retries: Number of retries for updating the status.
+
+    Raises:
+      GenerateBuildSpecException in case of failure to generate a buildspec
     """
     self.CheckoutSourceCode()
 
@@ -308,11 +309,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     This method sets up an LKGM manager and publishes a new manifest to the
     manifest versions repo based on the passed in manifest but filtering
     internal repositories and changes out of it.
+
     Args:
       manifest: A manifest that possibly contains private changes/projects. It
         is named with the given version we want to create a new manifest from
         i.e R20-1920.0.1-rc7.xml where R20-1920.0.1-rc7 is the version.
       retries: Number of retries for updating the status.
+
     Raises:
       GenerateBuildSpecException in case of failure to check-in the new
         manifest because of a git error or the manifest is already checked-in.
@@ -341,12 +344,15 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
   def GetLatestCandidate(self):
     """Gets and syncs to the next candiate manifest.
-      Args:
-        retries: Number of retries for updating the status
-      Returns:
-        Local path to manifest to build or None in case of no need to build.
-      Raises:
-        GenerateBuildSpecException in case of failure to generate a buildspec
+
+    Args:
+      retries: Number of retries for updating the status
+
+    Returns:
+      Local path to manifest to build or None in case of no need to build.
+
+    Raises:
+      GenerateBuildSpecException in case of failure to generate a buildspec
     """
     def _AttemptToGetLatestCandidate():
       """Attempts to acquire latest candidate using manifest repo."""

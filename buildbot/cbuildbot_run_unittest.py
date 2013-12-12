@@ -40,6 +40,7 @@ def _NewBuilderRun(options=None, config=None):
   Args:
     options: Specify options or default to DEFAULT_OPTIONS.
     config: Specify build config or default to DEFAULT_CONFIG.
+
   Returns:
     BuilderRun object.
   """
@@ -54,6 +55,7 @@ def _NewChildBuilderRun(child_index, options=None, config=None):
   Args:
     options: Specify options or default to DEFAULT_OPTIONS.
     config: Specify build config or default to DEFAULT_CONFIG.
+
   Returns:
     ChildBuilderRun object.
   """
@@ -158,6 +160,7 @@ class BuilderRunTest(cros_test_lib.TestCase):
       method: A BuilderRun method to call.
       options_dict: Extend default options with this.
       config_dict: Extend default config with this.
+
     Returns:
       Result of calling the given method.
     """

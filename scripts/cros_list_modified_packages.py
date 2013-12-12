@@ -144,7 +144,8 @@ def ListWorkonPackagesInfo(board, host):
     board: The board to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
 
-  Returns a list of unique packages being worked on.
+  Returns:
+    A list of unique packages being worked on.
   """
   # Import portage late so that this script can be imported outside the chroot.
   # pylint: disable=W0404

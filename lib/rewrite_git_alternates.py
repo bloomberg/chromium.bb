@@ -175,8 +175,7 @@ def _RebuildRepoCheckout(target_root, reference_map,
 
 
 def WalkReferences(repo_root, max_depth=5, suppress=()):
-  """
-  Given a repo checkout root, find the repo's it references up to max_depth
+  """Given a repo checkout root, find the repo's it references up to max_depth.
 
   Args:
     repo_root: The root of a repo checkout to start from
@@ -222,8 +221,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
 
 def RebuildRepoCheckout(repo_root, initial_reference,
                         chroot_reference_root=None):
-  """
-  Rebuild a repo checkouts ondisk 'alternate tree' rewriting the repo to use it
+  """Rebuild a repo checkout's 'alternate tree' rewriting the repo to use it
 
   Args:
     repo_root: absolute path to the root of a repository checkout

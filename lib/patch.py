@@ -546,6 +546,7 @@ class GitRepoPatch(object):
 
     Args:
       git_repo: The git repository to fetch this patch into.
+
     Returns:
       The sha1 of the patch.
     """
@@ -609,7 +610,8 @@ class GitRepoPatch(object):
     Args:
       git_repo: Git repository to operate upon.
 
-    returns: A dictionary of path -> modification_type tuples.  See
+    Returns:
+      A dictionary of path -> modification_type tuples.  See
       `git log --help`, specifically the --diff-filter section for details.
     """
 
@@ -903,14 +905,14 @@ class GitRepoPatch(object):
   def GetCheckout(self, manifest, strict=True):
     """Get the ProjectCheckout associated with this patch.
 
-    Raises:
-      ChangeMatchesMultipleCheckouts if there are multiple checkouts that
-      match this change.
-
     Args:
       manifest: A ManifestCheckout object.
       strict: If the change refers to a project/branch that is not in the
         manifest, raise a ChangeNotInManifest error.
+
+    Raises:
+      ChangeMatchesMultipleCheckouts if there are multiple checkouts that
+      match this change.
     """
     checkouts = manifest.FindCheckouts(self.project, self.tracking_branch)
     if len(checkouts) != 1:
@@ -1020,6 +1022,7 @@ class LocalPatch(GitRepoPatch):
       dryrun: Do the git push with --dry-run
       reviewers: Iterable of reviewers to add.
       cc: Iterable of people to add to cc.
+
     Returns:
       A list of gerrit URLs found in the output
     """
@@ -1271,6 +1274,7 @@ class GerritPatch(GitRepoPatch):
 
     Args:
       field: Which field to check ('VRIF', 'CRVW', ...).
+
     Returns:
       Most recent field value (as str) or '0' if no such field.
     """

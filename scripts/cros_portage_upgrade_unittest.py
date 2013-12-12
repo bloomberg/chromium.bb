@@ -420,19 +420,19 @@ class CpuTestBase(cros_test_lib.MoxOutputTestCase):
     This leverages test code in existing Portage modules to create an ebuild
     hierarchy.  This can be a little slow.
 
-    |ebuilds| is a list of hashes representing ebuild files in
-    a portdir.
-    |installed| is a list of hashes representing ebuilds files
-    already installed.
-    |world| is a list of lines to simulate in the world file.
-    |active| True means that os.environ variables should be set
-    to point to the created playground, such that Portage tools
-    (such as emerge) can be run now using the playground as the active
-    PORTDIR.  Also saves the playground as self._playground. If |active|
-    is False, then no os.environ variables are set and playground is
-    not saved (only returned).
+    Args:
+      ebuilds: A list of hashes representing ebuild files in a portdir.
+      installed: A list of hashes representing ebuilds files already installed.
+      world: A list of lines to simulate in the world file.
+      active: True means that os.environ variables should be set
+        to point to the created playground, such that Portage tools
+        (such as emerge) can be run now using the playground as the active
+        PORTDIR.  Also saves the playground as self._playground. If |active|
+        is False, then no os.environ variables are set and playground is
+        not saved (only returned).
 
-    Returns tuple (playground, envvars).
+    Returns:
+      Tuple (playground, envvars).
     """
 
     # TODO(mtennant): Support multiple overlays?  This essentially
@@ -544,15 +544,17 @@ class CopyUpstreamTest(CpuTestBase):
                              ebuilds=None, missing=False):
     """Hack to insert an eclass into the playground source.
 
-    |eclass| Name of eclass to create (without .eclass suffix).  Will be
-    created as an empty file unless |lines| is specified.
-    |lines| Lines of text to put into created eclass, if given.
-    |ebuilds| List of ebuilds to put inherit line into.  Should be path
-    to ebuild from playground portdir.
-    |missing| If True, do not actually create the eclass file.  Only makes
-    sense if |ebuilds| is non-empty, presumably to test inherit failure.
+    Args:
+      eclass: Name of eclass to create (without .eclass suffix).  Will be
+        created as an empty file unless |lines| is specified.
+      lines: Lines of text to put into created eclass, if given.
+      ebuilds: List of ebuilds to put inherit line into.  Should be path
+        to ebuild from playground portdir.
+      missing: If True, do not actually create the eclass file.  Only makes
+        sense if |ebuilds| is non-empty, presumably to test inherit failure.
 
-    Return full path to the eclass file, whether it was created or not.
+    Returns:
+      Full path to the eclass file, whether it was created or not.
     """
     portdir = self._GetPlaygroundPortdir()
     eclass_path = os.path.join(portdir, 'eclass', '%s.eclass' % eclass)

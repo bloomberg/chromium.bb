@@ -86,6 +86,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
     draft: If True, upload to refs/draft/|branch| rather than refs/for/|branch|.
     dryrun: Don't actually upload a change but go through all the steps up to
       and including git push --dry-run.
+
   Returns:
     A list of all the gerrit URLs found.
   """

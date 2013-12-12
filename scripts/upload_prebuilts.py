@@ -84,6 +84,7 @@ class BuildTarget(object):
 
 def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   """Update the key in file with the value passed.
+
   File format:
     key="value"
   Note quotes are added automatically
@@ -224,9 +225,11 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
 
 def GetBoardOverlay(build_path, target):
   """Get the path to the board variant.
+
    Args:
      build_path: The path to the root of the build directory
      target: The target board as a BuildTarget object.
+
    Returns:
      The last overlay configured for the given board as a string.
   """
@@ -240,13 +243,13 @@ def GetBoardOverlay(build_path, target):
 def DeterminePrebuiltConfFile(build_path, target):
   """Determine the prebuilt.conf file that needs to be updated for prebuilts.
 
-    Args:
-      build_path: The path to the root of the build directory
-      target: String representation of the board. This includes host and board
-        targets
+  Args:
+    build_path: The path to the root of the build directory
+    target: String representation of the board. This includes host and board
+      targets
 
-    Returns
-      A string path to a prebuilt.conf file to be updated.
+  Returns:
+    A string path to a prebuilt.conf file to be updated.
   """
   if _HOST_ARCH == target:
     # We are host.
@@ -358,9 +361,7 @@ class PrebuiltUploader(object):
     Args:
       package_path: The path to the packages dir.
       url_suffix: The remote subdirectory where we should upload the packages.
-
     """
-
     # Process Packages file, removing duplicates and filtered packages.
     pkg_index = binpkg.GrabLocalPackageIndex(package_path)
     pkg_index.SetUploadLocation(self._binhost_base_url, url_suffix)
@@ -577,8 +578,9 @@ def _AddSlaveProfile(_option, _opt_str, value, parser):
 def ParseOptions():
   """Returns options given by the user and the target specified.
 
-  Returns a tuple containing a parsed options object and BuildTarget.
-  target instance is None if no board is specified.
+  Returns:
+    A tuple containing a parsed options object and BuildTarget.
+    The target instance is None if no board is specified.
   """
   parser = optparse.OptionParser()
   parser.add_option('-H', '--binhost-base-url', dest='binhost_base_url',

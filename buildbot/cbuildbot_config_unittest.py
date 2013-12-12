@@ -42,9 +42,8 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testConfigsKeysMismatch(self):
     """Verify that all configs contain exactly the default keys.
 
-       This checks for mispelled keys, or keys that are somehow removed.
+    This checks for mispelled keys, or keys that are somehow removed.
     """
-
     expected_keys = set(cbuildbot_config._default.keys())
     for build_name, config in cbuildbot_config.config.iteritems():
       config_keys = set(config.keys())
@@ -58,16 +57,16 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                                       (build_name, list(missing_keys))))
 
   def testConfigsHaveName(self):
-    """ Configs must have names set."""
+    """Configs must have names set."""
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(build_name == config['name'])
 
   def testConfigUseflags(self):
-    """ Useflags must be lists.
-        Strings are interpreted as arrays of characters for this, which is not
-        useful.
-    """
+    """Useflags must be lists.
 
+    Strings are interpreted as arrays of characters for this, which is not
+    useful.
+    """
     for build_name, config in cbuildbot_config.config.iteritems():
       useflags = config.get('useflags')
       if not useflags is None:
@@ -77,7 +76,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testBoards(self):
     """Verify 'boards' is explicitly set for every config."""
-
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(isinstance(config['boards'], (tuple, list)),
                       "Config %s doesn't have a list of boards." % build_name)
@@ -88,7 +86,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testOverlaySettings(self):
     """Verify overlays and push_overlays have legal values."""
-
     for build_name, config in cbuildbot_config.config.iteritems():
       overlays = config['overlays']
       push_overlays = config['push_overlays']
@@ -132,7 +129,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testChromeRev(self):
     """Verify chrome_rev has an expected value"""
-
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(
           config['chrome_rev'] in constants.VALID_CHROME_REVISIONS + [None],
@@ -146,7 +142,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testValidVMTestType(self):
     """Verify vm_tests has an expected value"""
-
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(
           config['vm_tests'] in constants.VALID_VM_TEST_TYPES + [None],
@@ -169,7 +164,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testBuildToRun(self):
     """Verify we don't try to run tests without building them."""
-
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertFalse(
           isinstance(config['useflags'], list) and
@@ -178,13 +172,12 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testARMNoVMTest(self):
     """Verify ARM builds don't get VMTests turned on by accident"""
-
     for build_name, config in cbuildbot_config.config.iteritems():
       if build_name.startswith('arm-') or config['arm']:
         self.assertTrue(config['vm_tests'] is None,
                         "ARM builder %s can't run vm tests!" % build_name)
 
-  #TODO: Add test for compare functionality
+  # TODO: Add test for compare functionality
   def testJSONDumpLoadable(self):
     """Make sure config export functionality works."""
     cwd = os.path.dirname(os.path.abspath(__file__))

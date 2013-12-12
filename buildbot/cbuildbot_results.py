@@ -168,8 +168,8 @@ class _Results(object):
   def PreviouslyCompletedRecord(self, name):
     """Check to see if this stage was previously completed.
 
-       Returns:
-         A boolean showing the stage was successful in the previous run.
+    Returns:
+      A boolean showing the stage was successful in the previous run.
     """
     return self._previous.get(name)
 
@@ -198,18 +198,18 @@ class _Results(object):
   def Record(self, name, result, description=None, prefix=None, time=0):
     """Store off an additional stage result.
 
-       Args:
-         name: The name of the stage (e.g. HWTest [bvt])
-         result:
-           Result should be one of:
-             Results.SUCCESS if the stage was successful.
-             Results.SKIPPED if the stage was skipped.
-             Results.FORGIVEN if the stage had warnings.
-             Otherwise, it should be the exception stage errored with.
-         description:
-           The textual backtrace of the exception, or None
-         prefix: The prefix of the stage (e.g. HWTest). Defaults to
-           the value of name.
+    Args:
+      name: The name of the stage (e.g. HWTest [bvt])
+      result:
+        Result should be one of:
+          Results.SUCCESS if the stage was successful.
+          Results.SKIPPED if the stage was skipped.
+          Results.FORGIVEN if the stage had warnings.
+          Otherwise, it should be the exception stage errored with.
+      description:
+        The textual backtrace of the exception, or None
+      prefix: The prefix of the stage (e.g. HWTest). Defaults to
+        the value of name.
     """
     if prefix is None:
       prefix = name
@@ -218,16 +218,16 @@ class _Results(object):
   def Get(self):
     """Fetch stage results.
 
-       Returns:
-         A list with one entry per stage run with a result.
+    Returns:
+      A list with one entry per stage run with a result.
     """
     return self._results_log
 
   def GetPrevious(self):
     """Fetch stage results.
 
-       Returns:
-         A list of stages names that were completed in a previous run.
+    Returns:
+      A list of stages names that were completed in a previous run.
     """
     return self._previous
 
