@@ -312,7 +312,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                               << signal_name << ".";
   }
 
-  // Make a method call to power manager with no arguments and no response.
+  // Makes a method call to power manager with no arguments and no response.
   void SimpleMethodCallToPowerManager(const std::string& method_name) {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  method_name);
@@ -324,10 +324,16 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void NameOwnerChangedReceived(const std::string& old_owner,
                                 const std::string& new_owner) {
-    VLOG(1) << "Power manager restarted";
-    RegisterSuspendDelay();
-    SetIsProjecting(last_is_projecting_);
-    FOR_EACH_OBSERVER(Observer, observers_, PowerManagerRestarted());
+    VLOG(1) << "Power manager restarted (old owner was "
+            << (old_owner.empty() ? "[none]" : old_owner.c_str())
+            << ", new owner is "
+            << (new_owner.empty() ? "[none]" : new_owner.c_str()) << ")";
+    if (!new_owner.empty()) {
+      VLOG(1) << "Sending initial state to power manager";
+      RegisterSuspendDelay();
+      SetIsProjecting(last_is_projecting_);
+      FOR_EACH_OBSERVER(Observer, observers_, PowerManagerRestarted());
+    }
   }
 
   void BrightnessChangedReceived(dbus::Signal* signal) {
