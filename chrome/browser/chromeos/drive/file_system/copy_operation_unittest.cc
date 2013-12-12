@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"

@@ -75,7 +75,7 @@ class FileCache {
   scoped_ptr<Iterator> GetIterator();
 
   // Frees up disk space to store a file with |num_bytes| size content, while
-  // keeping kMinFreeSpace bytes on the disk, if needed.
+  // keeping cryptohome::kMinFreeSpaceInBytes bytes on the disk, if needed.
   // Returns true if we successfully manage to have enough space, otherwise
   // false.
   bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
@@ -153,7 +153,7 @@ class FileCache {
   void DestroyOnBlockingPool();
 
   // Returns true if we have sufficient space to store the given number of
-  // bytes, while keeping kMinFreeSpace bytes on the disk.
+  // bytes, while keeping cryptohome::kMinFreeSpaceInBytes bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
   // Renames cache files from old "prefix:id.md5" format to the new format.
@@ -176,14 +176,6 @@ class FileCache {
   base::WeakPtrFactory<FileCache> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileCache);
 };
-
-// The minimum free space to keep. Operations that add cache files return
-// FILE_ERROR_NO_LOCAL_SPACE if the available space is smaller than
-// this value.
-//
-// Copied from cryptohome/homedirs.h.
-// TODO(hashimoto): Share the constant.
-const int64 kMinFreeSpace = 512 * 1LL << 20;
 
 }  // namespace internal
 }  // namespace drive

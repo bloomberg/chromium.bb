@@ -22,6 +22,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "third_party/cros_system_api/constants/cryptohome.h"
 
 using content::BrowserThread;
 
@@ -488,7 +489,7 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
     free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
 
   // Subtract this as if this portion does not exist.
-  free_space -= kMinFreeSpace;
+  free_space -= cryptohome::kMinFreeSpaceInBytes;
   return (free_space >= num_bytes);
 }
 

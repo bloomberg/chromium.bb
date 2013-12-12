@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
+#include "third_party/cros_system_api/constants/cryptohome.h"
 
 class PrefRegistrySimple;
 
@@ -25,7 +25,7 @@ namespace drive {
 namespace test_util {
 
 // Disk space size used by FakeFreeDiskSpaceGetter.
-const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
+const int64 kLotsOfSpace = cryptohome::kMinFreeSpaceInBytes * 10;
 
 // Runs a task posted to the blocking pool, including subsequent tasks posted
 // to the UI message loop and the blocking pool.
