@@ -636,9 +636,7 @@ class BASE_EXPORT TraceLog {
   bool CheckGeneration(int generation) const {
     return generation == this->generation();
   }
-  int NextGeneration() {
-    return static_cast<int>(subtle::NoBarrier_AtomicIncrement(&generation_, 1));
-  }
+  void UseNextTraceBuffer();
 
   TimeTicks OffsetNow() const {
     return OffsetTimestamp(TimeTicks::NowFromSystemTraceTime());

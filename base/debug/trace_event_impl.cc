@@ -1282,8 +1282,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
 
     if (options != old_options) {
       subtle::NoBarrier_Store(&trace_options_, options);
-      logged_events_.reset(CreateTraceBuffer());
-      NextGeneration();
+      UseNextTraceBuffer();
     }
 
     num_traces_recorded_++;
@@ -1573,8 +1572,7 @@ void TraceLog::FinishFlush(int generation) {
     AutoLock lock(lock_);
 
     previous_logged_events.swap(logged_events_);
-    logged_events_.reset(CreateTraceBuffer());
-    NextGeneration();
+    UseNextTraceBuffer();
     thread_message_loops_.clear();
 
     flush_message_loop_proxy_ = NULL;
@@ -1647,6 +1645,13 @@ void TraceLog::FlushButLeaveBufferIntact(
 
   ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
                                   flush_output_callback);
+}
+
+void TraceLog::UseNextTraceBuffer() {
+  logged_events_.reset(CreateTraceBuffer());
+  subtle::NoBarrier_AtomicIncrement(&generation_, 1);
+  thread_shared_chunk_.reset();
+  thread_shared_chunk_index_ = 0;
 }
 
 TraceEventHandle TraceLog::AddTraceEvent(
