@@ -189,6 +189,18 @@ class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.sendKeyEvents",
+                             INPUT_IME_SENDKEYEVENTS)
+
+ protected:
+  virtual ~InputImeSendKeyEventsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class InputImeAPI : public ProfileKeyedAPI,
                     public content::NotificationObserver {
  public:

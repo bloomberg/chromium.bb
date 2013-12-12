@@ -185,9 +185,40 @@
         ]
       },
       {
+        "name": "sendKeyEvents",
+        "type": "function",
+        "description": "Sends the key events.  This function is expected to be used by virtual keyboards.  When key(s) on a virtual keyboard is pressed by a user, this function is used to propagate that event to the system.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context where the key events will be sent",
+                "type": "integer"
+              },
+              "keyData": {
+                "type": "array",
+                "description": "Data on the key event.",
+                "items": {
+                  "$ref": "KeyboardEvent"
+                }
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "setCandidateWindowProperties",
         "type": "function",
-        "description": "Sets the properties of the candidate window. This fails if the extension doesn’t own the active IME",
+        "description": "Sets the properties of the candidate window. This fails if the extension doesn't own the active IME",
         "parameters": [
           {
             "name": "parameters",
@@ -257,7 +288,7 @@
       {
         "name": "setCandidates",
         "type": "function",
-        "description": "Sets the current candidate list. This fails if this extension doesn’t own the active IME",
+        "description": "Sets the current candidate list. This fails if this extension doesn't own the active IME",
         "parameters": [
           {
             "name": "parameters",

@@ -22,6 +22,7 @@ namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 namespace DeleteSurroundingText =
     extensions::api::input_ime::DeleteSurroundingText;
 namespace UpdateMenuItems = extensions::api::input_ime::UpdateMenuItems;
+namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
 namespace SetMenuItems = extensions::api::input_ime::SetMenuItems;
 namespace SetCursorPosition = extensions::api::input_ime::SetCursorPosition;
 namespace SetCandidates = extensions::api::input_ime::SetCandidates;
@@ -496,6 +497,11 @@ bool InputImeCommitTextFunction::RunImpl() {
 
   SetResult(new base::FundamentalValue(
       engine->CommitText(params.context_id, params.text.c_str(), &error_)));
+  return true;
+}
+
+bool InputImeSendKeyEventsFunction::RunImpl() {
+  // TODO(komatsu): Implement here.
   return true;
 }
 
