@@ -24535,6 +24535,21 @@ other types of suffix sets.
   <int value="201" label="DocumentBeforeUnloadFired"/>
   <int value="202" label="DocumentUnloadRegistered"/>
   <int value="203" label="DocumentUnloadFired"/>
+  <int value="204" label="SVGLocatableNearestViewportElement"/>
+  <int value="205" label="SVGLocatableFarthestViewportElement"/>
+  <int value="206" label="IsIndexElement"/>
+  <int value="207" label="HTMLHeadElementProfile"/>
+  <int value="208" label="OverflowChangedEvent"/>
+  <int value="209" label="SVGPointMatrixTransform"/>
+  <int value="210" label="HTMLHtmlElementManifest"/>
+  <int value="211" label="DOMFocusInOutEvent"/>
+  <int value="212" label="FileGetLastModifiedDate"/>
+  <int value="213" label="HTMLElementInnerText"/>
+  <int value="214" label="HTMLElementOuterText"/>
+  <int value="215" label="ReplaceDocumentViaJavaScriptURL"/>
+  <int value="216" label="ElementSetAttributeNodeNS"/>
+  <int value="217" label="ElementPrefixedMatchesSelector"/>
+  <int value="218" label="DOMImplementationCreateCSSStyleSheet"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
