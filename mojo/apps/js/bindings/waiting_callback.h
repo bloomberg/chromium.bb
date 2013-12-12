@@ -16,6 +16,8 @@ namespace js {
 class WaitingCallback : public gin::Wrappable<WaitingCallback>,
                         public BindingsSupport::AsyncWaitCallback {
  public:
+  static gin::WrapperInfo kWrapperInfo;
+
   static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate, v8::Handle<v8::Function> callback);
 

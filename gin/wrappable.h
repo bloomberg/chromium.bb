@@ -63,13 +63,11 @@ class WrappableBase {
 template<typename T>
 class Wrappable : public WrappableBase {
  public:
-  static WrapperInfo kWrapperInfo;
-
   // Retrieve (or create) the v8 wrapper object cooresponding to this object.
   // To customize the wrapper created for a subclass, override GetWrapperInfo()
   // instead of overriding this function.
   v8::Handle<v8::Object> GetWrapper(v8::Isolate* isolate) {
-    return GetWrapperImpl(isolate, &kWrapperInfo);
+    return GetWrapperImpl(isolate, &T::kWrapperInfo);
   }
 
  protected:
@@ -80,14 +78,6 @@ class Wrappable : public WrappableBase {
   DISALLOW_COPY_AND_ASSIGN(Wrappable);
 };
 
-
-// Subclasses of Wrappable must call this within a cc file to initialize their
-// WrapperInfo. This template must be used inside namespace gin.
-#define INIT_WRAPPABLE(TYPE)                              \
-  template <>                                             \
-  gin::WrapperInfo gin::Wrappable<TYPE>::kWrapperInfo = { \
-      gin::kEmbedderNativeGin                             \
-  }
 
 // This converter handles any subclass of Wrappable.
 template<typename T>

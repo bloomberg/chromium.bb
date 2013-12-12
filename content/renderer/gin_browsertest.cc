@@ -14,11 +14,15 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-namespace gin {
+namespace content {
 
-class TestGinObject : public Wrappable<TestGinObject> {
+namespace {
+
+class TestGinObject : public gin::Wrappable<TestGinObject> {
  public:
-  static Handle<TestGinObject> Create(v8::Isolate* isolate, bool* alive) {
+  static gin::WrapperInfo kWrapperInfo;
+
+  static gin::Handle<TestGinObject> Create(v8::Isolate* isolate, bool* alive) {
     return CreateHandle(isolate, new TestGinObject(alive));
   }
 
@@ -31,20 +35,14 @@ class TestGinObject : public Wrappable<TestGinObject> {
   DISALLOW_COPY_AND_ASSIGN(TestGinObject);
 };
 
-INIT_WRAPPABLE(TestGinObject);
-
-}  // namespace gin
-
-namespace content {
-
-namespace {
+gin::WrapperInfo TestGinObject::kWrapperInfo = { gin::kEmbedderNativeGin };
 
 void RegisterTemplates(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
 
   v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
   templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-  data->SetObjectTemplate(&gin::TestGinObject::kWrapperInfo, templ);
+  data->SetObjectTemplate(&TestGinObject::kWrapperInfo, templ);
 }
 
 class GinBrowserTest : public RenderViewTest {
@@ -81,7 +79,7 @@ TEST_F(GinBrowserTest, GinAndGarbageCollection) {
 
     // We create the object inside a scope so it's not kept alive by a handle
     // on the stack.
-    gin::TestGinObject::Create(isolate, &alive);
+    TestGinObject::Create(isolate, &alive);
   }
 
   CHECK(alive);

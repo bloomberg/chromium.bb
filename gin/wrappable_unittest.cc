@@ -17,6 +17,8 @@ namespace gin {
 
 class MyObject : public Wrappable<MyObject> {
  public:
+  static WrapperInfo kWrapperInfo;
+
   static gin::Handle<MyObject> Create(v8::Isolate* isolate) {
     return CreateHandle(isolate, new MyObject());
   }
@@ -32,14 +34,18 @@ class MyObject : public Wrappable<MyObject> {
 };
 
 class MyObject2 : public Wrappable<MyObject2> {
+ public:
+  static WrapperInfo kWrapperInfo;
 };
 
 class MyObjectBlink : public Wrappable<MyObjectBlink> {
+ public:
+  static WrapperInfo kWrapperInfo;
 };
 
-INIT_WRAPPABLE(gin::MyObject);
-INIT_WRAPPABLE(gin::MyObject2);
-INIT_WRAPPABLE(gin::MyObjectBlink);
+WrapperInfo MyObject::kWrapperInfo = { kEmbedderNativeGin };
+WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
+WrapperInfo MyObjectBlink::kWrapperInfo = { kEmbedderNativeGin };
 
 void RegisterTemplates(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);

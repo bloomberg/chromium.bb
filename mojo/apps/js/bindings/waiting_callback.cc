@@ -7,8 +7,6 @@
 #include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"
 
-INIT_WRAPPABLE(mojo::js::WaitingCallback);
-
 namespace mojo {
 namespace js {
 
@@ -19,6 +17,8 @@ v8::Handle<v8::String> GetHiddenPropertyName(v8::Isolate* isolate) {
 }
 
 }  // namespace
+
+gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };
 
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback)

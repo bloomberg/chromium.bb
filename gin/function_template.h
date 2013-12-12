@@ -59,6 +59,9 @@ struct CallbackParamTraits<const T*> {
 // This simple base class is used so that we can share a single object template
 // among every CallbackHolder instance.
 class CallbackHolderBase : public Wrappable<CallbackHolderBase> {
+ public:
+  static WrapperInfo kWrapperInfo;
+
  protected:
   virtual ~CallbackHolderBase() {}
 };
