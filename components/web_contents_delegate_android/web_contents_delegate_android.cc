@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/web_contents_delegate_android/color_chooser_android.h"
+#include "components/web_contents_delegate_android/validation_message_bubble_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/invalidate_type.h"
@@ -29,6 +30,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using content::ColorChooser;
+using content::RenderWidgetHostView;
 using content::WebContents;
 using content::WebContentsDelegate;
 
@@ -311,6 +313,37 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
       env, obj.obj());
 }
 
+void WebContentsDelegateAndroid::ShowValidationMessage(
+    WebContents* web_contents,
+    const gfx::Rect& anchor_in_root_view,
+    const string16& main_text,
+    const string16& sub_text) {
+  RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
+  if (rwhv) {
+    validation_message_bubble_.reset(
+        new ValidationMessageBubbleAndroid(rwhv->GetRenderWidgetHost(),
+                                           anchor_in_root_view,
+                                           main_text,
+                                           sub_text));
+  }
+}
+
+void WebContentsDelegateAndroid::HideValidationMessage(
+    WebContents* web_contents) {
+  validation_message_bubble_.reset();
+}
+
+void WebContentsDelegateAndroid::MoveValidationMessage(
+    WebContents* web_contents,
+    const gfx::Rect& anchor_in_root_view) {
+  if (!validation_message_bubble_)
+    return;
+  RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
+  if (rwhv) {
+    validation_message_bubble_->SetPositionRelativeToAnchor(
+        rwhv->GetRenderWidgetHost(), anchor_in_root_view);
+  }
+}
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

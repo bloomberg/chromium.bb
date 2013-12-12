@@ -84,7 +84,6 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/browser/validation_message_message_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -920,7 +919,6 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->AddFilter(new ChromeNetBenchmarkingMessageFilter(
       id, profile, context));
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
-  host->AddFilter(new ValidationMessageMessageFilter(id));
   host->AddFilter(new TtsMessageFilter(id, profile));
 #if defined(ENABLE_WEBRTC)
   WebRtcLoggingHandlerHost* webrtc_logging_handler_host =

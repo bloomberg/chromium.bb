@@ -134,6 +134,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/unload_controller.h"
+#include "chrome/browser/ui/validation_message_bubble.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -163,6 +164,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -212,6 +214,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;
+using content::RenderWidgetHostView;
 using content::SiteInstance;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -1230,6 +1233,36 @@ bool Browser::TabsNeedBeforeUnloadFired() {
 
 void Browser::OverscrollUpdate(int delta_y) {
   window_->OverscrollUpdate(delta_y);
+}
+
+void Browser::ShowValidationMessage(content::WebContents* web_contents,
+                                    const gfx::Rect& anchor_in_root_view,
+                                    const string16& main_text,
+                                    const string16& sub_text) {
+  RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
+  if (rwhv) {
+    validation_message_bubble_ =
+        chrome::ValidationMessageBubble::CreateAndShow(
+            rwhv->GetRenderWidgetHost(),
+            anchor_in_root_view,
+            main_text,
+            sub_text);
+  }
+}
+
+void Browser::HideValidationMessage(content::WebContents* web_contents) {
+  validation_message_bubble_.reset();
+}
+
+void Browser::MoveValidationMessage(content::WebContents* web_contents,
+                                    const gfx::Rect& anchor_in_root_view) {
+  if (!validation_message_bubble_)
+    return;
+  RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
+  if (rwhv) {
+    validation_message_bubble_->SetPositionRelativeToAnchor(
+        rwhv->GetRenderWidgetHost(), anchor_in_root_view);
+  }
 }
 
 bool Browser::IsMouseLocked() const {

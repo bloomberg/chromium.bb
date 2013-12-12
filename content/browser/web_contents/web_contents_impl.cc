@@ -550,6 +550,12 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
+                        OnShowValidationMessage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HideValidationMessage,
+                        OnHideValidationMessage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
+                        OnMoveValidationMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   render_view_message_source_ = NULL;
@@ -1599,6 +1605,26 @@ SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(
 
 FrameTree* WebContentsImpl::GetFrameTree() {
   return &frame_tree_;
+}
+
+void WebContentsImpl::OnShowValidationMessage(
+    const gfx::Rect& anchor_in_root_view,
+    const string16& main_text,
+    const string16& sub_text) {
+  if (delegate_)
+    delegate_->ShowValidationMessage(
+        this, anchor_in_root_view, main_text, sub_text);
+}
+
+void WebContentsImpl::OnHideValidationMessage() {
+  if (delegate_)
+    delegate_->HideValidationMessage(this);
+}
+
+void WebContentsImpl::OnMoveValidationMessage(
+    const gfx::Rect& anchor_in_root_view) {
+  if (delegate_)
+    delegate_->MoveValidationMessage(this, anchor_in_root_view);
 }
 
 void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {

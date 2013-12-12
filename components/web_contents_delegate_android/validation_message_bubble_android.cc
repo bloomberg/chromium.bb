@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/validation_message_bubble_android.h"
+#include "components/web_contents_delegate_android/validation_message_bubble_android.h"
 
 #include "base/android/jni_string.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -24,6 +24,8 @@ inline ContentViewCore* GetContentViewCoreFrom(RenderWidgetHost* widget_host) {
 }
 
 }
+
+namespace web_contents_delegate_android {
 
 ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
     RenderWidgetHost* widget_host,
@@ -65,15 +67,4 @@ bool ValidationMessageBubbleAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-namespace chrome {
-
-scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
-    RenderWidgetHost* widget_host,
-    const gfx::Rect& anchor_in_root_view,
-    const base::string16& main_text,
-    const base::string16& sub_text) {
-  return scoped_ptr<ValidationMessageBubble>(new ValidationMessageBubbleAndroid(
-      widget_host, anchor_in_root_view, main_text, sub_text)).Pass();
-}
-
-}  // namespace chrome
+}  // namespace web_contents_delegate_android

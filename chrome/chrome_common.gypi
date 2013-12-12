@@ -378,7 +378,6 @@
         'common/tts_utterance_request.h',
         'common/url_constants.cc',
         'common/url_constants.h',
-        'common/validation_message_messages.h',
         'common/web_application_info.cc',
         'common/web_application_info.h',
         'common/worker_thread_ticker.cc',

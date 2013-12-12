@@ -343,8 +343,6 @@
         'renderer/tts_dispatcher.h',
         'renderer/translate/translate_helper.cc',
         'renderer/translate/translate_helper.h',
-        'renderer/validation_message_agent.cc',
-        'renderer/validation_message_agent.h',
         'renderer/web_apps.cc',
         'renderer/web_apps.h',
         'renderer/webview_color_overlay.cc',

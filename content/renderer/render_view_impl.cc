@@ -15,6 +15,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -2619,6 +2620,41 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
       routing_id_, frame->document().url(), message, is_reload,
       &success, &ignored_result));
   return success;
+}
+
+void RenderViewImpl::showValidationMessage(
+    const blink::WebRect& anchor_in_root_view,
+    const blink::WebString& main_text,
+    const blink::WebString& sub_text,
+    blink::WebTextDirection hint) {
+  base::string16 wrapped_main_text = main_text;
+  base::string16 wrapped_sub_text = sub_text;
+  if (hint == blink::WebTextDirectionLeftToRight) {
+    wrapped_main_text =
+        base::i18n::GetDisplayStringInLTRDirectionality(wrapped_main_text);
+    if (!wrapped_sub_text.empty()) {
+      wrapped_sub_text =
+          base::i18n::GetDisplayStringInLTRDirectionality(wrapped_sub_text);
+    }
+  } else if (hint == blink::WebTextDirectionRightToLeft
+             && !base::i18n::IsRTL()) {
+    base::i18n::WrapStringWithRTLFormatting(&wrapped_main_text);
+    if (!wrapped_sub_text.empty()) {
+      base::i18n::WrapStringWithRTLFormatting(&wrapped_sub_text);
+    }
+  }
+  Send(new ViewHostMsg_ShowValidationMessage(
+    routing_id(), anchor_in_root_view, wrapped_main_text, wrapped_sub_text));
+}
+
+void RenderViewImpl::hideValidationMessage() {
+  Send(new ViewHostMsg_HideValidationMessage(routing_id()));
+}
+
+void RenderViewImpl::moveValidationMessage(
+    const blink::WebRect& anchor_in_root_view) {
+  Send(new ViewHostMsg_MoveValidationMessage(routing_id(),
+                                             anchor_in_root_view));
 }
 
 void RenderViewImpl::showContextMenu(

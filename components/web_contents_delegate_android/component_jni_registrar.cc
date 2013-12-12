@@ -7,12 +7,14 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "components/web_contents_delegate_android/color_chooser_android.h"
+#include "components/web_contents_delegate_android/validation_message_bubble_android.h"
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 
 namespace web_contents_delegate_android {
 
 static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
   { "ColorChooserAndroid", RegisterColorChooserAndroid },
+  { "ValidationMessageBubble", ValidationMessageBubbleAndroid::Register },
   { "WebContentsDelegateAndroid", RegisterWebContentsDelegateAndroid },
 };
 

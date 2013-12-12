@@ -440,6 +440,14 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool runModalBeforeUnloadDialog(blink::WebFrame* frame,
                                           bool is_reload,
                                           const blink::WebString& message);
+  virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
+                                     const blink::WebString& main_text,
+                                     const blink::WebString& sub_text,
+                                     blink::WebTextDirection hint) OVERRIDE;
+  virtual void hideValidationMessage() OVERRIDE;
+  virtual void moveValidationMessage(
+      const blink::WebRect& anchor_in_root_view) OVERRIDE;
+
   // DEPRECATED
   virtual bool runModalBeforeUnloadDialog(blink::WebFrame* frame,
                                           const blink::WebString& message);

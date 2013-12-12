@@ -698,6 +698,12 @@ class CONTENT_EXPORT WebContentsImpl
                            bool has_video,
                            bool has_audio,
                            bool is_playing);
+  void OnShowValidationMessage(const gfx::Rect& anchor_in_root_view,
+                               const string16& main_text,
+                               const string16& sub_text);
+  void OnHideValidationMessage();
+  void OnMoveValidationMessage(const gfx::Rect& anchor_in_root_view);
+
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked

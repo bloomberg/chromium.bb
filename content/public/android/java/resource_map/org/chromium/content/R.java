@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,22 +16,28 @@ package org.chromium.content;
  * com.android.internal.R.
  */
 public final class R {
+    /** Attributes */
     public static final class attr {
         public static int select_dialog_multichoice;
         public static int select_dialog_singlechoice;
     }
+    /** Dimensions */
     public static final class dimen {
         public static int link_preview_overlay_radius;
     }
+    /** Drawables */
     public static final class drawable {
         public static int ondemand_overlay;
     }
+    /** id */
     public static final class id {
         public static int ampm;
+        public static int arrow_image;
         public static int date_picker;
         public static int date_time_suggestion_value;
         public static int date_time_suggestion_label;
         public static int hour;
+        public static int main_text;
         public static int milli;
         public static int minute;
         public static int pickers;
@@ -45,18 +51,23 @@ public final class R {
         public static int select_action_menu_paste;
         public static int select_action_menu_share;
         public static int select_action_menu_web_search;
+        public static int sub_text;
         public static int time_picker;
         public static int year;
     }
+    /** layouts */
     public static final class layout {
         public static int date_time_picker_dialog;
         public static int date_time_suggestion;
         public static int two_field_date_picker;
         public static int multi_field_time_picker_dialog;
+        public static int validation_message_bubble;
     }
+    /** menus */
     public static final class menu {
         public static int select_action_menu;
     }
+    /** strings */
     public static final class string {
         public static int accessibility_content_view;
         public static int accessibility_date_picker_month;
@@ -89,6 +100,7 @@ public final class R {
         public static int time_picker_dialog_title;
         public static int week_picker_dialog_title;
     }
+    /** styles */
     public static final class style {
         public static int SelectPopupDialog;
     }

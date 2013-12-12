@@ -66,6 +66,7 @@ namespace chrome {
 class BrowserCommandController;
 class FastUnloadController;
 class UnloadController;
+class ValidationMessageBubble;
 }
 
 namespace content {
@@ -466,6 +467,15 @@ class Browser : public TabStripModelObserver,
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void OverscrollUpdate(int delta_y) OVERRIDE;
+  virtual void ShowValidationMessage(content::WebContents* web_contents,
+                                     const gfx::Rect& anchor_in_root_view,
+                                     const string16& main_text,
+                                     const string16& sub_text) OVERRIDE;
+  virtual void HideValidationMessage(
+      content::WebContents* web_contents) OVERRIDE;
+  virtual void MoveValidationMessage(
+      content::WebContents* web_contents,
+      const gfx::Rect& anchor_in_root_view) OVERRIDE;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
@@ -942,6 +952,8 @@ class Browser : public TabStripModelObserver,
   base::WeakPtrFactory<Browser> weak_factory_;
 
   scoped_ptr<BrowserLanguageStateObserver> language_state_observer_;
+
+  scoped_ptr<chrome::ValidationMessageBubble> validation_message_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

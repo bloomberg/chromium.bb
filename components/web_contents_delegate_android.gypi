@@ -31,6 +31,8 @@
             'web_contents_delegate_android/color_chooser_android.h',
             'web_contents_delegate_android/component_jni_registrar.cc',
             'web_contents_delegate_android/component_jni_registrar.h',
+            'web_contents_delegate_android/validation_message_bubble_android.cc',
+            'web_contents_delegate_android/validation_message_bubble_android.h',
             'web_contents_delegate_android/web_contents_delegate_android.cc',
             'web_contents_delegate_android/web_contents_delegate_android.h',
           ],
@@ -52,6 +54,7 @@
           'type': 'none',
           'sources': [
             'web_contents_delegate_android/android/java/src/org/chromium/components/web_contents_delegate_android/ColorChooserAndroid.java',
+            'web_contents_delegate_android/android/java/src/org/chromium/components/web_contents_delegate_android/ValidationMessageBubble.java',
             'web_contents_delegate_android/android/java/src/org/chromium/components/web_contents_delegate_android/WebContentsDelegateAndroid.java',
           ],
           'variables': {
