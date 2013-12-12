@@ -306,6 +306,13 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Ash.TouchDuration" units="milliseconds">
+  <obsolete>
+    Deprecated 12/2013 in r239809, and replaced by Ash.TouchDuration2.
+  </obsolete>
+  <summary>The duration of a touch-sequence.</summary>
+</histogram>
+
+<histogram name="Ash.TouchDuration2" units="milliseconds">
   <summary>The duration of a touch-sequence.</summary>
 </histogram>
 
