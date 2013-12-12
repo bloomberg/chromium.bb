@@ -127,7 +127,7 @@ void SetupPreReadFieldTrial() {
 void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
                              const base::Time& install_time,
                              PrefService* local_state) {
-  prerender::ConfigurePrefetchAndPrerender(parsed_command_line);
+  prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();
   OmniboxFieldTrial::ActivateStaticTrials();
   SetupInfiniteCacheFieldTrial();

@@ -1536,6 +1536,8 @@
         'browser/predictors/resource_prefetcher_manager.h',
         'browser/pref_service_flags_storage.cc',
         'browser/pref_service_flags_storage.h',
+        'browser/prefetch/prefetch_field_trial.cc',
+        'browser/prefetch/prefetch_field_trial.h',
         'browser/prefs/browser_prefs.cc',
         'browser/prefs/browser_prefs.h',
         'browser/prefs/chrome_pref_service_factory.cc',

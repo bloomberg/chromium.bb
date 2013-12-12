@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -556,19 +557,19 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   class SetPrefetchForTest {
    public:
     explicit SetPrefetchForTest(bool prefetch)
-        : old_prefetch_state_(prerender::PrerenderManager::IsPrefetchEnabled()),
-          old_prerender_mode_(prerender::PrerenderManager::GetMode()) {
-      prerender::PrerenderManager::SetIsPrefetchEnabled(prefetch);
+        : old_prerender_mode_(prerender::PrerenderManager::GetMode()) {
+      std::string exp_group = prefetch ? "ExperimentYes" : "ExperimentNo";
+      base::FieldTrialList::CreateFieldTrial("Prefetch", exp_group);
+
       prerender::PrerenderManager::SetMode(
           prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
     }
 
     ~SetPrefetchForTest() {
-      prerender::PrerenderManager::SetIsPrefetchEnabled(old_prefetch_state_);
       prerender::PrerenderManager::SetMode(old_prerender_mode_);
     }
+
    private:
-    bool old_prefetch_state_;
     prerender::PrerenderManager::PrerenderManagerMode old_prerender_mode_;
   } set_prefetch_for_test(true);
 

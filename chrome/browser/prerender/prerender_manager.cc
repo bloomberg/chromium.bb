@@ -211,9 +211,6 @@ class PrerenderManager::OnCloseWebContentsDeleter
 };
 
 // static
-bool PrerenderManager::is_prefetch_enabled_ = false;
-
-// static
 int PrerenderManager::prerenders_per_session_count_ = 0;
 
 // static
@@ -780,16 +777,6 @@ void PrerenderManager::RecordFractionPixelsFinalAtSwapin(
 void PrerenderManager::set_enabled(bool enabled) {
   DCHECK(CalledOnValidThread());
   enabled_ = enabled;
-}
-
-// static
-bool PrerenderManager::IsPrefetchEnabled() {
-  return is_prefetch_enabled_;
-}
-
-// static
-void PrerenderManager::SetIsPrefetchEnabled(bool value) {
-  is_prefetch_enabled_ = value;
 }
 
 // static

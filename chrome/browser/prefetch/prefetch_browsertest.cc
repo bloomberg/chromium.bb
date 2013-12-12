@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,12 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (do_prefetching_) {
       command_line->AppendSwitchASCII(
-          switches::kPrerenderMode,
-          switches::kPrerenderModeSwitchValuePrefetchOnly);
+          switches::kForceFieldTrials,
+          "Prefetch/ExperimentYes/");
     } else {
       command_line->AppendSwitchASCII(
-          switches::kPrerenderMode,
-          switches::kPrerenderModeSwitchValueDisabled);
+          switches::kForceFieldTrials,
+          "Prefetch/ExperimentNo/");
     }
   }
 

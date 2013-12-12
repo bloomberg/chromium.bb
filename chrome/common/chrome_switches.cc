@@ -1149,14 +1149,12 @@ const char kPrerenderFromOmniboxSwitchValueEnabled[] = "enabled";
 const char kPrerenderMode[]                 = "prerender";
 // These are the values the kPrerenderMode switch may have, as in
 // "--prerender=auto".
-//   auto: Allow field trial selection in both prerender and prefetch.
+//   auto: Allow field trial selection for prerender.
 const char kPrerenderModeSwitchValueAuto[]  = "auto";
-//   disabled: No prerendering or prefetching.
+//   disabled: No prerendering.
 const char kPrerenderModeSwitchValueDisabled[] = "disabled";
-//   enabled: Both prerendering and prefetching.
+//   enabled: Prerendering.
 const char kPrerenderModeSwitchValueEnabled[] = "enabled";
-//   prefetch_only: No prerendering, but enables prefetching.
-const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 
 #if defined(OS_WIN)
 // Enable conversion from vector to raster for any page.
