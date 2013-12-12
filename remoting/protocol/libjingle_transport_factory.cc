@@ -13,8 +13,6 @@
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/chromium_port_allocator.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/transport_config.h"
@@ -363,50 +361,12 @@ void LibjingleStreamTransport::NotifyConnectFailed() {
 
 }  // namespace
 
-scoped_ptr<LibjingleTransportFactory> LibjingleTransportFactory::Create(
-    const NetworkSettings& network_settings,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter) {
-  // Use Chrome's network stack to allocate ports for peer-to-peer channels.
-  scoped_ptr<ChromiumPortAllocator> port_allocator(
-      ChromiumPortAllocator::Create(url_request_context_getter,
-          network_settings));
-
-  bool incoming_only = network_settings.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_DISABLED;
-
-  // Use libjingle for negotiation of peer-to-peer channels over
-  // NativePortAllocator allocated ports.
-  scoped_ptr<LibjingleTransportFactory> transport_factory(
-      new LibjingleTransportFactory(
-          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          incoming_only));
-  return transport_factory.Pass();
-}
-
 LibjingleTransportFactory::LibjingleTransportFactory(
     scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
     bool incoming_only)
-    : http_port_allocator_(port_allocator.get()),
-      port_allocator_(port_allocator.Pass()),
+    : port_allocator_(port_allocator.Pass()),
       incoming_only_(incoming_only) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-}
-
-LibjingleTransportFactory::LibjingleTransportFactory()
-    : network_manager_(new talk_base::BasicNetworkManager()),
-      socket_factory_(new remoting::ChromiumPacketSocketFactory()),
-      http_port_allocator_(NULL),
-      port_allocator_(new cricket::BasicPortAllocator(
-          network_manager_.get(), socket_factory_.get())),
-      incoming_only_(false) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-  port_allocator_->set_flags(
-      cricket::PORTALLOCATOR_DISABLE_TCP |
-      cricket::PORTALLOCATOR_DISABLE_STUN |
-      cricket::PORTALLOCATOR_DISABLE_RELAY |
-      cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
-      cricket::PORTALLOCATOR_ENABLE_IPV6);
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {
@@ -415,28 +375,24 @@ LibjingleTransportFactory::~LibjingleTransportFactory() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   task_runner->DeleteSoon(FROM_HERE, port_allocator_.release());
-  task_runner->DeleteSoon(FROM_HERE, socket_factory_.release());
-  task_runner->DeleteSoon(FROM_HERE, network_manager_.release());
 }
 
 void LibjingleTransportFactory::SetTransportConfig(
     const TransportConfig& config) {
-  if (http_port_allocator_) {
-    std::vector<talk_base::SocketAddress> stun_hosts;
-    talk_base::SocketAddress stun_address;
-    if (stun_address.FromString(config.stun_server)) {
-      stun_hosts.push_back(stun_address);
-      http_port_allocator_->SetStunHosts(stun_hosts);
-    } else {
-      LOG(ERROR) << "Failed to parse stun server address: "
-                 << config.stun_server;
-    }
-
-    std::vector<std::string> relay_hosts;
-    relay_hosts.push_back(config.relay_server);
-    http_port_allocator_->SetRelayHosts(relay_hosts);
-    http_port_allocator_->SetRelayToken(config.relay_token);
+  std::vector<talk_base::SocketAddress> stun_hosts;
+  talk_base::SocketAddress stun_address;
+  if (stun_address.FromString(config.stun_server)) {
+    stun_hosts.push_back(stun_address);
+    port_allocator_->SetStunHosts(stun_hosts);
+  } else {
+    LOG(ERROR) << "Failed to parse stun server address: "
+               << config.stun_server;
   }
+
+  std::vector<std::string> relay_hosts;
+  relay_hosts.push_back(config.relay_server);
+  port_allocator_->SetRelayHosts(relay_hosts);
+  port_allocator_->SetRelayToken(config.relay_token);
 }
 
 scoped_ptr<StreamTransport> LibjingleTransportFactory::CreateStreamTransport() {

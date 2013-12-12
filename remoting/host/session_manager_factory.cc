@@ -5,6 +5,7 @@
 #include "remoting/host/session_manager_factory.h"
 
 #include "remoting/jingle_glue/chromium_port_allocator.h"
+#include "remoting/jingle_glue/chromium_socket_factory.h"
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
@@ -16,9 +17,18 @@ scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
     const NetworkSettings& network_settings,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
+  // Use Chrome's network stack to allocate ports for peer-to-peer channels.
+  scoped_ptr<ChromiumPortAllocator> port_allocator(
+      ChromiumPortAllocator::Create(url_request_context_getter,
+          network_settings));
+
+  bool incoming_only = network_settings.nat_traversal_mode ==
+      NetworkSettings::NAT_TRAVERSAL_DISABLED;
+
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      protocol::LibjingleTransportFactory::Create(network_settings,
-                                                  url_request_context_getter));
+      new protocol::LibjingleTransportFactory(
+          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
+          incoming_only));
 
   // Use the Jingle protocol for channel-negotiation signalling between
   // peer TransportFactories.

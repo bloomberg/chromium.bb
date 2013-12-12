@@ -17,7 +17,6 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/jni/jni_frame_consumer.h"
-#include "remoting/jingle_glue/network_settings.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -139,7 +138,6 @@ class ChromotingJniInstance
   scoped_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
-  scoped_ptr<NetworkSettings> network_settings_;
 
   // Pass this the user's PIN once we have it. To be assigned and accessed on
   // the UI thread, but must be posted to the network thread to call it.

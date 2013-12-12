@@ -12,6 +12,9 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/jingle_glue/chromium_port_allocator.h"
+#include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 
@@ -297,14 +300,18 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       jni_runtime_->url_requester(), xmpp_config_));
 
-  network_settings_.reset(new NetworkSettings(
-      NetworkSettings::NAT_TRAVERSAL_ENABLED));
-  scoped_ptr<protocol::TransportFactory> fact(
-      protocol::LibjingleTransportFactory::Create(
-          *network_settings_,
-          jni_runtime_->url_requester()));
+  NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_ENABLED);
 
-  client_->Start(signaling_.get(), fact.Pass());
+  // Use Chrome's network stack to allocate ports for peer-to-peer channels.
+  scoped_ptr<ChromiumPortAllocator> port_allocator(
+      ChromiumPortAllocator::Create(jni_runtime_->url_requester(),
+                                    network_settings));
+
+  scoped_ptr<protocol::TransportFactory> transport_factory(
+      new protocol::LibjingleTransportFactory(
+          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(), false));
+
+  client_->Start(signaling_.get(), transport_factory.Pass());
 }
 
 void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {

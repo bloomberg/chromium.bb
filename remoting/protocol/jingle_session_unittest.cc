@@ -10,8 +10,11 @@
 #include "base/time/time.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/constants.h"
+#include "remoting/jingle_glue/chromium_port_allocator.h"
 #include "remoting/jingle_glue/fake_signal_strategy.h"
+#include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
@@ -137,9 +140,14 @@ class JingleSessionTest : public testing::Test {
 
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
-    host_server_.reset(new JingleSessionManager(
-        scoped_ptr<TransportFactory>(new LibjingleTransportFactory()),
+
+    NetworkSettings network_settings;
+
+    scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
+        ChromiumPortAllocator::Create(NULL, network_settings)
+            .PassAs<cricket::HttpPortAllocatorBase>(),
         false));
+    host_server_.reset(new JingleSessionManager(host_transport.Pass(), false));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
 
     scoped_ptr<AuthenticatorFactory> factory(
@@ -148,8 +156,12 @@ class JingleSessionTest : public testing::Test {
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
-    client_server_.reset(new JingleSessionManager(
-        scoped_ptr<TransportFactory>(new LibjingleTransportFactory()), false));
+    scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
+        ChromiumPortAllocator::Create(NULL, network_settings)
+            .PassAs<cricket::HttpPortAllocatorBase>(),
+        false));
+    client_server_.reset(
+        new JingleSessionManager(client_transport.Pass(), false));
     client_server_->Init(client_signal_strategy_.get(),
                          &client_server_listener_);
   }
