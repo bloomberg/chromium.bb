@@ -46,13 +46,25 @@
   <body>
     <h1>PPAPI PPB_Instance Test</h1>
 
-    <embed type="application/x-nacl" id="test_nexe"
-           name="nacl_module"
-           src="ppapi_ppb_instance.nmf"
-           width="0" height="0" />
-
     <script type="text/javascript">
       //<![CDATA[
+      function createModule(id, src, type) {
+        return createNaClEmbed({
+          id: id,
+          src: src,
+          width: 1,
+          height: 1,
+          type: type
+        });
+      }
+
+      var mime = 'application/x-nacl';
+      if (getTestArguments()['pnacl'] !== undefined) {
+        mime = 'application/x-pnacl';
+      }
+      var embed = createModule('test_nexe', 'ppapi_ppb_instance.nmf', mime);
+      document.body.appendChild(embed);
+
       var tester = new Tester();
       setupTests(tester, $('test_nexe'));
       tester.waitFor($('test_nexe'));

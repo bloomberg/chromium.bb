@@ -338,5 +338,68 @@
         'ppapi_test_lib',
       ],
     },
+    {
+      'target_name': 'ppapi_ppb_instance',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_ppb_instance',
+        'build_newlib': 1,
+        'build_glibc': 1,
+        'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'link_flags': [
+          '-lppapi',
+          '-lppapi_test_lib',
+          '-lplatform',
+          '-lgio',
+        ],
+        'sources': [
+          'ppapi/ppb_instance/ppapi_ppb_instance.cc',
+        ],
+        'test_files': [
+          'ppapi/ppb_instance/ppapi_ppb_instance.html',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+        'ppapi_test_lib',
+      ],
+    },
+    {
+      'target_name': 'ppapi_ppp_instance',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_ppp_instance',
+        'build_newlib': 1,
+        'build_glibc': 1,
+        'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'link_flags': [
+          '-lppapi',
+          '-lppapi_test_lib',
+          '-lplatform',
+          '-lgio',
+        ],
+        'sources': [
+          'ppapi/ppp_instance/ppapi_ppp_instance.cc',
+        ],
+        'test_files': [
+          'ppapi/ppp_instance/ppapi_ppp_instance.html',
+          'ppapi/ppp_instance/ppapi_ppp_instance.js',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+        'ppapi_test_lib',
+      ],
+    },
   ],
 }

@@ -13,17 +13,29 @@
     <h1>PPAPI PPP_Instance Test</h1>
 
     <div id="test_nexe_parent">
-      <embed type="application/x-nacl" id="test_nexe"
-             name="nacl_module"
-             src="ppapi_ppp_instance.nmf"
-             style="background-color:#AAAAAA"
-             width="20" height="20" />
     <!-- NOTE: The width and height must be different from the values checked
          in PPP_Instance::DidChangeView so when we set them, they change -->
     </div>
     <br>
     <script type="text/javascript">
       //<![CDATA[
+      function createModule(id, src, type) {
+        return createNaClEmbed({
+          id: id,
+          src: src,
+          width: 20,
+          height: 20,
+          type: type
+        });
+      }
+
+      var mime = 'application/x-nacl';
+      if (getTestArguments()['pnacl'] !== undefined) {
+        mime = 'application/x-pnacl';
+      }
+      var embed = createModule('test_nexe', 'ppapi_ppp_instance.nmf', mime);
+      $('test_nexe_parent').appendChild(embed);
+
       var tester = new Tester();
       setupTests(tester, $('test_nexe'));
       tester.waitFor($('test_nexe'));

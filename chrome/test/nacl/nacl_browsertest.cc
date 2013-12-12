@@ -45,6 +45,14 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPICore, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
 })
 
+NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPIPPBInstance, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_instance.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPIPPPInstance, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppp_instance.html"));
+})
+
 NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
 })
