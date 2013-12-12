@@ -23,7 +23,7 @@ class TestGinObject : public gin::Wrappable<TestGinObject> {
   static gin::WrapperInfo kWrapperInfo;
 
   static gin::Handle<TestGinObject> Create(v8::Isolate* isolate, bool* alive) {
-    return CreateHandle(isolate, new TestGinObject(alive));
+    return gin::CreateHandle(isolate, new TestGinObject(alive));
   }
 
  private:
