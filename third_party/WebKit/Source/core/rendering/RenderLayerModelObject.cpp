@@ -209,5 +209,10 @@ bool RenderLayerModelObject::hasCompositedLayerMapping() const
     return m_layer ? m_layer->hasCompositedLayerMapping() : false;
 }
 
+CompositedLayerMapping* RenderLayerModelObject::groupedMapping() const
+{
+    return m_layer ? m_layer->groupedMapping() : 0;
+}
+
 } // namespace WebCore
 

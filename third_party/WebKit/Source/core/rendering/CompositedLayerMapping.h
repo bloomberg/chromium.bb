@@ -52,6 +52,10 @@ struct GraphicsLayerPaintInfo {
 
     IntRect compositedBounds;
 
+    // A temporary offset used for squashing layers, when the origin of the
+    // squashing layer is not yet known.
+    IntSize offsetFromBackingRoot;
+
     IntSize offsetFromRenderer;
 
     GraphicsLayerPaintingPhase paintingPhase;
@@ -115,6 +119,8 @@ public:
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
 
+    GraphicsLayer* squashingLayer() const { return m_squashingLayer.get(); }
+
     // Returns true for a composited layer that has no backing store of its own, so
     // paints into some ancestor layer.
     bool paintsIntoCompositedAncestor() const { return !(m_requiresOwnBackingStoreForAncestorReasons || m_requiresOwnBackingStoreForIntrinsicReasons); }
@@ -151,6 +157,9 @@ public:
     void updateAfterWidgetResize();
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
+
+    void addRenderLayerToSquashingGraphicsLayer(RenderLayer*, IntSize offsetFromTargetBacking, size_t nextSquashedLayerIndex);
+    void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
 
     // GraphicsLayerClient interface
     virtual void notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime) OVERRIDE;
@@ -210,6 +219,7 @@ private:
     bool updateScrollingLayers(bool scrollingLayers);
     void updateScrollParent(RenderLayer*);
     void updateClipParent(RenderLayer*);
+    bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent(bool isSimpleContainer);
     void registerScrollingLayers();
 
@@ -328,6 +338,10 @@ private:
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
 
     OwnPtr<WebAnimationProvider> m_animationProvider;
+
+    OwnPtr<GraphicsLayer> m_squashingContainmentLayer; // Only used if any squashed layers exist, to contain the squashed layers as siblings to the rest of the GraphicsLayer tree chunk.
+    OwnPtr<GraphicsLayer> m_squashingLayer; // Only used if any squashed layers exist, this is the backing that squashed layers paint into.
+    Vector<GraphicsLayerPaintInfo> m_squashedLayers;
 
     IntRect m_compositedBounds;
 

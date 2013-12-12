@@ -354,6 +354,9 @@ public:
     bool hasCompositedLayerMapping() const { return m_compositedLayerMapping.get(); }
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
 
+    CompositedLayerMapping* groupedMapping() const { return m_groupedMapping; }
+    void setGroupedMapping(CompositedLayerMapping* groupedMapping) { m_groupedMapping = groupedMapping; }
+
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const { return m_scrollableArea && m_scrollableArea->needsCompositedScrolling(); }
@@ -443,6 +446,9 @@ public:
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
+
+    void setOffsetFromSquashingLayerOrigin(IntSize offset) { m_compositingProperties.offsetFromSquashingLayerOrigin = offset; }
+    IntSize offsetFromSquashingLayerOrigin() const { return m_compositingProperties.offsetFromSquashingLayerOrigin; }
 
 private:
     bool hasOverflowControls() const;
@@ -717,6 +723,9 @@ protected:
 
         // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
         CompositingReasons compositingReasons;
+
+        // Used for invalidating this layer's contents on the squashing GraphicsLayer.
+        IntSize offsetFromSquashingLayerOrigin;
     };
 
     CompositingProperties m_compositingProperties;
@@ -733,6 +742,8 @@ private:
 
     OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
+
+    CompositedLayerMapping* m_groupedMapping;
 
     RenderLayerRepainter m_repainter;
     RenderLayerClipper m_clipper; // FIXME: Lazily allocate?

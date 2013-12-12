@@ -133,6 +133,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_enclosingPaginationLayer(0)
+    , m_groupedMapping(0)
     , m_repainter(renderer)
     , m_clipper(renderer)
 {
@@ -1109,15 +1110,16 @@ static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
 
 // FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
 // is error-prone and misleading for reading code that uses these functions - especially compounded with
-// the includeSelf option. It is very likely that some call sites of this function actually mean to use
-// enclosingCompositingLayerForRepaint().
+// the includeSelf option. It is very likely that we don't even want either of these functions; A layer
+// should be told explicitly which GraphicsLayer is the repaintContainer for a RenderLayer, and
+// any other use cases should probably have an API between the non-compositing and compositing sides of code.
 RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
 {
-    if (includeSelf && hasCompositedLayerMapping())
+    if (includeSelf && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
-        if (curr->hasCompositedLayerMapping())
+        if (curr->compositingState() != NotComposited && curr->compositingState() != PaintsIntoGroupedBacking)
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -1126,11 +1128,11 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
 
 RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(bool includeSelf) const
 {
-    if (includeSelf && compositingState() == PaintsIntoOwnBacking)
+    if (includeSelf && (compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking))
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
-        if (curr->compositingState() == PaintsIntoOwnBacking)
+        if (curr->compositingState() == PaintsIntoOwnBacking || curr->compositingState() == PaintsIntoGroupedBacking)
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -1883,7 +1885,7 @@ static bool paintForFixedRootBackground(const RenderLayer* layer, PaintLayerFlag
 
 void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
-    if (compositingState() != NotComposited) {
+    if (compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking) {
         // The updatingControlTints() painting pass goes through compositing layers,
         // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
         if (context->updatingControlTints() || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)) {
@@ -2224,6 +2226,11 @@ void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* conte
     RenderLayerStackingNodeIterator iterator(*m_stackingNode, childrenToVisit);
     while (RenderLayerStackingNode* child = iterator.next()) {
         RenderLayer* childLayer = child->layer();
+
+        // Squashed RenderLayers should not paint into their ancestor.
+        if (childLayer->compositingState() == PaintsIntoGroupedBacking)
+            continue;
+
         if (!childLayer->isPaginated())
             childLayer->paintLayer(context, paintingInfo, paintFlags);
         else
@@ -3635,6 +3642,12 @@ CompositingState RenderLayer::compositingState() const
     // This is computed procedurally so there is no redundant state variable that
     // can get out of sync from the real actual compositing state.
 
+    if (m_groupedMapping) {
+        ASSERT(compositor()->isLayerSquashingEnabled());
+        ASSERT(!m_compositedLayerMapping);
+        return PaintsIntoGroupedBacking;
+    }
+
     if (!m_compositedLayerMapping)
         return NotComposited;
 
@@ -3993,10 +4006,20 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         || needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters)
-        || needsCompositingLayersRebuiltForBlending(oldStyle, newStyle))
+        || needsCompositingLayersRebuiltForBlending(oldStyle, newStyle)) {
         compositor()->setCompositingLayersNeedRebuild();
-    else if (hasCompositedLayerMapping())
+    } else if (compositingState() == PaintsIntoOwnBacking || compositingState() == HasOwnBackingButPaintsIntoAncestor) {
+        ASSERT(hasCompositedLayerMapping());
         compositedLayerMapping()->updateGraphicsLayerGeometry();
+    } else if (compositingState() == PaintsIntoGroupedBacking) {
+        ASSERT(compositor()->isLayerSquashingEnabled());
+        ASSERT(groupedMapping());
+        // updateGraphicsLayerGeometry() is called to update the squashingLayer in case its size/position has changed.
+        // FIXME: Make sure to create a layout test that covers this scenario.
+        // FIXME: It is not expected that any other layers on the compositedLayerMapping would change. we should
+        // be able to just update the squashing layer only and save a lot of computation.
+        groupedMapping()->updateGraphicsLayerGeometry();
+    }
 }
 
 bool RenderLayer::scrollsOverflow() const

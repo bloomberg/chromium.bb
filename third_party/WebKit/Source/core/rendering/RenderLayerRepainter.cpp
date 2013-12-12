@@ -155,16 +155,22 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
 
 void RenderLayerRepainter::setBackingNeedsRepaint()
 {
-    ASSERT(m_renderer->hasCompositedLayerMapping());
-    m_renderer->compositedLayerMapping()->setContentsNeedDisplay();
+    ASSERT(m_renderer->compositingState() != NotComposited);
+
+    if (m_renderer->compositingState() == PaintsIntoGroupedBacking) {
+        // FIXME: should probably setNeedsDisplayInRect for this layer's bounds only.
+        m_renderer->groupedMapping()->squashingLayer()->setNeedsDisplay();
+    } else {
+        m_renderer->compositedLayerMapping()->setContentsNeedDisplay();
+    }
 }
 
 void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
-    ASSERT(m_renderer->hasCompositedLayerMapping());
-    if (!m_renderer->hasCompositedLayerMapping()) {
+    ASSERT(m_renderer->compositingState() != NotComposited);
+    if (m_renderer->compositingState() == NotComposited) {
         // If we're trying to repaint the placeholder document layer, propagate the
         // repaint to the native view system.
         LayoutRect absRect(r);
@@ -176,7 +182,17 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
         if (view)
             view->repaintViewRectangle(absRect);
     } else {
-        m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(pixelSnappedIntRect(r));
+        if (m_renderer->compositingState() == PaintsIntoGroupedBacking) {
+            // FIXME: LayoutRect rounding to IntRect is probably not a good idea.
+            IntRect offsetRect = pixelSnappedIntRect(r);
+            if (m_renderer->hasTransform())
+                offsetRect = m_renderer->layer()->transform()->mapRect(pixelSnappedIntRect(r));
+
+            offsetRect.move(-m_renderer->layer()->offsetFromSquashingLayerOrigin());
+            m_renderer->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(offsetRect);
+        } else {
+            m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(pixelSnappedIntRect(r));
+        }
     }
 }
 

@@ -229,6 +229,25 @@ private:
     void addToOverlapMap(OverlapMap&, RenderLayer*, IntRect& layerBounds, bool& boundsComputed);
     void addToOverlapMapRecursive(OverlapMap&, RenderLayer*, RenderLayer* ancestorLayer = 0);
 
+    struct SquashingState {
+        SquashingState()
+            : mostRecentMapping(0)
+            , hasMostRecentMapping(false)
+            , nextSquashedLayerIndex(0) { }
+
+        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsolute);
+
+        // The most recent composited backing that the layer should squash onto if needed.
+        CompositedLayerMappingPtr mostRecentMapping;
+        bool hasMostRecentMapping;
+
+        // Offset in absolute coordinates of the compositedLayerMapping's owning layer.
+        IntPoint offsetFromAbsolute;
+
+        // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
+        size_t nextSquashedLayerIndex;
+    };
+
     // Forces an update for all frames of frame tree recursively. Used only when the mainFrame compositor is ready to
     // finish all deferred work.
     static void finishCompositingUpdateForFrameTree(Frame*);
@@ -238,7 +257,7 @@ private:
 
     // Defines which RenderLayers will paint into which composited backings, by allocating and destroying CompositedLayerMappings as needed.
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
-    void assignLayersToBackingsInternal(RenderLayer*, bool& layersChanged);
+    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged);
 
     // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
     void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);

@@ -18,6 +18,10 @@ enum CompositingState {
     HasOwnBackingButPaintsIntoAncestor = 1,
 
     PaintsIntoOwnBacking = 2,
+
+    // In this state, the RenderLayer subtree paints into a backing that is shared by
+    // several RenderLayer subtrees.
+    PaintsIntoGroupedBacking = 3
 };
 
 } // namespace WebCore
