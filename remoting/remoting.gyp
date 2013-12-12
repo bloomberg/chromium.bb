@@ -735,14 +735,8 @@
               'msvs_settings': {
                 'VCManifestTool': {
                   'EmbedManifest': 'true',
-                },
-                'VCLinkerTool': {
-                  'AdditionalOptions': [
-                    "\"/manifestdependency:type='win32' "
-                        "name='Microsoft.Windows.Common-Controls' "
-                        "version='6.0.0.0' "
-                        "processorArchitecture='*' "
-                        "publicKeyToken='6595b64144ccf1df' language='*'\"",
+                  'AdditionalManifestFiles': [
+                    'host/win/common-controls.manifest',
                   ],
                 },
               },
@@ -1503,14 +1497,12 @@
             'host/setup/win/start_host_window.h',
           ],
           'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+            'VCManifestTool': {
+              'AdditionalManifestFiles': [
+                'host/win/common-controls.manifest',
               ],
+            },
+            'VCLinkerTool': {
               # 2 == /SUBSYSTEM:WINDOWS
               'SubSystem': '2',
             },
@@ -1644,6 +1636,9 @@
           'msvs_settings': {
             'VCManifestTool': {
               'EmbedManifest': 'true',
+              'AdditionalManifestFiles': [
+                'host/win/common-controls.manifest',
+              ],
             },
             'VCLinkerTool': {
               'AdditionalDependencies': [
@@ -1654,12 +1649,6 @@
                 'wtsapi32.lib',
               ],
               'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
-
                 # Export the proxy/stub entry points. Note that the generated
                 # routines have 'Ps' prefix to avoid conflicts with our own
                 # DllMain().
