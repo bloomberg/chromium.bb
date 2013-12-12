@@ -43,14 +43,15 @@ namespace chromeos {
 
 namespace {
 
-// The initial time to wait in seconds before starting the opt-in.
+// The initial time to wait in seconds before enabling offline mode.
 int kInitialDelaySeconds = 180;
 
 // Time to wait for Drive app background page to come up before giving up.
 int kWebContentsTimeoutSeconds = 15;
 
 // Google Drive offline opt-in endpoint.
-const char kDriveOfflineEndpointUrl[] = "https://drive.google.com/#offline";
+const char kDriveOfflineEndpointUrl[] =
+    "https://docs.google.com/offline/autoenable";
 
 // Google Drive app id.
 const char kDriveHostedAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
