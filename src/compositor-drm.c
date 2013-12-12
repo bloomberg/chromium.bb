@@ -1857,7 +1857,7 @@ create_output_for_connector(struct drm_compositor *ec,
 			    int x, int y, struct udev_device *drm_device)
 {
 	struct drm_output *output;
-	struct drm_mode *drm_mode, *next, *preferred, *current, *configured;
+	struct drm_mode *drm_mode, *next, *preferred, *current, *configured, *best;
 	struct weston_mode *m;
 	struct weston_config_section *section;
 	drmModeEncoder *encoder;
@@ -1960,6 +1960,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	preferred = NULL;
 	current = NULL;
 	configured = NULL;
+	best = NULL;
 
 	wl_list_for_each_reverse(drm_mode, &output->base.mode_list, base.link) {
 		if (config == OUTPUT_CONFIG_MODE &&
@@ -1970,6 +1971,7 @@ create_output_for_connector(struct drm_compositor *ec,
 			current = drm_mode;
 		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
 			preferred = drm_mode;
+		best = drm_mode;
 	}
 
 	if (config == OUTPUT_CONFIG_MODELINE) {
@@ -1995,6 +1997,8 @@ create_output_for_connector(struct drm_compositor *ec,
 		output->base.current_mode = &preferred->base;
 	else if (current)
 		output->base.current_mode = &current->base;
+	else if (best)
+		output->base.current_mode = &best->base;
 
 	if (output->base.current_mode == NULL) {
 		weston_log("no available modes for %s\n", output->base.name);
