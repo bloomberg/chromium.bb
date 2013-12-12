@@ -52,6 +52,7 @@ public:
     static bool isLazyDecoded(const SkBitmap&);
 
     static void setEnabled(bool);
+    static void setSkiaDiscardableMemoryEnabled(bool);
 
     String filenameExtension() const;
 
@@ -78,6 +79,8 @@ public:
 private:
     explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
     void prepareLazyDecodedFrames();
+    SkBitmap createBitmap(size_t index);
+    SkBitmap createSkiaDiscardableBitmap(size_t index);
     SkBitmap createLazyDecodingBitmap(size_t index);
     void activateLazyDecoding();
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
@@ -95,6 +98,7 @@ private:
     RefPtr<ImageFrameGenerator> m_frameGenerator;
 
     static bool s_enabled;
+    static bool s_skiaDiscardableMemoryEnabled;
 };
 
 } // namespace WebCore

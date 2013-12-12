@@ -26,8 +26,9 @@
 #include "config.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 
+#include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/LazyDecodingPixelRef.h"
-
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -37,9 +38,13 @@ namespace {
 // URI label for a lazily decoded SkPixelRef.
 const char labelLazyDecoded[] = "lazy";
 
+// URI label for SkDiscardablePixelRef.
+const char labelDiscardable[] = "discardable";
+
 } // namespace
 
 bool DeferredImageDecoder::s_enabled = false;
+bool DeferredImageDecoder::s_skiaDiscardableMemoryEnabled = false;
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
@@ -68,12 +73,18 @@ bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
 {
     return bitmap.pixelRef()
         && bitmap.pixelRef()->getURI()
-        && !memcmp(bitmap.pixelRef()->getURI(), labelLazyDecoded, sizeof(labelLazyDecoded));
+        && (!memcmp(bitmap.pixelRef()->getURI(), labelLazyDecoded, sizeof(labelLazyDecoded))
+            || !memcmp(bitmap.pixelRef()->getURI(), labelDiscardable, sizeof(labelDiscardable)));
 }
 
 void DeferredImageDecoder::setEnabled(bool enabled)
 {
     s_enabled = enabled;
+}
+
+void DeferredImageDecoder::setSkiaDiscardableMemoryEnabled(bool enabled)
+{
+    s_skiaDiscardableMemoryEnabled = enabled;
 }
 
 String DeferredImageDecoder::filenameExtension() const
@@ -208,7 +219,7 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
     m_lazyDecodedFrames.resize(m_actualDecoder->frameCount());
     for (size_t i = previousSize; i < m_lazyDecodedFrames.size(); ++i) {
         OwnPtr<ImageFrame> frame(adoptPtr(new ImageFrame()));
-        frame->setSkBitmap(createLazyDecodingBitmap(i));
+        frame->setSkBitmap(createBitmap(i));
         frame->setDuration(m_actualDecoder->frameDurationAtIndex(i));
         frame->setStatus(m_actualDecoder->frameIsCompleteAtIndex(i) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
         m_lazyDecodedFrames[i] = frame.release();
@@ -224,6 +235,36 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
         m_actualDecoder.clear();
         m_data = nullptr;
     }
+}
+
+// Creates either a SkBitmap backed by SkDiscardablePixelRef or a SkBitmap using the
+// legacy LazyDecodingPixelRef.
+SkBitmap DeferredImageDecoder::createBitmap(size_t index)
+{
+    // This code is temporary until the transition to SkDiscardablePixelRef is complete.
+    if (s_skiaDiscardableMemoryEnabled)
+        return createSkiaDiscardableBitmap(index);
+    return createLazyDecodingBitmap(index);
+}
+
+// Creates a SkBitmap that is backed by SkDiscardablePixelRef.
+SkBitmap DeferredImageDecoder::createSkiaDiscardableBitmap(size_t index)
+{
+    IntSize decodedSize = m_actualDecoder->decodedSize();
+    ASSERT(decodedSize.width() > 0);
+    ASSERT(decodedSize.height() > 0);
+
+    SkImageInfo info;
+    info.fWidth = decodedSize.width();
+    info.fHeight = decodedSize.height();
+    info.fColorType = kBGRA_8888_SkColorType;
+    info.fAlphaType = frameHasAlphaAtIndex(index) ? kPremul_SkAlphaType : kOpaque_SkAlphaType;
+
+    SkBitmap bitmap;
+    bool installed = SkInstallDiscardablePixelRef(new DecodingImageGenerator(m_frameGenerator, info, index), &bitmap);
+    ASSERT_UNUSED(installed, installed);
+    bitmap.pixelRef()->setURI(labelDiscardable);
+    return bitmap;
 }
 
 SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)

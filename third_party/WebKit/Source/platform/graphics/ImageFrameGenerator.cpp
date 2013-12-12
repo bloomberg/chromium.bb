@@ -105,6 +105,38 @@ const ScaledImageFragment* ImageFrameGenerator::decodeAndScale(const SkISize& sc
     return 0;
 }
 
+bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, void* pixels, size_t rowBytes)
+{
+    // This method is called to populate a discardable memory owned by Skia.
+    // Ideally we want the decoder to write directly to |pixels| but this
+    // simple implementation copies from a decoded bitmap.
+
+    // This implementation does not support scaling so check the requested size.
+    ASSERT(m_fullSize.width() == info.fWidth);
+    ASSERT(m_fullSize.height() == info.fHeight);
+
+    // Don't use discardable memory for decoding if Skia is providing output
+    // memory. By clearing the memory allocator decoding will use heap memory.
+    //
+    // TODO:
+    // This is not pretty because this class is used in two different code
+    // paths: discardable memory decoding on Android and discardable memory
+    // in Skia. Once the transition to caching in Skia is complete we can get
+    // rid of the logic that handles discardable memory.
+    m_allocator.clear();
+
+    const ScaledImageFragment* cachedImage = decodeAndScale(SkISize::Make(info.fWidth, info.fHeight), index);
+    if (!cachedImage)
+        return false;
+
+    ASSERT(cachedImage->bitmap().width() == info.fWidth);
+    ASSERT(cachedImage->bitmap().height() == info.fHeight);
+
+    bool copied = cachedImage->bitmap().copyPixelsTo(pixels, rowBytes * info.fHeight, rowBytes);
+    ImageDecodingStore::instance()->unlockCache(this, cachedImage);
+    return copied;
+}
+
 const ScaledImageFragment* ImageFrameGenerator::tryToLockCompleteCache(const SkISize& scaledSize, size_t index)
 {
     const ScaledImageFragment* cachedImage = 0;

@@ -66,6 +66,13 @@ public:
 
     const ScaledImageFragment* decodeAndScale(const SkISize& scaledSize, size_t index = 0);
 
+    // Decodes and scales the specified frame indicated by |index|. Dimensions
+    // and output format are specified in |info|. Decoded pixels are written
+    // into |pixels| with a stride of |rowBytes|.
+    //
+    // Returns true if decoding was successful.
+    bool decodeAndScale(const SkImageInfo&, size_t index, void* pixels, size_t rowBytes);
+
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
     // Creates a new SharedBuffer containing the data received so far.

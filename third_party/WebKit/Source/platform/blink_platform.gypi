@@ -563,6 +563,8 @@
       'graphics/ColorSpace.h',
       'graphics/CrossfadeGeneratedImage.cpp',
       'graphics/CrossfadeGeneratedImage.h',
+      'graphics/DecodingImageGenerator.cpp',
+      'graphics/DecodingImageGenerator.h',
       'graphics/DeferredImageDecoder.cpp',
       'graphics/DeferredImageDecoder.h',
       'graphics/DiscardablePixelRef.cpp',
