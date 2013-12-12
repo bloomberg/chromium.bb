@@ -201,14 +201,13 @@ bool StickyKeysHandler::HandleKeyEvent(ui::KeyEvent* event) {
 }
 
 bool StickyKeysHandler::HandleMouseEvent(ui::MouseEvent* event) {
+  preparing_to_enable_ = false;
   if (event_from_myself_ || current_state_ == DISABLED
       || !ShouldModifyMouseEvent(event)) {
     return false;
   }
-
   DCHECK(current_state_ == ENABLED || current_state_ == LOCKED);
 
-  preparing_to_enable_ = false;
   AppendModifier(event);
   // Only disable on the mouse released event in normal, non-locked mode.
   if (current_state_ == ENABLED && event->type() != ui::ET_MOUSE_PRESSED) {
@@ -221,10 +220,10 @@ bool StickyKeysHandler::HandleMouseEvent(ui::MouseEvent* event) {
 }
 
 bool StickyKeysHandler::HandleScrollEvent(ui::ScrollEvent* event) {
+  preparing_to_enable_ = false;
   if (event_from_myself_ || current_state_ == DISABLED)
     return false;
   DCHECK(current_state_ == ENABLED || current_state_ == LOCKED);
-  preparing_to_enable_ = false;
 
   // We detect a direction change if the current |scroll_delta_| is assigned
   // and the offset of the current scroll event has the opposing sign.

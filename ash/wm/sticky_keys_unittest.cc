@@ -425,6 +425,55 @@ TEST_F(StickyKeysTest, NormalShortcutTest) {
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
 }
 
+TEST_F(StickyKeysTest, NormalModifiedClickTest) {
+  scoped_ptr<ui::KeyEvent> kev;
+  scoped_ptr<ui::MouseEvent> mev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  // Perform ctrl+click.
+  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
+  mev.reset(GenerateMouseEvent(true));
+  sticky_key.HandleMouseEvent(mev.get());
+  mev.reset(GenerateMouseEvent(false));
+  sticky_key.HandleMouseEvent(mev.get());
+
+  // Sticky keys should not be enabled afterwards.
+  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+}
+
+TEST_F(StickyKeysTest, NormalModifiedScrollTest) {
+  ui::SetUpScrollDeviceForTest(kScrollDeviceId);
+
+  scoped_ptr<ui::KeyEvent> kev;
+  scoped_ptr<ui::ScrollEvent> sev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  // Perform ctrl+scroll.
+  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sev.reset(GenerateFlingScrollEvent(0, true));
+  sticky_key.HandleScrollEvent(sev.get());
+  sev.reset(GenerateScrollEvent(10));
+  sticky_key.HandleScrollEvent(sev.get());
+  sev.reset(GenerateFlingScrollEvent(10, false));
+  sticky_key.HandleScrollEvent(sev.get());
+
+  // Sticky keys should not be enabled afterwards.
+  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+}
+
 TEST_F(StickyKeysTest, MouseEventOneshot) {
   scoped_ptr<ui::MouseEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
