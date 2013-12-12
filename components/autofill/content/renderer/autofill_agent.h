@@ -91,6 +91,7 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void setIgnoreTextChanges(bool ignore) OVERRIDE;
   virtual void didAssociateFormControls(
       const blink::WebVector<blink::WebNode>& nodes) OVERRIDE;
+  virtual void openTextDataListChooser(const blink::WebInputElement& element);
 
   void OnFormDataFilled(int query_id, const FormData& form);
   void OnFieldTypePredictionsAvailable(
@@ -133,15 +134,20 @@ class AutofillAgent : public content::RenderViewObserver,
   // displayed to the user if Autofill has suggestions available, but cannot
   // fill them because it is disabled (e.g. when trying to fill a credit card
   // form on a non-secure website).
+  // |datalist_only| specifies whether all of <datalist> suggestions and no
+  // autofill suggestions are shown. |autofill_on_empty_values| and
+  // |requires_caret_at_end| are ignored if |datalist_only| is true.
   void ShowSuggestions(const blink::WebInputElement& element,
                        bool autofill_on_empty_values,
                        bool requires_caret_at_end,
-                       bool display_warning_if_disabled);
+                       bool display_warning_if_disabled,
+                       bool datalist_only);
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
   void QueryAutofillSuggestions(const blink::WebInputElement& element,
-                                bool display_warning_if_disabled);
+                                bool display_warning_if_disabled,
+                                bool datalist_only);
 
   // Sets the element value to reflect the selected |suggested_value|.
   void AcceptDataListSuggestion(const base::string16& suggested_value);

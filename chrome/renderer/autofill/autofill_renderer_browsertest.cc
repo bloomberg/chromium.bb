@@ -91,7 +91,7 @@ TEST_F(ChromeRenderViewTest, SendForms) {
 
   // Make sure to query for Autofill suggestions before selecting one.
   autofill_agent_->element_ = firstname;
-  autofill_agent_->QueryAutofillSuggestions(firstname, false);
+  autofill_agent_->QueryAutofillSuggestions(firstname, false, false);
 
   // Fill the form with a suggestion that contained a label.  Labeled items
   // indicate Autofill as opposed to Autocomplete.  We're testing this

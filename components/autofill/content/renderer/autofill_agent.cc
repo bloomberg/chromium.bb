@@ -67,19 +67,23 @@ const size_t kMaximumDataListSizeForAutofill = 30;
 // Gets all the data list values (with corresponding label) for the given
 // element.
 void GetDataListSuggestions(const blink::WebInputElement& element,
+                            bool ignore_current_value,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels) {
   WebNodeCollection options = element.dataListOptions();
   if (options.isNull())
     return;
 
-  base::string16 prefix = element.editingValue();
-  if (element.isMultiple() &&
-      element.formControlType() == WebString::fromUTF8("email")) {
-    std::vector<base::string16> parts;
-    base::SplitStringDontTrim(prefix, ',', &parts);
-    if (parts.size() > 0)
-      TrimWhitespace(parts[parts.size() - 1], TRIM_LEADING, &prefix);
+  base::string16 prefix;
+  if (!ignore_current_value) {
+    prefix = element.editingValue();
+    if (element.isMultiple() &&
+        element.formControlType() == WebString::fromUTF8("email")) {
+      std::vector<base::string16> parts;
+      base::SplitStringDontTrim(prefix, ',', &parts);
+      if (parts.size() > 0)
+        TrimWhitespace(parts[parts.size() - 1], TRIM_LEADING, &prefix);
+    }
   }
   for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
        !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
@@ -295,7 +299,7 @@ void AutofillAgent::InputElementClicked(const WebInputElement& element,
                                         bool was_focused,
                                         bool is_focused) {
   if (was_focused)
-    ShowSuggestions(element, true, false, true);
+    ShowSuggestions(element, true, false, true, false);
 }
 
 void AutofillAgent::InputElementLostFocus() {
@@ -355,7 +359,7 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
     return;
   }
 
-  ShowSuggestions(element, false, true, false);
+  ShowSuggestions(element, false, true, false, false);
 
   FormData form;
   FormFieldData field;
@@ -374,7 +378,11 @@ void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
 
   if (event.windowsKeyCode == ui::VKEY_DOWN ||
       event.windowsKeyCode == ui::VKEY_UP)
-    ShowSuggestions(element, true, true, true);
+    ShowSuggestions(element, true, true, true, false);
+}
+
+void AutofillAgent::openTextDataListChooser(const WebInputElement& element) {
+    ShowSuggestions(element, true, false, false, true);
 }
 
 void AutofillAgent::AcceptDataListSuggestion(
@@ -492,19 +500,23 @@ void AutofillAgent::OnPageShown() {
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
-                                    bool display_warning_if_disabled) {
+                                    bool display_warning_if_disabled,
+                                    bool datalist_only) {
   if (!element.isEnabled() || element.isReadOnly() || !element.isTextField() ||
-      element.isPasswordField() || !element.suggestedValue().isEmpty())
+      element.isPasswordField())
+    return;
+  if (!datalist_only && !element.suggestedValue().isEmpty())
     return;
 
   // Don't attempt to autofill with values that are too large or if filling
   // criteria are not met.
   WebString value = element.editingValue();
-  if (value.length() > kMaximumTextSizeForAutofill ||
-      (!autofill_on_empty_values && value.isEmpty()) ||
-      (requires_caret_at_end &&
-       (element.selectionStart() != element.selectionEnd() ||
-        element.selectionEnd() != static_cast<int>(value.length())))) {
+  if (!datalist_only &&
+      (value.length() > kMaximumTextSizeForAutofill ||
+       (!autofill_on_empty_values && value.isEmpty()) ||
+       (requires_caret_at_end &&
+        (element.selectionStart() != element.selectionEnd() ||
+         element.selectionEnd() != static_cast<int>(value.length()))))) {
     // Any popup currently showing is obsolete.
     HideAutofillUI();
     return;
@@ -524,11 +536,14 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (LowerCaseEqualsASCII(autocomplete_attribute, "off"))
     display_warning_if_disabled = false;
 
-  QueryAutofillSuggestions(element, display_warning_if_disabled);
+  QueryAutofillSuggestions(element,
+                           display_warning_if_disabled,
+                           datalist_only);
 }
 
 void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
-                                             bool display_warning_if_disabled) {
+                                             bool display_warning_if_disabled,
+                                             bool datalist_only) {
   if (!element.document().frame())
     return;
 
@@ -551,6 +566,8 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
     // at providing suggestions.
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
   }
+  if (datalist_only)
+    field.should_autocomplete = false;
 
   gfx::RectF bounding_box_scaled =
       GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_);
@@ -558,7 +575,10 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   // Find the datalist values and send them to the browser process.
   std::vector<base::string16> data_list_values;
   std::vector<base::string16> data_list_labels;
-  GetDataListSuggestions(element_, &data_list_values, &data_list_labels);
+  GetDataListSuggestions(element_,
+                         datalist_only,
+                         &data_list_values,
+                         &data_list_labels);
   TrimStringVectorForIPC(&data_list_values);
   TrimStringVectorForIPC(&data_list_labels);
 
