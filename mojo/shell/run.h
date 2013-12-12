@@ -5,10 +5,10 @@
 #ifndef MOJO_SHELL_RUN_H_
 #define MOJO_SHELL_RUN_H_
 
-#include "mojo/shell/context.h"
-
 namespace mojo {
 namespace shell {
+
+class Context;
 
 void Run(Context* context);
 
