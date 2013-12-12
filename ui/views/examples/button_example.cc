@@ -38,7 +38,7 @@ ButtonExample::ButtonExample()
       icon_(NULL),
       count_(0) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  icon_ = rb.GetImageNamed(IDR_CLOSE_SA_H).ToImageSkia();
+  icon_ = rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia();
 }
 
 ButtonExample::~ButtonExample() {

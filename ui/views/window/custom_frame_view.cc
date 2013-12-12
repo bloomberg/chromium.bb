@@ -92,7 +92,7 @@ CustomFrameView::CustomFrameView()
       maximize_button_(NULL),
       restore_button_(NULL),
       close_button_(NULL),
-      should_show_minmax_buttons_(false),
+      should_show_maximize_button_(false),
       frame_background_(new FrameBackground()) {
 }
 
@@ -118,7 +118,7 @@ void CustomFrameView::Init(Widget* frame) {
   restore_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_RESTORE,
       IDR_RESTORE, IDR_RESTORE_H, IDR_RESTORE_P);
 
-  should_show_minmax_buttons_ = frame_->widget_delegate()->CanMaximize();
+  should_show_maximize_button_ = frame_->widget_delegate()->CanMaximize();
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new ImageButton(this);
@@ -487,7 +487,8 @@ void CustomFrameView::LayoutWindowControls() {
   ImageButton* visible_button = is_restored ? maximize_button_
                                             : restore_button_;
   FramePartImage normal_part, hot_part, pushed_part;
-  if (should_show_minmax_buttons_) {
+  int next_button_x;
+  if (should_show_maximize_button_) {
     visible_button->SetVisible(true);
     visible_button->SetImageAlignment(ImageButton::ALIGN_LEFT,
                                       ImageButton::ALIGN_BOTTOM);
@@ -495,27 +496,24 @@ void CustomFrameView::LayoutWindowControls() {
     visible_button->SetBounds(close_button_->x() - visible_button_size.width(),
                               caption_y, visible_button_size.width(),
                               visible_button_size.height());
-
-    minimize_button_->SetVisible(true);
-    minimize_button_->SetImageAlignment(ImageButton::ALIGN_LEFT,
-                                        ImageButton::ALIGN_BOTTOM);
-    gfx::Size minimize_button_size = minimize_button_->GetPreferredSize();
-    minimize_button_->SetBounds(
-        visible_button->x() - minimize_button_size.width(), caption_y,
-        minimize_button_size.width(),
-        minimize_button_size.height());
-
-    normal_part = IDR_CLOSE;
-    hot_part = IDR_CLOSE_H;
-    pushed_part = IDR_CLOSE_P;
+    next_button_x = visible_button->x();
   } else {
     visible_button->SetVisible(false);
-    minimize_button_->SetVisible(false);
-
-    normal_part = IDR_CLOSE_SA;
-    hot_part = IDR_CLOSE_SA_H;
-    pushed_part = IDR_CLOSE_SA_P;
+    next_button_x = close_button_->x();
   }
+
+  minimize_button_->SetVisible(true);
+  minimize_button_->SetImageAlignment(ImageButton::ALIGN_LEFT,
+                                      ImageButton::ALIGN_BOTTOM);
+  gfx::Size minimize_button_size = minimize_button_->GetPreferredSize();
+  minimize_button_->SetBounds(
+      next_button_x - minimize_button_size.width(), caption_y,
+      minimize_button_size.width(),
+      minimize_button_size.height());
+
+  normal_part = IDR_CLOSE;
+  hot_part = IDR_CLOSE_H;
+  pushed_part = IDR_CLOSE_P;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -546,8 +544,7 @@ void CustomFrameView::LayoutTitleBar() {
   // title from overlapping the 3D edge at the bottom of the titlebar.
   title_bounds_.SetRect(title_x,
       icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
-      std::max(0, (should_show_minmax_buttons_ ?
-          minimize_button_->x() : close_button_->x()) - kTitleCaptionSpacing -
+      std::max(0, minimize_button_->x() - kTitleCaptionSpacing -
       title_x), title_height);
 }
 

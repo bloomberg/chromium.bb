@@ -130,9 +130,8 @@ class CustomFrameView : public NonClientFrameView,
   ImageButton* restore_button_;
   ImageButton* close_button_;
 
-  // Should minimize and maximize buttons be shown? This is true when the
-  // window can be maximized.
-  bool should_show_minmax_buttons_;
+  // Should maximize button be shown?
+  bool should_show_maximize_button_;
 
   // Background painter for the window frame.
   scoped_ptr<FrameBackground> frame_background_;
