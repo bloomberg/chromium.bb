@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "client/windows/common/auto_critical_section.h"
+#include "common/scoped_ptr.h"
 #include "common/windows/guid_string.h"
 
 using std::wstring;
@@ -372,6 +373,31 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
                                       bool is_client_pointers,
                                       HANDLE dump_file,
                                       HANDLE full_dump_file) {
+  return WriteMinidump(process_handle,
+                       process_id,
+                       thread_id,
+                       requesting_thread_id,
+                       exception_pointers,
+                       assert_info,
+                       dump_type,
+                       is_client_pointers,
+                       dump_file,
+                       full_dump_file,
+                       NULL);
+}
+
+bool MinidumpGenerator::WriteMinidump(
+    HANDLE process_handle,
+    DWORD process_id,
+    DWORD thread_id,
+    DWORD requesting_thread_id,
+    EXCEPTION_POINTERS* exception_pointers,
+    MDRawAssertionInfo* assert_info,
+    MINIDUMP_TYPE dump_type,
+    bool is_client_pointers,
+    HANDLE dump_file,
+    HANDLE full_dump_file,
+    MINIDUMP_USER_STREAM_INFORMATION* additional_streams) {
   bool full_memory_dump = (dump_type & MiniDumpWithFullMemory) != 0;
   if (dump_file == INVALID_HANDLE_VALUE ||
       (full_memory_dump && full_dump_file == INVALID_HANDLE_VALUE)) {
@@ -411,16 +437,17 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
     breakpad_info.requesting_thread_id = requesting_thread_id;
   }
 
-  // Leave room in user_stream_array for possible assertion info and handle
-  // operations streams.
-  MINIDUMP_USER_STREAM user_stream_array[3];
+  scoped_array<MINIDUMP_USER_STREAM> user_stream_array(
+      new MINIDUMP_USER_STREAM[3 + additional_streams ?
+                                   additional_streams->UserStreamCount :
+                                   0]);
   user_stream_array[0].Type = MD_BREAKPAD_INFO_STREAM;
   user_stream_array[0].BufferSize = sizeof(breakpad_info);
   user_stream_array[0].Buffer = &breakpad_info;
 
   MINIDUMP_USER_STREAM_INFORMATION user_streams;
   user_streams.UserStreamCount = 1;
-  user_streams.UserStreamArray = user_stream_array;
+  user_streams.UserStreamArray = user_stream_array.get();
 
   MDRawAssertionInfo* actual_assert_info = assert_info;
   MDRawAssertionInfo client_assert_info = {0};
@@ -457,8 +484,19 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
     ++user_streams.UserStreamCount;
   }
 
+  for (size_t i = 0;
+       additional_streams != NULL, i < additional_streams->UserStreamCount;
+       i++, user_streams.UserStreamCount++) {
+    user_stream_array[user_streams.UserStreamCount].Type =
+        additional_streams->UserStreamArray[i].Type;
+    user_stream_array[user_streams.UserStreamCount].BufferSize =
+        additional_streams->UserStreamArray[i].BufferSize;
+    user_stream_array[user_streams.UserStreamCount].Buffer =
+        additional_streams->UserStreamArray[i].Buffer;
+  }
+
   // If the process is terminated by STATUS_INVALID_HANDLE exception store
-  // the trace of operatios for the offending handle value. Do nothing special
+  // the trace of operations for the offending handle value. Do nothing special
   // if the client already requested the handle trace to be stored in the dump.
   HandleTraceData handle_trace_data;
   if (exception_pointers && (dump_type & MiniDumpWithHandleData) == 0) {

@@ -91,6 +91,20 @@ class MinidumpGenerator {
                      HANDLE dump_file,
                      HANDLE full_dump_file);
 
+  // Writes the minidump with the given parameters. Allows the user to include
+  // additional streams in the dump that would not otherwise be included.
+  bool WriteMinidump(HANDLE process_handle,
+                     DWORD process_id,
+                     DWORD thread_id,
+                     DWORD requesting_thread_id,
+                     EXCEPTION_POINTERS* exception_pointers,
+                     MDRawAssertionInfo* assert_info,
+                     MINIDUMP_TYPE dump_type,
+                     bool is_client_pointers,
+                     HANDLE dump_file,
+                     HANDLE full_dump_file,
+                     MINIDUMP_USER_STREAM_INFORMATION* additional_streams);
+
  private:
   // Function pointer type for MiniDumpWriteDump, which is looked up
   // dynamically.
