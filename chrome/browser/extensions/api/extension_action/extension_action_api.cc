@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/error_utils.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -98,20 +99,24 @@ bool StringToSkBitmap(const std::string& str, SkBitmap* bitmap) {
   std::string raw_str;
   if (!base::Base64Decode(str, &raw_str))
     return false;
-  IPC::Message bitmap_pickle(raw_str.data(), raw_str.size());
-  PickleIterator iter(bitmap_pickle);
-  return IPC::ReadParam(&bitmap_pickle, &iter, bitmap);
+
+  bool success = gfx::PNGCodec::Decode(
+      reinterpret_cast<unsigned const char*>(raw_str.data()), raw_str.size(),
+      bitmap);
+  return success;
 }
 
 // Conversion function for reading/writing to storage.
 std::string RepresentationToString(const gfx::ImageSkia& image, float scale) {
   SkBitmap bitmap = image.GetRepresentation(scale).sk_bitmap();
-  IPC::Message bitmap_pickle;
-  // Clear the header values so they don't vary in serialization.
-  bitmap_pickle.SetHeaderValues(0, 0, 0);
-  IPC::WriteParam(&bitmap_pickle, bitmap);
-  std::string raw_str(static_cast<const char*>(bitmap_pickle.data()),
-                      bitmap_pickle.size());
+  SkAutoLockPixels lock_image(bitmap);
+  std::vector<unsigned char> data;
+  bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data);
+  if (!success)
+    return std::string();
+
+  base::StringPiece raw_str(
+      reinterpret_cast<const char*>(&data[0]), data.size());
   std::string base64_str;
   base::Base64Encode(raw_str, &base64_str);
   return base64_str;
