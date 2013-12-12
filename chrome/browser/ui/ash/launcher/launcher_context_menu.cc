@@ -88,20 +88,30 @@ void LauncherContextMenu::Init() {
       if (!controller_->IsPlatformApp(item_.id) &&
           item_.type != ash::TYPE_WINDOWED_APP) {
         AddSeparator(ui::NORMAL_SEPARATOR);
-        AddCheckItemWithStringId(
-            LAUNCH_TYPE_REGULAR_TAB,
-            IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-        AddCheckItemWithStringId(
-            LAUNCH_TYPE_PINNED_TAB,
-            IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-        AddCheckItemWithStringId(
-            LAUNCH_TYPE_WINDOW,
-            IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-        // Even though the launch type is Full Screen it is more accurately
-        // described as Maximized in Ash.
-        AddCheckItemWithStringId(
-            LAUNCH_TYPE_FULLSCREEN,
-            IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableStreamlinedHostedApps)) {
+          // Streamlined hosted apps launch in a window by default. This menu
+          // item is re-interpreted as a single, toggle-able option to launch
+          // the hosted app as a tab.
+          AddCheckItemWithStringId(
+              LAUNCH_TYPE_REGULAR_TAB,
+              IDS_APP_CONTEXT_MENU_OPEN_TAB);
+        } else {
+          AddCheckItemWithStringId(
+              LAUNCH_TYPE_REGULAR_TAB,
+              IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+          AddCheckItemWithStringId(
+              LAUNCH_TYPE_PINNED_TAB,
+              IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+          AddCheckItemWithStringId(
+              LAUNCH_TYPE_WINDOW,
+              IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+          // Even though the launch type is Full Screen it is more accurately
+          // described as Maximized in Ash.
+          AddCheckItemWithStringId(
+              LAUNCH_TYPE_FULLSCREEN,
+              IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+        }
       }
     } else if (item_.type == ash::TYPE_BROWSER_SHORTCUT) {
       AddItem(MENU_NEW_WINDOW,
@@ -246,9 +256,21 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case LAUNCH_TYPE_PINNED_TAB:
       controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_PINNED);
       break;
-    case LAUNCH_TYPE_REGULAR_TAB:
-      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_REGULAR);
+    case LAUNCH_TYPE_REGULAR_TAB: {
+      extensions::LaunchType launch_type =
+          extensions::LAUNCH_TYPE_REGULAR;
+      // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
+      // LAUNCH_REGULAR.
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableStreamlinedHostedApps)) {
+        launch_type = controller_->GetLaunchType(item_.id) ==
+                    extensions::LAUNCH_TYPE_REGULAR
+                ? extensions::LAUNCH_TYPE_WINDOW
+                : extensions::LAUNCH_TYPE_REGULAR;
+      }
+      controller_->SetLaunchType(item_.id, launch_type);
       break;
+    }
     case LAUNCH_TYPE_WINDOW:
       controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_WINDOW);
       break;
