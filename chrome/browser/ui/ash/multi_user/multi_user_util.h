@@ -9,6 +9,10 @@
 
 class Profile;
 
+namespace aura {
+class Window;
+}
+
 namespace multi_user_util {
 
 // Get the user id from a given profile.
@@ -19,6 +23,9 @@ std::string GetUserIDFromEmail(const std::string& email);
 
 // Get a profile for a given user id.
 Profile* GetProfileFromUserID(const std::string& user_id);
+
+// Get a profile for a |window|. Returns NULL if window belongs to no profile.
+Profile* GetProfileFromWindow(aura::Window* window);
 
 // Check if the given profile is from the currently active user. Note that since
 // only Chrome OS has the concept of an active user, only Chrome OS can ever

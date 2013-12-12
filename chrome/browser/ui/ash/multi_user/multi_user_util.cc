@@ -13,6 +13,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #endif
 
 namespace multi_user_util {
@@ -41,6 +42,21 @@ Profile* GetProfileFromUserID(const std::string& user_id) {
       return *profile_iterator;
   }
   return NULL;
+}
+
+Profile* GetProfileFromWindow(aura::Window* window) {
+#if defined(OS_CHROMEOS)
+  chrome::MultiUserWindowManager* manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  // We might come here before the manager got created - or in a unit test.
+  if (!manager)
+    return NULL;
+  const std::string user_id = manager->GetUserPresentingWindow(window);
+  return user_id.empty() ? NULL :
+                           multi_user_util::GetProfileFromUserID(user_id);
+#else
+  return NULL;
+#endif
 }
 
 bool IsProfileFromActiveUser(Profile* profile) {
