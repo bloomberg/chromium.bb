@@ -31,10 +31,7 @@
 #include "config.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DataTransferItem.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/platform/Pasteboard.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
@@ -95,13 +92,11 @@ void ChromiumDataObject::clearAll()
     m_itemList.clear();
 }
 
-PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, const String& type, ExceptionState& exceptionState)
+PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, const String& type)
 {
     RefPtr<ChromiumDataObjectItem> item = ChromiumDataObjectItem::createFromString(type, data);
-    if (!internalAddStringItem(item)) {
-        exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
+    if (!internalAddStringItem(item))
         return 0;
-    }
     return item;
 }
 
@@ -166,7 +161,8 @@ String ChromiumDataObject::getData(const String& type) const
 bool ChromiumDataObject::setData(const String& type, const String& data)
 {
     clearData(type);
-    add(data, type, ASSERT_NO_EXCEPTION);
+    if (!add(data, type))
+        ASSERT_NOT_REACHED();
     return true;
 }
 

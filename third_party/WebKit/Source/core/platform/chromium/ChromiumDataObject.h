@@ -43,7 +43,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
 class KURL;
 class SharedBuffer;
 
@@ -63,7 +62,8 @@ public:
     // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
     void deleteItem(unsigned long index);
     void clearAll();
-    PassRefPtr<ChromiumDataObjectItem> add(const String& data, const String& type, ExceptionState&);
+    // Returns null if an item already exists with the provided type.
+    PassRefPtr<ChromiumDataObjectItem> add(const String& data, const String& type);
     PassRefPtr<ChromiumDataObjectItem> add(PassRefPtr<File>);
 
     // WebCore helpers.
