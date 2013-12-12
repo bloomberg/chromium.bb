@@ -36,7 +36,7 @@ ScreenCaptureTrayItem::~ScreenCaptureTrayItem() {
 
 views::View* ScreenCaptureTrayItem::CreateTrayView(user::LoginStatus status) {
   set_tray_view(
-      new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_DISPLAY_LIGHT));
+      new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
   return tray_view();
 }
 
@@ -44,7 +44,7 @@ views::View* ScreenCaptureTrayItem::CreateDefaultView(
     user::LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this,
-      IDR_AURA_UBER_TRAY_DISPLAY,
+      IDR_AURA_UBER_TRAY_SCREENSHARE_DARK,
       screen_capture_status_,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP)));
@@ -61,7 +61,7 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
       kScreenCaptureNotificationId,
       screen_capture_status_,
       base::string16() /* body is blank */,
-      resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
+      resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK),
       base::string16() /* display_source */,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,

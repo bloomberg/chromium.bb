@@ -36,14 +36,14 @@ ScreenShareTrayItem::~ScreenShareTrayItem() {
 
 views::View* ScreenShareTrayItem::CreateTrayView(user::LoginStatus status) {
   set_tray_view(
-      new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_DISPLAY_LIGHT));
+      new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
   return tray_view();
 }
 
 views::View* ScreenShareTrayItem::CreateDefaultView(user::LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this,
-      IDR_AURA_UBER_TRAY_DISPLAY,
+      IDR_AURA_UBER_TRAY_SCREENSHARE_DARK,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED),
       l10n_util::GetStringUTF16(
@@ -71,7 +71,7 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
       kScreenShareNotificationId,
       help_label_text,
       base::string16() /* body is blank */,
-      resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
+      resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK),
       base::string16() /* display_source */,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
