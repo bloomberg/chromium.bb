@@ -434,7 +434,7 @@ void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const 
 
 void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location> >& positions)
 {
-    if (!isPaused() || m_currentCallStack.isNull()) {
+    if (!isPaused() || m_currentCallStack.hasNoValue()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
@@ -611,7 +611,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
 {
-    if (!isPaused() || m_currentCallStack.isNull()) {
+    if (!isPaused() || m_currentCallStack.hasNoValue()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
@@ -734,7 +734,7 @@ ScriptValue InspectorDebuggerAgent::resolveCallFrame(ErrorString* errorString, c
 {
     if (!callFrameId)
         return ScriptValue();
-    if (!isPaused() || m_currentCallStack.isNull()) {
+    if (!isPaused() || m_currentCallStack.hasNoValue()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return ScriptValue();
     }
@@ -805,7 +805,7 @@ void InspectorDebuggerAgent::setPauseOnExceptionsImpl(ErrorString* errorString, 
 
 void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& callFrameId, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
-    if (!isPaused() || m_currentCallStack.isNull()) {
+    if (!isPaused() || m_currentCallStack.hasNoValue()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
@@ -893,7 +893,7 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
 {
     InjectedScript injectedScript;
     if (callFrameId) {
-        if (!isPaused() || m_currentCallStack.isNull()) {
+        if (!isPaused() || m_currentCallStack.hasNoValue()) {
             *errorString = "Attempt to access callframe when debugger is not on pause";
             return;
         }
@@ -949,7 +949,7 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
 
 PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
 {
-    if (!m_pausedScriptState)
+    if (!m_pausedScriptState || m_currentCallStack.hasNoValue())
         return Array<CallFrame>::create();
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState);
     if (injectedScript.hasNoValue()) {
