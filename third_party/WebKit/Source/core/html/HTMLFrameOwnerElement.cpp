@@ -125,7 +125,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 {
     RefPtr<Frame> parentFrame = document().frame();
     if (contentFrame()) {
-        contentFrame()->navigationScheduler().scheduleLocationChange(document().securityOrigin(), url.string(), parentFrame->loader().outgoingReferrer(), lockBackForwardList);
+        contentFrame()->navigationScheduler().scheduleLocationChange(&document(), url.string(), parentFrame->loader().outgoingReferrer(), lockBackForwardList);
         return true;
     }
 

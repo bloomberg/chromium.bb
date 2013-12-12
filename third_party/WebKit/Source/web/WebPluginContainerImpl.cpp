@@ -466,7 +466,7 @@ void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, cons
         WebDataSourceImpl::setNextPluginLoadObserver(observer.release());
     }
 
-    FrameLoadRequest frameRequest(frame->document()->securityOrigin(), request.toResourceRequest(), target);
+    FrameLoadRequest frameRequest(frame->document(), request.toResourceRequest(), target);
     UserGestureIndicator gestureIndicator(request.hasUserGesture() ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
     frame->loader().load(frameRequest);
 }

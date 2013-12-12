@@ -652,17 +652,20 @@ void FrameLoader::started()
         frame->loader().m_isComplete = false;
 }
 
-void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer)
+void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
 {
     if (shouldSendReferrer == NeverSendReferrer) {
         request.clearHTTPReferrer();
         return;
     }
 
+    // Only consider using this frame's outgoing referrer if one isn't set and this frame's document initiated the request.
+    // However, we still need to generateReferrerHeader(), because we might not have enforced ReferrerPolicy or https->http
+    // referrer suppression yet.
     String argsReferrer(request.httpReferrer());
-    if (argsReferrer.isEmpty())
+    if (argsReferrer.isEmpty() && originDocument == m_frame->document())
         argsReferrer = outgoingReferrer();
-    String referrer = SecurityPolicy::generateReferrerHeader(m_frame->document()->referrerPolicy(), request.url(), argsReferrer);
+    String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), argsReferrer);
 
     request.setHTTPReferrer(referrer);
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
@@ -689,7 +692,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeReload;
     if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
-    if (!request.requester() && shouldTreatURLAsSameAsCurrent(request.resourceRequest().url()))
+    if (!request.originDocument() && shouldTreatURLAsSameAsCurrent(request.resourceRequest().url()))
         return FrameLoadTypeSame;
     if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeReload)
         return FrameLoadTypeReload;
@@ -698,27 +701,23 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 
 bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 {
-    // If no SecurityOrigin was specified, skip security checks and assume the caller has fully initialized the FrameLoadRequest.
-    if (!request.requester())
+    // If no origin Document* was specified, skip security checks and assume the caller has fully initialized the FrameLoadRequest.
+    if (!request.originDocument())
         return true;
 
     KURL url = request.resourceRequest().url();
     if (m_frame->script().executeScriptIfJavaScriptURL(url))
         return false;
 
-    if (!request.requester()->canDisplay(url)) {
+    if (!request.originDocument()->securityOrigin()->canDisplay(url)) {
         reportLocalLoadFailed(m_frame, url.elidedString());
         return false;
     }
 
-    if (request.requester() && !request.formState() && request.frameName().isEmpty())
+    if (!request.formState() && request.frameName().isEmpty())
         request.setFrameName(m_frame->document()->baseTarget());
 
-    // If the requesting SecurityOrigin is not this Frame's SecurityOrigin, the request was initiated by a different frame that should
-    // have already set the referrer.
-    // FIXME: Not clear that this is a valid assumption.
-    if (request.requester()->equal(m_frame->document()->securityOrigin()))
-        setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer());
+    setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer(), request.originDocument());
     return true;
 }
 

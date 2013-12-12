@@ -595,7 +595,7 @@ PassRefPtr<Frame> FrameLoaderClientImpl::createFrame(
     const String& referrer,
     HTMLFrameOwnerElement* ownerElement)
 {
-    FrameLoadRequest frameRequest(m_webFrame->frame()->document()->securityOrigin(),
+    FrameLoadRequest frameRequest(m_webFrame->frame()->document(),
         ResourceRequest(url, referrer), name);
     return m_webFrame->createChildFrame(frameRequest, ownerElement);
 }

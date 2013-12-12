@@ -42,10 +42,10 @@
 
 namespace WebCore {
 
+class Document;
 class FormSubmission;
 class Frame;
 class ScheduledNavigation;
-class SecurityOrigin;
 
 class NavigationDisablerForBeforeUnload {
     WTF_MAKE_NONCOPYABLE(NavigationDisablerForBeforeUnload);
@@ -76,7 +76,7 @@ public:
     bool locationChangePending();
 
     void scheduleRedirect(double delay, const String& url);
-    void scheduleLocationChange(SecurityOrigin*, const String& url, const String& referrer, bool lockBackForwardList = true);
+    void scheduleLocationChange(Document*, const String& url, const String& referrer, bool lockBackForwardList = true);
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
     void scheduleRefresh();
     void scheduleHistoryNavigation(int steps);
