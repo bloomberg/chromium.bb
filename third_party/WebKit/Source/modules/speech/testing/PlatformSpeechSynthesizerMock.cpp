@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
+#include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
 
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 

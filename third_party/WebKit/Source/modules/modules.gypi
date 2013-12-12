@@ -796,6 +796,8 @@
     'modules_testing_support_files': [
       'speech/testing/InternalsSpeechSynthesis.cpp',
       'speech/testing/InternalsSpeechSynthesis.h',
+      'speech/testing/PlatformSpeechSynthesizerMock.cpp',
+      'speech/testing/PlatformSpeechSynthesizerMock.h',
       'vibration/testing/InternalsVibration.cpp',
       'vibration/testing/InternalsVibration.h',
     ],

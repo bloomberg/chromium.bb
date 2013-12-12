@@ -32,10 +32,10 @@
 #include "InternalsSpeechSynthesis.h"
 
 #include "core/dom/Document.h"
-#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 #include "core/testing/Internals.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
+#include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
 
 namespace WebCore {
 

@@ -2723,8 +2723,6 @@
             'platform/mediastream/RTCPeerConnectionHandlerClient.h',
             'platform/mediastream/RTCStatsRequest.h',
             'platform/mock/GeolocationClientMock.cpp',
-            'platform/mock/PlatformSpeechSynthesizerMock.cpp',
-            'platform/mock/PlatformSpeechSynthesizerMock.h',
         ],
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',
