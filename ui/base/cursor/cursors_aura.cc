@@ -76,13 +76,13 @@ const CursorData kNormalCursors[] = {
 
 const CursorData kLargeCursors[] = {
   // The 2x hotspots should be double of the 1x, even though the cursors are
-  // shown as same size as 1x (64x64). Since, in 2x dpi screen, the 1x large
+  // shown as same size as 1x (64x64), because in 2x dpi screen, the 1x large
   // cursor assets (64x64) are internally enlarged to the double size (128x128)
   // by ResourceBundleImageSource.
   {ui::kCursorNull, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {20, 20}},
   {ui::kCursorPointer, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {20, 20}},
   {ui::kCursorNoDrop, IDR_AURA_CURSOR_BIG_NO_DROP, {10, 10}, {20, 20}},
-  {ui::kCursorNotAllowed, IDR_AURA_CURSOR_BIG_NO_DROP, {23, 23}, {46, 46}},
+  {ui::kCursorNotAllowed, IDR_AURA_CURSOR_BIG_NO_DROP, {10, 10}, {20, 20}},
   {ui::kCursorCopy, IDR_AURA_CURSOR_BIG_COPY, {10, 10}, {20, 20}},
   {ui::kCursorHand, IDR_AURA_CURSOR_BIG_HAND, {25, 7}, {50, 14}},
   {ui::kCursorMove, IDR_AURA_CURSOR_BIG_MOVE, {32, 31}, {64, 62}},
@@ -100,7 +100,7 @@ const CursorData kLargeCursors[] = {
    {29, 32}, {58, 64}},
   {ui::kCursorEastResize, IDR_AURA_CURSOR_BIG_EAST_RESIZE, {35, 29}, {70, 58}},
   {ui::kCursorWestResize, IDR_AURA_CURSOR_BIG_WEST_RESIZE, {35, 29}, {70, 58}},
-  {ui::kCursorIBeam, IDR_AURA_CURSOR_BIG_IBEAM, {30, 32}, {30, 64}},
+  {ui::kCursorIBeam, IDR_AURA_CURSOR_BIG_IBEAM, {30, 32}, {60, 64}},
   {ui::kCursorAlias, IDR_AURA_CURSOR_BIG_ALIAS, {19, 11}, {38, 22}},
   {ui::kCursorCell, IDR_AURA_CURSOR_BIG_CELL, {30, 30}, {60, 60}},
   {ui::kCursorContextMenu, IDR_AURA_CURSOR_BIG_CONTEXT_MENU,
