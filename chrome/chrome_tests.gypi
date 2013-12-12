@@ -160,7 +160,7 @@
         '../ui/views/widget/widget_interactive_uitest.cc',
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',
-        'browser/apps/app_interactive_uitest.cc',
+        'browser/apps/app_window_interactive_uitest.cc',
         'browser/apps/web_view_interactive_browsertest.cc',
         'browser/autofill/autofill_interactive_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',

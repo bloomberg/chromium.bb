@@ -116,6 +116,9 @@ namespace app.window {
     // after creation.<br>
     // Currently only available on Dev channel.
     boolean? alwaysOnTop;
+
+    // If true, the window will be focused when created. Defaults to true.
+    boolean? focused;
   };
 
   // Called in the creating window (parent) before the load event is called in

@@ -62,7 +62,7 @@ class GeometryCacheChangeHelper : ShellWindowGeometryCache::Observer {
 };
 
 // Helper class for tests related to the Apps Window API (chrome.app.window).
-class AppWindowAPI : public extensions::PlatformAppBrowserTest {
+class AppWindowAPITest : public extensions::PlatformAppBrowserTest {
  public:
   bool RunAppWindowAPITest(const char* testName) {
     ExtensionTestMessageListener launched_listener("Launched", true);
@@ -87,36 +87,41 @@ class AppWindowAPI : public extensions::PlatformAppBrowserTest {
 // These tests are flaky after https://codereview.chromium.org/57433010/.
 // See http://crbug.com/319613.
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestCreate) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestCreate) {
   ASSERT_TRUE(RunAppWindowAPITest("testCreate")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestSingleton) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestSingleton) {
   ASSERT_TRUE(RunAppWindowAPITest("testSingleton")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestBounds) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestBounds) {
   ASSERT_TRUE(RunAppWindowAPITest("testBounds")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestCloseEvent) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestCloseEvent) {
   ASSERT_TRUE(RunAppWindowAPITest("testCloseEvent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestMaximize) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestMaximize) {
   ASSERT_TRUE(RunAppWindowAPITest("testMaximize")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestore) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestore) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestore")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreAfterClose) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestoreAfterClose) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestoreAfterClose")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestSizeConstraints) {
+  ASSERT_TRUE(RunAppWindowAPITest("testSizeConstraints")) << message_;
+}
+
 // Flaky failures on mac_rel and WinXP, see http://crbug.com/324915.
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreGeometryCacheChange) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
+                       DISABLED_TestRestoreGeometryCacheChange) {
   // This test is similar to the other AppWindowAPI tests except that at some
   // point the app will send a 'ListenGeometryChange' message at which point the
   // test will check if the geometry cache entry for the test window has
@@ -157,6 +162,3 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreGeometryCacheChange) {
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestSizeConstraints) {
-  ASSERT_TRUE(RunAppWindowAPITest("testSizeConstraints")) << message_;
-}

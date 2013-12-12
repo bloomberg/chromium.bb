@@ -179,7 +179,11 @@ bool AppWindowCreateFunction::RunImpl() {
             view_id = created_view->GetRoutingID();
           }
 
-          window->Show(ShellWindow::SHOW_ACTIVE);
+          if (options->focused.get() && !*options->focused.get())
+            window->Show(ShellWindow::SHOW_INACTIVE);
+          else
+            window->Show(ShellWindow::SHOW_ACTIVE);
+
           base::DictionaryValue* result = new base::DictionaryValue;
           result->Set("viewId", new base::FundamentalValue(view_id));
           SetCreateResultFromShellWindow(window, result);
@@ -272,6 +276,9 @@ bool AppWindowCreateFunction::RunImpl() {
     if (options->always_on_top.get() &&
         GetExtension()->HasAPIPermission(APIPermission::kAlwaysOnTopWindows))
       create_params.always_on_top = *options->always_on_top.get();
+
+    if (options->focused.get())
+      create_params.focused = *options->focused.get();
 
     if (options->type != extensions::api::app_window::WINDOW_TYPE_PANEL) {
       switch (options->state) {

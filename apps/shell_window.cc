@@ -183,7 +183,8 @@ void ShellWindow::Init(const GURL& url,
 
   if (!new_params.hidden) {
     // Panels are not activated by default.
-    Show(window_type_is_panel() ? SHOW_INACTIVE : SHOW_ACTIVE);
+    Show(window_type_is_panel() || !new_params.focused ? SHOW_INACTIVE
+                                                       : SHOW_ACTIVE);
   }
 
   if (new_params.state == ui::SHOW_STATE_FULLSCREEN)

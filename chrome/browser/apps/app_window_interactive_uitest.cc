@@ -9,13 +9,6 @@
 
 using namespace apps;
 
-// This test does not work on Linux Aura yet. It might be because the fullscreen
-// window is not correctly focused or because key events are not correctly sent.
-#if !(defined(OS_LINUX) && defined(USE_AURA))
-
-// This test is also highly flaky on MacOS X.
-#if !defined(OS_MACOSX)
-
 // Helper class that has to be created in the stack to check if the fullscreen
 // setting of a NativeWindow has changed since the creation of the object.
 class FullscreenChangeWaiter {
@@ -36,8 +29,27 @@ class FullscreenChangeWaiter {
   DISALLOW_COPY_AND_ASSIGN(FullscreenChangeWaiter);
 };
 
-class AppInteractiveTest : public extensions::PlatformAppBrowserTest {
+class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
  public:
+  bool RunAppWindowInteractiveTest(const char* testName) {
+    ExtensionTestMessageListener launched_listener("Launched", true);
+    LoadAndLaunchPlatformApp("window_api_interactive");
+    if (!launched_listener.WaitUntilSatisfied()) {
+      message_ = "Did not get the 'Launched' message.";
+      return false;
+    }
+
+    ResultCatcher catcher;
+    launched_listener.Reply(testName);
+
+    if (!catcher.GetNextResult()) {
+      message_ = catcher.message();
+      return false;
+    }
+
+    return true;
+  }
+
   bool SimulateKeyPress(ui::KeyboardCode key) {
     return ui_test_utils::SendKeyPressToWindowSync(
       GetFirstShellWindow()->GetNativeWindow(),
@@ -49,7 +61,32 @@ class AppInteractiveTest : public extensions::PlatformAppBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCLeavesFullscreenWindow) {
+#if defined(OS_LINUX) && defined(USE_AURA)
+// These tests do not work on Linux Aura because when the window is raised, the
+// content is not focused thus do not get the key events.
+// See http://crbug.com/324346
+#define MAYBE_ESCDoesNotLeaveFullscreenWindow \
+  DISABLED_ESCDoesNotLeaveFullscreenWindow
+#define MAYBE_ESCDoesNotLeaveFullscreenDOM DISABLED_ESCDoesNotLeaveFullscreenDOM
+// These tests are failing on Linux Aura for unknown reasons.
+#define MAYBE_ESCLeavesFullscreenWindow DISABLED_ESCLeavesFullscreenWindow
+#define MAYBE_ESCLeavesFullscreenDOM DISABLED_ESCLeavesFullscreenDOM
+#elif defined(OS_MACOSX)
+// These tests are highly flaky on MacOS.
+#define MAYBE_ESCLeavesFullscreenWindow DISABLED_ESCLeavesFullscreenWindow
+#define MAYBE_ESCLeavesFullscreenDOM DISABLED_ESCLeavesFullscreenDOM
+#define MAYBE_ESCDoesNotLeaveFullscreenWindow \
+  DISABLED_ESCDoesNotLeaveFullscreenWindow
+#define MAYBE_ESCDoesNotLeaveFullscreenDOM DISABLED_ESCDoesNotLeaveFullscreenDOM
+#else
+#define MAYBE_ESCLeavesFullscreenWindow ESCLeavesFullscreenWindow
+#define MAYBE_ESCLeavesFullscreenDOM ESCLeavesFullscreenDOM
+#define MAYBE_ESCDoesNotLeaveFullscreenWindow ESCDoesNotLeaveFullscreenWindow
+#define MAYBE_ESCDoesNotLeaveFullscreenDOM ESCDoesNotLeaveFullscreenDOM
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
+                       MAYBE_ESCLeavesFullscreenWindow) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -77,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCLeavesFullscreenWindow) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCLeavesFullscreenDOM) {
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_ESCLeavesFullscreenDOM) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -111,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCLeavesFullscreenDOM) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCDoesNotLeaveFullscreenWindow) {
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
+                       MAYBE_ESCDoesNotLeaveFullscreenWindow) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -143,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCDoesNotLeaveFullscreenWindow) {
   EXPECT_TRUE(GetFirstShellWindow()->GetBaseWindow()->IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCDoesNotLeaveFullscreenDOM) {
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
+                       MAYBE_ESCDoesNotLeaveFullscreenDOM) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -181,6 +220,19 @@ IN_PROC_BROWSER_TEST_F(AppInteractiveTest, ESCDoesNotLeaveFullscreenDOM) {
   EXPECT_TRUE(GetFirstShellWindow()->GetBaseWindow()->IsFullscreen());
 }
 
-#endif // !(defined(OS_MACOSX))
+// This test does not work on Linux Aura because ShowInactive() is not
+// implemented. See http://crbug.com/325142
+// It also does not work on Windows because of the document being focused even
+// though the window is not activated. See http://crbug.com/326986
+// It also does not work on MacOS because ::ShowInactive() ends up behaving like
+// ::Show() because of Cocoa conventions. See http://crbug.com/326987
+#if (defined(OS_LINUX) && defined(USE_AURA)) || \
+    defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_TestCreate DISABLED_TestCreate
+#else
+#define MAYBE_TestCreate TestCreate
+#endif
 
-#endif // !(defined(OS_LINUX) && defined(USE_AURA))
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestCreate) {
+  ASSERT_TRUE(RunAppWindowInteractiveTest("testCreate")) << message_;
+}
