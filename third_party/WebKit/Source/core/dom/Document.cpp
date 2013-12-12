@@ -3327,11 +3327,6 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             else
                 view()->setFocus(false);
         }
-
-        // Autofill client may have modified the value of newFocusedElement, thus require
-        // a layout update here, otherwise it will assert at newFocusedElement->isFocusable().
-        // See crbug.com/251163.
-        updateLayoutIgnorePendingStylesheets();
     }
 
     if (newFocusedElement && newFocusedElement->isFocusable()) {
