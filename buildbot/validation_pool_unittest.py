@@ -674,6 +674,58 @@ class TestSubmitChange(cros_test_lib.MoxTestCase):
     self.assertTrue(validation_pool.ValidationPool._SubmitChange(pool, change))
     self.mox.VerifyAll()
 
+
+class ValidationFailureOrTimeout(MoxBase):
+  """Tests that HandleValidationFailure and HandleValidationTimeout functions.
+
+  These tests check that HandleValidationTimeout and HandleValidationFailure
+  reject (i.e. zero out the CQ field) of the correct number of patches, under
+  various circumstances.
+  """
+
+  _PATCH_MESSAGE = 'Your patch failed.'
+  _BUILD_MESSAGE = 'Your build failed.'
+
+  def setUp(self):
+    self._patches = self.GetPatches(3)
+    self._pool = MakePool(changes=self._patches)
+
+    self.PatchObject(
+        validation_pool.ValidationPool, 'GetCLStatus',
+        return_value=validation_pool.ValidationPool.STATUS_PASSED)
+    self.PatchObject(
+        validation_pool.CalculateSuspects, 'FindSuspects',
+        return_value=self._patches)
+    self.PatchObject(
+        validation_pool.ValidationPool, '_CreateValidationFailureMessage',
+        return_value=self._PATCH_MESSAGE)
+    self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
+    self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
+    self.PatchObject(validation_pool.ValidationPool, 'UpdateCLStatus')
+
+
+  def testPatchesWereRejectedByFailure(self):
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
+    self.assertEqual(
+        len(self._patches), self._pool.RemoveCommitReady.call_count)
+
+  def testPatchesWereRejectedByTimeout(self):
+    self._pool.HandleValidationTimeout()
+    self.assertEqual(
+        len(self._patches), self._pool.RemoveCommitReady.call_count)
+
+  def testNoSuspectsWithFailure(self):
+    self.PatchObject(
+        validation_pool.CalculateSuspects, 'FindSuspects',
+        return_value=[])
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
+    self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
+
+  def testPreCQ(self):
+    self._pool.pre_cq = True
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
+    self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
+
 class TestCoreLogic(MoxBase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
