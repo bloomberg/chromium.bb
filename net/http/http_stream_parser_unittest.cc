@@ -4,6 +4,10 @@
 
 #include "net/http/http_stream_parser.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -582,7 +586,7 @@ TEST(HttpStreamParser, ReceivedBytesNoHeaders) {
   get_runner.SetupParserAndSendRequest();
   get_runner.ReadHeaders();
   EXPECT_EQ(0, get_runner.parser()->received_bytes());
-  int64 response_size = response.size();
+  int response_size = response.size();
   int read_lengths[] = {response_size, 0};
   get_runner.ReadBody(response_size, read_lengths);
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
@@ -602,7 +606,7 @@ TEST(HttpStreamParser, ReceivedBytesNormal) {
   get_runner.ReadHeaders();
   int64 headers_size = headers.size();
   EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
-  int64 body_size = body.size();
+  int body_size = body.size();
   int read_lengths[] = {body_size, 0};
   get_runner.ReadBody(body_size, read_lengths);
   int64 response_size = response.size();
@@ -626,7 +630,7 @@ TEST(HttpStreamParser, ReceivedBytesExcludesNextResponse) {
   EXPECT_EQ(39, get_runner.parser()->received_bytes());
   int64 headers_size = headers.size();
   EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
-  int64 body_size = body.size();
+  int body_size = body.size();
   int read_lengths[] = {body_size, 0};
   get_runner.ReadBody(body_size, read_lengths);
   int64 response_size = response.size();
@@ -647,7 +651,7 @@ TEST(HttpStreamParser, ReceivedBytesMultiReadExcludesNextResponse) {
       "Content-Length: 36\r\n\r\n";
   int64 user_buf_len = 32;
   std::string body_start = std::string(user_buf_len, '#');
-  int64 body_start_size = body_start.size();
+  int body_start_size = body_start.size();
   EXPECT_EQ(user_buf_len, body_start_size);
   std::string response_start = headers + body_start;
   std::string body_end = "abcd";
@@ -661,7 +665,7 @@ TEST(HttpStreamParser, ReceivedBytesMultiReadExcludesNextResponse) {
   get_runner.ReadHeaders();
   int64 headers_size = headers.size();
   EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
-  int64 body_end_size = body_end.size();
+  int body_end_size = body_end.size();
   int read_lengths[] = {body_start_size, body_end_size, 0};
   get_runner.ReadBody(body_start_size, read_lengths);
   int64 response_size = response_start.size() + body_end_size;
@@ -688,7 +692,7 @@ TEST(HttpStreamParser, ReceivedBytesFromReadBufExcludesNextResponse) {
   get_runner.ReadHeaders();
   int64 headers_size = headers.size();
   EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
-  int64 body_size = body.size();
+  int body_size = body.size();
   int read_lengths[] = {body_size, 0};
   get_runner.ReadBody(body_size, read_lengths);
   int64 response_size = response.size();
@@ -712,7 +716,7 @@ TEST(HttpStreamParser, ReceivedBytesUseReadBuf) {
   get_runner.SetupParserAndSendRequest();
   get_runner.ReadHeaders();
   EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
-  int64 body_size = body.size();
+  int body_size = body.size();
   int read_lengths[] = {body_size, 0};
   get_runner.ReadBody(body_size, read_lengths);
   EXPECT_EQ(headers_size + body_size, get_runner.parser()->received_bytes());
@@ -761,7 +765,7 @@ TEST(HttpStreamParser, ReceivedBytesMultipleReads) {
   }
 
   SimpleGetRunner get_runner;
-  for(std::vector<std::string>::size_type i = 0; i < blocks.size(); ++i)
+  for (std::vector<std::string>::size_type i = 0; i < blocks.size(); ++i)
     get_runner.AddRead(blocks[i]);
   get_runner.SetupParserAndSendRequest();
   get_runner.ReadHeaders();
@@ -794,7 +798,7 @@ TEST(HttpStreamParser, ReceivedBytesIncludesContinueHeader) {
   EXPECT_EQ(200, get_runner.response_info()->headers->response_code());
   EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
   int64 response_size = headers_size + body.size();
-  int64 body_size = body.size();
+  int body_size = body.size();
   int read_lengths[] = {body_size, 0};
   get_runner.ReadBody(body_size, read_lengths);
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
