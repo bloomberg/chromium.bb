@@ -98,8 +98,14 @@ public class SysUtils {
         if (sLowEndDevice == null) {
             sLowEndDevice = detectLowEndDevice();
         }
-
         return sLowEndDevice.booleanValue();
+    }
+
+    /**
+     * @return Whether isLowEndDevice() has ever been called.
+     */
+    public static boolean isLowEndStateInitialized() {
+        return (sLowEndDevice != null);
     }
 
     private static boolean detectLowEndDevice() {
