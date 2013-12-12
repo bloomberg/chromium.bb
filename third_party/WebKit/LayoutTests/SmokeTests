@@ -32,7 +32,6 @@ css1/formatting_model/horizontal_formatting.html
 css1/text_properties/text_align.html
 css1/units/rounding.html
 css1/units/zero-duration-without-units.html
-css3/compositing/should-have-compositing-layer.html
 css3/device-adapt/viewport-insert-rule-after.html
 css3/device-adapt/viewport-insert-rule-before.html
 css3/filters/crash-hw-sw-switch.html
@@ -166,7 +165,6 @@ fast/regions/hit-test-float.html
 fast/replaced/computed-image-width-with-percent-height-inside-table-cell-and-fixed-ancestor-vertical-lr.html
 fast/replaced/image-map-2.html
 fast/ruby/before-block-doesnt-crash.html
-fast/runin/runin-reparent-crash.html
 fast/selectors/style-sharing-adjacent-selector.html
 fast/shapes/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html
 fast/speechsynthesis/speech-synthesis-cancel.html
@@ -175,7 +173,6 @@ fast/tokenizer/entities-04.html
 fast/tokenizer/external-script-document-open.html
 fast/transforms/container-transform-crash.html
 fast/transforms/topmost-becomes-bottomost-for-scrolling.html
-fast/viewport/viewport-legacy-ordering-7.html
 fast/writing-mode/percentage-padding.html
 fast/xsl/import-non-document-node.xhtml
 fast/xsl/xslt-doc-enc.xml
@@ -211,8 +208,6 @@ transforms/2d/transform-accuracy.html
 transforms/3d/hit-testing/rotated-hit-test-with-child.html
 transforms/no_transform_hit_testing.html
 transitions/transition-transform-translate-calculated-length-crash.html
-userstyles/mixed-case-stylesheet.html
-userstyles/simple-stylesheet.html
 virtual/deferred/fast/images/link-body-content-imageDimensionChanged-crash.html
 virtual/gpu/compositedscrolling/scrollbars/scrollbar-large-overflow-rectangle.html
 virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html

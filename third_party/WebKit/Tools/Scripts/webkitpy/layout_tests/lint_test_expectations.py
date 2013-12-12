@@ -32,6 +32,8 @@ import signal
 import traceback
 
 from webkitpy.common.host import Host
+from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.layout_tests.controllers.layout_test_finder import LayoutTestFinder
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port import platform_options
 
@@ -51,16 +53,14 @@ def lint(host, options, logging_stream):
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler(logging_stream)
     logger.addHandler(handler)
+    webkit_finder = WebKitFinder(host.filesystem)
 
     try:
-        # FIXME: Remove this when we remove the --chromium flag (crbug.com/245504).
-        if options.platform == 'chromium':
-            options.platform = None
-
         ports_to_lint = [host.port_factory.get(name) for name in host.port_factory.all_port_names(options.platform)]
         files_linted = set()
         lint_failed = False
 
+        missing_smoke_tests = set()
         for port_to_lint in ports_to_lint:
             expectations_dict = port_to_lint.expectations_dict()
 
@@ -80,6 +80,14 @@ def lint(host, options, logging_stream):
                     _log.error('')
                 files_linted.add(expectations_file)
 
+                # Ensure the tests in the SmokeTests list are valid on every port.
+                check_test_list(port_to_lint, options, webkit_finder.path_from_webkit_base('LayoutTests', 'SmokeTests'), missing_smoke_tests)
+
+        # We could list the port here, but at the moment all ports use the same tests, so it doesn't convey much information.
+        for test_name in missing_smoke_tests:
+            _log.error('%s listed in LayoutTests/SmokeTests is not found.' % (test_name))
+            lint_failed = True
+
         if lint_failed:
             _log.error('Lint failed.')
             return -1
@@ -88,6 +96,15 @@ def lint(host, options, logging_stream):
         return 0
     finally:
         logger.removeHandler(handler)
+
+
+def check_test_list(port, options, path, missing_smoke_tests):
+    finder = LayoutTestFinder(port, options)
+    tests_in_file = finder.read_test_names_from_file([path], port.TEST_PATH_SEPARATOR)
+    tests = port.tests(tests_in_file)
+    for test_name in set(tests_in_file).difference(set(tests)):
+        if not test_name in missing_smoke_tests:
+            missing_smoke_tests.add(test_name)
 
 
 def main(argv, _, stderr):

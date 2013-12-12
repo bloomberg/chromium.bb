@@ -35,10 +35,13 @@ from webkitpy.layout_tests import lint_test_expectations
 
 
 class FakePort(object):
+    TEST_PATH_SEPARATOR = '/'
+
     def __init__(self, host, name, path):
         self.host = host
         self.name = name
         self.path = path
+        self.tests_found = []
 
     def test_configuration(self):
         return None
@@ -65,6 +68,10 @@ class FakePort(object):
     def path_to_generic_test_expectations_file(self):
         return ''
 
+    def tests(self, paths):
+        return self.tests_found
+
+
 class FakeFactory(object):
     def __init__(self, host, ports):
         self.host = host
@@ -80,9 +87,12 @@ class FakeFactory(object):
 
 
 class LintTest(unittest.TestCase):
+    SMOKE_TESTS_FILENAME = '/mock-checkout/third_party/WebKit/LayoutTests/SmokeTests'
+
     def test_all_configurations(self):
         host = MockHost()
         host.ports_parsed = []
+        host.filesystem.write_text_file(self.SMOKE_TESTS_FILENAME, '')
         host.port_factory = FakeFactory(host, (FakePort(host, 'a', 'path-to-a'),
                                                FakePort(host, 'b', 'path-to-b'),
                                                FakePort(host, 'b-win', 'path-to-b')))
@@ -97,6 +107,7 @@ class LintTest(unittest.TestCase):
         logging_stream = StringIO.StringIO()
         options = optparse.Values({'platform': 'test-mac-leopard'})
         host = MockHost()
+        host.filesystem.write_text_file(self.SMOKE_TESTS_FILENAME, '')
 
         # pylint appears to complain incorrectly about the method overrides pylint: disable=E0202,C0322
         # FIXME: incorrect complaints about spacing pylint: disable=C0322
@@ -110,6 +121,7 @@ class LintTest(unittest.TestCase):
     def test_lint_test_files__errors(self):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
+        host.filesystem.write_text_file(self.SMOKE_TESTS_FILENAME, '')
 
         # FIXME: incorrect complaints about spacing pylint: disable=C0322
         port = host.port_factory.get(options.platform, options=options)
@@ -126,6 +138,33 @@ class LintTest(unittest.TestCase):
         self.assertIn('Lint failed', logging_stream.getvalue())
         self.assertIn('foo:1', logging_stream.getvalue())
         self.assertIn('bar:1', logging_stream.getvalue())
+
+    def test_missing_smoke_test_fails(self):
+        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        host = MockHost()
+        host.filesystem.write_text_file(self.SMOKE_TESTS_FILENAME, 'foo/bar.html')
+        logging_stream = StringIO.StringIO()
+        port = host.port_factory.get(options.platform, options=options)
+        host.port_factory.get = lambda platform, options=None: port
+        host.port_factory.all_port_names = lambda platform=None: [port.name()]
+
+        res = lint_test_expectations.lint(host, options, logging_stream)
+        self.assertEqual(res, -1)
+        self.assertIn('Lint failed', logging_stream.getvalue())
+        self.assertIn('foo/bar.html listed in LayoutTests/SmokeTests is not found.', logging_stream.getvalue())
+
+    def test_existing_smoke_test_is_okay(self):
+        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        host = MockHost()
+        host.filesystem.write_text_file(self.SMOKE_TESTS_FILENAME, 'passes/text.html')
+        logging_stream = StringIO.StringIO()
+        port = host.port_factory.get(options.platform, options=options)
+        host.port_factory.get = lambda platform, options=None: port
+        host.port_factory.all_port_names = lambda platform=None: [port.name()]
+
+        res = lint_test_expectations.lint(host, options, logging_stream)
+        self.assertEqual(res, 0)
+        self.assertIn('Lint succeeded', logging_stream.getvalue())
 
 
 class MainTest(unittest.TestCase):
