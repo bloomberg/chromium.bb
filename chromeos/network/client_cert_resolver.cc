@@ -81,7 +81,7 @@ struct CertAndIssuer {
 
 bool CompareCertExpiration(const CertAndIssuer& a,
                            const CertAndIssuer& b) {
-  return (a.cert->valid_expiry() < b.cert->valid_expiry());
+  return (a.cert->valid_expiry() > b.cert->valid_expiry());
 }
 
 // Describes a network that is configured with the certificate pattern
