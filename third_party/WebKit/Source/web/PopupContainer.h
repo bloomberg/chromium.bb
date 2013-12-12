@@ -32,8 +32,8 @@
 #define PopupContainer_h
 
 #include "PopupListBox.h"
-#include "core/platform/PopupMenuStyle.h"
 #include "core/platform/chromium/FramelessScrollView.h"
+#include "platform/PopupMenuStyle.h"
 #include "platform/geometry/FloatQuad.h"
 
 namespace WebCore {

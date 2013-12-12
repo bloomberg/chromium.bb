@@ -31,7 +31,7 @@
 #ifndef AutofillPopupMenuClient_h
 #define AutofillPopupMenuClient_h
 
-#include "core/platform/PopupMenuClient.h"
+#include "platform/PopupMenuClient.h"
 
 namespace WebCore {
 class FontSelector;

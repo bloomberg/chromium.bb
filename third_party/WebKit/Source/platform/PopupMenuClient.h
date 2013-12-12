@@ -22,8 +22,9 @@
 #ifndef PopupMenuClient_h
 #define PopupMenuClient_h
 
-#include "core/platform/PopupMenuStyle.h"
 #include "platform/LayoutUnit.h"
+#include "platform/PlatformExport.h"
+#include "platform/PopupMenuStyle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 
@@ -37,7 +38,7 @@ class ScrollableArea;
 
 class PopupMenuClient {
 public:
-    virtual ~PopupMenuClient() {}
+    virtual ~PopupMenuClient() { }
     virtual void valueChanged(unsigned listIndex, bool fireEvents = true) = 0;
     virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) = 0;
     virtual void selectionCleared() = 0;
