@@ -20,9 +20,11 @@ KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
 }
 
 aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
-  aura::Window* window = new aura::Window(&delegate_);
-  window->Init(ui::LAYER_NOT_DRAWN);
-  return window;
+  if (!keyboard_) {
+    keyboard_.reset(new aura::Window(&delegate_));
+    keyboard_->Init(ui::LAYER_NOT_DRAWN);
+  }
+  return keyboard_.get();
 }
 
 BrowserContext* KeyboardControllerProxyStub::GetBrowserContext() {

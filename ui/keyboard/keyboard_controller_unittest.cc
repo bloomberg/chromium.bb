@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/event_generator.h"
@@ -332,6 +333,34 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
   EXPECT_FALSE(WillHideKeyboard());
   EXPECT_TRUE(keyboard_container->IsVisible());
+}
+
+TEST_F(KeyboardControllerTest, KeyboardResizingFromContents) {
+  aura::Window* keyboard_container = controller()->GetContainerWindow();
+  aura::Window* keyboard_window = proxy()->GetKeyboardWindow();
+  keyboard_container->SetBounds(gfx::Rect(800, 600));
+  keyboard_container->AddChild(keyboard_window);
+
+  // Default keyboard size.
+  EXPECT_EQ(180, keyboard_window->bounds().height());
+
+  // Resizes from contents when flag is unset.
+  keyboard_window->SetBounds(gfx::Rect(100, 80));
+  EXPECT_EQ(180, keyboard_window->bounds().height());
+
+  // Resizes from contents when flag is set.
+  proxy()->set_resizing_from_contents(true);
+  keyboard_window->SetBounds(gfx::Rect(100, 80));
+  EXPECT_EQ(80, keyboard_window->bounds().height());
+
+  // Resizes from container when flag is set.
+  keyboard_container->SetBounds(gfx::Rect(400, 300));
+  EXPECT_EQ(80, keyboard_window->bounds().height());
+
+  // Resizes from container when flag is unset.
+  proxy()->set_resizing_from_contents(false);
+  keyboard_container->SetBounds(gfx::Rect(800, 600));
+  EXPECT_EQ(180, keyboard_window->bounds().height());
 }
 
 class KeyboardControllerUsabilityTest : public KeyboardControllerTest {

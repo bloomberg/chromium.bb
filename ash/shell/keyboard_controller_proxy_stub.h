@@ -31,6 +31,8 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
       const content::MediaResponseCallback& callback) OVERRIDE;
 
   aura::test::TestWindowDelegate delegate_;
+  scoped_ptr<aura::Window> keyboard_;
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerProxyStub);
 };
 

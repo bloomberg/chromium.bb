@@ -21,10 +21,12 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
@@ -83,36 +85,6 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
   aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteOnBlurDelegate);
-};
-
-class ClickTestWindow : public views::WidgetDelegateView {
- public:
-  ClickTestWindow() : mouse_presses_(0) {}
-  virtual ~ClickTestWindow() {}
-
-  // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
-    return this;
-  }
-
-  aura::Window* CreateTestWindowWithParent(aura::Window* parent) {
-    DCHECK(parent);
-    views::Widget* widget = Widget::CreateWindowWithParent(this, parent);
-    return widget->GetNativeView();
-  }
-
-  // Overridden from views::View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    mouse_presses_++;
-    return false;
-  }
-
-  int mouse_presses() const { return mouse_presses_; }
-
- private:
-  int mouse_presses_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClickTestWindow);
 };
 
 }  // namespace
@@ -646,16 +618,19 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
 
-  ClickTestWindow* main_delegate = new ClickTestWindow();
-  scoped_ptr<aura::Window> keyboard_window(
-      main_delegate->CreateTestWindowWithParent(keyboard_container));
-  keyboard_container->layout_manager()->OnWindowResized();
+  aura::Window* keyboard_window = Shell::GetInstance()->keyboard_controller()->
+      proxy()->GetKeyboardWindow();
+  keyboard_container->AddChild(keyboard_window);
+  keyboard_window->SetBounds(gfx::Rect());
   keyboard_window->Show();
-  aura::test::EventGenerator event_generator(root_window,
-                                             keyboard_window.get());
+
+  aura::test::TestEventHandler* handler = new aura::test::TestEventHandler;
+  root_window->SetEventFilter(handler);
+
+  aura::test::EventGenerator event_generator(root_window, keyboard_window);
   event_generator.ClickLeftButton();
   int expected_mouse_presses = 1;
-  EXPECT_EQ(expected_mouse_presses, main_delegate->mouse_presses());
+  EXPECT_EQ(expected_mouse_presses, handler->num_mouse_events() / 2);
 
   for (int block_reason = FIRST_BLOCK_REASON;
        block_reason < NUMBER_OF_BLOCK_REASONS;
@@ -663,7 +638,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
     event_generator.ClickLeftButton();
     expected_mouse_presses++;
-    EXPECT_EQ(expected_mouse_presses, main_delegate->mouse_presses());
+    EXPECT_EQ(expected_mouse_presses, handler->num_mouse_events() / 2);
     UnblockUserSession();
   }
 }
