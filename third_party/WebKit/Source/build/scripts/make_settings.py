@@ -58,7 +58,7 @@ class MakeSettingsWriter(in_generator.Writer):
     defaults = {
         'type': 'bool',
         'initial': None,
-        'setNeedsStyleRecalcInAllFrames': 0,
+        'invalidate': None,
     }
     default_parameters = {}
     filters = {

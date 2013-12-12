@@ -7,11 +7,7 @@
 #define SETTINGS_GETTERS_AND_SETTERS \
 {%- for setting in settings %}
     {{setting.type|to_passing_type}} {{setting.name}}() const { return m_{{setting.name}}; } \
-    {%- if setting.setNeedsStyleRecalcInAllFrames %}
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}); \
-    {%- else %}
-    void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}) { m_{{setting.name}} = {{setting.name}}; } \
-    {%- endif  %}
 {%- endfor %}
 // End of SETTINGS_GETTERS_AND_SETTERS.
 
@@ -34,13 +30,15 @@
 // End of SETTINGS_INITIALIZER_LIST.
 
 #define SETTINGS_SETTER_BODIES \
-{%- for setting in settings if setting.setNeedsStyleRecalcInAllFrames %}
+{%- for setting in settings %}
 void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}) \
 { \
     if (m_{{setting.name}} == {{setting.name}}) \
         return; \
     m_{{setting.name}} = {{setting.name}}; \
-    invalidate(SettingsDelegate::StyleChange); \
+    {%- if setting.invalidate %}
+    invalidate(SettingsDelegate::{{setting.invalidate}}Change); \
+    {%- endif  %}
 } \
 {%- endfor %}
 // End of SETTINGS_SETTER_BODIES.

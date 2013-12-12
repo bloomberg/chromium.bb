@@ -55,10 +55,10 @@ minimumAccelerated2dCanvasSize type=int, initial=257*256
 # FIXME: This should get the value from the @viewport UA sheet instead.
 layoutFallbackWidth type=int, initial=980
 
-minimumFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
-minimumLogicalFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
-defaultFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
-defaultFixedFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
+minimumFontSize type=int, initial=0, invalidate=Style
+minimumLogicalFontSize type=int, initial=0, invalidate=Style
+defaultFontSize type=int, initial=0, invalidate=Style
+defaultFixedFontSize type=int, initial=0, invalidate=Style
 
 editingBehaviorType type=EditingBehaviorType, initial=editingBehaviorTypeForPlatform()
 
@@ -72,11 +72,11 @@ javaScriptCanAccessClipboard initial=false
 shouldPrintBackgrounds initial=false
 shouldClearDocumentBackground initial=true
 
-textAreasAreResizable initial=false, setNeedsStyleRecalcInAllFrames=1
-acceleratedCompositingEnabled initial=true, setNeedsStyleRecalcInAllFrames=1
+textAreasAreResizable initial=false, invalidate=Style
+acceleratedCompositingEnabled initial=true, invalidate=Style
 
 # Debugging feature used for accelerated compositing layers.
-showRepaintCounter initial=false, setNeedsStyleRecalcInAllFrames=1
+showRepaintCounter initial=false, invalidate=Style
 
 shrinksStandaloneImagesToFit initial=true
 
