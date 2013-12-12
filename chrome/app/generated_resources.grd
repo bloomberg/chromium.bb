@@ -4384,6 +4384,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE" desc="Permission string for locking an unlocking the screen.">
         Lock and unlock the screen
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HIDE_BOOKMARK_STAR" desc="Permission string for hiding the bookmark star button.">
+        Hide the bookmark star
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACTIVITY_LOG_PRIVATE" desc="Permission string for the observing other extensions' API calls">
         Monitor the behavior of other extensions, including visited URLs
       </message>

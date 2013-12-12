@@ -422,6 +422,9 @@ class LocationBarView : public LocationBar,
   // don't normally use this). Sets the value and clears the selection.
   void AccessibilitySetValue(const base::string16& new_value);
 
+  // Checks if an extension has specified the bookmark star be hidden.
+  bool IsBookmarkStarHiddenByExtension();
+
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
   // window, so this may be NULL.

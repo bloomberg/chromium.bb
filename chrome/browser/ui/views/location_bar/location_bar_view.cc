@@ -17,6 +17,8 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -59,6 +61,7 @@
 #include "chrome/browser/ui/views/toolbar/site_chip_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -395,9 +398,12 @@ void LocationBarView::Init() {
   search_button_->SetVisible(false);
   AddChildView(search_button_);
 
+  content::Source<Profile> profile_source = content::Source<Profile>(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-                 content::Source<Profile>(profile_));
+                 profile_source);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED, profile_source);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED, profile_source);
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -1016,7 +1022,7 @@ void LocationBarView::Update(const WebContents* contents) {
 
   bool star_enabled = browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
       star_view_ && !GetToolbarModel()->input_in_progress() &&
-      edit_bookmarks_enabled_.GetValue();
+      edit_bookmarks_enabled_.GetValue() && !IsBookmarkStarHiddenByExtension();
 
   command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
@@ -1305,6 +1311,11 @@ void LocationBarView::Observe(int type,
       break;
     }
 
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+      Update(NULL);
+      break;
+
     default:
       NOTREACHED() << "Unexpected notification.";
   }
@@ -1558,4 +1569,23 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
 
 void LocationBarView::AccessibilitySetValue(const base::string16& new_value) {
   omnibox_view_->SetUserText(new_value, new_value, true);
+}
+
+bool LocationBarView::IsBookmarkStarHiddenByExtension() {
+  if (!extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
+    return false;
+
+  const ExtensionSet* extension_set =
+      extensions::ExtensionSystem::GetForBrowserContext(profile_)
+          ->extension_service()->extensions();
+  for (ExtensionSet::const_iterator i = extension_set->begin();
+       i != extension_set->end(); ++i) {
+    const extensions::SettingsOverrides* settings_overrides =
+        extensions::SettingsOverrides::Get(i->get());
+    if (settings_overrides &&
+        settings_overrides->RequiresHideBookmarkButtonPermission())
+      return true;
+  }
+
+  return false;
 }

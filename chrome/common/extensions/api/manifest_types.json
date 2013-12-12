@@ -43,6 +43,18 @@
         "type": "object",
         "description": "Chrome settings which can be overriden by an extension.",
         "properties": {
+          "bookmarks_ui": {
+            "type": "object",
+            "description": "Settings to permit bookmarks user interface customization by extensions.",
+            "optional": true,
+            "properties": {
+              "hide_bookmark_button": {
+                "type": "boolean",
+                "description": "If <code>true</code>, the built-in bookmark button will be hidden within the user interface.",
+                "optional": true
+              }
+            }
+          },
           "homepage": {
             "description": "New value for the homepage.",
             "optional": true,

@@ -30,6 +30,9 @@ const char kEasyOffStoreExtensionInstall[] = "easy-off-store-extension-install";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
+// Enables extensions to hide bookmarks UI elements.
+const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
+
 // Allows the ErrorConsole to collect runtime and manifest errors, and display
 // them in the chrome:extensions page.
 const char kErrorConsole[] = "error-console";

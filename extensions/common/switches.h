@@ -16,6 +16,7 @@ extern const char kAllowLegacyExtensionManifests[];
 extern const char kAllowScriptingGallery[];
 extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableExperimentalExtensionApis[];
+extern const char kEnableOverrideBookmarksUI[];
 extern const char kErrorConsole[];
 extern const char kEventPageIdleTime[];
 extern const char kEventPageSuspendingTime[];
