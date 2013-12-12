@@ -1379,10 +1379,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
   @staticmethod
   def _WasBuildSane(sanity_check_slaves, slave_statuses):
-    """Determines weather any of the sanity check slaves did not pass."""
+    """Determines weather any of the sanity check slaves failed."""
     sanity_check_slaves = sanity_check_slaves or []
-    return all([slave_statuses.has_key(x) and slave_statuses[x].Passed()
-                for x in sanity_check_slaves])
+    # Ignore any sanity_check_slaves builders for which we do not have a
+    # status (perhaps because they timed out or never ran).
+    # Of those that do have a status, if any of them failed,
+    # call the build not sane.
+    return not any([slave_statuses.has_key(x) and slave_statuses[x].Failed()
+                    for x in sanity_check_slaves])
 
   def PerformStage(self):
     if not self.success and self._run.config.important:

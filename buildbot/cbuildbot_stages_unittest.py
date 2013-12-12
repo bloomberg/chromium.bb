@@ -427,11 +427,12 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
         stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
                                                         slave_statuses))
 
-    # If any sanity builder did not report a status, build was not sane.
+    # If some sanity builders did not report a status, but those that did
+    # passed, then build was sane.
     slave_statuses = {'builder_a': passed,
                       'sanity_2' : passed}
 
-    self.assertFalse(
+    self.assertTrue(
         stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
                                                         slave_statuses))
 
