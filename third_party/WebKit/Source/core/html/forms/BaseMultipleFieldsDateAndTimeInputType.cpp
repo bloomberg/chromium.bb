@@ -541,16 +541,10 @@ void BaseMultipleFieldsDateAndTimeInputType::updatePickerIndicatorVisibility()
         return;
     }
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        if (HTMLDataListElement* dataList = element().dataList()) {
-            RefPtr<HTMLCollection> options = dataList->options();
-            for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
-                if (element().isValidValue(option->value())) {
-                    showPickerIndicator();
-                    return;
-                }
-            }
-        }
-        hidePickerIndicator();
+        if (element().hasValidDataListOptions())
+            showPickerIndicator();
+        else
+            hidePickerIndicator();
     }
 }
 

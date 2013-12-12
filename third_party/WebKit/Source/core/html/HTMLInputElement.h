@@ -230,6 +230,7 @@ public:
 
     HTMLElement* list() const;
     HTMLDataListElement* dataList() const;
+    bool hasValidDataListOptions() const;
     void listAttributeTargetChanged();
 
     HTMLInputElement* checkedRadioButtonForGroup() const;
