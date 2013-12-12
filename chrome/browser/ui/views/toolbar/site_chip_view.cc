@@ -14,6 +14,10 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,8 +28,11 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "grit/component_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -99,29 +106,79 @@ const int k16x16IconTrailingSpacing = 3;
 const int kIconTextSpacing = 3;
 const int kTrailingLabelMargin = 0;
 
+// Detect client-side or SB malware/phishing hits.
+bool IsMalware(const GURL& url, content::WebContents* tab) {
+  if (tab->GetURL() != url)
+    return false;
+
+  safe_browsing::SafeBrowsingTabObserver* sb_observer =
+      safe_browsing::SafeBrowsingTabObserver::FromWebContents(tab);
+  return sb_observer && sb_observer->detection_host() &&
+      sb_observer->detection_host()->DidPageReceiveSafeBrowsingMatch();
+}
+
+// For selected kChromeUIScheme and kAboutScheme, return the string resource
+// number for the title of the page. If we don't have a specialized title,
+// returns -1.
+int StringForChromeHost(const GURL& url) {
+  DCHECK(url.is_empty() ||
+      url.SchemeIs(chrome::kChromeUIScheme) ||
+      url.SchemeIs(chrome::kAboutScheme));
+
+  if (url.is_empty())
+    return IDS_NEW_TAB_TITLE;
+
+  // TODO(gbillock): Just get the page title and special case exceptions?
+  std::string host = url.host();
+  if (host == chrome::kChromeUIAppLauncherPageHost)
+    return IDS_APP_DEFAULT_PAGE_NAME;
+  if (host == chrome::kChromeUIBookmarksHost)
+    return IDS_BOOKMARK_MANAGER_TITLE;
+  if (host == chrome::kChromeUIComponentsHost)
+    return IDS_COMPONENTS_TITLE;
+  if (host == chrome::kChromeUICrashesHost)
+    return IDS_CRASHES_TITLE;
+  if (host == chrome::kChromeUIDevicesHost)
+    return IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE;
+  if (host == chrome::kChromeUIDownloadsHost)
+    return IDS_DOWNLOAD_TITLE;
+  if (host == chrome::kChromeUIExtensionsHost)
+    return IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE;
+  if (host == chrome::kChromeUIHelpHost)
+    return IDS_ABOUT_TAB_TITLE;
+  if (host == chrome::kChromeUIHistoryHost)
+    return IDS_HISTORY_TITLE;
+  if (host == chrome::kChromeUINewTabHost)
+    return IDS_NEW_TAB_TITLE;
+  if (host == chrome::kChromeUIPluginsHost)
+    return IDS_PLUGINS_TITLE;
+  if (host == chrome::kChromeUIPolicyHost)
+    return IDS_POLICY_TITLE;
+  if (host == chrome::kChromeUIPrintHost)
+    return IDS_PRINT_PREVIEW_TITLE;
+  if (host == chrome::kChromeUISettingsHost)
+    return IDS_SETTINGS_TITLE;
+  if (host == chrome::kChromeUIVersionHost)
+    return IDS_ABOUT_VERSION_TITLE;
+
+  return -1;
+}
+
 }  // namespace
 
 string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
-  // The NTP.
-  if (!url.is_valid())
-    return string16(UTF8ToUTF16("Chrome"));
-
-  // TODO(gbillock): for kChromeUIScheme and kAboutScheme, return the title of
-  // the page.
-  // See url_constants.cc for hosts. ?? Or just show "Chrome"?
-  if (url.SchemeIs(chrome::kChromeUIScheme) ||
+  // Chrome built-in pages.
+  if (url.is_empty() ||
+      url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(chrome::kAboutScheme)) {
-    return string16(UTF8ToUTF16("Chrome"));
+    int string_ref = StringForChromeHost(url);
+    if (string_ref == -1)
+      return base::UTF8ToUTF16("Chrome");
+    return l10n_util::GetStringUTF16(string_ref);
   }
 
-  // For file: urls, return the full URL.
-  if (url.SchemeIsFile())
-    return base::UTF8ToUTF16(url.spec());
-
-  // TODO(gbillock): Handle filesystem urls the same way?
-  // Also: should handle interstitials differently?
-
-  // TODO(gbillock): think about view-source?
+  // TODO(gbillock): For view-source, strip the scheme and treat as
+  // if it was an ordinary url.
 
   Profile* profile = toolbar_view_->browser()->profile();
 
@@ -132,7 +189,7 @@ string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
     const extensions::Extension* extension =
         service->extensions()->GetExtensionOrAppByURL(url);
     return extension ?
-        base::UTF8ToUTF16(extension->name()) : UTF8ToUTF16(url.host());
+        base::UTF8ToUTF16(extension->name()) : base::UTF8ToUTF16(url.host());
   }
 
   if (url.SchemeIsHTTPOrHTTPS()) {
@@ -161,12 +218,37 @@ string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
   }
 
   // For FTP, prepend "ftp:" to hostname.
-  if (url.SchemeIs(content::kFtpScheme)) {
-    return string16(UTF8ToUTF16(std::string("ftp:") + url.host()));
+  if (url.SchemeIs(content::kFtpScheme))
+    return base::UTF8ToUTF16(std::string("ftp:") + url.host());
+
+  // These internal-ish debugging-style schemes we don't expect users
+  // to see. In these cases, the site chip will display the first
+  // part of the full URL.
+  if (url.SchemeIs(chrome::kBlobScheme) ||
+      url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+      url.SchemeIs(chrome::kChromeNativeScheme) ||
+      url.SchemeIs(chrome::kDataScheme) ||
+      url.SchemeIs(chrome::kFileScheme) ||
+      url.SchemeIs(chrome::kFileSystemScheme) ||
+      url.SchemeIs(content::kGuestScheme) ||
+      url.SchemeIs(content::kJavaScriptScheme) ||
+      url.SchemeIs(content::kMailToScheme) ||
+      url.SchemeIs(content::kMetadataScheme) ||
+      url.SchemeIs(content::kSwappedOutScheme)) {
+    std::string truncated_url;
+    base::TruncateUTF8ToByteSize(url.spec(), 1000, &truncated_url);
+    return base::UTF8ToUTF16(truncated_url);
   }
 
+#if defined(OS_CHROMEOS)
+  if (url.SchemeIs(chrome::kCrosScheme) ||
+      url.SchemeIs(chrome::kDriveScheme)) {
+    return base::UTF8ToUTF16(url.spec());
+  }
+#endif
+
   // If all else fails, return hostname.
-  return string16(UTF8ToUTF16(url.host()));
+  return base::UTF8ToUTF16(url.host());
 }
 
 SiteChipView::SiteChipView(ToolbarView* toolbar_view)
@@ -174,10 +256,20 @@ SiteChipView::SiteChipView(ToolbarView* toolbar_view)
       toolbar_view_(toolbar_view),
       painter_(NULL),
       showing_16x16_icon_(false) {
+  scoped_refptr<SafeBrowsingService> sb_service =
+      g_browser_process->safe_browsing_service();
+  // May not be set for unit tests.
+  if (sb_service.get() && sb_service->ui_manager())
+    sb_service->ui_manager()->AddObserver(this);
+
   set_drag_controller(this);
 }
 
 SiteChipView::~SiteChipView() {
+  scoped_refptr<SafeBrowsingService> sb_service =
+      g_browser_process->safe_browsing_service();
+  if (sb_service.get() && sb_service->ui_manager())
+    sb_service->ui_manager()->RemoveObserver(this);
 }
 
 void SiteChipView::Init() {
@@ -202,6 +294,9 @@ void SiteChipView::Init() {
   const int kBrokenSSLBackgroundImages[] = IMAGE_GRID(IDR_SITE_CHIP_BROKENSSL);
   broken_ssl_background_painter_.reset(
       views::Painter::CreateImageGridPainter(kBrokenSSLBackgroundImages));
+  const int kMalwareBackgroundImages[] = IMAGE_GRID(IDR_SITE_CHIP_MALWARE);
+  malware_background_painter_.reset(
+      views::Painter::CreateImageGridPainter(kMalwareBackgroundImages));
 }
 
 bool SiteChipView::ShouldShow() {
@@ -216,50 +311,71 @@ void SiteChipView::Update(content::WebContents* web_contents) {
   GURL url = toolbar_view_->GetToolbarModel()->GetURL();
   const ToolbarModel::SecurityLevel security_level =
       toolbar_view_->GetToolbarModel()->GetSecurityLevel(true);
-  if ((url == url_displayed_) && (security_level == security_level_))
+
+  bool url_malware = IsMalware(url, web_contents);
+
+  // TODO(gbillock): We persist a malware setting while a new WebContents
+  // content is loaded, meaning that we end up transiently marking a safe
+  // page as malware. Need to fix that.
+
+  if ((url == url_displayed_) &&
+      (security_level == security_level_) &&
+      (url_malware == url_malware_))
     return;
 
   url_displayed_ = url;
+  url_malware_ = url_malware;
+  security_level_ = security_level;
 
-  string16 host = SiteLabelFromURL(url);
+  if (url_malware_)
+    painter_ = malware_background_painter_.get();
+  else if (security_level_ == ToolbarModel::SECURITY_ERROR)
+    painter_ = broken_ssl_background_painter_.get();
+  else if (security_level_ == ToolbarModel::EV_SECURE)
+    painter_ = ev_background_painter_.get();
+  else
+    painter_ = NULL;
 
-  // TODO(gbillock): Deal with RTL here better? Use a separate
-  // label for cert name?
-  if ((security_level != security_level_) &&
-      (security_level == ToolbarModel::EV_SECURE)) {
+  string16 host = SiteLabelFromURL(url_displayed_);
+  if (security_level_ == ToolbarModel::EV_SECURE) {
     host = l10n_util::GetStringFUTF16(IDS_SITE_CHIP_EV_SSL_LABEL,
         toolbar_view_->GetToolbarModel()->GetEVCertName(),
         host);
   }
 
-  host_ = host;
-  host_label_->SetText(host_);
-  host_label_->SetTooltipText(host_);
+  host_label_->SetText(host);
+  host_label_->SetTooltipText(host);
+  // TODO(gbillock): Instead of this, just set
+  // host_label_->SetBackgroundColor() to either the COLOR_TOOLBAR or
+  // the painter background color if we're using a background painter.
   SkColor toolbar_background =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
   host_label_->SetEnabledColor(
       color_utils::GetReadableColor(SK_ColorBLACK, toolbar_background));
 
-  security_level_ = security_level;
   int icon = toolbar_view_->GetToolbarModel()->GetIconForSecurityLevel(
       security_level_);
   showing_16x16_icon_ = false;
 
-  if (!url.is_valid() ||
-      url.SchemeIs(chrome::kChromeUIScheme)) {
+  if (url_displayed_.is_empty() ||
+      url_displayed_.SchemeIs(chrome::kChromeUIScheme) ||
+      url_displayed_.SchemeIs(chrome::kAboutScheme)) {
     icon = IDR_PRODUCT_LOGO_16;
     showing_16x16_icon_ = true;
   }
 
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
+  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
+
+  if (url_displayed_.SchemeIs(extensions::kExtensionScheme)) {
     icon = IDR_EXTENSIONS_FAVICON;
     showing_16x16_icon_ = true;
+    location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
 
     ExtensionService* service =
         extensions::ExtensionSystem::Get(
             toolbar_view_->browser()->profile())->extension_service();
     const extensions::Extension* extension =
-        service->extensions()->GetExtensionOrAppByURL(url);
+        service->extensions()->GetExtensionOrAppByURL(url_displayed_);
     extension_icon_.reset(
         new SiteChipExtensionIcon(location_icon_view_,
                                   toolbar_view_->browser()->profile(),
@@ -268,20 +384,8 @@ void SiteChipView::Update(content::WebContents* web_contents) {
     extension_icon_.reset();
   }
 
-  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
-  location_icon_view_->ShowTooltip(true);
-
-  // TODO(gbillock): Add malware accounting.
-  if (security_level_ == ToolbarModel::SECURITY_ERROR)
-    painter_ = broken_ssl_background_painter_.get();
-  else if (security_level_ == ToolbarModel::EV_SECURE)
-    painter_ = ev_background_painter_.get();
-  else
-    painter_ = NULL;
-
   Layout();
   SchedulePaint();
-  // TODO(gbillock): Need to schedule paint on parent to erase any background?
 }
 
 void SiteChipView::OnChanged() {
@@ -367,5 +471,15 @@ bool SiteChipView::CanStartDragForView(View* sender,
                                        const gfx::Point& press_pt,
                                        const gfx::Point& p) {
   return true;
+}
+
+// Note: When OnSafeBrowsingHit would be called, OnSafeBrowsingMatch will
+// have already been called.
+void SiteChipView::OnSafeBrowsingHit(
+    const SafeBrowsingUIManager::UnsafeResource& resource) {}
+
+void SiteChipView::OnSafeBrowsingMatch(
+    const SafeBrowsingUIManager::UnsafeResource& resource) {
+  OnChanged();
 }
 
