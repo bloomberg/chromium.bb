@@ -377,8 +377,7 @@ SavePageBrowserTest::~SavePageBrowserTest() {
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_WIN)
 #define MAYBE_SaveHTMLOnly DISABLED_SaveHTMLOnly
 #else
 #define MAYBE_SaveHTMLOnly SaveHTMLOnly
@@ -409,7 +408,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
 }
 
 // http://crbug.com/162323
-// http://crbug.com/163931
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
@@ -494,8 +492,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_WIN)
 #define MAYBE_SaveViewSourceHTMLOnly DISABLED_SaveViewSourceHTMLOnly
 #else
 #define MAYBE_SaveViewSourceHTMLOnly SaveViewSourceHTMLOnly
@@ -534,8 +531,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_WIN)
 #define MAYBE_SaveCompleteHTML DISABLED_SaveCompleteHTML
 #else
 #define MAYBE_SaveCompleteHTML SaveCompleteHTML
@@ -577,8 +573,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
 // Invoke a save page during the initial navigation.
 // (Regression test for http://crbug.com/156538).
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_WIN)
 #define MAYBE_SaveDuringInitialNavigationIncognito DISABLED_SaveDuringInitialNavigationIncognito
 #else
 #define MAYBE_SaveDuringInitialNavigationIncognito SaveDuringInitialNavigationIncognito
@@ -629,8 +624,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_WIN)
 #define MAYBE_FileNameFromPageTitle DISABLED_FileNameFromPageTitle
 #else
 #define MAYBE_FileNameFromPageTitle FileNameFromPageTitle
@@ -673,8 +667,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_WIN)
 #define MAYBE_RemoveFromList DISABLED_RemoveFromList
 #else
 #define MAYBE_RemoveFromList RemoveFromList
