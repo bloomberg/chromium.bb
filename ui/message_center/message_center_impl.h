@@ -199,6 +199,7 @@ class MessageCenterImpl : public MessageCenter,
     NotificationCache();
     ~NotificationCache();
     void Rebuild(const NotificationList::Notifications& notificaitons);
+    void RecountUnread();
 
     NotificationList::Notifications visible_notifications;
     size_t unread_count;

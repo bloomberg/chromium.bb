@@ -401,9 +401,14 @@ MessageCenterImpl::NotificationCache::~NotificationCache() {}
 void MessageCenterImpl::NotificationCache::Rebuild(
     const NotificationList::Notifications& notifications) {
   visible_notifications = notifications;
+  RecountUnread();
+}
+
+void MessageCenterImpl::NotificationCache::RecountUnread() {
   unread_count = 0;
   for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
+           visible_notifications.begin();
+       iter != visible_notifications.end(); ++iter) {
     if (!(*iter)->IsRead())
       ++unread_count;
   }
@@ -456,7 +461,14 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
 
   for (std::list<std::string>::const_iterator iter = blocked_ids.begin();
        iter != blocked_ids.end(); ++iter) {
-    MarkSinglePopupAsShown((*iter), true);
+    // Do not call MessageCenterImpl::MarkSinglePopupAsShown() directly here
+    // just for performance reason. MessageCenterImpl::MarkSinglePopupAsShown()
+    // calls NotificationList::MarkSinglePopupAsShown() and then updates the
+    // unread count, but the whole cache will be recreated below.
+    notification_list_->MarkSinglePopupAsShown((*iter), true);
+    FOR_EACH_OBSERVER(MessageCenterObserver,
+                      observer_list_,
+                      OnNotificationUpdated(*iter));
   }
   notification_cache_.Rebuild(
       notification_list_->GetVisibleNotifications(blockers_));
@@ -469,6 +481,7 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
   std::set<std::string> updated_ids;
   notification_list_->SetMessageCenterVisible(
       (visibility == VISIBILITY_MESSAGE_CENTER), &updated_ids);
+  notification_cache_.RecountUnread();
 
   for (std::set<std::string>::const_iterator iter = updated_ids.begin();
        iter != updated_ids.end();
@@ -793,6 +806,7 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
   if (!HasNotification(id))
     return;
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
+  notification_cache_.RecountUnread();
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
 }
@@ -803,6 +817,7 @@ void MessageCenterImpl::DisplayedNotification(const std::string& id) {
 
   if (HasPopupNotifications())
     notification_list_->MarkSinglePopupAsDisplayed(id);
+  notification_cache_.RecountUnread();
   NotificationDelegate* delegate =
       notification_list_->GetNotificationDelegate(id);
   if (delegate)
