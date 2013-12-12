@@ -532,6 +532,19 @@ const char kGypFile_Help[] =
     "  GYP file, just put gyp_file = \"foo\" at the top of the file and\n"
     "  the variable will be in scope for all targets.\n";
 
+const char kGypHeader[] = "gyp_header";
+const char kGypHeader_HelpShort[] =
+    "gyp_header: [string] Extra stuff to prepend to GYP files.";
+const char kGypHeader_Help[] =
+    "gyp_header: Extra stuff to prepend to GYP files.\n"
+    "\n"
+    "  A Python dictionary string. This will be inserted after the initial\n"
+    "  \"{\" in the GYP file. It is expected this is used to define the\n"
+    "  make_global_settings.\n"
+    "\n"
+    "  This string should end in a comma to keep the python dictionary syntax\n"
+    "  valid when everything is concatenated.\n";
+
 const char kHardDep[] = "hard_dep";
 const char kHardDep_HelpShort[] =
     "hard_dep: [boolean] Indicates a target should be built before dependees.";

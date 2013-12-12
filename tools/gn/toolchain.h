@@ -84,8 +84,10 @@ class Toolchain : public Item {
   const Tool& GetTool(ToolType type) const;
   void SetTool(ToolType type, const Tool& t);
 
-  const std::string& environment() const { return environment_; }
-  void set_environment(const std::string& env) { environment_ = env; }
+  // This extra stuff is specified by the build and will be added to the top
+  // of a generated GYP file (right after the opening "{").
+  std::string gyp_header() const { return gyp_header_; }
+  void set_gyp_header(const std::string& gh) { gyp_header_ = gh; }
 
   // Specifies build argument overrides that will be set on the base scope. It
   // will be as if these arguments were passed in on the command line. This
@@ -99,7 +101,7 @@ class Toolchain : public Item {
 
   Scope::KeyValueMap args_;
 
-  std::string environment_;
+  std::string gyp_header_;
 };
 
 #endif  // TOOLS_GN_TOOLCHAIN_H_

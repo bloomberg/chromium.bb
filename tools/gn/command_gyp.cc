@@ -237,10 +237,18 @@ std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
       return std::make_pair(0, 0);
   }
 
+  // Extract the toolchain for the debug targets.
+  const Toolchain* debug_toolchain = NULL;
+  if (!grouped_targets.empty()) {
+    debug_toolchain = debug_setup->builder()->GetToolchain(
+        grouped_targets.begin()->second[0].debug->item()->settings()->
+        default_toolchain_label());
+  }
+
   // Write each GYP file.
   for (GroupedTargetsMap::iterator i = grouped_targets.begin();
        i != grouped_targets.end(); ++i) {
-    GypTargetWriter::WriteFile(i->first, i->second, err);
+    GypTargetWriter::WriteFile(i->first, i->second, debug_toolchain, err);
     if (err->has_error())
       return std::make_pair(0, 0);
   }

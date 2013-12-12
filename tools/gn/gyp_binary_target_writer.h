@@ -18,6 +18,7 @@
 class GypBinaryTargetWriter : public GypTargetWriter {
  public:
   GypBinaryTargetWriter(const TargetGroup& group,
+                        const Toolchain* debug_toolchain,
                         const SourceDir& gyp_dir,
                         std::ostream& out);
   virtual ~GypBinaryTargetWriter();

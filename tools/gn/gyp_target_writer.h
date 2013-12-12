@@ -17,6 +17,7 @@ class Err;
 class Settings;
 class SourceFile;
 class Target;
+class Toolchain;
 
 class GypTargetWriter {
  public:
@@ -34,12 +35,14 @@ class GypTargetWriter {
   };
 
   GypTargetWriter(const Target* target,
+                  const Toolchain* toolchain,
                   const SourceDir& gyp_dir,
                   std::ostream& out);
   virtual ~GypTargetWriter();
 
   static void WriteFile(const SourceFile& gyp_file,
                         const std::vector<TargetGroup>& targets,
+                        const Toolchain* debug_toolchain,
                         Err* err);
 
   virtual void Run() = 0;
@@ -53,6 +56,7 @@ class GypTargetWriter {
 
   const Settings* settings_;  // Non-owning.
   const Target* target_;  // Non-owning.
+  const Toolchain* toolchain_;  // Toolchain corresponding to target_.
   SourceDir gyp_dir_;  // Dir of GYP file.
   std::ostream& out_;
 

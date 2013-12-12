@@ -87,9 +87,11 @@ GypBinaryTargetWriter::Flags::Flags() {}
 GypBinaryTargetWriter::Flags::~Flags() {}
 
 GypBinaryTargetWriter::GypBinaryTargetWriter(const TargetGroup& group,
+                                             const Toolchain* debug_toolchain,
                                              const SourceDir& gyp_dir,
                                              std::ostream& out)
-    : GypTargetWriter(group.debug->item()->AsTarget(), gyp_dir, out),
+    : GypTargetWriter(group.debug->item()->AsTarget(), debug_toolchain,
+                      gyp_dir, out),
       group_(group) {
 }
 
@@ -350,16 +352,28 @@ void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
   if (target_->output_type() != Target::STATIC_LIBRARY)
     WriteNamedArray("OTHER_LDFLAGS", flags.ldflags, indent + kExtraIndent);
 
-  base::FilePath clang_path =
-      target_->settings()->build_settings()->GetFullPath(SourceFile(
-          "//third_party/llvm-build/Release+Asserts/bin/clang"));
-  base::FilePath clang_pp_path =
-      target_->settings()->build_settings()->GetFullPath(SourceFile(
-          "//third_party/llvm-build/Release+Asserts/bin/clang++"));
+  // Write the compiler that XCode should use. When we're using clang, we want
+  // the custom one, otherwise don't add this and the default compiler will be
+  // used.
+  //
+  // TODO(brettw) this is a hack. We could add a way for the GN build to set
+  // these values but as far as I can see this is the only use for them, so
+  // currently we manually check the build config's is_clang value.
+  const Value* is_clang =
+      target_->settings()->base_config()->GetValue("is_clang");
+  if (is_clang && is_clang->type() == Value::BOOLEAN &&
+      is_clang->boolean_value()) {
+    base::FilePath clang_path =
+        target_->settings()->build_settings()->GetFullPath(SourceFile(
+            "//third_party/llvm-build/Release+Asserts/bin/clang"));
+    base::FilePath clang_pp_path =
+        target_->settings()->build_settings()->GetFullPath(SourceFile(
+            "//third_party/llvm-build/Release+Asserts/bin/clang++"));
 
-  Indent(indent) << "'CC': '" << FilePathToUTF8(clang_path) << "',\n";
-  Indent(indent) << "'LDPLUSPLUS': '"
-                 << FilePathToUTF8(clang_pp_path) << "',\n";
+    Indent(indent) << "'CC': '" << FilePathToUTF8(clang_path) << "',\n";
+    Indent(indent) << "'LDPLUSPLUS': '"
+                   << FilePathToUTF8(clang_pp_path) << "',\n";
+  }
 
   Indent(indent) << "},\n";
 }

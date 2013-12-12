@@ -16,9 +16,11 @@
 // semantices in GYP for each platform (GYP varies a bit).
 
 GypScriptTargetWriter::GypScriptTargetWriter(const TargetGroup& group,
+                                             const Toolchain* toolchain,
                                              const SourceDir& gyp_dir,
                                              std::ostream& out)
-    : GypTargetWriter(group.debug->item()->AsTarget(), gyp_dir, out) {
+    : GypTargetWriter(group.debug->item()->AsTarget(), toolchain,
+                      gyp_dir, out) {
 }
 
 GypScriptTargetWriter::~GypScriptTargetWriter() {

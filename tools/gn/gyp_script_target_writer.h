@@ -13,6 +13,7 @@
 class GypScriptTargetWriter : public GypTargetWriter {
  public:
   GypScriptTargetWriter(const TargetGroup& group,
+                        const Toolchain* toolchain,
                         const SourceDir& gyp_dir,
                         std::ostream& out);
   virtual ~GypScriptTargetWriter();

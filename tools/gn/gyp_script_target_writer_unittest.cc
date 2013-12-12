@@ -28,7 +28,8 @@ TEST(GypScriptTargetWriter, Run) {
   setup.settings()->set_target_os(Settings::WIN);
 
   std::ostringstream out;
-  GypScriptTargetWriter writer(group, SourceDir("//out/gn_gyp/"), out);
+  GypScriptTargetWriter writer(group, setup.toolchain(),
+                               SourceDir("//out/gn_gyp/"), out);
   writer.Run();
 
   const char expected[] =

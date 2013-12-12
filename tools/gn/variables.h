@@ -135,6 +135,10 @@ extern const char kGypFile[];
 extern const char kGypFile_HelpShort[];
 extern const char kGypFile_Help[];
 
+extern const char kGypHeader[];
+extern const char kGypHeader_HelpShort[];
+extern const char kGypHeader_Help[];
+
 extern const char kHardDep[];
 extern const char kHardDep_HelpShort[];
 extern const char kHardDep_Help[];
