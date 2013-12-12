@@ -680,11 +680,6 @@ HTMLFormElement* HTMLElement::findFormAncestor() const
     return 0;
 }
 
-HTMLFormElement* HTMLElement::virtualForm() const
-{
-    return findFormAncestor();
-}
-
 static inline bool elementAffectsDirectionality(const Node* node)
 {
     return node->isHTMLElement() && (node->hasTagName(bdiTag) || toHTMLElement(node)->hasAttribute(dirAttr));

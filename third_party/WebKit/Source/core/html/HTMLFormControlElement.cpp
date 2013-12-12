@@ -297,6 +297,11 @@ void HTMLFormControlElement::dispatchFormControlInputEvent()
     HTMLElement::dispatchInputEvent();
 }
 
+HTMLFormElement* HTMLFormControlElement::formOwner() const
+{
+    return FormAssociatedElement::form();
+}
+
 bool HTMLFormControlElement::isDisabledFormControl() const
 {
     if (m_disabled)
@@ -496,11 +501,6 @@ void HTMLFormControlElement::dispatchBlurEvent(Element* newFocusedElement)
 {
     HTMLElement::dispatchBlurEvent(newFocusedElement);
     hideVisibleValidationMessage();
-}
-
-HTMLFormElement* HTMLFormControlElement::virtualForm() const
-{
-    return FormAssociatedElement::form();
 }
 
 bool HTMLFormControlElement::isSuccessfulSubmitButton() const

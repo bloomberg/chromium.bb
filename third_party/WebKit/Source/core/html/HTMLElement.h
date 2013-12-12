@@ -77,7 +77,7 @@ public:
     virtual bool rendererIsNeeded(const RenderStyle&);
     virtual RenderObject* createRenderer(RenderStyle*);
 
-    HTMLFormElement* formOwner() const { return virtualForm(); }
+    virtual HTMLFormElement* formOwner() const { return 0; }
 
     HTMLFormElement* findFormAncestor() const;
 
@@ -112,8 +112,6 @@ private:
     virtual String nodeName() const OVERRIDE FINAL;
 
     void mapLanguageAttributeToLocale(const AtomicString&, MutableStylePropertySet*);
-
-    virtual HTMLFormElement* virtualForm() const;
 
     PassRefPtr<DocumentFragment> textToFragment(const String&, ExceptionState&);
 

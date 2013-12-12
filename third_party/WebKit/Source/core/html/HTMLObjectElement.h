@@ -37,6 +37,8 @@ public:
 
     const String& classId() const { return m_classId; }
 
+    virtual HTMLFormElement* formOwner() const OVERRIDE;
+
     bool containsJavaApplet() const;
 
     virtual bool useFallbackContent() const OVERRIDE;
@@ -101,7 +103,6 @@ private:
 
     virtual void refFormAssociatedElement() { ref(); }
     virtual void derefFormAssociatedElement() { deref(); }
-    virtual HTMLFormElement* virtualForm() const;
 
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
     virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
