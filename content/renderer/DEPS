@@ -17,4 +17,8 @@ specific_include_rules = {
     "+content/public/browser",
     "+content/shell",
   ],
+  # gin usage in blink is currently experimental. Don't use outside of tests.
+  'gin_browsertest.cc': [
+    "+gin",
+  ],
 }
