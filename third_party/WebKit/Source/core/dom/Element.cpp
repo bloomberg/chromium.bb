@@ -1405,6 +1405,10 @@ void Element::attach(const AttachContext& context)
                 document().updateFocusAppearanceSoon(false /* don't restore selection */);
             data->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
         }
+        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !renderer()) {
+            if (ActiveAnimations* activeAnimations = data->activeAnimations())
+                activeAnimations->cssAnimations().cancel();
+        }
     }
 
     InspectorInstrumentation::didRecalculateStyleForElement(this);
