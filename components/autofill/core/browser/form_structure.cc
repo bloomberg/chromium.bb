@@ -768,6 +768,12 @@ void FormStructure::LogQualityMetrics(
     if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
       continue;
 
+    // Similarly, no further logging for password fields.  Those are primarily
+    // related to a different feature code path, and so make more sense to track
+    // outside of this metric.
+    if (field->form_control_type == "password")
+      continue;
+
     ++num_detected_field_types;
     if (field->is_autofilled)
       did_autofill_some_possible_fields = true;
