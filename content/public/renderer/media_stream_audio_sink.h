@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/media_stream_sink.h"
 
 namespace blink {
 class WebMediaStreamTrack;
@@ -20,7 +21,7 @@ class AudioParameters;
 
 namespace content {
 
-class MediaStreamAudioSink {
+class MediaStreamAudioSink : public MediaStreamSink {
  public:
   // Adds a MediaStreamAudioSink to the audio track to receive audio data from
   // the track.

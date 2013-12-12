@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "media/audio/audio_parameters.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 namespace content {
 
@@ -31,6 +32,9 @@ class MediaStreamAudioTrackSink
                       bool key_pressed) = 0;
 
   virtual void OnSetFormat(const media::AudioParameters& params) = 0;
+
+  virtual void OnReadyStateChanged(
+      blink::WebMediaStreamSource::ReadyState state) = 0;
 
   virtual void Reset() = 0;
 

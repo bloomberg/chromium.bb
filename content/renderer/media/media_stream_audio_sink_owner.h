@@ -30,6 +30,8 @@ class MediaStreamAudioSinkOwner : public MediaStreamAudioTrackSink {
                      bool need_audio_processing,
                      bool key_pressed) OVERRIDE;
   virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void OnReadyStateChanged(
+      blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual bool IsEqual(const MediaStreamAudioSink* other) const OVERRIDE;
   virtual bool IsEqual(const PeerConnectionAudioSink* other) const OVERRIDE;

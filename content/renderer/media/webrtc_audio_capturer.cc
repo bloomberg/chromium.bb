@@ -68,6 +68,16 @@ class WebRtcAudioCapturer::TrackOwner
     delegate_ = NULL;
   }
 
+  void Stop() {
+    base::AutoLock lock(lock_);
+    DCHECK(delegate_);
+
+    // This can be reentrant so reset |delegate_| before calling out.
+    WebRtcLocalAudioTrack* temp = delegate_;
+    delegate_ = NULL;
+    temp->Stop();
+  }
+
   // Wrapper which allows to use std::find_if() when adding and removing
   // sinks to/from the list.
   struct TrackWrapper {
@@ -356,14 +366,22 @@ void WebRtcAudioCapturer::Start() {
 void WebRtcAudioCapturer::Stop() {
   DVLOG(1) << "WebRtcAudioCapturer::Stop()";
   scoped_refptr<media::AudioCapturerSource> source;
+  TrackList::ItemList tracks;
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
       return;
 
     source = source_;
+    tracks = tracks_.Items();
     tracks_.Clear();
     running_ = false;
+  }
+
+  for (TrackList::ItemList::const_iterator it = tracks.begin();
+       it != tracks.end();
+       ++it) {
+    (*it)->Stop();
   }
 
   if (source.get())

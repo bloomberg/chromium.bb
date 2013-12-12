@@ -353,12 +353,23 @@ void WebRtcLocalAudioTrack::Start() {
     // If the track is hooking up with WebAudio, do NOT add the track to the
     // capturer as its sink otherwise two streams in different clock will be
     // pushed through the same track.
-     webaudio_source_->Start(this, capturer_.get());
+    webaudio_source_->Start(this, capturer_.get());
     return;
   }
 
   if (capturer_.get())
     capturer_->AddTrack(this);
+
+  SinkList::ItemList sinks;
+  {
+    base::AutoLock auto_lock(lock_);
+    sinks = sinks_.Items();
+  }
+  for (SinkList::ItemList::const_iterator it = sinks.begin();
+       it != sinks.end();
+       ++it) {
+    (*it)->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateLive);
+  }
 }
 
 void WebRtcLocalAudioTrack::Stop() {
@@ -392,8 +403,10 @@ void WebRtcLocalAudioTrack::Stop() {
 
   for (SinkList::ItemList::const_iterator it = sinks.begin();
        it != sinks.end();
-       ++it)
+       ++it){
+    (*it)->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateEnded);
     (*it)->Reset();
+  }
 }
 
 }  // namespace content

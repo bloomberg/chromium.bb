@@ -45,6 +45,11 @@ void PeerConnectionAudioSinkOwner::OnSetFormat(
     delegate_->OnSetFormat(params);
 }
 
+void PeerConnectionAudioSinkOwner::OnReadyStateChanged(
+    blink::WebMediaStreamSource::ReadyState state) {
+  // Not forwarded at the moment.
+}
+
 void PeerConnectionAudioSinkOwner::Reset() {
   base::AutoLock lock(lock_);
   delegate_ = NULL;

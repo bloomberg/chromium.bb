@@ -42,6 +42,13 @@ void MediaStreamAudioSinkOwner::OnSetFormat(
     delegate_->OnSetFormat(params);
 }
 
+void MediaStreamAudioSinkOwner::OnReadyStateChanged(
+    blink::WebMediaStreamSource::ReadyState state) {
+  base::AutoLock lock(lock_);
+  if (delegate_)
+    delegate_->OnReadyStateChanged(state);
+}
+
 void MediaStreamAudioSinkOwner::Reset() {
   base::AutoLock lock(lock_);
   delegate_ = NULL;
