@@ -24,6 +24,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,6 +43,13 @@ const char kProbeURLWithOKResponse[] = "http://ok.org/";
 const char kProbeURLWithBadResponse[] = "http://bad.org/";
 const char kProbeURLWithNoResponse[] = "http://no.org/";
 
+// Transform "normal"-looking headers (\n-separated) to the appropriate
+// input format for ParseRawHeaders (\0-separated).
+void HeadersToRaw(std::string* headers) {
+  std::replace(headers->begin(), headers->end(), '\n', '\0');
+  if (!headers->empty())
+    *headers += '\0';
+}
 
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
     : testing::Test() {
@@ -558,5 +566,47 @@ TEST_F(DataReductionProxySettingsTest, TestBypassList) {
   for (std::vector<std::string>::iterator it = settings_->bypass_rules_.begin();
        it != settings_->bypass_rules_.end(); ++it) {
     EXPECT_EQ(expected[i++], *it);
+  }
+}
+
+TEST_F(DataReductionProxySettingsTest, WasFetchedViaProxy) {
+  const struct {
+     const char* headers;
+     bool expected_result;
+  } tests[] = {
+    { "HTTP/1.1 200 OK\n"
+      "Via: 1.1 Chrome Proxy\n",
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Via: 1.1 Chrome Compression Proxy\n",
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Via: 1.1 Foo Bar, 1.1 Chrome Compression Proxy\n",
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Via: 1.1 Chrome Compression Proxy, 1.1 Bar Foo\n",
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Via: 1.1 chrome compression proxy\n",
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Via: 1.1 Foo Bar\n"
+      "Via: 1.1 Chrome Compression Proxy\n",
+      true,
+    },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    std::string headers(tests[i].headers);
+    HeadersToRaw(&headers);
+    scoped_refptr<net::HttpResponseHeaders> parsed(
+        new net::HttpResponseHeaders(headers));
+
+    EXPECT_EQ(tests[i].expected_result,
+              DataReductionProxySettings::WasFetchedViaProxy(parsed));
   }
 }

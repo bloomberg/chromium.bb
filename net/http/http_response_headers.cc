@@ -1392,6 +1392,6 @@ bool HttpResponseHeaders::GetChromeProxyInfo(
 
   return false;
 }
-#endif
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 }  // namespace net

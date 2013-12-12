@@ -22,6 +22,7 @@ class AuthChallengeInfo;
 class HostPortPair;
 class HttpAuthCache;
 class HttpNetworkSession;
+class HttpResponseHeaders;
 class URLFetcher;
 }
 
@@ -87,6 +88,10 @@ class DataReductionProxySettings
   // Returns true if preconnect advisory hinting is enabled by command line
   // flag or Finch trial.
   static bool IsPreconnectHintingAllowed();
+
+  // Returns true if the Via header indicates that this request was fetched
+  // explicitly via the Chrome Proxy.
+  static bool WasFetchedViaProxy(const net::HttpResponseHeaders* headers);
 
   // Returns the URL of the data reduction proxy.
   static std::string GetDataReductionProxyOrigin();

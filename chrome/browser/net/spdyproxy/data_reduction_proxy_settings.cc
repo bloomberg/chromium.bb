@@ -29,6 +29,7 @@
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -149,6 +150,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings() {
   }
 }
 
+// static
 void DataReductionProxySettings::InitDataReductionProxySession(
     net::HttpNetworkSession* session) {
 // This is a no-op unless the authentication parameters are compiled in.
@@ -164,6 +166,7 @@ void DataReductionProxySettings::InitDataReductionProxySession(
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN) && defined(SPDY_PROXY_AUTH_VALUE)
 }
 
+// static
 void DataReductionProxySettings::InitDataReductionAuthentication(
     net::HttpAuthCache* auth_cache) {
   DCHECK(auth_cache);
@@ -217,11 +220,13 @@ void DataReductionProxySettings::AddURLPatternToBypass(
   AddHostPatternToBypass(host_pattern);
 }
 
+// static
 bool DataReductionProxySettings::IsDataReductionProxyAllowed() {
   return IsProxyOriginSetOnCommandLine() ||
       (FieldTrialList::FindFullName("DataCompressionProxyRollout") == kEnabled);
 }
 
+// static
 bool DataReductionProxySettings::IsDataReductionProxyPromoAllowed() {
   return IsProxyOriginSetOnCommandLine() ||
       (IsDataReductionProxyAllowed() &&
@@ -229,6 +234,7 @@ bool DataReductionProxySettings::IsDataReductionProxyPromoAllowed() {
             kEnabled);
 }
 
+// static
 bool DataReductionProxySettings::IsPreconnectHintingAllowed() {
   if (!IsDataReductionProxyAllowed())
     return false;
@@ -236,6 +242,18 @@ bool DataReductionProxySettings::IsPreconnectHintingAllowed() {
       kEnabled;
 }
 
+// static
+bool DataReductionProxySettings::WasFetchedViaProxy(
+    const net::HttpResponseHeaders* headers) {
+  const char kChromeProxyViaValue[] = "1.1 Chrome Compression Proxy";
+  void* iter = NULL;
+  std::string value;
+  while (headers->EnumerateHeader(&iter, "via", &value))
+    if (value == kChromeProxyViaValue) return true;
+  return false;
+}
+
+// static
 std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin))
@@ -247,6 +265,7 @@ std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
 #endif
 }
 
+// static
 std::string DataReductionProxySettings::GetDataReductionProxyFallback() {
   // Regardless of what else is defined, only return a value if the main proxy
   // origin is defined.
@@ -307,6 +326,7 @@ bool DataReductionProxySettings::IsDataReductionProxyManaged() {
   return spdy_proxy_auth_enabled_.IsManaged();
 }
 
+// static
 DataReductionProxySettings::DataReductionProxyList
 DataReductionProxySettings::GetDataReductionProxies() {
   DataReductionProxyList proxies;
@@ -582,6 +602,7 @@ std::string DataReductionProxySettings::GetProxyCheckURL() {
 #endif
 }
 
+// static
 base::string16 DataReductionProxySettings::AuthHashForSalt(int64 salt) {
   if (!IsDataReductionProxyAllowed())
     return base::string16();
