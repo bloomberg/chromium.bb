@@ -425,15 +425,22 @@
             '../build/linux/system.gyp:pangocairo',
           ],
         }],
-        ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {
+        ['use_x11==0 or use_clipboard_aurax11==1', {
+          'sources!': [
+            'base/clipboard/clipboard_aura.cc',
+          ],
+        }, {
           'sources!': [
             'base/clipboard/clipboard_aurax11.cc',
+          ],
+        }],
+        ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {
+          'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11.cc',
             'base/touch/touch_device.cc',
           ],
         }, {
           'sources!': [
-            'base/clipboard/clipboard_aura.cc',
             'base/dragdrop/os_exchange_data_provider_aura.cc',
             'base/dragdrop/os_exchange_data_provider_aura.h',
             'base/touch/touch_device_aurax11.cc',

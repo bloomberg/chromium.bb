@@ -147,6 +147,9 @@
         # Set ARM architecture version.
         'arm_version%': 7,
 
+        # Use aurax11 for clipboard implementation. This is true on linux_aura.
+        'use_clipboard_aurax11%': 0,
+
         # goma settings.
         # 1 to use goma.
         # If no gomadir is set, it uses the default gomadir.
@@ -236,6 +239,7 @@
       'use_cras%': '<(use_cras)',
       'use_ozone%': '<(use_ozone)',
       'use_ozone_evdev%': '<(use_ozone_evdev)',
+      'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
       'embedded%': '<(embedded)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
@@ -546,6 +550,10 @@
           'use_x11%': 0,
         }, {
           'use_x11%': 1,
+        }],
+
+        ['OS=="linux" and use_aura==1 and chromeos==0', {
+          'use_clipboard_aurax11%': 1,
         }],
 
         # Flags to use glib.
@@ -888,6 +896,7 @@
     'use_cairo%': '<(use_cairo)',
     'use_ozone%': '<(use_ozone)',
     'use_ozone_evdev%': '<(use_ozone_evdev)',
+    'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',
@@ -2132,6 +2141,9 @@
       }],
       ['use_x11==1', {
         'defines': ['USE_X11=1'],
+      }],
+      ['use_clipboard_aurax11==1', {
+        'defines': ['USE_CLIPBOARD_AURAX11=1'],
       }],
       ['enable_one_click_signin==1', {
         'defines': ['ENABLE_ONE_CLICK_SIGNIN'],

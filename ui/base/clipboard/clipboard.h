@@ -384,7 +384,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   TargetMap* clipboard_data_;
   GtkClipboard* clipboard_;
   GtkClipboard* primary_selection_;
-#elif defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
+#elif defined(USE_CLIPBOARD_AURAX11)
  private:
   // We keep our implementation details private because otherwise we bring in
   // the X11 headers and break chrome compile.
