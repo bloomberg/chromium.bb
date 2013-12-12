@@ -32,7 +32,6 @@
 #include "ContextFeaturesClientImpl.h"
 
 #include "WebDocument.h"
-#include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "core/dom/Document.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -140,21 +139,12 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
         return defaultValue;
 
     switch (type) {
-#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
-    case ContextFeatures::StyleScoped:
-        return m_client->allowWebComponents(WebFrameImpl::fromFrame(document->frame()), defaultValue);
-    case ContextFeatures::MutationEvents:
-        return m_client->allowMutationEvents(WebFrameImpl::fromFrame(document->frame()), defaultValue);
-    case ContextFeatures::PushState:
-        return m_client->allowPushState(WebFrameImpl::fromFrame(document->frame()));
-#else
     case ContextFeatures::StyleScoped:
         return m_client->allowWebComponents(WebDocument(document), defaultValue);
     case ContextFeatures::MutationEvents:
         return m_client->allowMutationEvents(WebDocument(document), defaultValue);
     case ContextFeatures::PushState:
         return m_client->allowPushState(WebDocument(document));
-#endif
     default:
         return defaultValue;
     }
