@@ -608,9 +608,11 @@ int UDPSocketLibevent::DoBind(const IPEndPoint& address) {
   if (!address.ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
   int rv = bind(socket_, storage.addr, storage.addr_len);
-  if (rv < 0)
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromPosix", rv);
-  return rv < 0 ? MapSystemError(errno) : rv;
+  if (rv == 0)
+    return OK;
+  int last_error = errno;
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromPosix", last_error);
+  return MapSystemError(last_error);
 }
 
 int UDPSocketLibevent::RandomBind(const IPAddressNumber& address) {

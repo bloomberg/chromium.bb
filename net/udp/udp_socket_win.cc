@@ -665,9 +665,11 @@ int UDPSocketWin::DoBind(const IPEndPoint& address) {
   if (!address.ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
   int rv = bind(socket_, storage.addr, storage.addr_len);
-  if (rv < 0)
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromWinOS", rv);
-  return rv < 0 ? MapSystemError(WSAGetLastError()) : rv;
+  if (rv == 0)
+    return OK;
+  int last_error = WSAGetLastError();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromWinOS", last_error);
+  return MapSystemError(last_error);
 }
 
 int UDPSocketWin::RandomBind(const IPAddressNumber& address) {
