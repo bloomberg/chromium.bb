@@ -29,15 +29,12 @@ by the administrator.
 
 <p>
 The <code>storage.managed_schema</code> property indicates a file
-within the {{platform}} that contains the policy schema. Since policies
-are read from the <code>storage.managed</code> API the
-<code>storage</code> permission is required.
+within the {{platform}} that contains the policy schema.
 </p>
 
 <pre data-filename="manifest.json">
 {
   "name": "My enterprise {{platform}}",
-  "permissions": [ "storage" ],
   "storage": {
     "managed_schema": "schema.json"
   },

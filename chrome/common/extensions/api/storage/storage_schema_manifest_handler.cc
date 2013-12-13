@@ -18,6 +18,9 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/permissions_info.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/common/schema.h"
@@ -36,11 +39,6 @@ StorageSchemaManifestHandler::~StorageSchemaManifestHandler() {}
 policy::Schema StorageSchemaManifestHandler::GetSchema(
     const Extension* extension,
     std::string* error) {
-  if (!extension->HasAPIPermission(APIPermission::kStorage)) {
-    *error = base::StringPrintf("The storage permission is required to use %s",
-                                kStorageManagedSchema);
-    return policy::Schema();
-  }
   std::string path;
   extension->manifest()->GetString(kStorageManagedSchema, &path);
   base::FilePath file = base::FilePath::FromUTF8Unsafe(path);
@@ -72,6 +70,13 @@ bool StorageSchemaManifestHandler::Parse(Extension* extension,
         base::StringPrintf("%s must be a string", kStorageManagedSchema));
     return false;
   }
+
+  // If an extension declares the "storage.managed_schema" key then it gets
+  // the "storage" permission implicitly.
+  APIPermissionSet* permission_set =
+      PermissionsData::GetInitialAPIPermissions(extension);
+  permission_set->insert(APIPermission::kStorage);
+
   return true;
 }
 

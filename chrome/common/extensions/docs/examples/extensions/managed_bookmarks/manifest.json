@@ -10,8 +10,7 @@
     "persistent": false
   },
   "permissions": [
-    "bookmarks",
-    "storage"
+    "bookmarks"
   ],
   "storage": {
     "managed_schema": "schema.json"

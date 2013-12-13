@@ -39,7 +39,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/one_shot_event.h"
-#include "extensions/common/permissions/api_permission.h"
 
 using content::BrowserThread;
 
@@ -195,12 +194,8 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
     std::string schema_file;
     if (!(*it)->manifest()->GetString(
             manifest_keys::kStorageManagedSchema, &schema_file)) {
-      // TODO(joaodasilva): Remove this. http://crbug.com/240704
-      if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
-        (*components)[(*it)->id()] = policy::Schema();
-      } else {
-        NOTREACHED();
-      }
+      // TODO(joaodasilva): Remove this. http://crbug.com/325349
+      (*components)[(*it)->id()] = policy::Schema();
       continue;
     }
     // The extension should have been validated, so assume the schema exists

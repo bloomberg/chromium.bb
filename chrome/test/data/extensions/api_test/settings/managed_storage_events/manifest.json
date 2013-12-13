@@ -4,7 +4,6 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests events on the 'managed' namespace of the Storage API.",
-  "permissions": ["storage"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
