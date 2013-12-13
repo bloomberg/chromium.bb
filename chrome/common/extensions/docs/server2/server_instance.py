@@ -16,7 +16,6 @@ from features_bundle import FeaturesBundle
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
-from intro_data_source import IntroDataSource
 from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
 from reference_resolver import ReferenceResolver

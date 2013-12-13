@@ -8,8 +8,7 @@ import sys
 import unittest
 
 from caching_file_system import CachingFileSystem
-from file_system import FileSystem, StatInfo
-from future import Future
+from file_system import  StatInfo
 from local_file_system import LocalFileSystem
 from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator

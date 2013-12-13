@@ -5,7 +5,6 @@
 import os
 import sys
 import unittest
-from collections import namedtuple
 
 import api_schema_graph
 from availability_finder import AvailabilityFinder

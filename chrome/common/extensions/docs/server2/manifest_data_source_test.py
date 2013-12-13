@@ -7,8 +7,6 @@ from copy import deepcopy
 import json
 import unittest
 
-from compiled_file_system import CompiledFileSystem
-from features_bundle import FeaturesBundle
 from future import Future
 import manifest_data_source
 from object_store_creator import ObjectStoreCreator

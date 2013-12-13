@@ -7,7 +7,6 @@ import unittest
 
 from app_yaml_helper import AppYamlHelper
 from extensions_paths import SERVER2
-from file_system import FileNotFoundError
 from host_file_system_provider import HostFileSystemProvider
 from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator

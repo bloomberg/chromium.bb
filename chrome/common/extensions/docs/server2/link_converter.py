@@ -8,11 +8,9 @@
 
 import optparse
 import os
-import sys
 import re
 
 from docs_server_utils import SanitizeAPIName
-import third_party.json_schema_compiler.model as model
 
 def _ReadFile(filename):
   with open(filename) as f:

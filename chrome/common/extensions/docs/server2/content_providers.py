@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import logging
-from operator import itemgetter
-import posixpath
 import traceback
 
 from chroot_file_system import ChrootFileSystem

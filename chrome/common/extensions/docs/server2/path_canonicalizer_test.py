@@ -5,7 +5,6 @@
 
 import unittest
 
-from path_canonicalizer import PathCanonicalizer
 from server_instance import ServerInstance
 
 

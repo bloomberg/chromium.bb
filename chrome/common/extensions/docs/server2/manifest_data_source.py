@@ -8,7 +8,6 @@ from data_source import DataSource
 import features_utility
 from future import Gettable, Future
 from manifest_features import ConvertDottedKeysToNested
-from third_party.json_schema_compiler.json_parse import Parse
 
 def _ListifyAndSortDocs(features, app_name):
   '''Convert a |feautres| dictionary, and all 'children' dictionaries, into

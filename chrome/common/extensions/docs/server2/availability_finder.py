@@ -7,7 +7,6 @@ from collections import Mapping
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
 from extensions_paths import API, JSON_TEMPLATES
-from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
 
 

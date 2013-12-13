@@ -5,7 +5,6 @@
 import os
 
 from future import Gettable, Future
-from local_file_system import LocalFileSystem
 
 
 class _Response(object):

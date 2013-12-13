@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-
 from data_source_registry import CreateDataSources
 from third_party.handlebar import Handlebar
 from url_constants import GITHUB_BASE, EXTENSIONS_SAMPLES

@@ -5,7 +5,6 @@
 
 import unittest
 
-from cron_servlet import CronServlet
 from fake_fetchers import ConfigureFakeFetchers
 from handler import Handler
 from servlet import Request

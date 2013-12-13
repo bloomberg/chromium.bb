@@ -2,17 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import hashlib
 import json
 import logging
 import posixpath
 import re
 import traceback
 
-from compiled_file_system import CompiledFileSystem
 from extensions_paths import EXAMPLES
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
-import third_party.json_schema_compiler.model as model
 import url_constants
 
 

@@ -3,11 +3,9 @@
 # found in the LICENSE file.
 
 import logging
-import posixpath
 import traceback
 
 from data_source import DataSource
-from docs_server_utils import FormatKey
 from extensions_paths import PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future

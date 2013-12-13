@@ -5,7 +5,6 @@
 
 import unittest
 
-from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system_provider import GithubFileSystemProvider
 from instance_servlet import InstanceServlet
 from servlet import Request

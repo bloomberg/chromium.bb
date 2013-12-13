@@ -6,12 +6,10 @@
 from copy import deepcopy
 import unittest
 
-from caching_file_system import CachingFileSystem
 from extensions_paths import API
 from file_system import FileNotFoundError
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
-from offline_file_system import OfflineFileSystem
 from test_data.canned_data import CANNED_API_FILE_SYSTEM_DATA
 from test_file_system import TestFileSystem
 

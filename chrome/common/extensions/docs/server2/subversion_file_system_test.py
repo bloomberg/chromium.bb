@@ -10,7 +10,6 @@ import unittest
 
 from fake_url_fetcher import FakeUrlFetcher
 from file_system import FileSystemError, StatInfo
-from future import Future
 from subversion_file_system import SubversionFileSystem
 import test_util
 

@@ -8,7 +8,6 @@
 
 import os
 import re
-import sys
 
 import appengine_wrappers
 from extensions_paths import SERVER2

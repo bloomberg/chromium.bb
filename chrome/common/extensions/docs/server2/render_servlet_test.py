@@ -10,7 +10,7 @@ from local_file_system import LocalFileSystem
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Request, Response
-from test_util import DisableLogging, ReadFile
+from test_util import ReadFile
 
 
 class _RenderServletDelegate(RenderServlet.Delegate):

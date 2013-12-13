@@ -3,15 +3,13 @@
 # found in the LICENSE file.
 
 import logging
-import os
 import posixpath
 import traceback
 
 from branch_utility import BranchUtility
-from compiled_file_system import CompiledFileSystem, SingleFile
+from compiled_file_system import SingleFile
 from extensions_paths import PUBLIC_TEMPLATES
 from file_system import FileNotFoundError
-from third_party.json_schema_compiler.model import UnixName
 
 
 def _SimplifyFileName(file_name):

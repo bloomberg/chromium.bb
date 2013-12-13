@@ -9,8 +9,7 @@ import os
 from appengine_wrappers import GetAppVersion
 from compiled_file_system import CompiledFileSystem
 from copy import deepcopy
-from file_system import FileNotFoundError, FileSystem, StatInfo
-from future import Gettable, Future
+from file_system import FileNotFoundError
 from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem

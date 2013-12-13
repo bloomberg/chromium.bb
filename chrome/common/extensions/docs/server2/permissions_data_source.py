@@ -9,7 +9,6 @@ from data_source import DataSource
 from extensions_paths import PRIVATE_TEMPLATES
 import features_utility as features
 from future import Gettable, Future
-from third_party.json_schema_compiler.json_parse import Parse
 
 
 def _ListifyPermissions(permissions):

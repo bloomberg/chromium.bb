@@ -6,7 +6,7 @@
 import unittest
 
 from chroot_file_system import ChrootFileSystem
-from file_system import FileNotFoundError, StatInfo
+from file_system import StatInfo
 from test_file_system import TestFileSystem
 
 

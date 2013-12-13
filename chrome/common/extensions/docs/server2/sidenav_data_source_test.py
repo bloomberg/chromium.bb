@@ -6,10 +6,8 @@
 import json
 import unittest
 
-from compiled_file_system import CompiledFileSystem
 from extensions_paths import JSON_TEMPLATES
 from mock_file_system import MockFileSystem
-from object_store_creator import ObjectStoreCreator
 from server_instance import ServerInstance
 from servlet import Request
 from sidenav_data_source import SidenavDataSource, _AddLevels, _AddSelected

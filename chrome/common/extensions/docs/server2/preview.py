@@ -33,8 +33,6 @@ build_server.main()
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import logging
 import optparse
-import os
-import sys
 import time
 
 from local_renderer import LocalRenderer

@@ -8,13 +8,10 @@ import os
 import sys
 import unittest
 
-from appengine_blobstore import AppEngineBlobstore
-from appengine_url_fetcher import AppEngineUrlFetcher
 from appengine_wrappers import files
 from fake_fetchers import ConfigureFakeFetchers
 from github_file_system import GithubFileSystem
 from object_store_creator import ObjectStoreCreator
-import url_constants
 
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):

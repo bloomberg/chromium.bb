@@ -11,9 +11,8 @@ from appengine_wrappers import (
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from data_source_registry import CreateDataSources
-from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
-from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, SERVER2, STATIC_DOCS
+from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, STATIC_DOCS
 from file_system_util import CreateURLsFromPaths
 from future import Gettable, Future
 from github_file_system_provider import GithubFileSystemProvider

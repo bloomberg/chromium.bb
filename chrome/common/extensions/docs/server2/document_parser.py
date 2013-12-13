@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from HTMLParser import HTMLParser
-import logging
 
 
 class ParseResult(object):

@@ -7,7 +7,6 @@ import sys
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
-from object_store_creator import ObjectStoreCreator
 
 
 class _AsyncUncachedFuture(object):

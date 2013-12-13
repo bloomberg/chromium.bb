@@ -6,9 +6,8 @@ import json
 import logging
 from cStringIO import StringIO
 import posixpath
-import sys
 import traceback
-from zipfile import BadZipfile, ZipFile
+from zipfile import ZipFile
 
 import appengine_blobstore as blobstore
 from appengine_url_fetcher import AppEngineUrlFetcher

@@ -6,7 +6,6 @@
 from HTMLParser import HTMLParser
 import unittest
 
-from empty_dir_file_system import EmptyDirFileSystem
 from fake_fetchers import ConfigureFakeFetchers
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider

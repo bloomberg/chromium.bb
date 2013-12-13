@@ -7,10 +7,7 @@ import unittest
 from caching_rietveld_patcher import (CachingRietveldPatcher,
                                       _VERSION_CACHE_MAXAGE)
 from datetime import datetime
-from file_system import FileNotFoundError
-from future import Future
 from object_store_creator import ObjectStoreCreator
-from patcher import Patcher
 from test_patcher import TestPatcher
 
 _TEST_PATCH_VERSION = '1'

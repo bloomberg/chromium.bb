@@ -6,13 +6,10 @@
 from copy import deepcopy
 import unittest
 
-from file_system import FileSystem, FileNotFoundError, StatInfo
-from future import Future
+from file_system import FileNotFoundError, StatInfo
 from patched_file_system import PatchedFileSystem
-from patcher import Patcher
 from test_file_system import TestFileSystem
 from test_patcher import TestPatcher
-import url_constants
 
 _TEST_FS_DATA = {
   'dir1': {

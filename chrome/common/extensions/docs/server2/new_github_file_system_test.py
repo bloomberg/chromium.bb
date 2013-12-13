@@ -19,7 +19,6 @@ from local_file_system import LocalFileSystem
 from new_github_file_system import GithubFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
-from test_util import EnableLogging
 
 
 class _TestBundle(object):

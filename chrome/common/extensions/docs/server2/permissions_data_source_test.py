@@ -3,14 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import Mapping
 import json
 from operator import itemgetter
 import unittest
 
-from compiled_file_system import CompiledFileSystem
 from extensions_paths import EXTENSIONS
-from object_store_creator import ObjectStoreCreator
 from permissions_data_source import PermissionsDataSource
 from server_instance import ServerInstance
 from third_party.handlebar import Handlebar
