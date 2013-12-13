@@ -361,7 +361,8 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       sym_paths.append(failed_queue.get())
     if sym_paths:
       cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
-      upload_count += len(sym_paths)
+      if upload_count is not None:
+        upload_count += len(sym_paths)
       # Decrement the error count in case we recover in the second pass.
       assert bg_errors.value >= len(sym_paths), 'more failed files than errors?'
       bg_errors.value -= len(sym_paths)
