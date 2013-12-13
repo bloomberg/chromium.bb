@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "content/port/common/input_event_ack_state.h"
-#include "content/renderer/gpu/input_handler_manager_client.h"
+#include "content/renderer/input/input_handler_manager_client.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace blink {

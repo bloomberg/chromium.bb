@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_WRAPPER_H_
-#define CONTENT_RENDERER_GPU_INPUT_HANDLER_WRAPPER_H_
+#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_WRAPPER_H_
+#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_WRAPPER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/gpu/input_handler_manager.h"
-#include "content/renderer/gpu/input_handler_proxy.h"
-#include "content/renderer/gpu/input_handler_proxy_client.h"
+#include "content/renderer/input/input_handler_manager.h"
+#include "content/renderer/input/input_handler_proxy.h"
+#include "content/renderer/input/input_handler_proxy_client.h"
 
 namespace content {
 
@@ -49,4 +49,4 @@ class InputHandlerWrapper : public InputHandlerProxyClient {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_INPUT_HANDLER_WRAPPER_H_
+#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_WRAPPER_H_

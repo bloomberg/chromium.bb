@@ -1,6 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "content/renderer/input/input_event_filter.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,7 +13,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/gpu/input_event_filter.h"
 #include "ui/gfx/vector2d_f.h"
 
 using blink::WebInputEvent;

@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_INPUT_EVENT_FILTER_H_
-#define CONTENT_RENDERER_GPU_INPUT_EVENT_FILTER_H_
+#ifndef CONTENT_RENDERER_INPUT_INPUT_EVENT_FILTER_H_
+#define CONTENT_RENDERER_INPUT_INPUT_EVENT_FILTER_H_
 
 #include <queue>
 #include <set>
@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
-#include "content/renderer/gpu/input_handler_manager_client.h"
+#include "content/renderer/input/input_handler_manager_client.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -91,4 +91,4 @@ class CONTENT_EXPORT InputEventFilter
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_INPUT_EVENT_FILTER_H_
+#endif  // CONTENT_RENDERER_INPUT_INPUT_EVENT_FILTER_H_

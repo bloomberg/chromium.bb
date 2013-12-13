@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_CLIENT_H_
-#define CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_CLIENT_H_
+#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_CLIENT_H_
+#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"

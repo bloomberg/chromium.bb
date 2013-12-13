@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/input_handler_proxy.h"
+#include "content/renderer/input/input_handler_proxy.h"
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/swap_promise_monitor.h"
-#include "content/renderer/gpu/input_handler_proxy_client.h"
+#include "content/renderer/input/input_handler_proxy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"

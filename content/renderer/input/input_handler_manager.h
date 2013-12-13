@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
-#define CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
+#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_H_
+#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_H_
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
@@ -75,4 +75,4 @@ class InputHandlerManager {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
+#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_H_

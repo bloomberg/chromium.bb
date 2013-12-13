@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_CLIENT_H_
-#define CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_CLIENT_H_
+#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
+#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
 
 namespace blink {
 class WebGestureCurve;
@@ -40,4 +40,4 @@ class InputHandlerProxyClient {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_CLIENT_H_
+#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_

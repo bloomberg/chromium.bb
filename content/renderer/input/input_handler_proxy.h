@@ -1,19 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_H_
-#define CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_H_
+#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_H_
+#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_H_
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
+#include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 
@@ -92,4 +92,4 @@ class CONTENT_EXPORT InputHandlerProxy
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_H_
+#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_H_

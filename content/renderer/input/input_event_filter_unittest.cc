@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/gpu/input_event_filter.h"
+#include "content/renderer/input/input_event_filter.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
