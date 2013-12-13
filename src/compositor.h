@@ -375,6 +375,8 @@ weston_pointer_move(struct weston_pointer *pointer,
 void
 weston_pointer_set_default_grab(struct weston_pointer *pointer,
 		const struct weston_pointer_grab_interface *interface);
+void
+weston_pointer_verify(struct weston_pointer *pointer);
 
 struct weston_keyboard *
 weston_keyboard_create(void);

@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
 
 #include "../shared/os-compatibility.h"
 #include "compositor.h"
@@ -791,6 +792,28 @@ weston_touch_cancel_grab(struct weston_touch *touch)
 	touch->grab->interface->cancel(touch->grab);
 }
 
+static void
+weston_pointer_clamp_for_output(struct weston_pointer *pointer,
+				struct weston_output *output,
+				wl_fixed_t *fx, wl_fixed_t *fy)
+{
+	int x, y;
+
+	x = wl_fixed_to_int(*fx);
+	y = wl_fixed_to_int(*fy);
+
+	if (x < output->x)
+		*fx = wl_fixed_from_int(output->x);
+	else if (x >= output->x + output->width)
+		*fx = wl_fixed_from_int(output->x +
+					output->width - 1);
+	if (y < output->y)
+		*fy = wl_fixed_from_int(output->y);
+	else if (y >= output->y + output->height)
+		*fy = wl_fixed_from_int(output->y +
+					output->height - 1);
+}
+
 WL_EXPORT void
 weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t *fy)
 {
@@ -817,18 +840,8 @@ weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t 
 	if (!prev)
 		prev = pointer->seat->output;
 
-	if (prev && !valid) {
-		if (x < prev->x)
-			*fx = wl_fixed_from_int(prev->x);
-		else if (x >= prev->x + prev->width)
-			*fx = wl_fixed_from_int(prev->x +
-						prev->width - 1);
-		if (y < prev->y)
-			*fy = wl_fixed_from_int(prev->y);
-		else if (y >= prev->y + prev->height)
-			*fy = wl_fixed_from_int(prev->y +
-						prev->height - 1);
-	}
+	if (prev && !valid)
+		weston_pointer_clamp_for_output(pointer, prev, fx, fy);
 }
 
 /* Takes absolute values */
@@ -854,6 +867,45 @@ weston_pointer_move(struct weston_pointer *pointer, wl_fixed_t x, wl_fixed_t y)
 
 	pointer->grab->interface->focus(pointer->grab);
 	wl_signal_emit(&pointer->motion_signal, pointer);
+}
+
+/** Verify if the pointer is in a valid position and move it if it isn't.
+ */
+WL_EXPORT void
+weston_pointer_verify(struct weston_pointer *pointer)
+{
+	struct weston_compositor *ec = pointer->seat->compositor;
+	struct weston_output *output, *closest = NULL;
+	int x, y, distance, min = INT_MAX;
+	wl_fixed_t fx, fy;
+
+	x = wl_fixed_to_int(pointer->x);
+	y = wl_fixed_to_int(pointer->y);
+
+	wl_list_for_each(output, &ec->output_list, link) {
+		if (pixman_region32_contains_point(&output->region,
+						   x, y, NULL))
+			return;
+
+		/* Aproximante the distance from the pointer to the center of
+		 * the output. */
+		distance = abs(output->x + output->width / 2 - x) +
+			   abs(output->y + output->height / 2 - y);
+		if (distance < min) {
+			min = distance;
+			closest = output;
+		}
+	}
+
+	/* Nothing to do if there's no output left. */
+	if (!closest)
+		return;
+
+	fx = pointer->x;
+	fy = pointer->y;
+
+	weston_pointer_clamp_for_output(pointer, closest, &fx, &fy);
+	weston_pointer_move(pointer, fx, fy);
 }
 
 WL_EXPORT void
