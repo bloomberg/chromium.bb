@@ -91,7 +91,12 @@ class Host(cr.Plugin, cr.Plugin.Type):
           for key, value in trail:
             print '   ', key, '=', value
         exit(1)
-      output, _ = p.communicate()
+      try:
+        output, _ = p.communicate()
+      except KeyboardInterrupt:
+        p.terminate()
+        p.wait()
+        exit(1)
       if return_status:
         return p.returncode
       if p.returncode != 0:
