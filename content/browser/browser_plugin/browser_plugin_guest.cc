@@ -1076,11 +1076,13 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
 }
 
 void BrowserPluginGuest::RenderViewReady() {
+  RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
+  // The guest RenderView should always live in a guest process.
+  CHECK(rvh->GetProcess()->IsGuest());
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://crbug.com/158151).
   Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
-  RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   if (auto_size_enabled_)
     rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
   else
