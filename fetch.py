@@ -19,6 +19,7 @@ These parameters will be passed through to the recipe's main method.
 """
 
 import json
+import optparse
 import os
 import subprocess
 import sys
@@ -28,7 +29,6 @@ from distutils import spawn
 
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
-
 
 #################################################
 # Checkout class definitions.
@@ -43,9 +43,9 @@ class Checkout(object):
     |root|: the directory into which the checkout will be performed, as returned
         by the recipe. This is a relative path from |base|.
   """
-  def __init__(self, dryrun, spec, root):
+  def __init__(self, options, spec, root):
     self.base = os.getcwd()
-    self.dryrun = dryrun
+    self.options = options
     self.spec = spec
     self.root = root
 
@@ -60,7 +60,7 @@ class Checkout(object):
 
   def run(self, cmd, **kwargs):
     print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
-    if self.dryrun:
+    if self.options.dryrun:
       return 0
     return subprocess.check_call(cmd, **kwargs)
 
@@ -97,8 +97,8 @@ class SvnCheckout(Checkout):
 
 class GclientGitCheckout(GclientCheckout, GitCheckout):
 
-  def __init__(self, dryrun, spec, root):
-    super(GclientGitCheckout, self).__init__(dryrun, spec, root)
+  def __init__(self, options, spec, root):
+    super(GclientGitCheckout, self).__init__(options, spec, root)
     assert 'solutions' in self.spec
     keys = ['solutions', 'target_os', 'target_os_only']
     gclient_spec = '\n'.join('%s = %s' % (key, self.spec[key])
@@ -114,11 +114,14 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
 
     # Configure and do the gclient checkout.
     self.run_gclient('config', '--spec', self.spec['gclient_spec'])
-    self.run_gclient('sync')
+    if self.options.nohooks:
+      self.run_gclient('sync', '--nohooks')
+    else:
+      self.run_gclient('sync')
 
     # Configure git.
     wd = os.path.join(self.base, self.root)
-    if self.dryrun:
+    if self.options.dryrun:
       print 'cd %s' % wd
     self.run_git(
         'submodule', 'foreach',
@@ -129,8 +132,8 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
 
 class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
 
-  def __init__(self, dryrun, spec, root):
-    super(GclientGitSvnCheckout, self).__init__(dryrun, spec, root)
+  def __init__(self, options, spec, root):
+    super(GclientGitSvnCheckout, self).__init__(options, spec, root)
     assert 'svn_url' in self.spec
     assert 'svn_branch' in self.spec
     assert 'svn_ref' in self.spec
@@ -154,7 +157,7 @@ class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
       if real_path != self.root:
         real_path = os.path.join(self.root, real_path)
       wd = os.path.join(self.base, real_path)
-      if self.dryrun:
+      if self.options.dryrun:
         print 'cd %s' % wd
       self.run_git('svn', 'init', '--prefix=origin/', '-T',
                    svn_spec['svn_branch'], svn_spec['svn_url'], cwd=wd)
@@ -173,12 +176,12 @@ CHECKOUT_TYPE_MAP = {
 }
 
 
-def CheckoutFactory(type_name, dryrun, spec, root):
+def CheckoutFactory(type_name, options, spec, root):
   """Factory to build Checkout class instances."""
   class_ = CHECKOUT_TYPE_MAP.get(type_name)
   if not class_:
     raise KeyError('unrecognized checkout type: %s' % type_name)
-  return class_(dryrun, spec, root)
+  return class_(options, spec, root)
 
 
 #################################################
@@ -191,7 +194,16 @@ def usage(msg=None):
 
   print (
 """
-usage: %s [-n|--dry-run] <recipe> [--property=value [--property2=value2 ...]]
+usage: %s [options] <recipe> [--property=value [--property2=value2 ...]]
+
+This script can be used to download the Chromium sources. See
+http://www.chromium.org/developers/how-tos/get-the-code
+for full usage instructions.
+
+Valid options:
+   -h, --help, help   Print this message.
+   --nohooks          Don't run hooks after checkout.
+   -n, --dryrun       Don't run commands, only print them.
 """ % os.path.basename(sys.argv[0]))
   sys.exit(bool(msg))
 
@@ -204,9 +216,18 @@ def handle_args(argv):
     usage()
 
   dryrun = False
-  if argv[1] in ('-n', '--dry-run'):
-    dryrun = True
+  nohooks = False
+  while len(argv) >= 2:
+    arg = argv[1]
+    if not arg.startswith('-'):
+      break
     argv.pop(1)
+    if arg in ('-n', '--dry-run'):
+      dryrun = True
+    elif arg == '--nohooks':
+      nohooks = True
+    else:
+      usage('Invalid option %s.' % arg)
 
   def looks_like_arg(arg):
     return arg.startswith('--') and arg.count('=') == 1
@@ -217,7 +238,7 @@ def handle_args(argv):
 
   recipe = argv[1]
   props = argv[2:]
-  return dryrun, recipe, props
+  return optparse.Values({'dryrun':dryrun, 'nohooks':nohooks }), recipe, props
 
 
 def run_recipe_fetch(recipe, props, aliased=False):
@@ -242,11 +263,11 @@ def run_recipe_fetch(recipe, props, aliased=False):
   return spec, root
 
 
-def run(dryrun, spec, root):
+def run(options, spec, root):
   """Perform a checkout with the given type and configuration.
 
     Args:
-      dryrun: if True, don't actually execute the commands
+      options: Options instance.
       spec: Checkout configuration returned by the the recipe's fetch_spec
           method (checkout type, repository url, etc.).
       root: The directory into which the repo expects to be checkout out.
@@ -255,7 +276,7 @@ def run(dryrun, spec, root):
   checkout_type = spec['type']
   checkout_spec = spec['%s_spec' % checkout_type]
   try:
-    checkout = CheckoutFactory(checkout_type, dryrun, checkout_spec, root)
+    checkout = CheckoutFactory(checkout_type, options, checkout_spec, root)
   except KeyError:
     return 1
   if checkout.exists():
@@ -269,9 +290,9 @@ def run(dryrun, spec, root):
 
 
 def main():
-  dryrun, recipe, props = handle_args(sys.argv)
+  options, recipe, props = handle_args(sys.argv)
   spec, root = run_recipe_fetch(recipe, props)
-  return run(dryrun, spec, root)
+  return run(options, spec, root)
 
 
 if __name__ == '__main__':
