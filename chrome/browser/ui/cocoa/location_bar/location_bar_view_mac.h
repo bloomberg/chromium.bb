@@ -196,6 +196,9 @@ class LocationBarViewMac : public LocationBar,
   // changed.
   bool UpdateMicSearchDecorationVisibility();
 
+  // Checks if an extension has specified the bookmark star be hidden.
+  bool IsBookmarkStarHiddenByExtension();
+
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   AutocompleteTextField* field_;  // owned by tab controller

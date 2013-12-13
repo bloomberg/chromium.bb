@@ -20,6 +20,8 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,6 +56,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -114,9 +117,12 @@ LocationBarViewMac::LocationBarViewMac(
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       content::NotificationService::AllSources());
+  content::Source<Profile> profile_source = content::Source<Profile>(profile_);
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      content::Source<Profile>(browser_->profile()));
+      profile_source);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED, profile_source);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED, profile_source);
 
   edit_bookmarks_enabled_.Init(
       prefs::kEditBookmarksEnabled,
@@ -578,6 +584,11 @@ void LocationBarViewMac::Observe(int type,
       break;
     }
 
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+      Update(NULL);
+      break;
+
     default:
       NOTREACHED() << "Unexpected notification";
       break;
@@ -690,7 +701,8 @@ bool LocationBarViewMac::IsStarEnabled() {
   return [field_ isEditable] &&
          browser_defaults::bookmarks_enabled &&
          !GetToolbarModel()->input_in_progress() &&
-         edit_bookmarks_enabled_.GetValue();
+         edit_bookmarks_enabled_.GetValue() &&
+         !IsBookmarkStarHiddenByExtension();
 }
 
 void LocationBarViewMac::UpdateZoomDecoration() {
@@ -712,4 +724,24 @@ bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
     return false;
   mic_search_decoration_->SetVisible(is_visible);
   return true;
+}
+
+bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() {
+  if (!extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
+    return false;
+
+  const ExtensionSet* extension_set =
+      extensions::ExtensionSystem::GetForBrowserContext(profile_)
+          ->extension_service()->extensions();
+  for (ExtensionSet::const_iterator i = extension_set->begin();
+       i != extension_set->end(); ++i) {
+    const extensions::SettingsOverrides* settings_overrides =
+        extensions::SettingsOverrides::Get(i->get());
+    if (settings_overrides &&
+        settings_overrides->RequiresHideBookmarkButtonPermission()) {
+      return true;
+    }
+  }
+
+  return false;
 }
