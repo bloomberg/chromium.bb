@@ -22,6 +22,16 @@ import gyp.MSVSUtil as MSVSUtil
 import gyp.MSVSVersion as MSVSVersion
 from gyp.common import GypError
 
+# TODO: Remove once bots are on 2.7, http://crbug.com/241769
+def _import_OrderedDict():
+  import collections
+  try:
+    return collections.OrderedDict
+  except AttributeError:
+    import ordered_dict
+    return ordered_dict.OrderedDict
+OrderedDict = _import_OrderedDict()
+
 
 # Regular expression for validating Visual Studio GUIDs.  If the GUID
 # contains lowercase hex letters, MSVS will be fine. However,
@@ -220,7 +230,7 @@ def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None,
   if not prefix: prefix = []
   result = []
   excluded_result = []
-  folders = collections.OrderedDict()
+  folders = OrderedDict()
   # Gather files into the final result, excluded, or folders.
   for s in sources:
     if len(s) == 1:
