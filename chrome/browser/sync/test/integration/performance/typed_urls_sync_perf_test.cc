@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "sync/sessions/sync_session_context.h"

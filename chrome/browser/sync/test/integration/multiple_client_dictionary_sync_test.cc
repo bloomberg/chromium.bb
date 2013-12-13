@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/spellcheck_common.h"
 

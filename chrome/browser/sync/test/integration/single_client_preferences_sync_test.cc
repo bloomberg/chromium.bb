@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/common/pref_names.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 using preferences_helper::BooleanPrefMatches;

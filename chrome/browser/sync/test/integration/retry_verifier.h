@@ -1,22 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
-#define CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
+#ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_RETRY_VERIFIER_H_
+#define CHROME_BROWSER_SYNC_TEST_INTEGRATION_RETRY_VERIFIER_H_
 
 #include "base/time/time.h"
-
-// TODO(akalin): Move this to somewhere in sync/ and make
-// sync/engine/polling_constants.h private.
 
 namespace syncer {
 namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
 }  // namespace syncer
-
-namespace browser_sync {
 
 // The minimum and maximum wait times for a retry. The actual retry would take
 // place somewhere in this range. The algorithm that calculates the retry wait
@@ -51,6 +46,4 @@ class RetryVerifier {
   DISALLOW_COPY_AND_ASSIGN(RetryVerifier);
 };
 
-}  // namespace browser_sync
-
-#endif  // CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
+#endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_RETRY_VERIFIER_H_

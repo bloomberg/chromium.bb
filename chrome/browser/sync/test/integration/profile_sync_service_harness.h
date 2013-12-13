@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_HARNESS_H_
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_HARNESS_H_
+#ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_
+#define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/sync/retry_verifier.h"
+#include "chrome/browser/sync/test/integration/retry_verifier.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class Profile;
@@ -380,7 +380,7 @@ class ProfileSyncServiceHarness
 
   // Keeps track of the number of attempts at exponential backoff and its
   // related bookkeeping information for verification.
-  browser_sync::RetryVerifier retry_verifier_;
+  RetryVerifier retry_verifier_;
 
   // Flag set to true when we're waiting for a status change to happen. Used to
   // avoid triggering internal state machine logic on unexpected sync observer
@@ -390,4 +390,4 @@ class ProfileSyncServiceHarness
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_HARNESS_H_
+#endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_

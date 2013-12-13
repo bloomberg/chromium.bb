@@ -1,16 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/retry_verifier.h"
+#include "chrome/browser/sync/test/integration/retry_verifier.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-
-namespace browser_sync {
 
 namespace {
 // Given the current delay calculate the minimum and maximum wait times for
@@ -110,4 +108,4 @@ void RetryVerifier::VerifyRetryInterval(
     return;
   }
 }
-}  // namespace browser_sync
+

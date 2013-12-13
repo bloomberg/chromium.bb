@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/password_form_data.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 
