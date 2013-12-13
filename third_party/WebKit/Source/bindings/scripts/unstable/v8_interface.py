@@ -362,4 +362,6 @@ def interface_length(interface):
     if not interface.constructors:
         return 0
     constructor = interface.constructors[0]  # FIXME: support overloading
-    return len(constructor.arguments)  # FIXME: support optional arguments
+    return len([argument
+                for argument in constructor.arguments
+                if not argument.is_optional])

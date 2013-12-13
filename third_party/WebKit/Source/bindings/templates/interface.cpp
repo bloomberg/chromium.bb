@@ -136,11 +136,9 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if constructor_arguments %}
-    {# FIXME: support optional arguments #}
-    {% set number_of_arguments = constructor_arguments|length %}
     {# FIXME: remove this UNLIKELY: constructors are heavy, so no difference. #}
-    if (UNLIKELY(info.Length() < {{number_of_arguments}})) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{number_of_arguments}}, info.Length())), info.GetIsolate());
+    if (UNLIKELY(info.Length() < {{interface_length}})) {
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{interface_length}}, info.Length())), info.GetIsolate());
         return;
     }
     {% endif %}

@@ -88,9 +88,14 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     V8TRYCATCH_VOID(Vector<String>, sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
+    V8TRYCATCH_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[5], info.GetIsolate()));
+    if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "parameter 6 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
+        return;
+    }
     ExecutionContext* context = getExecutionContext();
     Document& document = *toDocument(getExecutionContext());
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;
