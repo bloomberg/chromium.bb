@@ -34,7 +34,6 @@ using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::AuthorizeAppRequest;
 using google_apis::CancelCallback;
-using google_apis::CopyHostedDocumentRequest;
 using google_apis::CreateDirectoryRequest;
 using google_apis::DeleteResourceRequest;
 using google_apis::DownloadActionCallback;
@@ -427,22 +426,6 @@ CancelCallback GDataWapiService::CopyResource(
   // Instead, client code should download the file (if needed) and upload it.
   NOTREACHED();
   return CancelCallback();
-}
-
-CancelCallback GDataWapiService::CopyHostedDocument(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  return sender_->StartRequestWithRetry(
-      new CopyHostedDocumentRequest(sender_.get(),
-                                    url_generator_,
-                                    base::Bind(&ParseResourceEntryAndRun,
-                                               callback),
-                                    resource_id,
-                                    new_title));
 }
 
 CancelCallback GDataWapiService::UpdateResource(

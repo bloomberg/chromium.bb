@@ -621,22 +621,6 @@ CancelCallback DriveAPIService::CopyResource(
   return sender_->StartRequestWithRetry(request);
 }
 
-CancelCallback DriveAPIService::CopyHostedDocument(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FilesCopyRequest* request = new FilesCopyRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
-  request->set_file_id(resource_id);
-  request->set_title(new_title);
-  request->set_fields(kFileResourceFields);
-  return sender_->StartRequestWithRetry(request);
-}
-
 CancelCallback DriveAPIService::UpdateResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,

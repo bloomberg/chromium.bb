@@ -466,27 +466,6 @@ void JobScheduler::CopyResource(
   StartJob(new_job);
 }
 
-void JobScheduler::CopyHostedDocument(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const google_apis::GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  JobEntry* new_job = CreateNewJob(TYPE_COPY_HOSTED_DOCUMENT);
-  new_job->task = base::Bind(
-      &DriveServiceInterface::CopyHostedDocument,
-      base::Unretained(drive_service_),
-      resource_id,
-      new_title,
-      base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
-  new_job->abort_callback = CreateErrorRunCallback(callback);
-  StartJob(new_job);
-}
-
 void JobScheduler::UpdateResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
@@ -1139,7 +1118,6 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_GET_SHARE_URL:
     case TYPE_TRASH_RESOURCE:
     case TYPE_COPY_RESOURCE:
-    case TYPE_COPY_HOSTED_DOCUMENT:
     case TYPE_UPDATE_RESOURCE:
     case TYPE_RENAME_RESOURCE:
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:

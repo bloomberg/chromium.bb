@@ -1202,67 +1202,6 @@ TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
   EXPECT_FALSE(resource_entry);
 }
 
-TEST_F(FakeDriveServiceTest, CopyHostedDocument_Existing) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
-
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
-
-  const std::string kResourceId = "document:5_document_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.CopyHostedDocument(
-      kResourceId,
-      "new title",
-      test_util::CreateCopyResultCallback(&error, &resource_entry));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_entry);
-  // The copied entry should have the new resource ID and the title.
-  EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
-  EXPECT_EQ("new title", resource_entry->title());
-  // Should be incremented as a new hosted document was created.
-  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
-  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
-}
-
-TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonExisting) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
-
-  const std::string kResourceId = "document:nonexisting_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.CopyHostedDocument(
-      kResourceId,
-      "new title",
-      test_util::CreateCopyResultCallback(&error, &resource_entry));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_NOT_FOUND, error);
-}
-
-TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
-  fake_service_.set_offline(true);
-
-  const std::string kResourceId = "document:5_document_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.CopyHostedDocument(
-      kResourceId,
-      "new title",
-      test_util::CreateCopyResultCallback(&error, &resource_entry));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
-  EXPECT_FALSE(resource_entry);
-}
-
 TEST_F(FakeDriveServiceTest, UpdateResource) {
   const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
   const base::Time::Exploded kViewedDate = {2013, 8, 1, 20, 16, 00, 14, 234};

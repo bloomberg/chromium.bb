@@ -216,36 +216,6 @@ class CreateDirectoryRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
 
-//============================ CopyHostedDocumentRequest =====================
-
-// This class performs the request for making a copy of a hosted document.
-// Note that this function cannot be used to copy regular files, as it's not
-// supported by WAPI.
-class CopyHostedDocumentRequest : public GetDataRequest {
- public:
-  // |callback| must not be null.
-  CopyHostedDocumentRequest(RequestSender* sender,
-                            const GDataWapiUrlGenerator& url_generator,
-                            const GetDataCallback& callback,
-                            const std::string& resource_id,
-                            const std::string& new_title);
-  virtual ~CopyHostedDocumentRequest();
-
- protected:
-  // UrlFetchRequestBase overrides.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
-  virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
-
- private:
-  const GDataWapiUrlGenerator url_generator_;
-  const std::string resource_id_;
-  const std::string new_title_;
-
-  DISALLOW_COPY_AND_ASSIGN(CopyHostedDocumentRequest);
-};
-
 //=========================== RenameResourceRequest ==========================
 
 // This class performs the request for renaming a document/file/directory.

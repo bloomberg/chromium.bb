@@ -123,11 +123,6 @@ CancelCallback DummyDriveService::CopyResource(
     const base::Time& last_modified,
     const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::CopyHostedDocument(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const GetResourceEntryCallback& callback) { return CancelCallback(); }
-
 CancelCallback DummyDriveService::UpdateResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,

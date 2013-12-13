@@ -827,17 +827,6 @@ CancelCallback FakeDriveService::CopyResource(
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::CopyHostedDocument(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  return CopyResource(
-      resource_id, std::string(), new_title, base::Time(), callback);
-}
-
 CancelCallback FakeDriveService::UpdateResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,

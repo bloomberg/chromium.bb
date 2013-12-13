@@ -325,51 +325,6 @@ bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//============================ CopyHostedDocumentRequest =====================
-
-CopyHostedDocumentRequest::CopyHostedDocumentRequest(
-    RequestSender* sender,
-    const GDataWapiUrlGenerator& url_generator,
-    const GetDataCallback& callback,
-    const std::string& resource_id,
-    const std::string& new_title)
-    : GetDataRequest(sender, callback),
-      url_generator_(url_generator),
-      resource_id_(resource_id),
-      new_title_(new_title) {
-  DCHECK(!callback.is_null());
-}
-
-CopyHostedDocumentRequest::~CopyHostedDocumentRequest() {}
-
-URLFetcher::RequestType CopyHostedDocumentRequest::GetRequestType() const {
-  return URLFetcher::POST;
-}
-
-GURL CopyHostedDocumentRequest::GetURL() const {
-  return url_generator_.GenerateResourceListRootUrl();
-}
-
-bool CopyHostedDocumentRequest::GetContentData(
-    std::string* upload_content_type,
-    std::string* upload_content) {
-  upload_content_type->assign("application/atom+xml");
-  XmlWriter xml_writer;
-  xml_writer.StartWriting();
-  xml_writer.StartElement("entry");
-  xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
-
-  xml_writer.WriteElement("id", resource_id_);
-  xml_writer.WriteElement("title", new_title_);
-
-  xml_writer.EndElement();  // Ends "entry" element.
-  xml_writer.StopWriting();
-  upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "CopyHostedDocumentRequest data: " << *upload_content_type
-           << ", [" << *upload_content << "]";
-  return true;
-}
-
 //=========================== RenameResourceRequest ==========================
 
 RenameResourceRequest::RenameResourceRequest(

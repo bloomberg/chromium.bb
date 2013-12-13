@@ -228,19 +228,6 @@ class DriveServiceInterface {
       const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
-  // Makes a copy of a hosted document identified by its |resource_id|.
-  // The copy is named as the UTF-8 encoded |new_title| and is not added to any
-  // collection. Use AddResourceToDirectory() to add the copy to a collection
-  // when needed. Upon completion, invokes |callback| with results on the
-  // calling thread.
-  // |callback| must not be null.
-  // TODO(hidehiko): After the migration to Drive API v2, remove this method,
-  // because we can use CopyResource instead.
-  virtual google_apis::CancelCallback CopyHostedDocument(
-      const std::string& resource_id,
-      const std::string& new_title,
-      const google_apis::GetResourceEntryCallback& callback) = 0;
-
   // Updates a resource with |resource_id| to the directory of
   // |parent_resource_id| with renaming to |new_title|.
   // If |last_modified| or |last_accessed| is not null, the modified/accessed

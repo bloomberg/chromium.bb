@@ -696,41 +696,6 @@ TEST_F(GDataWapiRequestsTest, CreateDirectoryRequest) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiRequestsTest, CopyHostedDocumentRequest) {
-  GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
-
-  // Copy a document with a new name "New Document".
-  {
-    base::RunLoop run_loop;
-    CopyHostedDocumentRequest* request = new CopyHostedDocumentRequest(
-        request_sender_.get(),
-        *url_generator_,
-        test_util::CreateQuitCallback(
-            &run_loop,
-            test_util::CreateCopyResultCallback(&result_code, &result_data)),
-        "document:5_document_resource_id",  // source resource ID
-        "New Document");
-
-    request_sender_->StartRequestWithRetry(request);
-    run_loop.Run();
-  }
-
-  EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true",
-            http_request_.relative_url);
-  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
-
-  EXPECT_TRUE(http_request_.has_content);
-  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
-            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
-            " <id>document:5_document_resource_id</id>\n"
-            " <title>New Document</title>\n"
-            "</entry>\n",
-            http_request_.content);
-}
-
 TEST_F(GDataWapiRequestsTest, RenameResourceRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
