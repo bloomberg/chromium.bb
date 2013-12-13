@@ -114,11 +114,6 @@ PASS selectedDayCells() is ""
 PASS highlightedValue() is "1999-12-26"
 PASS highlightedDayCells() is "1999-12-26"
 press enter
-PASS currentMonth() is "1999-12"
-PASS selectedValue() is "1999-12-26"
-PASS selectedDayCells() is "1999-12-26"
-PASS highlightedValue() is "1999-12-26"
-PASS highlightedDayCells() is "1999-12-26"
 PASS document.getElementById("date").value is "1999-12-26"
 Check if tabbing works.
 PASS focusedElement() is ".list-view calendar-table-view"
@@ -158,7 +153,6 @@ PASS highlightedValue() is "1999-12-26"
 PASS highlightedDayCells() is ""
 focus calendar table
 press t
-PASS isCalendarTableScrollingWithAnimation() is true
 PASS testToday() || testToday() is true
 press esc
 PASS document.getElementById("mock-page-popup") is null

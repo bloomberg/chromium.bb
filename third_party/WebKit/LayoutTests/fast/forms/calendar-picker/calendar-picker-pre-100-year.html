@@ -18,6 +18,7 @@ openPicker(document.getElementById('date'), finishTest);
 function finishTest() {
     var daysContainer = popupWindow.document.getElementsByClassName("days-area")[0];
     eventSender.keyDown('rightArrow');
+    removeCommitDelay();
     eventSender.keyDown('\n');
     shouldBeEqualToString('document.getElementById("date").value', '0002-02-03');
     finishJSTest();

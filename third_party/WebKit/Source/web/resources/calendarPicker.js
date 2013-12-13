@@ -878,6 +878,7 @@ EventEmitter.prototype.dispatchEvent = function(type) {
     var callbacksForType = this._callbacks[type];
     if (!callbacksForType)
         return;
+    callbacksForType = callbacksForType.slice(0);
     for (var i = 0; i < callbacksForType.length; ++i) {
         callbacksForType[i].apply(this, Array.prototype.slice.call(arguments, 1));
     }
@@ -3650,6 +3651,7 @@ CalendarPicker.BorderWidth = 1;
 CalendarPicker.ClassNameCalendarPicker = "calendar-picker";
 CalendarPicker.ClassNamePreparing = "preparing";
 CalendarPicker.EventTypeCurrentMonthChanged = "currentMonthChanged";
+CalendarPicker.commitDelayMs = 100;
 
 /**
  * @param {!Event} event
@@ -3792,7 +3794,7 @@ CalendarPicker.prototype.lastVisibleDay = function() {
  */
 CalendarPicker.prototype.selectRangeContainingDay = function(day) {
     var selection = day ? this._dateTypeConstructor.createFromDay(day) : null;
-    this.setSelection(selection);
+    this.setSelectionAndCommit(selection);
 };
 
 /**
@@ -3804,6 +3806,7 @@ CalendarPicker.prototype.highlightRangeContainingDay = function(day) {
 };
 
 /**
+ * Select the specified date.
  * @param {?DateType} dayOrWeekOrMonth
  */
 CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
@@ -3832,7 +3835,29 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
         return;
     this._selection = dayOrWeekOrMonth;
     this.calendarTableView.setNeedsUpdateCells(true);
-    window.pagePopupController.setValue(this._selection.toString());
+};
+
+/**
+ * Select the specified date, commit it, and close the popup.
+ * @param {?DateType} dayOrWeekOrMonth
+ */
+CalendarPicker.prototype.setSelectionAndCommit = function(dayOrWeekOrMonth) {
+    this.setSelection(dayOrWeekOrMonth);
+    // Redraw the widget immidiately, and wait for some time to give feedback to
+    // a user.
+    this.element.offsetLeft;
+    var value = this._selection.toString();
+    if (CalendarPicker.commitDelayMs == 0) {
+        // For testing.
+        window.pagePopupController.setValueAndClosePopup(0, value);
+    } else if (CalendarPicker.commitDelayMs < 0) {
+        // For testing.
+        window.pagePopupController.setValue(value);
+    } else {
+        setTimeout(function() {
+            window.pagePopupController.setValueAndClosePopup(0, value);
+        }, CalendarPicker.commitDelayMs);
+    }
 };
 
 /**
@@ -3929,7 +3954,7 @@ CalendarPicker.prototype.onCalendarTableKeyDown = function(event) {
         } else if (key == "Down") {
             eventHandled = this._moveHighlight(this._highlight.next(this.type === "date" ? DaysPerWeek : 1));
         } else if (key == "Enter") {
-            this.setSelection(this._highlight);
+            this.setSelectionAndCommit(this._highlight);
         }
     } else if (key == "Left" || key == "Up" || key == "Right" || key == "Down") {
         // Highlight range near the middle.

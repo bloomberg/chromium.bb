@@ -159,3 +159,11 @@ function isCalendarTableScrollingWithAnimation() {
         return false;
     return animator.isRunning();
 }
+
+function removeCommitDelay() {
+    popupWindow.CalendarPicker.commitDelayMs = 0;
+}
+
+function setNoCloseOnCommit() {
+    popupWindow.CalendarPicker.commitDelayMs = -1;
+}

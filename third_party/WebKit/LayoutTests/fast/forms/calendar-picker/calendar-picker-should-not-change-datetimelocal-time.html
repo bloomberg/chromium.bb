@@ -24,6 +24,7 @@ openPicker(input, function() {
     eventSender.keyDown('rightArrow');
     shouldBeEqualToString('highlightedValue()', '1999-08-01');
 
+    removeCommitDelay();
     eventSender.keyDown('\n');
     shouldBeEqualToString('selectedValue()', '1999-08-01');
 

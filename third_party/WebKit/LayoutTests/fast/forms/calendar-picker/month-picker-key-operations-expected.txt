@@ -148,7 +148,6 @@ PASS highlightedValue() is "2000-02"
 PASS highlightedDayCells() is ""
 focus calendar table
 press t
-PASS isCalendarTableScrollingWithAnimation() is true
 PASS testToday() || testToday() is true
 press esc
 PASS document.getElementById("mock-page-popup") is null

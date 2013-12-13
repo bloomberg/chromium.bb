@@ -161,14 +161,15 @@ function test1() {
     shouldBeEqualToString('highlightedDayCells()', '1999-12-26');
 
     debug("press enter");
+    removeCommitDelay();
     eventSender.keyDown('\n');
-    shouldBeEqualToString('currentMonth()', '1999-12');
-    shouldBeEqualToString('selectedValue()', '1999-12-26');
-    shouldBeEqualToString('selectedDayCells()', '1999-12-26');
-    shouldBeEqualToString('highlightedValue()', '1999-12-26');
-    shouldBeEqualToString('highlightedDayCells()', '1999-12-26');
     shouldBeEqualToString('document.getElementById("date").value', '1999-12-26');
+    waitUntilClosing(function() {
+        openPicker(document.getElementById("date"), test2);
+    });
+}
 
+function test2() {
     debug('Check if tabbing works.');
     shouldBeEqualToString('focusedElement()', '.list-view calendar-table-view');
     eventSender.keyDown('\t', ['shiftKey']);
@@ -237,6 +238,7 @@ function test1() {
     debug("focus calendar table");
     popupWindow.global.picker.calendarTableView.element.focus();
 
+    setNoCloseOnCommit();
     // Test twice in case midnight.
     debug("press t");
     shouldBeTrue('testToday() || testToday()');
@@ -254,7 +256,7 @@ function test2AfterClosing() {
 
 function testToday() {
     eventSender.keyDown('t');
-    shouldBeTrue('isCalendarTableScrollingWithAnimation()');
+    shouldBeTrueQuiet('isCalendarTableScrollingWithAnimation()');
     var now = new Date();
     var expectedDate = serializeDate(now.getFullYear(), now.getMonth(), now.getDate());
     var expectedMonth = (new popupWindow.Month(now.getFullYear(), now.getMonth())).toString();

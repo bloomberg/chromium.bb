@@ -29,12 +29,13 @@ openPicker(datetimelocal1, test1);
 
 function test1() {
     debug('Choosing a new date value from the calendar picker. No events should be dispatched because the hour field and the minutes field are empty.');
+    removeCommitDelay();
+    eventSender.keyDown('leftArrow');
     eventSender.keyDown('\n');
     shouldBeEqualToString('datetimelocal1.value', '');
     shouldBeUndefined('eventsCounter.input');
     shouldBeUndefined('eventsCounter.change');
 
-    eventSender.keyDown('\x1B');
     waitUntilClosing(test1AfterClosing);
 }
 
@@ -46,6 +47,7 @@ function test1AfterClosing() {
 function test2() {
     debug('Choosing a new value from the calendar picker. "Input" and "change" events should be dispatched in this order.');
     eventSender.keyDown('rightArrow');
+    removeCommitDelay();
     eventSender.keyDown('\n');
     shouldBeEqualToString('datetimelocal1.value', '2013-01-22T17:49');
     shouldBe('eventsCounter.input', '1');

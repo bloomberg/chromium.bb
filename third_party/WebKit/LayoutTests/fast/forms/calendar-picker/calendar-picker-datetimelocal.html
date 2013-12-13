@@ -24,8 +24,8 @@ function test() {
     eventSender.keyDown('rightArrow');
     shouldBeEqualToString('highlightedValue()', '2012-01-01');
 
+    removeCommitDelay();
     eventSender.keyDown('\n');
-    shouldBeEqualToString('selectedValue()', '2012-01-01');
     shouldBeEqualToString('document.getElementById("datetimelocal").value', '2012-01-01T12:53:45');
 
     finishJSTest();
