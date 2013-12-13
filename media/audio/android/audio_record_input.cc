@@ -24,7 +24,8 @@ AudioRecordInputStream::AudioRecordInputStream(
           params.sample_rate(),
           params.channels(),
           params.bits_per_sample(),
-          params.GetBytesPerBuffer()));
+          params.GetBytesPerBuffer(),
+          params.effects() & AudioParameters::ECHO_CANCELLER));
 }
 
 AudioRecordInputStream::~AudioRecordInputStream() {

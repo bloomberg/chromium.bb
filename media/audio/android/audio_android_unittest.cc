@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/build_info.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -95,7 +96,9 @@ std::ostream& operator<<(std::ostream& os, const AudioParameters& params) {
      << "bytes per buffer: " << params.GetBytesPerBuffer() << endl
      << "bytes per second: " << params.GetBytesPerSecond() << endl
      << "bytes per frame: " << params.GetBytesPerFrame() << endl
-     << "frame size in ms: " << ExpectedTimeBetweenCallbacks(params);
+     << "chunk size in ms: " << ExpectedTimeBetweenCallbacks(params) << endl
+     << "echo_canceller: "
+     << (params.effects() & AudioParameters::ECHO_CANCELLER);
   return os;
 }
 
@@ -383,10 +386,10 @@ class FullDuplexAudioSinkSource
   DISALLOW_COPY_AND_ASSIGN(FullDuplexAudioSinkSource);
 };
 
-// Test fixture class.
-class AudioAndroidTest : public testing::Test {
+// Test fixture class for tests which only exercise the output path.
+class AudioAndroidOutputTest : public testing::Test {
  public:
-  AudioAndroidTest() {}
+  AudioAndroidOutputTest() {}
 
  protected:
   virtual void SetUp() {
@@ -399,11 +402,6 @@ class AudioAndroidTest : public testing::Test {
   AudioManager* audio_manager() { return audio_manager_.get(); }
   base::MessageLoopForUI* loop() { return loop_.get(); }
 
-  AudioParameters GetDefaultInputStreamParameters() {
-    return audio_manager()->GetInputStreamParameters(
-        AudioManagerBase::kDefaultDeviceId);
-  }
-
   AudioParameters GetDefaultOutputStreamParameters() {
     return audio_manager()->GetDefaultOutputStreamParameters();
   }
@@ -411,46 +409,6 @@ class AudioAndroidTest : public testing::Test {
   double AverageTimeBetweenCallbacks(int num_callbacks) const {
     return ((end_time_ - start_time_) / static_cast<double>(num_callbacks - 1))
         .InMillisecondsF();
-  }
-
-  void StartInputStreamCallbacks(const AudioParameters& params) {
-    double expected_time_between_callbacks_ms =
-        ExpectedTimeBetweenCallbacks(params);
-    const int num_callbacks =
-        (kCallbackTestTimeMs / expected_time_between_callbacks_ms);
-    AudioInputStream* stream = audio_manager()->MakeAudioInputStream(
-        params, AudioManagerBase::kDefaultDeviceId);
-    EXPECT_TRUE(stream);
-
-    int count = 0;
-    MockAudioInputCallback sink;
-
-    EXPECT_CALL(sink,
-                OnData(stream, NotNull(), params.GetBytesPerBuffer(), _, _))
-        .Times(AtLeast(num_callbacks))
-        .WillRepeatedly(
-             CheckCountAndPostQuitTask(&count, num_callbacks, loop()));
-    EXPECT_CALL(sink, OnError(stream)).Times(0);
-    EXPECT_CALL(sink, OnClose(stream)).Times(1);
-
-    EXPECT_TRUE(stream->Open());
-    stream->Start(&sink);
-    start_time_ = base::TimeTicks::Now();
-    loop()->Run();
-    end_time_ = base::TimeTicks::Now();
-    stream->Stop();
-    stream->Close();
-
-    double average_time_between_callbacks_ms =
-        AverageTimeBetweenCallbacks(num_callbacks);
-    VLOG(0) << "expected time between callbacks: "
-            << expected_time_between_callbacks_ms << " ms";
-    VLOG(0) << "average time between callbacks: "
-            << average_time_between_callbacks_ms << " ms";
-    EXPECT_GE(average_time_between_callbacks_ms,
-              0.70 * expected_time_between_callbacks_ms);
-    EXPECT_LE(average_time_between_callbacks_ms,
-              1.30 * expected_time_between_callbacks_ms);
   }
 
   void StartOutputStreamCallbacks(const AudioParameters& params) {
@@ -498,25 +456,110 @@ class AudioAndroidTest : public testing::Test {
   base::TimeTicks start_time_;
   base::TimeTicks end_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioAndroidTest);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AudioAndroidOutputTest);
+};
+
+// AudioRecordInputStream should only be created on Jelly Bean and higher. This
+// ensures we only test against the AudioRecord path when that is satisfied.
+std::vector<bool> RunAudioRecordInputPathTests() {
+  std::vector<bool> tests;
+  tests.push_back(false);
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 16)
+    tests.push_back(true);
+  return tests;
+}
+
+// Test fixture class for tests which exercise the input path, or both input and
+// output paths. It is value-parameterized to test against both the Java
+// AudioRecord (when true) and native OpenSLES (when false) input paths.
+class AudioAndroidInputTest : public AudioAndroidOutputTest,
+                              public testing::WithParamInterface<bool> {
+ public:
+  AudioAndroidInputTest() {}
+
+ protected:
+  AudioParameters GetInputStreamParameters() {
+    AudioParameters input_params = audio_manager()->GetInputStreamParameters(
+        AudioManagerBase::kDefaultDeviceId);
+    // Override the platform effects setting to use the AudioRecord or OpenSLES
+    // path as requested.
+    int effects = GetParam() ? AudioParameters::ECHO_CANCELLER :
+                               AudioParameters::NO_EFFECTS;
+    AudioParameters params(input_params.format(),
+                           input_params.channel_layout(),
+                           input_params.input_channels(),
+                           input_params.sample_rate(),
+                           input_params.bits_per_sample(),
+                           input_params.frames_per_buffer(),
+                           effects);
+    return params;
+  }
+
+  void StartInputStreamCallbacks(const AudioParameters& params) {
+    double expected_time_between_callbacks_ms =
+        ExpectedTimeBetweenCallbacks(params);
+    const int num_callbacks =
+        (kCallbackTestTimeMs / expected_time_between_callbacks_ms);
+    AudioInputStream* stream = audio_manager()->MakeAudioInputStream(
+        params, AudioManagerBase::kDefaultDeviceId);
+    EXPECT_TRUE(stream);
+
+    int count = 0;
+    MockAudioInputCallback sink;
+
+    EXPECT_CALL(sink,
+                OnData(stream, NotNull(), params.GetBytesPerBuffer(), _, _))
+        .Times(AtLeast(num_callbacks))
+        .WillRepeatedly(
+             CheckCountAndPostQuitTask(&count, num_callbacks, loop()));
+    EXPECT_CALL(sink, OnError(stream)).Times(0);
+    EXPECT_CALL(sink, OnClose(stream)).Times(1);
+
+    EXPECT_TRUE(stream->Open());
+    stream->Start(&sink);
+    start_time_ = base::TimeTicks::Now();
+    loop()->Run();
+    end_time_ = base::TimeTicks::Now();
+    stream->Stop();
+    stream->Close();
+
+    double average_time_between_callbacks_ms =
+        AverageTimeBetweenCallbacks(num_callbacks);
+    VLOG(0) << "expected time between callbacks: "
+            << expected_time_between_callbacks_ms << " ms";
+    VLOG(0) << "average time between callbacks: "
+            << average_time_between_callbacks_ms << " ms";
+    EXPECT_GE(average_time_between_callbacks_ms,
+              0.70 * expected_time_between_callbacks_ms);
+    EXPECT_LE(average_time_between_callbacks_ms,
+              1.30 * expected_time_between_callbacks_ms);
+  }
+
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AudioAndroidInputTest);
 };
 
 // Get the default audio input parameters and log the result.
-TEST_F(AudioAndroidTest, GetInputStreamParameters) {
-  AudioParameters params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, GetDefaultInputStreamParameters) {
+  // We don't go through AudioAndroidInputTest::GetInputStreamParameters() here
+  // so that we can log the real (non-overridden) values of the effects.
+  AudioParameters params = audio_manager()->GetInputStreamParameters(
+      AudioManagerBase::kDefaultDeviceId);
   EXPECT_TRUE(params.IsValid());
   VLOG(1) << params;
 }
 
 // Get the default audio output parameters and log the result.
-TEST_F(AudioAndroidTest, GetDefaultOutputStreamParameters) {
+TEST_F(AudioAndroidOutputTest, GetDefaultOutputStreamParameters) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   EXPECT_TRUE(params.IsValid());
   VLOG(1) << params;
 }
 
 // Check if low-latency output is supported and log the result as output.
-TEST_F(AudioAndroidTest, IsAudioLowLatencySupported) {
+TEST_F(AudioAndroidOutputTest, IsAudioLowLatencySupported) {
   AudioManagerAndroid* manager =
       static_cast<AudioManagerAndroid*>(audio_manager());
   bool low_latency = manager->IsAudioLowLatencySupported();
@@ -525,8 +568,8 @@ TEST_F(AudioAndroidTest, IsAudioLowLatencySupported) {
 }
 
 // Ensure that a default input stream can be created and closed.
-TEST_F(AudioAndroidTest, CreateAndCloseInputStream) {
-  AudioParameters params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, CreateAndCloseInputStream) {
+  AudioParameters params = GetInputStreamParameters();
   AudioInputStream* ais = audio_manager()->MakeAudioInputStream(
       params, AudioManagerBase::kDefaultDeviceId);
   EXPECT_TRUE(ais);
@@ -537,7 +580,7 @@ TEST_F(AudioAndroidTest, CreateAndCloseInputStream) {
 // TODO(henrika): should we also verify that this API changes the audio mode
 // to communication mode, and calls RegisterHeadsetReceiver, the first time
 // it is called?
-TEST_F(AudioAndroidTest, CreateAndCloseOutputStream) {
+TEST_F(AudioAndroidOutputTest, CreateAndCloseOutputStream) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
       params, std::string(), std::string());
@@ -546,8 +589,8 @@ TEST_F(AudioAndroidTest, CreateAndCloseOutputStream) {
 }
 
 // Ensure that a default input stream can be opened and closed.
-TEST_F(AudioAndroidTest, OpenAndCloseInputStream) {
-  AudioParameters params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, OpenAndCloseInputStream) {
+  AudioParameters params = GetInputStreamParameters();
   AudioInputStream* ais = audio_manager()->MakeAudioInputStream(
       params, AudioManagerBase::kDefaultDeviceId);
   EXPECT_TRUE(ais);
@@ -556,7 +599,7 @@ TEST_F(AudioAndroidTest, OpenAndCloseInputStream) {
 }
 
 // Ensure that a default output stream can be opened and closed.
-TEST_F(AudioAndroidTest, OpenAndCloseOutputStream) {
+TEST_F(AudioAndroidOutputTest, OpenAndCloseOutputStream) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
       params, std::string(), std::string());
@@ -567,8 +610,8 @@ TEST_F(AudioAndroidTest, OpenAndCloseOutputStream) {
 
 // Start input streaming using default input parameters and ensure that the
 // callback sequence is sane.
-TEST_F(AudioAndroidTest, StartInputStreamCallbacks) {
-  AudioParameters params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, StartInputStreamCallbacks) {
+  AudioParameters params = GetInputStreamParameters();
   StartInputStreamCallbacks(params);
 }
 
@@ -576,19 +619,21 @@ TEST_F(AudioAndroidTest, StartInputStreamCallbacks) {
 // callback sequence is sane. The only change we make in this test is to select
 // a 10ms buffer size instead of the default size.
 // TODO(henrika): possibly add support for more variations.
-TEST_F(AudioAndroidTest, StartInputStreamCallbacksNonDefaultParameters) {
-  AudioParameters native_params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, StartInputStreamCallbacksNonDefaultParameters) {
+  AudioParameters native_params = GetInputStreamParameters();
   AudioParameters params(native_params.format(),
                          native_params.channel_layout(),
+                         native_params.input_channels(),
                          native_params.sample_rate(),
                          native_params.bits_per_sample(),
-                         native_params.sample_rate() / 100);
+                         native_params.sample_rate() / 100,
+                         native_params.effects());
   StartInputStreamCallbacks(params);
 }
 
 // Start output streaming using default output parameters and ensure that the
 // callback sequence is sane.
-TEST_F(AudioAndroidTest, StartOutputStreamCallbacks) {
+TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacks) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   StartOutputStreamCallbacks(params);
 }
@@ -598,7 +643,7 @@ TEST_F(AudioAndroidTest, StartOutputStreamCallbacks) {
 // select a 10ms buffer size instead of the default size and to open up the
 // device in mono.
 // TODO(henrika): possibly add support for more variations.
-TEST_F(AudioAndroidTest, StartOutputStreamCallbacksNonDefaultParameters) {
+TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacksNonDefaultParameters) {
   AudioParameters native_params = GetDefaultOutputStreamParameters();
   AudioParameters params(native_params.format(),
                          CHANNEL_LAYOUT_MONO,
@@ -612,7 +657,7 @@ TEST_F(AudioAndroidTest, StartOutputStreamCallbacksNonDefaultParameters) {
 // the rendered audio sounds OK.
 // NOTE: this test requires user interaction and is not designed to run as an
 // automatized test on bots.
-TEST_F(AudioAndroidTest, DISABLED_RunOutputStreamWithFileAsSource) {
+TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
   AudioParameters params = GetDefaultOutputStreamParameters();
   VLOG(1) << params;
   AudioOutputStream* aos = audio_manager()->MakeAudioOutputStream(
@@ -649,8 +694,8 @@ TEST_F(AudioAndroidTest, DISABLED_RunOutputStreamWithFileAsSource) {
 // local audio file.
 // NOTE: this test requires user interaction and is not designed to run as an
 // automatized test on bots.
-TEST_F(AudioAndroidTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
-  AudioParameters params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
+  AudioParameters params = GetInputStreamParameters();
   VLOG(1) << params;
   AudioInputStream* ais = audio_manager()->MakeAudioInputStream(
       params, AudioManagerBase::kDefaultDeviceId);
@@ -676,8 +721,8 @@ TEST_F(AudioAndroidTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
 // streaming is active as well (reads zeros only).
 // NOTE: this test requires user interaction and is not designed to run as an
 // automatized test on bots.
-TEST_F(AudioAndroidTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
-  AudioParameters in_params = GetDefaultInputStreamParameters();
+TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
+  AudioParameters in_params = GetInputStreamParameters();
   AudioInputStream* ais = audio_manager()->MakeAudioInputStream(
       in_params, AudioManagerBase::kDefaultDeviceId);
   EXPECT_TRUE(ais);
@@ -720,10 +765,10 @@ TEST_F(AudioAndroidTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
 // printed out during the test.
 // NOTE: this test requires user interaction and is not designed to run as an
 // automatized test on bots.
-TEST_F(AudioAndroidTest,
+TEST_P(AudioAndroidInputTest,
        DISABLED_RunSymmetricInputAndOutputStreamsInFullDuplex) {
   // Get native audio parameters for the input side.
-  AudioParameters default_input_params = GetDefaultInputStreamParameters();
+  AudioParameters default_input_params = GetInputStreamParameters();
 
   // Modify the parameters so that both input and output can use the same
   // parameters by selecting 10ms as buffer size. This will also ensure that
@@ -765,5 +810,8 @@ TEST_F(AudioAndroidTest,
   aos->Close();
   ais->Close();
 }
+
+INSTANTIATE_TEST_CASE_P(AudioAndroidInputTest, AudioAndroidInputTest,
+    testing::ValuesIn(RunAudioRecordInputPathTests()));
 
 }  // namespace media

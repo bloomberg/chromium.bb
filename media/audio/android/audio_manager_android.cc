@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "jni/AudioManagerAndroid_jni.h"
+#include "media/audio/android/audio_record_input.h"
 #include "media/audio/android/opensles_input.h"
 #include "media/audio/android/opensles_output.h"
 #include "media/audio/audio_manager.h"
@@ -103,18 +104,22 @@ void AudioManagerAndroid::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerAndroid::GetInputStreamParameters(
     const std::string& device_id) {
+  JNIEnv* env = AttachCurrentThread();
   // Use mono as preferred number of input channels on Android to save
   // resources. Using mono also avoids a driver issue seen on Samsung
   // Galaxy S3 and S4 devices. See http://crbug.com/256851 for details.
   ChannelLayout channel_layout = CHANNEL_LAYOUT_MONO;
   int buffer_size = Java_AudioManagerAndroid_getMinInputFrameSize(
-      base::android::AttachCurrentThread(), GetNativeOutputSampleRate(),
+      env, GetNativeOutputSampleRate(),
       ChannelLayoutToChannelCount(channel_layout));
-
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+  int effects = AudioParameters::NO_EFFECTS;
+  effects |= Java_AudioManagerAndroid_shouldUseAcousticEchoCanceler(env) ?
+      AudioParameters::ECHO_CANCELLER : AudioParameters::NO_EFFECTS;
+  AudioParameters params(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, 0,
       GetNativeOutputSampleRate(), 16,
-      buffer_size <= 0 ? kDefaultInputBufferSize : buffer_size);
+      buffer_size <= 0 ? kDefaultInputBufferSize : buffer_size, effects);
+  return params;
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
@@ -189,6 +194,20 @@ AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
   // device, i.e., this selection does also switch the output device.
   // All input and output streams will be affected by the device selection.
   SetAudioDevice(device_id);
+
+  if (params.effects() != AudioParameters::NO_EFFECTS) {
+    // Platform effects can only be enabled through the AudioRecord path.
+    // An effect should only have been requested here if recommended by
+    // AudioManagerAndroid.shouldUse<Effect>.
+    //
+    // Creating this class requires Jelly Bean, which is already guaranteed by
+    // shouldUse<Effect>. Only DCHECK on that condition to allow tests to use
+    // the effect settings as a way to select the input path.
+    DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(), 16);
+    DVLOG(1) << "Creating AudioRecordInputStream";
+    return new AudioRecordInputStream(this, params);
+  }
+  DVLOG(1) << "Creating OpenSLESInputStream";
   return new OpenSLESInputStream(this, params);
 }
 
@@ -230,7 +249,7 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
 
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
-      sample_rate, bits_per_sample, buffer_size);
+      sample_rate, bits_per_sample, buffer_size, AudioParameters::NO_EFFECTS);
 }
 
 // static

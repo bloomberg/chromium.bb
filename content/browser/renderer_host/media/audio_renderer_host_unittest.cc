@@ -198,7 +198,8 @@ class AudioRendererHostTest : public testing::Test {
           media::CHANNEL_LAYOUT_STEREO,
           2,
           media::AudioParameters::kAudioCDSampleRate, 16,
-          media::AudioParameters::kAudioCDSampleRate / 10);
+          media::AudioParameters::kAudioCDSampleRate / 10,
+          media::AudioParameters::NO_EFFECTS);
     } else {
       session_id = 0;
       params = media::AudioParameters(
