@@ -36,7 +36,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WebCore { class Image; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -67,21 +67,21 @@ public:
     // Decodes the given image data. If the image has multiple frames,
     // then the frame whose size is desiredSize is returned. Otherwise,
     // the first frame is returned.
-    BLINK_EXPORT static WebImage fromData(const WebData&, const WebSize& desiredSize);
+    BLINK_PLATFORM_EXPORT static WebImage fromData(const WebData&, const WebSize& desiredSize);
 
     // Returns a list of all frames in the image. Only the first frame at each pixel
     // size will be returned.
-    BLINK_EXPORT static WebVector<WebImage> framesFromData(const WebData&);
+    BLINK_PLATFORM_EXPORT static WebVector<WebImage> framesFromData(const WebData&);
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebImage&);
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebImage&);
 
-    BLINK_EXPORT bool isNull() const;
-    BLINK_EXPORT WebSize size() const;
+    BLINK_PLATFORM_EXPORT bool isNull() const;
+    BLINK_PLATFORM_EXPORT WebSize size() const;
 
-#if BLINK_IMPLEMENTATION
-    WebImage(const WTF::PassRefPtr<WebCore::Image>&);
-    WebImage& operator=(const WTF::PassRefPtr<WebCore::Image>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebImage(const WTF::PassRefPtr<WebCore::Image>&);
+    BLINK_PLATFORM_EXPORT WebImage& operator=(const WTF::PassRefPtr<WebCore::Image>&);
 #endif
 
     WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) { }

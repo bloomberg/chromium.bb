@@ -171,7 +171,6 @@
       'WebIDBMetadata.cpp',
       'WebImageCache.cpp',
       'WebImageDecoder.cpp',
-      'WebImageSkia.cpp',
       'WebInputElement.cpp',
       'WebInputEvent.cpp',
       'WebInputEventFactoryAndroid.cpp',

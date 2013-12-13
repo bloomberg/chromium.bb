@@ -3209,7 +3209,6 @@
         'webcore_platform_support_files': [
             'platform/chromium/support/WebArrayBuffer.cpp',
             'platform/chromium/support/WebCrypto.cpp',
-            'platform/chromium/support/WebCursorInfo.cpp',
             'platform/chromium/support/WebMediaStream.cpp',
             'platform/chromium/support/WebMediaStreamTrack.cpp',
             'platform/chromium/support/WebRTCSessionDescription.cpp',
