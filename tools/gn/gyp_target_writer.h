@@ -26,12 +26,22 @@ class GypTargetWriter {
         : debug(NULL),
           release(NULL),
           host_debug(NULL),
-          host_release(NULL) {
+          host_release(NULL),
+          debug64(NULL),
+          release64(NULL) {
     }
     const BuilderRecord* debug;
     const BuilderRecord* release;
+
+    // When the main compile is targeting a different architecture, these will
+    // contain the builds with the host system's toolchain. Only supported on
+    // Linux.
     const BuilderRecord* host_debug;
     const BuilderRecord* host_release;
+
+    // On Windows, we do both 32-bit and 64-bit builds. Null on non-Windows.
+    const BuilderRecord* debug64;
+    const BuilderRecord* release64;
   };
 
   GypTargetWriter(const Target* target,

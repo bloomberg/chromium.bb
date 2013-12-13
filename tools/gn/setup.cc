@@ -235,6 +235,10 @@ bool Setup::Run() {
   return RunPostMessageLoop();
 }
 
+Scheduler* Setup::GetScheduler() {
+  return &scheduler_;
+}
+
 bool Setup::FillArguments(const CommandLine& cmdline) {
   std::string args = cmdline.GetSwitchValueASCII(kSwitchArgs);
   if (args.empty())
@@ -399,14 +403,25 @@ bool Setup::FillOtherConfig(const CommandLine& cmdline) {
 
 // DependentSetup --------------------------------------------------------------
 
-DependentSetup::DependentSetup(Setup& main_setup)
-    : CommonSetup(main_setup) {
+DependentSetup::DependentSetup(Setup* derive_from)
+    : CommonSetup(*derive_from),
+      scheduler_(derive_from->GetScheduler()) {
   build_settings_.set_item_defined_callback(
-      base::Bind(&ItemDefinedCallback, main_setup.scheduler().main_loop(),
-                 builder_));
+      base::Bind(&ItemDefinedCallback, scheduler_->main_loop(), builder_));
+}
+
+DependentSetup::DependentSetup(DependentSetup* derive_from)
+    : CommonSetup(*derive_from),
+      scheduler_(derive_from->GetScheduler()) {
+  build_settings_.set_item_defined_callback(
+      base::Bind(&ItemDefinedCallback, scheduler_->main_loop(), builder_));
 }
 
 DependentSetup::~DependentSetup() {
+}
+
+Scheduler* DependentSetup::GetScheduler() {
+  return scheduler_;
 }
 
 void DependentSetup::RunPreMessageLoop() {

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/build_settings.h"
@@ -29,6 +30,10 @@ extern const char kDotfile_Help[];
 class CommonSetup {
  public:
   virtual ~CommonSetup();
+
+  // Returns the scheduler. This is virtual since only the main setup has a
+  // scheduler and the derived ones just store pointers.
+  virtual Scheduler* GetScheduler() = 0;
 
   // When true (the default), Run() will check for unresolved dependencies and
   // cycles upon completion. When false, such errors will be ignored.
@@ -74,6 +79,8 @@ class Setup : public CommonSetup {
   bool Run();
 
   Scheduler& scheduler() { return scheduler_; }
+
+  virtual Scheduler* GetScheduler() OVERRIDE;
 
  private:
   // Fills build arguments. Returns true on success.
@@ -126,7 +133,11 @@ class Setup : public CommonSetup {
 // so that the main setup executes the message loop, but both are run.
 class DependentSetup : public CommonSetup {
  public:
-  DependentSetup(Setup& main_setup);
+  // Note: this could be one function that takes a CommonSetup*, but then
+  // the compiler can get confused what to call, since it also matches the
+  // default copy constructor.
+  DependentSetup(Setup* derive_from);
+  DependentSetup(DependentSetup* derive_from);
   virtual ~DependentSetup();
 
   // These are the two parts of Run() in the regular setup, not including the
@@ -134,8 +145,10 @@ class DependentSetup : public CommonSetup {
   void RunPreMessageLoop();
   bool RunPostMessageLoop();
 
+  virtual Scheduler* GetScheduler() OVERRIDE;
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(DependentSetup);
+  Scheduler* scheduler_;
 };
 
 #endif  // TOOLS_GN_SETUP_H_

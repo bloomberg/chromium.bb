@@ -45,7 +45,12 @@ class Label {
 
   const SourceDir& toolchain_dir() const { return toolchain_dir_; }
   const std::string& toolchain_name() const { return toolchain_name_; }
+
+  // Returns the current label's toolchain as its own Label.
   Label GetToolchainLabel() const;
+
+  // Returns a copy of this label but with an empty toolchain.
+  Label GetWithNoToolchain() const;
 
   // Formats this label in a way that we can present to the user or expose to
   // other parts of the system. SourceDirs end in slashes, but the user

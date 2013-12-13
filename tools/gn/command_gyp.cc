@@ -34,6 +34,7 @@ typedef GypTargetWriter::TargetGroup TargetGroup;
 typedef std::map<Label, TargetGroup> CorrelatedTargetsMap;
 typedef std::map<SourceFile, std::vector<TargetGroup> > GroupedTargetsMap;
 typedef std::map<std::string, std::string> StringStringMap;
+typedef std::vector<const BuilderRecord*> RecordVector;
 
 std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
     const Builder* builder) {
@@ -50,16 +51,50 @@ std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
 }
 
 // Groups targets sharing the same label between debug and release.
-void CorrelateTargets(const std::vector<const BuilderRecord*>& debug_targets,
-                      const std::vector<const BuilderRecord*>& release_targets,
+//
+// We strip the toolchain label because the 64-bit and 32-bit builds, for
+// example, will have different toolchains but we want to correlate them.
+//
+// TODO(brettw) this assumes that everything in the build has the same
+// toolchain. To support cross-compiling and nacl, we'll need to differentiate
+// the 32-vs-64-bit case and the default-toolchain-vs-not case. When we find
+// a target not using hte default toolchain, we should probably just shell
+// out to ninja.
+void CorrelateTargets(const RecordVector& debug_targets,
+                      const RecordVector& release_targets,
+                      const RecordVector& host_debug_targets,
+                      const RecordVector& host_release_targets,
+                      const RecordVector& debug64_targets,
+                      const RecordVector& release64_targets,
                       CorrelatedTargetsMap* correlated) {
+  // Normal.
   for (size_t i = 0; i < debug_targets.size(); i++) {
     const BuilderRecord* record = debug_targets[i];
-    (*correlated)[record->label()].debug = record;
+    (*correlated)[record->label().GetWithNoToolchain()].debug = record;
   }
   for (size_t i = 0; i < release_targets.size(); i++) {
     const BuilderRecord* record = release_targets[i];
-    (*correlated)[record->label()].release = record;
+    (*correlated)[record->label().GetWithNoToolchain()].release = record;
+  }
+
+  // Host build.
+  for (size_t i = 0; i < host_debug_targets.size(); i++) {
+    const BuilderRecord* record = host_debug_targets[i];
+    (*correlated)[record->label().GetWithNoToolchain()].host_debug = record;
+  }
+  for (size_t i = 0; i < host_release_targets.size(); i++) {
+    const BuilderRecord* record = host_release_targets[i];
+    (*correlated)[record->label().GetWithNoToolchain()].host_release = record;
+  }
+
+  // Host build.
+  for (size_t i = 0; i < debug64_targets.size(); i++) {
+    const BuilderRecord* record = debug64_targets[i];
+    (*correlated)[record->label().GetWithNoToolchain()].debug64 = record;
+  }
+  for (size_t i = 0; i < release64_targets.size(); i++) {
+    const BuilderRecord* record = release64_targets[i];
+    (*correlated)[record->label().GetWithNoToolchain()].release64 = record;
   }
 }
 
@@ -202,6 +237,10 @@ bool GetArgsFromGypDefines(Scope::KeyValueMap* args) {
 // Returns the (number of targets, number of GYP files).
 std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
                                   CommonSetup* release_setup,
+                                  CommonSetup* host_debug_setup,
+                                  CommonSetup* host_release_setup,
+                                  CommonSetup* debug64_setup,
+                                  CommonSetup* release64_setup,
                                   Err* err) {
   // Group all targets by output GYP file name.
   std::vector<const BuilderRecord*> debug_targets =
@@ -209,9 +248,32 @@ std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
   std::vector<const BuilderRecord*> release_targets =
       GetAllResolvedTargetRecords(release_setup->builder());
 
+  // Host build is optional.
+  std::vector<const BuilderRecord*> host_debug_targets;
+  std::vector<const BuilderRecord*> host_release_targets;
+  if (host_debug_setup && host_release_setup) {
+      host_debug_targets = GetAllResolvedTargetRecords(
+          host_debug_setup->builder());
+      host_release_targets = GetAllResolvedTargetRecords(
+          host_release_setup->builder());
+  }
+
+  // 64-bit build is optional.
+  std::vector<const BuilderRecord*> debug64_targets;
+  std::vector<const BuilderRecord*> release64_targets;
+  if (debug64_setup && release64_setup) {
+      debug64_targets = GetAllResolvedTargetRecords(
+          debug64_setup->builder());
+      release64_targets = GetAllResolvedTargetRecords(
+          release64_setup->builder());
+  }
+
   // Match up the debug and release version of each target by label.
   CorrelatedTargetsMap correlated;
-  CorrelateTargets(debug_targets, release_targets, &correlated);
+  CorrelateTargets(debug_targets, release_targets,
+                   host_debug_targets, host_release_targets,
+                   debug64_targets, release64_targets,
+                   &correlated);
 
   GypHelper helper;
   GroupedTargetsMap grouped_targets;
@@ -347,22 +409,69 @@ int RunGyp(const std::vector<std::string>& args) {
 
   // Make a release build based on the debug one. We use a new directory for
   // the build output so that they don't stomp on each other.
-  DependentSetup* setup_release = new DependentSetup(*setup_debug);
+  DependentSetup* setup_release = new DependentSetup(setup_debug);
   setup_release->build_settings().build_args().AddArgOverride(
       kIsDebug, Value(NULL, false));
   setup_release->build_settings().SetBuildDir(
       SourceDir(setup_release->build_settings().build_dir().value() +
                 "gn_release.tmp/"));
 
-  // Run both debug and release builds in parallel.
+  // Host build.
+  DependentSetup* setup_host_debug = NULL;
+  DependentSetup* setup_host_release = NULL;
+  // TODO(brettw) hook up host build.
+
+  // 64-bit build (Windows only).
+  DependentSetup* setup_debug64 = NULL;
+  DependentSetup* setup_release64 = NULL;
+#if defined(OS_WIN)
+  static const char kForceWin64[] = "force_win64";
+  setup_debug64 = new DependentSetup(setup_debug);
+  setup_debug64->build_settings().build_args().AddArgOverride(
+      kForceWin64, Value(NULL, true));
+  setup_debug64->build_settings().SetBuildDir(
+      SourceDir(setup_release->build_settings().build_dir().value() +
+                "gn_debug64.tmp/"));
+
+  setup_release64 = new DependentSetup(setup_release);
+  setup_release64->build_settings().build_args().AddArgOverride(
+      kForceWin64, Value(NULL, true));
+  setup_release64->build_settings().SetBuildDir(
+      SourceDir(setup_release->build_settings().build_dir().value() +
+                "gn_release64.tmp/"));
+#endif
+
+  // Run all the builds in parellel.
   setup_release->RunPreMessageLoop();
+  if (setup_host_debug && setup_host_release) {
+    setup_host_debug->RunPreMessageLoop();
+    setup_host_release->RunPreMessageLoop();
+  }
+  if (setup_debug64 && setup_release64) {
+    setup_debug64->RunPreMessageLoop();
+    setup_release64->RunPreMessageLoop();
+  }
+
   if (!setup_debug->Run())
     return 1;
+
   if (!setup_release->RunPostMessageLoop())
+    return 1;
+  if (setup_host_debug && !setup_host_debug->RunPostMessageLoop())
+    return 1;
+  if (setup_host_release && !setup_host_release->RunPostMessageLoop())
+    return 1;
+  if (setup_debug64 && !setup_debug64->RunPostMessageLoop())
+    return 1;
+  if (setup_release64 && !setup_release64->RunPostMessageLoop())
     return 1;
 
   Err err;
-  std::pair<int, int> counts = WriteGypFiles(setup_debug, setup_release, &err);
+  std::pair<int, int> counts =
+      WriteGypFiles(setup_debug, setup_release,
+                    setup_host_debug, setup_host_release,
+                    setup_debug64, setup_release64,
+                    &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return 1;

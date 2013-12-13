@@ -236,6 +236,10 @@ Label Label::GetToolchainLabel() const {
   return Label(toolchain_dir_, toolchain_name_);
 }
 
+Label Label::GetWithNoToolchain() const {
+  return Label(dir_, name_);
+}
+
 std::string Label::GetUserVisibleName(bool include_toolchain) const {
   std::string ret;
   ret.reserve(dir_.value().size() + name_.size() + 1);

@@ -171,8 +171,22 @@ void GypBinaryTargetWriter::WriteVCConfiguration(int indent) {
   WriteVCFlags(release_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
 
-  Indent(indent + kExtraIndent) << "'Debug_x64': {},\n";
-  Indent(indent + kExtraIndent) << "'Release_x64': {},\n";
+  // Note that we always need Debug_x64 and Release_x64 defined or GYP will get
+  // confused, but we ca leave them empty if there's no 64-bit target.
+  Indent(indent + kExtraIndent) << "'Debug_x64': {\n";
+  if (group_.debug64) {
+    Flags flags(FlagsFromTarget(group_.debug64->item()->AsTarget()));
+    WriteVCFlags(flags, indent + kExtraIndent * 2);
+  }
+  Indent(indent + kExtraIndent) << "},\n";
+
+  Indent(indent + kExtraIndent) << "'Release_x64': {\n";
+  if (group_.release64) {
+    Flags flags(FlagsFromTarget(group_.release64->item()->AsTarget()));
+    WriteVCFlags(flags, indent + kExtraIndent * 2);
+  }
+  Indent(indent + kExtraIndent) << "},\n";
+
   Indent(indent) << "},\n";
 
   WriteSources(target_, indent);
