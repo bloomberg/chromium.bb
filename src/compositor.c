@@ -345,6 +345,26 @@ region_init_infinite(pixman_region32_t *region)
 static struct weston_subsurface *
 weston_surface_to_subsurface(struct weston_surface *surface);
 
+static void
+weston_view_output_move_handler(struct wl_listener *listener,
+				void *data)
+{
+	struct weston_view *ev;
+	struct weston_output *output = data;
+
+	ev = container_of(listener, struct weston_view,
+			  output_move_listener);
+
+	/* the child window's view->geometry is a relative coordinate to
+	 * parent view, no need to move child_view. */
+	if (ev->geometry.parent)
+		return;
+
+	weston_view_set_position(ev,
+				 ev->geometry.x + output->move_x,
+				 ev->geometry.y + output->move_y);
+}
+
 WL_EXPORT struct weston_view *
 weston_view_create(struct weston_surface *surface)
 {
@@ -379,6 +399,8 @@ weston_view_create(struct weston_surface *surface)
 	view->transform.dirty = 1;
 
 	view->output = NULL;
+
+	view->output_move_listener.notify = weston_view_output_move_handler;
 
 	return view;
 }
@@ -727,6 +749,7 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	}
 }
 
+
 static void
 weston_surface_assign_output(struct weston_surface *es)
 {
@@ -792,6 +815,13 @@ weston_view_assign_output(struct weston_view *ev)
 		}
 	}
 	pixman_region32_fini(&region);
+
+	if (ev->output_mask != 0)
+		wl_list_remove(&ev->output_move_listener.link);
+
+	if (mask != 0)
+		wl_signal_add(&new_output->move_signal,
+			      &ev->output_move_listener);
 
 	ev->output = new_output;
 	ev->output_mask = mask;
@@ -1233,6 +1263,8 @@ weston_view_unmap(struct weston_view *view)
 	wl_list_init(&view->layer_link);
 	wl_list_remove(&view->link);
 	wl_list_init(&view->link);
+	wl_list_remove(&view->output_move_listener.link);
+	wl_list_init(&view->output_move_listener.link);
 	view->output_mask = 0;
 	weston_surface_assign_output(view->surface);
 
@@ -3152,8 +3184,8 @@ weston_output_transform_scale_init(struct weston_output *output, uint32_t transf
 	output->height /= scale;
 }
 
-WL_EXPORT void
-weston_output_move(struct weston_output *output, int x, int y)
+static void
+weston_output_init_geometry(struct weston_output *output, int x, int y)
 {
 	output->x = x;
 	output->y = y;
@@ -3162,6 +3194,41 @@ weston_output_move(struct weston_output *output, int x, int y)
 	pixman_region32_init_rect(&output->region, x, y,
 				  output->width,
 				  output->height);
+}
+
+WL_EXPORT void
+weston_output_move(struct weston_output *output, int x, int y)
+{
+	pixman_region32_t old_region;
+	struct wl_resource *resource;
+
+	output->move_x = x - output->x;
+	output->move_y = y - output->y;
+
+	if (output->move_x == 0 && output->move_y == 0)
+		return;
+
+	pixman_region32_init(&old_region);
+	pixman_region32_copy(&old_region, &output->region);
+
+	weston_output_init_geometry(output, x, y);
+
+	output->dirty = 1;
+
+	/* Move views on this output. */
+	wl_signal_emit(&output->move_signal, output);
+
+	/* Notify clients of the change for output position. */
+	wl_resource_for_each(resource, &output->resource_list)
+		wl_output_send_geometry(resource,
+					output->x,
+					output->y,
+					output->mm_width,
+					output->mm_height,
+					output->subpixel,
+					output->make,
+					output->model,
+					output->transform);
 }
 
 WL_EXPORT void
@@ -3180,11 +3247,12 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	weston_output_transform_scale_init(output, transform, scale);
 	weston_output_init_zoom(output);
 
-	weston_output_move(output, x, y);
+	weston_output_init_geometry(output, x, y);
 	weston_output_damage(output);
 
 	wl_signal_init(&output->frame_signal);
 	wl_signal_init(&output->destroy_signal);
+	wl_signal_init(&output->move_signal);
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 

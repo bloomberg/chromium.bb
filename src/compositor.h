@@ -194,6 +194,8 @@ struct weston_output {
 	int dirty;
 	struct wl_signal frame_signal;
 	struct wl_signal destroy_signal;
+	struct wl_signal move_signal;
+	int move_x, move_y;
 	uint32_t frame_time;
 	int disable_planes;
 
@@ -803,6 +805,8 @@ struct weston_view {
 	 * displayed on.
 	 */
 	uint32_t output_mask;
+
+	struct wl_listener output_move_listener;
 };
 
 struct weston_surface {
