@@ -105,6 +105,10 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
   std::string utf8_content_;
 };
 
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, AttributesTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL("attributes_test.js")));
+}
+
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")));
 }

@@ -43,26 +43,26 @@
         top: 0;
       }
 
-      ::part(key)[inverted] {
-        color: #7c7c7c;
-      }
-
-     ::part(hint) {
+      ::part(hint) {
         color: #7c7c7c;
         font-size: 70%;
         position: absolute;
         right: 7%;
         top: 5%;
-      } 
+      }
 
-      ::part(hint)[inverted] {
+      :host[invert] ::part(key) {
+        color: #7c7c7c;
+      }
+
+      :host[invert] ::part(hint) {
         color: #ffffff;
       }
     </style>
-    <div id="key" part="key" inverted?={{invert}}>
+    <div id="key" part="key">
       <content></content>
     </div>
-    <div part="hint" inverted?={{invert}}>{{hintText}}</div>
+    <div part="hint">{{hintText}}</div>
   </template>
   <script>
     Polymer('kb-key', {

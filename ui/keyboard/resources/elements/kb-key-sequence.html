@@ -33,6 +33,7 @@
           var newKeys = this.getAttribute('keys');
           var newHintTexts = this.getAttribute('hintTexts');
           var keyCodes = this.getAttribute('hintCodes') || newKeys;
+          var invert = this.getAttribute('invert');
           if (newKeys) {
             if (newHintTexts && newKeys.length != newHintTexts.length) {
               console.error('keys and hintTexts do not match');
@@ -50,7 +51,7 @@
               if (newHintTexts)
                 key.hintText = newHintTexts[i];
               var keyCodeIndex = keyCodes[i];
-              if (this.invert) {
+              if (invert) {
                 key.invert = true;
                 key.char = newKeys[i];
                 keyCodeIndex = key.hintText;
