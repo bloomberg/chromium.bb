@@ -62,4 +62,28 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ASSERT_FALSE(jpegResource.canReuse(pngRequest));
 }
 
+TEST(RawResourceTest, RevalidationSucceeded)
+{
+    // Create two RawResources and set one to revalidate the other.
+    RawResource* oldResourcePointer = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    RawResource* newResourcePointer = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    newResourcePointer->setResourceToRevalidate(oldResourcePointer);
+    ResourcePtr<Resource> oldResource = oldResourcePointer;
+    ResourcePtr<Resource> newResource = newResourcePointer;
+    memoryCache()->add(oldResource.get());
+    memoryCache()->remove(oldResource.get());
+    memoryCache()->add(newResource.get());
+
+    // Simulate a successful revalidation.
+    // The revalidated resource (oldResource) should now be in the cache, newResource
+    // should have been sliently switched to point to the revalidated resource, and
+    // we shouldn't hit any ASSERTs.
+    ResourceResponse response;
+    response.setHTTPStatusCode(304);
+    newResource->responseReceived(response);
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), oldResource.get());
+    EXPECT_EQ(oldResource.get(), newResource.get());
+    EXPECT_NE(newResource.get(), newResourcePointer);
+}
+
 } // namespace

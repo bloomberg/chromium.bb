@@ -200,7 +200,7 @@ public:
     // Returns cached metadata of the given type associated with this resource.
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
 
-    bool canDelete() const { return !hasClients() && !m_loader && !m_preloadCount && !m_handleCount && !m_resourceToRevalidate && !m_proxyResource; }
+    bool canDelete() const { return !hasClients() && !m_loader && !m_preloadCount && !m_handleCount && !m_protectorCount && !m_resourceToRevalidate && !m_proxyResource; }
     bool hasOneHandle() const { return m_handleCount == 1; }
 
     bool isExpired() const;
@@ -250,6 +250,32 @@ public:
 protected:
     virtual void checkNotify();
     virtual void finishOnePart();
+
+    // Normal resource pointers will silently switch what Resource* they reference when we
+    // successfully revalidated the resource. We need a way to guarantee that the Resource
+    // that received the 304 response survives long enough to switch everything over to the
+    // revalidatedresource. The normal mechanisms for keeping a Resource alive externally
+    // (ResourcePtrs and ResourceClients registering themselves) don't work in this case, so
+    // have a separate internal protector).
+    class InternalResourcePtr {
+    public:
+        explicit InternalResourcePtr(Resource* resource)
+            : m_resource(resource)
+        {
+            m_resource->incrementProtectorCount();
+        }
+
+        ~InternalResourcePtr()
+        {
+            m_resource->decrementProtectorCount();
+            m_resource->deleteIfPossible();
+        }
+    private:
+        Resource* m_resource;
+    };
+
+    void incrementProtectorCount() { m_protectorCount++; }
+    void decrementProtectorCount() { m_protectorCount--; }
 
     void setEncodedSize(size_t);
     void setDecodedSize(size_t);
@@ -320,6 +346,7 @@ private:
     unsigned m_accessCount;
     unsigned m_handleCount;
     unsigned m_preloadCount;
+    unsigned m_protectorCount;
 
     unsigned m_preloadResult : 2; // PreloadResult
     unsigned m_cacheLiveResourcePriority : 2; // CacheLiveResourcePriority
