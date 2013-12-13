@@ -4975,6 +4975,9 @@ shell_surface_output_destroyed(struct weston_surface *es)
 	struct shell_surface *shsurf = get_shell_surface(es);
 
 	shsurf->saved_position_valid = false;
+	shsurf->next_state.maximized = false;
+	shsurf->next_state.fullscreen = false;
+	shsurf->state_changed = true;
 }
 
 static void launch_desktop_shell_process(void *data);
