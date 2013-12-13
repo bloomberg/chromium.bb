@@ -1262,7 +1262,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   // in the first tab.
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
   // But it should not seem like a search has been issued.
-  EXPECT_EQ(string16(), GetMatchCountText());
+  EXPECT_EQ(base::string16(), GetMatchCountText());
 }
 
 // This makes sure that we can search for A in tabA, then for B in tabB and

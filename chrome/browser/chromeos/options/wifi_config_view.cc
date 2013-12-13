@@ -629,7 +629,7 @@ void WifiConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {
     passphrase_textfield_->SetEnabled(passphrase_enabled &&
                                       passphrase_ui_data_.IsEditable());
     if (!passphrase_enabled)
-      passphrase_textfield_->SetText(string16());
+      passphrase_textfield_->SetText(base::string16());
     RefreshShareCheckbox();
   } else if (combobox == user_cert_combobox_) {
     RefreshShareCheckbox();

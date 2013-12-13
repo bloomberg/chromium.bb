@@ -332,13 +332,13 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
           match.contents);
 
-  AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
+  AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,
       &match.contents_class);
 
   match.description =
       AutocompleteMatch::SanitizeString(navigation.description());
-  AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
+  AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.description.length(), ACMatchClassification::NONE,
       &match.description_class);
   return match;

@@ -83,7 +83,7 @@ class ProfileListChromeOSTest : public testing::Test {
     return static_cast<FakeUserManager*>(UserManager::Get());
   }
 
-  void AddProfile(string16 name, bool log_in) {
+  void AddProfile(base::string16 name, bool log_in) {
     std::string email_string = UTF16ToASCII(name) + "@example.com";
 
     // Add a user to the fake user manager.

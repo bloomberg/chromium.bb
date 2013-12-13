@@ -92,11 +92,11 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
   explicit TranslateDenialComboboxModel(
       const base::string16& original_language_name) {
     items_.push_back(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY));
-    items_.push_back(string16());
+    items_.push_back(base::string16());
     items_.push_back(l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
         original_language_name));
-    items_.push_back(string16());
+    items_.push_back(base::string16());
     items_.push_back(l10n_util::GetStringUTF16(
         IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE));
   }
@@ -697,7 +697,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   // In an incognito window, "Always translate" checkbox shouldn't be shown.
   if (!is_in_incognito_window_) {
-    always_translate_checkbox_ = new views::Checkbox(string16());
+    always_translate_checkbox_ = new views::Checkbox(base::string16());
     always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
     always_translate_checkbox_->set_listener(this);
   }

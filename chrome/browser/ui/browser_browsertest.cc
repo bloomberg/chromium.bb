@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(),
+      ExecuteJavascriptInWebFrame(base::string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
 
@@ -671,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(),
+      ExecuteJavascriptInWebFrame(base::string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
 
@@ -688,14 +688,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 // two beforeunload dialogs shown.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(),
+      ExecuteJavascriptInWebFrame(base::string16(),
                                   ASCIIToUTF16(kOpenNewBeforeUnloadPage));
 
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
   // that a second beforeunload dialog isn't shown.
   browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(),
+      ExecuteJavascriptInWebFrame(base::string16(),
                                   ASCIIToUTF16("w.close(); alert('bar');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->AcceptAppModalDialog();
@@ -852,8 +852,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(redirect_popup));
+  oldtab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      base::string16(), ASCIIToUTF16(redirect_popup));
 
   // Wait for popup window to appear and finish navigating.
   popup_observer.Wait();
@@ -886,8 +886,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   content::WindowedNotificationObserver nav_observer2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(refresh_popup));
+  oldtab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      base::string16(), ASCIIToUTF16(refresh_popup));
 
   // Wait for popup window to appear and finish navigating.
   popup_observer2.Wait();
@@ -940,8 +940,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(dont_fork_popup));
+  oldtab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      base::string16(), ASCIIToUTF16(dont_fork_popup));
 
   // Wait for popup window to appear and finish navigating.
   popup_observer.Wait();
@@ -968,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
   oldtab->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(navigate_str));
+      ExecuteJavascriptInWebFrame(base::string16(), ASCIIToUTF16(navigate_str));
   nav_observer2.Wait();
   ASSERT_TRUE(oldtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),

@@ -1288,7 +1288,7 @@ TEST_F(HistoryTest, SetTitle) {
 
   // Make sure nothing got written.
   EXPECT_FALSE(QueryURL(history_service_.get(), nonexistent_url));
-  EXPECT_EQ(string16(), query_url_row_.title());
+  EXPECT_EQ(base::string16(), query_url_row_.title());
 
   // TODO(brettw) this should also test redirects, which get the title of the
   // destination page.

@@ -31,7 +31,7 @@ base::string16 GetContent(const TokenizedString& tokenized) {
 TEST(TokenizedStringTest, Empty) {
   base::string16 empty;
   TokenizedString tokens(empty);
-  EXPECT_EQ(string16(), GetContent(tokens));
+  EXPECT_EQ(base::string16(), GetContent(tokens));
 }
 
 TEST(TokenizedStringTest, Basic) {

@@ -110,7 +110,7 @@ bool MaybeGetQueryStringBasedAliasURL(
     url_canon::RawCanonOutputW<1024> decoded_url;
     url_util::DecodeURLEscapeSequences(url.spec().c_str() + value.begin,
                                        value.len, &decoded_url);
-    GURL new_url(string16(decoded_url.data(), decoded_url.length()));
+    GURL new_url(base::string16(decoded_url.data(), decoded_url.length()));
     if (!new_url.is_empty() && new_url.is_valid()) {
       *alias_url = new_url;
       return true;

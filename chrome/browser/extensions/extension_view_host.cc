@@ -333,7 +333,7 @@ void ExtensionViewHost::InsertInfobarCSS() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_EXTENSIONS_INFOBAR_CSS));
 
-  render_view_host()->InsertCSS(string16(), css.as_string());
+  render_view_host()->InsertCSS(base::string16(), css.as_string());
 }
 
 }  // namespace extensions

@@ -551,7 +551,8 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   // Some web sites do not have a description.  If the string being searched is
   // empty, the classifications must also be empty: http://crbug.com/148647
   // Extra parens in the next line hack around C++03's "most vexing parse".
-  class ClassifyTest classify_test5((string16()), ACMatchClassifications());
+  class ClassifyTest classify_test5((base::string16()),
+                                    ACMatchClassifications());
   ACMatchClassifications spans_j = classify_test5.RunTest(ASCIIToUTF16("man"));
   ASSERT_EQ(0U, spans_j.size());
 

@@ -459,7 +459,7 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   } else {
     // Set the arguments explicitly to the empty string to ensure that
     // |ShellUtil::CreateOrUpdateShortcut| updates that part of the shortcut.
-    properties.set_arguments(string16());
+    properties.set_arguments(base::string16());
   }
 
   properties.set_app_id(
@@ -554,7 +554,7 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     product.AddDefaultShortcutProperties(chrome_exe, &properties);
     properties.set_shortcut_name(
-        profiles::internal::GetShortcutFilenameForProfile(string16(),
+        profiles::internal::GetShortcutFilenameForProfile(base::string16(),
                                                           distribution));
     ShellUtil::CreateOrUpdateShortcut(
         ShellUtil::SHORTCUT_LOCATION_DESKTOP, distribution, properties,

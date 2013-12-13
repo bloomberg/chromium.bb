@@ -30,7 +30,7 @@ void NewTabPageReadyHandler::RegisterMessages() {
 
 void NewTabPageReadyHandler::HandleNewTabPageTitleLoaded(
     const ListValue* args) {
-  web_ui()->OverrideTitle(string16());
+  web_ui()->OverrideTitle(base::string16());
 }
 
 void NewTabPageReadyHandler::HandleNewTabPageReady(

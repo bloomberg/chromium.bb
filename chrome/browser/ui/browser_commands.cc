@@ -1079,7 +1079,7 @@ void ViewSource(Browser* browser,
   entry->SetPageState(page_state.RemoveScrollOffset());
 
   // Do not restore title, derive it from the url.
-  entry->SetTitle(string16());
+  entry->SetTitle(base::string16());
 
   // Now show view-source entry.
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {

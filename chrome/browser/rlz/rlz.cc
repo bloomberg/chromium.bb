@@ -36,7 +36,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #else
 namespace GoogleUpdateSettings {
-static bool GetLanguage(string16* language) {
+static bool GetLanguage(base::string16* language) {
   // TODO(thakis): Implement.
   NOTIMPLEMENTED();
   return false;
@@ -44,7 +44,7 @@ static bool GetLanguage(string16* language) {
 
 // The referral program is defunct and not used. No need to implement these
 // functions on non-Win platforms.
-static bool GetReferral(string16* referral) {
+static bool GetReferral(base::string16* referral) {
   return true;
 }
 static bool ClearReferral() {

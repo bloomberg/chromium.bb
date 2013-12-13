@@ -42,7 +42,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
-  details.push_back(string16());
+  details.push_back(base::string16());
   prompt.SetPermissionsDetails(details);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -97,7 +97,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
-  details.push_back(string16());
+  details.push_back(base::string16());
   prompt.SetPermissionsDetails(details);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -125,7 +125,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   one_warning_prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
-  details.push_back(string16());
+  details.push_back(base::string16());
   one_warning_prompt.SetPermissionsDetails(details);
 
   ExtensionInstallPrompt::Prompt two_warnings_prompt =
@@ -133,7 +133,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   permissions.push_back(UTF8ToUTF16("warning 2"));
   two_warnings_prompt.SetPermissions(permissions);
   // No details provided with this permission.
-  details.push_back(string16());
+  details.push_back(base::string16());
   two_warnings_prompt.SetPermissionsDetails(details);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller1(
@@ -272,7 +272,7 @@ TEST_F(ExtensionInstallViewControllerTest, OAuthIssues) {
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
-  details.push_back(string16());
+  details.push_back(base::string16());
   prompt.SetPermissionsDetails(details);
 
   IssueAdviceInfoEntry issue;
@@ -314,7 +314,7 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
-  details.push_back(string16());
+  details.push_back(base::string16());
   prompt.SetPermissionsDetails(details);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(

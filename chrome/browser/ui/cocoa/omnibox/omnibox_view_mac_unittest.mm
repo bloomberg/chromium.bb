@@ -165,9 +165,9 @@ TEST_F(OmniboxViewMacTest, SetGrayTextAutocompletion) {
   EXPECT_EQ("Alfred", UTF16ToUTF8(view.GetText()));
   EXPECT_EQ(" Hitchcock", UTF16ToUTF8(view.GetGrayTextAutocompletion()));
 
-  view.SetUserText(string16());
-  EXPECT_EQ(string16(), view.GetText());
-  EXPECT_EQ(string16(), view.GetGrayTextAutocompletion());
+  view.SetUserText(base::string16());
+  EXPECT_EQ(base::string16(), view.GetText());
+  EXPECT_EQ(base::string16(), view.GetGrayTextAutocompletion());
 }
 
 TEST_F(OmniboxViewMacTest, UpDownArrow) {

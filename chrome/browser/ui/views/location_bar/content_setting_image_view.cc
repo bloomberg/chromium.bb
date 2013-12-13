@@ -43,7 +43,7 @@ ContentSettingImageView::ContentSettingImageView(
       background_painter_(
           views::Painter::CreateImageGridPainter(kBackgroundImages)),
       icon_(new views::ImageView),
-      text_label_(new views::Label(string16(), font_list)),
+      text_label_(new views::Label(base::string16(), font_list)),
       slide_animator_(this),
       pause_animation_(false),
       pause_animation_state_(0.0),

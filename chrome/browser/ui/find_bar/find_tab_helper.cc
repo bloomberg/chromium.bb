@@ -37,7 +37,7 @@ FindTabHelper::FindTabHelper(WebContents* web_contents)
 FindTabHelper::~FindTabHelper() {
 }
 
-void FindTabHelper::StartFinding(string16 search_string,
+void FindTabHelper::StartFinding(base::string16 search_string,
                                  bool forward_direction,
                                  bool case_sensitive) {
   // If search_string is empty, it means FindNext was pressed with a keyboard

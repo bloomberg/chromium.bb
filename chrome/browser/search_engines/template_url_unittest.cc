@@ -936,15 +936,15 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.ca/?q=something"), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.ca/?q=something&q=anything"), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/foo/?q=foo"), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("https://google.com/?q=foo"), &result));
@@ -952,7 +952,7 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com:8080/?q=foo"), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/?q=1+2+3&b=456"), &result));
@@ -972,19 +972,19 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/?q="), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/?#q="), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/?q=#q="), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/?q=123#q="), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(base::string16(), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/?q=#q=123"), &result));

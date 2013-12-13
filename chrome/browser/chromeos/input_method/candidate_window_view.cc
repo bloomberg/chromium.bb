@@ -731,7 +731,7 @@ void CandidateWindowView::UpdateCandidates(
       CandidateView* candidate_view = candidate_views_[index_in_page];
       // Set the shortcut text.
       if (no_shortcut_mode) {
-        candidate_view->SetShortcutText(string16());
+        candidate_view->SetShortcutText(base::string16());
       } else {
         // At this moment, we don't use labels sent from engines for UX
         // reasons. First, we want to show shortcut labels in empty rows
@@ -751,8 +751,8 @@ void CandidateWindowView::UpdateCandidates(
          candidate_view->SetInfolistIcon(!entry.description_title.empty());
       } else {
         // Disable the empty row.
-        candidate_view->SetCandidateText(string16());
-        candidate_view->SetAnnotationText(string16());
+        candidate_view->SetCandidateText(base::string16());
+        candidate_view->SetAnnotationText(base::string16());
         candidate_view->SetRowEnabled(false);
         candidate_view->SetInfolistIcon(false);
       }

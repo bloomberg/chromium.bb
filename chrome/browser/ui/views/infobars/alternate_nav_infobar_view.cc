@@ -60,7 +60,7 @@ void AlternateNavInfoBarView::ViewHierarchyChanged(
     AlternateNavInfoBarDelegate* delegate = GetDelegate();
     size_t offset;
     base::string16 message_text = delegate->GetMessageTextWithOffset(&offset);
-    DCHECK_NE(string16::npos, offset);
+    DCHECK_NE(base::string16::npos, offset);
     label_1_ = CreateLabel(message_text.substr(0, offset));
     AddChildView(label_1_);
 

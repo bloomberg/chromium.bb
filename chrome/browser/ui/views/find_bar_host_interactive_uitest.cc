@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
       browser(), ui::VKEY_BACK, false, false, false, false));
 
   // Validate we have cleared the text.
-  EXPECT_EQ(string16(), GetFindBarText());
+  EXPECT_EQ(base::string16(), GetFindBarText());
 
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
   // After the Find box has been reopened, it should not have been prepopulated
   // with "a" again.
-  EXPECT_EQ(string16(), GetFindBarText());
+  EXPECT_EQ(base::string16(), GetFindBarText());
 
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
   // After the Find box has been reopened, it should still have no prepopulate
   // value.
-  EXPECT_EQ(string16(), GetFindBarText());
+  EXPECT_EQ(base::string16(), GetFindBarText());
 }
 
 // Flaky on Win. http://crbug.com/92467

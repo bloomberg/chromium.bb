@@ -361,7 +361,7 @@ void OmniboxEditModel::OnChanged() {
                             AutocompleteActionPredictor::LAST_PREDICT_ACTION);
 
   // Hide any suggestions we might be showing.
-  view_->SetGrayTextAutocompletion(string16());
+  view_->SetGrayTextAutocompletion(base::string16());
 
   switch (recommended_action) {
     case AutocompleteActionPredictor::ACTION_PRERENDER:

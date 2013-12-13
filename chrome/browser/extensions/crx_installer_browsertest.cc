@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
     EXPECT_EQ(kTestData[i], mock_prompt->confirmation_requested()) <<
         kTestData[i];
     if (kTestData[i]) {
-      EXPECT_EQ(string16(), mock_prompt->error()) << kTestData[i];
+      EXPECT_EQ(base::string16(), mock_prompt->error()) << kTestData[i];
     } else {
       EXPECT_EQ(l10n_util::GetStringUTF16(
           IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE),

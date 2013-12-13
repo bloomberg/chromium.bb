@@ -33,7 +33,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 - (void)alertEnded:(NSAlert *)alert
         returnCode:(int)returnCode
        contextInfo:(void*)contextInfo;
-- (string16)appNameForProtocol;
+- (base::string16)appNameForProtocol;
 @end
 
 @implementation ExternalProtocolDialogController
@@ -140,7 +140,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   [self autorelease];
 }
 
-- (string16)appNameForProtocol {
+- (base::string16)appNameForProtocol {
   NSURL* url = [NSURL URLWithString:
       base::SysUTF8ToNSString(url_.possibly_invalid_spec())];
   CFURLRef openingApp = NULL;

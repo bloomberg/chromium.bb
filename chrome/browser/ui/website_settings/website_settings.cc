@@ -656,7 +656,7 @@ void WebsiteSettings::PresentSiteIdentity() {
 
 void WebsiteSettings::PresentHistoryInfo(base::Time first_visit) {
   if (first_visit == base::Time()) {
-    ui_->SetFirstVisit(string16());
+    ui_->SetFirstVisit(base::string16());
     return;
   }
 

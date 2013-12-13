@@ -83,7 +83,7 @@ class QueryNodeWord : public QueryNode {
   void set_literal(bool literal) { literal_ = literal; }
 
   // QueryNode:
-  virtual int AppendToSQLiteQuery(string16* query) const OVERRIDE;
+  virtual int AppendToSQLiteQuery(base::string16* query) const OVERRIDE;
   virtual bool IsWord() const OVERRIDE;
   virtual bool Matches(const base::string16& word, bool exact) const OVERRIDE;
   virtual bool HasMatchIn(
@@ -106,7 +106,7 @@ QueryNodeWord::QueryNodeWord(const base::string16& word)
 
 QueryNodeWord::~QueryNodeWord() {}
 
-int QueryNodeWord::AppendToSQLiteQuery(string16* query) const {
+int QueryNodeWord::AppendToSQLiteQuery(base::string16* query) const {
   query->append(word_);
 
   // Use prefix search if we're not literal and long enough.

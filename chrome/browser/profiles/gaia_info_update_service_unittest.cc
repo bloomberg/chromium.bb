@@ -114,7 +114,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   // On failure nothing should be updated.
   EXPECT_FALSE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(index));
   EXPECT_EQ(old_name, GetCache()->GetNameOfProfileAtIndex(index));
-  EXPECT_EQ(string16(), GetCache()->GetGAIANameOfProfileAtIndex(index));
+  EXPECT_EQ(base::string16(), GetCache()->GetGAIANameOfProfileAtIndex(index));
   EXPECT_TRUE(gfx::test::IsEqual(
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(index));

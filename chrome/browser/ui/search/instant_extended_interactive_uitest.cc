@@ -219,7 +219,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     return NULL;
   }
 
-  bool AddSearchToHistory(string16 term, int visit_count) {
+  bool AddSearchToHistory(base::string16 term, int visit_count) {
     TemplateURL* template_url = GetDefaultSearchProviderTemplateURL();
     if (!template_url)
       return false;

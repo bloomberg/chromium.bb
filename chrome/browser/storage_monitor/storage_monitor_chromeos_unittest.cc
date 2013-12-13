@@ -272,7 +272,7 @@ TEST_F(StorageMonitorCrosTest, BasicAttachDetach) {
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
             observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
@@ -293,7 +293,7 @@ TEST_F(StorageMonitorCrosTest, BasicAttachDetach) {
   EXPECT_EQ(1, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
             observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path2.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
@@ -321,7 +321,7 @@ TEST_F(StorageMonitorCrosTest, NoDCIM) {
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(device_id, observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path.value(), observer().last_attached().location());
 }
 
@@ -371,7 +371,7 @@ TEST_F(StorageMonitorCrosTest, SDCardAttachDetach) {
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
             observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info1);
@@ -392,7 +392,7 @@ TEST_F(StorageMonitorCrosTest, SDCardAttachDetach) {
   EXPECT_EQ(1, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
             observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path2.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
@@ -415,7 +415,7 @@ TEST_F(StorageMonitorCrosTest, AttachDeviceWithEmptyLabel) {
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
             observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
@@ -438,7 +438,7 @@ TEST_F(StorageMonitorCrosTest, GetStorageSize) {
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
             observer().last_attached().device_id());
-  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   EXPECT_EQ(kDevice1SizeInBytes, GetDeviceStorageSize(mount_path1.value()));

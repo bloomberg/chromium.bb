@@ -329,9 +329,10 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 
   base::string16 script = base::SysNSStringToUTF16(
       [[command evaluatedArguments] objectForKey:@"javascript"]);
-  view->ExecuteJavascriptInWebFrameCallbackResult(string16(),  // frame_xpath
-                                                  script,
-                                                  callback);
+  view->ExecuteJavascriptInWebFrameCallbackResult(
+      base::string16(),  // frame_xpath
+      script,
+      callback);
 
   return nil;
 }

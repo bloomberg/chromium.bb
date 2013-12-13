@@ -200,14 +200,14 @@ class GoogleUpdateJobObserver
 
   // Returns which version Google Update found on the server (if a more
   // recent version was found). Otherwise, this will be blank.
-  STDMETHOD(GetVersionInfo)(string16* version_string) {
+  STDMETHOD(GetVersionInfo)(base::string16* version_string) {
     *version_string = new_version_;
     return S_OK;
   }
 
   // Returns the Google Update supplied error string that describes the error
   // that occurred during the update check/upgrade.
-  STDMETHOD(GetErrorMessage)(string16* error_message) {
+  STDMETHOD(GetErrorMessage)(base::string16* error_message) {
     *error_message = error_message_;
     return S_OK;
   }

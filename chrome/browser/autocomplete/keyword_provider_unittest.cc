@@ -271,9 +271,9 @@ TEST_F(KeywordProviderTest, RemoveKeyword) {
 TEST_F(KeywordProviderTest, GetKeywordForInput) {
   EXPECT_EQ(ASCIIToUTF16("aa"),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aa")));
-  EXPECT_EQ(string16(),
+  EXPECT_EQ(base::string16(),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aafoo")));
-  EXPECT_EQ(string16(),
+  EXPECT_EQ(base::string16(),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aa foo")));
 }
 

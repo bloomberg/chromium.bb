@@ -21,7 +21,7 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   // sets different defaults. If tests utilizing the MockController start
   // breaking because of this, use ON_CALL instead.
   DefaultValue<const DetailInputs&>::Set(default_inputs_);
-  DefaultValue<base::string16>::Set(string16());
+  DefaultValue<base::string16>::Set(base::string16());
   DefaultValue<GURL>::Set(GURL());
   DefaultValue<ValidityMessages>::Set(ValidityMessages());
   DefaultValue<gfx::Image>::Set(gfx::Image());

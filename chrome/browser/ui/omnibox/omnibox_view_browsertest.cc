@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BackspaceInKeywordMode) {
   // the keyword mode.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_EQ(string16(), omnibox_view->model()->keyword());
+  ASSERT_EQ(base::string16(), omnibox_view->model()->keyword());
   ASSERT_EQ(std::string(kSearchKeyword) + kSearchText,
             UTF16ToUTF8(omnibox_view->GetText()));
 }
@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_TRUE(omnibox_view->GetText().empty());
 
   // Revert to keyword hint mode.
-  omnibox_view->model()->ClearKeyword(string16());
+  omnibox_view->model()->ClearKeyword(base::string16());
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
   ASSERT_EQ(search_keyword, omnibox_view->GetText());
@@ -851,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_TRUE(omnibox_view->GetText().empty());
 
   // Revert to keyword hint mode.
-  omnibox_view->model()->ClearKeyword(string16());
+  omnibox_view->model()->ClearKeyword(base::string16());
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
   ASSERT_EQ(search_keyword, omnibox_view->GetText());
@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   EXPECT_EQ(0U, end);
 
   // Keyword shouldn't be accepted by pasting "foo bar".
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_TRUE(omnibox_view->model()->keyword().empty());
 
@@ -929,10 +929,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
-  ASSERT_EQ(string16(), omnibox_view->GetText());
+  ASSERT_EQ(base::string16(), omnibox_view->GetText());
 
   // Space should accept keyword even when inline autocomplete is available.
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
   const TestHistoryEntry kHistoryFoobar = {
     "http://www.foobar.com", "Page foobar", kSearchText, 100, 100, true
   };
@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
 
   // Space in the middle of a temporary text, which separates the text into
   // keyword and replacement portions, should trigger keyword mode.
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
@@ -981,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
 
   // Space after temporary text that looks like a keyword, when the original
   // input does not look like a keyword, should trigger keyword mode.
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
   const TestHistoryEntry kHistoryFoo = {
     "http://footest.com", "Page footest", kSearchText, 1000, 1000, true
   };
@@ -1034,7 +1034,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
   TemplateURL* template_url = new TemplateURL(profile, data);
   template_url_service->Add(template_url);
 
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
 
   // Non-default substituting keyword shouldn't be matched by default.
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
@@ -1047,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
   ASSERT_EQ(kSearchTextURL,
             popup_model->result().default_match()->destination_url.spec());
 
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   ASSERT_FALSE(popup_model->IsOpen());
 
@@ -1635,7 +1635,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_CUT));
-  EXPECT_EQ(string16(), omnibox_view->GetText());
+  EXPECT_EQ(base::string16(), omnibox_view->GetText());
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
 
@@ -1697,7 +1697,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutTextToClipboard) {
       ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-  EXPECT_EQ(string16(), omnibox_view->GetText());
+  EXPECT_EQ(base::string16(), omnibox_view->GetText());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {

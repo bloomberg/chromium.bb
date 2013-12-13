@@ -41,12 +41,12 @@ TEST(MisspellingTest, GetMisspelledStringTest) {
   EXPECT_EQ(ASCIIToUTF16("doe sit"), misspelling.GetMisspelledString());
 
   misspelling.length = 0;
-  EXPECT_EQ(string16(), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());
 
   misspelling.location = misspelling.context.length();
   misspelling.length = 7;
-  EXPECT_EQ(string16(), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());
 
   misspelling.location = misspelling.context.length() + 1;
-  EXPECT_EQ(string16(), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());
 }

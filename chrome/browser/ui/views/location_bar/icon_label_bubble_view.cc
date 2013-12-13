@@ -25,7 +25,7 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
     : background_painter_(
           views::Painter::CreateImageGridPainter(background_images)),
       image_(new views::ImageView()),
-      label_(new views::Label(string16(), font_list)),
+      label_(new views::Label(base::string16(), font_list)),
       is_extension_icon_(false),
       in_hover_(false) {
   image_->SetImage(

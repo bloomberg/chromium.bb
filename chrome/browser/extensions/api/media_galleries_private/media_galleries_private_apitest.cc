@@ -77,7 +77,8 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
                       const std::string& js_command,
                       const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false  /* no reply */);
-    host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(js_command));
+    host->ExecuteJavascriptInWebFrame(base::string16(),
+                                      ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 

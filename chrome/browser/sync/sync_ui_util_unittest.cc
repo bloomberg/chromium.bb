@@ -387,7 +387,7 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     // found in an English language message) fails when links are excluded from
     // the status label.
     EXPECT_FALSE(status_label.empty());
-    EXPECT_EQ(status_label.find(string16(ASCIIToUTF16("href"))),
+    EXPECT_EQ(status_label.find(base::string16(ASCIIToUTF16("href"))),
               base::string16::npos);
     testing::Mock::VerifyAndClearExpectations(&service);
     testing::Mock::VerifyAndClearExpectations(&signin);

@@ -178,7 +178,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Password element was updated.
 #if defined(OS_MACOSX)
   // On the Mac we should never be storing passwords in the database.
-  EXPECT_EQ(string16(), result[0]->password_value);
+  EXPECT_EQ(base::string16(), result[0]->password_value);
 #else
   EXPECT_EQ(form6.password_value, result[0]->password_value);
 #endif

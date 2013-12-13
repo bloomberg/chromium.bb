@@ -235,12 +235,12 @@ TEST_F(ManagedUserServiceExtensionTestUnmanaged,
   scoped_refptr<extensions::Extension> extension = MakeExtension();
   base::string16 error_1;
   EXPECT_TRUE(managed_user_service->UserMayLoad(extension.get(), &error_1));
-  EXPECT_EQ(string16(), error_1);
+  EXPECT_EQ(base::string16(), error_1);
 
   base::string16 error_2;
   EXPECT_TRUE(
       managed_user_service->UserMayModifySettings(extension.get(), &error_2));
-  EXPECT_EQ(string16(), error_2);
+  EXPECT_EQ(base::string16(), error_2);
 }
 
 TEST_F(ManagedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
@@ -343,7 +343,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   ASSERT_EQ(3u, sites.size());
   EXPECT_EQ(ASCIIToUTF16("YouTube"), sites[0].name);
   EXPECT_EQ(ASCIIToUTF16("Homestar Runner"), sites[1].name);
-  EXPECT_EQ(string16(), sites[2].name);
+  EXPECT_EQ(base::string16(), sites[2].name);
 
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));

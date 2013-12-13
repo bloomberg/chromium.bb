@@ -277,7 +277,7 @@ void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const ListValue* list_value) {
   content::RenderViewHost* host =
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost();
-  host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
+  host->ExecuteJavascriptInWebFrame(base::string16(), ASCIIToUTF16("Click()"));
 }
 
 void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(

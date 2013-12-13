@@ -201,7 +201,7 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
     const base::string16& search_terms)
     : search_terms(search_terms),
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
-      cursor_position(string16::npos),
+      cursor_position(base::string16::npos),
       omnibox_start_margin(-1),
       page_classification(AutocompleteInput::INVALID_SPEC),
       bookmark_bar_pinned(false),
@@ -478,7 +478,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
   // so we use the empty string.
   // Currently we assume the search term only shows in URL, not in post params.
   GURL pattern(ReplaceSearchTermsUsingTermsData(
-      SearchTermsArgs(string16()), search_terms_data, NULL));
+      SearchTermsArgs(base::string16()), search_terms_data, NULL));
   // Host, path and port must match.
   if (url.port() != pattern.port() ||
       url.host() != host_ ||

@@ -224,7 +224,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
 }
 
 void FindBarView::ClearMatchCount() {
-  match_count_text_->SetText(string16());
+  match_count_text_->SetText(base::string16());
   UpdateMatchCountAppearance(false);
   Layout();
   SchedulePaint();
@@ -474,7 +474,7 @@ void FindBarView::Find(const base::string16& search_text) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(profile);
-    find_bar_state->set_last_prepopulate_text(string16());
+    find_bar_state->set_last_prepopulate_text(base::string16());
   }
 }
 

@@ -634,7 +634,7 @@ void StatusBubbleViews::SetStatus(const base::string16& status_text) {
   } else if (!url_text_.empty()) {
     view_->SetText(url_text_, true);
   } else {
-    view_->SetText(string16(), true);
+    view_->SetText(base::string16(), true);
   }
 }
 

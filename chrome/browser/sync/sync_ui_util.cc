@@ -289,7 +289,7 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
       // NOT first machine.
       // Show a link and present as an error ("needs attention").
       if (status_label && link_label) {
-        status_label->assign(string16());
+        status_label->assign(base::string16());
         link_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_CONFIGURE_ENCRYPTION));
       }

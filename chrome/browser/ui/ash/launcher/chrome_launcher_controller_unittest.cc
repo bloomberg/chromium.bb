@@ -237,8 +237,10 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE {
     ChromeLauncherAppMenuItems items;
-    items.push_back(new ChromeLauncherAppMenuItem(string16(), NULL, false));
-    items.push_back(new ChromeLauncherAppMenuItem(string16(), NULL, false));
+    items.push_back(
+        new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
+    items.push_back(
+        new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
     return items.Pass();
   }
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) OVERRIDE {

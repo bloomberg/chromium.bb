@@ -629,7 +629,7 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
     // just deleted.
     FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(
         browser_->profile());
-    find_bar_state->set_last_prepopulate_text(string16());
+    find_bar_state->set_last_prepopulate_text(base::string16());
   }
 }
 

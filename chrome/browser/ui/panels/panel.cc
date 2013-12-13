@@ -888,7 +888,7 @@ void Panel::UpdateAppIcon() {
 }
 
 // static
-void Panel::FormatTitleForDisplay(string16* title) {
+void Panel::FormatTitleForDisplay(base::string16* title) {
   size_t current_index = 0;
   size_t match_index;
   while ((match_index = title->find(L'\n', current_index)) !=

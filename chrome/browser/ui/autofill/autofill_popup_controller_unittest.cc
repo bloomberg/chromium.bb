@@ -342,7 +342,7 @@ TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
 
 TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   std::vector<base::string16> items;
-  items.push_back(string16());
+  items.push_back(base::string16());
   std::vector<int> ids;
   ids.push_back(1);
 
@@ -387,7 +387,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
                                                    data_list_values);
 
   items.clear();
-  items.push_back(string16());
+  items.push_back(base::string16());
   ids.clear();
   ids.push_back(1);
 
@@ -398,7 +398,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
   // Create the popup with a single datalist element.
   std::vector<base::string16> items;
-  items.push_back(string16());
+  items.push_back(base::string16());
   std::vector<int> ids;
   ids.push_back(WebAutofillClient::MenuItemIDDataListEntry);
 

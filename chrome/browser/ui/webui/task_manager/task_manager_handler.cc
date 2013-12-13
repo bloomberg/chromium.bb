@@ -113,7 +113,7 @@ static int parseIndex(const Value* value) {
   base::string16 base::string16_index;
   double double_index;
   if (value->GetAsString(&string16_index)) {
-    bool converted = base::StringToInt(string16_index, &index);
+    bool converted = base::StringToInt(base::string16_index, &index);
     DCHECK(converted);
   } else if (value->GetAsDouble(&double_index)) {
     index = static_cast<int>(double_index);

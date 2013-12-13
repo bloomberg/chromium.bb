@@ -43,5 +43,5 @@ void MemoryInternalsHandler::OnUpdate(const base::string16& update) {
   content::RenderViewHost* host =
       web_ui()->GetWebContents()->GetRenderViewHost();
   if (host)
-    host->ExecuteJavascriptInWebFrame(string16(), update);
+    host->ExecuteJavascriptInWebFrame(base::string16(), update);
 }

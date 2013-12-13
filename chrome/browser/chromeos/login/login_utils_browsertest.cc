@@ -558,7 +558,7 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
   base::string16 rlz_string;
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
       RLZTracker::CHROME_HOME_PAGE, &rlz_string));
-  EXPECT_EQ(string16(), rlz_string);
+  EXPECT_EQ(base::string16(), rlz_string);
 }
 #endif
 

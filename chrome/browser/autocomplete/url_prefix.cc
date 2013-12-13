@@ -24,7 +24,7 @@ const URLPrefixes& URLPrefix::GetURLPrefixes() {
     prefixes.push_back(URLPrefix(ASCIIToUTF16("https://"), 1));
     prefixes.push_back(URLPrefix(ASCIIToUTF16("http://"), 1));
     prefixes.push_back(URLPrefix(ASCIIToUTF16("ftp://"), 1));
-    prefixes.push_back(URLPrefix(string16(), 0));
+    prefixes.push_back(URLPrefix(base::string16(), 0));
   }
   return prefixes;
 }

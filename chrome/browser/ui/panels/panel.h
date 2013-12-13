@@ -339,7 +339,7 @@ class Panel : public ui::BaseWindow,
   void UpdateAppIcon();
 
   // Prepares a title string for display (removes embedded newlines, etc).
-  static void FormatTitleForDisplay(string16* title);
+  static void FormatTitleForDisplay(base::string16* title);
 
   // The application name that is also the name of the window when the
   // page content does not provide a title.

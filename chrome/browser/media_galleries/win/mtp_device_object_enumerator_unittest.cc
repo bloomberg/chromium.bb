@@ -40,7 +40,7 @@ const MTPDeviceObjectEntryData kTestCases[] = {
 };
 
 void TestEnumeratorIsEmpty(MTPDeviceObjectEnumerator* enumerator) {
-  EXPECT_EQ(string16(), enumerator->GetObjectId());
+  EXPECT_EQ(base::string16(), enumerator->GetObjectId());
   EXPECT_EQ(0, enumerator->Size());
   EXPECT_FALSE(enumerator->IsDirectory());
   EXPECT_TRUE(enumerator->LastModifiedTime().is_null());

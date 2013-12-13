@@ -10,7 +10,7 @@
 TEST(WordTrimmerTest, TrimWordsEmptyText) {
   size_t start = 0;
   size_t end = 0;
-  EXPECT_EQ(string16(), TrimWords(&start, end, base::string16(), 0));
+  EXPECT_EQ(base::string16(), TrimWords(&start, end, base::string16(), 0));
   EXPECT_EQ(0UL, start);
 }
 

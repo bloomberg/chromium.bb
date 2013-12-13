@@ -40,8 +40,8 @@ TEST_F(FindBackendTest, InternalState) {
   FindTabHelper* find_tab_helper =
       FindTabHelper::FromWebContents(web_contents());
   // Initial state for the WebContents is blank strings.
-  EXPECT_EQ(string16(), FindPrepopulateText(web_contents()));
-  EXPECT_EQ(string16(), find_tab_helper->find_text());
+  EXPECT_EQ(base::string16(), FindPrepopulateText(web_contents()));
+  EXPECT_EQ(base::string16(), find_tab_helper->find_text());
 
   // Get another WebContents object ready.
   scoped_ptr<WebContents> contents2(
@@ -51,10 +51,10 @@ TEST_F(FindBackendTest, InternalState) {
       FindTabHelper::FromWebContents(contents2.get());
 
   // No search has still been issued, strings should be blank.
-  EXPECT_EQ(string16(), FindPrepopulateText(web_contents()));
-  EXPECT_EQ(string16(), find_tab_helper->find_text());
-  EXPECT_EQ(string16(), FindPrepopulateText(contents2.get()));
-  EXPECT_EQ(string16(), find_tab_helper2->find_text());
+  EXPECT_EQ(base::string16(), FindPrepopulateText(web_contents()));
+  EXPECT_EQ(base::string16(), find_tab_helper->find_text());
+  EXPECT_EQ(base::string16(), FindPrepopulateText(contents2.get()));
+  EXPECT_EQ(base::string16(), find_tab_helper2->find_text());
 
   base::string16 search_term1 = ASCIIToUTF16(" I had a 401K    ");
   base::string16 search_term2 = ASCIIToUTF16(" but the economy ");
@@ -69,7 +69,7 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(search_term1, FindPrepopulateText(web_contents()));
   EXPECT_EQ(search_term1, find_tab_helper->find_text());
   EXPECT_EQ(search_term1, FindPrepopulateText(contents2.get()));
-  EXPECT_EQ(string16(), find_tab_helper2->find_text());
+  EXPECT_EQ(base::string16(), find_tab_helper2->find_text());
 
   // Now search in the other WebContents, searching forwards but not case
   // sensitive (as indicated by the last two params).

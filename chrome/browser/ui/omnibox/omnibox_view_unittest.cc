@@ -94,7 +94,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   // Does an empty clipboard get empty text?
   clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE,
                           ui::Clipboard::ObjectMap());
-  EXPECT_EQ(string16(), OmniboxView::GetClipboardText());
+  EXPECT_EQ(base::string16(), OmniboxView::GetClipboardText());
 #endif
 
   // Bookmark clipboard apparently not supported on Linux.

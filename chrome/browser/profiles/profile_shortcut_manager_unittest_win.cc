@@ -326,7 +326,7 @@ TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutFilename) {
   EXPECT_EQ(
       distribution->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
           installer::kLnkExt,
-      profiles::internal::GetShortcutFilenameForProfile(string16(),
+      profiles::internal::GetShortcutFilenameForProfile(base::string16(),
                                                         distribution));
 }
 
@@ -360,7 +360,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
 TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
   SetupDefaultProfileShortcut(FROM_HERE);
   // Assert that a shortcut without a profile name exists.
-  ASSERT_TRUE(ProfileShortcutExistsAtDefaultPath(string16()));
+  ASSERT_TRUE(ProfileShortcutExistsAtDefaultPath(base::string16()));
 
   // Create a second profile without a shortcut.
   profile_info_cache_->AddProfileToCache(profile_2_path_, profile_2_name_,
@@ -370,7 +370,7 @@ TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
   // Ensure that the second profile doesn't have a shortcut and that the first
   // profile's shortcut got renamed and badged.
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_2_name_));
-  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(string16()));
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(base::string16()));
   ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
 }
 
@@ -442,7 +442,7 @@ TEST_F(ProfileShortcutManagerTest, DeleteOnlyProfileWithShortcuts) {
   CreateProfileWithShortcut(FROM_HERE, profile_3_name_, profile_3_path_);
 
   const base::FilePath non_profile_shortcut_path =
-      GetDefaultShortcutPathForProfile(string16());
+      GetDefaultShortcutPathForProfile(base::string16());
   const base::FilePath profile_1_shortcut_path =
       GetDefaultShortcutPathForProfile(profile_1_name_);
   const base::FilePath profile_2_shortcut_path =
@@ -489,7 +489,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
   // Verify that the original shortcut received the profile's name.
   ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
   // Verify that a default shortcut no longer exists.
-  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(string16()));
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(base::string16()));
 }
 
 TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcuts) {
@@ -581,8 +581,8 @@ TEST_F(ProfileShortcutManagerTest, UpdateShortcutWithNoFlags) {
 
   // Delete the shortcut that got created for this profile and instead make
   // a new one without any command-line flags.
-  ASSERT_TRUE(base::DeleteFile(GetDefaultShortcutPathForProfile(string16()),
-                                false));
+  ASSERT_TRUE(base::DeleteFile(
+      GetDefaultShortcutPathForProfile(base::string16()), false));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
                                     GetDistribution()->GetShortcutName(
@@ -600,8 +600,8 @@ TEST_F(ProfileShortcutManagerTest, UpdateTwoShortcutsWithNoFlags) {
 
   // Delete the shortcut that got created for this profile and instead make
   // two new ones without any command-line flags.
-  ASSERT_TRUE(base::DeleteFile(GetDefaultShortcutPathForProfile(string16()),
-                                false));
+  ASSERT_TRUE(base::DeleteFile(
+      GetDefaultShortcutPathForProfile(base::string16()), false));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
                                     GetDistribution()->GetShortcutName(
@@ -693,7 +693,7 @@ TEST_F(ProfileShortcutManagerTest, ProfileShortcutsWithSystemLevelShortcut) {
   // Ensure system-level continues to exist and user-level was not created.
   EXPECT_TRUE(base::PathExists(system_level_shortcut_path));
   EXPECT_FALSE(base::PathExists(
-                   GetDefaultShortcutPathForProfile(string16())));
+                   GetDefaultShortcutPathForProfile(base::string16())));
 
   // Create another profile with a shortcut and ensure both profiles receive
   // user-level profile shortcuts and the system-level one still exists.
@@ -746,7 +746,7 @@ TEST_F(ProfileShortcutManagerTest,
   RunPendingTasks();
 
   EXPECT_TRUE(base::PathExists(system_level_shortcut_path));
-  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(string16()));
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(base::string16()));
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_));
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_2_name_));
 }
@@ -777,7 +777,7 @@ TEST_F(ProfileShortcutManagerTest,
   // Verify that only the system-level shortcut still exists.
   EXPECT_TRUE(base::PathExists(system_level_shortcut_path));
   EXPECT_FALSE(base::PathExists(
-                   GetDefaultShortcutPathForProfile(string16())));
+                   GetDefaultShortcutPathForProfile(base::string16())));
   EXPECT_FALSE(base::PathExists(profile_1_shortcut_path));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path));
 }

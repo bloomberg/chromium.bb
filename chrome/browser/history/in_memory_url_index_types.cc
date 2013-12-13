@@ -163,7 +163,8 @@ String16Vector String16VectorFromString16(
 
 Char16Set Char16SetFromString16(const base::string16& term) {
   Char16Set characters;
-  for (string16::const_iterator iter = term.begin(); iter != term.end(); ++iter)
+  for (base::string16::const_iterator iter = term.begin(); iter != term.end();
+       ++iter)
     characters.insert(*iter);
   return characters;
 }

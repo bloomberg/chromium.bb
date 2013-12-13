@@ -57,14 +57,14 @@ TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
 
   base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
-  EXPECT_EQ(string16(), error16);
+  EXPECT_EQ(base::string16(), error16);
 
   // We won't check the exact wording of the error, but it should say
   // something.
   EXPECT_FALSE(provider_.UserMayModifySettings(extension.get(), &error16));
-  EXPECT_NE(string16(), error16);
+  EXPECT_NE(base::string16(), error16);
   EXPECT_TRUE(provider_.MustRemainEnabled(extension.get(), &error16));
-  EXPECT_NE(string16(), error16);
+  EXPECT_NE(base::string16(), error16);
 }
 
 // Tests the behavior of the ManagementPolicy provider methods for an
@@ -75,11 +75,11 @@ TEST_F(StandardManagementPolicyProviderTest, NotRequiredExtension) {
 
   base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
-  EXPECT_EQ(string16(), error16);
+  EXPECT_EQ(base::string16(), error16);
   EXPECT_TRUE(provider_.UserMayModifySettings(extension.get(), &error16));
-  EXPECT_EQ(string16(), error16);
+  EXPECT_EQ(base::string16(), error16);
   EXPECT_FALSE(provider_.MustRemainEnabled(extension.get(), &error16));
-  EXPECT_EQ(string16(), error16);
+  EXPECT_EQ(base::string16(), error16);
 }
 
 }  // namespace extensions

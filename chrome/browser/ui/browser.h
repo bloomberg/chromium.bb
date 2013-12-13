@@ -289,7 +289,7 @@ class Browser : public TabStripModelObserver,
   base::string16 GetWindowTitleForCurrentTab() const;
 
   // Prepares a title string for display (removes embedded newlines, etc).
-  static void FormatTitleForDisplay(string16* title);
+  static void FormatTitleForDisplay(base::string16* title);
 
   // OnBeforeUnload handling //////////////////////////////////////////////////
 

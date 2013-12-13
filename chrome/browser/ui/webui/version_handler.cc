@@ -114,7 +114,7 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
   web_ui()->CallJavascriptFunction("returnVariationInfo", variations_list);
 }
 
-void VersionHandler::OnGotFilePaths(string16* executable_path_data,
+void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
                                     base::string16* profile_path_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

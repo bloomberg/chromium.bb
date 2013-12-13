@@ -47,7 +47,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
       extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   base::ScopedTempDir ext_dir;
@@ -100,7 +100,7 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
       extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   base::ScopedTempDir ext_dir;
@@ -167,7 +167,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentStart) {
       extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   base::ScopedTempDir ext_dir;
@@ -202,7 +202,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentEnd) {
       extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   base::ScopedTempDir ext_dir;
@@ -238,7 +238,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
       extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   base::ScopedTempDir ext_dir;

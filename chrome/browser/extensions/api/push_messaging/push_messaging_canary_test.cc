@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, MANUAL_ReceivesPush) {
       client_id.c_str(), client_secret.c_str(), refresh_token.c_str()));
 
   browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), script_string);
+      ExecuteJavascriptInWebFrame(base::string16(), script_string);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

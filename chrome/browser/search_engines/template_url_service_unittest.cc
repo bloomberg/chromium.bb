@@ -1041,7 +1041,7 @@ TEST_F(TemplateURLServiceTest, DontUpdateKeywordSearchForNonReplaceable) {
     details.row = history::URLRow(GURL(data[i].url));
     details.transition = content::PageTransitionFromInt(0);
     model()->UpdateKeywordSearchTermsForURL(details);
-    ASSERT_EQ(string16(), test_util_.GetAndClearSearchTerm());
+    ASSERT_EQ(base::string16(), test_util_.GetAndClearSearchTerm());
   }
 }
 
