@@ -4,11 +4,13 @@
 
 #include "base/test/launcher/test_results_tracker.h"
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/test_launcher.h"
@@ -273,8 +275,26 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
         test_result_value->SetString("status", test_result.StatusAsString());
         test_result_value->SetInteger(
             "elapsed_time_ms", test_result.elapsed_time.InMilliseconds());
+
+        // There are no guarantees about character encoding of the output
+        // snippet. Escape it and record whether it was losless.
+        // It's useful to have the output snippet as string in the summary
+        // for easy viewing.
+        std::string escaped_output_snippet;
+        bool losless_snippet = EscapeJSONString(
+            test_result.output_snippet, false, &escaped_output_snippet);
         test_result_value->SetString("output_snippet",
-                                     test_result.output_snippet);
+                                     escaped_output_snippet);
+        test_result_value->SetBoolean("losless_snippet", losless_snippet);
+
+        // Also include the raw version (base64-encoded so that it can be safely
+        // JSON-serialized - there are no guarantees about character encoding
+        // of the snippet). This can be very useful piece of information when
+        // debugging a test failure related to character encoding.
+        std::string base64_output_snippet;
+        Base64Encode(test_result.output_snippet, &base64_output_snippet);
+        test_result_value->SetString("output_snippet_base64",
+                                     base64_output_snippet);
       }
     }
   }
