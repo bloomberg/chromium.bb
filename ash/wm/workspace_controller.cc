@@ -31,13 +31,10 @@ namespace {
 // animation (when logging in).
 const int kInitialPauseTimeMS = 750;
 
-// Returns true if the |window| is docked and visible.
-bool IsDockedAndVisible(const aura::Window* window) {
-  return (window->parent()->id() == kShellWindowId_DockedContainer &&
-          window->IsVisible() &&
-          !wm::GetWindowState(window)->IsMinimized() &&
-          window->type() != aura::client::WINDOW_TYPE_POPUP &&
-          !window->transient_parent());
+// Returns true if there are visible docked windows in the same screen as the
+// |shelf|.
+bool IsDockedAreaVisible(const ShelfLayoutManager* shelf) {
+  return shelf->dock_bounds().width() > 0;
 }
 
 }  // namespace
@@ -97,14 +94,13 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
       if (window_state->IsMaximized())
         return WORKSPACE_WINDOW_STATE_MAXIMIZED;
       if (!window_overlaps_launcher &&
-          ((*i)->bounds().Intersects(shelf_bounds) ||
-           IsDockedAndVisible(*i))) {
+          ((*i)->bounds().Intersects(shelf_bounds))) {
         window_overlaps_launcher = true;
       }
     }
   }
 
-  return window_overlaps_launcher ?
+  return (window_overlaps_launcher || IsDockedAreaVisible(shelf_)) ?
       WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
       WORKSPACE_WINDOW_STATE_DEFAULT;
 }

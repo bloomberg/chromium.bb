@@ -1296,6 +1296,11 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
       Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(10, 10);
   generator.PressLeftButton();
+  generator.MoveMouseTo(100, shelf->GetIdealBounds().y() - 70);
+
+  // Shelf should not be in overlapped state.
+  EXPECT_FALSE(GetWindowOverlapsShelf());
+
   generator.MoveMouseTo(100, shelf->GetIdealBounds().y() - 20);
 
   // Shelf should detect overlap. Overlap state stays after mouse is released.

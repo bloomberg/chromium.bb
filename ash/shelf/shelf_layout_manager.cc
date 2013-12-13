@@ -1131,6 +1131,7 @@ void ShelfLayoutManager::OnDockBoundsChanging(
   if (dock_bounds_ != dock_bounds) {
     dock_bounds_ = dock_bounds;
     OnWindowResized();
+    UpdateVisibilityState();
     UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
   }
 }
