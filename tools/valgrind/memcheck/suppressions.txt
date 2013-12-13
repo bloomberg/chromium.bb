@@ -6343,10 +6343,6 @@
    fun:_ZNK7WebCore18StyleSheetContents11isCacheableEv
    fun:_ZN7WebCore9LinkStyle16setCSSStyleSheetERKN3WTF6StringERKNS_4KURLES4_PKNS_21CSSStyleSheetResourceE
    fun:_ZN7WebCore21CSSStyleSheetResource11checkNotifyEv
-   fun:_ZN7WebCore8Resource13finishOnePartEv
-   fun:_ZN7WebCore8Resource6finishEd
-   fun:_ZN7WebCore14ResourceLoader16didFinishLoadingEPN5blink12WebURLLoaderEd
+   ...
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
-   fun:_ZN7content18ResourceDispatcher17OnRequestCompleteEiibRKSsRKN4base9TimeTicksE
 }
-
