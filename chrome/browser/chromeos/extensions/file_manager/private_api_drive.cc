@@ -423,7 +423,7 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
 }
 
 bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
-  using extensions::api::file_browser_private::SearchDriveMetadata::Params;
+  using api::file_browser_private::SearchDriveMetadata::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -431,7 +431,7 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
                    "%s[%d] called. (types: '%s', maxResults: '%d')",
                    name().c_str(),
                    request_id(),
-                   Params::SearchParams::ToString(
+                   api::file_browser_private::ToString(
                        params->search_params.types).c_str(),
                    params->search_params.max_results);
   set_log_on_completion(true);
@@ -445,19 +445,19 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
 
   int options = -1;
   switch (params->search_params.types) {
-    case Params::SearchParams::TYPES_EXCLUDE_DIRECTORIES:
+    case api::file_browser_private::SEARCH_TYPE_EXCLUDE_DIRECTORIES:
       options = drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES;
       break;
-    case Params::SearchParams::TYPES_SHARED_WITH_ME:
+    case api::file_browser_private::SEARCH_TYPE_SHARED_WITH_ME:
       options = drive::SEARCH_METADATA_SHARED_WITH_ME;
       break;
-    case Params::SearchParams::TYPES_OFFLINE:
+    case api::file_browser_private::SEARCH_TYPE_OFFLINE:
       options = drive::SEARCH_METADATA_OFFLINE;
       break;
-    case Params::SearchParams::TYPES_ALL:
+    case api::file_browser_private::SEARCH_TYPE_ALL:
       options = drive::SEARCH_METADATA_ALL;
       break;
-    case Params::SearchParams::TYPES_NONE:
+    case api::file_browser_private::SEARCH_TYPE_NONE:
       break;
   }
   DCHECK_NE(options, -1);
@@ -511,7 +511,7 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
 }
 
 bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
-  api::file_browser_private::GetDriveConnectionState::Results::Result result;
+  api::file_browser_private::DriveConnectionState result;
 
   switch (drive::util::GetDriveConnectionStatus(GetProfile())) {
     case drive::util::DRIVE_DISCONNECTED_NOSERVICE:

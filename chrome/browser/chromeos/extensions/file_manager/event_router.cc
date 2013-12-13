@@ -149,57 +149,67 @@ void BroadcastEvent(Profile* profile,
           new extensions::Event(event_name, event_args.Pass())));
 }
 
-file_browser_private::MountCompletedEvent::Status
+file_browser_private::MountCompletedStatus
 MountErrorToMountCompletedStatus(chromeos::MountError error) {
-  using file_browser_private::MountCompletedEvent;
-
   switch (error) {
     case chromeos::MOUNT_ERROR_NONE:
-      return MountCompletedEvent::STATUS_SUCCESS;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_SUCCESS;
     case chromeos::MOUNT_ERROR_UNKNOWN:
-      return MountCompletedEvent::STATUS_ERROR_UNKNOWN;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN;
     case chromeos::MOUNT_ERROR_INTERNAL:
-      return MountCompletedEvent::STATUS_ERROR_INTERNAL;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_INTERNAL;
     case chromeos::MOUNT_ERROR_INVALID_ARGUMENT:
-      return MountCompletedEvent::STATUS_ERROR_INVALID_ARGUMENT;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARGUMENT;
     case chromeos::MOUNT_ERROR_INVALID_PATH:
-      return MountCompletedEvent::STATUS_ERROR_INVALID_PATH;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_PATH;
     case chromeos::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
-      return MountCompletedEvent::STATUS_ERROR_PATH_ALREADY_MOUNTED;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_PATH_ALREADY_MOUNTED;
     case chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED:
-      return MountCompletedEvent::STATUS_ERROR_PATH_NOT_MOUNTED;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_PATH_NOT_MOUNTED;
     case chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
-      return MountCompletedEvent::STATUS_ERROR_DIRECTORY_CREATION_FAILED;
+      return file_browser_private
+          ::MOUNT_COMPLETED_STATUS_ERROR_DIRECTORY_CREATION_FAILED;
     case chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
-      return MountCompletedEvent::STATUS_ERROR_INVALID_MOUNT_OPTIONS;
+      return file_browser_private
+          ::MOUNT_COMPLETED_STATUS_ERROR_INVALID_MOUNT_OPTIONS;
     case chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
-      return MountCompletedEvent::STATUS_ERROR_INVALID_UNMOUNT_OPTIONS;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_INVALID_UNMOUNT_OPTIONS;
     case chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
-      return MountCompletedEvent::STATUS_ERROR_INSUFFICIENT_PERMISSIONS;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_INSUFFICIENT_PERMISSIONS;
     case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
-      return MountCompletedEvent::STATUS_ERROR_MOUNT_PROGRAM_NOT_FOUND;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_NOT_FOUND;
     case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
-      return MountCompletedEvent::STATUS_ERROR_MOUNT_PROGRAM_FAILED;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_FAILED;
     case chromeos::MOUNT_ERROR_INVALID_DEVICE_PATH:
-      return MountCompletedEvent::STATUS_ERROR_INVALID_DEVICE_PATH;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_INVALID_DEVICE_PATH;
     case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
-      return MountCompletedEvent::STATUS_ERROR_UNKNOWN_FILESYSTEM;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN_FILESYSTEM;
     case chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
-      return MountCompletedEvent::STATUS_ERROR_UNSUPORTED_FILESYSTEM;
+      return file_browser_private::
+          MOUNT_COMPLETED_STATUS_ERROR_UNSUPORTED_FILESYSTEM;
     case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
-      return MountCompletedEvent::STATUS_ERROR_INVALID_ARCHIVE;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARCHIVE;
     case chromeos::MOUNT_ERROR_NOT_AUTHENTICATED:
-      return MountCompletedEvent::STATUS_ERROR_AUTHENTICATION;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_AUTHENTICATION;
     case chromeos::MOUNT_ERROR_PATH_UNMOUNTED:
-      return MountCompletedEvent::STATUS_ERROR_PATH_UNMOUNTED;
+      return file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_PATH_UNMOUNTED;
   }
   NOTREACHED();
-  return MountCompletedEvent::STATUS_NONE;
+  return file_browser_private::MOUNT_COMPLETED_STATUS_NONE;
 }
 
 void BroadcastMountCompletedEvent(
     Profile* profile,
-    file_browser_private::MountCompletedEvent::EventType event_type,
+    file_browser_private::MountCompletedEventType event_type,
     chromeos::MountError error,
     const VolumeInfo& volume_info) {
   file_browser_private::MountCompletedEvent event;
@@ -211,7 +221,7 @@ void BroadcastMountCompletedEvent(
   if (!volume_info.mount_path.empty() &&
       event.volume_metadata.mount_path.empty()) {
     event.status =
-        file_browser_private::MountCompletedEvent::STATUS_ERROR_PATH_UNMOUNTED;
+        file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_PATH_UNMOUNTED;
   }
 
   BroadcastEvent(
@@ -220,21 +230,19 @@ void BroadcastMountCompletedEvent(
       file_browser_private::OnMountCompleted::Create(event));
 }
 
-file_browser_private::CopyProgressStatus::Type
+file_browser_private::CopyProgressStatusType
 CopyProgressTypeToCopyProgressStatusType(
     fileapi::FileSystemOperation::CopyProgressType type) {
-  using file_browser_private::CopyProgressStatus;
-
   switch (type) {
     case fileapi::FileSystemOperation::BEGIN_COPY_ENTRY:
-      return CopyProgressStatus::TYPE_BEGIN_COPY_ENTRY;
+      return file_browser_private::COPY_PROGRESS_STATUS_TYPE_BEGIN_COPY_ENTRY;
     case fileapi::FileSystemOperation::END_COPY_ENTRY:
-      return CopyProgressStatus::TYPE_END_COPY_ENTRY;
+      return file_browser_private::COPY_PROGRESS_STATUS_TYPE_END_COPY_ENTRY;
     case fileapi::FileSystemOperation::PROGRESS:
-      return CopyProgressStatus::TYPE_PROGRESS;
+      return file_browser_private::COPY_PROGRESS_STATUS_TYPE_PROGRESS;
   }
   NOTREACHED();
-  return CopyProgressStatus::TYPE_NONE;
+  return file_browser_private::COPY_PROGRESS_STATUS_TYPE_NONE;
 }
 
 }  // namespace
@@ -409,12 +417,12 @@ void EventRouter::OnCopyCompleted(int copy_id,
   file_browser_private::CopyProgressStatus status;
   if (error == base::PLATFORM_FILE_OK) {
     // Send success event.
-    status.type = file_browser_private::CopyProgressStatus::TYPE_SUCCESS;
+    status.type = file_browser_private::COPY_PROGRESS_STATUS_TYPE_SUCCESS;
     status.source_url.reset(new std::string(source_url.spec()));
     status.destination_url.reset(new std::string(destination_url.spec()));
   } else {
     // Send error event.
-    status.type = file_browser_private::CopyProgressStatus::TYPE_ERROR;
+    status.type = file_browser_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
     status.error.reset(
         new int(fileapi::PlatformFileErrorToWebFileError(error)));
   }
@@ -696,7 +704,7 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
 
   BroadcastMountCompletedEvent(
       profile_,
-      file_browser_private::MountCompletedEvent::EVENT_TYPE_MOUNT,
+      file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT,
       error_code, volume_info);
 
   if (volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION &&
@@ -720,7 +728,7 @@ void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BroadcastMountCompletedEvent(
       profile_,
-      file_browser_private::MountCompletedEvent::EVENT_TYPE_UNMOUNT,
+      file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT,
       error_code, volume_info);
 }
 

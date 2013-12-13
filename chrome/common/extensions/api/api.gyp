@@ -66,7 +66,7 @@
               'experimental_accessibility.json',
               'experimental_discovery.idl',
               'feedback_private.idl',
-              'file_browser_private.json',
+              'file_browser_private.idl',
               'file_system.idl',
               'file_system_provider.idl',
               'font_settings.json',

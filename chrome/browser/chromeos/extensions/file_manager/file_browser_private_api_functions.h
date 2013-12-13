@@ -7,7 +7,7 @@
 
 // This header file is included from the auto generated code by the extension
 // API scheme compiler.
-// See also chrome/common/extensions/api/file_browser_private.json.
+// See also chrome/common/extensions/api/file_browser_private.idl.
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_dialog.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"

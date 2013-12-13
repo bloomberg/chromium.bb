@@ -46,7 +46,7 @@ bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunImpl() {
 }
 
 bool FileBrowserPrivateGetPreferencesFunction::RunImpl() {
-  api::file_browser_private::GetPreferences::Results::Result result;
+  api::file_browser_private::Preferences result;
   const PrefService* const service = GetProfile()->GetPrefs();
 
   result.drive_enabled = drive::util::IsDriveEnabledForProfile(GetProfile());
@@ -167,13 +167,13 @@ bool FileBrowserPrivateZoomFunction::RunImpl() {
   content::RenderViewHost* const view_host = render_view_host();
   content::PageZoom zoom_type;
   switch (params->operation) {
-    case Params::OPERATION_IN:
+    case api::file_browser_private::ZOOM_OPERATION_TYPE_IN:
       zoom_type = content::PAGE_ZOOM_IN;
       break;
-    case Params::OPERATION_OUT:
+    case api::file_browser_private::ZOOM_OPERATION_TYPE_OUT:
       zoom_type = content::PAGE_ZOOM_OUT;
       break;
-    case Params::OPERATION_RESET:
+    case api::file_browser_private::ZOOM_OPERATION_TYPE_RESET:
       zoom_type = content::PAGE_ZOOM_RESET;
       break;
     default:
