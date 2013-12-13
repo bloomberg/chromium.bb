@@ -9,6 +9,7 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
@@ -89,6 +90,11 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
       // that write profile data to disk (which happens under profile collection
       // mode).
       alarm(60);
+#if defined(LEAK_SANITIZER)
+      // Invoke LeakSanitizer early to avoid detecting shutdown-only leaks. If
+      // leaks are found, the process will exit here.
+      __lsan_do_leak_check();
+#endif
     } else {
       _exit(0);
     }
