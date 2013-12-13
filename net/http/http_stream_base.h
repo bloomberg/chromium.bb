@@ -110,6 +110,9 @@ class NET_EXPORT_PRIVATE HttpStreamBase {
   // allows it to be reused.
   virtual bool IsConnectionReusable() const = 0;
 
+  // Get the total number of bytes received from network for this stream.
+  virtual int64 GetTotalReceivedBytes() const = 0;
+
   // Populates the connection establishment part of |load_timing_info|, and
   // socket ID.  |load_timing_info| must have all null times when called.
   // Returns false and does nothing if there is no underlying connection, either

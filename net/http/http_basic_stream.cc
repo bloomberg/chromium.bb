@@ -85,6 +85,10 @@ bool HttpBasicStream::IsConnectionReusable() const {
   return parser()->IsConnectionReusable();
 }
 
+int64 HttpBasicStream::GetTotalReceivedBytes() const {
+  return parser()->received_bytes();
+}
+
 bool HttpBasicStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
   return state_.connection()->GetLoadTimingInfo(IsConnectionReused(),

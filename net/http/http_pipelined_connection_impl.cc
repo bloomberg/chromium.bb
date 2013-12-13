@@ -653,6 +653,13 @@ void HttpPipelinedConnectionImpl::SetConnectionReused(int pipeline_id) {
   connection_->set_is_reused(true);
 }
 
+int64 HttpPipelinedConnectionImpl::GetTotalReceivedBytes(
+    int pipeline_id) const {
+  CHECK(ContainsKey(stream_info_map_, pipeline_id));
+  CHECK(stream_info_map_.find(pipeline_id)->second.parser.get());
+  return stream_info_map_.find(pipeline_id)->second.parser->received_bytes();
+}
+
 bool HttpPipelinedConnectionImpl::GetLoadTimingInfo(
     int pipeline_id, LoadTimingInfo* load_timing_info) const {
   return connection_->GetLoadTimingInfo(IsConnectionReused(pipeline_id),

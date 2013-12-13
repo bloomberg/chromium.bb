@@ -66,6 +66,8 @@ class HttpBasicStream : public HttpStream {
 
   virtual bool IsConnectionReusable() const OVERRIDE;
 
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
+
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;
 

@@ -101,6 +101,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   virtual bool IsConnectionReused() const OVERRIDE { return false; }
   virtual void SetConnectionReused() OVERRIDE {}
   virtual bool IsConnectionReusable() const OVERRIDE { return false; }
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE { return 0; }
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
       OVERRIDE {
     return false;

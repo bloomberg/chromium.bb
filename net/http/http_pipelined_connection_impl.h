@@ -125,6 +125,8 @@ class NET_EXPORT_PRIVATE HttpPipelinedConnectionImpl
 
   void SetConnectionReused(int pipeline_id);
 
+  int64 GetTotalReceivedBytes(int pipeline_id) const;
+
   bool GetLoadTimingInfo(int pipeline_id,
                          LoadTimingInfo* load_timing_info) const;
 

@@ -217,6 +217,10 @@ bool WebSocketBasicHandshakeStream::IsConnectionReusable() const {
   return false;
 }
 
+int64 WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {
+  return 0;
+}
+
 bool WebSocketBasicHandshakeStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
   return state_.connection()->GetLoadTimingInfo(IsConnectionReused(),

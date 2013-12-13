@@ -11815,6 +11815,11 @@ class FakeStream : public HttpStreamBase,
     return false;
   }
 
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE {
+    ADD_FAILURE();
+    return 0;
+  }
+
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE {
     ADD_FAILURE();

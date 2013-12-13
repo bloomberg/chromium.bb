@@ -66,6 +66,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   virtual void SetConnectionReused() OVERRIDE;
   virtual bool IsConnectionReusable() const OVERRIDE;
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;
   virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
@@ -122,6 +123,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   SpdyStreamId closed_stream_id_;
   bool closed_stream_has_load_timing_info_;
   LoadTimingInfo closed_stream_load_timing_info_;
+  int64 closed_stream_received_bytes_;
 
   // The request to send.
   const HttpRequestInfo* request_info_;

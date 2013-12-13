@@ -238,6 +238,11 @@ bool QuicHttpStream::IsConnectionReusable() const {
   return false;
 }
 
+int64 QuicHttpStream::GetTotalReceivedBytes() const {
+  // TODO(eustas): Implement.
+  return 0;
+}
+
 bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // TODO(mmenke):  Figure out what to do here.
   return true;

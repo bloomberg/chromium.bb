@@ -234,6 +234,8 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   virtual bool IsConnectionReusable() const OVERRIDE { return false; }
 
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE { return 0; }
+
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
       OVERRIDE {
     return false;

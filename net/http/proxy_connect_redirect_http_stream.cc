@@ -82,6 +82,10 @@ bool ProxyConnectRedirectHttpStream::IsConnectionReusable() const {
   return false;
 }
 
+int64 ProxyConnectRedirectHttpStream::GetTotalReceivedBytes() const {
+  return 0;
+}
+
 bool ProxyConnectRedirectHttpStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
   if (!has_load_timing_info_)

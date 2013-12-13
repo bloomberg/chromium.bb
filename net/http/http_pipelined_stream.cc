@@ -99,6 +99,10 @@ bool HttpPipelinedStream::IsConnectionReusable() const {
   return pipeline_->usable();
 }
 
+int64 HttpPipelinedStream::GetTotalReceivedBytes() const {
+  return pipeline_->GetTotalReceivedBytes(pipeline_id_);
+}
+
 bool HttpPipelinedStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
   return pipeline_->GetLoadTimingInfo(pipeline_id_, load_timing_info);

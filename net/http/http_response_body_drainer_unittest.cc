@@ -101,6 +101,7 @@ class MockHttpStream : public HttpStream {
   virtual bool IsConnectionReused() const OVERRIDE { return false; }
   virtual void SetConnectionReused() OVERRIDE {}
   virtual bool IsConnectionReusable() const OVERRIDE { return false; }
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE { return 0; }
   virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {}
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE {}
