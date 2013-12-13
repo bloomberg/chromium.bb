@@ -698,6 +698,10 @@ DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
 DELEGATE_TO_GL_5(framebufferTexture2D, FramebufferTexture2D,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint)
 
+DELEGATE_TO_GL_6(framebufferTexture2DMultisampleEXT,
+                 FramebufferTexture2DMultisampleEXT,
+                 WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint, WGC3Dsizei)
+
 DELEGATE_TO_GL_1(frontFace, FrontFace, WGC3Denum)
 
 DELEGATE_TO_GL_1(generateMipmap, GenerateMipmap, WGC3Denum)
