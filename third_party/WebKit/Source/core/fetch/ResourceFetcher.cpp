@@ -749,8 +749,8 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
     const AtomicString& lastModified = resource->response().httpHeaderField("Last-Modified");
     const AtomicString& eTag = resource->response().httpHeaderField("ETag");
     if (!lastModified.isEmpty() || !eTag.isEmpty()) {
-        ASSERT(context().cachePolicy(resource->type()) != CachePolicyReload);
-        if (context().cachePolicy(resource->type()) == CachePolicyRevalidate)
+        ASSERT(context().cachePolicy(document()) != CachePolicyReload);
+        if (context().cachePolicy(document()) == CachePolicyRevalidate)
             revalidatingRequest.setHTTPHeaderField("Cache-Control", "max-age=0");
         if (!lastModified.isEmpty())
             revalidatingRequest.setHTTPHeaderField("If-Modified-Since", lastModified);
@@ -847,7 +847,8 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Use;
 
     // CachePolicyHistoryBuffer uses the cache no matter what.
-    if (context().cachePolicy(type) == CachePolicyHistoryBuffer)
+    CachePolicy cachePolicy = context().cachePolicy(document());
+    if (cachePolicy == CachePolicyHistoryBuffer)
         return Use;
 
     // Don't reuse resources with Cache-control: no-store.
@@ -873,7 +874,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Use;
 
     // CachePolicyReload always reloads
-    if (context().cachePolicy(type) == CachePolicyReload) {
+    if (cachePolicy == CachePolicyReload) {
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to CachePolicyReload.");
         return Reload;
     }
@@ -889,7 +890,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Use;
 
     // Check if the cache headers requires us to revalidate (cache expiration for example).
-    if (existingResource->mustRevalidateDueToCacheHeaders(context().cachePolicy(type))) {
+    if (cachePolicy == CachePolicyRevalidate || existingResource->mustRevalidateDueToCacheHeaders()) {
         // See if the resource has usable ETag or Last-modified headers.
         if (existingResource->canUseCacheValidator())
             return Revalidate;

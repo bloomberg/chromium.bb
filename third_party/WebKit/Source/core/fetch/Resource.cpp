@@ -760,27 +760,13 @@ bool Resource::canUseCacheValidator() const
     return m_response.hasCacheValidatorFields();
 }
 
-bool Resource::mustRevalidateDueToCacheHeaders(CachePolicy cachePolicy) const
+bool Resource::mustRevalidateDueToCacheHeaders() const
 {
-    ASSERT(cachePolicy == CachePolicyRevalidate || cachePolicy == CachePolicyCache || cachePolicy == CachePolicyVerify);
-
-    if (cachePolicy == CachePolicyRevalidate)
-        return true;
-
     if (m_response.cacheControlContainsNoCache() || m_response.cacheControlContainsNoStore()) {
         WTF_LOG(ResourceLoading, "Resource %p mustRevalidate because of m_response.cacheControlContainsNoCache() || m_response.cacheControlContainsNoStore()\n", this);
         return true;
     }
 
-    if (cachePolicy == CachePolicyCache) {
-        if (m_response.cacheControlContainsMustRevalidate() && isExpired()) {
-            WTF_LOG(ResourceLoading, "Resource %p mustRevalidate because of cachePolicy == CachePolicyCache and m_response.cacheControlContainsMustRevalidate() && isExpired()\n", this);
-            return true;
-        }
-        return false;
-    }
-
-    // CachePolicyVerify
     if (isExpired()) {
         WTF_LOG(ResourceLoading, "Resource %p mustRevalidate because of isExpired()\n", this);
         return true;

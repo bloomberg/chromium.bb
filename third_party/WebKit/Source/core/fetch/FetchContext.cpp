@@ -52,7 +52,7 @@ void FetchContext::addAdditionalRequestHeaders(Document&, ResourceRequest&, Reso
 {
 }
 
-CachePolicy FetchContext::cachePolicy(Resource::Type) const
+CachePolicy FetchContext::cachePolicy(Document*) const
 {
     return CachePolicyVerify;
 }

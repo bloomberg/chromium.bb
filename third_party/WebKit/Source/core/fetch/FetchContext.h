@@ -59,7 +59,7 @@ public:
 
     virtual void reportLocalLoadFailed(const KURL&);
     virtual void addAdditionalRequestHeaders(Document&, ResourceRequest&, Resource::Type);
-    virtual CachePolicy cachePolicy(Resource::Type) const;
+    virtual CachePolicy cachePolicy(Document*) const;
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority);
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());

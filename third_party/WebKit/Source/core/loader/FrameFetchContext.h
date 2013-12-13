@@ -37,6 +37,7 @@
 
 namespace WebCore {
 
+class Document;
 class DocumentLoader;
 class Frame;
 class Page;
@@ -51,7 +52,7 @@ public:
 
     virtual void reportLocalLoadFailed(const KURL&) OVERRIDE;
     virtual void addAdditionalRequestHeaders(Document&, ResourceRequest&, Resource::Type) OVERRIDE;
-    virtual CachePolicy cachePolicy(Resource::Type) const OVERRIDE;
+    virtual CachePolicy cachePolicy(Document*) const OVERRIDE;
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority);
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) OVERRIDE;
     virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) OVERRIDE;

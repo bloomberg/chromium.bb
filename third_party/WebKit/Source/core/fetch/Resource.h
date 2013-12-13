@@ -23,7 +23,6 @@
 #ifndef Resource_h
 #define Resource_h
 
-#include "core/fetch/CachePolicy.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
@@ -228,7 +227,7 @@ public:
     void unregisterHandle(ResourcePtrBase* h);
 
     bool canUseCacheValidator() const;
-    bool mustRevalidateDueToCacheHeaders(CachePolicy) const;
+    bool mustRevalidateDueToCacheHeaders() const;
     bool isCacheValidator() const { return m_resourceToRevalidate; }
     Resource* resourceToRevalidate() const { return m_resourceToRevalidate; }
     void setResourceToRevalidate(Resource*);

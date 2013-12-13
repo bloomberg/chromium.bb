@@ -35,7 +35,6 @@
 #include "core/dom/IconURL.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
-#include "core/fetch/CachePolicy.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoaderStateMachine.h"
@@ -133,8 +132,6 @@ public:
 
     FrameLoadType loadType() const;
     void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
-
-    CachePolicy subresourceCachePolicy() const;
 
     void didFirstLayout();
 
