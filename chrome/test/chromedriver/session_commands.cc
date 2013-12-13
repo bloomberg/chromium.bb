@@ -163,8 +163,11 @@ Status ExecuteInitSession(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   Status status = InitSessionHelper(bound_params, session, params, value);
-  if (status.IsError())
+  if (status.IsError()) {
     session->quit = true;
+    if (session->chrome != NULL)
+      session->chrome->Quit();
+  }
   return status;
 }
 

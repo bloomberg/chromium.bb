@@ -38,15 +38,11 @@ class Device {
          Adb* adb,
          base::Callback<void()> release_callback);
 
-  Status ForwardDevtoolsPort(const std::string& package,
-                             const std::string& process,
-                             std::string& device_socket,
-                             int port);
-
   const std::string serial_;
   std::string active_package_;
   Adb* adb_;
   base::Callback<void()> release_callback_;
+  int host_port_;
 
   DISALLOW_COPY_AND_ASSIGN(Device);
 };

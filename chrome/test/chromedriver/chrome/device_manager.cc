@@ -21,7 +21,8 @@ Device::Device(
     base::Callback<void()> release_callback)
     : serial_(device_serial),
       adb_(adb),
-      release_callback_(release_callback) {}
+      release_callback_(release_callback),
+      host_port_(-1) {}
 
 Device::~Device() {
   release_callback_.Run();
@@ -33,12 +34,13 @@ Status Device::SetUp(const std::string& package,
                      const std::string& args,
                      bool use_running_app,
                      int port) {
+  host_port_ = port;
   if (!active_package_.empty())
     return Status(kUnknownError,
         active_package_ + " was launched and has not been quit");
 
   Status status = adb_->CheckAppInstalled(serial_, package);
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   std::string known_activity;
@@ -65,7 +67,7 @@ Status Device::SetUp(const std::string& package,
 
   if (!use_running_app) {
     status = adb_->ClearAppData(serial_, package);
-    if (!status.IsOk())
+    if (status.IsError())
       return status;
 
     if (!known_activity.empty()) {
@@ -80,33 +82,24 @@ Status Device::SetUp(const std::string& package,
     if (!command_line_file.empty()) {
       status = adb_->SetCommandLineFile(serial_, command_line_file, exec_name,
                                         args);
-      if (!status.IsOk())
+      if (status.IsError())
         return status;
     }
 
     status = adb_->Launch(serial_, package,
                           known_activity.empty() ? activity : known_activity);
-    if (!status.IsOk())
+    if (status.IsError())
       return status;
 
     active_package_ = package;
   }
-  this->ForwardDevtoolsPort(package, process, device_socket, port);
 
-  return status;
-}
-
-Status Device::ForwardDevtoolsPort(const std::string& package,
-                                   const std::string& process,
-                                   std::string& device_socket,
-                                   int port) {
   if (device_socket.empty()) {
     // Assume this is a WebView app.
     int pid;
-    Status status = adb_->GetPidByName(serial_,
-                                       process.empty() ? package : process,
-                                       &pid);
-    if (!status.IsOk()) {
+    Status status = adb_->GetPidByName(
+      serial_, process.empty() ? package : process, &pid);
+    if (status.IsError()) {
       if (process.empty())
         status.AddDetails(
             "process name must be specified if not equal to package name");
@@ -115,17 +108,24 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
     device_socket = base::StringPrintf("webview_devtools_remote_%d", pid);
   }
 
-  return adb_->ForwardPort(serial_, port, device_socket);
+  return adb_->Forward(serial_, port, device_socket);
 }
 
 Status Device::TearDown() {
   if (!active_package_.empty()) {
     std::string response;
     Status status = adb_->ForceStop(serial_, active_package_);
-    if (!status.IsOk())
+    if (status.IsError())
       return status;
     active_package_ = "";
   }
+  if (host_port_ != -1) {
+    Status status = adb_->KillForward(serial_, host_port_);
+    if (status.IsError())
+      return status;
+    host_port_ = -1;
+  }
+
   return Status(kOk);
 }
 
@@ -138,7 +138,7 @@ DeviceManager::~DeviceManager() {}
 Status DeviceManager::AcquireDevice(scoped_ptr<Device>* device) {
   std::vector<std::string> devices;
   Status status = adb_->GetDevices(&devices);
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   if (devices.empty())
@@ -162,7 +162,7 @@ Status DeviceManager::AcquireSpecificDevice(
     const std::string& device_serial, scoped_ptr<Device>* device) {
   std::vector<std::string> devices;
   Status status = adb_->GetDevices(&devices);
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   if (std::find(devices.begin(), devices.end(), device_serial) == devices.end())

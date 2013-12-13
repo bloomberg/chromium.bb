@@ -73,8 +73,8 @@ void ExecuteCommandOnIOThread(
 
 AdbImpl::AdbImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    int port)
-    : io_task_runner_(io_task_runner), port_(port) {
+    int server_port)
+    : io_task_runner_(io_task_runner), server_port_(server_port) {
   CHECK(io_task_runner_.get());
 }
 
@@ -96,21 +96,34 @@ Status AdbImpl::GetDevices(std::vector<std::string>* devices) {
   return Status(kOk);
 }
 
-Status AdbImpl::ForwardPort(
-    const std::string& device_serial, int local_port,
-    const std::string& remote_abstract) {
+Status AdbImpl::Forward(
+    const std::string& device_serial, int host_port,
+    const std::string& device_abstract) {
   std::string response;
   Status status = ExecuteHostCommand(
       device_serial,
-      "forward:tcp:" + base::IntToString(local_port) + ";localabstract:" +
-          remote_abstract,
+      "forward:tcp:" + base::IntToString(host_port) + ";localabstract:" +
+      device_abstract,
       &response);
-  if (!status.IsOk())
-    return status;
-  if (response == "OKAY")
-    return Status(kOk);
-  return Status(kUnknownError, "Failed to forward ports to device " +
-                device_serial + ": " + response);
+  if (status.IsError())
+    return Status(kUnknownError,
+                  "Failed to forward socket connection to device " +
+                  device_serial + ": " + response);
+  return Status(kOk);
+}
+
+Status AdbImpl::KillForward(
+    const std::string& device_serial, int host_port) {
+  std::string response;
+  Status status = ExecuteHostCommand(
+      device_serial,
+      "killforward:tcp:" + base::IntToString(host_port),
+      &response);
+  if (status.IsError())
+    return Status(kUnknownError,
+                  "Failed to remove forward socket connection " +
+                  device_serial + ": " + response);
+  return Status(kOk);
 }
 
 Status AdbImpl::SetCommandLineFile(const std::string& device_serial,
@@ -152,9 +165,7 @@ Status AdbImpl::ClearAppData(
   std::string response;
   std::string command = "pm clear " + package;
   Status status = ExecuteHostShellCommand(device_serial, command, &response);
-  if (!status.IsOk())
-    return status;
-  if (response.find("Success") == std::string::npos)
+  if (status.IsError())
     return Status(kUnknownError, "Failed to clear data for " + package +
                   " on device " + device_serial + ": " + response);
   return Status(kOk);
@@ -168,9 +179,7 @@ Status AdbImpl::Launch(
       device_serial,
       "am start -W -n " + package + "/" + activity + " -d data:,",
       &response);
-  if (!status.IsOk())
-    return status;
-  if (response.find("Complete") == std::string::npos)
+  if (status.IsError())
     return Status(kUnknownError,
                   "Failed to start " + package + " on device " + device_serial +
                   ": " + response);
@@ -217,11 +226,12 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
 
 Status AdbImpl::ExecuteCommand(
     const std::string& command, std::string* response) {
-  scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
+  scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer();
   VLOG(1) << "Sending adb command: " << command;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ExecuteCommandOnIOThread, command, response_buffer, port_));
+      base::Bind(&ExecuteCommandOnIOThread, command, response_buffer,
+                 server_port_));
   Status status = response_buffer->GetResponse(
       response, base::TimeDelta::FromSeconds(30));
   if (status.IsOk()) {

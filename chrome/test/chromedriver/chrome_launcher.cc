@@ -366,7 +366,7 @@ Status LaunchAndroidChrome(
                          switches.ToString(),
                          capabilities.android_use_running_app,
                          port);
-  if (!status.IsOk()) {
+  if (status.IsError()) {
     device->TearDown();
     return status;
   }
@@ -376,8 +376,10 @@ Status LaunchAndroidChrome(
                                           context_getter,
                                           socket_factory,
                                           &devtools_client);
-  if (status.IsError())
+  if (status.IsError()) {
+    device->TearDown();
     return status;
+  }
 
   chrome->reset(new ChromeAndroidImpl(devtools_client.Pass(),
                                       devtools_event_listeners,
