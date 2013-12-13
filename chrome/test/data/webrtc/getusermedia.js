@@ -61,11 +61,7 @@ function doGetUserMedia(constraints) {
     throw failTest('Not valid JavaScript expression: ' + constraints);
   }
   debug('Requesting doGetUserMedia: constraints: ' + constraints);
-  getUserMedia(evaluatedConstraints,
-               function(stream) {
-                 ensureGotAllExpectedStreams_(stream, constraints);
-                 getUserMediaOkCallback_(stream);
-               },
+  getUserMedia(evaluatedConstraints, getUserMediaOkCallback_,
                getUserMediaFailedCallback_);
   returnToTest('ok-requested');
 }
@@ -141,28 +137,6 @@ function getLocalStream() {
 }
 
 // Internals.
-
-/**
- * @private
- * @param {MediaStream} stream Media stream from getUserMedia.
- * @param {String} constraints The constraints passed
- */
-function ensureGotAllExpectedStreams_(stream, constraints) {
-  var requestedVideo = /video\s*:\s*true/i;
-  if (requestedVideo.test(constraints) && stream.getVideoTracks().length == 0) {
-    gRequestWebcamAndMicrophoneResult = 'failed-to-get-video';
-    throw ('Requested video, but did not receive a video stream from ' +
-           'getUserMedia. Perhaps the machine you are running on ' +
-           'does not have a webcam.');
-  }
-  var requestedAudio = /audio\s*:\s*true/i;
-  if (requestedAudio.test(constraints) && stream.getAudioTracks().length == 0) {
-    gRequestWebcamAndMicrophoneResult = 'failed-to-get-audio';
-    throw ('Requested audio, but did not receive an audio stream ' +
-           'from getUserMedia. Perhaps the machine you are running ' +
-           'on does not have audio devices.');
-  }
-}
 
 /**
  * @private
