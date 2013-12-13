@@ -4,8 +4,12 @@
 
 #include "chrome/browser/extensions/install_verifier.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -14,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,12 +26,44 @@
 namespace {
 
 enum VerifyStatus {
-  NONE,       // Do not request install signatures, and do not enforce them.
-  BOOTSTRAP,  // Request install signatures, but do not enforce them.
-  ENFORCE     // Request install signatures, and enforce them.
+  NONE = 0,       // Do not request install signatures, and do not enforce them.
+  BOOTSTRAP = 1,  // Request install signatures, but do not enforce them.
+  ENFORCE = 2     // Request install signatures, and enforce them.
 };
 
-VerifyStatus GetStatus() {
+#if defined(GOOGLE_CHROME_BUILD)
+const char kExperimentName[] = "ExtensionInstallVerification";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+VerifyStatus GetExperimentStatus() {
+#if defined(GOOGLE_CHROME_BUILD)
+  const std::string group = base::FieldTrialList::FindFullName(
+      kExperimentName);
+
+  std::string forced_trials = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kForceFieldTrials);
+  if (forced_trials.find(kExperimentName) != std::string::npos) {
+    // We don't want to allow turning off enforcement by forcing the field
+    // trial group to something other than enforcement.
+    return ENFORCE;
+  }
+
+  VerifyStatus default_status = BOOTSTRAP;
+
+  if (group == "Enforce")
+    return ENFORCE;
+  else if (group == "Bootstrap")
+    return BOOTSTRAP;
+  else if (group == "None" || group == "Control")
+    return NONE;
+  else
+    return default_status;
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return NONE;
+}
+
+VerifyStatus GetCommandLineStatus() {
   const CommandLine* cmdline = CommandLine::ForCurrentProcess();
   if (!extensions::InstallSigner::GetForcedNotFromWebstore().empty())
     return ENFORCE;
@@ -41,6 +78,10 @@ VerifyStatus GetStatus() {
   }
 
   return NONE;
+}
+
+VerifyStatus GetStatus() {
+  return std::max(GetExperimentStatus(), GetCommandLineStatus());
 }
 
 bool ShouldFetchSignature() {
@@ -195,7 +236,7 @@ static bool FromStore(const Extension* extension) {
 bool InstallVerifier::MustRemainDisabled(const Extension* extension,
                                          Extension::DisableReason* reason,
                                          base::string16* error) const {
-  if (!ShouldEnforce() || !extension->is_extension() ||
+  if (!extension->is_extension() ||
       Manifest::IsUnpackedLocation(extension->location()) ||
       AllowedByEnterprisePolicy(extension->id()))
     return false;
@@ -204,6 +245,13 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
       FromStore(extension) &&
       IsVerified(extension->id()) &&
       !ContainsKey(InstallSigner::GetForcedNotFromWebstore(), extension->id());
+
+  if (!verified && !ShouldEnforce()) {
+    if (signature_.get())
+      UMA_HISTOGRAM_BOOLEAN("InstallVerifier.SignatureFailedButNotEnforcing",
+                            true);
+    return false;
+  }
 
   if (!verified) {
     if (reason)
