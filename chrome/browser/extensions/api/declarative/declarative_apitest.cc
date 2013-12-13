@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
@@ -25,6 +26,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::ExtensionPrefs;
 using extensions::RulesRegistry;
 using extensions::RulesRegistryService;
 using extensions::TestExtensionDir;
@@ -219,4 +221,38 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, ExtensionLifetimeRulesHandling) {
   ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
   EXPECT_NE(kTestTitle, GetTitle());
   EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
+}
+
+// When an extenion is uninstalled, the state store deletes all preferences
+// stored for that extension. We need to make sure we don't store anything after
+// that deletion occurs.
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, NoTracesAfterUninstalling) {
+  TestExtensionDir ext_dir;
+
+  // 1. Install the extension. Verify that rules become active and some prefs
+  // are stored.
+  ext_dir.WriteManifest(GetRedirectToDataManifestWithVersion(1));
+  ext_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                    base::StringPrintf("%s%s%s",
+                                       kRedirectToDataConstants,
+                                       kRedirectToDataRules,
+                                       kRedirectToDataInstallRules));
+  ExtensionTestMessageListener ready("ready", /*will_reply=*/false);
+  const Extension* extension = InstallExtensionWithUIAutoConfirm(
+      ext_dir.Pack(), 1 /*+1 installed extension*/, browser());
+  ASSERT_TRUE(extension);
+  std::string extension_id(extension->id());
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_EQ(kTestTitle, GetTitle());
+  EXPECT_EQ(1u, NumberOfRegisteredRules(extension_id));
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser()->profile());
+  EXPECT_TRUE(extension_prefs->HasPrefForExtension(extension_id));
+
+  // 2. Uninstall the extension. Rules are gone and preferences should be empty.
+  UninstallExtension(extension_id);
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_NE(kTestTitle, GetTitle());
+  EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
+  EXPECT_FALSE(extension_prefs->HasPrefForExtension(extension_id));
 }

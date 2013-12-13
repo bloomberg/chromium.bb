@@ -20,14 +20,12 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extension_test_util::LoadManifestUnchecked;
 
 namespace {
-// The |kExtensionId| needs to pass the Extension::IdIsValid test.
-const char kExtensionId[] = "abcdefghijklmnopabcdefghijklmnop";
-const char kExtension2Id[] = "ponmlkjihgfedcbaponmlkjihgfedcba";
 const char kRuleId[] = "rule";
 const char kRule2Id[] = "rule2";
 }
@@ -37,20 +35,40 @@ namespace extensions {
 class RulesRegistryWithCacheTest : public testing::Test {
  public:
   RulesRegistryWithCacheTest()
-      : cache_delegate_(/*log_storage_init_delay=*/false ),
+      : cache_delegate_(/*log_storage_init_delay=*/false),
         registry_(new TestRulesRegistry(profile(),
                                         /*event_name=*/"",
                                         content::BrowserThread::UI,
                                         &cache_delegate_,
                                         RulesRegistry::WebViewKey(0, 0))) {}
 
+  virtual void SetUp() {
+    env_.GetExtensionPrefs();  // Force creation before adding extensions.
+    // Note that env_.MakeExtension below also forces the creation of
+    // ExtensionService.
+
+    base::DictionaryValue manifest_extra;
+    std::string key;
+    CHECK(Extension::ProducePEM("test extension 1", &key));
+    manifest_extra.SetString(manifest_keys::kPublicKey, key);
+    extension1_ = env_.MakeExtension(manifest_extra);
+    CHECK(extension1_.get());
+
+    // Different "key" values for the two extensions ensure a different ID.
+    CHECK(Extension::ProducePEM("test extension 2", &key));
+    manifest_extra.SetString(manifest_keys::kPublicKey, key);
+    extension2_ = env_.MakeExtension(manifest_extra);
+    CHECK(extension2_.get());
+    CHECK_NE(extension2_->id(), extension1_->id());
+  }
+
   virtual ~RulesRegistryWithCacheTest() {}
 
   std::string AddRule(const std::string& extension_id,
                       const std::string& rule_id,
                       TestRulesRegistry* registry) {
-    std::vector<linked_ptr<extensions::RulesRegistry::Rule> > add_rules;
-    add_rules.push_back(make_linked_ptr(new extensions::RulesRegistry::Rule));
+    std::vector<linked_ptr<RulesRegistry::Rule> > add_rules;
+    add_rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
     add_rules[0]->id.reset(new std::string(rule_id));
     return registry->AddRules(extension_id, add_rules);
   }
@@ -69,7 +87,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
 
   int GetNumberOfRules(const std::string& extension_id,
                        TestRulesRegistry* registry) {
-    std::vector<linked_ptr<extensions::RulesRegistry::Rule> > get_rules;
+    std::vector<linked_ptr<RulesRegistry::Rule> > get_rules;
     registry->GetAllRules(extension_id, &get_rules);
     return get_rules.size();
   }
@@ -84,87 +102,89 @@ class RulesRegistryWithCacheTest : public testing::Test {
   TestExtensionEnvironment env_;
   RulesCacheDelegate cache_delegate_;
   scoped_refptr<TestRulesRegistry> registry_;
+  scoped_refptr<const Extension> extension1_;
+  scoped_refptr<const Extension> extension2_;
 };
 
 TEST_F(RulesRegistryWithCacheTest, AddRules) {
   // Check that nothing happens if the concrete RulesRegistry refuses to insert
   // the rules.
   registry_->SetResult("Error");
-  EXPECT_EQ("Error", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ(0, GetNumberOfRules(kExtensionId));
+  EXPECT_EQ("Error", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ(0, GetNumberOfRules(extension1_->id()));
   registry_->SetResult(std::string());
 
   // Check that rules can be inserted.
-  EXPECT_EQ("", AddRule(kExtensionId, kRule2Id));
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRule2Id));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id()));
 
   // Check that rules cannot be inserted twice with the same kRuleId.
-  EXPECT_NE("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
+  EXPECT_NE("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id()));
 
   // Check that different extensions may use the same kRuleId.
-  EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id()));
+  EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 }
 
 TEST_F(RulesRegistryWithCacheTest, RemoveRules) {
   // Prime registry.
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id()));
+  EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 
   // Check that nothing happens if the concrete RuleRegistry refuses to remove
   // the rules.
   registry_->SetResult("Error");
-  EXPECT_EQ("Error", RemoveRule(kExtensionId, kRuleId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
+  EXPECT_EQ("Error", RemoveRule(extension1_->id(), kRuleId));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id()));
   registry_->SetResult(std::string());
 
   // Check that nothing happens if a rule does not exist.
-  EXPECT_EQ("", RemoveRule(kExtensionId, "unknown_rule"));
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
+  EXPECT_EQ("", RemoveRule(extension1_->id(), "unknown_rule"));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id()));
 
   // Check that rules may be removed and only for the correct extension.
-  EXPECT_EQ("", RemoveRule(kExtensionId, kRuleId));
-  EXPECT_EQ(0, GetNumberOfRules(kExtensionId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
+  EXPECT_EQ("", RemoveRule(extension1_->id(), kRuleId));
+  EXPECT_EQ(0, GetNumberOfRules(extension1_->id()));
+  EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 }
 
 TEST_F(RulesRegistryWithCacheTest, RemoveAllRules) {
   // Prime registry.
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtensionId, kRule2Id));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
-  EXPECT_EQ(2, GetNumberOfRules(kExtensionId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRule2Id));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
+  EXPECT_EQ(2, GetNumberOfRules(extension1_->id()));
+  EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 
   // Check that nothing happens if the concrete RuleRegistry refuses to remove
   // the rules.
   registry_->SetResult("Error");
-  EXPECT_EQ("Error", registry_->RemoveAllRules(kExtensionId));
-  EXPECT_EQ(2, GetNumberOfRules(kExtensionId));
+  EXPECT_EQ("Error", registry_->RemoveAllRules(extension1_->id()));
+  EXPECT_EQ(2, GetNumberOfRules(extension1_->id()));
   registry_->SetResult(std::string());
 
   // Check that rules may be removed and only for the correct extension.
-  EXPECT_EQ("", registry_->RemoveAllRules(kExtensionId));
-  EXPECT_EQ(0, GetNumberOfRules(kExtensionId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
+  EXPECT_EQ("", registry_->RemoveAllRules(extension1_->id()));
+  EXPECT_EQ(0, GetNumberOfRules(extension1_->id()));
+  EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 }
 
 TEST_F(RulesRegistryWithCacheTest, GetRules) {
   // Prime registry.
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtensionId, kRule2Id));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRule2Id));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
 
   // Check that we get the correct rule and unknown rules are ignored.
   std::vector<std::string> rules_to_get;
   rules_to_get.push_back(kRuleId);
   rules_to_get.push_back("unknown_rule");
-  std::vector<linked_ptr<extensions::RulesRegistry::Rule> > gotten_rules;
-  registry_->GetRules(kExtensionId, rules_to_get, &gotten_rules);
+  std::vector<linked_ptr<RulesRegistry::Rule> > gotten_rules;
+  registry_->GetRules(extension1_->id(), rules_to_get, &gotten_rules);
   ASSERT_EQ(1u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());
   EXPECT_EQ(kRuleId, *(gotten_rules[0]->id));
@@ -172,13 +192,13 @@ TEST_F(RulesRegistryWithCacheTest, GetRules) {
 
 TEST_F(RulesRegistryWithCacheTest, GetAllRules) {
   // Prime registry.
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtensionId, kRule2Id));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRule2Id));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
 
   // Check that we get the correct rules.
-  std::vector<linked_ptr<extensions::RulesRegistry::Rule> > gotten_rules;
-  registry_->GetAllRules(kExtensionId, &gotten_rules);
+  std::vector<linked_ptr<RulesRegistry::Rule> > gotten_rules;
+  registry_->GetAllRules(extension1_->id(), &gotten_rules);
   EXPECT_EQ(2u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());
   ASSERT_TRUE(gotten_rules[1]->id.get());
@@ -190,18 +210,17 @@ TEST_F(RulesRegistryWithCacheTest, GetAllRules) {
 
 TEST_F(RulesRegistryWithCacheTest, OnExtensionUninstalled) {
   // Prime registry.
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
+  EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
 
   // Check that the correct rules are removed.
-  registry_->OnExtensionUninstalled(kExtensionId);
-  EXPECT_EQ(0, GetNumberOfRules(kExtensionId));
-  EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
+  registry_->OnExtensionUninstalled(extension1_->id());
+  EXPECT_EQ(0, GetNumberOfRules(extension1_->id()));
+  EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 }
 
 TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   ExtensionPrefs* extension_prefs = env_.GetExtensionPrefs();
-  env_.GetExtensionService();
   // The value store is first created during GetExtensionService.
   TestingValueStore* store = env_.GetExtensionSystem()->value_store();
 
@@ -217,52 +236,55 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
 
   // 1. Test the handling of preferences.
   // Default value is always true.
-  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
 
   extension_prefs->UpdateExtensionPref(
-      kExtensionId, rules_stored_key, new base::FundamentalValue(false));
-  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
+      extension1_->id(), rules_stored_key, new base::FundamentalValue(false));
+  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
 
   extension_prefs->UpdateExtensionPref(
-      kExtensionId, rules_stored_key, new base::FundamentalValue(true));
-  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
+      extension1_->id(), rules_stored_key, new base::FundamentalValue(true));
+  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
 
   // 2. Test writing behavior.
   int write_count = store->write_count();
 
   scoped_ptr<base::ListValue> value(new base::ListValue);
   value->AppendBoolean(true);
-  cache_delegate->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
-  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
+  cache_delegate->WriteToStorage(extension1_->id(),
+                                 value.PassAs<base::Value>());
+  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
   value.reset(new base::ListValue);
-  cache_delegate->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
-  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
+  cache_delegate->WriteToStorage(extension1_->id(),
+                                 value.PassAs<base::Value>());
+  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
   base::RunLoop().RunUntilIdle();
   // No rules currently, but previously there were, so we expect a write.
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
   value.reset(new base::ListValue);
-  cache_delegate->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
-  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
+  cache_delegate->WriteToStorage(extension1_->id(),
+                                 value.PassAs<base::Value>());
+  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(write_count, store->write_count());
 
   // 3. Test reading behavior.
   int read_count = store->read_count();
 
-  cache_delegate->SetDeclarativeRulesStored(kExtensionId, false);
-  cache_delegate->ReadFromStorage(kExtensionId);
+  cache_delegate->SetDeclarativeRulesStored(extension1_->id(), false);
+  cache_delegate->ReadFromStorage(extension1_->id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(read_count, store->read_count());
   read_count = store->read_count();
 
-  cache_delegate->SetDeclarativeRulesStored(kExtensionId, true);
-  cache_delegate->ReadFromStorage(kExtensionId);
+  cache_delegate->SetDeclarativeRulesStored(extension1_->id(), true);
+  cache_delegate->ReadFromStorage(extension1_->id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(read_count + 1, store->read_count());
 }
@@ -292,14 +314,14 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
       RulesRegistry::WebViewKey(0, 0)));
 
   // Checkt the correct default values.
-  EXPECT_TRUE(cache_delegate1->GetDeclarativeRulesStored(kExtensionId));
-  EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate1->GetDeclarativeRulesStored(extension1_->id()));
+  EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(extension1_->id()));
 
   // Update the flag for the first registry.
   extension_prefs->UpdateExtensionPref(
-      kExtensionId, rules_stored_key1, new base::FundamentalValue(false));
-  EXPECT_FALSE(cache_delegate1->GetDeclarativeRulesStored(kExtensionId));
-  EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(kExtensionId));
+      extension1_->id(), rules_stored_key1, new base::FundamentalValue(false));
+  EXPECT_FALSE(cache_delegate1->GetDeclarativeRulesStored(extension1_->id()));
+  EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(extension1_->id()));
 }
 
 TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
@@ -314,7 +336,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
                             "web_request_all_host_permissions.json",
                             Manifest::INVALID_LOCATION,
                             Extension::NO_FLAGS,
-                            kExtensionId,
+                            extension1_->id(),
                             &error));
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
@@ -329,9 +351,9 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
       cache_delegate.get(),
       RulesRegistry::WebViewKey(0, 0)));
 
-  AddRule(kExtensionId, kRuleId, registry.get());
+  AddRule(extension1_->id(), kRuleId, registry.get());
   base::RunLoop().RunUntilIdle();  // Posted tasks store the added rule.
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id(), registry.get()));
 
   // 3. Restart the TestRulesRegistry and see the rule still there.
   cache_delegate.reset(new RulesCacheDelegate(false));
@@ -343,7 +365,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
       RulesRegistry::WebViewKey(0, 0));
 
   base::RunLoop().RunUntilIdle();  // Posted tasks retrieve the stored rule.
-  EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));
+  EXPECT_EQ(1, GetNumberOfRules(extension1_->id(), registry.get()));
 }
 
 TEST_F(RulesRegistryWithCacheTest, ConcurrentStoringOfRules) {
@@ -353,14 +375,12 @@ TEST_F(RulesRegistryWithCacheTest, ConcurrentStoringOfRules) {
   // write a rules update for extension A, just because it is immediately
   // followed by a rules update for extension B.
   extensions::TestExtensionSystem* system = env_.GetExtensionSystem();
-  env_.GetExtensionPrefs();
-  env_.GetExtensionService();  // Force creation.
   TestingValueStore* store = system->value_store();
 
   int write_count = store->write_count();
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRule2Id));
-  system->SetReady();
+  EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
+  EXPECT_EQ("", AddRule(extension2_->id(), kRule2Id));
+  env_.GetExtensionSystem()->SetReady();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(write_count + 2, store->write_count());
 }

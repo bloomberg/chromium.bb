@@ -210,6 +210,12 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // NOT_SCHEDULED_FOR_PROCESSING.
   void MaybeProcessChangedRules(const std::string& extension_id);
 
+  // This method implements the functionality of RemoveAllRules, except for not
+  // calling MaybeProcessChangedRules. That way updating the rules store and
+  // extension prefs is avoided. This method is called when an extension is
+  // uninstalled, that way there is no clash with the preferences being wiped.
+  std::string RemoveAllRulesNoStoreUpdate(const std::string& extension_id);
+
   void MarkReady(base::Time storage_init_time);
 
   // Deserialize the rules from the given Value object and add them to the

@@ -213,6 +213,10 @@ void RulesCacheDelegate::SetDeclarativeRulesStored(
     const std::string& extension_id,
     bool rules_stored) {
   CHECK(profile_);
+  ExtensionSystem& system = *ExtensionSystem::Get(profile_);
+  ExtensionService* extension_service = system.extension_service();
+  DCHECK(extension_service);
+  DCHECK(extension_service->GetInstalledExtension(extension_id));
   ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   extension_prefs->UpdateExtensionPref(
       extension_id,

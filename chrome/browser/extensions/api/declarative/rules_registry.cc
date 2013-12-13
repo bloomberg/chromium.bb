@@ -165,6 +165,13 @@ std::string RulesRegistry::RemoveRules(
 }
 
 std::string RulesRegistry::RemoveAllRules(const std::string& extension_id) {
+  std::string result = RulesRegistry::RemoveAllRulesNoStoreUpdate(extension_id);
+  MaybeProcessChangedRules(extension_id);  // Now update the prefs and store.
+  return result;
+}
+
+std::string RulesRegistry::RemoveAllRulesNoStoreUpdate(
+    const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
   std::string error = RemoveAllRulesImpl(extension_id);
@@ -180,7 +187,6 @@ std::string RulesRegistry::RemoveAllRules(const std::string& extension_id) {
       rules_.erase(key);
   }
 
-  MaybeProcessChangedRules(extension_id);
   RemoveAllUsedRuleIdentifiers(extension_id);
   return kSuccess;
 }
@@ -220,7 +226,7 @@ void RulesRegistry::OnExtensionUnloaded(const std::string& extension_id) {
 
 void RulesRegistry::OnExtensionUninstalled(const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
-  std::string error = RemoveAllRules(extension_id);
+  std::string error = RemoveAllRulesNoStoreUpdate(extension_id);
   if (!error.empty())
     LOG(ERROR) << error;
 }
