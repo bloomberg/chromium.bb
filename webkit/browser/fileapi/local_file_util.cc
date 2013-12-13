@@ -210,7 +210,8 @@ PlatformFileError LocalFileUtil::CopyOrMoveFile(
     return error;
 
   return NativeFileUtil::CopyOrMoveFile(
-      src_file_path, dest_file_path, option, copy);
+      src_file_path, dest_file_path, option,
+      fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url, copy));
 }
 
 PlatformFileError LocalFileUtil::CopyInForeignFile(
@@ -226,7 +227,9 @@ PlatformFileError LocalFileUtil::CopyInForeignFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
   return NativeFileUtil::CopyOrMoveFile(
-      src_file_path, dest_file_path, FileSystemOperation::OPTION_NONE, true);
+      src_file_path, dest_file_path, FileSystemOperation::OPTION_NONE,
+      fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
+                                                            true /* copy */));
 }
 
 PlatformFileError LocalFileUtil::DeleteFile(

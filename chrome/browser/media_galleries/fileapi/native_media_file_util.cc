@@ -460,7 +460,8 @@ base::PlatformFileError NativeMediaFileUtil::CopyOrMoveFileSync(
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   return fileapi::NativeFileUtil::CopyOrMoveFile(
-      src_file_path, dest_file_path, option, copy);
+      src_file_path, dest_file_path, option,
+      fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url, copy));
 }
 
 base::PlatformFileError NativeMediaFileUtil::CopyInForeignFileSync(
@@ -478,7 +479,9 @@ base::PlatformFileError NativeMediaFileUtil::CopyInForeignFileSync(
     return error;
   return fileapi::NativeFileUtil::CopyOrMoveFile(
       src_file_path, dest_file_path,
-      fileapi::FileSystemOperation::OPTION_NONE, true);
+      fileapi::FileSystemOperation::OPTION_NONE,
+      fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
+                                                            true /* copy */));
 }
 
 base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(

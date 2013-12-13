@@ -215,6 +215,8 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   base::FilePath from_file = Path("fromfile");
   base::FilePath to_file1 = Path("tofile1");
   base::FilePath to_file2 = Path("tofile2");
+  const NativeFileUtil::CopyOrMoveMode nosync = NativeFileUtil::COPY_NOSYNC;
+  const NativeFileUtil::CopyOrMoveMode sync = NativeFileUtil::COPY_SYNC;
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
@@ -228,11 +230,11 @@ TEST_F(NativeFileUtilTest, CopyFile) {
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
-                from_file, to_file1, FileSystemOperation::OPTION_NONE, true));
+                from_file, to_file1, FileSystemOperation::OPTION_NONE, nosync));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
-                from_file, to_file2, FileSystemOperation::OPTION_NONE, true));
+                from_file, to_file2, FileSystemOperation::OPTION_NONE, sync));
 
   EXPECT_TRUE(FileExists(from_file));
   EXPECT_EQ(1020, GetSize(from_file));
@@ -249,7 +251,7 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, to_dir_file,
-                FileSystemOperation::OPTION_NONE, true));
+                FileSystemOperation::OPTION_NONE, nosync));
   EXPECT_TRUE(FileExists(to_dir_file));
   EXPECT_EQ(1020, GetSize(to_dir_file));
 
@@ -258,31 +260,32 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::CopyOrMoveFile(
                 Path("nonexists"), Path("file"),
-                FileSystemOperation::OPTION_NONE, true));
+                FileSystemOperation::OPTION_NONE, nosync));
 
   // Source is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
             NativeFileUtil::CopyOrMoveFile(
-                dir, Path("file"), FileSystemOperation::OPTION_NONE, true));
+                dir, Path("file"), FileSystemOperation::OPTION_NONE, nosync));
   // Destination is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
             NativeFileUtil::CopyOrMoveFile(
-                from_file, dir, FileSystemOperation::OPTION_NONE, true));
+                from_file, dir, FileSystemOperation::OPTION_NONE, nosync));
   // Destination's parent doesn't exist.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, Path("nodir").AppendASCII("file"),
-                FileSystemOperation::OPTION_NONE, true));
+                FileSystemOperation::OPTION_NONE, nosync));
   // Destination's parent is a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, Path("tofile1").AppendASCII("file"),
-                FileSystemOperation::OPTION_NONE, true));
+                FileSystemOperation::OPTION_NONE, nosync));
 }
 
 TEST_F(NativeFileUtilTest, MoveFile) {
   base::FilePath from_file = Path("fromfile");
   base::FilePath to_file = Path("tofile");
+  const NativeFileUtil::CopyOrMoveMode move = NativeFileUtil::MOVE;
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
@@ -295,7 +298,7 @@ TEST_F(NativeFileUtilTest, MoveFile) {
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
-                from_file, to_file, FileSystemOperation::OPTION_NONE, false));
+                from_file, to_file, FileSystemOperation::OPTION_NONE, move));
 
   EXPECT_FALSE(FileExists(from_file));
   EXPECT_TRUE(FileExists(to_file));
@@ -314,7 +317,7 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, to_dir_file,
-                FileSystemOperation::OPTION_NONE, false));
+                FileSystemOperation::OPTION_NONE, move));
   EXPECT_FALSE(FileExists(from_file));
   EXPECT_TRUE(FileExists(to_dir_file));
   EXPECT_EQ(1020, GetSize(to_dir_file));
@@ -324,19 +327,19 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::CopyOrMoveFile(
                 Path("nonexists"), Path("file"),
-                FileSystemOperation::OPTION_NONE, false));
+                FileSystemOperation::OPTION_NONE, move));
 
   // Source is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
             NativeFileUtil::CopyOrMoveFile(
-                dir, Path("file"), FileSystemOperation::OPTION_NONE, false));
+                dir, Path("file"), FileSystemOperation::OPTION_NONE, move));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
   ASSERT_TRUE(FileExists(from_file));
   // Destination is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
             NativeFileUtil::CopyOrMoveFile(
-                from_file, dir, FileSystemOperation::OPTION_NONE, false));
+                from_file, dir, FileSystemOperation::OPTION_NONE, move));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
@@ -345,18 +348,19 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, Path("nodir").AppendASCII("file"),
-                FileSystemOperation::OPTION_NONE, false));
+                FileSystemOperation::OPTION_NONE, move));
   // Destination's parent is a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, Path("tofile1").AppendASCII("file"),
-                FileSystemOperation::OPTION_NONE, false));
+                FileSystemOperation::OPTION_NONE, move));
 }
 
 TEST_F(NativeFileUtilTest, PreserveLastModified) {
   base::FilePath from_file = Path("fromfile");
   base::FilePath to_file1 = Path("tofile1");
   base::FilePath to_file2 = Path("tofile2");
+  base::FilePath to_file3 = Path("tofile3");
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
@@ -367,11 +371,12 @@ TEST_F(NativeFileUtilTest, PreserveLastModified) {
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::GetFileInfo(from_file, &file_info1));
 
-  // Test for copy.
+  // Test for copy (nosync).
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, to_file1,
-                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED, true));
+                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+                NativeFileUtil::COPY_NOSYNC));
 
   base::PlatformFileInfo file_info2;
   ASSERT_TRUE(FileExists(to_file1));
@@ -379,13 +384,26 @@ TEST_F(NativeFileUtilTest, PreserveLastModified) {
             NativeFileUtil::GetFileInfo(to_file1, &file_info2));
   EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
 
-  // Test for move.
+  // Test for copy (sync).
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(
                 from_file, to_file2,
-                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED, false));
+                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+                NativeFileUtil::COPY_SYNC));
 
   ASSERT_TRUE(FileExists(to_file2));
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::GetFileInfo(to_file1, &file_info2));
+  EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
+
+  // Test for move.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_file3,
+                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+                NativeFileUtil::MOVE));
+
+  ASSERT_TRUE(FileExists(to_file3));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::GetFileInfo(to_file2, &file_info2));
   EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
