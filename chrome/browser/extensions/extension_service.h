@@ -127,6 +127,12 @@ class ExtensionService
       public content::NotificationObserver,
       public extensions::Blacklist::Observer {
  public:
+  // Returns the Extension of an extension from a given url or NULL if the url
+  // doesn't belong to an installed extension. This may be a hosted app extent
+  // or a chrome-extension:// url.
+  const extensions::Extension* GetInstalledExtensionByUrl(
+      const GURL& url) const;
+
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
   const extensions::Extension* GetInstalledApp(const GURL& url) const;
 

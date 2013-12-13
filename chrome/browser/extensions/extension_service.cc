@@ -270,8 +270,13 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   return true;
 }
 
+const Extension* ExtensionService::GetInstalledExtensionByUrl(
+    const GURL& url) const {
+  return extensions_.GetExtensionOrAppByURL(url);
+}
+
 const Extension* ExtensionService::GetInstalledApp(const GURL& url) const {
-  const Extension* extension = extensions_.GetExtensionOrAppByURL(url);
+  const Extension* extension = GetInstalledExtensionByUrl(url);
   return (extension && extension->is_app()) ? extension : NULL;
 }
 

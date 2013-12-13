@@ -55,6 +55,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
@@ -233,13 +234,15 @@ void TabHelper::DidNavigateMainFrame(
   }
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  if (details.is_in_page)
-    return;
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
+    return;
+
+  UpdateExtensionAppIcon(service->GetInstalledExtensionByUrl(params.url));
+
+  if (details.is_in_page)
     return;
 
   ExtensionActionManager* extension_action_manager =
@@ -476,10 +479,10 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
     loader->LoadImageAsync(
         extension,
         IconsInfo::GetIconResource(extension,
-                                   extension_misc::EXTENSION_ICON_SMALLISH,
-                                   ExtensionIconSet::MATCH_EXACTLY),
-        gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
-                  extension_misc::EXTENSION_ICON_SMALLISH),
+                                   extension_misc::EXTENSION_ICON_SMALL,
+                                   ExtensionIconSet::MATCH_BIGGER),
+        gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                  extension_misc::EXTENSION_ICON_SMALL),
         base::Bind(&TabHelper::OnImageLoaded,
                    image_loader_ptr_factory_.GetWeakPtr()));
   }
