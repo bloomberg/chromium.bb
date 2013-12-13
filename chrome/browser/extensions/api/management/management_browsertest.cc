@@ -390,14 +390,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   notification_listener.Reset();
 }
 
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_ExternalUrlUpdate DISABLED_ExternalUrlUpdate
-#else
-#define MAYBE_ExternalUrlUpdate ExternalUrlUpdate
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
