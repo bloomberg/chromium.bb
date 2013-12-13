@@ -2431,9 +2431,13 @@ WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
 
 void WebViewImpl::extendSelectionAndDelete(int before, int after)
 {
-    const Frame* focused = focusedWebCoreFrame();
+    Frame* focused = focusedWebCoreFrame();
     if (!focused)
         return;
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused)) {
+        plugin->extendSelectionAndDelete(before, after);
+        return;
+    }
     focused->inputMethodController().extendSelectionAndDelete(before, after);
 }
 

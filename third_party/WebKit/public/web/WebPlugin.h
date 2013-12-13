@@ -137,6 +137,9 @@ public:
     // Confirms an ongoing composition and returns true if there is an ongoing
     // composition or the text is inserted.
     virtual bool confirmComposition(const WebString& text, WebWidget::ConfirmCompositionBehavior selectionBehavior) { return false; }
+    // Deletes the current selection plus the specified number of characters
+    // before and after the selection or caret.
+    virtual void extendSelectionAndDelete(int before, int after) { }
     // If the given position is over a link, returns the absolute url.
     // Otherwise an empty url is returned.
     virtual WebURL linkAtPosition(const WebPoint& position) const { return WebURL(); }
