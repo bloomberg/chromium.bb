@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/sample_format.h"
 
 struct OpusMSDecoder;
 
@@ -62,9 +63,10 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   OpusMSDecoder* opus_decoder_;
 
   // Decoded audio format.
-  int bits_per_channel_;
   ChannelLayout channel_layout_;
   int samples_per_second_;
+  const SampleFormat sample_format_;
+  const int bits_per_channel_;
 
   // Used for computing output timestamps.
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
@@ -80,15 +82,14 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   int frames_to_discard_;
 
   // Number of frames to be discarded at the start of the stream. This value
-  // is typically the CodecDelay value from the container.
+  // is typically the CodecDelay value from the container.  This value should
+  // only be applied when input timestamp is |start_input_timestamp_|.
   int frame_delay_at_start_;
+  base::TimeDelta start_input_timestamp_;
 
   // Timestamp to be subtracted from all the frames. This is typically computed
   // from the CodecDelay value in the container.
   base::TimeDelta timestamp_offset_;
-
-  // Buffer for output from libopus.
-  scoped_ptr<int16[]> output_buffer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OpusAudioDecoder);
 };

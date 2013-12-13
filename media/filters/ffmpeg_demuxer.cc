@@ -845,6 +845,19 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
       packet.swap(new_packet);
     }
 
+    // Special case for opus in ogg.  FFmpeg is pre-trimming the codec delay
+    // from the packet timestamp.  Chrome expects to handle this itself inside
+    // the decoder, so shift timestamps by the delay in this case.
+    // TODO(dalecurtis): Try to get fixed upstream.  See http://crbug.com/328207
+    if (strcmp(glue_->format_context()->iformat->name, "ogg") == 0) {
+      const AVCodecContext* codec_context =
+          glue_->format_context()->streams[packet->stream_index]->codec;
+      if (codec_context->codec_id == AV_CODEC_ID_OPUS &&
+          codec_context->delay > 0) {
+        packet->pts += codec_context->delay;
+      }
+    }
+
     FFmpegDemuxerStream* demuxer_stream = streams_[packet->stream_index];
     demuxer_stream->EnqueuePacket(packet.Pass());
   }

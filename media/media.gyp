@@ -560,6 +560,10 @@
             'base/media.h',
             'base/media_stub.cc',
           ],
+          'sources!': [
+            'filters/opus_audio_decoder.cc',
+            'filters/opus_audio_decoder.h',
+          ],
           'conditions': [
             ['android_webview_build==0', {
               'dependencies': [

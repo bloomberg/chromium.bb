@@ -286,8 +286,9 @@ static void AVCodecContextToAudioDecoderConfig(
 
   if (codec == kCodecOpus) {
     // |codec_context->sample_fmt| is not set by FFmpeg because Opus decoding is
-    // not enabled in FFmpeg, so we need to manually set the sample format.
-    sample_format = kSampleFormatS16;
+    // not enabled in FFmpeg.  It doesn't matter what value is set here, so long
+    // as it's valid, the true sample format is selected inside the decoder.
+    sample_format = kSampleFormatF32;
   }
 
   base::TimeDelta seek_preroll;

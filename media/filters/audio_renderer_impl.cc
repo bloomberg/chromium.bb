@@ -399,8 +399,22 @@ bool AudioRendererImpl::HandleSplicerBuffer(
     if (state_ == kUnderflow || state_ == kRebuffering)
       ChangeState_Locked(kPlaying);
   } else {
-    if (state_ == kPrerolling && IsBeforePrerollTime(buffer))
-      return true;
+    if (state_ == kPrerolling) {
+      if (IsBeforePrerollTime(buffer))
+        return true;
+
+      // Trim off any additional time before the preroll timestamp.
+      const base::TimeDelta trim_time =
+          preroll_timestamp_ - buffer->timestamp();
+      if (trim_time > base::TimeDelta()) {
+        buffer->TrimStart(buffer->frame_count() *
+                          (static_cast<double>(trim_time.InMicroseconds()) /
+                           buffer->duration().InMicroseconds()));
+      }
+      // If the entire buffer was trimmed, request a new one.
+      if (!buffer->frame_count())
+        return true;
+    }
 
     if (state_ != kUninitialized && state_ != kStopped)
       algorithm_->EnqueueBuffer(buffer);
