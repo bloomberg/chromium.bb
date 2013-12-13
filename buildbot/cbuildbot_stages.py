@@ -69,6 +69,7 @@ PRE_CQ = validation_pool.PRE_CQ
 
 class NonHaltingBuilderStage(bs.BuilderStage):
   """Build stage that fails a build but finishes the other steps."""
+
   def Run(self):
     try:
       super(NonHaltingBuilderStage, self).Run()
@@ -79,6 +80,7 @@ class NonHaltingBuilderStage(bs.BuilderStage):
 
 class ForgivingBuilderStage(bs.BuilderStage):
   """Build stage that turns a build step red but not a build."""
+
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
     return self._HandleExceptionAsWarning(exception)
@@ -127,6 +129,7 @@ class RetryStage(object):
 
 
 class BoardSpecificBuilderStage(bs.BuilderStage):
+  """Builder stage that is specific to a board."""
 
   def __init__(self, builder_run, board, **kwargs):
     super(BoardSpecificBuilderStage, self).__init__(builder_run, **kwargs)
@@ -615,7 +618,7 @@ class BootstrapStage(PatchChangesStage):
     """Apply a pool of manifest patches to a temp manifest checkout.
 
     Args:
-      filter_fn: Used to filter changes during dependency resolution.
+      patch_pool: The pool to apply.
 
     Returns:
       The path to the patched manifest checkout.
@@ -941,6 +944,7 @@ class ManifestVersionedSyncStage(SyncStage):
     """Remove restricted checkouts from the manifest if needed.
 
     Args:
+      manifest: The manifest to localize.
       filter_cros: If set, then only checkouts with a remote of 'cros' or
         'cros-internal' are kept, and the rest are filtered out.
     """
@@ -1549,6 +1553,7 @@ class PreCQLauncherStage(SyncStage):
     """Launch a Pre-CQ run with the provided list of CLs.
 
     Args:
+      pool: ValidationPool corresponding to |plan|.
       plan: The list of patches to test in the Pre-CQ run.
     """
     cmd = ['cbuildbot', '--remote', '--nobootstrap',
@@ -3283,6 +3288,8 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 
 
 class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
+  """Stage that uploads DevInstaller prebuilts."""
+
   config_name = 'dev_installer_prebuilts'
 
   def PerformStage(self):
@@ -3304,6 +3311,7 @@ class PublishUprevChangesStage(bs.BuilderStage):
 
     Args:
       builder_run: BuilderRun object.
+      success: Boolean indicating whether the build succeeded.
     """
     super(PublishUprevChangesStage, self).__init__(builder_run, **kwargs)
     self.success = success
