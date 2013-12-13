@@ -5,6 +5,7 @@
 #ifndef MEDIA_CRYPTO_AES_DECRYPTOR_H_
 #define MEDIA_CRYPTO_AES_DECRYPTOR_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -123,6 +124,9 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   // Decrypt() and other methods.
   KeyIdToSessionKeysMap key_map_;  // Protected by |key_map_lock_|.
   mutable base::Lock key_map_lock_;  // Protects the |key_map_|.
+
+  // Keeps track of current valid session IDs.
+  std::set<uint32> valid_sessions_;
 
   // Make web session ID unique per renderer by making it static. Web session
   // IDs seen by the app will be "1", "2", etc.

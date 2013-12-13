@@ -237,6 +237,10 @@ bool AesDecryptor::CreateSession(uint32 session_id,
                                  const std::string& type,
                                  const uint8* init_data,
                                  int init_data_length) {
+  // Validate that this is a new session.
+  DCHECK(valid_sessions_.find(session_id) == valid_sessions_.end());
+  valid_sessions_.insert(session_id);
+
   std::string web_session_id_string(base::UintToString(next_web_session_id_++));
 
   // For now, the AesDecryptor does not care about |type|;
@@ -255,7 +259,7 @@ void AesDecryptor::UpdateSession(uint32 session_id,
                                  int response_length) {
   CHECK(response);
   CHECK_GT(response_length, 0);
-  // TODO(jrummell): Verify that the session for |session_id| exists.
+  DCHECK(valid_sessions_.find(session_id) != valid_sessions_.end());
 
   std::string key_string(reinterpret_cast<const char*>(response),
                          response_length);
@@ -294,6 +298,11 @@ void AesDecryptor::UpdateSession(uint32 session_id,
 }
 
 void AesDecryptor::ReleaseSession(uint32 session_id) {
+  // Validate that this is a reference to an active session and then forget it.
+  std::set<uint32>::iterator it = valid_sessions_.find(session_id);
+  DCHECK(it != valid_sessions_.end());
+  valid_sessions_.erase(it);
+
   DeleteKeysForSession(session_id);
   session_closed_cb_.Run(session_id);
 }
