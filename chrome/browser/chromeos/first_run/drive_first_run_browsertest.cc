@@ -96,7 +96,7 @@ void DriveFirstRunTest::SetUpOnMainThread() {
   host_resolver()->AddRule("example.com", "127.0.0.1");
 
   // |controller_| will delete itself when it completes.
-  controller_ = new DriveFirstRunController();
+  controller_ = new DriveFirstRunController(browser()->profile());
   controller_->AddObserver(this);
   controller_->SetDelaysForTest(0, 10);
   controller_->SetAppInfoForTest(kTestAppId, kTestEndpointUrl);

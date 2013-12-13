@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -319,8 +318,8 @@ void DriveWebContentsManager::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // DriveFirstRunController
 
-DriveFirstRunController::DriveFirstRunController()
-    : profile_(ProfileManager::GetDefaultProfile()),
+DriveFirstRunController::DriveFirstRunController(Profile* profile)
+    : profile_(profile),
       started_(false),
       initial_delay_secs_(kInitialDelaySeconds),
       web_contents_timeout_secs_(kWebContentsTimeoutSeconds),

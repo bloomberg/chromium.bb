@@ -33,7 +33,7 @@ class DriveFirstRunController {
     virtual ~Observer() {}
   };
 
-  DriveFirstRunController();
+  explicit DriveFirstRunController(Profile* profile);
   ~DriveFirstRunController();
 
   // Starts the process to enable offline mode for the user's Drive account.

@@ -389,7 +389,8 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
           switches::kEnableDriveOfflineFirstRun)) {
     if (UserManager::Get()->IsCurrentUserNew()) {
       // DriveOptInController will delete itself when finished.
-      (new DriveFirstRunController())->EnableOfflineMode();
+      (new DriveFirstRunController(
+          ProfileManager::GetActiveUserProfile()))->EnableOfflineMode();
     }
   }
 }
