@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "content/common/sandbox_linux.h"
-#include "content/common/sandbox_seccomp_bpf_linux.h"
+#include "content/common/sandbox_linux/sandbox_linux.h"
+#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
