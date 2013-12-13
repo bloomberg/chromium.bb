@@ -10,11 +10,28 @@ class AppEngineHandler(webapp2.RequestHandler):
   '''Top-level handler for AppEngine requests. Just converts them into our
   internal Servlet architecture.
   '''
+
   def get(self):
-    request = Request(self.request.path,
-                      self.request.url[:-len(self.request.path)],
-                      self.request.headers)
-    response = Handler(request).Get()
-    self.response.out.write(response.content.ToString())
-    self.response.headers.update(response.headers)
-    self.response.status = response.status
+    profile_mode = self.request.get('profile')
+    if profile_mode:
+      import cProfile, pstats, StringIO
+      pr = cProfile.Profile()
+      pr.enable()
+
+    try:
+      request = Request(self.request.path,
+                        self.request.url[:-len(self.request.path)],
+                        self.request.headers)
+      response = Handler(request).Get()
+    finally:
+      if profile_mode:
+        pr.disable()
+        s = StringIO.StringIO()
+        pstats.Stats(pr, stream=s).sort_stats(profile_mode).print_stats()
+        self.response.out.write(s.getvalue())
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.status = 200
+      else:
+        self.response.out.write(response.content.ToString())
+        self.response.headers.update(response.headers)
+        self.response.status = response.status

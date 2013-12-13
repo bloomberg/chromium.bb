@@ -100,8 +100,12 @@ class GithubFileSystem(FileSystem):
     self._GetZip(self.Stat(ZIP_KEY).version)
 
   def _GetZip(self, version):
-    blob = self._blobstore.Get(_MakeBlobstoreKey(version),
-                               blobstore.BLOBSTORE_GITHUB)
+    try:
+      blob = self._blobstore.Get(_MakeBlobstoreKey(version),
+                                 blobstore.BLOBSTORE_GITHUB)
+    except:
+      self._zip_file = Future(value=None)
+      return
     if blob is not None:
       try:
         self._zip_file = Future(value=ZipFile(StringIO(blob)))
