@@ -170,13 +170,6 @@ class CdmAdapter : public pp::Instance,
 
   bool IsValidVideoFrame(const LinkedVideoFrame& video_frame);
 
-#if !defined(NDEBUG)
-  // Logs the given message to the JavaScript console associated with the
-  // CDM adapter instance. The name of the CDM adapter issuing the log message
-  // will be automatically prepended to the message.
-  void LogToConsole(const pp::Var& value);
-#endif  // !defined(NDEBUG)
-
 #if defined(OS_CHROMEOS)
   void SendPlatformChallengeDone(int32_t result);
   void EnableProtectionDone(int32_t result);
