@@ -935,9 +935,6 @@ class DrMemory(BaseTool):
 
     proc += ["-callstack_max_frames", "40"]
 
-    # DrMem i#1404: -soft_kills causes the new python testserver to hang
-    proc += ["-no_soft_kills"]
-
     # disable leak scan for now
     proc += ["-no_count_leaks", "-no_leak_scan"]
 
