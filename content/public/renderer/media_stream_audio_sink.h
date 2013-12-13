@@ -21,7 +21,7 @@ class AudioParameters;
 
 namespace content {
 
-class MediaStreamAudioSink : public MediaStreamSink {
+class CONTENT_EXPORT MediaStreamAudioSink : public MediaStreamSink {
  public:
   // Adds a MediaStreamAudioSink to the audio track to receive audio data from
   // the track.

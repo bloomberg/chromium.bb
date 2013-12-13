@@ -24,7 +24,7 @@ namespace content {
 // Video Stream Track or a Video Source.
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // All methods calls will be done from the main render thread.
-class MediaStreamVideoSink : public MediaStreamSink {
+class CONTENT_EXPORT MediaStreamVideoSink : public MediaStreamSink {
  public:
   // An implementation of MediaStreamVideoSink should call AddToVideoTrack when
   // it is ready to receive data from a video track. Before the implementation

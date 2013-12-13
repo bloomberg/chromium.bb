@@ -7,7 +7,10 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
 #include "content/public/renderer/render_thread.h"
+#include "media/base/bind_to_loop.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_sender.h"
 
 CastSession::CastSession()
     : delegate_(new CastSessionDelegate()),
@@ -23,18 +26,22 @@ CastSession::~CastSession() {
 CastSession::P2PSocketFactory::~P2PSocketFactory() {
 }
 
-void CastSession::StartAudio(const media::cast::AudioSenderConfig& config) {
+void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
+                             const FrameInputAvailableCallback& callback) {
   io_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&CastSessionDelegate::StartAudio,
                  base::Unretained(delegate_.get()),
-                 config));
+                 config,
+                 media::BindToCurrentLoop(callback)));
 }
 
-void CastSession::StartVideo(const media::cast::VideoSenderConfig& config) {
+void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
+                             const FrameInputAvailableCallback& callback) {
   io_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&CastSessionDelegate::StartVideo,
                  base::Unretained(delegate_.get()),
-                 config));
+                 config,
+                 media::BindToCurrentLoop(callback)));
 }
 
 void CastSession::SetSocketFactory(scoped_ptr<P2PSocketFactory> socket_factory,

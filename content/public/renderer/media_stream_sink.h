@@ -15,7 +15,7 @@ namespace content {
 // MediaStreamVideoSink. It allows an implementation to receive notifications
 // about state changes on a blink::WebMediaStreamSource object or such an
 // object underlying a blink::WebMediaStreamTrack.
-class MediaStreamSink {
+class CONTENT_EXPORT MediaStreamSink {
  public:
   virtual void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) {}

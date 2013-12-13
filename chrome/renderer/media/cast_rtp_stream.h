@@ -10,9 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
+class CastAudioSink;
 class CastSession;
+class CastVideoSink;
 
 // A key value pair structure for codec specific parameters.
 struct CastCodecSpecificParams {
@@ -82,7 +85,7 @@ typedef CastRtpCaps CastRtpParams;
 class CastRtpStream {
  public:
   CastRtpStream(const blink::WebMediaStreamTrack& track,
-                    const scoped_refptr<CastSession>& session);
+                const scoped_refptr<CastSession>& session);
   ~CastRtpStream();
 
   // Return capabilities currently supported by this transport.
@@ -105,6 +108,8 @@ class CastRtpStream {
 
   blink::WebMediaStreamTrack track_;
   const scoped_refptr<CastSession> cast_session_;
+  scoped_ptr<CastAudioSink> audio_sink_;
+  scoped_ptr<CastVideoSink> video_sink_;
   CastRtpParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRtpStream);
