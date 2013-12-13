@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/page_info_helper.h"
 
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/navigation_controller.h"
@@ -27,7 +28,8 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
 
   // Do not show page info if the user has been editing the location
   // bar, or the location bar is at the NTP.
-  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
+  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty() &&
+      !chrome::ShouldDisplayOriginChip())
     return;
 
   WebContents* tab = location_bar_->GetWebContents();
