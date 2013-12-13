@@ -316,6 +316,46 @@ TEST(PictureLayerTilingTest, BundleAtContainsTileAt) {
   }
 }
 
+TEST(PictureLayerTilingTest, TilesCleanedUp) {
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
+  FakePictureLayerTilingClient twin_client(&tile_manager);
+
+  gfx::Size current_layer_bounds(400, 400);
+  client.SetTileSize(gfx::Size(100, 100));
+  twin_client.SetTileSize(gfx::Size(100, 100));
+  scoped_ptr<TestablePictureLayerTiling> tiling =
+      TestablePictureLayerTiling::Create(1.0f, current_layer_bounds, &client);
+  scoped_ptr<TestablePictureLayerTiling> twin_tiling =
+      TestablePictureLayerTiling::Create(
+          1.0f, current_layer_bounds, &twin_client);
+
+  client.set_twin_tiling(twin_tiling.get());
+  twin_client.set_twin_tiling(tiling.get());
+
+  tiling->CreateTilesForTesting(ACTIVE_TREE);
+  twin_tiling->CreateTilesForTesting(PENDING_TREE);
+  for (int tile_y = 0; tile_y < 4; ++tile_y) {
+    for (int tile_x = 0; tile_x < 4; ++tile_x) {
+      EXPECT_TRUE(tiling->TileAt(ACTIVE_TREE, tile_x, tile_y) ==
+                  twin_tiling->TileAt(ACTIVE_TREE, tile_x, tile_y));
+      EXPECT_TRUE(tiling->TileAt(PENDING_TREE, tile_x, tile_y) ==
+                  twin_tiling->TileAt(PENDING_TREE, tile_x, tile_y));
+    }
+  }
+
+  client.set_twin_tiling(NULL);
+  twin_tiling.reset();
+
+  for (int tile_y = 0; tile_y < 4; ++tile_y) {
+    for (int tile_x = 0; tile_x < 4; ++tile_x) {
+      EXPECT_TRUE(tiling->TileAt(ACTIVE_TREE, tile_x, tile_y) != NULL);
+      EXPECT_TRUE(tiling->TileAt(PENDING_TREE, tile_x, tile_y) == NULL);
+    }
+  }
+}
+
 TEST(PictureLayerTilingTest, DidBecomeActiveSwapsTiles) {
   FakeTileManagerClient tile_manager_client;
   FakeTileManager tile_manager(&tile_manager_client);

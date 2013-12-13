@@ -78,6 +78,7 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
 }
 
 PictureLayerTiling::~PictureLayerTiling() {
+  SetLiveTilesRect(gfx::Rect());
 }
 
 void PictureLayerTiling::SetClient(PictureLayerTilingClient* client) {
@@ -713,6 +714,11 @@ void PictureLayerTiling::SetLiveTilesRect(gfx::Rect new_live_tiles_rect) {
     // though it was in the live rect.
     RemoveTile(current_tree_, tile_x, tile_y);
     RemoveBundleContainingTileAtIfEmpty(tile_x, tile_y);
+  }
+
+  if (new_live_tiles_rect.IsEmpty()) {
+    live_tiles_rect_ = new_live_tiles_rect;
+    return;
   }
 
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
