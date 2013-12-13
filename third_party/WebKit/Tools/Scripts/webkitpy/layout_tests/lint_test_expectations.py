@@ -101,7 +101,7 @@ def lint(host, options, logging_stream):
 def check_test_list(port, options, path, missing_smoke_tests):
     finder = LayoutTestFinder(port, options)
     tests_in_file = finder.read_test_names_from_file([path], port.TEST_PATH_SEPARATOR)
-    tests = port.tests(tests_in_file)
+    tests = [test.replace(port.host.filesystem.sep, port.TEST_PATH_SEPARATOR) for test in port.tests(tests_in_file)]
     for test_name in set(tests_in_file).difference(set(tests)):
         if not test_name in missing_smoke_tests:
             missing_smoke_tests.add(test_name)
