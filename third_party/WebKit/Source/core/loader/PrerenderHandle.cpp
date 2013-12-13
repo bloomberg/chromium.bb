@@ -51,7 +51,7 @@ PassOwnPtr<PrerenderHandle> PrerenderHandle::create(Document& document, Prerende
     if (!document.frame())
         return PassOwnPtr<PrerenderHandle>();
 
-    const String referrer = SecurityPolicy::generateReferrerHeader(referrerPolicy, url, document.frame()->loader().outgoingReferrer());
+    const String referrer = SecurityPolicy::generateReferrerHeader(referrerPolicy, url, document.outgoingReferrer());
 
     RefPtr<Prerender> prerender = Prerender::create(client, url, referrer, referrerPolicy);
 

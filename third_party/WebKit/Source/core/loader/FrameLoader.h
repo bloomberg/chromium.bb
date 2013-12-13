@@ -113,8 +113,6 @@ public:
     bool isLoading() const;
 
     int numPendingOrLoadingRequests(bool recurse) const;
-    String outgoingReferrer() const;
-    String outgoingOrigin() const;
 
     DocumentLoader* activeDocumentLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
@@ -174,8 +172,6 @@ public:
     void setOpener(Frame*);
 
     void frameDetached();
-
-    void setOutgoingReferrer(const KURL&);
 
     void loadDone();
     void finishedParsing();
@@ -284,8 +280,6 @@ private:
     RefPtr<HistoryItem> m_currentItem;
 
     bool m_inStopAllLoaders;
-
-    String m_outgoingReferrer;
 
     // FIXME: This is only used in checkCompleted(). Figure out a way to disentangle it.
     bool m_isComplete;

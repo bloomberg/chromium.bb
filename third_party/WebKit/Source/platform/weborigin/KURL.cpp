@@ -130,6 +130,9 @@ bool isValidProtocol(const String& protocol)
 
 String KURL::strippedForUseAsReferrer() const
 {
+    if (isBlankURL() || protocolIs("data") || protocolIs("javascript"))
+        return String();
+
     KURL referrer(*this);
     referrer.setUser(String());
     referrer.setPass(String());

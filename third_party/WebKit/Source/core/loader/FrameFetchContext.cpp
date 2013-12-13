@@ -55,16 +55,12 @@ void FrameFetchContext::reportLocalLoadFailed(const KURL& url)
 
 void FrameFetchContext::addAdditionalRequestHeaders(Document& document, ResourceRequest& request, Resource::Type type)
 {
-    bool isMainResource = type == Resource::MainResource;
-
-    FrameLoader& frameLoader = m_frame->loader();
-
-    if (!isMainResource) {
+    if (type != Resource::MainResource) {
         String outgoingReferrer;
         String outgoingOrigin;
         if (request.httpReferrer().isNull()) {
-            outgoingReferrer = frameLoader.outgoingReferrer();
-            outgoingOrigin = frameLoader.outgoingOrigin();
+            outgoingReferrer = document.outgoingReferrer();
+            outgoingOrigin = document.outgoingOrigin();
         } else {
             outgoingReferrer = request.httpReferrer();
             outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
@@ -79,7 +75,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document& document, Resource
         FrameLoader::addHTTPOriginIfNeeded(request, outgoingOrigin);
     }
 
-    frameLoader.addExtraFieldsToRequest(request);
+    m_frame->loader().addExtraFieldsToRequest(request);
 }
 
 CachePolicy FrameFetchContext::cachePolicy(Resource::Type type) const

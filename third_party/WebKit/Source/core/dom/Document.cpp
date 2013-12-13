@@ -2969,6 +2969,28 @@ void Document::processReferrerPolicy(const String& policy)
         m_referrerPolicy = ReferrerPolicyOrigin;
 }
 
+String Document::outgoingReferrer()
+{
+    // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
+    // for why we walk the parent chain for srcdoc documents.
+    Document* referrerDocument = this;
+    if (Frame* frame = m_frame) {
+        while (frame->document()->isSrcdocDocument()) {
+            frame = frame->tree().parent();
+            // Srcdoc documents cannot be top-level documents, by definition,
+            // because they need to be contained in iframes with the srcdoc.
+            ASSERT(frame);
+        }
+        referrerDocument = frame->document();
+    }
+    return referrerDocument->m_url.strippedForUseAsReferrer();
+}
+
+String Document::outgoingOrigin() const
+{
+    return securityOrigin()->toString();
+}
+
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
     ASSERT(!renderView() || renderView()->isRenderView());

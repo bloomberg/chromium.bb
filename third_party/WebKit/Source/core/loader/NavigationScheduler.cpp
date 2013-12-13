@@ -333,7 +333,7 @@ void NavigationScheduler::scheduleRefresh()
     if (url.isEmpty())
         return;
 
-    schedule(adoptPtr(new ScheduledRefresh(m_frame->document(), url.string(), m_frame->loader().outgoingReferrer())));
+    schedule(adoptPtr(new ScheduledRefresh(m_frame->document(), url.string(), m_frame->document()->outgoingReferrer())));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)

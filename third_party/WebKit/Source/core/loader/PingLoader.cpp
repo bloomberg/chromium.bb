@@ -60,7 +60,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
     ResourceRequest request(url);
     request.setTargetType(ResourceRequest::TargetIsPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), request.url(), frame->loader().outgoingReferrer());
+    String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), request.url(), frame->document()->outgoingReferrer());
     if (!referrer.isEmpty())
         request.setHTTPReferrer(referrer);
     frame->loader().addExtraFieldsToRequest(request);
@@ -85,10 +85,10 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
     FrameLoader::addHTTPOriginIfNeeded(request, sourceOrigin->toString());
     request.setHTTPHeaderField("Ping-To", destinationURL.string());
-    if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->loader().outgoingReferrer())) {
+    if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->outgoingReferrer())) {
         request.setHTTPHeaderField("Ping-From", frame->document()->url().string());
         if (!sourceOrigin->isSameSchemeHostPort(pingOrigin.get())) {
-            String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), pingURL, frame->loader().outgoingReferrer());
+            String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), pingURL, frame->document()->outgoingReferrer());
             if (!referrer.isEmpty())
                 request.setHTTPReferrer(referrer);
         }
@@ -108,7 +108,7 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
     request.setHTTPBody(report);
     frame->loader().addExtraFieldsToRequest(request);
 
-    String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), reportURL, frame->loader().outgoingReferrer());
+    String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), reportURL, frame->document()->outgoingReferrer());
     if (!referrer.isEmpty())
         request.setHTTPReferrer(referrer);
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials));

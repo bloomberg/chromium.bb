@@ -412,8 +412,8 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
     if (!targetFrame->page())
         return;
 
-    submission->setReferrer(document().frame()->loader().outgoingReferrer());
-    submission->setOrigin(document().frame()->loader().outgoingOrigin());
+    submission->setReferrer(document().outgoingReferrer());
+    submission->setOrigin(document().outgoingOrigin());
 
     targetFrame->navigationScheduler().scheduleFormSubmission(submission);
 }

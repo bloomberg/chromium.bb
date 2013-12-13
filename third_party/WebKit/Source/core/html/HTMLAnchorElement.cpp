@@ -425,7 +425,7 @@ void HTMLAnchorElement::handleClick(Event* event)
         frame->loader().client()->dispatchWillRequestAfterPreconnect(request);
     if (hasAttribute(downloadAttr)) {
         if (!hasRel(RelationNoReferrer)) {
-            String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, frame->loader().outgoingReferrer());
+            String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, document().outgoingReferrer());
             if (!referrer.isEmpty())
                 request.setHTTPReferrer(referrer);
         }

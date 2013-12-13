@@ -359,11 +359,6 @@ void FrameLoader::receivedFirstData()
     dispatchDidClearWindowObjectsInAllWorlds();
 }
 
-void FrameLoader::setOutgoingReferrer(const KURL& url)
-{
-    m_outgoingReferrer = url.strippedForUseAsReferrer();
-}
-
 void FrameLoader::didBeginDocument(bool dispatch)
 {
     m_isComplete = false;
@@ -519,25 +514,6 @@ void FrameLoader::scheduleCheckCompleted()
     startCheckCompleteTimer();
 }
 
-String FrameLoader::outgoingReferrer() const
-{
-    // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
-    // for why we walk the parent chain for srcdoc documents.
-    Frame* frame = m_frame;
-    while (frame->document()->isSrcdocDocument()) {
-        frame = frame->tree().parent();
-        // Srcdoc documents cannot be top-level documents, by definition,
-        // because they need to be contained in iframes with the srcdoc.
-        ASSERT(frame);
-    }
-    return frame->loader().m_outgoingReferrer;
-}
-
-String FrameLoader::outgoingOrigin() const
-{
-    return m_frame->document()->securityOrigin()->toString();
-}
-
 Frame* FrameLoader::opener()
 {
     return m_opener;
@@ -571,7 +547,6 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
 {
     // Update the data source's request with the new URL to fake the URL change
     m_frame->document()->setURL(newURL);
-    setOutgoingReferrer(newURL);
     documentLoader()->updateForSameDocumentNavigation(newURL);
 
     // Generate start and stop notifications only when loader is completed so that we
@@ -659,12 +634,12 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
         return;
     }
 
-    // Only consider using this frame's outgoing referrer if one isn't set and this frame's document initiated the request.
-    // However, we still need to generateReferrerHeader(), because we might not have enforced ReferrerPolicy or https->http
+    // Always use the initiating document to generate the referrer.
+    // We need to generateReferrerHeader(), because we might not have enforced ReferrerPolicy or https->http
     // referrer suppression yet.
     String argsReferrer(request.httpReferrer());
-    if (argsReferrer.isEmpty() && originDocument == m_frame->document())
-        argsReferrer = outgoingReferrer();
+    if (argsReferrer.isEmpty())
+        argsReferrer = originDocument->outgoingReferrer();
     String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), argsReferrer);
 
     request.setHTTPReferrer(referrer);

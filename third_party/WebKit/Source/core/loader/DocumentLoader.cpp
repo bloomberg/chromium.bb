@@ -918,7 +918,6 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     if (!shouldReuseDefaultView)
         frame->setDOMWindow(DOMWindow::create(frame));
 
-    frame->loader().setOutgoingReferrer(url);
     RefPtr<Document> document = frame->domWindow()->installNewDocument(mimeType, init);
     if (ownerDocument) {
         document->setCookieURL(ownerDocument->cookieURL());
