@@ -293,12 +293,16 @@ function setAuthorization(request, callbackBoolean) {
 
 /**
  * Shows parsed and combined cards as notifications.
+ * @param {Object.<string, StoredNotificationGroup>} notificationGroups Map from
+ *     group name to group information.
  * @param {Object.<ChromeNotificationId, CombinedCard>} cards Map from
  *     chromeNotificationId to the combined card, containing cards to show.
+ * @param {function()} onSuccess Called on success.
  * @param {function(ReceivedNotification)=} onCardShown Optional parameter
  *     called when each card is shown.
  */
-function showNotificationCards(cards, onCardShown) {
+function showNotificationCards(
+    notificationGroups, cards, onSuccess, onCardShown) {
   console.log('showNotificationCards ' + JSON.stringify(cards));
 
   instrumented.notifications.getAll(function(notifications) {
@@ -320,9 +324,11 @@ function showNotificationCards(cards, onCardShown) {
       notificationsData[chromeNotificationId] = cardSet.update(
           chromeNotificationId,
           cards[chromeNotificationId],
+          notificationGroups,
           onCardShown);
     }
     chrome.storage.local.set({notificationsData: notificationsData});
+    onSuccess();
   });
 }
 
@@ -417,10 +423,12 @@ function scheduleNextPoll(groups, isOptedIn) {
  * them.
  * @param {Object.<string, StoredNotificationGroup>} notificationGroups Map from
  *     group name to group information.
+ * @param {function()} onSuccess Called on success.
  * @param {function(ReceivedNotification)=} onCardShown Optional parameter
  *     called when each card is shown.
  */
-function combineAndShowNotificationCards(notificationGroups, onCardShown) {
+function combineAndShowNotificationCards(
+    notificationGroups, onSuccess, onCardShown) {
   console.log('combineAndShowNotificationCards ' +
       JSON.stringify(notificationGroups));
   /** @type {Object.<ChromeNotificationId, CombinedCard>} */
@@ -429,7 +437,8 @@ function combineAndShowNotificationCards(notificationGroups, onCardShown) {
   for (var groupName in notificationGroups)
     combineGroup(combinedCards, notificationGroups[groupName]);
 
-  showNotificationCards(combinedCards, onCardShown);
+  showNotificationCards(
+      notificationGroups, combinedCards, onSuccess, onCardShown);
 }
 
 /**
@@ -531,12 +540,16 @@ function parseAndShowNotificationCards(response, onCardShown) {
         }
 
         scheduleNextPoll(updatedGroups, !parsedResponse.googleNowDisabled);
-        chrome.storage.local.set({
-          notificationGroups: updatedGroups,
-          recentDismissals: updatedRecentDismissals
-        });
-        combineAndShowNotificationCards(updatedGroups, onCardShown);
-        recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
+        combineAndShowNotificationCards(
+            updatedGroups,
+            function() {
+              chrome.storage.local.set({
+                notificationGroups: updatedGroups,
+                recentDismissals: updatedRecentDismissals
+              });
+              recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
+            },
+            onCardShown);
       });
 }
 
@@ -905,42 +918,47 @@ function onNotificationClosed(chromeNotificationId, byUser) {
     dismissalAttempts.start();
 
     instrumented.storage.local.get(
-        ['pendingDismissals', 'notificationsData'], function(items) {
-      items = items || {};
-      /** @type {Array.<PendingDismissal>} */
-      items.pendingDismissals = items.pendingDismissals || [];
-      /** @type {Object.<string, NotificationDataEntry>} */
-      items.notificationsData = items.notificationsData || {};
+        ['pendingDismissals', 'notificationsData', 'notificationGroups'],
+        function(items) {
+          items = items || {};
+          /** @type {Array.<PendingDismissal>} */
+          items.pendingDismissals = items.pendingDismissals || [];
+          /** @type {Object.<string, NotificationDataEntry>} */
+          items.notificationsData = items.notificationsData || {};
+          /** @type {Object.<string, StoredNotificationGroup>} */
+          items.notificationGroups = items.notificationGroups || {};
 
-      /** @type {NotificationDataEntry} */
-      var notificationData = items.notificationsData[chromeNotificationId] || {
-        timestamp: Date.now(),
-        combinedCard: []
-      };
+          /** @type {NotificationDataEntry} */
+          var notificationData =
+              items.notificationsData[chromeNotificationId] ||
+              {
+                timestamp: Date.now(),
+                combinedCard: []
+              };
 
-      var dismissalResult =
-          cardSet.onDismissal(chromeNotificationId, notificationData);
+          var dismissalResult =
+              cardSet.onDismissal(
+                  chromeNotificationId,
+                  notificationData,
+                  items.notificationGroups);
 
-      for (var i = 0; i < dismissalResult.dismissals.length; i++) {
-        /** @type {PendingDismissal} */
-        var dismissal = {
-          chromeNotificationId: chromeNotificationId,
-          time: Date.now(),
-          dismissalData: dismissalResult.dismissals[i]
-        };
-        items.pendingDismissals.push(dismissal);
-      }
+          for (var i = 0; i < dismissalResult.dismissals.length; i++) {
+            /** @type {PendingDismissal} */
+            var dismissal = {
+              chromeNotificationId: chromeNotificationId,
+              time: Date.now(),
+              dismissalData: dismissalResult.dismissals[i]
+            };
+            items.pendingDismissals.push(dismissal);
+          }
 
-      items.notificationsData[chromeNotificationId] =
-          dismissalResult.notificationData;
+          items.notificationsData[chromeNotificationId] =
+              dismissalResult.notificationData;
 
-      chrome.storage.local.set({
-        pendingDismissals: items.pendingDismissals,
-        notificationsData: items.notificationsData
-      });
+          chrome.storage.local.set(items);
 
-      processPendingDismissals(function(success) {});
-    });
+          processPendingDismissals(function(success) {});
+        });
   });
 }
 
@@ -1125,7 +1143,9 @@ instrumented.runtime.onStartup.addListener(function() {
       /** @type {Object.<string, StoredNotificationGroup>} */
       items.notificationGroups = items.notificationGroups || {};
 
-      combineAndShowNotificationCards(items.notificationGroups);
+      combineAndShowNotificationCards(items.notificationGroups, function() {
+        chrome.storage.local.set(items);
+      });
     });
   });
 

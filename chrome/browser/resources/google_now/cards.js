@@ -183,12 +183,14 @@ function buildCardSet() {
    * based on the current time and show-hide intervals in the combined card.
    * @param {ChromeNotificationId} cardId Card ID.
    * @param {CombinedCard} combinedCard Combined cards with |cardId|.
+   * @param {Object.<string, StoredNotificationGroup>} notificationGroups
+   *     Map from group name to group information.
    * @param {function(ReceivedNotification)=} onCardShown Optional parameter
    *     called when each card is shown.
    * @return {(NotificationDataEntry|undefined)} Notification data entry for
    *     this card. It's 'undefined' if the card's life is over.
    */
-  function update(cardId, combinedCard, onCardShown) {
+  function update(cardId, combinedCard, notificationGroups, onCardShown) {
     console.log('cardManager.update ' + JSON.stringify(combinedCard));
 
     chrome.alarms.clear(alarmPrefix + cardId);
@@ -254,7 +256,7 @@ function buildCardSet() {
       // If there are no more events, we are done with this card. Note that all
       // received notifications have hideTime.
       verify(!winningCard, 'No events left, but card is shown.');
-      clearCardFromGroups(cardId);
+      clearCardFromGroups(cardId, notificationGroups);
       return undefined;
     }
   }
@@ -265,12 +267,14 @@ function buildCardSet() {
    * @param {ChromeNotificationId} cardId Card ID.
    * @param {NotificationDataEntry} notificationData Stored notification entry
    *     for this card.
+   * @param {Object.<string, StoredNotificationGroup>} notificationGroups
+   *     Map from group name to group information.
    * @return {{
    *   dismissals: Array.<DismissalData>,
    *   notificationData: (NotificationDataEntry|undefined)
    * }}
    */
-  function onDismissal(cardId, notificationData) {
+  function onDismissal(cardId, notificationData, notificationGroups) {
     var dismissals = [];
     var newCombinedCard = [];
 
@@ -293,34 +297,27 @@ function buildCardSet() {
 
     return {
       dismissals: dismissals,
-      notificationData: update(cardId, newCombinedCard)
+      notificationData: update(cardId, newCombinedCard, notificationGroups)
     };
   }
 
   /**
-   * Removes card information from 'notificationGroups'.
+   * Removes card information from |notificationGroups|.
    * @param {ChromeNotificationId} cardId Card ID.
+   * @param {Object.<string, StoredNotificationGroup>} notificationGroups
+   *     Map from group name to group information.
    */
-  function clearCardFromGroups(cardId) {
+  function clearCardFromGroups(cardId, notificationGroups) {
     console.log('cardManager.clearCardFromGroups ' + cardId);
-
-    instrumented.storage.local.get('notificationGroups', function(items) {
-      items = items || {};
-      /** @type {Object.<string, StoredNotificationGroup>} */
-      items.notificationGroups = items.notificationGroups || {};
-
-      for (var groupName in items.notificationGroups) {
-        var group = items.notificationGroups[groupName];
-        for (var i = 0; i != group.cards.length; ++i) {
-          if (group.cards[i].chromeNotificationId == cardId) {
-            group.cards.splice(i, 1);
-            break;
-          }
+    for (var groupName in notificationGroups) {
+      var group = notificationGroups[groupName];
+      for (var i = 0; i != group.cards.length; ++i) {
+        if (group.cards[i].chromeNotificationId == cardId) {
+          group.cards.splice(i, 1);
+          break;
         }
       }
-
-      chrome.storage.local.set(items);
-    });
+    }
   }
 
   instrumented.alarms.onAlarm.addListener(function(alarm) {
@@ -330,26 +327,35 @@ function buildCardSet() {
       // Alarm to show the card.
       tasks.add(UPDATE_CARD_TASK_NAME, function() {
         var cardId = alarm.name.substring(alarmPrefix.length);
-        instrumented.storage.local.get('notificationsData', function(items) {
-          console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
-          items = items || {};
-          /** @type {Object.<string, NotificationDataEntry>} */
-          items.notificationsData = items.notificationsData || {};
-          var combinedCard =
-            (items.notificationsData[cardId] &&
-             items.notificationsData[cardId].combinedCard) || [];
+        instrumented.storage.local.get(
+            ['notificationsData', 'notificationGroups'],
+            function(items) {
+              console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
+              items = items || {};
+              /** @type {Object.<string, NotificationDataEntry>} */
+              items.notificationsData = items.notificationsData || {};
+              /** @type {Object.<string, StoredNotificationGroup>} */
+              items.notificationGroups = items.notificationGroups || {};
 
-          var cardShownCallback = undefined;
-          if (localStorage['locationCardsShown'] <
-              LOCATION_CARDS_LINK_THRESHOLD) {
-             cardShownCallback = countLocationCard;
-          }
+              var combinedCard =
+                (items.notificationsData[cardId] &&
+                 items.notificationsData[cardId].combinedCard) || [];
 
-          items.notificationsData[cardId] =
-              update(cardId, combinedCard, cardShownCallback);
+              var cardShownCallback = undefined;
+              if (localStorage['locationCardsShown'] <
+                  LOCATION_CARDS_LINK_THRESHOLD) {
+                 cardShownCallback = countLocationCard;
+              }
 
-          chrome.storage.local.set(items);
-        });
+              items.notificationsData[cardId] =
+                  update(
+                      cardId,
+                      combinedCard,
+                      items.notificationGroups,
+                      cardShownCallback);
+
+              chrome.storage.local.set(items);
+            });
       });
     }
   });
