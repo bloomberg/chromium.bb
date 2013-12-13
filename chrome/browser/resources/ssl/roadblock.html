@@ -34,10 +34,6 @@
     width: 80%;
   }
 
-  .icon {
-    position:absolute;
-  }
-
   .main {
     margin: 1em 80px;
   }
@@ -59,8 +55,11 @@
     text-decoration: underline;
   }
 
-  html[dir='rtl'] .test-image {
-    float: left;
+  #roadblock-icon {
+    background-image: url('images/roadblock.png');
+    height: 53px;
+    position: absolute;
+    width: 64px;
   }
 
   .title {
@@ -81,9 +80,7 @@
 </head>
 <body>
   <div class="box">
-    <div class="icon">
-      <img src="roadblock_icon.png" alt="SSL Error Icon" id="roadblock-icon">
-    </div>
+    <div class="icon" id="roadblock-icon"></div>
     <div class="title" i18n-content="headLine"></div>
     <div class="main" i18n-values=".innerHTML:description;dir:textdirection"></div>
     <div class="main" i18n-values=".innerHTML:reasonForNotProceeding"></div>
