@@ -73,7 +73,7 @@ Profile* ExtensionBrowserTest::profile() {
     if (browser())
       profile_ = browser()->profile();
     else
-      profile_ = ProfileManager::GetDefaultProfile();
+      profile_ = ProfileManager::GetActiveUserProfile();
   }
   return profile_;
 }

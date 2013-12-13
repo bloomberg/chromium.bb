@@ -132,7 +132,7 @@ Profile* ExtensionTestNotificationObserver::GetProfile() {
     if (browser_)
       profile_ = browser_->profile();
     else
-      profile_ = ProfileManager::GetDefaultProfile();
+      profile_ = ProfileManager::GetActiveUserProfile();
   }
   return profile_;
 }
