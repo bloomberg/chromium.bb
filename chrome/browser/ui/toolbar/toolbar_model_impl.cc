@@ -206,6 +206,12 @@ int ToolbarModelImpl::GetIcon() const {
         chrome::DISPLAY_SEARCH_BUTTON_NEVER) ?
             IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
   }
+
+  // When the site chip experiment is running, the icon in the location bar,
+  // when not the search icon, should be the page icon.
+  if (chrome::ShouldDisplayOriginChip())
+    return GetIconForSecurityLevel(NONE);
+
   return GetIconForSecurityLevel(GetSecurityLevel(false));
 }
 
