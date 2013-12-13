@@ -9,6 +9,7 @@ var ClientRenderer = (function() {
         document.getElementById('property-table').querySelector('tbody');
     this.logTable = document.getElementById('log').querySelector('tbody');
     this.graphElement = document.getElementById('graphs');
+    this.propertyName = document.getElementById('property-name');
 
     this.selectedPlayer = null;
     this.selectedAudioComponentType = null;
@@ -126,9 +127,10 @@ var ClientRenderer = (function() {
         var fragment = document.createDocumentFragment();
         for (id in components) {
           var li = document.createElement('li');
+          var friendlyName = baseName + ' ' + id;
           li.appendChild(createButton(
-              baseName + ' ' + id, renderer.selectAudioComponent_.bind(
-                  renderer, componentType, id, components[id])));
+              friendlyName, renderer.selectAudioComponent_.bind(
+                  renderer, componentType, id, components[id], friendlyName)));
           fragment.appendChild(li);
         }
         removeChildren(element);
@@ -153,7 +155,8 @@ var ClientRenderer = (function() {
       }
     },
 
-    selectAudioComponent_: function(componentType, componentId, componentData) {
+    selectAudioComponent_: function(
+          componentType, componentId, componentData, friendlyName) {
       this.selectedPlayer = null;
       this.selectedAudioComponentType = componentType;
       this.selectedAudioComponentId = componentId;
@@ -161,6 +164,9 @@ var ClientRenderer = (function() {
       this.drawProperties_(componentData);
       removeChildren(this.logTable);
       removeChildren(this.graphElement);
+
+      removeChildren(this.propertyName);
+      this.propertyName.appendChild(document.createTextNode(friendlyName));
     },
 
     redrawPlayerList_: function(players) {
@@ -192,6 +198,8 @@ var ClientRenderer = (function() {
       removeChildren(this.graphElement);
       this.drawLog_();
       this.drawGraphs_();
+      removeChildren(this.propertyName);
+      this.propertyName.appendChild(document.createTextNode('Player'));
     },
 
     drawProperties_: function(propertyMap) {

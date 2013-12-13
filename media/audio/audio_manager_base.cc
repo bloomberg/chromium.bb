@@ -421,7 +421,6 @@ int AudioManagerBase::GetUserBufferSize() {
 
 scoped_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
   return audio_log_factory_->CreateAudioLog(component);
 }
 

@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_logging.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_parameters.h"
@@ -88,6 +89,11 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
 
   typedef std::map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   AudioStreamMap proxy_to_physical_map_;
+
+  scoped_ptr<AudioLog> audio_log_;
+  typedef std::map<AudioOutputStream*, int> AudioStreamIDMap;
+  AudioStreamIDMap audio_stream_ids_;
+  int audio_stream_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDispatcherImpl);
 };
