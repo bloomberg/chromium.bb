@@ -79,8 +79,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Called when a new packet is serialized.  If the packet contains
   // retransmittable data, it will be added to the unacked packet map.
-  void OnSerializedPacket(const SerializedPacket& serialized_packet,
-                          QuicTime serialized_time);
+  void OnSerializedPacket(const SerializedPacket& serialized_packet);
 
   // Called when a packet is retransmitted with a new sequence number.
   // Replaces the old entry in the unacked packet map with the new
@@ -97,9 +96,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // If this packet has been retransmitted, information on those packets
   // will be discarded as well.
   void DiscardUnackedPacket(QuicPacketSequenceNumber sequence_number);
-
-  // Discards all information about fec packet |sequence_number|.
-  void DiscardFecPacket(QuicPacketSequenceNumber sequence_number);
 
   // Returns true if the non-FEC packet |sequence_number| is unacked.
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;
@@ -119,17 +115,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Retrieves the next pending retransmission.
   PendingRetransmission NextPendingRetransmission();
 
-  // Returns the time the fec packet was sent.
-  QuicTime GetFecSentTime(QuicPacketSequenceNumber sequence_number) const;
-
-  // Returns true if there are any unacked packets.
   bool HasUnackedPackets() const;
 
   // Returns the number of unacked packets which have retransmittable frames.
   size_t GetNumRetransmittablePackets() const;
-
-  // Returns true if there are any unacked FEC packets.
-  bool HasUnackedFecPackets() const;
 
   // Returns the smallest sequence number of a sent packet which has not been
   // acked by the peer.  Excludes any packets which have been retransmitted
@@ -137,12 +126,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // sequence number of the next packet that will be sent.
   QuicPacketSequenceNumber GetLeastUnackedSentPacket() const;
 
-  // Returns the smallest sequence number of a sent fec packet which has not
-  // been acked by the peer.  If all packets have been acked, returns the
-  // sequence number of the next packet that will be sent.
-  QuicPacketSequenceNumber GetLeastUnackedFecPacket() const;
-
   // Returns the set of sequence numbers of all unacked packets.
+  // Test only.
   SequenceNumberSet GetUnackedPackets() const;
 
   // Returns true if |sequence_number| is a previous transmission of packet.
@@ -173,10 +158,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when the retransmission timer expires.
   virtual void OnRetransmissionTimeout();
 
-  // Called when the fec timout timer expires.  Returns the next timeout of the
-  // FEC timer if it should be reset, and QuicTime::Zero() otherwise.
-  virtual QuicTime OnAbandonFecTimeout();
-
   // Called when a packet is timed out, such as an RTO.  Removes the bytes from
   // the congestion manager, but does not change the congestion window size.
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number);
@@ -190,8 +171,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                                         TransmissionType transmission_type,
                                         HasRetransmittableData retransmittable,
                                         IsHandshake handshake);
-
-  const QuicTime::Delta DefaultRetransmissionTime();
 
   // Returns amount of time for delayed ack timer.
   const QuicTime::Delta DelayedAckTime();
@@ -222,21 +201,25 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   friend class test::QuicSentPacketManagerPeer;
 
   struct TransmissionInfo {
-    TransmissionInfo() {}
+    TransmissionInfo()
+        : retransmittable_frames(NULL),
+          sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
+          sent_time(QuicTime::Zero()) { }
     TransmissionInfo(RetransmittableFrames* retransmittable_frames,
                      QuicSequenceNumberLength sequence_number_length)
         : retransmittable_frames(retransmittable_frames),
-          sequence_number_length(sequence_number_length) {
+          sequence_number_length(sequence_number_length),
+          sent_time(QuicTime::Zero()) {
     }
 
     RetransmittableFrames* retransmittable_frames;
     QuicSequenceNumberLength sequence_number_length;
+    // Zero when the packet is serialized, non-zero once it's sent.
+    QuicTime sent_time;
   };
 
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionInfo> UnackedPacketMap;
-  typedef linked_hash_map<QuicPacketSequenceNumber,
-                          QuicTime> UnackedFecPacketMap;
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
   typedef base::hash_map<QuicPacketSequenceNumber, SequenceNumberSet*>
@@ -244,9 +227,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const ReceivedPacketInfo& received_info);
-
-  // Process the incoming ack looking for newly ack'd FEC packets.
-  void HandleAckForSentFecPackets(const ReceivedPacketInfo& received_info);
 
   // Update the RTT if the ack is for the largest acked sequence number.
   void MaybeUpdateRTT(const ReceivedPacketInfo& received_info,
@@ -283,20 +263,15 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   void CleanupPacketHistory();
 
-  // When new packets are created which may be retransmitted, they are added
-  // to this map, which contains owning pointers to the contained frames.  If
-  // a packet is retransmitted, this map will contain entries for both the old
-  // and the new packet.  The old packet's retransmittable frames entry will be
-  // NULL, while the new packet's entry will contain the frames to retransmit.
+  // Newly serialized retransmittable and fec packets are added to this map,
+  // which contains owning pointers to any contained frames.  If a packet is
+  // retransmitted, this map will contain entries for both the old and the new
+  // packet. The old packet's retransmittable frames entry will be NULL, while
+  // the new packet's entry will contain the frames to retransmit.
   // If the old packet is acked before the new packet, then the old entry will
   // be removed from the map and the new entry's retransmittable frames will be
   // set to NULL.
   UnackedPacketMap unacked_packets_;
-
-  // Pending fec packets that have not been acked yet. These packets need to be
-  // cleared out of the cgst_window after a timeout since FEC packets are never
-  // retransmitted.
-  UnackedFecPacketMap unacked_fec_packets_;
 
   // Pending retransmissions which have not been packetized and sent yet.
   PendingRetransmissionMap pending_retransmissions_;

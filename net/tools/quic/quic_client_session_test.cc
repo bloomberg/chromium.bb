@@ -10,7 +10,7 @@
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/tools/quic/quic_reliable_client_stream.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::CryptoTestUtils;
@@ -58,14 +58,14 @@ TEST_F(ToolsQuicClientSessionTest, MaxNumStreams) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
-  QuicReliableClientStream* stream =
-      session_->CreateOutgoingReliableStream();
+  QuicSpdyClientStream* stream =
+      session_->CreateOutgoingDataStream();
   ASSERT_TRUE(stream);
-  EXPECT_FALSE(session_->CreateOutgoingReliableStream());
+  EXPECT_FALSE(session_->CreateOutgoingDataStream());
 
   // Close a stream and ensure I can now open a new one.
   session_->CloseStream(stream->id());
-  stream = session_->CreateOutgoingReliableStream();
+  stream = session_->CreateOutgoingDataStream();
   EXPECT_TRUE(stream);
 }
 
@@ -75,7 +75,7 @@ TEST_F(ToolsQuicClientSessionTest, GoAwayReceived) {
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
   session_->OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(NULL, session_->CreateOutgoingReliableStream());
+  EXPECT_EQ(NULL, session_->CreateOutgoingDataStream());
 }
 
 }  // namespace

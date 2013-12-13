@@ -5,6 +5,7 @@
 #include "net/tools/quic/quic_server_session.h"
 
 #include "base/logging.h"
+#include "net/quic/quic_connection.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
@@ -38,7 +39,7 @@ void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
   owner_->OnConnectionClosed(connection()->guid(), error);
 }
 
-bool QuicServerSession::ShouldCreateIncomingReliableStream(QuicStreamId id) {
+bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {
   if (id % 2 == 0) {
     DLOG(INFO) << "Invalid incoming even stream_id:" << id;
     connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
@@ -53,16 +54,16 @@ bool QuicServerSession::ShouldCreateIncomingReliableStream(QuicStreamId id) {
   return true;
 }
 
-ReliableQuicStream* QuicServerSession::CreateIncomingReliableStream(
+QuicDataStream* QuicServerSession::CreateIncomingDataStream(
     QuicStreamId id) {
-  if (!ShouldCreateIncomingReliableStream(id)) {
+  if (!ShouldCreateIncomingDataStream(id)) {
     return NULL;
   }
 
   return new QuicSpdyServerStream(id, this);
 }
 
-ReliableQuicStream* QuicServerSession::CreateOutgoingReliableStream() {
+QuicDataStream* QuicServerSession::CreateOutgoingDataStream() {
   DLOG(ERROR) << "Server push not yet supported";
   return NULL;
 }

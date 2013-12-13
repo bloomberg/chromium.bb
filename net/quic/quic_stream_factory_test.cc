@@ -64,7 +64,8 @@ class QuicStreamFactoryPeer {
 class QuicStreamFactoryTest : public ::testing::Test {
  protected:
   QuicStreamFactoryTest()
-      : clock_(new MockClock()),
+      : random_generator_(0),
+        clock_(new MockClock()),
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),
                  &crypto_client_stream_factory_,
@@ -80,7 +81,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
       QuicPacketSequenceNumber num,
       QuicStreamId stream_id) {
     QuicPacketHeader header;
-    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.guid = random_generator_.RandUint64();
     header.public_header.reset_flag = false;
     header.public_header.version_flag = true;
     header.packet_sequence_number = num;
@@ -98,7 +99,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
       QuicPacketSequenceNumber largest_received,
       QuicPacketSequenceNumber least_unacked) {
     QuicPacketHeader header;
-    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.guid = random_generator_.RandUint64();
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
     header.packet_sequence_number = 2;
@@ -126,7 +127,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   scoped_ptr<QuicEncryptedPacket> ConstructFeedbackPacket(
       QuicPacketSequenceNumber sequence_number) {
     QuicPacketHeader header;
-    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.guid = random_generator_.RandUint64();
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
     header.packet_sequence_number = sequence_number;

@@ -56,7 +56,9 @@ const QuicByteCount kMaxPacketSize = 1452;
 
 // Maximum size of the initial congestion window in packets.
 const size_t kDefaultInitialWindow = 10;
-const size_t kMaxInitialWindow = 100;
+// TODO(ianswett): Temporarily changed to 10 due to a large number of clients
+// mistakenly negotiating 100 initially and suffering the consequences.
+const size_t kMaxInitialWindow = 10;
 
 // Maximum size of the congestion window, in packets, for TCP congestion control
 // algorithms.

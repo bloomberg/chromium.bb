@@ -20,6 +20,8 @@ namespace net {
 namespace test {
 namespace {
 
+const QuicGuid kStreamId = 3;
+
 class MockDelegate : public QuicReliableClientStream::Delegate {
  public:
   MockDelegate() {}
@@ -39,7 +41,7 @@ class QuicReliableClientStreamTest : public ::testing::Test {
  public:
   QuicReliableClientStreamTest()
       : session_(new MockConnection(1, IPEndPoint(), false), false),
-        stream_(1, &session_, BoundNetLog()) {
+        stream_(kStreamId, &session_, BoundNetLog()) {
     stream_.SetDelegate(&delegate_);
   }
 
@@ -82,17 +84,17 @@ class QuicReliableClientStreamTest : public ::testing::Test {
 
 TEST_F(QuicReliableClientStreamTest, OnFinRead) {
   InitializeHeaders();
-  const QuicGuid kStreamId = 1;
+  QuicSpdyCompressor compressor;
+  string compressed_headers = compressor.CompressHeaders(headers_);
+  QuicStreamFrame frame1(kStreamId, false, 0, MakeIOVector(compressed_headers));
   string uncompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
-  QuicStreamFrame frame1(kStreamId, false, 0,
-                         MakeIOVector(uncompressed_headers));
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(uncompressed_headers.data()),
                                         uncompressed_headers.size()));
   stream_.OnStreamFrame(frame1);
 
   IOVector iov;
-  QuicStreamFrame frame2(kStreamId, true, uncompressed_headers.length(), iov);
+  QuicStreamFrame frame2(kStreamId, true, compressed_headers.length(), iov);
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
   stream_.OnStreamFrame(frame2);
 }

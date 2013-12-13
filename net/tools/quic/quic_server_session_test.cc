@@ -4,13 +4,12 @@
 
 #include "net/tools/quic/quic_server_session.h"
 
-
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_data_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
@@ -20,7 +19,7 @@
 using __gnu_cxx::vector;
 using net::test::MockConnection;
 using net::test::QuicConnectionPeer;
-using net::test::ReliableQuicStreamPeer;
+using net::test::QuicDataStreamPeer;
 using testing::_;
 using testing::StrictMock;
 
@@ -30,19 +29,19 @@ namespace test {
 
 class QuicServerSessionPeer {
  public:
-  static ReliableQuicStream* GetIncomingReliableStream(
+  static QuicDataStream* GetIncomingReliableStream(
       QuicServerSession* s, QuicStreamId id) {
     return s->GetIncomingReliableStream(id);
   }
-  static ReliableQuicStream* GetStream(QuicServerSession* s, QuicStreamId id) {
-    return s->GetStream(id);
+  static QuicDataStream* GetDataStream(QuicServerSession* s, QuicStreamId id) {
+    return s->GetDataStream(id);
   }
 };
 
-class CloseOnDataStream : public ReliableQuicStream {
+class CloseOnDataStream : public QuicDataStream {
  public:
   CloseOnDataStream(QuicStreamId id, QuicSession* session)
-      : ReliableQuicStream(id, session) {
+      : QuicDataStream(id, session) {
   }
 
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
@@ -65,9 +64,9 @@ class TestQuicQuicServerSession : public QuicServerSession {
         close_stream_on_data_(false) {
   }
 
-  virtual ReliableQuicStream* CreateIncomingReliableStream(
+  virtual QuicDataStream* CreateIncomingDataStream(
       QuicStreamId id) OVERRIDE {
-    if (!ShouldCreateIncomingReliableStream(id)) {
+    if (!ShouldCreateIncomingDataStream(id)) {
       return NULL;
     }
     if (close_stream_on_data_) {
@@ -104,10 +103,10 @@ class QuicServerSessionTest : public ::testing::Test {
   }
 
   void MarkHeadersReadForStream(QuicStreamId id) {
-    ReliableQuicStream* stream = QuicServerSessionPeer::GetStream(
+    QuicDataStream* stream = QuicServerSessionPeer::GetDataStream(
         session_.get(), id);
     ASSERT_TRUE(stream != NULL);
-    ReliableQuicStreamPeer::SetHeadersDecompressed(stream, true);
+    QuicDataStreamPeer::SetHeadersDecompressed(stream, true);
   }
 
   QuicGuid guid_;

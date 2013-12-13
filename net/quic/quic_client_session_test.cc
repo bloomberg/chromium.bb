@@ -116,15 +116,15 @@ TEST_F(QuicClientSessionTest, MaxNumStreams) {
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
-    QuicReliableClientStream* stream = session_.CreateOutgoingReliableStream();
+    QuicReliableClientStream* stream = session_.CreateOutgoingDataStream();
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
-  EXPECT_FALSE(session_.CreateOutgoingReliableStream());
+  EXPECT_FALSE(session_.CreateOutgoingDataStream());
 
   // Close a stream and ensure I can now open a new one.
   session_.CloseStream(streams[0]->id());
-  EXPECT_TRUE(session_.CreateOutgoingReliableStream());
+  EXPECT_TRUE(session_.CreateOutgoingDataStream());
 }
 
 TEST_F(QuicClientSessionTest, MaxNumStreamsViaRequest) {
@@ -132,7 +132,7 @@ TEST_F(QuicClientSessionTest, MaxNumStreamsViaRequest) {
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
-    QuicReliableClientStream* stream = session_.CreateOutgoingReliableStream();
+    QuicReliableClientStream* stream = session_.CreateOutgoingDataStream();
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
@@ -157,7 +157,7 @@ TEST_F(QuicClientSessionTest, GoAwayReceived) {
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
   session_.OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(NULL, session_.CreateOutgoingReliableStream());
+  EXPECT_EQ(NULL, session_.CreateOutgoingDataStream());
 }
 
 }  // namespace

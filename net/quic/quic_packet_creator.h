@@ -27,6 +27,7 @@ class QuicPacketCreatorPeer;
 
 class QuicAckNotifier;
 class QuicRandom;
+class QuicRandomBoolSource;
 
 class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
  public:
@@ -202,7 +203,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   Options options_;
   QuicGuid guid_;
   QuicFramer* framer_;
-  QuicRandom* random_generator_;
+  scoped_ptr<QuicRandomBoolSource> random_bool_source_;
   QuicPacketSequenceNumber sequence_number_;
   QuicFecGroupNumber fec_group_number_;
   scoped_ptr<QuicFecGroup> fec_group_;

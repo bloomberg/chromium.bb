@@ -5,13 +5,17 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 #define NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 
+#include <sys/types.h>
+#include <string>
+
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
-#include "net/tools/quic/quic_reliable_client_stream.h"
+#include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_protocol.h"
+#include "net/tools/balsa/balsa_frame.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
-
-class BalsaHeaders;
 
 namespace tools {
 
@@ -19,10 +23,15 @@ class QuicClientSession;
 
 // All this does right now is send an SPDY request, and aggregate the
 // SPDY response.
-class QuicSpdyClientStream : public QuicReliableClientStream {
+class QuicSpdyClientStream : public QuicDataStream {
  public:
   QuicSpdyClientStream(QuicStreamId id, QuicClientSession* session);
   virtual ~QuicSpdyClientStream();
+
+  // Override the base class to close the write side as soon as we get a
+  // response.
+  // SPDY/HTTP does not support bidirectional streaming.
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
 
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
@@ -30,16 +39,30 @@ class QuicSpdyClientStream : public QuicReliableClientStream {
 
   virtual void OnFinRead() OVERRIDE;
 
-  virtual ssize_t SendRequest(const BalsaHeaders& headers,
-                              base::StringPiece body,
-                              bool fin) OVERRIDE;
+  // Serializes the headers and body, sends it to the server, and
+  // returns the number of bytes sent.
+  ssize_t SendRequest(const BalsaHeaders& headers,
+                      base::StringPiece body,
+                      bool fin);
+
+  // Sends body data to the server, or buffers if it can't be sent immediately.
+  void SendBody(const std::string& data, bool fin);
+
+  // Returns the response data.
+  const std::string& data() { return data_; }
+
+  // Returns whatever headers have been received for this stream.
+  const BalsaHeaders& headers() { return headers_; }
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
-  using QuicReliableClientStream::set_priority;
+  using QuicDataStream::set_priority;
 
  private:
   int ParseResponseHeaders();
+
+  BalsaHeaders headers_;
+  std::string data_;
 
   scoped_refptr<GrowableIOBuffer> read_buf_;
   bool response_headers_received_;

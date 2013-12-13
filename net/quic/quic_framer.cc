@@ -261,12 +261,7 @@ QuicFramer::AckFrameInfo::~AckFrameInfo() { }
 
 QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
     const QuicPacketHeader& header) const {
-  if (!header.entropy_flag) {
-    // TODO(satyamshekhar): Return some more better value here (something that
-    // is not a constant).
-    return 0;
-  }
-  return 1 << (header.packet_sequence_number % 8);
+  return header.entropy_flag << (header.packet_sequence_number % 8);
 }
 
 // Test only.
@@ -1823,9 +1818,9 @@ bool QuicFramer::AppendAckFramePayloadAndTypeByte(
   max_num_ranges =
       min(static_cast<size_t>(numeric_limits<uint8>::max()), max_num_ranges);
   bool truncated = ack_info.nack_ranges.size() > max_num_ranges;
-  DLOG_IF(INFO, truncated) << "Truncating ack from "
-                           << ack_info.nack_ranges.size() << " ranges to "
-                           << max_num_ranges;
+  DVLOG_IF(1, truncated) << "Truncating ack from "
+                         << ack_info.nack_ranges.size() << " ranges to "
+                         << max_num_ranges;
 
   // Write out the type byte by setting the low order bits and doing shifts
   // to make room for the next bit flags to be set.

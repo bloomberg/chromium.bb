@@ -23,6 +23,9 @@ class QuicSentPacketManagerPeer {
       const QuicSentPacketManager* sent_packet_manager,
       QuicPacketSequenceNumber sequence_number);
 
+  static QuicTime GetSentTime(const QuicSentPacketManager* sent_packet_manager,
+                              QuicPacketSequenceNumber sequence_number);
+
   static QuicTime::Delta rtt(QuicSentPacketManager* sent_packet_manager);
 
   // Returns true if |sequence_number| is a retransmission of a packet.

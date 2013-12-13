@@ -15,6 +15,7 @@
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_stream.h"
+#include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_spdy_compressor.h"
@@ -65,7 +66,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnSuccessfulVersionNegotiation(
-      const QuicVersion& version) OVERRIDE{}
+      const QuicVersion& version) OVERRIDE {}
   virtual void OnConfigNegotiated() OVERRIDE;
   // Not needed for HTTP.
   virtual bool OnCanWrite() OVERRIDE;
@@ -175,25 +176,29 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool is_server() const { return is_server_; }
 
  protected:
+  typedef base::hash_map<QuicStreamId, QuicDataStream*> DataStreamMap;
+
   // Creates a new stream, owned by the caller, to handle a peer-initiated
   // stream.  Returns NULL and does error handling if the stream can not be
   // created.
-  virtual ReliableQuicStream* CreateIncomingReliableStream(QuicStreamId id) = 0;
+  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) = 0;
 
   // Create a new stream, owned by the caller, to handle a locally-initiated
   // stream.  Returns NULL if max streams have already been opened.
-  virtual ReliableQuicStream* CreateOutgoingReliableStream() = 0;
+  virtual QuicDataStream* CreateOutgoingDataStream() = 0;
 
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetCryptoStream() = 0;
 
   // Adds 'stream' to the active stream map.
-  virtual void ActivateStream(ReliableQuicStream* stream);
+  virtual void ActivateStream(QuicDataStream* stream);
 
   // Returns the stream id for a new stream.
   QuicStreamId GetNextStreamId();
 
-  ReliableQuicStream* GetIncomingReliableStream(QuicStreamId stream_id);
+  QuicDataStream* GetIncomingReliableStream(QuicStreamId stream_id);
+
+  QuicDataStream* GetDataStream(const QuicStreamId stream_id);
 
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
@@ -203,17 +208,15 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // operations are being done on the streams at this time)
   virtual void PostProcessAfterData();
 
-  base::hash_map<QuicStreamId, ReliableQuicStream*>* streams() {
+  base::hash_map<QuicStreamId, QuicDataStream*>* streams() {
     return &stream_map_;
   }
 
-  const base::hash_map<QuicStreamId, ReliableQuicStream*>* streams() const {
+  const base::hash_map<QuicStreamId, QuicDataStream*>* streams() const {
     return &stream_map_;
   }
 
-  std::vector<ReliableQuicStream*>* closed_streams() {
-    return &closed_streams_;
-  }
+  std::vector<QuicDataStream*>* closed_streams() { return &closed_streams_; }
 
   size_t get_max_open_streams() const {
     return max_open_streams_;
@@ -222,8 +225,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
-
-  typedef base::hash_map<QuicStreamId, ReliableQuicStream*> ReliableStreamMap;
 
   // Performs the work required to close |stream_id|.  If |locally_reset|
   // then the stream has been reset by this endpoint, not by the peer.  This
@@ -260,7 +261,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // deletions.
   scoped_ptr<VisitorShim> visitor_shim_;
 
-  std::vector<ReliableQuicStream*> closed_streams_;
+  std::vector<QuicDataStream*> closed_streams_;
 
   QuicSpdyDecompressor decompressor_;
   QuicSpdyCompressor compressor_;
@@ -271,7 +272,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   size_t max_open_streams_;
 
   // Map from StreamId to pointers to streams that are owned by the caller.
-  ReliableStreamMap stream_map_;
+  DataStreamMap stream_map_;
   QuicStreamId next_stream_id_;
   bool is_server_;
 

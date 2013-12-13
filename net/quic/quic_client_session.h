@@ -114,7 +114,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // QuicSession methods:
   virtual bool OnStreamFrames(
       const std::vector<QuicStreamFrame>& frames) OVERRIDE;
-  virtual QuicReliableClientStream* CreateOutgoingReliableStream() OVERRIDE;
+  virtual QuicReliableClientStream* CreateOutgoingDataStream() OVERRIDE;
   virtual QuicCryptoClientStream* GetCryptoStream() OVERRIDE;
   virtual void CloseStream(QuicStreamId stream_id) OVERRIDE;
   virtual void SendRstStream(QuicStreamId id,
@@ -156,8 +156,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
  protected:
   // QuicSession methods:
-  virtual ReliableQuicStream* CreateIncomingReliableStream(
-      QuicStreamId id) OVERRIDE;
+  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) OVERRIDE;
 
  private:
   friend class test::QuicClientSessionPeer;

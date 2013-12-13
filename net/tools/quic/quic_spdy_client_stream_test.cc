@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_reliable_client_stream.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_utils.h"
@@ -23,9 +23,9 @@ namespace tools {
 namespace test {
 namespace {
 
-class QuicClientStreamTest : public ::testing::Test {
+class QuicSpdyClientStreamTest : public ::testing::Test {
  public:
-  QuicClientStreamTest()
+  QuicSpdyClientStreamTest()
       : session_("example.com", DefaultQuicConfig(),
                  new MockConnection(1, IPEndPoint(), 0, &eps_, false),
                  &crypto_config_),
@@ -42,14 +42,14 @@ class QuicClientStreamTest : public ::testing::Test {
 
   EpollServer eps_;
   QuicClientSession session_;
-  scoped_ptr<QuicReliableClientStream> stream_;
+  scoped_ptr<QuicSpdyClientStream> stream_;
   BalsaHeaders headers_;
   string headers_string_;
   string body_;
   QuicCryptoClientConfig crypto_config_;
 };
 
-TEST_F(QuicClientStreamTest, TestFraming) {
+TEST_F(QuicSpdyClientStreamTest, TestFraming) {
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
       headers_string_.c_str(), headers_string_.size()));
   EXPECT_EQ(body_.size(),
@@ -58,7 +58,7 @@ TEST_F(QuicClientStreamTest, TestFraming) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_F(QuicClientStreamTest, TestFramingOnePacket) {
+TEST_F(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   string message = headers_string_ + body_;
 
   EXPECT_EQ(message.size(), stream_->ProcessData(
@@ -67,7 +67,7 @@ TEST_F(QuicClientStreamTest, TestFramingOnePacket) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_F(QuicClientStreamTest, DISABLED_TestFramingExtraData) {
+TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -77,12 +77,11 @@ TEST_F(QuicClientStreamTest, DISABLED_TestFramingExtraData) {
   EXPECT_EQ(200u, stream_->headers().parsed_response_code());
 
   stream_->ProcessData(large_body.c_str(), large_body.size());
-  stream_->OnFinRead();
 
   EXPECT_NE(QUIC_STREAM_NO_ERROR, stream_->stream_error());
 }
 
-TEST_F(QuicClientStreamTest, TestNoBidirectionalStreaming) {
+TEST_F(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
   QuicStreamFrame frame(3, false, 3, MakeIOVector("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());

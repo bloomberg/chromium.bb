@@ -12,7 +12,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_stream.h"
-#include "net/quic/reliable_quic_stream.h"
+#include "net/quic/quic_data_stream.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ class QuicClientSession;
 
 // A client-initiated ReliableQuicStream.  Instances of this class
 // are owned by the QuicClientSession which created them.
-class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
+class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
  public:
   // Delegate handles protocol specific behavior of a quic stream.
   class NET_EXPORT_PRIVATE Delegate {
@@ -53,7 +53,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
 
   virtual ~QuicReliableClientStream();
 
-  // ReliableQuicStream
+  // QuicDataStream
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
   virtual void OnFinRead() OVERRIDE;
   virtual void OnCanWrite() OVERRIDE;
@@ -61,7 +61,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
-  using ReliableQuicStream::set_priority;
+  using QuicDataStream::set_priority;
 
   int WriteStreamData(base::StringPiece data,
                       bool fin,
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
 
   const BoundNetLog& net_log() const { return net_log_; }
 
-  using ReliableQuicStream::HasBufferedData;
+  using QuicDataStream::HasBufferedData;
 
  private:
   BoundNetLog net_log_;

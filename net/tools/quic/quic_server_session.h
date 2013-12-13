@@ -56,15 +56,14 @@ class QuicServerSession : public QuicSession {
 
  protected:
   // QuicSession methods:
-  virtual ReliableQuicStream* CreateIncomingReliableStream(
-      QuicStreamId id) OVERRIDE;
-  virtual ReliableQuicStream* CreateOutgoingReliableStream() OVERRIDE;
+  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) OVERRIDE;
+  virtual QuicDataStream* CreateOutgoingDataStream() OVERRIDE;
   virtual QuicCryptoServerStream* GetCryptoStream() OVERRIDE;
 
   // If we should create an incoming stream, returns true. Otherwise
   // does error handling, including communicating the error to the client and
   // possibly closing the connection, and returns false.
-  virtual bool ShouldCreateIncomingReliableStream(QuicStreamId id);
+  virtual bool ShouldCreateIncomingDataStream(QuicStreamId id);
 
   virtual QuicCryptoServerStream* CreateQuicCryptoServerStream(
     const QuicCryptoServerConfig& crypto_config);

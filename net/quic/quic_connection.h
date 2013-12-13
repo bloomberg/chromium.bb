@@ -359,13 +359,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
 
-  // Called when an RTO fires.  Returns the time when this alarm
-  // should next fire, or 0 if no retransmission alarm should be set.
+  // Called when an RTO fires.  Resets the retransmission alarm if there are
+  // remaining unacked packets.
   void OnRetransmissionTimeout();
-
-  // Called when an alarm to abandon sent FEC packets fires.  The alarm is set
-  // by the same policy as the RTO alarm, but is a separate alarm.
-  QuicTime OnAbandonFecTimeout();
 
   // Retransmits all unacked packets with retransmittable frames if
   // |retransmission_type| is ALL_PACKETS, otherwise retransmits only initially
@@ -579,8 +575,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
 
-  void SetupRetransmission(QuicPacketSequenceNumber sequence_number,
-                           EncryptionLevel level);
+  void SetupRetransmissionAlarm(QuicPacketSequenceNumber sequence_number);
   bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
 
   void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);
@@ -708,8 +703,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   scoped_ptr<QuicAlarm> ack_alarm_;
   // An alarm that fires when a packet needs to be retransmitted.
   scoped_ptr<QuicAlarm> retransmission_alarm_;
-  // An alarm that fires when one or more FEC packets are to be discarded.
-  scoped_ptr<QuicAlarm> abandon_fec_alarm_;
   // An alarm that is scheduled when the sent scheduler requires a
   // a delay before sending packets and fires when the packet may be sent.
   scoped_ptr<QuicAlarm> send_alarm_;

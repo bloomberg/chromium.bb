@@ -78,10 +78,10 @@ TEST_F(QuicCryptoStreamTest, NotInitiallyConected) {
   EXPECT_FALSE(stream_.handshake_confirmed());
 }
 
-TEST_F(QuicCryptoStreamTest, ProcessData) {
+TEST_F(QuicCryptoStreamTest, ProcessRawData) {
   EXPECT_EQ(message_data_->length(),
-            stream_.ProcessData(message_data_->data(),
-                                message_data_->length()));
+            stream_.ProcessRawData(message_data_->data(),
+                                   message_data_->length()));
   ASSERT_EQ(1u, stream_.messages()->size());
   const CryptoHandshakeMessage& message = (*stream_.messages())[0];
   EXPECT_EQ(kSHLO, message.tag());
@@ -100,7 +100,7 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
 
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
-  EXPECT_EQ(0u, stream_.ProcessData(bad.data(), bad.length()));
+  EXPECT_EQ(0u, stream_.ProcessRawData(bad.data(), bad.length()));
 }
 
 }  // namespace

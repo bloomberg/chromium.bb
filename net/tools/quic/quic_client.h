@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -20,7 +19,7 @@
 #include "net/quic/quic_packet_creator.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_session.h"
-#include "net/tools/quic/quic_reliable_client_stream.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 
 namespace net {
 
@@ -35,7 +34,7 @@ class QuicClientPeer;
 }  // namespace test
 
 class QuicClient : public EpollCallbackInterface,
-                   public ReliableQuicStream::Visitor {
+                   public QuicDataStream::Visitor {
  public:
   QuicClient(IPEndPoint server_address,
              const string& server_hostname,
@@ -76,7 +75,7 @@ class QuicClient : public EpollCallbackInterface,
 
   // Returns a newly created CreateReliableClientStream, owned by the
   // QuicClient.
-  QuicReliableClientStream* CreateReliableClientStream();
+  QuicSpdyClientStream* CreateReliableClientStream();
 
   // Wait for events until the stream with the given ID is closed.
   void WaitForStreamToClose(QuicStreamId id);
@@ -99,8 +98,8 @@ class QuicClient : public EpollCallbackInterface,
   virtual void OnUnregistration(int fd, bool replaced) OVERRIDE {}
   virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}
 
-  // ReliableQuicStream::Visitor
-  virtual void OnClose(ReliableQuicStream* stream) OVERRIDE;
+  // QuicDataStream::Visitor
+  virtual void OnClose(QuicDataStream* stream) OVERRIDE;
 
   QuicPacketCreator::Options* options();
 
@@ -153,9 +152,6 @@ class QuicClient : public EpollCallbackInterface,
 
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
-
-  // Set of streams created (and owned) by this client
-  base::hash_set<QuicReliableClientStream*> streams_;
 
   // Address of the server.
   const IPEndPoint server_address_;

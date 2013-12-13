@@ -26,6 +26,7 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/quic_socket_utils.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 #include "net/tools/quic/test_tools/packet_dropping_test_writer.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
@@ -622,7 +623,7 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   // Set the offset so we won't frame.  Otherwise when we pick up termination
   // before HTTP framing is complete, we send an error and close the stream,
   // and the second write is picked up as writing on a closed stream.
-  QuicReliableClientStream* stream = client_->GetOrCreateStream();
+  QuicSpdyClientStream* stream = client_->GetOrCreateStream();
   ASSERT_TRUE(stream != NULL);
   ReliableQuicStreamPeer::SetStreamBytesWritten(3, stream);
 

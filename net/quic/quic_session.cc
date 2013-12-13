@@ -137,11 +137,11 @@ bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
     }
     stream->OnStreamFrame(frames[i]);
 
-    // If the stream had been prematurely closed, and the
+    // If the stream is a data stream had been prematurely closed, and the
     // headers are now decompressed, then we are finally finished
     // with this stream.
     if (ContainsKey(zombie_streams_, stream_id) &&
-        stream->headers_decompressed()) {
+        static_cast<QuicDataStream*>(stream)->headers_decompressed()) {
       CloseZombieStream(stream_id);
     }
   }
@@ -153,7 +153,7 @@ bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
     }
     QuicStreamId stream_id = decompression_blocked_streams_.begin()->second;
     decompression_blocked_streams_.erase(header_id);
-    ReliableQuicStream* stream = GetStream(stream_id);
+    QuicDataStream* stream = GetDataStream(stream_id);
     if (!stream) {
       connection()->SendConnectionClose(
           QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
@@ -165,7 +165,13 @@ bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
 }
 
 void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
-  ReliableQuicStream* stream = GetStream(frame.stream_id);
+  if (frame.stream_id == kCryptoStreamId) {
+    connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_STREAM_ID,
+        "Attempt to reset the crypto stream");
+    return;
+  }
+  QuicDataStream* stream = GetDataStream(frame.stream_id);
   if (!stream) {
     return;  // Errors are handled by GetStream.
   }
@@ -198,7 +204,7 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
   }
 
   while (!stream_map_.empty()) {
-    ReliableStreamMap::iterator it = stream_map_.begin();
+    DataStreamMap::iterator it = stream_map_.begin();
     QuicStreamId id = it->first;
     it->second->OnConnectionClosed(error, from_peer);
     // The stream should call CloseStream as part of OnConnectionClosed.
@@ -276,12 +282,12 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
                                    bool locally_reset) {
   DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
 
-  ReliableStreamMap::iterator it = stream_map_.find(stream_id);
+  DataStreamMap::iterator it = stream_map_.find(stream_id);
   if (it == stream_map_.end()) {
     DVLOG(1) << ENDPOINT << "Stream is already closed: " << stream_id;
     return;
   }
-  ReliableQuicStream* stream = it->second;
+  QuicDataStream* stream = it->second;
   if (connection_->connected() && !stream->headers_decompressed()) {
     // If the stream is being closed locally (for example a client cancelling
     // a request before receiving the response) then we need to make sure that
@@ -324,7 +330,7 @@ void QuicSession::AddZombieStream(QuicStreamId stream_id) {
 void QuicSession::CloseZombieStream(QuicStreamId stream_id) {
   DCHECK(ContainsKey(zombie_streams_, stream_id));
   zombie_streams_.erase(stream_id);
-  ReliableQuicStream* stream = GetStream(stream_id);
+  QuicDataStream* stream = GetDataStream(stream_id);
   if (!stream) {
     return;
   }
@@ -390,7 +396,7 @@ QuicConfig* QuicSession::config() {
   return &config_;
 }
 
-void QuicSession::ActivateStream(ReliableQuicStream* stream) {
+void QuicSession::ActivateStream(QuicDataStream* stream) {
   DVLOG(1) << ENDPOINT << "num_streams: " << stream_map_.size()
              << ". activating " << stream->id();
   DCHECK_EQ(stream_map_.count(stream->id()), 0u);
@@ -407,8 +413,16 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
   if (stream_id == kCryptoStreamId) {
     return GetCryptoStream();
   }
+  return GetDataStream(stream_id);
+}
 
-  ReliableStreamMap::iterator it = stream_map_.find(stream_id);
+QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
+  if (stream_id == kCryptoStreamId) {
+    DLOG(FATAL) << "Attempt to call GetDataStream with the crypto stream id";
+    return NULL;
+  }
+
+  DataStreamMap::iterator it = stream_map_.find(stream_id);
   if (it != stream_map_.end()) {
     return it->second;
   }
@@ -427,7 +441,7 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
   return GetIncomingReliableStream(stream_id);
 }
 
-ReliableQuicStream* QuicSession::GetIncomingReliableStream(
+QuicDataStream* QuicSession::GetIncomingReliableStream(
     QuicStreamId stream_id) {
   if (IsClosedStream(stream_id)) {
     return NULL;
@@ -456,7 +470,7 @@ ReliableQuicStream* QuicSession::GetIncomingReliableStream(
     }
     largest_peer_created_stream_id_ = stream_id;
   }
-  ReliableQuicStream* stream = CreateIncomingReliableStream(stream_id);
+  QuicDataStream* stream = CreateIncomingDataStream(stream_id);
   if (stream == NULL) {
     return NULL;
   }

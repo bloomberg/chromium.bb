@@ -8,7 +8,9 @@
 #include <string>
 
 #include "net/base/io_buffer.h"
-#include "net/tools/quic/quic_reliable_server_stream.h"
+#include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_protocol.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
 
@@ -16,9 +18,13 @@ class QuicSession;
 
 namespace tools {
 
-// All this does right now is aggregate data, and on fin, send a cached
+namespace test {
+class QuicSpdyServerStreamPeer;
+}  // namespace test
+
+// All this does right now is aggregate data, and on fin, send an HTTP
 // response.
-class QuicSpdyServerStream : public QuicReliableServerStream {
+class QuicSpdyServerStream : public QuicDataStream {
  public:
   QuicSpdyServerStream(QuicStreamId id, QuicSession* session);
   virtual ~QuicSpdyServerStream();
@@ -26,13 +32,26 @@ class QuicSpdyServerStream : public QuicReliableServerStream {
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
-
-  virtual void SendHeaders(const BalsaHeaders& response_headers) OVERRIDE;
+  virtual void OnFinRead() OVERRIDE;
 
   int ParseRequestHeaders();
 
- protected:
-  virtual void OnFinRead() OVERRIDE;
+ private:
+  friend class test::QuicSpdyServerStreamPeer;
+
+  // Sends a basic 200 response using SendHeaders for the headers and WriteData
+  // for the body.
+  void SendResponse();
+
+  // Sends a basic 500 response using SendHeaders for the headers and WriteData
+  // for the body
+  void SendErrorResponse();
+
+  void SendHeadersAndBody(const BalsaHeaders& response_headers,
+                          base::StringPiece body);
+
+  BalsaHeaders headers_;
+  string body_;
 
   // Buffer into which response header data is read.
   scoped_refptr<GrowableIOBuffer> read_buf_;

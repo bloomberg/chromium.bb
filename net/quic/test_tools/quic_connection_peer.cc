@@ -84,6 +84,7 @@ bool QuicConnectionPeer::IsRetransmission(
 }
 
 // static
+// TODO(ianswett): Create a GetSentEntropyHash which accepts an AckFrame.
 QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
@@ -175,11 +176,6 @@ QuicAlarm* QuicConnectionPeer::GetAckAlarm(QuicConnection* connection) {
 QuicAlarm* QuicConnectionPeer::GetRetransmissionAlarm(
     QuicConnection* connection) {
   return connection->retransmission_alarm_.get();
-}
-
-// static
-QuicAlarm* QuicConnectionPeer::GetAbandonFecAlarm(QuicConnection* connection) {
-  return connection->abandon_fec_alarm_.get();
 }
 
 // static

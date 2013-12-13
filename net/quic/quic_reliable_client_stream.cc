@@ -14,7 +14,7 @@ namespace net {
 QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
                                                    QuicSession* session,
                                                    const BoundNetLog& net_log)
-    : ReliableQuicStream(id, session),
+    : QuicDataStream(id, session),
       net_log_(net_log),
       delegate_(NULL) {
 }
@@ -57,7 +57,7 @@ void QuicReliableClientStream::OnCanWrite() {
 
 QuicPriority QuicReliableClientStream::EffectivePriority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
-    return ReliableQuicStream::EffectivePriority();
+    return QuicDataStream::EffectivePriority();
   }
   return kHighestPriority;
 }
@@ -69,7 +69,7 @@ int QuicReliableClientStream::WriteStreamData(
   // We should not have data buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
-  WriteData(data, fin);
+  WriteOrBufferData(data, fin);
   if (!HasBufferedData()) {
     return OK;
   }

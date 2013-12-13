@@ -18,8 +18,8 @@
 #include "net/quic/quic_protocol.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
-#include "net/tools/quic/quic_reliable_client_stream.h"
 #include "net/tools/quic/quic_socket_utils.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -188,10 +188,10 @@ void QuicClient::Disconnect() {
 
 void QuicClient::SendRequestsAndWaitForResponse(
     const CommandLine::StringVector& args) {
-  for (size_t i = 0; i < args.size(); i++) {
+  for (size_t i = 0; i < args.size(); ++i) {
     BalsaHeaders headers;
     headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");
-    QuicReliableClientStream* stream = CreateReliableClientStream();
+    QuicSpdyClientStream* stream = CreateReliableClientStream();
     stream->SendRequest(headers, "", true);
     stream->set_visitor(this);
   }
@@ -199,12 +199,12 @@ void QuicClient::SendRequestsAndWaitForResponse(
   while (WaitForEvents()) { }
 }
 
-QuicReliableClientStream* QuicClient::CreateReliableClientStream() {
+QuicSpdyClientStream* QuicClient::CreateReliableClientStream() {
   if (!connected()) {
     return NULL;
   }
 
-  return session_->CreateOutgoingReliableStream();
+  return session_->CreateOutgoingDataStream();
 }
 
 void QuicClient::WaitForStreamToClose(QuicStreamId id) {
@@ -245,13 +245,13 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   }
 }
 
-void QuicClient::OnClose(ReliableQuicStream* stream) {
+void QuicClient::OnClose(QuicDataStream* stream) {
   if (!print_response_) {
     return;
   }
 
-  QuicReliableClientStream* client_stream =
-      static_cast<QuicReliableClientStream*>(stream);
+  QuicSpdyClientStream* client_stream =
+      static_cast<QuicSpdyClientStream*>(stream);
   const BalsaHeaders& headers = client_stream->headers();
   printf("%s\n", headers.first_line().as_string().c_str());
   for (BalsaHeaders::const_header_lines_iterator i =

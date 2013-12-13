@@ -7,7 +7,13 @@
 namespace net {
 
 MockRandom::MockRandom()
-    : increment_(0) {
+    : base_(0xDEADBEEF),
+      increment_(0) {
+}
+
+MockRandom::MockRandom(uint32 base)
+    : base_(base),
+      increment_(0) {
 }
 
 void MockRandom::RandBytes(void* data, size_t len) {
@@ -15,11 +21,7 @@ void MockRandom::RandBytes(void* data, size_t len) {
 }
 
 uint64 MockRandom::RandUint64() {
-  return 0xDEADBEEF + increment_;
-}
-
-bool MockRandom::RandBool() {
-  return false;
+  return base_ + increment_;
 }
 
 void MockRandom::Reseed(const void* additional_entropy, size_t entropy_len) {

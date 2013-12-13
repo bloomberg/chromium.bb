@@ -215,7 +215,7 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
     }
   }
 
-  QuicReliableClientStream* stream = GetOrCreateStream();
+  QuicSpdyClientStream* stream = GetOrCreateStream();
   if (!stream) { return 0; }
 
   scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
@@ -229,7 +229,7 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
 }
 
 ssize_t QuicTestClient::SendData(string data, bool last_data) {
-  QuicReliableClientStream* stream = GetOrCreateStream();
+  QuicSpdyClientStream* stream = GetOrCreateStream();
   if (!stream) { return 0; }
   GetOrCreateStream()->SendBody(data, last_data);
   WaitForWriteToFlush();
@@ -252,7 +252,7 @@ string QuicTestClient::SendSynchronousRequest(const string& uri) {
   return response_;
 }
 
-QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
+QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
   if (!connect_attempted_ || auto_reconnect_) {
     if (!connected()) {
       Connect();
@@ -401,7 +401,7 @@ size_t QuicTestClient::bytes_written() const {
   return bytes_written_;
 }
 
-void QuicTestClient::OnClose(ReliableQuicStream* stream) {
+void QuicTestClient::OnClose(QuicDataStream* stream) {
   if (stream_ != stream) {
     return;
   }

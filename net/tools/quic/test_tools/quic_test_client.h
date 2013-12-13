@@ -26,7 +26,7 @@ namespace test {
 class HTTPMessage;
 
 // A toy QUIC client used for testing.
-class QuicTestClient :  public ReliableQuicStream::Visitor {
+class QuicTestClient :  public QuicDataStream::Visitor {
  public:
   QuicTestClient(IPEndPoint server_address, const string& server_hostname,
                  const QuicVersionVector& supported_versions);
@@ -81,8 +81,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   bool buffer_body() const { return buffer_body_; }
   void set_buffer_body(bool buffer_body) { buffer_body_ = buffer_body; }
 
-  // From ReliableQuicStream::Visitor
-  virtual void OnClose(ReliableQuicStream* stream) OVERRIDE;
+  // From QuicDataStream::Visitor
+  virtual void OnClose(QuicDataStream* stream) OVERRIDE;
 
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
@@ -92,7 +92,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   void UseGuid(QuicGuid guid);
 
   // Returns NULL if the maximum number of streams have already been created.
-  QuicReliableClientStream* GetOrCreateStream();
+  QuicSpdyClientStream* GetOrCreateStream();
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
   QuicErrorCode connection_error() { return client()->session()->error(); }
@@ -118,7 +118,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   IPEndPoint server_address_;
   IPEndPoint client_address_;
   scoped_ptr<QuicClient> client_;  // The actual client
-  QuicReliableClientStream* stream_;
+  QuicSpdyClientStream* stream_;
 
   QuicRstStreamErrorCode stream_error_;
 

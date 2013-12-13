@@ -28,6 +28,16 @@ size_t QuicSentPacketManagerPeer::GetNackCount(
 }
 
 // static
+QuicTime QuicSentPacketManagerPeer::GetSentTime(
+    const QuicSentPacketManager* sent_packet_manager,
+    QuicPacketSequenceNumber sequence_number) {
+  DCHECK(ContainsKey(sent_packet_manager->unacked_packets_, sequence_number));
+
+  return sent_packet_manager->unacked_packets_
+      .find(sequence_number)->second.sent_time;
+}
+
+// static
 QuicTime::Delta QuicSentPacketManagerPeer::rtt(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->rtt_sample_;

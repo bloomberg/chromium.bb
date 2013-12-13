@@ -101,23 +101,6 @@ class RetransmissionAlarm : public QuicAlarm::Delegate {
   QuicConnection* connection_;
 };
 
-// This alarm will be scheduled any time a FEC-bearing packet is sent out.
-// When the alarm goes off, the connection checks to see if the oldest packets
-// have been acked, and removes them from the congestion window if not.
-class AbandonFecAlarm : public QuicAlarm::Delegate {
- public:
-  explicit AbandonFecAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
-
-  virtual QuicTime OnAlarm() OVERRIDE {
-    return connection_->OnAbandonFecTimeout();
-  }
-
- private:
-  QuicConnection* connection_;
-};
-
 // An alarm that is scheduled when the sent scheduler requires a
 // a delay before sending packets and fires when the packet may be sent.
 class SendAlarm : public QuicAlarm::Delegate {
@@ -208,7 +191,6 @@ QuicConnection::QuicConnection(QuicGuid guid,
       received_packet_manager_(kTCP),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
-      abandon_fec_alarm_(helper->CreateAlarm(new AbandonFecAlarm(this))),
       send_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       resume_writes_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
@@ -524,16 +506,11 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   if (reset_retransmission_alarm) {
     retransmission_alarm_->Cancel();
-    abandon_fec_alarm_->Cancel();
     // Reset the RTO and FEC alarms if the are unacked packets.
-    QuicTime::Delta retransmission_delay =
-        sent_packet_manager_.GetRetransmissionDelay();
     if (sent_packet_manager_.HasUnackedPackets()) {
+      QuicTime::Delta retransmission_delay =
+          sent_packet_manager_.GetRetransmissionDelay();
       retransmission_alarm_->Set(
-          clock_->ApproximateNow().Add(retransmission_delay));
-    }
-    if (sent_packet_manager_.HasUnackedFecPackets()) {
-      abandon_fec_alarm_->Set(
           clock_->ApproximateNow().Add(retransmission_delay));
     }
   }
@@ -1108,9 +1085,8 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
   return true;
 }
 
-void QuicConnection::SetupRetransmission(
-    QuicPacketSequenceNumber sequence_number,
-    EncryptionLevel level) {
+void QuicConnection::SetupRetransmissionAlarm(
+    QuicPacketSequenceNumber sequence_number) {
   if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
     DVLOG(1) << ENDPOINT << "Will not retransmit packet " << sequence_number;
     return;
@@ -1126,16 +1102,6 @@ void QuicConnection::SetupRetransmission(
       sent_packet_manager_.GetRetransmissionDelay();
   retransmission_alarm_->Set(
       clock_->ApproximateNow().Add(retransmission_delay));
-}
-
-void QuicConnection::SetupAbandonFecTimer(
-    QuicPacketSequenceNumber sequence_number) {
-  if (abandon_fec_alarm_->IsSet()) {
-    return;
-  }
-  QuicTime::Delta retransmission_delay =
-      sent_packet_manager_.GetRetransmissionDelay();
-  abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(retransmission_delay));
 }
 
 bool QuicConnection::WritePacket(EncryptionLevel level,
@@ -1314,7 +1280,6 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   QuicPacketSequenceNumber sequence_number = pending_write_->sequence_number;
   TransmissionType transmission_type  = pending_write_->transmission_type;
   HasRetransmittableData retransmittable = pending_write_->retransmittable;
-  EncryptionLevel level = pending_write_->level;
   bool is_fec_packet = pending_write_->is_fec_packet;
   size_t length = pending_write_->length;
   pending_write_.reset();
@@ -1336,10 +1301,8 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   // Set the retransmit alarm only when we have sent the packet to the client
   // and not when it goes to the pending queue, otherwise we will end up adding
   // an entry to retransmission_timeout_ every time we attempt a write.
-  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
-    SetupRetransmission(sequence_number, level);
-  } else if (is_fec_packet) {
-    SetupAbandonFecTimer(sequence_number);
+  if (retransmittable == HAS_RETRANSMITTABLE_DATA || is_fec_packet) {
+    SetupRetransmissionAlarm(sequence_number);
   }
 
   // TODO(ianswett): Change the sequence number length and other packet creator
@@ -1350,7 +1313,7 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
           sent_packet_manager_.SmoothedRtt()));
 
   sent_packet_manager_.OnPacketSent(sequence_number, now, length,
-                                   transmission_type, retransmittable);
+                                    transmission_type, retransmittable);
 
   stats_.bytes_sent += result.bytes_written;
   ++stats_.packets_sent;
@@ -1370,8 +1333,7 @@ bool QuicConnection::OnSerializedPacket(
     serialized_packet.retransmittable_frames->
         set_encryption_level(encryption_level_);
   }
-  sent_packet_manager_.OnSerializedPacket(serialized_packet,
-                                          clock_->ApproximateNow());
+  sent_packet_manager_.OnSerializedPacket(serialized_packet);
   // The TransmissionType is NOT_RETRANSMISSION because all retransmissions
   // serialize packets and invoke SendOrQueuePacket directly.
   return SendOrQueuePacket(encryption_level_,
@@ -1436,16 +1398,14 @@ void QuicConnection::OnRetransmissionTimeout() {
   sent_packet_manager_.OnRetransmissionTimeout();
 
   WriteIfNotBlocked();
-}
 
-QuicTime QuicConnection::OnAbandonFecTimeout() {
-  QuicTime fec_timeout = sent_packet_manager_.OnAbandonFecTimeout();
-
-  // If a packet was abandoned, then the congestion window may have
-  // opened up, so attempt to write.
-  WriteIfNotBlocked();
-
-  return fec_timeout;
+  // Ensure the retransmission alarm is always set if there are unacked packets.
+  if (sent_packet_manager_.HasUnackedPackets() && !HasQueuedData() &&
+      !retransmission_alarm_->IsSet()) {
+    QuicTime rto_timeout = clock_->ApproximateNow().Add(
+        sent_packet_manager_.GetRetransmissionDelay());
+    retransmission_alarm_->Set(rto_timeout);
+  }
 }
 
 void QuicConnection::SetEncrypter(EncryptionLevel level,

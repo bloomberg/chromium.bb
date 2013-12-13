@@ -64,6 +64,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
         compressor_(new QuicSpdyCompressor()),
         auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        random_generator_(0),
         hanging_data_(NULL, 0, NULL, 0) {
     request_.method = "GET";
     request_.url = GURL("http://www.google.com/");
@@ -90,7 +91,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
       QuicPacketSequenceNumber num,
       QuicStreamId stream_id) {
     QuicPacketHeader header;
-    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.guid = random_generator_.RandUint64();
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
     header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
@@ -107,7 +108,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   scoped_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
       QuicPacketSequenceNumber num) {
     QuicPacketHeader header;
-    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.guid = random_generator_.RandUint64();
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
     header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
@@ -127,7 +128,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
       QuicPacketSequenceNumber largest_received,
       QuicPacketSequenceNumber least_unacked) {
     QuicPacketHeader header;
-    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.guid = random_generator_.RandUint64();
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
     header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;

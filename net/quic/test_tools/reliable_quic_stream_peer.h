@@ -19,8 +19,6 @@ class ReliableQuicStreamPeer {
   static void SetWriteSideClosed(bool value, ReliableQuicStream* stream);
   static void SetStreamBytesWritten(QuicStreamOffset stream_bytes_written,
                                     ReliableQuicStream* stream);
-  static void SetHeadersDecompressed(ReliableQuicStream* stream,
-                                     bool headers_decompressed);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStreamPeer);

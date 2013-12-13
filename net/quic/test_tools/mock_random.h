@@ -12,15 +12,15 @@ namespace net {
 
 class MockRandom : public QuicRandom {
  public:
+  // Initializes base_ to 0xDEADBEEF.
   MockRandom();
+  MockRandom(uint32 base);
 
   // QuicRandom:
   // Fills the |data| buffer with a repeating byte, initially 'r'.
   virtual void RandBytes(void* data, size_t len) OVERRIDE;
-  // Returns 0xDEADBEEF + the current increment.
+  // Returns base + the current increment.
   virtual uint64 RandUint64() OVERRIDE;
-  // Returns false.
-  virtual bool RandBool() OVERRIDE;
   // Does nothing.
   virtual void Reseed(const void* additional_entropy,
                       size_t entropy_len) OVERRIDE;
@@ -30,6 +30,7 @@ class MockRandom : public QuicRandom {
   void ChangeValue();
 
  private:
+  uint32 base_;
   uint8 increment_;
 };
 

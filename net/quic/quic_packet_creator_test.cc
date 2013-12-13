@@ -8,8 +8,8 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
-#include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +35,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
         sequence_number_(0),
         guid_(2),
         data_("foo"),
-        creator_(guid_, &client_framer_, QuicRandom::GetInstance(), false) {
+        creator_(guid_, &client_framer_, &mock_random_, false) {
     client_framer_.set_visitor(&framer_visitor_);
     server_framer_.set_visitor(&framer_visitor_);
   }
@@ -97,6 +97,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
   QuicPacketSequenceNumber sequence_number_;
   QuicGuid guid_;
   string data_;
+  MockRandom mock_random_;
   QuicPacketCreator creator_;
 };
 
@@ -623,6 +624,29 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
                 PACKET_1BYTE_SEQUENCE_NUMBER,
                 NOT_IN_FEC_GROUP),
             creator_.BytesFree());
+}
+
+TEST_F(QuicPacketCreatorTest, EntropyFlag) {
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 64; ++j) {
+      SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
+      // Verify both BoolSource and hash algorithm.
+      bool expected_rand_bool =
+          (mock_random_.RandUint64() & (GG_UINT64_C(1) << j)) != 0;
+      bool observed_rand_bool =
+          (serialized.entropy_hash & (1 << ((j+1) % 8))) != 0;
+      uint8 rest_of_hash = serialized.entropy_hash & ~(1 << ((j+1) % 8));
+      EXPECT_EQ(expected_rand_bool, observed_rand_bool);
+      EXPECT_EQ(0, rest_of_hash);
+      delete serialized.packet;
+    }
+    // After 64 calls, BoolSource will refresh the bucket - make sure it does.
+    mock_random_.ChangeValue();
+  }
+
+  delete frames_[0].stream_frame;
 }
 
 }  // namespace

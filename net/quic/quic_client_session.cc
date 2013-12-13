@@ -214,7 +214,7 @@ void QuicClientSession::CancelRequest(StreamRequest* request) {
   }
 }
 
-QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
+QuicReliableClientStream* QuicClientSession::CreateOutgoingDataStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return NULL;
@@ -277,7 +277,7 @@ int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
-ReliableQuicStream* QuicClientSession::CreateIncomingReliableStream(
+QuicDataStream* QuicClientSession::CreateIncomingDataStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
   return NULL;

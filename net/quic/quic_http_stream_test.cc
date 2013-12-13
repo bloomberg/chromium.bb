@@ -136,7 +136,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         read_buffer_(new IOBufferWithSize(4096)),
         guid_(2),
         framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
-        creator_(guid_, &framer_, &random_, false) {
+        random_generator_(0),
+        creator_(guid_, &framer_, &random_generator_, false) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
     peer_addr_ = IPEndPoint(ip, 443);
@@ -305,7 +306,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   scoped_refptr<TestTaskRunner> runner_;
   scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
-  MockRandom random_generator_;
   TestQuicConnection* connection_;
   scoped_ptr<QuicConnectionHelper> helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
@@ -348,7 +348,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   QuicFramer framer_;
   IPEndPoint self_addr_;
   IPEndPoint peer_addr_;
-  MockRandom random_;
+  MockRandom random_generator_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   QuicPacketCreator creator_;
   QuicPacketHeader header_;

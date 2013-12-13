@@ -112,15 +112,9 @@ void QuicSentPacketManager::SetMaxPacketSize(QuicByteCount max_packet_size) {
 }
 
 void QuicSentPacketManager::OnSerializedPacket(
-    const SerializedPacket& serialized_packet, QuicTime serialized_time) {
-  if (serialized_packet.packet->is_fec_packet()) {
-    DCHECK(!serialized_packet.retransmittable_frames);
-    unacked_fec_packets_.insert(make_pair(
-        serialized_packet.sequence_number, serialized_time));
-    return;
-  }
-
-  if (serialized_packet.retransmittable_frames == NULL) {
+    const SerializedPacket& serialized_packet) {
+  if (serialized_packet.retransmittable_frames == NULL &&
+      !serialized_packet.packet->is_fec_packet()) {
     // Don't track ack/congestion feedback packets.
     return;
   }
@@ -183,12 +177,11 @@ bool QuicSentPacketManager::OnIncomingAck(
     const ReceivedPacketInfo& received_info, QuicTime ack_receive_time) {
   // Determine if the least unacked sequence number is being acked.
   QuicPacketSequenceNumber least_unacked_sent_before =
-      min(GetLeastUnackedSentPacket(), GetLeastUnackedFecPacket());
+      GetLeastUnackedSentPacket();
   bool new_least_unacked = !IsAwaitingPacket(received_info,
                                              least_unacked_sent_before);
 
   HandleAckForSentPackets(received_info);
-  HandleAckForSentFecPackets(received_info);
 
   SequenceNumberSet retransmission_packets =
       OnIncomingAckFrame(received_info, ack_receive_time);
@@ -446,35 +439,6 @@ void QuicSentPacketManager::DiscardPacket(
   return;
 }
 
-void QuicSentPacketManager::HandleAckForSentFecPackets(
-    const ReceivedPacketInfo& received_info) {
-  UnackedFecPacketMap::iterator it = unacked_fec_packets_.begin();
-  while (it != unacked_fec_packets_.end()) {
-    QuicPacketSequenceNumber sequence_number = it->first;
-    if (sequence_number > received_info.largest_observed) {
-      break;
-    }
-
-    if (!IsAwaitingPacket(received_info, sequence_number)) {
-      DVLOG(1) << ENDPOINT << "Got an ack for fec packet: " << sequence_number;
-      unacked_fec_packets_.erase(it++);
-    } else {
-      // TODO(rch): treat these packets more consistently.  They should
-      // be subject to NACK and RTO based loss.  (Thought obviously, they
-      // should not be retransmitted.)
-      DVLOG(1) << ENDPOINT << "Still missing ack for fec packet: "
-               << sequence_number;
-      ++it;
-    }
-  }
-}
-
-void QuicSentPacketManager::DiscardFecPacket(
-    QuicPacketSequenceNumber sequence_number) {
-  DCHECK(ContainsKey(unacked_fec_packets_, sequence_number));
-  unacked_fec_packets_.erase(sequence_number);
-}
-
 bool QuicSentPacketManager::IsUnacked(
     QuicPacketSequenceNumber sequence_number) const {
   return ContainsKey(unacked_packets_, sequence_number);
@@ -485,13 +449,6 @@ QuicSequenceNumberLength QuicSentPacketManager::GetSequenceNumberLength(
   DCHECK(ContainsKey(unacked_packets_, sequence_number));
 
   return unacked_packets_.find(sequence_number)->second.sequence_number_length;
-}
-
-QuicTime QuicSentPacketManager::GetFecSentTime(
-    QuicPacketSequenceNumber sequence_number) const {
-  DCHECK(ContainsKey(unacked_fec_packets_, sequence_number));
-
-  return unacked_fec_packets_.find(sequence_number)->second;
 }
 
 bool QuicSentPacketManager::HasUnackedPackets() const {
@@ -510,10 +467,6 @@ size_t QuicSentPacketManager::GetNumRetransmittablePackets() const {
   return num_unacked_packets;
 }
 
-bool QuicSentPacketManager::HasUnackedFecPackets() const {
-  return !unacked_fec_packets_.empty();
-}
-
 QuicPacketSequenceNumber
 QuicSentPacketManager::GetLeastUnackedSentPacket() const {
   if (unacked_packets_.empty()) {
@@ -523,17 +476,6 @@ QuicSentPacketManager::GetLeastUnackedSentPacket() const {
   }
 
   return unacked_packets_.begin()->first;
-}
-
-QuicPacketSequenceNumber
-QuicSentPacketManager::GetLeastUnackedFecPacket() const {
-  if (unacked_fec_packets_.empty()) {
-    // If there are no unacked packets, set the least unacked packet to
-    // the sequence number of the next packet sent.
-    return helper_->GetNextPacketSequenceNumber();
-  }
-
-  return unacked_fec_packets_.begin()->first;
 }
 
 SequenceNumberSet QuicSentPacketManager::GetUnackedPackets() const {
@@ -553,6 +495,9 @@ void QuicSentPacketManager::OnPacketSent(
     HasRetransmittableData has_retransmittable_data) {
   DCHECK_LT(0u, sequence_number);
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
+  if (ContainsKey(unacked_packets_, sequence_number)) {
+    unacked_packets_[sequence_number].sent_time = sent_time;
+  }
 
   // Only track packets the send algorithm wants us to track.
   if (!send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
@@ -567,18 +512,28 @@ void QuicSentPacketManager::OnPacketSent(
 }
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {
-  ++consecutive_rto_count_;
-  send_algorithm_->OnRetransmissionTimeout();
   // Abandon all pending packets to ensure the congestion window
   // opens up before we attempt to retransmit packets.
-  for (SequenceNumberSet::const_iterator it = pending_packets_.begin();
-       it != pending_packets_.end(); ++it) {
+  QuicTime::Delta retransmission_delay = GetRetransmissionDelay();
+  QuicTime max_send_time =
+      clock_->ApproximateNow().Subtract(retransmission_delay);
+  for (SequenceNumberSet::iterator it = pending_packets_.begin();
+       it != pending_packets_.end();) {
     QuicPacketSequenceNumber sequence_number = *it;
     DCHECK(ContainsKey(packet_history_map_, sequence_number));
-    send_algorithm_->OnPacketAbandoned(
-        sequence_number, packet_history_map_[sequence_number]->bytes_sent());
+    DCHECK(ContainsKey(unacked_packets_, sequence_number));
+    const TransmissionInfo& transmission_info =
+        unacked_packets_.find(sequence_number)->second;
+    // Abandon retransmittable packet and old non-retransmittable packets.
+    if (transmission_info.retransmittable_frames ||
+        transmission_info.sent_time <= max_send_time) {
+      pending_packets_.erase(it++);
+      send_algorithm_->OnPacketAbandoned(
+          sequence_number, packet_history_map_[sequence_number]->bytes_sent());
+    } else {
+      ++it;
+    }
   }
-  pending_packets_.clear();
 
   // Attempt to send all the unacked packets when the RTO fires, let the
   // congestion manager decide how many to send immediately and the remaining
@@ -587,31 +542,20 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
            << unacked_packets_.size() << " unacked packets.";
 
   // Retransmit any packet with retransmittable frames.
+  bool packets_retransmitted = false;
   for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it) {
     if (it->second.retransmittable_frames != NULL) {
+      packets_retransmitted = true;
       MarkForRetransmission(it->first, RTO_RETRANSMISSION);
     }
   }
-}
 
-QuicTime QuicSentPacketManager::OnAbandonFecTimeout() {
-  // Abandon all the FEC packets older than the current RTO, then reschedule
-  // the alarm if there are more pending fec packets.
-  QuicTime::Delta retransmission_delay = GetRetransmissionDelay();
-  QuicTime max_send_time =
-      clock_->ApproximateNow().Subtract(retransmission_delay);
-  while (HasUnackedFecPackets()) {
-    QuicPacketSequenceNumber oldest_unacked_fec = GetLeastUnackedFecPacket();
-    QuicTime fec_sent_time = GetFecSentTime(oldest_unacked_fec);
-    if (fec_sent_time > max_send_time) {
-      return fec_sent_time.Add(retransmission_delay);
-    }
-    DiscardFecPacket(oldest_unacked_fec);
-    OnPacketAbandoned(oldest_unacked_fec);
+  // Only inform the sent packet manager of an RTO if data was retransmitted.
+  if (packets_retransmitted) {
+    ++consecutive_rto_count_;
+    send_algorithm_->OnRetransmissionTimeout();
   }
-
-  return QuicTime::Zero();
 }
 
 void QuicSentPacketManager::OnPacketAbandoned(
@@ -749,10 +693,6 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
     IsHandshake handshake) {
   return send_algorithm_->TimeUntilSend(now, transmission_type, retransmittable,
                                         handshake);
-}
-
-const QuicTime::Delta QuicSentPacketManager::DefaultRetransmissionTime() {
-  return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
 }
 
 // Ensures that the Delayed Ack timer is always set to a value lesser

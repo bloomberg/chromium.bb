@@ -12,6 +12,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_data_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/spdy/spdy_framer.h"
@@ -55,10 +56,10 @@ class TestCryptoStream : public QuicCryptoStream {
   MOCK_METHOD0(OnCanWrite, void());
 };
 
-class TestStream : public ReliableQuicStream {
+class TestStream : public QuicDataStream {
  public:
   TestStream(QuicStreamId id, QuicSession* session)
-      : ReliableQuicStream(id, session) {
+      : QuicDataStream(id, session) {
   }
 
   using ReliableQuicStream::CloseWriteSide;
@@ -98,13 +99,13 @@ class TestSession : public QuicSession {
     return &crypto_stream_;
   }
 
-  virtual TestStream* CreateOutgoingReliableStream() OVERRIDE {
+  virtual TestStream* CreateOutgoingDataStream() OVERRIDE {
     TestStream* stream = new TestStream(GetNextStreamId(), this);
     ActivateStream(stream);
     return stream;
   }
 
-  virtual TestStream* CreateIncomingReliableStream(QuicStreamId id) OVERRIDE {
+  virtual TestStream* CreateIncomingDataStream(QuicStreamId id) OVERRIDE {
     return new TestStream(id, this);
   }
 
@@ -112,7 +113,7 @@ class TestSession : public QuicSession {
     return QuicSession::IsClosedStream(id);
   }
 
-  ReliableQuicStream* GetIncomingReliableStream(QuicStreamId stream_id) {
+  QuicDataStream* GetIncomingReliableStream(QuicStreamId stream_id) {
     return QuicSession::GetIncomingReliableStream(stream_id);
   }
 
@@ -204,12 +205,12 @@ TEST_F(QuicSessionTest, ImplicitlyCreatedStreams) {
 }
 
 TEST_F(QuicSessionTest, IsClosedStreamLocallyCreated) {
-  TestStream* stream2 = session_.CreateOutgoingReliableStream();
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
   EXPECT_EQ(2u, stream2->id());
-  ReliableQuicStreamPeer::SetHeadersDecompressed(stream2, true);
-  TestStream* stream4 = session_.CreateOutgoingReliableStream();
+  QuicDataStreamPeer::SetHeadersDecompressed(stream2, true);
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
   EXPECT_EQ(4u, stream4->id());
-  ReliableQuicStreamPeer::SetHeadersDecompressed(stream4, true);
+  QuicDataStreamPeer::SetHeadersDecompressed(stream4, true);
 
   CheckClosedStreams();
   CloseStream(4);
@@ -219,18 +220,18 @@ TEST_F(QuicSessionTest, IsClosedStreamLocallyCreated) {
 }
 
 TEST_F(QuicSessionTest, IsClosedStreamPeerCreated) {
-  ReliableQuicStream* stream3 = session_.GetIncomingReliableStream(3);
-  ReliableQuicStreamPeer::SetHeadersDecompressed(stream3, true);
-  ReliableQuicStream* stream5 = session_.GetIncomingReliableStream(5);
-  ReliableQuicStreamPeer::SetHeadersDecompressed(stream5, true);
+  QuicDataStream* stream3 = session_.GetIncomingReliableStream(3);
+  QuicDataStreamPeer::SetHeadersDecompressed(stream3, true);
+  QuicDataStream* stream5 = session_.GetIncomingReliableStream(5);
+  QuicDataStreamPeer::SetHeadersDecompressed(stream5, true);
 
   CheckClosedStreams();
   CloseStream(3);
   CheckClosedStreams();
   CloseStream(5);
   // Create stream id 9, and implicitly 7
-  ReliableQuicStream* stream9 = session_.GetIncomingReliableStream(9);
-  ReliableQuicStreamPeer::SetHeadersDecompressed(stream9, true);
+  QuicDataStream* stream9 = session_.GetIncomingReliableStream(9);
+  QuicDataStreamPeer::SetHeadersDecompressed(stream9, true);
   CheckClosedStreams();
   // Close 9, but make sure 7 is still not closed
   CloseStream(9);
@@ -254,9 +255,9 @@ TEST_F(QuicSessionTest, DecompressionError) {
 }
 
 TEST_F(QuicSessionTest, OnCanWrite) {
-  TestStream* stream2 = session_.CreateOutgoingReliableStream();
-  TestStream* stream4 = session_.CreateOutgoingReliableStream();
-  TestStream* stream6 = session_.CreateOutgoingReliableStream();
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
+  TestStream* stream6 = session_.CreateOutgoingDataStream();
 
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
@@ -277,12 +278,12 @@ TEST_F(QuicSessionTest, BufferedHandshake) {
   EXPECT_FALSE(session_.HasPendingHandshake());  // Default value.
 
   // Test that blocking other streams does not change our status.
-  TestStream* stream2 = session_.CreateOutgoingReliableStream();
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
   StreamBlocker stream2_blocker(&session_, stream2->id());
   stream2_blocker.MarkWriteBlocked();
   EXPECT_FALSE(session_.HasPendingHandshake());
 
-  TestStream* stream3 = session_.CreateOutgoingReliableStream();
+  TestStream* stream3 = session_.CreateOutgoingDataStream();
   StreamBlocker stream3_blocker(&session_, stream3->id());
   stream3_blocker.MarkWriteBlocked();
   EXPECT_FALSE(session_.HasPendingHandshake());
@@ -291,7 +292,7 @@ TEST_F(QuicSessionTest, BufferedHandshake) {
   session_.MarkWriteBlocked(kCryptoStreamId, kSomeMiddlePriority);
   EXPECT_TRUE(session_.HasPendingHandshake());
 
-  TestStream* stream4 = session_.CreateOutgoingReliableStream();
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
   StreamBlocker stream4_blocker(&session_, stream4->id());
   stream4_blocker.MarkWriteBlocked();
   EXPECT_TRUE(session_.HasPendingHandshake());
@@ -321,9 +322,9 @@ TEST_F(QuicSessionTest, BufferedHandshake) {
 }
 
 TEST_F(QuicSessionTest, OnCanWriteWithClosedStream) {
-  TestStream* stream2 = session_.CreateOutgoingReliableStream();
-  TestStream* stream4 = session_.CreateOutgoingReliableStream();
-  TestStream* stream6 = session_.CreateOutgoingReliableStream();
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
+  TestStream* stream6 = session_.CreateOutgoingDataStream();
 
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
@@ -343,8 +344,8 @@ TEST_F(QuicSessionTest, OutOfOrderHeaders) {
   QuicPacketHeader header;
   header.public_header.guid = session_.guid();
 
-  TestStream* stream2 = session_.CreateOutgoingReliableStream();
-  TestStream* stream4 = session_.CreateOutgoingReliableStream();
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
   stream2->CloseWriteSide();
   stream4->CloseWriteSide();
 
@@ -397,9 +398,9 @@ TEST_F(QuicSessionTest, ZombieStream) {
       new StrictMock<MockConnection>(guid_, IPEndPoint(), false);
   TestSession session(connection, /*is_server=*/ false);
 
-  TestStream* stream3 = session.CreateOutgoingReliableStream();
+  TestStream* stream3 = session.CreateOutgoingDataStream();
   EXPECT_EQ(3u, stream3->id());
-  TestStream* stream5 = session.CreateOutgoingReliableStream();
+  TestStream* stream5 = session.CreateOutgoingDataStream();
   EXPECT_EQ(5u, stream5->id());
   EXPECT_EQ(2u, session.GetNumOpenStreams());
 
@@ -437,9 +438,9 @@ TEST_F(QuicSessionTest, ZombieStreamConnectionClose) {
       new StrictMock<MockConnection>(guid_, IPEndPoint(), false);
   TestSession session(connection, /*is_server=*/ false);
 
-  TestStream* stream3 = session.CreateOutgoingReliableStream();
+  TestStream* stream3 = session.CreateOutgoingDataStream();
   EXPECT_EQ(3u, stream3->id());
-  TestStream* stream5 = session.CreateOutgoingReliableStream();
+  TestStream* stream5 = session.CreateOutgoingDataStream();
   EXPECT_EQ(5u, stream5->id());
   EXPECT_EQ(2u, session.GetNumOpenStreams());
 
