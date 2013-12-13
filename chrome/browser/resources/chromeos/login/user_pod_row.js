@@ -142,6 +142,7 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
+      this.customButton.tabIndex = UserPodTabOrder.POD_INPUT;
       this.actionBoxAreaElement.tabIndex = UserPodTabOrder.ACTION_BOX;
 
       // Mousedown has to be used instead of click to be able to prevent 'focus'
@@ -171,6 +172,9 @@ cr.define('login', function() {
             'click',
             this.handleRemoveUserConfirmationClick_.bind(this));
       }
+
+      this.customButton.addEventListener('click',
+          this.handleCustomButtonClick_.bind(this));
     },
 
     /**
@@ -358,6 +362,15 @@ cr.define('login', function() {
      */
     get lockedIndicatorElement() {
       return this.querySelector('.locked-indicator');
+    },
+
+    /**
+     * Gets the custom button. This button is normally hidden, but can be
+     * shown using the chrome.screenlockPrivate API.
+     * @type {!HTMLInputElement}
+     */
+    get customButton() {
+      return this.querySelector('.custom-button');
     },
 
     /**
@@ -692,6 +705,13 @@ cr.define('login', function() {
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
       }
+    },
+
+    /**
+     * Called when the custom button is clicked.
+     */
+    handleCustomButtonClick_: function() {
+      chrome.send('customButtonClicked', [this.user.username]);
     }
   };
 
@@ -1198,6 +1218,26 @@ cr.define('login', function() {
       }, 0);
 
       this.focusPod(this.preselectedPod);
+    },
+
+    /**
+     * Shows a button on a user pod with an icon. Clicking on this button
+     * triggers an event used by the chrome.screenlockPrivate API.
+     * @param {string} username Username of pod to add button
+     * @param {string} iconURL URL of the button icon
+     */
+    showUserPodButton: function(username, iconURL) {
+      var pod = this.getPodWithUsername_(username);
+      if (pod == null) {
+        console.error('Unable to show user pod button for ' + username +
+                      ': user pod not found.');
+        return;
+      }
+
+      pod.customButton.hidden = false;
+      var icon =
+          pod.customButton.querySelector('.custom-button-icon');
+      icon.src = iconURL;
     },
 
     /**

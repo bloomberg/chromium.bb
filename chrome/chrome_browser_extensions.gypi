@@ -934,8 +934,6 @@
             'browser/extensions/api/log_private/log_private_api_chromeos.cc',
             'browser/extensions/api/log_private/syslog_parser.cc',
             'browser/extensions/api/log_private/syslog_parser.h',
-            'browser/chromeos/extensions/screenlock_private_api.cc',
-            'browser/chromeos/extensions/screenlock_private_api.h',
             'browser/extensions/api/networking_private/networking_private_api_chromeos.cc',
             'browser/extensions/api/networking_private/networking_private_api.h',
             'browser/extensions/api/networking_private/networking_private_event_router_chromeos.cc',

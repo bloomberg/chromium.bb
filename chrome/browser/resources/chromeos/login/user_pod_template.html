@@ -3,10 +3,17 @@
     <div class="signed-in-indicator" i18n-content="signedIn" hidden></div>
     <img class="user-image" alt="">
     <div class="name"></div>
-    <input type="password" class="password"
-           i18n-values="placeholder:passwordHint">
-    <img class="capslock-hint"
-         src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt="">
+    <div class="password-area">
+      <div class="password-input-container">
+        <input type="password" class="password"
+               i18n-values="placeholder:passwordHint">
+        <img class="capslock-hint"
+             src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt="">
+      </div>
+      <button class="custom-button custom-appearance" hidden>
+        <img class="custom-button-icon"></img>
+      </button>
+    </div>
     <button class="signin-button" i18n-content="signinButton"></button>
     <div class="locked-indicator" hidden></div>
   </div>

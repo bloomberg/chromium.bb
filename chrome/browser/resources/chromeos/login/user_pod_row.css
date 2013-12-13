@@ -115,20 +115,54 @@ podrow[ncolumns='6'] .pod {
   display: none;
 }
 
+.password-area {
+  display: none;
+}
+
+.password-input-container {
+  -webkit-box-flex: 1;
+  /* This relative position is so the capslock hint is positioned correctly. */
+  position: relative;
+}
+
+.custom-button {
+  -webkit-box-align: center;
+  background-color: rgba(0, 0, 0, 0);
+  background-image: none;
+  cursor: pointer;
+  display: -webkit-box;
+  height: 40px;
+  margin: 0;
+  max-width: 40px;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+button.custom-button:focus:active,
+button.custom-button:focus:hover {
+  border: 1px solid transparent !important;
+}
+
+.custom-button img {
+  max-height: 100%;
+  max-width: 100%;
+}
+
 .pod input[type='password'] {
   -webkit-transition: opacity linear 150ms;
   background: white;
   border: none;
   box-sizing: border-box;
-  display: none;
+  display: inline-block;
   height: 40px;
   outline: none;
   padding: 4px 6px;
   width: 100%;
 }
 
-.pod.need-password.focused input[type='password'] {
-  display: inline-block;
+.pod.need-password.focused .password-area {
+  display: -webkit-box;
 }
 
 .pod .signin-button {

@@ -104,6 +104,15 @@ void WebUIScreenLocker::ShowBannerMessage(const std::string& message) {
   login_display_->ShowBannerMessage(message);
 }
 
+void WebUIScreenLocker::ShowUserPodButton(
+    const std::string& username,
+    const std::string& iconURL,
+    const base::Closure& click_callback) {
+  if (!webui_ready_)
+    return;
+  login_display_->ShowUserPodButton(username, iconURL, click_callback);
+}
+
 void WebUIScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {

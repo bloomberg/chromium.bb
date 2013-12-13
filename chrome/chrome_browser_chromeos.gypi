@@ -921,6 +921,8 @@
             'browser/chromeos/extensions/first_run_private_api.h',
             'browser/chromeos/extensions/input_method_api.cc',
             'browser/chromeos/extensions/input_method_api.h',
+            'browser/chromeos/extensions/screenlock_private_api.cc',
+            'browser/chromeos/extensions/screenlock_private_api.h',
             'browser/chromeos/extensions/media_player_api.cc',
             'browser/chromeos/extensions/media_player_api.h',
             'browser/chromeos/extensions/wallpaper_manager_util.cc',

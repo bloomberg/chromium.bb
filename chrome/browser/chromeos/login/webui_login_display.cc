@@ -132,6 +132,15 @@ void WebUILoginDisplay::ShowBannerMessage(const std::string& message) {
   webui_handler_->ShowBannerMessage(message);
 }
 
+void WebUILoginDisplay::ShowUserPodButton(
+    const std::string& username,
+    const std::string& iconURL,
+    const base::Closure& click_callback) {
+  if (!webui_handler_)
+    return;
+  webui_handler_->ShowUserPodButton(username, iconURL, click_callback);
+}
+
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {

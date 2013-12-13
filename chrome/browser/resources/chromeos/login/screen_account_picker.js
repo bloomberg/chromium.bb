@@ -30,6 +30,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'onWallpaperLoaded',
       'removeUser',
       'showBannerMessage',
+      'showUserPodButton',
     ],
 
     preferredWidth_: 0,
@@ -239,6 +240,16 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       var banner = $('signin-banner');
       banner.textContent = message;
       banner.classList.toggle('message-set', true);
+    },
+
+    /**
+     * Shows a button with an icon on the user pod of |username|. This function
+     * is used by the chrome.screenlockPrivate API.
+     * @param {string} username Username of pod to add button
+     * @param {string} iconURL URL of the button icon
+     */
+    showUserPodButton: function(username, iconURL) {
+      $('pod-row').showUserPodButton(username, iconURL);
     }
   };
 });

@@ -805,6 +805,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("updateOfflineLogin",
               &SigninScreenHandler::HandleUpdateOfflineLogin);
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
+  AddCallback("customButtonClicked",
+              &SigninScreenHandler::HandleCustomButtonClicked);
 
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
@@ -868,6 +870,14 @@ void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
 
 void SigninScreenHandler::ShowBannerMessage(const std::string& message) {
   CallJS("login.AccountPickerScreen.showBannerMessage", message);
+}
+
+void SigninScreenHandler::ShowUserPodButton(
+    const std::string& username,
+    const std::string& iconURL,
+    const base::Closure& click_callback) {
+  user_pod_button_callback_map_[username] = click_callback;
+  CallJS("login.AccountPickerScreen.showUserPodButton", username, iconURL);
 }
 
 void SigninScreenHandler::ShowError(int login_attempts,
@@ -1501,6 +1511,16 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id);
+}
+
+void SigninScreenHandler::HandleCustomButtonClicked(
+    const std::string& username) {
+  if (user_pod_button_callback_map_.find(username)
+      == user_pod_button_callback_map_.end()) {
+    LOG(WARNING) << "User pod custom button clicked but no callback found";
+    return;
+  }
+  user_pod_button_callback_map_[username].Run();
 }
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id) {

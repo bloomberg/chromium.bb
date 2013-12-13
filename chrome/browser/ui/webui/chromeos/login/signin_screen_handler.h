@@ -74,6 +74,9 @@ class LoginDisplayWebUIHandler {
   virtual void OnPreferencesChanged() = 0;
   virtual void ResetSigninScreenHandlerDelegate() = 0;
   virtual void ShowBannerMessage(const std::string& message) = 0;
+  virtual void ShowUserPodButton(const std::string& username,
+                                 const std::string& iconURL,
+                                 const base::Closure& click_callback) = 0;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -276,6 +279,9 @@ class SigninScreenHandler
   virtual void OnPreferencesChanged() OVERRIDE;
   virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
   virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
+  virtual void ShowUserPodButton(const std::string& username,
+                                 const std::string& iconURL,
+                                 const base::Closure& click_callback) OVERRIDE;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -356,6 +362,7 @@ class SigninScreenHandler
   void HandleShowLocallyManagedUserCreationScreen();
   void HandleFocusPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id);
+  void HandleCustomButtonClicked(const std::string& username);
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,
@@ -504,6 +511,9 @@ class SigninScreenHandler
   bool wait_for_auto_enrollment_check_;
 
   base::Closure kiosk_enable_flow_aborted_callback_for_test_;
+
+  // Map of callbacks run when the custom button on a user pod is clicked.
+  std::map<std::string, base::Closure> user_pod_button_callback_map_;
 
   // Non-owning ptr.
   // TODO (ygorshenin@): remove this dependency.
