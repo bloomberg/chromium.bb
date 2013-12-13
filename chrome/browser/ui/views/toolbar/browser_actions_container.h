@@ -144,7 +144,7 @@ class BrowserActionsContainer
     return browser_action_views_[index];
   }
 
-  // Retrieve the BrowserActionView for |extension|.
+  // Retrieve the BrowserActionView for a certain extension |action|.
   BrowserActionView* GetBrowserActionView(ExtensionAction* action);
 
   // Update the views to reflect the state of the browser action icons.

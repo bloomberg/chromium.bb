@@ -20,6 +20,9 @@ class CommonSwitches {
       : easy_off_store_install(
             switches::kEasyOffStoreExtensionInstall,
             FeatureSwitch::DEFAULT_DISABLED),
+        force_dev_mode_highlighting(
+            switches::kForceDevModeHighlighting,
+            FeatureSwitch::DEFAULT_DISABLED),
         global_commands(
             switches::kGlobalCommands,
             FeatureSwitch::DEFAULT_DISABLED),
@@ -44,6 +47,7 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED) {}
 
   FeatureSwitch easy_off_store_install;
+  FeatureSwitch force_dev_mode_highlighting;
   FeatureSwitch global_commands;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
@@ -57,6 +61,9 @@ base::LazyInstance<CommonSwitches> g_common_switches =
 
 }  // namespace
 
+FeatureSwitch* FeatureSwitch::force_dev_mode_highlighting() {
+  return &g_common_switches.Get().force_dev_mode_highlighting;
+}
 FeatureSwitch* FeatureSwitch::easy_off_store_install() {
   return &g_common_switches.Get().easy_off_store_install;
 }

@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/extensions/suspicious_extension_bubble_view.h"
+#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
@@ -267,7 +267,8 @@ void ToolbarView::Init() {
 void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
                                             bool visible) {
   if (visible) {
-    extensions::SuspiciousExtensionBubbleView::MaybeShow(browser_, app_menu_);
+    extensions::ExtensionMessageBubbleView::MaybeShow(
+        browser_, this, app_menu_);
     GetWidget()->RemoveObserver(this);
   }
 }

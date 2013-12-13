@@ -50,6 +50,9 @@ const char kEventPageSuspendingTime[]       = "event-page-unloading-time";
 // manifest.
 const char kExtensionsOnChromeURLs[] = "extensions-on-chrome-urls";
 
+// Whether to force developer mode extensions highlighting.
+const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
+
 // Enables setting global commands through the Extensions Commands API.
 const char kGlobalCommands[] = "global-commands";
 

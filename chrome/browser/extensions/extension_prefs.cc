@@ -673,7 +673,7 @@ void ExtensionPrefs::SetWipeoutAcknowledged(
     const std::string& extension_id,
     bool value) {
   UpdateExtensionPref(extension_id, kPrefWipeoutAcknowledged,
-                      Value::CreateBooleanValue(value));
+                      value ? Value::CreateBooleanValue(value) : NULL);
 }
 
 bool ExtensionPrefs::SetAlertSystemFirstRun() {

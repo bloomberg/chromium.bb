@@ -21,6 +21,7 @@ extern const char kErrorConsole[];
 extern const char kEventPageIdleTime[];
 extern const char kEventPageSuspendingTime[];
 extern const char kExtensionsOnChromeURLs[];
+extern const char kForceDevModeHighlighting[];
 extern const char kGlobalCommands[];
 extern const char kPromptForExternalExtensions[];
 extern const char kScriptBadges[];
