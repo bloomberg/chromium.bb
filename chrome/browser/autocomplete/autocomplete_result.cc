@@ -259,20 +259,15 @@ AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
 
 bool AutocompleteResult::ShouldHideTopMatch() const {
   // Gate on our field trial flag.
-  if (!chrome::ShouldHideTopVerbatimMatch())
-    return false;
+  return chrome::ShouldHideTopVerbatimMatch() &&
+      TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches();
+}
 
-  // If we don't have a verbatim first match, show everything.
+bool AutocompleteResult::TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches()
+    const {
   if (empty() || !match_at(0).IsVerbatimType())
     return false;
-
-  // If the verbatim first match is followed by another verbatim match, don't
-  // hide anything, lest we cause user confusion.
-  if ((size() > 1) && match_at(1).IsVerbatimType())
-    return false;
-
-  // Otherwise, it's safe to hide the verbatim first match.
-  return true;
+  return !(size() > 1) || !match_at(1).IsVerbatimType();
 }
 
 void AutocompleteResult::Reset() {

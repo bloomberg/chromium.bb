@@ -22,6 +22,25 @@
 #include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// Creates an AutocompleteMatch using |destination_url| and |type| and appends
+// it to |matches|.
+void AddMatch(const std::string& destination_url, AutocompleteMatch::Type type,
+              ACMatches* matches) {
+  ASSERT_TRUE(matches != NULL);
+  AutocompleteMatch* last_match =
+    !matches->empty() ? &((*matches)[matches->size() - 1]) : NULL;
+  AutocompleteMatch match;
+  match.destination_url = GURL(destination_url);
+  match.relevance = last_match ? last_match->relevance - 100 : 1300;
+  match.allowed_to_be_default_match = true;
+  match.type = type;
+  matches->push_back(match);
+}
+
+}  // namespace
+
 class AutocompleteResultTest : public testing::Test  {
  public:
   struct TestData {
@@ -318,38 +337,16 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   // Add some matches.
   ACMatches matches;
-  {
-    AutocompleteMatch match;
-    match.destination_url = GURL("http://history-url/");
-    match.relevance = 1400;
-    match.allowed_to_be_default_match = true;
-    match.type = AutocompleteMatchType::HISTORY_URL;
-    matches.push_back(match);
-  }
-  {
-    AutocompleteMatch match;
-    match.destination_url = GURL("http://search-what-you-typed/");
-    match.relevance = 1300;
-    match.allowed_to_be_default_match = true;
-    match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
-    matches.push_back(match);
-  }
-  {
-    AutocompleteMatch match;
-    match.destination_url = GURL("http://history-title/");
-    match.relevance = 1200;
-    match.allowed_to_be_default_match = true;
-    match.type = AutocompleteMatchType::HISTORY_TITLE;
-    matches.push_back(match);
-  }
-  {
-    AutocompleteMatch match;
-    match.destination_url = GURL("http://search-history/");
-    match.relevance = 500;
-    match.allowed_to_be_default_match = true;
-    match.type = AutocompleteMatchType::SEARCH_HISTORY;
-    matches.push_back(match);
-  }
+  AddMatch("http://history-url/", AutocompleteMatchType::HISTORY_URL, &matches);
+  AddMatch("http://search-what-you-typed/",
+           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+
+  // Add a search history type match and demote its relevance score.
+  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
+           &matches);
+  matches[matches.size() - 1].relevance = 500;
 
   // Add a rule demoting history-url and killing history-title.
   {
@@ -485,4 +482,132 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     EXPECT_EQ("http://b/", result.match_at(2)->destination_url.spec());
     EXPECT_EQ("http://d/", result.match_at(3)->destination_url.spec());
   }
+}
+
+TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
+  // Add some matches.
+  ACMatches matches;
+  AddMatch("http://search-what-you-typed/",
+           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
+           &matches);
+
+  base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                         "Group1 hide_verbatim:1");
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  EXPECT_TRUE(result.ShouldHideTopMatch());
+}
+
+TEST_F(AutocompleteResultTest, DoNotHideTopMatch) {
+  ACMatches matches;
+  AddMatch("http://search-what-you-typed/",
+           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://url-what-you-typed/",
+           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
+           &matches);
+
+  base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                         "Group1 hide_verbatim:1");
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  // If the verbatim first match is followed by another verbatim match, don't
+  // hide the top verbatim match.
+  EXPECT_FALSE(result.ShouldHideTopMatch());
+}
+
+TEST_F(AutocompleteResultTest, DoNotHideTopMatch_TopMatchIsNotVerbatim) {
+  ACMatches matches;
+  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
+           &matches);
+  AddMatch("http://search-what-you-typed/",
+           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+
+  base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                         "Group1 hide_verbatim:1");
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  // Top match is not a verbatim type match. Do not hide the top match.
+  EXPECT_FALSE(result.ShouldHideTopMatch());
+}
+
+TEST_F(AutocompleteResultTest, DoNotHideTopMatch_FieldTrialFlagDisabled) {
+  // Add some matches. This test config is identical to ShouldHideTopMatch test
+  // except that the "hide_verbatim" flag is disabled in the field trials.
+  ACMatches matches;
+  AddMatch("http://search-what-you-typed/",
+           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
+           &matches);
+
+  base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                         "Group1 hide_verbatim:0");
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  // Field trial flag "hide_verbatim" is disabled. Do not hide top match.
+  EXPECT_FALSE(result.ShouldHideTopMatch());
+}
+
+TEST_F(AutocompleteResultTest,
+       TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches) {
+  ACMatches matches;
+  AddMatch("http://url-what-you-typed/",
+           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  EXPECT_TRUE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
+}
+
+TEST_F(AutocompleteResultTest,
+       TopMatchIsVerbatimAndHasConsecutiveVerbatimMatches) {
+  ACMatches matches;
+  AddMatch("http://search-what-you-typed/",
+           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://url-what-you-typed/",
+           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  EXPECT_FALSE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
+}
+
+TEST_F(AutocompleteResultTest, TopMatchIsNotVerbatim) {
+  ACMatches matches;
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+
+  // Result set is empty.
+  EXPECT_FALSE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
+
+  // Add a non-verbatim match to the result.
+  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
+           &matches);
+
+  result.AppendMatches(matches);
+  EXPECT_FALSE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
+}
+
+TEST_F(AutocompleteResultTest,
+       TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches_SingleMatchFound) {
+  ACMatches matches;
+  AddMatch("http://url-what-you-typed/",
+           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
+
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  EXPECT_TRUE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
 }

@@ -31,11 +31,14 @@ namespace {
 //
 // The SearchProvider may mark some suggestions to be prefetched based on
 // instructions from the suggest server. If such a match ranks sufficiently
-// highly, we'll return it. We only care about matches that are the default or
-// else the very first entry in the dropdown (which can happen for non-default
-// matches only if we're hiding a top verbatim match); for other matches, we
-// think the likelihood of the user selecting them is low enough that
-// prefetching isn't worth doing.
+// highly, we'll return it.
+//
+// We only care about matches that are the default or the very first entry in
+// the dropdown (which can happen for non-default matches only if we're hiding
+// a top verbatim match) or the second entry in the dropdown (which can happen
+// for non-default matches when a top verbatim match is shown); for other
+// matches, we think the likelihood of the user selecting them is low enough
+// that prefetching isn't worth doing.
 const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
   const AutocompleteResult::const_iterator default_match(
       result.default_match());
@@ -45,9 +48,11 @@ const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
   if (SearchProvider::ShouldPrefetch(*default_match))
     return &(*default_match);
 
-  return (result.ShouldHideTopMatch() && (result.size() > 1) &&
-      SearchProvider::ShouldPrefetch(result.match_at(1))) ?
-          &result.match_at(1) : NULL;
+  return ((result.ShouldHideTopMatch() ||
+              result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches()) &&
+          (result.size() > 1) &&
+          SearchProvider::ShouldPrefetch(result.match_at(1))) ?
+              &result.match_at(1) : NULL;
 }
 
 }  // namespace

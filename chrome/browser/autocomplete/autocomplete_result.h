@@ -125,6 +125,11 @@ class AutocompleteResult {
   // the dropdown should be closed.
   bool ShouldHideTopMatch() const;
 
+  // Returns true if the top match is a verbatim search or URL match (see
+  // IsVerbatimType() in autocomplete_match.h), and the next match is not also
+  // some kind of verbatim match.
+  bool TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches() const;
+
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.
