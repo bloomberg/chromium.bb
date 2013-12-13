@@ -32,6 +32,7 @@
 #include "ContextFeaturesClientImpl.h"
 
 #include "WebDocument.h"
+#include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "core/dom/Document.h"
 #include "platform/weborigin/SecurityOrigin.h"
