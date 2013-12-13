@@ -4,11 +4,14 @@
 
 #include "chrome/browser/lifetime/browser_close_manager.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -17,7 +20,13 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "chrome/browser/first_run/upgrade_util_win.h"
+#endif
 
 BrowserCloseManager::BrowserCloseManager() : current_browser_(NULL) {}
 
@@ -160,4 +169,17 @@ void BrowserCloseManager::CloseBrowsers() {
       }
     }
   }
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    PrefService* pref_service = g_browser_process->local_state();
+    bool is_relaunch = pref_service->GetBoolean(prefs::kWasRestarted);
+    if (is_relaunch) {
+      upgrade_util::RelaunchMode mode = upgrade_util::RelaunchModeStringToEnum(
+          pref_service->GetString(prefs::kRelaunchMode));
+      if (mode == upgrade_util::RELAUNCH_MODE_DESKTOP)
+        chrome::ActivateDesktopHelper(chrome::ASH_TERMINATE);
+    }
+  }
+#endif
 }

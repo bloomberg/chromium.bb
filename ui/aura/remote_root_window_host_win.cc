@@ -135,12 +135,10 @@ void HandleSelectFolder(const base::string16& title,
 }
 
 void HandleActivateDesktop(const base::FilePath& shortcut,
-                           bool ash_exit,
-                           const ActivateDesktopCompleted& on_success) {
+                           bool ash_exit) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleActivateDesktop(shortcut,
-                                                                   ash_exit,
-                                                                   on_success);
+                                                                   ash_exit);
 }
 
 RemoteRootWindowHostWin* g_instance = NULL;
@@ -215,8 +213,6 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnSelectFolderDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPosAck,
                         OnSetCursorPosAck)
-    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktopDone,
-                        OnDesktopActivated)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeCandidatePopupChanged,
                         OnImeCandidatePopupChanged)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeCompositionChanged,
@@ -240,12 +236,9 @@ void RemoteRootWindowHostWin::HandleOpenURLOnDesktop(
 
 void RemoteRootWindowHostWin::HandleActivateDesktop(
     const base::FilePath& shortcut,
-    bool ash_exit,
-    const ActivateDesktopCompleted& on_success) {
+    bool ash_exit) {
   if (!host_)
     return;
-  DCHECK(activate_completed_callback_.is_null());
-  activate_completed_callback_ = on_success;
   host_->Send(new MetroViewerHostMsg_ActivateDesktop(shortcut, ash_exit));
 }
 
@@ -640,12 +633,6 @@ void RemoteRootWindowHostWin::OnSelectFolderDone(
 void RemoteRootWindowHostWin::OnSetCursorPosAck() {
   DCHECK(ignore_mouse_moves_until_set_cursor_ack_);
   ignore_mouse_moves_until_set_cursor_ack_ = false;
-}
-
-void RemoteRootWindowHostWin::OnDesktopActivated() {
-  ActivateDesktopCompleted temp = activate_completed_callback_;
-  activate_completed_callback_.Reset();
-  temp.Run();
 }
 
 ui::RemoteInputMethodPrivateWin*

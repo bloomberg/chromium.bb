@@ -90,10 +90,6 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SelectFolderDone,
                      bool,           /* success */
                      base::FilePath) /* filepath*/
 
-// Informs the browser of the result of a activate desktop (shellexecute)
-// operation.
-IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_ActivateDesktopDone)
-
 // Messages sent from the browser to the viewer:
 
 // Requests the viewer to activate desktop mode.

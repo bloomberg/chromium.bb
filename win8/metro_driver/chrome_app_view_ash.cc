@@ -718,7 +718,6 @@ void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path,
     ::TerminateProcess(sei.hProcess, 0);
     ::CloseHandle(sei.hProcess);
   }
-  ui_channel_->Send(new MetroViewerHostMsg_ActivateDesktopDone());
 }
 
 void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,

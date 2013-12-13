@@ -31,13 +31,6 @@ void StartShutdownTracing();
 void AttemptRestart();
 
 #if defined(OS_WIN)
-// Windows 8 specific: Like AttemptRestart but if chrome is running
-// in desktop mode it starts in metro mode and vice-versa. The switching like
-// the restarting is controlled by a preference.
-void AttemptRestartWithModeSwitch();
-void AttemptRestartToDesktopMode();
-void AttemptRestartToMetroMode();
-
 enum AshExecutionStatus {
   ASH_KEEP_RUNNING,
   ASH_TERMINATE,
@@ -47,6 +40,13 @@ enum AshExecutionStatus {
 // |ash_execution_status| parameter indicates if we should exit Ash after
 // activating desktop.
 void ActivateDesktopHelper(AshExecutionStatus ash_execution_status);
+
+// Windows 8 specific: Like AttemptRestart but if chrome is running
+// in desktop mode it starts in metro mode and vice-versa. The switching like
+// the restarting is controlled by a preference.
+void AttemptRestartWithModeSwitch();
+void AttemptRestartToDesktopMode();
+void AttemptRestartToMetroMode();
 #endif
 
 // Attempt to exit by closing all browsers.  This is equivalent to

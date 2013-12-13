@@ -86,7 +86,7 @@ class StartPageService::ProfileDestroyObserver
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-    DCHECK_EQ(service_->profile(), content::Details<Profile>(details).ptr());
+    DCHECK_EQ(service_->profile(), content::Source<Profile>(source).ptr());
     service_->Shutdown();
   }
 

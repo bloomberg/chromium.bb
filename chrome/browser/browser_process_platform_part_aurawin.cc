@@ -43,24 +43,3 @@ void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
     }
   }
 }
-
-void BrowserProcessPlatformPart::AttemptExit() {
-  // On WinAura, the regular exit path is fine except on Win8+, where Ash might
-  // be active in Metro and won't go away even if all browsers are closed. The
-  // viewer process, whose host holds a reference to g_browser_process, needs to
-  // be killed as well.
-  BrowserProcessPlatformPartBase::AttemptExit();
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      metro_viewer_process_host_) {
-    base::ProcessId viewer_id =
-        metro_viewer_process_host_->GetViewerProcessId();
-    if (viewer_id == base::kNullProcessId)
-      return;
-    // The viewer doesn't hold any state so it is fine to kill it before it
-    // cleanly exits. This will trigger MetroViewerProcessHost::OnChannelError()
-    // which will cleanup references to g_browser_process.
-    bool success = base::KillProcessById(viewer_id, 0, true);
-    DCHECK(success);
-  }
-}

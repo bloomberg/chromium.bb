@@ -22,7 +22,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   // Overridden from BrowserProcessPlatformPartBase:
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) OVERRIDE;
-  virtual void AttemptExit() OVERRIDE;
 
  private:
   // Hosts the channel for the Windows 8 metro viewer process which runs in
