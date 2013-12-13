@@ -6,7 +6,10 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "media/base/bind_to_loop.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
 
 using blink::WebVector;
@@ -45,7 +48,8 @@ class AutoTryLock {
 
 WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
     const scoped_refptr<media::AudioRendererSink>& sink)
-    : channels_(0),
+    : weak_this_(this),
+      channels_(0),
       sample_rate_(0),
       volume_(1.0),
       state_(kStopped),
@@ -54,7 +58,8 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
       sink_(sink) {
 }
 
-WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {}
+WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {
+}
 
 void WebAudioSourceProviderImpl::setClient(
     blink::WebAudioSourceProviderClient* client) {
@@ -66,14 +71,17 @@ void WebAudioSourceProviderImpl::setClient(
     // The client will now take control by calling provideInput() periodically.
     client_ = client;
 
-    if (renderer_) {
-      // The client needs to be notified of the audio format, if available.
-      // If the format is not yet available, we'll be notified later
-      // when Initialize() is called.
+    set_format_cb_ = media::BindToCurrentLoop(
+        base::Bind(&WebAudioSourceProviderImpl::OnSetFormat,
+                   weak_this_.GetWeakPtr()));
 
-      // Inform WebKit about the audio stream format.
-      client->setFormat(channels_, sample_rate_);
-    }
+    // If |renderer_| is set, then run |set_format_cb_| to send |client_|
+    // the current format info. If |renderer_| is not set, then |set_format_cb_|
+    // will get called when Initialize() is called.
+    // Note: Always using |set_format_cb_| ensures we have the same
+    // locking order when calling into |client_|.
+    if (renderer_)
+      base::ResetAndReturn(&set_format_cb_).Run();
   } else if (!client && client_) {
     // Restore normal playback.
     client_ = NULL;
@@ -165,10 +173,17 @@ void WebAudioSourceProviderImpl::Initialize(
   channels_ = params.channels();
   sample_rate_ = params.sample_rate();
 
-  if (client_) {
-    // Inform WebKit about the audio stream format.
-    client_->setFormat(channels_, sample_rate_);
-  }
+  if (!set_format_cb_.is_null())
+    base::ResetAndReturn(&set_format_cb_).Run();
+}
+
+void WebAudioSourceProviderImpl::OnSetFormat() {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    return;
+
+  // Inform Blink about the audio stream format.
+  client_->setFormat(channels_, sample_rate_);
 }
 
 }  // namespace content

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBAUDIOSOURCEPROVIDER_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_WEBAUDIOSOURCEPROVIDER_IMPL_H_
 
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_renderer_sink.h"
@@ -51,6 +53,14 @@ class CONTENT_EXPORT WebAudioSourceProviderImpl
   virtual ~WebAudioSourceProviderImpl();
 
  private:
+  // Calls setFormat() on |client_| from the Blink renderer thread.
+  void OnSetFormat();
+
+  base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_this_;
+
+  // Closure that posts a task to call OnSetFormat() on the renderer thread.
+  base::Closure set_format_cb_;
+
   // Set to true when Initialize() is called.
   int channels_;
   int sample_rate_;

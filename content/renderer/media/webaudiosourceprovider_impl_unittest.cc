@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -59,6 +61,7 @@ class WebAudioSourceProviderImplTest
       EXPECT_CALL(*this, setFormat(params_.channels(), params_.sample_rate()));
     }
     wasp_impl_->setClient(client);
+    base::RunLoop().RunUntilIdle();
 
     testing::Mock::VerifyAndClear(mock_sink_.get());
     testing::Mock::VerifyAndClear(this);
@@ -84,6 +87,7 @@ class WebAudioSourceProviderImplTest
   media::FakeAudioRenderCallback fake_callback_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
   scoped_refptr<WebAudioSourceProviderImpl> wasp_impl_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioSourceProviderImplTest);
 };
@@ -94,14 +98,17 @@ TEST_F(WebAudioSourceProviderImplTest, SetClientBeforeInitialize) {
 
   EXPECT_CALL(*mock_sink_.get(), Stop());
   wasp_impl_->setClient(this);
+  base::RunLoop().RunUntilIdle();
 
   // When Initialize() is called after setClient(), the params should propagate
   // to the client via setFormat() during the call.
   EXPECT_CALL(*this, setFormat(params_.channels(), params_.sample_rate()));
   wasp_impl_->Initialize(params_, &fake_callback_);
+  base::RunLoop().RunUntilIdle();
 
   // setClient() with the same client should do nothing.
   wasp_impl_->setClient(this);
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify AudioRendererSink functionality w/ and w/o a client.
