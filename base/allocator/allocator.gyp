@@ -253,6 +253,8 @@
         '<(tcmalloc_dir)/src/gperftools/profiler.h',
         '<(tcmalloc_dir)/src/gperftools/stacktrace.h',
         '<(tcmalloc_dir)/src/gperftools/tcmalloc.h',
+        '<(tcmalloc_dir)/src/heap-checker-bcad.cc',
+        '<(tcmalloc_dir)/src/heap-checker.cc',
         '<(tcmalloc_dir)/src/libc_override.h',
         '<(tcmalloc_dir)/src/libc_override_gcc_and_weak.h',
         '<(tcmalloc_dir)/src/libc_override_glibc.h',
@@ -325,6 +327,10 @@
           ],
         },
       },
+      # Disable the heap checker in tcmalloc.
+      'defines': [
+        'NO_HEAP_CHECK',
+      ],
       'conditions': [
         ['OS=="linux" and clang_type_profiler==1', {
           'dependencies': [
@@ -371,11 +377,9 @@
             # included by allocator_shim.cc
             'debugallocation_shim.cc',
 
-            # heap-checker/cpuprofiler
+            # cpuprofiler
             '<(tcmalloc_dir)/src/base/thread_lister.c',
             '<(tcmalloc_dir)/src/base/thread_lister.h',
-            '<(tcmalloc_dir)/src/heap-checker-bcad.cc',
-            '<(tcmalloc_dir)/src/heap-checker.cc',
             '<(tcmalloc_dir)/src/profiledata.cc',
             '<(tcmalloc_dir)/src/profiledata.h',
             '<(tcmalloc_dir)/src/profile-handler.cc',
@@ -431,30 +435,6 @@
           'cflags': [
             '-fvtable-verify=preinit',
           ],
-        }],
-        [ 'linux_keep_shadow_stacks==1', {
-          'sources': [
-            '<(tcmalloc_dir)/src/linux_shadow_stacks.cc',
-            '<(tcmalloc_dir)/src/linux_shadow_stacks.h',
-            '<(tcmalloc_dir)/src/stacktrace_shadow-inl.h',
-          ],
-          'cflags': [
-            '-finstrument-functions',
-          ],
-          'defines': [
-            'KEEP_SHADOW_STACKS',
-          ],
-        }],
-        [ 'linux_use_heapchecker==0', {
-          # Do not compile and link the heapchecker source.
-          'sources!': [
-            '<(tcmalloc_dir)/src/heap-checker-bcad.cc',
-            '<(tcmalloc_dir)/src/heap-checker.cc',
-          ],
-          # Disable the heap checker in tcmalloc.
-          'defines': [
-            'NO_HEAP_CHECK',
-           ],
         }],
         ['order_profiling != 0', {
           'target_conditions' : [

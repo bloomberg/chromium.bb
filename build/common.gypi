@@ -1122,13 +1122,6 @@
     'linux_use_tcmalloc%': 1,
     'android_use_tcmalloc%': 0,
 
-    # Disable TCMalloc's heapchecker.
-    'linux_use_heapchecker%': 0,
-
-    # Disable shadow stack keeping used by heapcheck to unwind the stacks
-    # better.
-    'linux_keep_shadow_stacks%': 0,
-
     # Set to 1 to link against libgnome-keyring instead of using dlopen().
     'linux_link_gnome_keyring%': 0,
     # Set to 1 to link against gsettings APIs instead of using dlopen().
@@ -3564,31 +3557,8 @@
               }],
             ],
           }],
-          ['linux_use_heapchecker==1', {
-            'variables': {'linux_use_tcmalloc%': 1},
-            'defines': [
-                'USE_HEAPCHECKER',
-                'MEMORY_TOOL_REPLACES_ALLOCATOR',
-            ],
-            'conditions': [
-              ['component=="shared_library"', {
-                # See crbug.com/112389
-                # TODO(glider): replace with --dynamic-list or something
-                'ldflags': ['-rdynamic'],
-              }],
-            ],
-          }],
           ['linux_use_tcmalloc==0 and android_use_tcmalloc==0', {
             'defines': ['NO_TCMALLOC'],
-          }],
-          ['linux_keep_shadow_stacks==1', {
-            'defines': ['KEEP_SHADOW_STACKS'],
-            'cflags': [
-              '-finstrument-functions',
-              # Allow mmx intrinsics to inline, so that the compiler can expand
-              # the intrinsics.
-              '-finstrument-functions-exclude-file-list=mmintrin.h',
-            ],
           }],
           ['linux_use_gold_flags==1', {
             'target_conditions': [

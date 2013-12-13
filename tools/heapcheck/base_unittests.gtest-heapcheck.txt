@@ -1,6 +1,0 @@
-# Failing after Lucid migration. http://crbug.com/82715
-ProcessUtilTest.GetTerminationStatusExit
-SharedMemoryProcessTest.Tasks
-
-# Occasionally times out. http://crbug.com/308273
-TraceEventTestFixture.TraceContinuousSampling
