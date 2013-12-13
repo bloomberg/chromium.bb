@@ -598,9 +598,10 @@ void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
   if (!dirty_tracker_->active() ||
       HasDisabledAppRoot(metadata_database(), *dirty_tracker_)) {
     // Operations for an inactive tracker don't update file content.
-    if (dirty_tracker_->has_synced_details()) {
+    if (dirty_tracker_->has_synced_details())
       updated_details.set_md5(dirty_tracker_->synced_details().md5());
-    } else {
+    if (!dirty_tracker_->active()) {
+      // Keep missing true, as the change hasn't been synced to local.
       updated_details.clear_md5();
       updated_details.set_missing(true);
     }

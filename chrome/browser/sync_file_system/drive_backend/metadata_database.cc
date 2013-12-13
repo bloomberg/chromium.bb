@@ -1752,20 +1752,21 @@ bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
     return true;
   const FileMetadata* file = found->second;
   DCHECK(file);
+  DCHECK(file->has_details());
+
+  const FileDetails& local_details = tracker.synced_details();
+  const FileDetails& remote_details = file->details();
 
   if (tracker.active()) {
     if (tracker.needs_folder_listing())
       return true;
     if (tracker.synced_details().md5() != file->details().md5())
       return true;
+    if (local_details.missing() != remote_details.missing())
+      return true;
   }
 
-  const FileDetails& local_details = tracker.synced_details();
-  const FileDetails& remote_details = file->details();
-
   if (local_details.title() != remote_details.title())
-    return true;
-  if (local_details.missing() != remote_details.missing())
     return true;
 
   return false;
