@@ -1,34 +1,10 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCqtHjbcvWT9Kbcapi0SaG28I66eRQHQvOqngCizm87qMb9RTgrftaUAGwPmxFLy4gBwO572N5ACpxsR6m2fRg9PSjeqaEojiFd28KY/b4VPoq/ukNOy97Ns7lPv4gmtNB8txuFIFuNw3s1k8nEJVAp659d7SnMsL4O1uXkW1huGQIDAQAB",
   "name": "Help",
-  "version": "3.1",
+  "version": "4.0",
   "description": "Chrome OS Help",
   "default_locale": "en",
-  "incognito": "split",
-  "permissions": [
-    "tabs",
-    "https://support.google.com/chromeos/*/*",
-    "https://support.google.com/chromebook/*/*",
-    "https://gweb-gettingstartedguide.appspot.com/*",
-    "chromeosInfoPrivate"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "http://support.google.com/chromeos/*",
-        "https://support.google.com/chromeos/*",
-        "http://support.google.com/chromebook/*",
-        "https://support.google.com/chromebook/*"
-      ],
-      "js": ["javascript/contentscript.js"],
-      "run_at": "document_end",
-      "all_frames": true
-    }
-  ],
-  "background": {
-    "persistent": false,
-    "scripts": ["javascript/gsg/background.js"]
-  },
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; script-src 'self' https://ssl.google-analytics.com; object-src 'none'; img-src 'self' http://www.google-analytics.com; frame-src https://support.google.com https://gweb-gettingstartedguide.appspot.com https://gsg-qa.appspot.com; connect-src https://support.google.com https://gweb-gettingstartedguide.appspot.com https://gsg-qa.appspot.com; style-src 'self' 'unsafe-inline'"
+  "content_security_policy": "default-src 'self'; img-src 'self' data:;",
+  "incognito": "split"
 }
