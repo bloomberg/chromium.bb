@@ -100,6 +100,7 @@
    fun:_ZN3gfx8internal24Get1xPNGBytesFromNSImageEP7NSImage
 }
 
+
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
 {
@@ -2037,12 +2038,10 @@
    fun:img_data_lock
    fun:CGSImageDataLock
    fun:ripc_AcquireImage
-   fun:ripc_DrawImages
-   fun:CGContextDrawImages
-   fun:_ZN11CUIRenderer10Draw9PieceElPK13CUIDescriptorm
-   fun:_ZN11CUIRenderer4DrawE6CGRectP9CGContextPK14__CFDictionaryPS5_
-   fun:-[NSButtonCell drawBezelWithFrame:inView:]
+   fun:ripc_DrawImage*
+   fun:CGContextDrawImage*
    ...
+   fun:_ZN11CUIRenderer4DrawE6CGRectP9CGContextPK14__CFDictionaryPS5_
 }
 {
    bug_177540
