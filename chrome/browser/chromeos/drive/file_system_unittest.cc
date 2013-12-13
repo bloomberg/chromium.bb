@@ -302,12 +302,7 @@ TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   loop.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
-  // Although GetResourceEntry() was called twice, the resource list
-  // should only be loaded once. In the past, there was a bug that caused
-  // it to be loaded twice.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
-  // See the comment in GetMyDriveRoot test case why this is 2.
-  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 
   // "Fast fetch" will fire an OnirectoryChanged event.
   ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
@@ -344,14 +339,7 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
   ASSERT_TRUE(entry);
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 
-  // Absence of "drive/root" in the local metadata triggers the "fast fetch"
-  // of "drive" directory. Fetch of "drive" grand root directory has a special
-  // implementation. Instead of normal GetResourceListInDirectory(), it is
-  // emulated by calling GetAboutResource() so that the resource_id of
-  // "drive/root" is listed.
-  // Together with the normal GetAboutResource() call to retrieve the largest
-  // changestamp, the method is called twice.
-  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
 
   // After "fast fetch" is done, full resource list is fetched.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
@@ -373,11 +361,7 @@ TEST_F(FileSystemTest, GetExistingFile) {
   ASSERT_TRUE(entry);
   EXPECT_EQ("file:subdirectory_file_1_id", entry->resource_id());
 
-  // One server changestamp check (about_resource), three directory load for
-  // "drive", "drive/root", and "drive/root/Directory 1", and one background
-  // full resource list loading. Note that the directory load for "drive" is
-  // special and resorts to about_resource.
-  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(2, fake_drive_service_->directory_load_count());
   EXPECT_EQ(1, fake_drive_service_->blocked_resource_list_load_count());
 }

@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "google_apis/drive/drive_common_callbacks.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 class GURL;
@@ -97,6 +98,11 @@ class ChangeListLoader {
   // |callback| must not be null.
   void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
                     const FileOperationCallback& callback);
+
+  // Gets the about resource from the cache or the server. If the cache is
+  // availlavle, just runs |callback| with the cached about resource. If not,
+  // calls |UpdateAboutResource| passing |callback|.
+  void GetAboutResource(const google_apis::AboutResourceCallback& callback);
 
  private:
   // Starts the resource metadata loading and calls |callback| when it's
@@ -251,6 +257,20 @@ class ChangeListLoader {
       const base::Closure& callback,
       FileError error);
 
+  // Gets the about resource from the server, and caches it if successful. This
+  // function calls JobScheduler::GetAboutResource internally. The cache will be
+  // used in |GetAboutResource|.
+  void UpdateAboutResource(
+      const google_apis::AboutResourceCallback& callback);
+  // Part of UpdateAboutResource().
+  // This function should be called when the latest about resource is being
+  // fetched from the server. The retrieved about resoure is cloned, and one is
+  // cached and the other is passed to |callback|.
+  void UpdateAboutResourceAfterGetAbout(
+      const google_apis::AboutResourceCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
@@ -267,12 +287,8 @@ class ChangeListLoader {
   // Set of the running feed fetcher for the fast fetch.
   std::set<FeedFetcher*> fast_fetch_feed_fetcher_set_;
 
-  // The last known remote changestamp. Used to check if a directory
-  // changestamp is up-to-date for fast fetch.
-  int64 last_known_remote_changestamp_;
-
-  // The cache of the root_folder_id.
-  std::string root_folder_id_;
+  // The cache of the about resource.
+  scoped_ptr<google_apis::AboutResource> cached_about_resource_;
 
   // True if the full resource list is loaded (i.e. the resource metadata is
   // stored locally).

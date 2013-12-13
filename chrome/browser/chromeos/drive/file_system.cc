@@ -765,7 +765,7 @@ void FileSystem::GetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scheduler_->GetAboutResource(
+  change_list_loader_->GetAboutResource(
       base::Bind(&FileSystem::OnGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

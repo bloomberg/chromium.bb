@@ -78,7 +78,7 @@ class AboutResource {
   int64 quota_bytes_used_;
   std::string root_folder_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AboutResource);
+  // This class is copyable on purpose.
 };
 
 // DriveAppIcon represents an icon for Drive Application.

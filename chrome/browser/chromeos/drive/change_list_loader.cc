@@ -170,14 +170,14 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 // Fetches the resource entries in the directory with |directory_resource_id|.
 class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
-  FastFetchFeedFetcher(JobScheduler* scheduler,
+  FastFetchFeedFetcher(ChangeListLoader* change_list_loader,
+                       JobScheduler* scheduler,
                        DriveServiceInterface* drive_service,
-                       const std::string& directory_resource_id,
-                       const std::string& root_folder_id)
-      : scheduler_(scheduler),
+                       const std::string& directory_resource_id)
+      : change_list_loader_(change_list_loader),
+        scheduler_(scheduler),
         drive_service_(drive_service),
         directory_resource_id_(directory_resource_id),
-        root_folder_id_(root_folder_id),
         weak_ptr_factory_(this) {
   }
 
@@ -188,15 +188,10 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
 
-    if (util::IsDriveV2ApiEnabled() && root_folder_id_.empty()) {
-      // The root folder id is not available yet. Fetch from the server.
-      scheduler_->GetAboutResource(
-          base::Bind(&FastFetchFeedFetcher::RunAfterGetAboutResource,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
-      return;
-    }
-
-    StartGetResourceListInDirectory(callback);
+    // Fetch the root folder id from the server.
+    change_list_loader_->GetAboutResource(
+        base::Bind(&FastFetchFeedFetcher::RunAfterGetAboutResource,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:
@@ -302,6 +297,7 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     return drive_service_->GetResourceIdCanonicalizer().Run(resource_id);
   }
 
+  ChangeListLoader* change_list_loader_;
   JobScheduler* scheduler_;
   DriveServiceInterface* drive_service_;
   std::string directory_resource_id_;
@@ -323,7 +319,6 @@ ChangeListLoader::ChangeListLoader(
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       drive_service_(drive_service),
-      last_known_remote_changestamp_(0),
       loaded_(false),
       weak_ptr_factory_(this) {
 }
@@ -386,6 +381,24 @@ void ChangeListLoader::LoadIfNeeded(
     return;
   }
   Load(directory_fetch_info, callback);
+}
+
+void ChangeListLoader::GetAboutResource(
+    const google_apis::AboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (cached_about_resource_) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback,
+            google_apis::HTTP_NO_CONTENT,
+            base::Passed(scoped_ptr<google_apis::AboutResource>(
+                new google_apis::AboutResource(*cached_about_resource_)))));
+  } else {
+    UpdateAboutResource(callback);
+  }
 }
 
 void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
@@ -532,7 +545,7 @@ void ChangeListLoader::LoadFromServerIfNeeded(
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
-  scheduler_->GetAboutResource(
+  UpdateAboutResource(
       base::Bind(&ChangeListLoader::LoadFromServerIfNeededAfterGetAbout,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
@@ -553,8 +566,6 @@ void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
   }
 
   DCHECK(about_resource);
-  last_known_remote_changestamp_ = about_resource->largest_change_id();
-  root_folder_id_ = about_resource->root_folder_id();
 
   int64 remote_changestamp = about_resource->largest_change_id();
   if (remote_changestamp > 0 && local_changestamp >= remote_changestamp) {
@@ -673,6 +684,9 @@ void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeded(
   int64 directory_changestamp = std::max(directory_fetch_info.changestamp(),
                                          local_changestamp);
 
+  int64 last_known_remote_changestamp =
+      cached_about_resource_ ? cached_about_resource_->largest_change_id() : 0;
+
   // We may not fetch from the server at all if the local metadata is new
   // enough, but we log this message here, so "Fast-fetch start" and
   // "Fast-fetch complete" always match.
@@ -680,14 +694,14 @@ void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeded(
   util::Log(logging::LOG_INFO,
             "Fast-fetch start: %s; Server changestamp: %s",
             directory_fetch_info.ToString().c_str(),
-            base::Int64ToString(last_known_remote_changestamp_).c_str());
+            base::Int64ToString(last_known_remote_changestamp).c_str());
 
   // If the directory's changestamp is up-to-date, just schedule to run the
   // callback, as there is no need to fetch the directory.
   // Note that |last_known_remote_changestamp_| is 0 when it is not received
   // yet. In that case we conservatively assume that we need to fetch.
-  if (last_known_remote_changestamp_ > 0 &&
-      directory_changestamp >= last_known_remote_changestamp_) {
+  if (last_known_remote_changestamp > 0 &&
+      directory_changestamp >= last_known_remote_changestamp) {
     callback.Run(FILE_ERROR_OK);
     return;
   }
@@ -696,7 +710,7 @@ void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeded(
   // |last_known_remote_changestamp_|.
   DirectoryFetchInfo new_directory_fetch_info(
       directory_fetch_info.resource_id(),
-      std::max(directory_changestamp, last_known_remote_changestamp_));
+      std::max(directory_changestamp, last_known_remote_changestamp));
   DoLoadDirectoryFromServer(new_directory_fetch_info, callback);
 }
 
@@ -726,10 +740,10 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   }
 
   FastFetchFeedFetcher* fetcher = new FastFetchFeedFetcher(
+      this,
       scheduler_,
       drive_service_,
-      directory_fetch_info.resource_id(),
-      root_folder_id_);
+      directory_fetch_info.resource_id());
   fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
@@ -756,7 +770,7 @@ ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath(
   }
 
   // Fetch root resource id from the server.
-  scheduler_->GetAboutResource(
+  GetAboutResource(
       base::Bind(
           &ChangeListLoader
               ::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource,
@@ -929,6 +943,41 @@ void ChangeListLoader::UpdateFromChangeListAfterApply(
   }
 
   callback.Run();
+}
+
+void ChangeListLoader::UpdateAboutResource(
+    const google_apis::AboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scheduler_->GetAboutResource(
+      base::Bind(&ChangeListLoader::UpdateAboutResourceAfterGetAbout,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void ChangeListLoader::UpdateAboutResourceAfterGetAbout(
+    const google_apis::AboutResourceCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  FileError error = GDataToFileError(status);
+
+  if (error == FILE_ERROR_OK) {
+    if (cached_about_resource_ &&
+        cached_about_resource_->largest_change_id() >
+        about_resource->largest_change_id()) {
+      LOG(WARNING) << "Local cached about resource is fresher than server, "
+                   << "local = " << cached_about_resource_->largest_change_id()
+                   << ", server = " << about_resource->largest_change_id();
+    }
+
+    cached_about_resource_.reset(
+        new google_apis::AboutResource(*about_resource));
+  }
+
+  callback.Run(status, about_resource.Pass());
 }
 
 }  // namespace internal
