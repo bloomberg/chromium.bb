@@ -162,11 +162,11 @@ function setWindowRect(rect) {
         window.frameElement.style.height = rect.height + "px";
     } else {
         if (isWindowHidden()) {
-            window.moveTo(rect.x - window.screen.availLeft, rect.y - window.screen.availTop);
+            window.moveTo(rect.x, rect.y);
             window.resizeTo(rect.width, rect.height);
         } else {
             window.resizeTo(rect.width, rect.height);
-            window.moveTo(rect.x - window.screen.availLeft, rect.y - window.screen.availTop);
+            window.moveTo(rect.x, rect.y);
         }
     }
 }
