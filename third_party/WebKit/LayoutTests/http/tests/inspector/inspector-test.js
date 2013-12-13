@@ -11,6 +11,13 @@ function consoleOutputHook(messageType)
 console.log = consoleOutputHook.bind(InspectorTest, "log");
 console.error = consoleOutputHook.bind(InspectorTest, "error");
 console.info = consoleOutputHook.bind(InspectorTest, "info");
+console.assert = function(condition, object)
+{
+    if (condition)
+        return;
+    var message = "Assertion failed: " + (typeof object !== "undefined" ? object : "");
+    InspectorTest.addResult(new Error(message).stack);
+}
 
 InspectorTest.Output = {   // override in window.initialize_yourName
     testComplete: function() 
