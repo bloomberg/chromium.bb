@@ -365,6 +365,52 @@ weston_view_output_move_handler(struct wl_listener *listener,
 				 ev->geometry.y + output->move_y);
 }
 
+static void
+weston_view_output_destroy_handler(struct wl_listener *listener,
+				   void *data)
+{
+	struct weston_view *ev;
+	struct weston_compositor *ec;
+	struct weston_output *output, *first_output;
+	float x, y;
+	int visible;
+
+	ev = container_of(listener, struct weston_view,
+			  output_destroy_listener);
+
+	ec = ev->surface->compositor;
+
+	/* the child window's view->geometry is a relative coordinate to
+	 * parent view, no need to move child_view. */
+	if (ev->geometry.parent)
+		return;
+
+	x = ev->geometry.x;
+	y = ev->geometry.y;
+
+	/* At this point the destroyed output is not in the list anymore.
+	 * If the view is still visible somewhere, we leave where it is,
+	 * otherwise, move it to the first output. */
+	visible = 0;
+	wl_list_for_each(output, &ec->output_list, link) {
+		if (pixman_region32_contains_point(&output->region,
+						   x, y, NULL)) {
+			visible = 1;
+			break;
+		}
+	}
+
+	if (!visible) {
+		first_output = container_of(ec->output_list.next,
+					    struct weston_output, link);
+
+		x = first_output->x + first_output->width / 4;
+		y = first_output->y + first_output->height / 4;
+	}
+
+	weston_view_set_position(ev, x, y);
+}
+
 WL_EXPORT struct weston_view *
 weston_view_create(struct weston_surface *surface)
 {
@@ -401,6 +447,8 @@ weston_view_create(struct weston_surface *surface)
 	view->output = NULL;
 
 	view->output_move_listener.notify = weston_view_output_move_handler;
+	view->output_destroy_listener.notify =
+		weston_view_output_destroy_handler;
 
 	return view;
 }
@@ -816,12 +864,17 @@ weston_view_assign_output(struct weston_view *ev)
 	}
 	pixman_region32_fini(&region);
 
-	if (ev->output_mask != 0)
+	if (ev->output_mask != 0) {
 		wl_list_remove(&ev->output_move_listener.link);
+		wl_list_remove(&ev->output_destroy_listener.link);
+	}
 
-	if (mask != 0)
+	if (mask != 0) {
 		wl_signal_add(&new_output->move_signal,
 			      &ev->output_move_listener);
+		wl_signal_add(&new_output->destroy_signal,
+			      &ev->output_destroy_listener);
+	}
 
 	ev->output = new_output;
 	ev->output_mask = mask;
@@ -1265,6 +1318,8 @@ weston_view_unmap(struct weston_view *view)
 	wl_list_init(&view->link);
 	wl_list_remove(&view->output_move_listener.link);
 	wl_list_init(&view->output_move_listener.link);
+	wl_list_remove(&view->output_destroy_listener.link);
+	wl_list_init(&view->output_destroy_listener.link);
 	view->output_mask = 0;
 	weston_surface_assign_output(view->surface);
 

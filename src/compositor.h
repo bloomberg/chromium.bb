@@ -807,6 +807,7 @@ struct weston_view {
 	uint32_t output_mask;
 
 	struct wl_listener output_move_listener;
+	struct wl_listener output_destroy_listener;
 };
 
 struct weston_surface {
