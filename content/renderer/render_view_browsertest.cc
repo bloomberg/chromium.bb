@@ -406,6 +406,36 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 }
 
+TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
+  DocumentState state;
+  state.set_navigation_state(NavigationState::CreateContentInitiated());
+
+  RendererPreferences prefs = view()->renderer_preferences();
+  prefs.browser_handles_all_top_level_requests = true;
+  view()->OnSetRendererPrefs(prefs);
+
+  const blink::WebNavigationType kNavTypes[] = {
+    blink::WebNavigationTypeLinkClicked,
+    blink::WebNavigationTypeFormSubmitted,
+    blink::WebNavigationTypeBackForward,
+    blink::WebNavigationTypeReload,
+    blink::WebNavigationTypeFormResubmitted,
+    blink::WebNavigationTypeOther,
+  };
+
+  blink::WebURLRequest request(GURL("http://foo.com"));
+  for (size_t i = 0; i < arraysize(kNavTypes); ++i) {
+    blink::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+        GetMainFrame(),
+        &state,
+        request,
+        kNavTypes[i],
+        blink::WebNavigationPolicyCurrentTab,
+        false);
+    EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
+  }
+}
+
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   // Enable bindings to simulate a WebUI view.
   view()->OnAllowBindings(BINDINGS_POLICY_WEB_UI);
