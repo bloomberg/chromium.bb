@@ -916,6 +916,34 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 	assert(0);
 }
 
+static void
+x11_compositor_delete_window(struct x11_compositor *c, xcb_window_t window)
+{
+	struct x11_output *deleted_output, *output, *next;
+	int x_offset = 0;
+
+	deleted_output = x11_compositor_find_output(c, window);
+
+	wl_list_for_each_safe(output, next, &c->base.output_list, base.link) {
+		if (x_offset != 0) {
+			weston_output_move(&output->base,
+					   output->base.x - x_offset,
+					   output->base.y);
+			weston_output_damage(&output->base);
+		}
+
+		if (output == deleted_output) {
+			x_offset += output->base.width;
+			x11_output_destroy(&output->base);
+		}
+	}
+
+	xcb_flush(c->conn);
+
+	if (wl_list_empty(&c->base.output_list))
+		wl_display_terminate(c->base.wl_display);
+}
+
 #ifdef HAVE_XCB_XKB
 static void
 update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
@@ -1115,6 +1143,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_focus_in_event_t *focus_in;
 	xcb_expose_event_t *expose;
 	xcb_atom_t atom;
+	xcb_window_t window;
 	uint32_t *k;
 	uint32_t i, set;
 	uint8_t response_type;
@@ -1243,8 +1272,9 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_CLIENT_MESSAGE:
 			client_message = (xcb_client_message_event_t *) event;
 			atom = client_message->data.data32[0];
+			window = client_message->window;
 			if (atom == c->atom.wm_delete_window)
-				wl_display_terminate(c->base.wl_display);
+				x11_compositor_delete_window(c, window);
 			break;
 
 		case XCB_FOCUS_IN:
