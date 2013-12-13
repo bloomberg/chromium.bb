@@ -990,11 +990,15 @@ login.createScreen('LocallyManagedUserCreationScreen',
         this.setButtonDisabledStatus('import', !passwordOk);
         return passwordOk;
       }
+      var imageGrid = this.getScreenElement('image-grid');
+      var imageChosen = !(imageGrid.selectionType == 'camera' &&
+                          imageGrid.cameraLive);
       var canProceed =
           passwordOk &&
           (userName.length > 0) &&
-           this.lastVerifiedName_ &&
-           (userName == this.lastVerifiedName_);
+          this.lastVerifiedName_ &&
+          (userName == this.lastVerifiedName_) &&
+          imageChosen;
 
       this.setButtonDisabledStatus('next', !canProceed);
       return canProceed;
@@ -1405,7 +1409,11 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     handleSelect_: function(e) {
       var imageGrid = this.getScreenElement('image-grid');
-      if (!(imageGrid.selectionType == 'camera' && imageGrid.cameraLive)) {
+      this.updateNextButtonForUser_();
+
+      $('managed-user-creation-flip-photo').tabIndex =
+          (imageGrid.selectionType == 'camera') ? 0 : -1;
+      if (!imageGrid.cameraLive || imageGrid.selectionType != 'camera') {
         this.context_.selectedImageUrl = imageGrid.selectedItemUrl;
         chrome.send('supervisedUserSelectImage',
                     [imageGrid.selectedItemUrl, imageGrid.selectionType]);
