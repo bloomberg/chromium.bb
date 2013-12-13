@@ -193,6 +193,11 @@ yet.</p>
     </li>
 </ul>
 
+<h3><a name="bugfix-dontDeleteAfterPrune">bugfix/dontDeleteAfterPrune</a> (Calum Robinson; D47079091)</h3>
+<p>Open <a href="repros/dontDeleteAfterPrune.html">this link</a> in Chrome, and
+press Ctrl+X to Cut.  The renderer will crash because a node that gets pruned
+during merge paragraphs is being deleted again.</p>
+
 <h3><a name="bugfix-emptycellcaret">bugfix/emptycellcaret</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85385">85385</a>)</h3>
 <p>Open <a href="repros/emptycellcaret.html">this link</a> in Chrome, and put
 the caret inside an empty table cell.  The caret's <code>y-position</code> is
@@ -421,6 +426,17 @@ would be preserved.</p>
 With this patch applied, the anchor offset would be 5 positions higher than the
 focus offset.  Without the patch, the anchor offset and focus offset will be
 switched.</p>
+
+<h3><a name="feature-removeIMEUnderlineColor">feature/removeIMEUnderlineColor</a> (Calum Robinson; D47474798)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>By default, Chrome shows a black underline while composing in IME mode.
+This is a problem if the background is also black.  This branch removes the
+color property from the <code>CompositionUnderline</code> object, and makes
+<code>InlineTextBox</code> use the text foreground color instead.</p>
+<p>Open <a href="repros/removeIMEUnderlineColor.html">this link</a> in Chrome
+and type in Japanese.  Without this patch, the underline color will be black,
+but it will be yellow once the patch is applied.</p>
 
 <h3><a name="feature-setDataNoRelayout">feature/setDataNoRelayout</a> (Shezan Baig; D42070031)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
