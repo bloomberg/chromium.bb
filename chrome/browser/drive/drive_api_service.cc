@@ -565,6 +565,7 @@ CancelCallback DriveAPIService::DeleteResource(
   FilesDeleteRequest* request = new FilesDeleteRequest(
       sender_.get(), url_generator_, callback);
   request->set_file_id(resource_id);
+  request->set_etag(etag);
   return sender_->StartRequestWithRetry(request);
 }
 

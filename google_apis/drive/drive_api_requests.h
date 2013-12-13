@@ -341,15 +341,18 @@ class FilesDeleteRequest : public EntryActionRequest {
   // Required parameter.
   const std::string& file_id() const { return file_id_; }
   void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+  void set_etag(const std::string& etag) { etag_ = etag; }
 
  protected:
   // Overridden from UrlFetchRequestBase.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
   const DriveApiUrlGenerator url_generator_;
   std::string file_id_;
+  std::string etag_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesDeleteRequest);
 };

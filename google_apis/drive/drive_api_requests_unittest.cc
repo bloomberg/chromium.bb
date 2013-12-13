@@ -199,7 +199,6 @@ class DriveApiRequestsTest : public testing::Test {
     return response.PassAs<net::test_server::HttpResponse>();
   }
 
-
   // Returns PRECONDITION_FAILED response for ETag mismatching with error JSON
   // content specified by |expected_precondition_failed_file_path_|.
   // To use this method, it is necessary to set the variable to the appropriate
@@ -797,12 +796,14 @@ TEST_F(DriveApiRequestsTest, FilesDeleteRequest) {
         test_util::CreateQuitCallback(
             &run_loop, test_util::CreateCopyResultCallback(&error)));
     request->set_file_id("resource_id");
+    request->set_etag(kTestETag);
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
 
   EXPECT_EQ(HTTP_NO_CONTENT, error);
   EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
   EXPECT_EQ("/drive/v2/files/resource_id", http_request_.relative_url);
   EXPECT_FALSE(http_request_.has_content);
 }

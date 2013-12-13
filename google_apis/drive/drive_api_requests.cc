@@ -392,6 +392,13 @@ GURL FilesDeleteRequest::GetURL() const {
   return url_generator_.GetFilesDeleteUrl(file_id_);
 }
 
+std::vector<std::string> FilesDeleteRequest::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers(
+      EntryActionRequest::GetExtraRequestHeaders());
+  headers.push_back(util::GenerateIfMatchHeader(etag_));
+  return headers;
+}
+
 //============================ FilesTrashRequest =============================
 
 FilesTrashRequest::FilesTrashRequest(
