@@ -84,7 +84,7 @@ class ShelfViewTestAPI {
   gfx::Rect GetBoundsForDragInsertInScreen();
 
   // Returns true if item is ripped off.
-  bool IsDraggingShelfItem();
+  bool IsRippedOffFromShelf();
 
   // Returns true if an item is ripped off and entered into shelf.
   bool DraggedItemFromOverflowToShelf();

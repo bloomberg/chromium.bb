@@ -29,6 +29,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shelf_item_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -502,7 +503,7 @@ class ShelfViewTest : public AshTestBase {
     gfx::Point rip_off_point(center_point_of_drag_item.x(), 0);
     generator.MoveMouseTo(rip_off_point);
     test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
-    ASSERT_TRUE(test_api_for_overflow.IsDraggingShelfItem());
+    ASSERT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
     ASSERT_FALSE(test_api_for_overflow.DraggedItemFromOverflowToShelf());
 
     // Move a dragged item into Shelf at |drop_index|.
@@ -517,7 +518,7 @@ class ShelfViewTest : public AshTestBase {
     generator.MoveMouseTo(modified_drop_point);
     test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
     test_api_->RunMessageLoopUntilAnimationsDone();
-    ASSERT_TRUE(test_api_for_overflow.IsDraggingShelfItem());
+    ASSERT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
     ASSERT_TRUE(test_api_for_overflow.DraggedItemFromOverflowToShelf());
 
     if (cancel)
@@ -527,7 +528,7 @@ class ShelfViewTest : public AshTestBase {
 
     test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
     test_api_->RunMessageLoopUntilAnimationsDone();
-    ASSERT_FALSE(test_api_for_overflow.IsDraggingShelfItem());
+    ASSERT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
     ASSERT_FALSE(test_api_for_overflow.DraggedItemFromOverflowToShelf());
 
     // Compare pre-stored items' id with newly positioned items' after dragging
@@ -1669,6 +1670,47 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Checks that a point of overflow bubble in primary shelf should not be
   // contained by insert bounds of secondary shelf.
   EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(point_in_shelf_view));
+}
+
+// Checks the rip an item off from left aligned shelf in secondary monitor.
+TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
+  // win8-aura doesn't support multiple display.
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("800x600,800x600");
+  ASSERT_EQ(2U, Shell::GetAllRootWindows().size());
+
+  aura::Window* second_root = Shell::GetAllRootWindows()[1];
+
+  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, second_root);
+  ASSERT_EQ(SHELF_ALIGNMENT_LEFT,
+            Shell::GetInstance()->GetShelfAlignment(second_root));
+
+  // Initially, app list and browser shortcut are added.
+  EXPECT_EQ(2, model_->item_count());
+  int browser_index = model_->GetItemIndexForType(TYPE_BROWSER_SHORTCUT);
+  EXPECT_GT(browser_index, 0);
+
+  Launcher* secondary_launcher = Launcher::ForWindow(second_root);
+  internal::ShelfView* shelf_view_for_secondary =
+      test::LauncherTestAPI(secondary_launcher).shelf_view();
+
+  ShelfViewTestAPI test_api_for_secondary_shelf_view(shelf_view_for_secondary);
+  internal::ShelfButton* button =
+    test_api_for_secondary_shelf_view.GetButton(browser_index);
+
+  // Fetch the start point of dragging.
+  gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
+  wm::ConvertPointFromScreen(second_root, &start_point);
+
+  aura::test::EventGenerator generator(second_root, start_point);
+
+  // Rip off the browser item.
+  generator.PressLeftButton();
+  generator.MoveMouseTo(start_point.x() + 400, start_point.y());
+  test_api_for_secondary_shelf_view.RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(test_api_for_secondary_shelf_view.IsRippedOffFromShelf());
 }
 
 // Checks various drag and drop operations from OverflowBubble to Shelf.

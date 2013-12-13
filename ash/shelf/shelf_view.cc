@@ -1130,7 +1130,7 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   }
   // Check if we are too far away from the shelf to enter the ripped off state.
   // Determine the distance to the shelf.
-  int delta = CalculateShelfDistance(event.root_location());
+  int delta = CalculateShelfDistance(screen_location);
   if (delta > kRipOffDistance) {
     // Create a proxy view item which can be moved anywhere.
     ShelfButton* button = static_cast<ShelfButton*>(drag_view_);
