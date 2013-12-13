@@ -1793,11 +1793,9 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
       request_info->cert_authorities[1]);
 }
 
-}  // namespace
-
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
+TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabled) {
   SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.signed_cert_timestamps_tls_ext = "test";
+  ssl_options.signed_cert_timestamps = "test";
 
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
                                 ssl_options,
@@ -1837,69 +1835,10 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
   EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
 
 #if !defined(USE_OPENSSL)
-  EXPECT_TRUE(sock->signed_cert_timestamps_received_);
+  EXPECT_TRUE(sock->WereSignedCertTimestampsReceived());
 #else
   // Enabling CT for OpenSSL is currently a noop.
-  EXPECT_FALSE(sock->signed_cert_timestamps_received_);
-#endif
-
-  sock->Disconnect();
-  EXPECT_FALSE(sock->IsConnected());
-}
-
-// Test that enabling Signed Certificate Timestamps enables OCSP stapling.
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.staple_ocsp_response = true;
-  // The test server currently only knows how to generate OCSP responses
-  // for a freshly minted certificate.
-  ssl_options.server_certificate = SpawnedTestServer::SSLOptions::CERT_AUTO;
-
-  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
-                                ssl_options,
-                                base::FilePath());
-  ASSERT_TRUE(test_server.Start());
-
-  AddressList addr;
-  ASSERT_TRUE(test_server.GetAddressList(&addr));
-
-  TestCompletionCallback callback;
-  CapturingNetLog log;
-  scoped_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr, &log, NetLog::Source()));
-  int rv = transport->Connect(callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
-
-  SSLConfig ssl_config;
-  // Enabling Signed Cert Timestamps ensures we request OCSP stapling for
-  // Certificate Transparency verification regardless of whether the platform
-  // is able to process the OCSP status itself.
-  ssl_config.signed_cert_timestamps_enabled = true;
-
-  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), ssl_config));
-
-  EXPECT_FALSE(sock->IsConnected());
-
-  rv = sock->Connect(callback.callback());
-
-  CapturingNetLog::CapturedEntryList entries;
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
-  EXPECT_TRUE(sock->IsConnected());
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
-
-#if !defined(USE_OPENSSL)
-  EXPECT_TRUE(sock->stapled_ocsp_response_received_);
-#else
-  // OCSP stapling isn't currently supported in the OpenSSL socket.
-  EXPECT_FALSE(sock->stapled_ocsp_response_received_);
+  EXPECT_FALSE(sock->WereSignedCertTimestampsReceived());
 #endif
 
   sock->Disconnect();
@@ -1908,7 +1847,7 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
 
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
   SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.signed_cert_timestamps_tls_ext = "test";
+  ssl_options.signed_cert_timestamps = "test";
 
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
                                 ssl_options,
@@ -1947,10 +1886,12 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
 
-  EXPECT_FALSE(sock->signed_cert_timestamps_received_);
+  EXPECT_FALSE(sock->WereSignedCertTimestampsReceived());
 
   sock->Disconnect();
   EXPECT_FALSE(sock->IsConnected());
 }
+
+}  // namespace
 
 }  // namespace net

@@ -32,7 +32,7 @@ void MultiLogCTVerifier::AddLog(scoped_ptr<CTLogVerifier> log_verifier) {
 
 int MultiLogCTVerifier::Verify(
     X509Certificate* cert,
-    const std::string& stapled_ocsp_response,
+    const std::string& sct_list_from_ocsp,
     const std::string& sct_list_from_tls_extension,
     ct::CTVerifyResult* result,
     const BoundNetLog& net_log)  {
@@ -64,16 +64,8 @@ int MultiLogCTVerifier::Verify(
             result);
   }
 
-  std::string sct_list_from_ocsp;
-  if (!stapled_ocsp_response.empty() &&
-      !cert->GetIntermediateCertificates().empty()) {
-    ct::ExtractSCTListFromOCSPResponse(
-        cert->GetIntermediateCertificates().front(), cert->serial_number(),
-        stapled_ocsp_response, &sct_list_from_ocsp);
-  }
-
-  // Log to Net Log, after extracting SCTs but before possibly failing on
-  // X.509 entry creation.
+  // Log to Net Log, after extracting embedded SCTs but before
+  // possibly failing on X.509 entry creation.
   NetLog::ParametersCallback net_log_callback =
       base::Bind(&NetLogRawSignedCertificateTimestampCallback,
           &embedded_scts, &sct_list_from_ocsp, &sct_list_from_tls_extension);

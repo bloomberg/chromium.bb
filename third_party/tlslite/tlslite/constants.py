@@ -22,7 +22,6 @@ class HandshakeType:
     certificate_verify = 15
     client_key_exchange = 16
     finished = 20
-    certificate_status = 22
     encrypted_extensions = 203
 
 class ContentType:
@@ -32,11 +31,7 @@ class ContentType:
     application_data = 23
     all = (20,21,22,23)
 
-class CertificateStatusType:
-    ocsp = 1
-
 class ExtensionType:
-    status_request = 5  # OCSP stapling
     signed_cert_timestamps = 18  # signed_certificate_timestamp in RFC 6962
     channel_id = 30031
 

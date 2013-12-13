@@ -83,8 +83,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     CapturingNetLog net_log;
     BoundNetLog bound_net_log =
       BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
-    return (verifier_->Verify(chain, std::string(), std::string(), &result,
-                              bound_net_log) == OK) &&
+    return (verifier_->Verify(chain, "", "", &result, bound_net_log) == OK) &&
         CheckForSingleVerifiedSCTInResult(result) &&
         CheckForSCTOrigin(
             result, ct::SignedCertificateTimestamp::SCT_EMBEDDED) &&
@@ -142,8 +141,7 @@ TEST_F(MultiLogCTVerifierTest,
 
   ct::CTVerifyResult result;
   EXPECT_EQ(OK,
-            verifier_->Verify(chain_, std::string(), sct_list, &result,
-                              BoundNetLog()));
+      verifier_->Verify(chain_, "", sct_list, &result, BoundNetLog()));
   ASSERT_TRUE(CheckForSingleVerifiedSCTInResult(result));
   ASSERT_TRUE(CheckForSCTOrigin(
       result, ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION));
@@ -162,8 +160,7 @@ TEST_F(MultiLogCTVerifierTest,
 
   ct::CTVerifyResult result;
   EXPECT_NE(OK,
-            verifier_->Verify(chain_, std::string(), sct_list, &result,
-                              BoundNetLog()));
+      verifier_->Verify(chain_, sct_list, "", &result, BoundNetLog()));
   EXPECT_EQ(1U, result.unknown_logs_scts.size());
   EXPECT_EQ("", result.unknown_logs_scts[0]->log_description);
 }

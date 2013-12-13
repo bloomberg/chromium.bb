@@ -937,8 +937,8 @@ class TLSConnection(TLSRecordLayer):
                         certChain=None, privateKey=None, reqCert=False,
                         sessionCache=None, settings=None, checker=None,
                         reqCAs=None, tlsIntolerant=0,
-                        signedCertTimestamps=None, fallbackSCSV=False,
-                        ocspResponse=None):
+                        signedCertTimestamps=None,
+                        fallbackSCSV=False):
         """Perform a handshake in the role of server.
 
         This function performs an SSL or TLS handshake.  Depending on
@@ -1014,16 +1014,6 @@ class TLSConnection(TLSRecordLayer):
         binary 8-bit string) that will be sent as a TLS extension whenever
         the client announces support for the extension.
 
-        @type ocspResponse: str
-        @param ocspResponse: An OCSP response (as a binary 8-bit string) that
-        will be sent stapled in the handshake whenever the client announces
-        support for the status_request extension.
-        Note that the response is sent independent of the ClientHello
-        status_request extension contents, and is thus only meant for testing
-        environments. Real OCSP stapling is more complicated as it requires
-        choosing a suitable response based on the ClientHello status_request
-        extension contents.
-
         @raise socket.error: If a socket error occurs.
         @raise tlslite.errors.TLSAbruptCloseError: If the socket is closed
         without a preceding alert.
@@ -1034,7 +1024,7 @@ class TLSConnection(TLSRecordLayer):
         for result in self.handshakeServerAsync(sharedKeyDB, verifierDB,
                 certChain, privateKey, reqCert, sessionCache, settings,
                 checker, reqCAs, tlsIntolerant, signedCertTimestamps,
-                fallbackSCSV, ocspResponse):
+                fallbackSCSV):
             pass
 
 
@@ -1043,7 +1033,7 @@ class TLSConnection(TLSRecordLayer):
                              sessionCache=None, settings=None, checker=None,
                              reqCAs=None, tlsIntolerant=0,
                              signedCertTimestamps=None,
-                             fallbackSCSV=False, ocspResponse=None):
+                             fallbackSCSV=False):
         """Start a server handshake operation on the TLS connection.
 
         This function returns a generator which behaves similarly to
@@ -1063,8 +1053,7 @@ class TLSConnection(TLSRecordLayer):
             reqCAs=reqCAs,
             tlsIntolerant=tlsIntolerant,
             signedCertTimestamps=signedCertTimestamps,
-            fallbackSCSV=fallbackSCSV, ocspResponse=ocspResponse)
-
+            fallbackSCSV=fallbackSCSV)
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
 
@@ -1073,7 +1062,7 @@ class TLSConnection(TLSRecordLayer):
                                     certChain, privateKey, reqCert,
                                     sessionCache, settings, reqCAs,
                                     tlsIntolerant, signedCertTimestamps,
-                                    fallbackSCSV, ocspResponse):
+                                    fallbackSCSV):
 
         self._handshakeStart(client=False)
 
@@ -1450,14 +1439,10 @@ class TLSConnection(TLSRecordLayer):
                     sessionID, cipherSuite, certificateType)
             serverHello.channel_id = clientHello.channel_id
             if clientHello.support_signed_cert_timestamps:
-              serverHello.signed_cert_timestamps = signedCertTimestamps
-            serverHello.status_request = (clientHello.status_request and
-                                          ocspResponse)
+                serverHello.signed_cert_timestamps = signedCertTimestamps
             doingChannelID = clientHello.channel_id
             msgs.append(serverHello)
             msgs.append(Certificate(certificateType).create(serverCertChain))
-            if serverHello.status_request:
-                msgs.append(CertificateStatus().create(ocspResponse))
             if reqCert and reqCAs:
                 msgs.append(CertificateRequest().create([], reqCAs))
             elif reqCert:
