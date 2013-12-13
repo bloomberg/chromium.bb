@@ -130,6 +130,9 @@ void ExtensionMessageBubbleController::AcknowledgeExtensions() {
 }
 
 ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
+  if (!service_)
+    return &extension_list_;  // Can occur during testing.
+
   if (!initialized_) {
     scoped_ptr<const ExtensionSet> extension_set(
         service_->GenerateInstalledExtensionsSet());
