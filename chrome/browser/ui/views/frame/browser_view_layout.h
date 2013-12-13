@@ -15,7 +15,7 @@
 class BookmarkBarView;
 class Browser;
 class BrowserViewLayoutDelegate;
-class ContentsLayoutManager;
+class ContentsContainer;
 class ImmersiveModeController;
 class InfoBarContainerView;
 class TabContentsContainer;
@@ -53,8 +53,8 @@ class BrowserViewLayout : public views::LayoutManager {
             TabStrip* tab_strip,
             views::View* toolbar,
             InfoBarContainerView* infobar_container,
-            views::View* contents_container,
-            ContentsLayoutManager* contents_layout_manager,
+            views::View* contents_split,
+            ContentsContainer* contents_container,
             ImmersiveModeController* immersive_mode_controller);
 
   // Sets or updates views that are not available when |this| is initialized.
@@ -102,10 +102,10 @@ class BrowserViewLayout : public views::LayoutManager {
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
-  // Layout the |contents_container_| view between the coordinates |top| and
+  // Layout the |contents_split_| view between the coordinates |top| and
   // |bottom|. See browser_view.h for details of the relationship between
-  // |contents_container_| and other views.
-  void LayoutContentsContainerView(int top, int bottom);
+  // |contents_split_| and other views.
+  void LayoutContentsSplitView(int top, int bottom);
 
   // Updates |top_container_|'s bounds. The new bounds depend on the size of
   // the bookmark bar and the toolbar.
@@ -144,8 +144,8 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* toolbar_;
   BookmarkBarView* bookmark_bar_;
   InfoBarContainerView* infobar_container_;
-  views::View* contents_container_;
-  ContentsLayoutManager* contents_layout_manager_;
+  views::View* contents_split_;
+  ContentsContainer* contents_container_;
   views::View* download_shelf_;
 
   ImmersiveModeController* immersive_mode_controller_;

@@ -521,6 +521,14 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
 
   PrefService* user_prefs = profile->GetPrefs();
   if (!(current_version & WINDOWS_PREFS)) {
+    registry->RegisterIntegerPref(prefs::kDevToolsHSplitLocation, -1);
+    if (local_state->HasPrefPath(prefs::kDevToolsHSplitLocation)) {
+      user_prefs->SetInteger(
+          prefs::kDevToolsHSplitLocation,
+          local_state->GetInteger(prefs::kDevToolsHSplitLocation));
+    }
+    local_state->ClearPref(prefs::kDevToolsHSplitLocation);
+
     registry->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
     if (local_state->HasPrefPath(prefs::kBrowserWindowPlacement)) {
       const PrefService::Preference* pref =
