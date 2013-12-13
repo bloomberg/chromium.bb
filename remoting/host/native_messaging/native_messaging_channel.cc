@@ -45,28 +45,27 @@ base::PlatformFile DuplicatePlatformFile(base::PlatformFile handle) {
 namespace remoting {
 
 NativeMessagingChannel::NativeMessagingChannel(
-    scoped_ptr<Delegate> delegate,
     base::PlatformFile input,
     base::PlatformFile output)
     : native_messaging_reader_(DuplicatePlatformFile(input)),
       native_messaging_writer_(new NativeMessagingWriter(
           DuplicatePlatformFile(output))),
-      delegate_(delegate.Pass()),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
-  delegate_->SetSendMessageCallback(
-      base::Bind(&NativeMessagingChannel::SendMessage, weak_ptr_));
 }
 
 NativeMessagingChannel::~NativeMessagingChannel() {
 }
 
-void NativeMessagingChannel::Start(const base::Closure& quit_closure) {
+void NativeMessagingChannel::Start(const SendMessageCallback& received_message,
+                                   const base::Closure& quit_closure) {
   DCHECK(CalledOnValidThread());
+  DCHECK(received_message_.is_null());
   DCHECK(quit_closure_.is_null());
-  DCHECK(!quit_closure.is_null());
 
+  received_message_ = received_message;
   quit_closure_ = quit_closure;
+
   native_messaging_reader_.Start(
       base::Bind(&NativeMessagingChannel::ProcessMessage, weak_ptr_),
       base::Bind(&NativeMessagingChannel::Shutdown, weak_ptr_));
@@ -83,7 +82,7 @@ void NativeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
 
   scoped_ptr<base::DictionaryValue> message_dict(
       static_cast<base::DictionaryValue*>(message.release()));
-  delegate_->ProcessMessage(message_dict.Pass());
+  received_message_.Run(message_dict.Pass());
 }
 
 void NativeMessagingChannel::SendMessage(

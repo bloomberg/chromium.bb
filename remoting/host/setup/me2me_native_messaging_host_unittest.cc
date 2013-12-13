@@ -222,11 +222,6 @@ class NativeMessagingHostTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  void Run();
-
-  // Deletes |host_|.
-  void DeleteHost();
-
   scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
 
   void WriteMessageToInputPipe(const base::Value& message);
@@ -243,6 +238,10 @@ class NativeMessagingHostTest : public testing::Test {
   MockDaemonControllerDelegate* daemon_controller_delegate_;
 
  private:
+  void StartHost();
+  void StopHost();
+  void ExitTest();
+
   // Each test creates two unidirectional pipes: "input" and "output".
   // NativeMessagingHost reads from input_read_handle and writes to
   // output_write_handle. The unittest supplies data to input_write_handle, and
@@ -252,16 +251,21 @@ class NativeMessagingHostTest : public testing::Test {
   base::PlatformFile input_write_handle_;
   base::PlatformFile output_read_handle_;
 
-  base::MessageLoop message_loop_;
-  base::RunLoop run_loop_;
-  scoped_refptr<AutoThreadTaskRunner> task_runner_;
-  scoped_ptr<remoting::NativeMessagingChannel> channel_;
+  // Message loop of the test thread.
+  scoped_ptr<base::MessageLoop> test_message_loop_;
+  scoped_ptr<base::RunLoop> test_run_loop_;
+
+  scoped_ptr<base::Thread> host_thread_;
+  scoped_ptr<base::RunLoop> host_run_loop_;
+
+  // Task runner of the host thread.
+  scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
+  scoped_ptr<remoting::NativeMessagingHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMessagingHostTest);
 };
 
-NativeMessagingHostTest::NativeMessagingHostTest()
-    : message_loop_(base::MessageLoop::TYPE_IO) {}
+NativeMessagingHostTest::NativeMessagingHostTest() {}
 
 NativeMessagingHostTest::~NativeMessagingHostTest() {}
 
@@ -272,9 +276,35 @@ void NativeMessagingHostTest::SetUp() {
   ASSERT_TRUE(MakePipe(&input_read_handle, &input_write_handle_));
   ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle));
 
-  // Arrange to run |message_loop_| until no components depend on it.
-  task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+  test_message_loop_.reset(new base::MessageLoop());
+  test_run_loop_.reset(new base::RunLoop());
+
+  // Run the host on a dedicated thread.
+  host_thread_.reset(new base::Thread("host_thread"));
+  host_thread_->Start();
+
+  // Arrange to run |test_message_loop_| until no components depend on it.
+  host_task_runner_ = new AutoThreadTaskRunner(
+      host_thread_->message_loop_proxy(),
+      base::Bind(&NativeMessagingHostTest::ExitTest,
+                 base::Unretained(this)));
+
+  host_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NativeMessagingHostTest::StartHost, base::Unretained(this)));
+
+  // Wait until the host finishes starting.
+  test_run_loop_->Run();
+}
+
+void NativeMessagingHostTest::StartHost() {
+  DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
+
+  base::PlatformFile input_read_handle;
+  base::PlatformFile output_write_handle;
+
+  ASSERT_TRUE(MakePipe(&input_read_handle, &input_write_handle_));
+  ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle));
 
   daemon_controller_delegate_ = new MockDaemonControllerDelegate();
   scoped_refptr<DaemonController> daemon_controller(
@@ -284,42 +314,61 @@ void NativeMessagingHostTest::SetUp() {
   scoped_refptr<PairingRegistry> pairing_registry =
       new SynchronousPairingRegistry(scoped_ptr<PairingRegistry::Delegate>(
           new MockPairingRegistryDelegate()));
-  scoped_ptr<NativeMessagingChannel::Delegate> host(
-      new NativeMessagingHost(daemon_controller,
-                              pairing_registry,
-                              scoped_ptr<remoting::OAuthClient>()));
-  channel_.reset(
-      new NativeMessagingChannel(host.Pass(),
-                                 input_read_handle,
-                                 output_write_handle));
+
+  scoped_ptr<NativeMessagingChannel> channel(
+      new NativeMessagingChannel(input_read_handle, output_write_handle));
+
+  host_.reset(new NativeMessagingHost(channel.Pass(),
+                                      daemon_controller,
+                                      pairing_registry,
+                                      scoped_ptr<remoting::OAuthClient>()));
+  host_->Start(base::Bind(&NativeMessagingHostTest::StopHost,
+                          base::Unretained(this)));
+
+  // Notify the test that the host has finished starting up.
+  test_message_loop_->message_loop_proxy()->PostTask(
+      FROM_HERE, test_run_loop_->QuitClosure());
+}
+
+void NativeMessagingHostTest::StopHost() {
+  DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
+
+  host_.reset();
+
+  // Wait till all shutdown tasks have completed.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Trigger a test shutdown via ExitTest().
+  host_task_runner_ = NULL;
+}
+
+void NativeMessagingHostTest::ExitTest() {
+  if (!test_message_loop_->message_loop_proxy()->RunsTasksOnCurrentThread()) {
+    test_message_loop_->message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&NativeMessagingHostTest::ExitTest,
+                   base::Unretained(this)));
+    return;
+  }
+  test_run_loop_->Quit();
 }
 
 void NativeMessagingHostTest::TearDown() {
-  // DaemonController destroys its internals asynchronously. Let these and any
-  // other pending tasks run to make sure we don't leak the memory owned by
-  // them.
-  message_loop_.RunUntilIdle();
-
-  // The NativeMessagingHost dtor closes the handles that are passed to it.
-  // |input_write_handle_| gets closed just before starting the host. So the
-  // only handle left to close is |output_read_handle_|.
-  base::ClosePlatformFile(output_read_handle_);
-}
-
-void NativeMessagingHostTest::Run() {
-  // Close the write-end of input, so that the host sees EOF after reading
-  // messages and won't block waiting for more input.
+  // Closing the write-end of the input will send an EOF to the native
+  // messaging reader. This will trigger a host shutdown.
   base::ClosePlatformFile(input_write_handle_);
-  channel_->Start(base::Bind(&NativeMessagingHostTest::DeleteHost,
-                             base::Unretained(this)));
-  run_loop_.Run();
-}
 
-void NativeMessagingHostTest::DeleteHost() {
-  // Destroy |channel_| so that it closes its end of the output pipe, so that
-  // TestBadRequest() will see EOF and won't block waiting for more data.
-  channel_.reset();
-  task_runner_ = NULL;
+  // Start a new RunLoop and Wait until the host finishes shutting down.
+  test_run_loop_.reset(new base::RunLoop());
+  test_run_loop_->Run();
+
+  // Verify there are no more message in the output pipe.
+  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
+  EXPECT_FALSE(response);
+
+  // The It2MeNativeMessagingHost dtor closes the handles that are passed to it.
+  // So the only handle left to close is |output_read_handle_|.
+  base::ClosePlatformFile(output_read_handle_);
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -370,8 +419,6 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   WriteMessageToInputPipe(message);
   WriteMessageToInputPipe(good_message);
 
-  Run();
-
   // Read from output pipe, and verify responses.
   scoped_ptr<base::DictionaryValue> response =
       ReadMessageFromOutputPipe();
@@ -383,7 +430,7 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
 
 // TODO (weitaosu): crbug.com/323306. Re-enable these tests.
 // Test all valid request-types.
-TEST_F(NativeMessagingHostTest, DISABLED_All) {
+TEST_F(NativeMessagingHostTest, All) {
   int next_id = 0;
   base::DictionaryValue message;
   message.SetInteger("id", next_id++);
@@ -437,8 +484,6 @@ TEST_F(NativeMessagingHostTest, DISABLED_All) {
   message.SetString("type", "startDaemon");
   WriteMessageToInputPipe(message);
 
-  Run();
-
   void (*verify_routines[])(scoped_ptr<base::DictionaryValue>) = {
     &VerifyHelloResponse,
     &VerifyGetHostNameResponse,
@@ -472,14 +517,12 @@ TEST_F(NativeMessagingHostTest, DISABLED_All) {
 }
 
 // Verify that response ID matches request ID.
-TEST_F(NativeMessagingHostTest, DISABLED_Id) {
+TEST_F(NativeMessagingHostTest, Id) {
   base::DictionaryValue message;
   message.SetString("type", "hello");
   WriteMessageToInputPipe(message);
   message.SetString("id", "42");
   WriteMessageToInputPipe(message);
-
-  Run();
 
   scoped_ptr<base::DictionaryValue> response =
       ReadMessageFromOutputPipe();
@@ -494,26 +537,26 @@ TEST_F(NativeMessagingHostTest, DISABLED_Id) {
 }
 
 // Verify non-Dictionary requests are rejected.
-TEST_F(NativeMessagingHostTest, DISABLED_WrongFormat) {
+TEST_F(NativeMessagingHostTest, WrongFormat) {
   base::ListValue message;
   TestBadRequest(message);
 }
 
 // Verify requests with no type are rejected.
-TEST_F(NativeMessagingHostTest, DISABLED_MissingType) {
+TEST_F(NativeMessagingHostTest, MissingType) {
   base::DictionaryValue message;
   TestBadRequest(message);
 }
 
 // Verify rejection if type is unrecognized.
-TEST_F(NativeMessagingHostTest, DISABLED_InvalidType) {
+TEST_F(NativeMessagingHostTest, InvalidType) {
   base::DictionaryValue message;
   message.SetString("type", "xxx");
   TestBadRequest(message);
 }
 
 // Verify rejection if getPinHash request has no hostId.
-TEST_F(NativeMessagingHostTest, DISABLED_GetPinHashNoHostId) {
+TEST_F(NativeMessagingHostTest, GetPinHashNoHostId) {
   base::DictionaryValue message;
   message.SetString("type", "getPinHash");
   message.SetString("pin", "1234");
@@ -521,7 +564,7 @@ TEST_F(NativeMessagingHostTest, DISABLED_GetPinHashNoHostId) {
 }
 
 // Verify rejection if getPinHash request has no pin.
-TEST_F(NativeMessagingHostTest, DISABLED_GetPinHashNoPin) {
+TEST_F(NativeMessagingHostTest, GetPinHashNoPin) {
   base::DictionaryValue message;
   message.SetString("type", "getPinHash");
   message.SetString("hostId", "my_host");
@@ -529,7 +572,7 @@ TEST_F(NativeMessagingHostTest, DISABLED_GetPinHashNoPin) {
 }
 
 // Verify rejection if updateDaemonConfig request has invalid config.
-TEST_F(NativeMessagingHostTest, DISABLED_UpdateDaemonConfigInvalidConfig) {
+TEST_F(NativeMessagingHostTest, UpdateDaemonConfigInvalidConfig) {
   base::DictionaryValue message;
   message.SetString("type", "updateDaemonConfig");
   message.SetString("config", "xxx");
@@ -537,7 +580,7 @@ TEST_F(NativeMessagingHostTest, DISABLED_UpdateDaemonConfigInvalidConfig) {
 }
 
 // Verify rejection if startDaemon request has invalid config.
-TEST_F(NativeMessagingHostTest, DISABLED_StartDaemonInvalidConfig) {
+TEST_F(NativeMessagingHostTest, StartDaemonInvalidConfig) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.SetString("config", "xxx");
@@ -546,7 +589,7 @@ TEST_F(NativeMessagingHostTest, DISABLED_StartDaemonInvalidConfig) {
 }
 
 // Verify rejection if startDaemon request has no "consent" parameter.
-TEST_F(NativeMessagingHostTest, DISABLED_StartDaemonNoConsent) {
+TEST_F(NativeMessagingHostTest, StartDaemonNoConsent) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.Set("config", base::DictionaryValue().DeepCopy());

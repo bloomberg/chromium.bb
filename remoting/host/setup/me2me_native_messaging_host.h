@@ -28,24 +28,23 @@ namespace protocol {
 class PairingRegistry;
 }  // namespace protocol
 
-// Implementation of the native messaging host process.
-class NativeMessagingHost : public NativeMessagingChannel::Delegate {
+// Implementation of the me2me native messaging host.
+class NativeMessagingHost {
  public:
   typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
 
   NativeMessagingHost(
+      scoped_ptr<NativeMessagingChannel> channel,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
       scoped_ptr<OAuthClient> oauth_client);
   virtual ~NativeMessagingHost();
 
-  // NativeMessagingChannel::Delegate interface.
-  virtual void SetSendMessageCallback(
-      const SendMessageCallback& send_message) OVERRIDE;
-  virtual void ProcessMessage(
-      scoped_ptr<base::DictionaryValue> message) OVERRIDE;
+  void Start(const base::Closure& quit_closure);
 
  private:
+  void ProcessMessage(scoped_ptr<base::DictionaryValue> message);
+
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
@@ -114,6 +113,7 @@ class NativeMessagingHost : public NativeMessagingChannel::Delegate {
                                const std::string& user_email,
                                const std::string& refresh_token);
 
+  scoped_ptr<NativeMessagingChannel> channel_;
   scoped_refptr<DaemonController> daemon_controller_;
 
   // Used to load and update the paired clients for this host.
@@ -124,7 +124,6 @@ class NativeMessagingHost : public NativeMessagingChannel::Delegate {
 
   base::ThreadChecker thread_checker_;
 
-  SendMessageCallback send_message_;
   base::WeakPtr<NativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<NativeMessagingHost> weak_factory_;
 

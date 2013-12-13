@@ -75,15 +75,17 @@ int NativeMessagingHostMain() {
   // Create the pairing registry and native messaging host.
   scoped_refptr<protocol::PairingRegistry> pairing_registry =
       CreatePairingRegistry(io_thread.message_loop_proxy());
-  scoped_ptr<NativeMessagingChannel::Delegate> host(
-      new NativeMessagingHost(daemon_controller,
-                              pairing_registry,
-                              oauth_client.Pass()));
 
   // Set up the native messaging channel.
   scoped_ptr<NativeMessagingChannel> channel(
-      new NativeMessagingChannel(host.Pass(), read_file, write_file));
-  channel->Start(run_loop.QuitClosure());
+      new NativeMessagingChannel(read_file, write_file));
+
+  scoped_ptr<NativeMessagingHost> host(
+      new NativeMessagingHost(channel.Pass(),
+                              daemon_controller,
+                              pairing_registry,
+                              oauth_client.Pass()));
+  host->Start(run_loop.QuitClosure());
 
   // Run the loop until channel is alive.
   run_loop.Run();

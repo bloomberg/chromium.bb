@@ -36,16 +36,15 @@ int It2MeNativeMessagingHostMain() {
                                          run_loop.QuitClosure());
 
   scoped_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
-  scoped_ptr<NativeMessagingChannel::Delegate> host(
-      new It2MeNativeMessagingHost(task_runner, factory.Pass()));
-
-  NativeMessagingChannel::Delegate* host_ptr = host.get();
 
   // Set up the native messaging channel.
   scoped_ptr<NativeMessagingChannel> channel(
-      new NativeMessagingChannel(host.Pass(), read_file, write_file));
-  channel->Start(base::Bind(&It2MeNativeMessagingHost::ShutDownHost,
-                            base::Unretained(host_ptr)));
+      new NativeMessagingChannel(read_file, write_file));
+
+  scoped_ptr<It2MeNativeMessagingHost> host(
+      new It2MeNativeMessagingHost(
+          task_runner, channel.Pass(), factory.Pass()));
+  host->Start(run_loop.QuitClosure());
 
   // Run the loop until channel is alive.
   run_loop.Run();

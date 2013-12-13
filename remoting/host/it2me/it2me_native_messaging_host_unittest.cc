@@ -187,7 +187,7 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   void TestConnect();
 
  private:
-  void StartHost(base::PlatformFile input, base::PlatformFile output);
+  void StartHost();
   void StopHost();
   void ExitTest();
 
@@ -209,18 +209,12 @@ class It2MeNativeMessagingHostTest : public testing::Test {
 
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
-  scoped_ptr<remoting::NativeMessagingChannel> channel_;
+  scoped_ptr<remoting::It2MeNativeMessagingHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHostTest);
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
-  base::PlatformFile input_read_handle;
-  base::PlatformFile output_write_handle;
-
-  ASSERT_TRUE(MakePipe(&input_read_handle, &input_write_handle_));
-  ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle));
-
   test_message_loop_.reset(new base::MessageLoop());
   test_run_loop_.reset(new base::RunLoop());
 
@@ -236,9 +230,7 @@ void It2MeNativeMessagingHostTest::SetUp() {
   host_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&It2MeNativeMessagingHostTest::StartHost,
-                 base::Unretained(this),
-                 input_read_handle,
-                 output_write_handle));
+                 base::Unretained(this)));
 
   // Wait until the host finishes starting.
   test_run_loop_->Run();
@@ -268,7 +260,7 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   int read_result = base::ReadPlatformFileAtCurrentPos(
       output_read_handle_, reinterpret_cast<char*>(&length), sizeof(length));
   if (read_result != sizeof(length)) {
-    LOG(ERROR) << "Invalid message header.";
+    // The output pipe has been closed, return an empty message.
     return scoped_ptr<base::DictionaryValue>();
   }
 
@@ -428,19 +420,26 @@ void It2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message,
   EXPECT_FALSE(response);
 }
 
-void It2MeNativeMessagingHostTest::StartHost(base::PlatformFile input,
-                                             base::PlatformFile output) {
+void It2MeNativeMessagingHostTest::StartHost() {
   DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
+
+  base::PlatformFile input_read_handle;
+  base::PlatformFile output_write_handle;
+
+  ASSERT_TRUE(MakePipe(&input_read_handle, &input_write_handle_));
+  ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle));
 
   // Creating a native messaging host with a mock It2MeHostFactory.
   scoped_ptr<It2MeHostFactory> factory(new MockIt2MeHostFactory());
-  scoped_ptr<NativeMessagingChannel::Delegate> host(
-      new It2MeNativeMessagingHost(host_task_runner_, factory.Pass()));
 
-  // Set up and start the native messaging channel.
-  channel_.reset(new NativeMessagingChannel(host.Pass(), input, output));
-  channel_->Start(base::Bind(&It2MeNativeMessagingHostTest::StopHost,
-                             base::Unretained(this)));
+  scoped_ptr<NativeMessagingChannel> channel(
+      new NativeMessagingChannel(input_read_handle, output_write_handle));
+
+  host_.reset(
+      new It2MeNativeMessagingHost(
+          host_task_runner_, channel.Pass(), factory.Pass()));
+  host_->Start(base::Bind(&It2MeNativeMessagingHostTest::StopHost,
+                          base::Unretained(this)));
 
   // Notify the test that the host has finished starting up.
   test_message_loop_->message_loop_proxy()->PostTask(
@@ -450,9 +449,7 @@ void It2MeNativeMessagingHostTest::StartHost(base::PlatformFile input,
 void It2MeNativeMessagingHostTest::StopHost() {
   DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
 
-  // The NativeMessagingChannel dtor will destroy the reader, the writer,
-  // and the delegate (the native messaging host).
-  channel_.reset();
+  host_.reset();
 
   // Wait till all shutdown tasks have completed.
   base::MessageLoop::current()->RunUntilIdle();

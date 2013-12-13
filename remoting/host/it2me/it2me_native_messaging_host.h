@@ -19,20 +19,17 @@ class DictionaryValue;
 namespace remoting {
 
 // Implementation of the native messaging host process.
-class It2MeNativeMessagingHost : public NativeMessagingChannel::Delegate,
-                                 public It2MeHost::Observer {
+class It2MeNativeMessagingHost : public It2MeHost::Observer {
  public:
   typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
 
-  It2MeNativeMessagingHost(scoped_refptr<AutoThreadTaskRunner> task_runner,
-                           scoped_ptr<It2MeHostFactory> factory);
+  It2MeNativeMessagingHost(
+      scoped_refptr<AutoThreadTaskRunner> task_runner,
+      scoped_ptr<NativeMessagingChannel> channel,
+      scoped_ptr<It2MeHostFactory> factory);
   virtual ~It2MeNativeMessagingHost();
 
-  // NativeMessagingChannel::Delegate interface.
-  virtual void SetSendMessageCallback(const SendMessageCallback& send_message)
-      OVERRIDE;
-  virtual void ProcessMessage(scoped_ptr<base::DictionaryValue> message)
-      OVERRIDE;
+  void Start(const base::Closure& quit_closure);
 
   // It2MeHost::Observer implementation
   virtual void OnClientAuthenticated(const std::string& client_username)
@@ -42,15 +39,11 @@ class It2MeNativeMessagingHost : public NativeMessagingChannel::Delegate,
   virtual void OnNatPolicyChanged(bool nat_traversal_enabled) OVERRIDE;
   virtual void OnStateChanged(It2MeHostState state) OVERRIDE;
 
-  static void ShutDownHost(NativeMessagingChannel::Delegate* delegate) {
-    It2MeNativeMessagingHost* host =
-        static_cast<It2MeNativeMessagingHost*>(delegate);
-    host->ShutDown();
-  }
-
   static std::string HostStateToString(It2MeHostState host_state);
 
  private:
+  void ProcessMessage(scoped_ptr<base::DictionaryValue> message);
+
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
@@ -65,12 +58,10 @@ class It2MeNativeMessagingHost : public NativeMessagingChannel::Delegate,
 
   scoped_refptr<AutoThreadTaskRunner> task_runner();
 
-  void ShutDown();
-
+  scoped_ptr<NativeMessagingChannel> channel_;
   scoped_ptr<It2MeHostFactory> factory_;
   scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<It2MeHost> it2me_host_;
-  SendMessageCallback send_message_;
 
   // Cached, read-only copies of |it2me_host_| session state.
   It2MeHostState state_;
