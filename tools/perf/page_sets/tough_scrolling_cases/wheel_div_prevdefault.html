@@ -3,10 +3,10 @@
 <body>
 <div style="width:60%; margin-left: 20%">
 <div id="prevent" style="position:absolute; width:500px; height:400px; background-color: blue; color: white; font-size: large">
-    This box has a mousewheel event handler that prevents the default action.
+    This box has a wheel event handler that prevents the default action.
 </div>
 <script>
-document.querySelector("#prevent").addEventListener("mousewheel", function(e) {
+document.querySelector("#prevent").addEventListener("wheel", function(e) {
     e.preventDefault();
 }, false);
 </script>

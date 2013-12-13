@@ -54,7 +54,7 @@
 
     function onMouseWheel(e) {
       e.preventDefault();
-      window.scrollBy(0, -e.wheelDelta);
+      window.scrollBy(0, e.deltaY);
     }
 
     function startExperiment() {
@@ -64,7 +64,7 @@
       window.addEventListener('touchend', onTouchEnd);
       window.addEventListener('touchleave', onTouchEnd);
       window.addEventListener('touchcancel', onTouchEnd);
-      window.addEventListener('mousewheel', onMouseWheel);
+      window.addEventListener('wheel', onMouseWheel);
       window.requestAnimationFrame(onAnimationFrame);
     }
 
