@@ -123,6 +123,15 @@ function Background() {
 Background.CLOSE_DELAY_MS_ = 5000;
 
 /**
+ * Make a key of window geometry preferences for the given initial URL.
+ * @param {string} url Initialize URL that the window has.
+ * @return {string} Key of window geometry preferences.
+ */
+Background.makeGeometryKey = function(url) {
+  return 'windowGeometry' + ':' + url;
+};
+
+/**
  * Register callback to be invoked after initialization.
  * If the initialization is already done, the callback is invoked immediately.
  *
@@ -173,6 +182,20 @@ Background.prototype.tryClose = function() {
 };
 
 /**
+ * Gets similar windows, it means with the same initial url.
+ * @param {string} url URL that the obtained windows have.
+ * @return {Array.<AppWindow>} List of similar windows.
+ */
+Background.prototype.getSimilarWindows = function(url) {
+  var result = [];
+  for (var appID in this.appWindows) {
+    if (this.appWindows[appID].contentWindow.appInitialURL === url)
+      result.push(this.appWindows[appID]);
+  }
+  return result;
+};
+
+/**
  * Wrapper for an app window.
  *
  * Expects the following from the app scripts:
@@ -191,10 +214,8 @@ Background.prototype.tryClose = function() {
 function AppWindowWrapper(url, id, options) {
   this.url_ = url;
   this.id_ = id;
-  // Do deep copy for the template of options to assign own ID to the option
-  // params.
+  // Do deep copy for the template of options to assign customized params later.
   this.options_ = JSON.parse(JSON.stringify(options));
-  this.options_.id = url; // This is to make Chrome reuse window geometries.
   this.window_ = null;
   this.appState_ = null;
   this.openingOrOpened_ = false;
@@ -209,19 +230,6 @@ function AppWindowWrapper(url, id, options) {
  */
 AppWindowWrapper.SHIFT_DISTANCE = 40;
 
-/**
- * Gets similar windows, it means with the same initial url.
- * @return {Array.<AppWindow>} List of similar windows.
- * @private
- */
-AppWindowWrapper.prototype.getSimilarWindows_ = function() {
-  var result = [];
-  for (var appID in background.appWindows) {
-    if (background.appWindows[appID].contentWindow.appInitialURL == this.url_)
-      result.push(background.appWindows[appID]);
-  }
-  return result;
-};
 
 /**
  * Opens the window.
@@ -244,17 +252,17 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
 
   // Get similar windows, it means with the same initial url, eg. different
   // main windows of Files.app.
-  var similarWindows = this.getSimilarWindows_();
+  var similarWindows = background.getSimilarWindows(this.url_);
 
   // Restore maximized windows, to avoid hiding them to tray, which can be
   // confusing for users.
-  this.queue.run(function(nextStep) {
+  this.queue.run(function(callback) {
     for (var index = 0; index < similarWindows.length; index++) {
       if (similarWindows[index].isMaximized()) {
         var createWindowAndRemoveListener = function() {
           similarWindows[index].onRestored.removeListener(
               createWindowAndRemoveListener);
-          nextStep();
+          callback();
         };
         similarWindows[index].onRestored.addListener(
             createWindowAndRemoveListener);
@@ -263,29 +271,64 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
       }
     }
     // If no maximized windows, then create the window immediately.
-    nextStep();
+    callback();
   });
 
+  // Obtains the last geometry.
+  var lastBounds;
+  this.queue.run(function(callback) {
+    var key = Background.makeGeometryKey(this.url_);
+    chrome.storage.local.get(key, function(preferences) {
+      if (!chrome.runtime.lastError)
+        lastBounds = preferences[key];
+      callback();
+    });
+  }.bind(this));
+
   // Closure creating the window, once all preprocessing tasks are finished.
-  this.queue.run(function(nextStep) {
+  this.queue.run(function(callback) {
+    // Apply the last bounds.
+    if (lastBounds)
+      this.options_.bounds = lastBounds;
+
+    // Create a window.
     chrome.app.window.create(this.url_, this.options_, function(appWindow) {
       this.window_ = appWindow;
-      nextStep();
+      callback();
     }.bind(this));
   }.bind(this));
 
   // After creating.
-  this.queue.run(function(nextStep) {
-    var appWindow = this.window_;
-    if (similarWindows.length) {
-      // If we have already another window of the same kind, then shift this
-      // window to avoid overlapping with the previous one.
-
-      var bounds = appWindow.getBounds();
-      appWindow.moveTo(bounds.left + AppWindowWrapper.SHIFT_DISTANCE,
-                       bounds.top + AppWindowWrapper.SHIFT_DISTANCE);
+  this.queue.run(function(callback) {
+    // If there is another window in the same position, shift the window.
+    var makeBoundsKey = function(bounds) {
+      return bounds.left + '/' + bounds.top;
+    };
+    var notAvailablePositions = {};
+    for (var i = 0; i < similarWindows.length; i++) {
+      var key = makeBoundsKey(similarWindows[i].getBounds());
+      notAvailablePositions[key] = true;
     }
+    var candidateBounds = this.window_.getBounds();
+    while (true) {
+      var key = makeBoundsKey(candidateBounds);
+      if (!notAvailablePositions[key])
+        break;
+      // Make the position available to avoid an infinite loop.
+      notAvailablePositions[key] = false;
+      var nextLeft = candidateBounds.left + AppWindowWrapper.SHIFT_DISTANCE;
+      var nextRight = nextLeft + candidateBounds.width;
+      candidateBounds.left = nextRight >= screen.availWidth ?
+          nextRight % screen.availWidth : nextLeft;
+      var nextTop = candidateBounds.top + AppWindowWrapper.SHIFT_DISTANCE;
+      var nextBottom = nextTop + candidateBounds.height;
+      candidateBounds.top = nextBottom >= screen.availHeight ?
+          nextBottom % screen.availHeight : nextTop;
+    }
+    this.window_.moveTo(candidateBounds.left, candidateBounds.top);
 
+    // Save the properties.
+    var appWindow = this.window_;
     background.appWindows[this.id_] = appWindow;
     var contentWindow = appWindow.contentWindow;
     contentWindow.appID = this.id_;
@@ -294,26 +337,56 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
     if (window.IN_TEST)
       contentWindow.IN_TEST = true;
 
-    appWindow.onClosed.addListener(function() {
-      if (contentWindow.unload)
-        contentWindow.unload();
-      if (contentWindow.saveOnExit) {
-        contentWindow.saveOnExit.forEach(function(entry) {
-          util.AppCache.update(entry.key, entry.value);
-        });
-      }
-      delete background.appWindows[this.id_];
-      chrome.storage.local.remove(this.id_);  // Forget the persisted state.
-      this.window_ = null;
-      this.openingOrOpened_ = false;
-      background.tryClose();
-    }.bind(this));
+    // Register event listners.
+    appWindow.onBoundsChanged.addListener(this.onBoundsChanged_.bind(this));
+    appWindow.onClosed.addListener(this.onClosed_.bind(this));
 
+    // Callback.
     if (opt_callback)
       opt_callback();
-
-    nextStep();
+    callback();
   }.bind(this));
+};
+
+/**
+ * Handles the onClosed extension API event.
+ * @private
+ */
+AppWindowWrapper.prototype.onClosed_ = function() {
+  // Unload the window.
+  var appWindow = this.window_;
+  var contentWindow = this.window_.contentWindow;
+  if (contentWindow.unload)
+    contentWindow.unload();
+  this.window_ = null;
+  this.openingOrOpened_ = false;
+
+  // Updates preferences.
+  if (contentWindow.saveOnExit) {
+    contentWindow.saveOnExit.forEach(function(entry) {
+      util.AppCache.update(entry.key, entry.value);
+    });
+  }
+  chrome.storage.local.remove(this.id_);  // Forget the persisted state.
+
+  // Remove the window from the set.
+  delete background.appWindows[this.id_];
+
+  // If there is no application window, reset window ID.
+  if (!Object.keys(background.appWindows).length)
+    nextFileManagerWindowID = 0;
+  background.tryClose();
+};
+
+/**
+ * Handles onBoundsChanged extension API event.
+ * @private
+ */
+AppWindowWrapper.prototype.onBoundsChanged_ = function() {
+  var preferences = {};
+  preferences[Background.makeGeometryKey(this.url_)] =
+      this.window_.getBounds();
+  chrome.storage.local.set(preferences);
 };
 
 /**
@@ -403,10 +476,12 @@ var nextFileManagerWindowID = 0;
  * @const
  */
 var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
-  defaultLeft: Math.round(window.screen.availWidth * 0.1),
-  defaultTop: Math.round(window.screen.availHeight * 0.1),
-  defaultWidth: Math.round(window.screen.availWidth * 0.8),
-  defaultHeight: Math.round(window.screen.availHeight * 0.8),
+  bounds: Object.freeze({
+    left: Math.round(window.screen.availWidth * 0.1),
+    top: Math.round(window.screen.availHeight * 0.1),
+    width: Math.round(window.screen.availWidth * 0.8),
+    height: Math.round(window.screen.availHeight * 0.8)
+  }),
   minWidth: 320,
   minHeight: 240,
   frame: 'none',
