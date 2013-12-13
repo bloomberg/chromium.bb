@@ -771,10 +771,7 @@
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
-          ],
-          'sources!': [
-            'browser/accessibility/browser_accessibility_win_unittest.cc',
-          ],
+          ]
         }],
         ['use_aura==1 or toolkit_views==1', {
           'dependencies': [

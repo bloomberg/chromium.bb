@@ -9,6 +9,7 @@
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -679,5 +680,55 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
+
+#if defined(USE_AURA)
+TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
+  HWND desktop_hwnd = GetDesktopWindow();
+  base::win::ScopedComPtr<IAccessible> desktop_hwnd_iaccessible;
+  ASSERT_EQ(S_OK, AccessibleObjectFromWindow(
+      desktop_hwnd, OBJID_CLIENT,
+      IID_IAccessible,
+      reinterpret_cast<void**>(desktop_hwnd_iaccessible.Receive())));
+
+  scoped_ptr<BrowserAccessibilityManagerWin> manager(
+      new BrowserAccessibilityManagerWin(
+          desktop_hwnd,
+          desktop_hwnd_iaccessible,
+          BrowserAccessibilityManagerWin::GetEmptyDocument(),
+          NULL));
+  ASSERT_EQ(desktop_hwnd, manager->parent_hwnd());
+
+  // Enabling screen reader support and calling MaybeCallNotifyWinEvent
+  // should trigger creating the AccessibleHWND, and we should now get a
+  // new parent_hwnd with the right window class to fool older screen
+  // readers.
+  BrowserAccessibilityStateImpl::GetInstance()->OnScreenReaderDetected();
+  manager->MaybeCallNotifyWinEvent(0, 0);
+  HWND new_parent_hwnd = manager->parent_hwnd();
+  ASSERT_NE(desktop_hwnd, new_parent_hwnd);
+  WCHAR hwnd_class_name[256];
+  ASSERT_NE(0, GetClassName(new_parent_hwnd, hwnd_class_name, 256));
+  ASSERT_STREQ(L"Chrome_RenderWidgetHostHWND", hwnd_class_name);
+
+  // Destroy the hwnd explicitly; that should trigger clearing parent_hwnd().
+  DestroyWindow(new_parent_hwnd);
+  ASSERT_EQ(NULL, manager->parent_hwnd());
+
+  // Now create it again.
+  manager.reset(
+      new BrowserAccessibilityManagerWin(
+          desktop_hwnd,
+          desktop_hwnd_iaccessible,
+          BrowserAccessibilityManagerWin::GetEmptyDocument(),
+          NULL));
+  manager->MaybeCallNotifyWinEvent(0, 0);
+  new_parent_hwnd = manager->parent_hwnd();
+  ASSERT_FALSE(NULL == new_parent_hwnd);
+
+  // This time, destroy the manager first, make sure the AccessibleHWND doesn't
+  // crash on destruction (to be caught by SyzyASAN or other tools).
+  manager.reset(NULL);
+}
+#endif
 
 }  // namespace content
