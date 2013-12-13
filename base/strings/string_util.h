@@ -68,9 +68,7 @@ inline int snprintf(char* buffer, size_t size, const char* format, ...) {
 // If the return value is >= dst_size, then the output was truncated.
 // NOTE: All sizes are in number of characters, NOT in bytes.
 BASE_EXPORT size_t strlcpy(char* dst, const char* src, size_t dst_size);
-#if defined(OS_WIN)
 BASE_EXPORT size_t wcslcpy(wchar_t* dst, const wchar_t* src, size_t dst_size);
-#endif
 
 // Scan a wprintf format string to determine whether it's portable across a
 // variety of systems.  This function only checks that the conversion
@@ -255,9 +253,7 @@ BASE_EXPORT bool ContainsOnlyChars(const std::string& input,
 
 // Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
 // beforehand.
-#if defined(OS_WIN)
 BASE_EXPORT std::string WideToASCII(const std::wstring& wide);
-#endif
 BASE_EXPORT std::string UTF16ToASCII(const base::string16& utf16);
 
 // Returns true if the specified string matches the criteria. How can a wide

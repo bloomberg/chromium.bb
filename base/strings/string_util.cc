@@ -32,12 +32,13 @@ using base::string16;
 
 namespace {
 
-// Force the singleton used by EmptyString[16] to be a unique type. This
+// Force the singleton used by Empty[W]String[16] to be a unique type. This
 // prevents other code that might accidentally use Singleton<string> from
 // getting our internal one.
 struct EmptyStrings {
   EmptyStrings() {}
   const std::string s;
+  const std::wstring ws;
   const string16 s16;
 
   static EmptyStrings* GetInstance() {
@@ -105,6 +106,10 @@ bool IsWprintfFormatPortable(const wchar_t* format) {
 
 const std::string& EmptyString() {
   return EmptyStrings::GetInstance()->s;
+}
+
+const std::wstring& EmptyWString() {
+  return EmptyStrings::GetInstance()->ws;
 }
 
 const string16& EmptyString16() {
@@ -342,12 +347,14 @@ bool ContainsOnlyChars(const std::string& input,
   return ContainsOnlyCharsT(input, characters);
 }
 
-#if defined(OS_WIN)
+#if !defined(WCHAR_T_IS_UTF16)
+bool IsStringASCII(const std::wstring& str);
+#endif
+
 std::string WideToASCII(const std::wstring& wide) {
   DCHECK(IsStringASCII(wide)) << wide;
   return std::string(wide.begin(), wide.end());
 }
-#endif
 
 std::string UTF16ToASCII(const string16& utf16) {
   DCHECK(IsStringASCII(utf16)) << utf16;
@@ -363,6 +370,12 @@ static bool DoIsStringASCII(const STR& str) {
   }
   return true;
 }
+
+#if !defined(WCHAR_T_IS_UTF16)
+bool IsStringASCII(const std::wstring& str) {
+  return DoIsStringASCII(str);
+}
+#endif
 
 bool IsStringASCII(const string16& str) {
   return DoIsStringASCII(str);
@@ -919,8 +932,6 @@ size_t lcpyT(CHAR* dst, const CHAR* src, size_t dst_size) {
 size_t base::strlcpy(char* dst, const char* src, size_t dst_size) {
   return lcpyT<char>(dst, src, dst_size);
 }
-#if defined(OS_WIN)
 size_t base::wcslcpy(wchar_t* dst, const wchar_t* src, size_t dst_size) {
   return lcpyT<wchar_t>(dst, src, dst_size);
 }
-#endif
