@@ -3084,7 +3084,6 @@
             # Also not used on android
             'browser/ui/apps/chrome_shell_window_delegate.cc',
             'browser/ui/autofill/account_chooser_model.cc',
-            'browser/ui/autofill/autocheckout_bubble.cc',
             'browser/ui/autofill/autofill_dialog_sign_in_delegate.cc',
             'browser/ui/autofill/country_combobox_model.cc',
             'browser/ui/bookmarks/bookmark_drag_drop.cc',

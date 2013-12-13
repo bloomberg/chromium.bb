@@ -102,7 +102,7 @@ enum ServerFieldType {
 
   // Field types for options generally found in merchant buyflows. Given that
   // these are likely to be filled out differently on a case by case basis,
-  // they are here primarly for use by Autocheckout.
+  // they are here primarily for use by Autocheckout.
   MERCHANT_EMAIL_SIGNUP = 73,
   MERCHANT_PROMO_CODE = 74,
 

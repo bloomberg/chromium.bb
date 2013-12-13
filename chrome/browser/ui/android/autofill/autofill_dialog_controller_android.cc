@@ -319,7 +319,7 @@ void AutofillDialogControllerAndroid::Show() {
 }
 
 void AutofillDialogControllerAndroid::Hide() {
-  // TODO(aruslan): http://crbug.com/177373 Autocheckout.
+  // TODO(aruslan): make the view actually hide. http://crbug.com/328205
   NOTIMPLEMENTED();
 }
 

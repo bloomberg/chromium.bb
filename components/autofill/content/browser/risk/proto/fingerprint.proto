@@ -64,7 +64,7 @@ message Fingerprint {
     // Browser features that integrate with Risk.
     enum BrowserFeature {
       FEATURE_UNKNOWN = 0;  // Should not be reachable.
-      FEATURE_AUTOCHECKOUT = 1;
+      DEPRECATED_FEATURE_AUTOCHECKOUT = 1;
       FEATURE_REQUEST_AUTOCOMPLETE = 2;
     }
 

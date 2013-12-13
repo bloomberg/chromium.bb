@@ -25,10 +25,6 @@ specific_include_rules = {
   # plain BrowserContext to a Profile. If on the other hand we move it
   # to the 'components_unittests' target, it will at this point fail
   # to build due to a few link-time dependencies.
-  'autocheckout_manager_unittest.cc': [
-    "!chrome/test/base/chrome_render_view_host_test_harness.h",
-    "!chrome/test/base/testing_profile.h",
-  ],
   'autofill_driver_impl_unittest.cc': [
     "!chrome/test/base/chrome_render_view_host_test_harness.h",
   ],
