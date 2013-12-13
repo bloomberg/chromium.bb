@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/experimental_accessibility.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
@@ -75,6 +77,14 @@ BrailleController* GetBrailleController() {
   return g_braille_controller_for_test
       ? g_braille_controller_for_test
       : BrailleController::GetInstance();
+}
+
+base::FilePath GetChromeVoxPath() {
+  base::FilePath path;
+  if (!PathService::Get(chrome::DIR_RESOURCES, &path))
+    NOTREACHED();
+  path = path.Append(extension_misc::kChromeVoxExtensionPath);
+  return path;
 }
 
 // Helper class that directly loads an extension's content scripts into
@@ -142,7 +152,7 @@ class ContentScriptLoader {
 void LoadChromeVoxExtension(Profile* profile, content::WebUI* login_web_ui) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
+  base::FilePath path = GetChromeVoxPath();
   std::string extension_id =
       extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
                                                  path);
@@ -188,9 +198,9 @@ void LoadChromeVoxExtension(Profile* profile, content::WebUI* login_web_ui) {
 }
 
 void UnloadChromeVoxExtension(Profile* profile) {
+  base::FilePath path = GetChromeVoxPath();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
   extension_service->component_loader()->Remove(path);
 }
 

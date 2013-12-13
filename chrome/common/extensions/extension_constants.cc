@@ -126,8 +126,7 @@ const char kTipsAndTricksAppId[] = "hkhhlkdconhgemhegnplaldnmnmkaemd";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
 #if defined(OS_CHROMEOS)
-const char kChromeVoxExtensionPath[] =
-    "/usr/share/chromeos-assets/accessibility/extensions/access_chromevox";
+const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
 // The extension id for the built-in component extension.
 const char kChromeVoxExtensionId[] =
     "mndnfokpggljbaajbnioimlmbfngpief";
