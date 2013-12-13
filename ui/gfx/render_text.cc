@@ -19,7 +19,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
 namespace gfx {
@@ -366,6 +365,7 @@ void RenderText::SetText(const base::string16& text) {
 
   obscured_reveal_index_ = -1;
   UpdateLayoutText();
+  ResetLayout();
 }
 
 void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
@@ -411,6 +411,7 @@ void RenderText::SetObscured(bool obscured) {
     obscured_reveal_index_ = -1;
     cached_bounds_and_offset_valid_ = false;
     UpdateLayoutText();
+    ResetLayout();
   }
 }
 
@@ -421,6 +422,7 @@ void RenderText::SetObscuredRevealIndex(int index) {
   obscured_reveal_index_ = index;
   cached_bounds_and_offset_valid_ = false;
   UpdateLayoutText();
+  ResetLayout();
 }
 
 void RenderText::SetMultiline(bool multiline) {
@@ -428,14 +430,6 @@ void RenderText::SetMultiline(bool multiline) {
     multiline_ = multiline;
     cached_bounds_and_offset_valid_ = false;
     lines_.clear();
-  }
-}
-
-void RenderText::SetElideBehavior(ElideBehavior elide_behavior) {
-  // TODO(skanuj) : Add a test for triggering layout change.
-  if (elide_behavior_ != elide_behavior) {
-    elide_behavior_ = elide_behavior;
-    UpdateLayoutText();
   }
 }
 
@@ -836,7 +830,6 @@ RenderText::RenderText()
       obscured_(false),
       obscured_reveal_index_(-1),
       truncate_length_(0),
-      elide_behavior_(NO_ELIDE),
       multiline_(false),
       fade_head_(false),
       fade_tail_(false),
@@ -1116,114 +1109,13 @@ void RenderText::UpdateLayoutText() {
     }
   }
 
-  const base::string16& text = GetLayoutText();
+  const base::string16& text = obscured_ ? layout_text_ : text_;
   if (truncate_length_ > 0 && truncate_length_ < text.length()) {
     // Truncate the text at a valid character break and append an ellipsis.
     icu::StringCharacterIterator iter(text.c_str());
     iter.setIndex32(truncate_length_ - 1);
     layout_text_.assign(text.substr(0, iter.getIndex()) + gfx::kEllipsisUTF16);
   }
-
-  if (elide_behavior_ != NO_ELIDE && display_rect_.width() > 0 &&
-      GetContentWidth() > display_rect_.width()) {
-    base::string16 elided_text = ElideText(GetLayoutText());
-
-    // This doesn't trim styles so ellipsis may get rendered as a different
-    // style than the preceding text. See crbug.com/327850.
-    layout_text_.assign(elided_text);
-  }
-  ResetLayout();
-}
-
-// TODO(skanuj): Fix code duplication with ElideText in ui/gfx/text_elider.cc
-// See crbug.com/327846
-base::string16 RenderText::ElideText(const base::string16& text) {
-  if (text.empty())
-    return text;
-
-  const bool insert_ellipsis = (elide_behavior_ != TRUNCATE_AT_END);
-  // Create a RenderText copy with attributes that affect the rendering width.
-  scoped_ptr<RenderText> render_text(CreateInstance());
-  render_text->SetFontList(font_list_);
-  render_text->SetDirectionalityMode(directionality_mode_);
-  render_text->SetCursorEnabled(cursor_enabled_);
-  render_text->styles_ = styles_;
-  render_text->colors_ = colors_;
-  render_text->SetText(text);
-  const float current_text_pixel_width = render_text->GetContentWidth();
-
-  const base::string16 ellipsis = base::string16(kEllipsisUTF16);
-  const bool elide_in_middle = false;
-  StringSlicer slicer(text, ellipsis, elide_in_middle);
-
-  // Pango will return 0 width for absurdly long strings. Cut the string in
-  // half and try again.
-  // This is caused by an int overflow in Pango (specifically, in
-  // pango_glyph_string_extents_range). It's actually more subtle than just
-  // returning 0, since on super absurdly long strings, the int can wrap and
-  // return positive numbers again. Detecting that is probably not worth it
-  // (eliding way too much from a ridiculous string is probably still
-  // ridiculous), but we should check other widths for bogus values as well.
-  if (current_text_pixel_width <= 0 && !text.empty())
-    return ElideText(slicer.CutString(text.length() / 2, insert_ellipsis));
-
-  if (current_text_pixel_width <= display_rect_.width())
-    return text;
-
-  if (insert_ellipsis &&
-      GetStringWidthF(ellipsis, font_list_) > display_rect_.width())
-    return base::string16();
-
-  // Use binary search to compute the elided text.
-  size_t lo = 0;
-  size_t hi = text.length() - 1;
-
-  for (size_t guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
-    // Restore styles and colors. They will be truncated to size by SetText.
-    render_text->styles_ = styles_;
-    render_text->colors_ = colors_;
-    base::string16 new_text = slicer.CutString(guess, false);
-    render_text->SetText(new_text);
-
-    // This has to be an additional step so that the ellipsis is rendered with
-    // same style as trailing part of the text.
-    if (insert_ellipsis) {
-      // When ellipsis follows text whose directionality is not the same as that
-      // of the whole text, it will be rendered with the directionality of the
-      // whole text. Since we want ellipsis to indicate continuation of the
-      // preceding text, we force the directionality of ellipsis to be same as
-      // the preceding text using LTR or RTL markers.
-      base::i18n::TextDirection leading_text_direction =
-          base::i18n::GetFirstStrongCharacterDirection(new_text);
-      base::i18n::TextDirection trailing_text_direction =
-          base::i18n::GetLastStrongCharacterDirection(new_text);
-      new_text += ellipsis;
-      if (trailing_text_direction != leading_text_direction) {
-        if (trailing_text_direction == base::i18n::LEFT_TO_RIGHT)
-          new_text += base::i18n::kLeftToRightMark;
-        else
-          new_text += base::i18n::kRightToLeftMark;
-      }
-      render_text->SetText(new_text);
-    }
-
-    // We check the width of the whole desired string at once to ensure we
-    // handle kerning/ligatures/etc. correctly.
-    const int guess_width = render_text->GetContentWidth();
-    if (guess_width == display_rect_.width())
-      break;
-    if (guess_width > display_rect_.width()) {
-      hi = guess - 1;
-      // Move back if we are on loop terminating condition, and guess is wider
-      // than available.
-      if (hi < lo)
-        lo = hi;
-    } else {
-      lo = guess + 1;
-    }
-  }
-
-  return render_text->text();
 }
 
 void RenderText::UpdateCachedBoundsAndOffset() {
