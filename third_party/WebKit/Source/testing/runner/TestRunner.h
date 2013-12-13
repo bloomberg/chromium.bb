@@ -116,6 +116,7 @@ public:
     bool shouldDumpResourceResponseMIMETypes() const;
     bool shouldDumpStatusCallbacks() const;
     bool shouldDumpProgressFinishedCallback() const;
+    bool shouldDumpSpellCheckCallbacks() const;
     bool deferMainResourceDataLoad() const;
     bool shouldStayOnPageAfterHandlingBeforeUnload() const;
     const std::set<std::string>* httpHeadersToClear() const;
@@ -401,6 +402,10 @@ private:
     // arguments, and ignores any that may be present.
     void dumpProgressFinishedCallback(const CppArgumentList&, CppVariant*);
 
+    // This function sets a flag that tells the test_shell to dump all
+    // the lines of descriptive text about spellcheck execution.
+    void dumpSpellCheckCallbacks(const CppArgumentList&, CppVariant*);
+
     // This function sets a flag that tells the test_shell to print out a text
     // representation of the back/forward list. It ignores all arguments.
     void dumpBackForwardList(const CppArgumentList&, CppVariant*);
@@ -663,6 +668,10 @@ private:
     // If true, the test_shell will output a descriptive line for the progress
     // finished callback.
     bool m_dumpProgressFinishedCallback;
+
+    // If true, the test_shell will output descriptive test for spellcheck
+    // execution.
+    bool m_dumpSpellCheckCallbacks;
 
     // If true, the test_shell will produce a dump of the back forward list as
     // well.

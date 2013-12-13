@@ -807,7 +807,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
     if (oldAdjacentWords  != newAdjacentWords) {
         if (isContinuousSpellCheckingEnabled() && isGrammarCheckingEnabled()) {
             VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-            markMisspellingsAndBadGrammar(oldAdjacentWords, selectedSentence != newSelectedSentence, selectedSentence);
+            markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);
         } else {
             markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
         }

@@ -34,6 +34,7 @@
 #include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebTextCheckingResult.h"
 #include <vector>
 
 namespace WebTestRunner {
@@ -64,6 +65,10 @@ public:
     // Checks whether the specified text can be spell checked immediately using
     // the spell checker cache.
     bool hasInCache(const blink::WebString& text);
+
+    // Checks whether the specified text is a misspelling comprised of more
+    // than one word. If it is, append multiple results to the results vector.
+    bool isMultiWordMisspelling(const blink::WebString& text, std::vector<blink::WebTextCheckingResult>* results);
 
 private:
     // Initialize the internal resources if we need to initialize it.

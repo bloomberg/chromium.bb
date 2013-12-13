@@ -126,12 +126,26 @@ bool MockSpellCheck::hasInCache(const WebString& word)
     return word == WebString::fromUTF8("Spell wellcome. Is it broken?") || word == WebString::fromUTF8("Spell wellcome.\x007F");
 }
 
+bool MockSpellCheck::isMultiWordMisspelling(const WebString& text, vector<WebTextCheckingResult>* results)
+{
+    if (text == WebString::fromUTF8("Helllo wordl.")) {
+        results->push_back(WebTextCheckingResult(WebTextDecorationTypeSpelling, 0, 6, WebString("Hello")));
+        results->push_back(WebTextCheckingResult(WebTextDecorationTypeSpelling, 7, 5, WebString("world")));
+        return true;
+    }
+    return false;
+}
+
 void MockSpellCheck::fillSuggestionList(const WebString& word, WebVector<WebString>* suggestions)
 {
     if (word == WebString::fromUTF8("wellcome"))
         append(suggestions, WebString::fromUTF8("welcome"));
     else if (word == WebString::fromUTF8("upper case"))
         append(suggestions, WebString::fromUTF8("uppercase"));
+    else if (word == WebString::fromUTF8("Helllo"))
+        append(suggestions, WebString::fromUTF8("Hello"));
+    else if (word == WebString::fromUTF8("wordl"))
+        append(suggestions, WebString::fromUTF8("world"));
 }
 
 bool MockSpellCheck::initializeIfNeeded()

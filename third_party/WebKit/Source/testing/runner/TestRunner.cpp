@@ -245,6 +245,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setAllowRunningOfInsecureContent", &TestRunner::setAllowRunningOfInsecureContent);
     bindMethod("dumpStatusCallbacks", &TestRunner::dumpWindowStatusChanges);
     bindMethod("dumpProgressFinishedCallback", &TestRunner::dumpProgressFinishedCallback);
+    bindMethod("dumpSpellCheckCallbacks", &TestRunner::dumpSpellCheckCallbacks);
     bindMethod("dumpBackForwardList", &TestRunner::dumpBackForwardList);
     bindMethod("setDeferMainResourceDataLoad", &TestRunner::setDeferMainResourceDataLoad);
     bindMethod("dumpSelectionRect", &TestRunner::dumpSelectionRect);
@@ -408,6 +409,7 @@ void TestRunner::reset()
     m_dumpResourceResponseMIMETypes = false;
     m_dumpWindowStatusChanges = false;
     m_dumpProgressFinishedCallback = false;
+    m_dumpSpellCheckCallbacks = false;
     m_dumpBackForwardList = false;
     m_deferMainResourceDataLoad = true;
     m_dumpSelectionRect = false;
@@ -597,6 +599,11 @@ bool TestRunner::shouldDumpStatusCallbacks() const
 bool TestRunner::shouldDumpProgressFinishedCallback() const
 {
     return m_dumpProgressFinishedCallback;
+}
+
+bool TestRunner::shouldDumpSpellCheckCallbacks() const
+{
+    return m_dumpSpellCheckCallbacks;
 }
 
 bool TestRunner::shouldDumpBackForwardList() const
@@ -1065,6 +1072,12 @@ void TestRunner::dumpWindowStatusChanges(const CppArgumentList&, CppVariant* res
 void TestRunner::dumpProgressFinishedCallback(const CppArgumentList&, CppVariant* result)
 {
     m_dumpProgressFinishedCallback = true;
+    result->setNull();
+}
+
+void TestRunner::dumpSpellCheckCallbacks(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpSpellCheckCallbacks = true;
     result->setNull();
 }
 

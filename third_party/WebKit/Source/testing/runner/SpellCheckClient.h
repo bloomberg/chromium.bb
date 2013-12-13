@@ -39,10 +39,11 @@
 namespace WebTestRunner {
 
 class WebTestDelegate;
+class WebTestProxyBase;
 
 class SpellCheckClient : public blink::WebSpellCheckClient, public blink::WebNonCopyable {
 public:
-    SpellCheckClient();
+    explicit SpellCheckClient(WebTestProxyBase*);
     virtual ~SpellCheckClient();
 
     void setDelegate(WebTestDelegate*);
@@ -71,6 +72,8 @@ private:
     WebTaskList m_taskList;
 
     WebTestDelegate* m_delegate;
+
+    WebTestProxyBase* m_webTestProxy;
 };
 
 }

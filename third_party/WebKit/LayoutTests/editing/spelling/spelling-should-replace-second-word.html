@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script src="resources/util.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="destination" contentEditable></div>
+</div>
+
+<script>
+
+description("Spell check replaces the second misspelled of two when a selection is made. " +
+            "To test manually, type 'Helllo wordl.' and context-click on 'wordl'. " +
+            "The test succeeds if the marker doesn't disappear from 'wordl'.");
+
+// Wait for async spellcheck to finish. If spellcheck is working correctly, the
+// markers will *not* change on a word. So we can only know if the test has
+// failed after 10 iterations, not when the test has succeeded.
+function waitAndTest(nretry, textNode) {
+  if (nretry) {
+      window.setTimeout(function() { waitAndTest(nretry - 1, textNode); }, 0);
+      return;
+  }
+
+  // See if there is still a marker on "wordl".
+  spellingMarkerRange = internals.markerRangeForNode(textNode, "spelling", 1);
+  shouldBeEqualToString("spellingMarkerRange.toString()", "wordl");
+
+  finishJSTest()
+}
+
+initSpellTest("destination", "Helllo wordl.", function (textNode) {
+    window.getSelection().removeAllRanges();
+    if (window.testRunner)
+        window.testRunner.dumpSpellCheckCallbacks();
+
+    // Context click on "wordl" to show the context menu.
+    var x = destination.offsetParent.offsetLeft + destination.offsetLeft + 60;
+    var y = destination.offsetParent.offsetTop + destination.offsetTop + destination.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
+    contextMenuElements = eventSender.contextClick();
+
+    window.setTimeout(function () { waitAndTest(10, textNode); }, 0);
+}, true);
+
+</script>
+</body>
+</html>

@@ -393,7 +393,7 @@ WebTestProxyBase::WebTestProxyBase()
     : m_testInterfaces(0)
     , m_delegate(0)
     , m_webWidget(0)
-    , m_spellcheck(new SpellCheckClient)
+    , m_spellcheck(new SpellCheckClient(this))
     , m_chooserCount(0)
     , m_validationMessageClient(new MockWebValidationMessageClient())
 {
@@ -1374,6 +1374,13 @@ bool WebTestProxyBase::willCheckAndDispatchMessageEvent(WebFrame*, WebFrame*, We
     }
 
     return false;
+}
+
+void WebTestProxyBase::postSpellCheckEvent(const WebString& eventName)
+{
+    if (m_testInterfaces->testRunner()->shouldDumpSpellCheckCallbacks()) {
+        m_delegate->printMessage(string("SpellCheckEvent: ") + eventName.utf8().data() + "\n");
+    }
 }
 
 void WebTestProxyBase::resetInputMethod()
