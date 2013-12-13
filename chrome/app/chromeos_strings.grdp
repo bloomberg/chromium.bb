@@ -3948,7 +3948,7 @@ Battery full
     Please stop using the recalled charger.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_UPDATE_P2" desc="The 2nd paragraph on the charger update page">
-    If you purchased an HP Chromebook 11 before December 1, 2013, we’ll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly. 
+    If you purchased an HP Chromebook 11 before December 1, 2013, we'll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly. 
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_UPDATE_FAQ" desc="Text about charger update FAQs">
     In the meantime, you may refer to the <ph name="BEGIN_LINK">&lt;a class="link" href="#"&gt;</ph>FAQs<ph name="END_LINK">&lt;/a&gt;</ph> and continue to use your HP Chromebook 11 with any other certified micro-USB charger, for example one provided with a tablet or smartphone. We apologize again for the inconvenience. Your safety is a top priority.
@@ -3972,7 +3972,7 @@ Battery full
     In the meantime, you can find more info at
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_FINISH_NOT_ORDER_CHARGER_TITLE" desc="Title of the finishing page for user choosing not to order new charger">
-    OK, we won’t ask you again
+    OK, we won't ask you again
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_FINISH_NOT_ORDER_CHARGER_P2" desc="Text of the 2nd paragraph for finishing not order charger page">
     You may refer to the <ph name="BEGIN_LINK">&lt;a class="link" href="#"&gt;</ph>FAQs<ph name="END_LINK">&lt;/a&gt;</ph> and continue to use your HP Chromebook 11 with any other certified micro-USB charger, for example one provided with a tablet or smartphone. We apologize again for the inconvenience. Your safety is a top priority.
@@ -3987,7 +3987,7 @@ Battery full
     With guidance and approval from the CPSC and other regulatory agencies, Google and HP are recalling the original charger for the HP Chromebook 11. 
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_OFFLINE_ORDER_P2" desc="2nd paragraph of text on the offline charger order form">
-    If you purchased an HP Chromebook 11 before December 1, 2013, we’ll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly. 
+    If you purchased an HP Chromebook 11 before December 1, 2013, we'll mail you a free replacement charger. You will also receive a prepaid shipping package to return the original charger so that we can dispose of it properly. 
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_OFFLINE_ORDER_CONFIRM" desc="Text for the check box that confirms user has ordered the charger offline">
     I have called the number and requested a replacement charger.
@@ -4002,7 +4002,7 @@ Battery full
     Your order is being processed
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_ORDERED" desc="Text for telling user we see they already ordered a new charger.">
-    We see that you’ve ordered a replacement charger.
+    We see that you've ordered a replacement charger.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_MORE_INFO" desc="Text for fining more info for charger">
     You can find more info at 
