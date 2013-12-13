@@ -126,14 +126,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kDevToolsDisabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kDevToolsHSplitLocation,
-      -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kDevToolsVSplitLocation,
-      -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       prefs::kBrowserWindowPlacement,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

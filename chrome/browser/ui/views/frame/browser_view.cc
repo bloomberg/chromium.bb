@@ -68,7 +68,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
-#include "chrome/browser/ui/views/frame/contents_container.h"
+#include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -120,7 +120,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
@@ -415,10 +414,7 @@ BrowserView::BrowserView()
       find_bar_host_view_(NULL),
       infobar_container_(NULL),
       contents_web_view_(NULL),
-      devtools_container_(NULL),
       contents_container_(NULL),
-      contents_split_(NULL),
-      devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
       devtools_window_(NULL),
       initialized_(false),
       in_process_fullscreen_(false),
@@ -510,7 +506,7 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
 }
 
 void BrowserView::InitStatusBubble() {
-  status_bubble_.reset(new StatusBubbleViews(contents_container_));
+  status_bubble_.reset(new StatusBubbleViews(contents_web_view_));
 }
 
 gfx::Rect BrowserView::GetToolbarBounds() const {
@@ -787,7 +783,7 @@ void BrowserView::BookmarkBarStateChanged(
 }
 
 void BrowserView::UpdateDevTools() {
-  UpdateDevToolsForContents(GetActiveWebContents());
+  UpdateDevToolsForContents(GetActiveWebContents(), true);
   Layout();
 }
 
@@ -837,8 +833,10 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // When we toggle the NTP floating bookmarks bar and/or the info bar,
   // we don't want any WebContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a WebContents.
-  if (change_tab_contents)
+  if (change_tab_contents) {
     contents_web_view_->SetWebContents(NULL);
+    devtools_web_view_->SetWebContents(NULL);
+  }
   infobar_container_->ChangeInfoBarService(
       InfoBarService::FromWebContents(new_contents));
   if (bookmark_bar_view_.get()) {
@@ -848,12 +846,16 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   }
   UpdateUIForContents(new_contents);
 
-  // Layout for DevTools _before_ setting the main WebContents to avoid
-  // toggling the size of the main WebContents.
-  UpdateDevToolsForContents(new_contents);
+  // Layout for DevTools _before_ setting the both main and devtools WebContents
+  // to avoid toggling the size of any of them.
+  UpdateDevToolsForContents(new_contents, !change_tab_contents);
 
-  if (change_tab_contents)
+  if (change_tab_contents) {
     contents_web_view_->SetWebContents(new_contents);
+    // The second layout update should be no-op. It will just set the
+    // DevTools WebContents.
+    UpdateDevToolsForContents(new_contents, true);
+  }
 
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
       GetWidget()->IsVisible()) {
@@ -1021,7 +1023,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // wrapping it will do it.
   if ((call_state == NORMAL) && !is_animating) {
     contents_web_view_->InvalidateLayout();
-    contents_split_->Layout();
+    contents_container_->Layout();
   }
 }
 
@@ -1291,7 +1293,7 @@ void BrowserView::WebContentsFocused(WebContents* contents) {
   if (contents_web_view_->GetWebContents() == contents)
     contents_web_view_->OnWebContentsFocused(contents);
   else
-    devtools_container_->OnWebContentsFocused(contents);
+    devtools_web_view_->OnWebContentsFocused(contents);
 }
 
 void BrowserView::ShowWebsiteSettings(Profile* profile,
@@ -1476,7 +1478,7 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
     // on the selected WebContents when it is removed.
     contents_web_view_->SetWebContents(NULL);
     infobar_container_->ChangeInfoBarService(NULL);
-    UpdateDevToolsForContents(NULL);
+    UpdateDevToolsForContents(NULL, true);
   }
 }
 
@@ -1753,8 +1755,8 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   if (download_shelf_.get())
     panes->push_back(download_shelf_.get());
   panes->push_back(GetTabContentsContainerView());
-  if (devtools_container_->visible())
-    panes->push_back(devtools_container_);
+  if (devtools_web_view_->visible())
+    panes->push_back(devtools_web_view_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1913,14 +1915,6 @@ bool BrowserView::DrawInfoBarArrows(int* x) const {
   return true;
 }
 
-bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
-  for (int i = 0; i < sender->child_count(); ++i)
-    sender->child_at(i)->InvalidateLayout();
-  SchedulePaint();
-  Layout();
-  return false;
-}
-
 void BrowserView::OnSysColorChange() {
   chrome::MaybeShowInvertBubbleView(browser_.get(), contents_container_);
 }
@@ -1954,29 +1948,18 @@ void BrowserView::InitViews() {
   contents_web_view_->SetEmbedFullscreenWidgetMode(
       implicit_cast<content::WebContentsDelegate*>(browser_.get())->
           EmbedsFullscreenWidget());
-  contents_container_ = new ContentsContainer(contents_web_view_);
 
-  SkColor bg_color = GetWidget()->GetThemeProvider()->
-      GetColor(ThemeProperties::COLOR_TOOLBAR);
+  devtools_web_view_ = new views::WebView(browser_->profile());
+  devtools_web_view_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
+  devtools_web_view_->SetVisible(false);
 
-  devtools_container_ = new views::WebView(browser_->profile());
-  devtools_container_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
-  devtools_container_->SetVisible(false);
-
-  views::View* contents_container_view = contents_container_;
-
-  contents_split_ = new views::SingleSplitView(
-      contents_container_view,
-      devtools_container_,
-      views::SingleSplitView::VERTICAL_SPLIT,
-      this);
-  contents_split_->set_id(VIEW_ID_CONTENTS_SPLIT);
-  contents_split_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS));
-  contents_split_->set_background(
-      views::Background::CreateSolidBackground(bg_color));
-  AddChildView(contents_split_);
-  set_contents_view(contents_split_);
+  contents_container_ = new views::View();
+  contents_container_->AddChildView(devtools_web_view_);
+  contents_container_->AddChildView(contents_web_view_);
+  contents_container_->SetLayoutManager(new ContentsLayoutManager(
+      devtools_web_view_, contents_web_view_));
+  AddChildView(contents_container_);
+  set_contents_view(contents_container_);
 
   InitStatusBubble();
 
@@ -2015,8 +1998,8 @@ void BrowserView::InitViews() {
                             tabstrip_,
                             toolbar_,
                             infobar_container_,
-                            contents_split_,
                             contents_container_,
+                            GetContentsLayoutManager(),
                             immersive_mode_controller_.get());
   SetLayoutManager(browser_view_layout);
 
@@ -2067,6 +2050,11 @@ void BrowserView::OnLoadCompleted() {
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());
+}
+
+ContentsLayoutManager* BrowserView::GetContentsLayoutManager() const {
+  return static_cast<ContentsLayoutManager*>(
+      contents_container_->GetLayoutManager());
 }
 
 void BrowserView::LayoutStatusBubble() {
@@ -2152,102 +2140,46 @@ bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
   return true;
 }
 
-void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
+void BrowserView::UpdateDevToolsForContents(
+    WebContents* web_contents, bool update_devtools_web_contents) {
   DevToolsWindow* new_devtools_window = web_contents ?
       DevToolsWindow::GetDockedInstanceForInspectedTab(web_contents) : NULL;
-  // Fast return in case of the same window having same orientation.
-  if (devtools_window_ == new_devtools_window) {
-    if (!new_devtools_window ||
-        (new_devtools_window->dock_side() == devtools_dock_side_)) {
-      return;
-    }
+
+  // Replace devtools WebContents.
+  WebContents* new_contents = new_devtools_window ?
+      new_devtools_window->web_contents() : NULL;
+  if (devtools_web_view_->web_contents() != new_contents &&
+      update_devtools_web_contents) {
+    devtools_web_view_->SetWebContents(new_contents);
   }
 
-  // Replace tab contents.
-  if (devtools_window_ != new_devtools_window) {
-    devtools_container_->SetWebContents(
-        new_devtools_window ? new_devtools_window->web_contents() : NULL);
-  }
-
-  // Store last used position.
-  if (devtools_window_) {
-    int split_size = contents_split_->GetDividerSize();
-    if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
-      devtools_window_->SetWidth(contents_split_->width() -
-          split_size - contents_split_->divider_offset());
-    } else if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM) {
-      devtools_window_->SetHeight(contents_split_->height() -
-          split_size - contents_split_->divider_offset());
-    }
-  }
-
-  // Show / hide container if necessary. Changing dock orientation is
-  // hide + show.
-  bool should_hide = devtools_window_ && (!new_devtools_window ||
-      devtools_dock_side_ != new_devtools_window->dock_side());
-  bool should_show = new_devtools_window && (!devtools_window_ || should_hide);
-
-  if (should_hide)
-    HideDevToolsContainer();
-
-  devtools_window_ = new_devtools_window;
-
-  if (should_show) {
-    devtools_dock_side_ = new_devtools_window->dock_side();
-    ShowDevToolsContainer();
-  } else if (new_devtools_window) {
-    UpdateDevToolsSplitPosition();
-    contents_split_->Layout();
-  }
-}
-
-void BrowserView::ShowDevToolsContainer() {
-  if (!devtools_focus_tracker_.get()) {
+  if (!devtools_window_ && new_devtools_window &&
+      !devtools_focus_tracker_.get()) {
     // Install devtools focus tracker when dev tools window is shown for the
     // first time.
     devtools_focus_tracker_.reset(
-        new views::ExternalFocusTracker(devtools_container_,
+        new views::ExternalFocusTracker(devtools_web_view_,
                                         GetFocusManager()));
   }
 
-  gfx::Size min_devtools_size(devtools_window_->GetMinimumWidth(),
-      devtools_window_->GetMinimumHeight());
-  devtools_container_->SetPreferredSize(min_devtools_size);
-
-  devtools_container_->SetVisible(true);
-  devtools_dock_side_ = devtools_window_->dock_side();
-  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  contents_split_->set_orientation(
-      dock_to_right ? views::SingleSplitView::HORIZONTAL_SPLIT
-                    : views::SingleSplitView::VERTICAL_SPLIT);
-  UpdateDevToolsSplitPosition();
-  contents_split_->InvalidateLayout();
-  Layout();
-}
-
-void BrowserView::HideDevToolsContainer() {
   // Restore focus to the last focused view when hiding devtools window.
-  devtools_focus_tracker_->FocusLastFocusedExternalView();
-  devtools_container_->SetVisible(false);
-  contents_split_->InvalidateLayout();
-  Layout();
-}
-
-void BrowserView::UpdateDevToolsSplitPosition() {
-  contents_split_->set_resize_disabled(
-      devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED);
-  int split_size = contents_split_->GetDividerSize();
-  if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
-    int split_offset = contents_split_->width() - split_size -
-        devtools_window_->GetWidth(contents_split_->width());
-    contents_split_->set_divider_offset(split_offset);
-  } else {
-    int height = devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED ?
-        devtools_window_->GetMinimizedHeight() :
-        devtools_window_->GetHeight(contents_split_->height());
-    int split_offset = contents_split_->height() - split_size - height;
-    contents_split_->set_divider_offset(split_offset);
+  if (devtools_window_ && !new_devtools_window &&
+      devtools_focus_tracker_.get()) {
+    devtools_focus_tracker_->FocusLastFocusedExternalView();
+    devtools_focus_tracker_.reset();
   }
+
+  devtools_window_ = new_devtools_window;
+  if (devtools_window_) {
+    devtools_web_view_->SetPreferredSize(devtools_window_->GetMinimumSize());
+    devtools_web_view_->SetVisible(true);
+    GetContentsLayoutManager()->SetContentsViewInsets(
+        devtools_window_->GetContentsInsets());
+  } else {
+    devtools_web_view_->SetVisible(false);
+    GetContentsLayoutManager()->SetContentsViewInsets(gfx::Insets());
+  }
+  contents_container_->Layout();
 }
 
 void BrowserView::UpdateUIForContents(WebContents* contents) {

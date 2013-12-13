@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
-#include "chrome/browser/ui/views/frame/contents_container.h"
+#include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
@@ -82,7 +82,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   // browser chrome.
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
     int top_y = browser_view_layout_->web_contents_modal_dialog_top_y_;
-    ContentsContainer* contents_container =
+    views::View* contents_container =
         browser_view_layout_->contents_container_;
     gfx::Rect contents_container_bounds_in_widget =
         contents_container->ConvertRectToWidget(
@@ -145,8 +145,8 @@ BrowserViewLayout::BrowserViewLayout()
       toolbar_(NULL),
       bookmark_bar_(NULL),
       infobar_container_(NULL),
-      contents_split_(NULL),
       contents_container_(NULL),
+      contents_layout_manager_(NULL),
       download_shelf_(NULL),
       immersive_mode_controller_(NULL),
       dialog_host_(new WebContentsModalDialogHostViews(this)),
@@ -163,8 +163,8 @@ void BrowserViewLayout::Init(
     TabStrip* tab_strip,
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
-    views::View* contents_split,
-    ContentsContainer* contents_container,
+    views::View* contents_container,
+    ContentsLayoutManager* contents_layout_manager,
     ImmersiveModeController* immersive_mode_controller) {
   delegate_.reset(delegate);
   browser_ = browser;
@@ -173,8 +173,8 @@ void BrowserViewLayout::Init(
   tab_strip_ = tab_strip;
   toolbar_ = toolbar;
   infobar_container_ = infobar_container;
-  contents_split_ = contents_split;
   contents_container_ = contents_container;
+  contents_layout_manager_ = contents_layout_manager;
   immersive_mode_controller_ = immersive_mode_controller;
 }
 
@@ -203,7 +203,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   gfx::Size infobar_container_size(infobar_container_->GetMinimumSize());
   // TODO: Adjust the minimum height for the find bar.
 
-  gfx::Size contents_size(contents_split_->GetMinimumSize());
+  gfx::Size contents_size(contents_container_->GetMinimumSize());
 
   int min_height = delegate_->GetTopInsetInBrowserView() +
       tabstrip_size.height() + toolbar_size.height() +
@@ -367,9 +367,9 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // Treat a detached bookmark bar as if the web contents container is shifted
   // upwards and overlaps it.
   int active_top_margin = GetContentsOffsetForBookmarkBar();
-  contents_container_->SetActiveTopMargin(active_top_margin);
+  contents_layout_manager_->SetActiveTopMargin(active_top_margin);
   top -= active_top_margin;
-  LayoutContentsSplitView(top, bottom);
+  LayoutContentsContainerView(top, bottom);
 
   // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar
@@ -526,14 +526,14 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   return overlapped_top + height;
 }
 
-void BrowserViewLayout::LayoutContentsSplitView(int top, int bottom) {
-  // |contents_split_| contains web page contents and devtools.
+void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
+  // |contents_container_| contains web page contents and devtools.
   // See browser_view.h for details.
-  gfx::Rect contents_split_bounds(vertical_layout_rect_.x(),
-                                  top,
-                                  vertical_layout_rect_.width(),
-                                  std::max(0, bottom - top));
-  contents_split_->SetBoundsRect(contents_split_bounds);
+  gfx::Rect contents_container_bounds(vertical_layout_rect_.x(),
+                                      top,
+                                      vertical_layout_rect_.width(),
+                                      std::max(0, bottom - top));
+  contents_container_->SetBoundsRect(contents_container_bounds);
 }
 
 void BrowserViewLayout::UpdateTopContainerBounds() {
@@ -558,10 +558,6 @@ int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
       !bookmark_bar_->IsDetached()) {
     return 0;
   }
-
-  // Dev tools.
-  if (contents_split_->child_at(1) && contents_split_->child_at(1)->visible())
-    return 0;
 
   // Offset for the detached bookmark bar.
   return bookmark_bar_->height() -

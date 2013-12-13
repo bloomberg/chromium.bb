@@ -225,10 +225,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        toolbar_border_(NULL),
        browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
-       devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
        devtools_window_(NULL),
-       contents_hsplit_(NULL),
-       contents_vsplit_(NULL),
+       devtools_floating_container_(NULL),
        frame_cursor_(NULL),
        is_active_(false),
        show_state_after_show_(ui::SHOW_STATE_DEFAULT),
@@ -591,13 +589,10 @@ void BrowserWindowGtk::Show() {
   // If we have sized the window by setting a size request for the render
   // area, then undo it so that the render view can later adjust its own
   // size.
-  gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
+  gtk_widget_set_size_request(devtools_floating_container_, -1, -1);
 
-  bool update_devtools = !window_has_shown_ && devtools_window_;
   window_has_shown_ = true;
   browser()->OnWindowDidShow();
-  if (update_devtools)
-    UpdateDevToolsSplitPosition();
 }
 
 void BrowserWindowGtk::ShowInactive() {
@@ -623,7 +618,7 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
   if (exterior) {
     gtk_window_util::SetWindowSize(window_, gfx::Size(width, height));
   } else {
-    gtk_widget_set_size_request(contents_container_->widget(),
+    gtk_widget_set_size_request(devtools_floating_container_,
                                 width, height);
   }
 }
@@ -681,8 +676,7 @@ void BrowserWindowGtk::Close() {
   render_area_floating_container_ = NULL;
   render_area_event_box_ = NULL;
   toolbar_border_ = NULL;
-  contents_vsplit_ = NULL;
-  contents_hsplit_ = NULL;
+  devtools_floating_container_ = NULL;
 
   window_has_shown_ = false;
   titlebar_->set_window(NULL);
@@ -808,10 +802,10 @@ void BrowserWindowGtk::OnActiveTabChanged(WebContents* old_contents,
 
   // Update various elements that are interested in knowing the current
   // WebContents.
-  UpdateDevToolsForContents(new_contents);
   infobar_container_->ChangeInfoBarService(
       InfoBarService::FromWebContents(new_contents));
   contents_container_->SetTab(new_contents);
+  UpdateDevToolsForContents(new_contents);
 
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
@@ -1681,18 +1675,23 @@ void BrowserWindowGtk::InitWidgets() {
       implicit_cast<content::WebContentsDelegate*>(browser_.get())->
           EmbedsFullscreenWidget()));
   devtools_container_.reset(new TabContentsContainerGtk(NULL, false));
+  // DevTools container should only have DevTools-specific view ID.
+  ViewIDUtil::SetDelegateForWidget(devtools_container_->widget(), NULL);
   ViewIDUtil::SetID(devtools_container_->widget(), VIEW_ID_DEV_TOOLS_DOCKED);
 
-  contents_hsplit_ = gtk_hpaned_new();
-  gtk_paned_pack1(GTK_PANED(contents_hsplit_), contents_container_->widget(),
-                  TRUE, TRUE);
-  contents_vsplit_ = gtk_vpaned_new();
-  gtk_paned_pack1(GTK_PANED(contents_vsplit_), contents_hsplit_, TRUE, TRUE);
-
+  devtools_floating_container_ = gtk_floating_container_new();
+  gtk_container_add(GTK_CONTAINER(devtools_floating_container_),
+                    devtools_container_->widget());
+  gtk_floating_container_add_floating(
+      GTK_FLOATING_CONTAINER(devtools_floating_container_),
+      contents_container_->widget());
+  g_signal_connect(devtools_floating_container_, "set-floating-position",
+                   G_CALLBACK(OnDevToolsContainerSetFloatingPosition), this);
   gtk_box_pack_end(GTK_BOX(render_area_vbox_),
-                   contents_vsplit_, TRUE, TRUE, 0);
+                   devtools_floating_container_, TRUE, TRUE, 0);
 
   gtk_widget_show_all(render_area_floating_container_);
+
   render_area_event_box_ = gtk_event_box_new();
   // Set a white background so during startup the user sees white in the
   // content area before we get a WebContents in place.
@@ -1770,22 +1769,6 @@ void BrowserWindowGtk::SetBackgroundColor() {
   GdkColor frame_color_gdk = gfx::SkColorToGdkColor(frame_color);
   gtk_widget_modify_bg(GTK_WIDGET(window_), GTK_STATE_NORMAL,
                        &frame_color_gdk);
-
-  // Set the color of the dev tools divider.
-  gtk_widget_modify_bg(contents_vsplit_, GTK_STATE_NORMAL, &frame_color_gdk);
-  gtk_widget_modify_bg(contents_hsplit_, GTK_STATE_NORMAL, &frame_color_gdk);
-
-  // When the cursor is over the divider, GTK+ normally lightens the background
-  // color by 1.3 (see LIGHTNESS_MULT in gtkstyle.c).  Since we're setting the
-  // color, override the prelight also.
-  color_utils::HSL hsl = { -1, 0.5, 0.65 };
-  SkColor frame_prelight_color = color_utils::HSLShift(frame_color, hsl);
-  GdkColor frame_prelight_color_gdk =
-      gfx::SkColorToGdkColor(frame_prelight_color);
-  gtk_widget_modify_bg(contents_hsplit_, GTK_STATE_PRELIGHT,
-      &frame_prelight_color_gdk);
-  gtk_widget_modify_bg(contents_vsplit_, GTK_STATE_PRELIGHT,
-      &frame_prelight_color_gdk);
 
   GdkColor border_color = theme_provider->GetBorderColor();
   gtk_widget_modify_bg(toolbar_border_, GTK_STATE_NORMAL, &border_color);
@@ -2274,12 +2257,6 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   DevToolsWindow* new_devtools_window = contents ?
       DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
 
-  // Fast return in case of the same window having same orientation.
-  if (devtools_window_ == new_devtools_window && (!new_devtools_window ||
-        new_devtools_window->dock_side() == devtools_dock_side_)) {
-    return;
-  }
-
   // Replace tab contents.
   if (devtools_window_ != new_devtools_window) {
     if (devtools_window_)
@@ -2295,98 +2272,59 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
     }
   }
 
-  // Store last used position.
-  if (devtools_window_) {
-    GtkAllocation contents_rect;
-    gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
-    int split_size;
-    if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
-      gtk_widget_style_get(contents_hsplit_, "handle-size", &split_size, NULL);
-      devtools_window_->SetWidth(
-          contents_rect.width - split_size -
-          gtk_paned_get_position(GTK_PANED(contents_hsplit_)));
-    } else if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM) {
-      gtk_widget_style_get(contents_vsplit_, "handle-size", &split_size, NULL);
-      devtools_window_->SetHeight(
-          contents_rect.height - split_size -
-          gtk_paned_get_position(GTK_PANED(contents_vsplit_)));
-    }
-  }
-
-  // Show / hide container if necessary. Changing dock orientation is
-  // hide + show.
-  bool should_hide = devtools_window_ && (!new_devtools_window ||
-      devtools_dock_side_ != new_devtools_window->dock_side());
-  bool should_show = new_devtools_window && (!devtools_window_ || should_hide);
+  // Show / hide container if necessary.
+  bool should_hide = devtools_window_ && !new_devtools_window;
+  bool should_show = new_devtools_window && !devtools_window_;
 
   if (should_hide)
     HideDevToolsContainer();
 
   devtools_window_ = new_devtools_window;
+  contents_insets_ = devtools_window_ ? devtools_window_->GetContentsInsets() :
+      gfx::Insets();
 
-  if (should_show) {
-    devtools_dock_side_ = new_devtools_window->dock_side();
+  if (should_show)
     ShowDevToolsContainer();
-  } else if (new_devtools_window) {
-    UpdateDevToolsSplitPosition();
-  }
+
+  gtk_widget_queue_resize(devtools_floating_container_);
+  gtk_widget_queue_draw(devtools_floating_container_);
 }
 
 void BrowserWindowGtk::ShowDevToolsContainer() {
-  if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_MINIMIZED) {
-    gtk_box_pack_end(GTK_BOX(render_area_vbox_),
-                     devtools_container_->widget(), FALSE, FALSE, 0);
-    gtk_box_reorder_child(GTK_BOX(render_area_vbox_),
-                          devtools_container_->widget(), 0);
-  } else {
-    gtk_widget_set_size_request(devtools_container_->widget(),
-        devtools_window_->GetMinimumWidth(),
-        devtools_window_->GetMinimumHeight());
-    bool to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-    gtk_paned_pack2(GTK_PANED(to_right ? contents_hsplit_ : contents_vsplit_),
-                    devtools_container_->widget(),
-                    FALSE,
-                    FALSE);
-  }
-  UpdateDevToolsSplitPosition();
-  gtk_widget_show(devtools_container_->widget());
+  // Move devtools below contents.
+  GdkWindow* const devtools_gdk_window =
+      gtk_widget_get_window(devtools_container_->widget());
+  if (devtools_gdk_window)
+    gdk_window_lower(devtools_gdk_window);
 }
 
 void BrowserWindowGtk::HideDevToolsContainer() {
-  gtk_container_remove(GTK_CONTAINER(
-          devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT ? contents_hsplit_ :
-          devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_BOTTOM ? contents_vsplit_ :
-          render_area_vbox_),
-      devtools_container_->widget());
-  gtk_widget_hide(devtools_container_->widget());
+  // This method is left intentionally blank.
 }
 
-void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
-  if (!window_has_shown_)
-    return;
+// static
+void BrowserWindowGtk::OnDevToolsContainerSetFloatingPosition(
+    GtkFloatingContainer* container, GtkAllocation* allocation,
+    BrowserWindowGtk* browser_window) {
+  gfx::Insets insets = browser_window->contents_insets_;
 
-  // This is required if infobar appears/disappears, or devtools container is
-  // moved between |render_area_vbox_| and |contents_{v,h}split_|.
-  gtk_container_check_resize(GTK_CONTAINER(render_area_vbox_));
+  int contents_width = std::max(0, allocation->width - insets.width());
+  int contents_height = std::max(0, allocation->height - insets.height());
+  int contents_x = std::min(insets.left(), allocation->width);
+  int contents_y = std::min(insets.top(), allocation->height);
 
-  GtkAllocation contents_rect;
-  gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
-  int split_size;
+  gtk_widget_set_size_request(browser_window->contents_container_->widget(),
+      contents_width, contents_height);
 
-  if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
-    gtk_widget_style_get(contents_hsplit_, "handle-size", &split_size, NULL);
-    int split_offset = contents_rect.width -
-        devtools_window_->GetWidth(contents_rect.width) - split_size;
-    gtk_paned_set_position(GTK_PANED(contents_hsplit_), split_offset);
-  } else if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_BOTTOM) {
-    gtk_widget_style_get(contents_vsplit_, "handle-size", &split_size, NULL);
-    int split_offset = contents_rect.height -
-        devtools_window_->GetHeight(contents_rect.height) - split_size;
-    gtk_paned_set_position(GTK_PANED(contents_vsplit_), split_offset);
-  } else {
-    gtk_widget_set_size_request(devtools_container_->widget(),
-        0, devtools_window_->GetMinimizedHeight());
-  }
+  GValue value = { 0, };
+  g_value_init(&value, G_TYPE_INT);
+  g_value_set_int(&value, contents_x);
+  gtk_container_child_set_property(GTK_CONTAINER(container),
+      browser_window->contents_container_->widget(), "x", &value);
+  g_value_set_int(&value, contents_y);
+  gtk_container_child_set_property(GTK_CONTAINER(container),
+      browser_window->contents_container_->widget(), "y", &value);
+  g_value_unset(&value);
 }
 
 void BrowserWindowGtk::OnUseCustomChromeFrameChanged() {

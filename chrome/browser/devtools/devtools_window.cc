@@ -240,8 +240,6 @@ static const char kFrontendHostId[] = "id";
 static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
 
-const int kMinContentsSize = 50;
-
 std::string SkColorToRGBAString(SkColor color) {
   // We avoid StringPrintf because it will use locale specific formatters for
   // the double (e.g. ',' instead of '.' in German).
@@ -463,20 +461,6 @@ void DevToolsWindow::InspectElement(content::RenderViewHost* inspected_rvh,
 }
 
 // static
-int DevToolsWindow::GetMinimumWidth() {
-  const int kMinDevToolsWidth = 150;
-  return kMinDevToolsWidth;
-}
-
-// static
-int DevToolsWindow::GetMinimumHeight() {
-  // Minimal height of devtools pane or content pane when devtools are docked
-  // to the browser window.
-  const int kMinDevToolsHeight = 50;
-  return kMinDevToolsHeight;
-}
-
-// static
 int DevToolsWindow::GetMinimizedHeight() {
   const int kMinimizedDevToolsHeight = 24;
   return kMinimizedDevToolsHeight;
@@ -495,51 +479,13 @@ content::DevToolsClientHost* DevToolsWindow::GetDevToolsClientHostForTest() {
   return frontend_host_.get();
 }
 
-int DevToolsWindow::GetWidth(int container_width) {
-  if (width_ == -1) {
-    width_ = profile_->GetPrefs()->
-        GetInteger(prefs::kDevToolsVSplitLocation);
-  }
-
-  // By default, size devtools as 1/3 of the browser window.
-  if (width_ == -1)
-    width_ = container_width / 3;
-
-  // Respect the minimum devtools width preset.
-  width_ = std::max(GetMinimumWidth(), width_);
-
-  // But it should never compromise the content window size unless the entire
-  // window is tiny.
-  width_ = std::min(container_width - kMinContentsSize, width_);
-  return width_;
+gfx::Insets DevToolsWindow::GetContentsInsets() const {
+  return contents_insets_;
 }
 
-int DevToolsWindow::GetHeight(int container_height) {
-  if (height_ == -1) {
-    height_ = profile_->GetPrefs()->
-        GetInteger(prefs::kDevToolsHSplitLocation);
-  }
-
-  // By default, size devtools as 1/3 of the browser window.
-  if (height_ == -1)
-    height_ = container_height / 3;
-
-  // Respect the minimum devtools width preset.
-  height_ = std::max(GetMinimumHeight(), height_);
-
-  // But it should never compromise the content window size.
-  height_ = std::min(container_height - kMinContentsSize, height_);
-  return height_;
-}
-
-void DevToolsWindow::SetWidth(int width) {
-  width_ = width;
-  profile_->GetPrefs()->SetInteger(prefs::kDevToolsVSplitLocation, width);
-}
-
-void DevToolsWindow::SetHeight(int height) {
-  height_ = height;
-  profile_->GetPrefs()->SetInteger(prefs::kDevToolsHSplitLocation, height);
+gfx::Size DevToolsWindow::GetMinimumSize() const {
+  const gfx::Size kMinDevToolsSize = gfx::Size(200, 100);
+  return kMinDevToolsSize;
 }
 
 void DevToolsWindow::Show(const DevToolsToggleAction& action) {
@@ -666,8 +612,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       dock_side_(dock_side),
       is_loaded_(false),
       action_on_load_(DevToolsToggleAction::Show()),
-      width_(-1),
-      height_(-1),
       dock_side_before_minimized_(dock_side),
       intercepted_page_beforeunload_(false),
       weak_factory_(this) {
@@ -769,6 +713,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
   url_string += "&updateAppcache";
+  url_string += "&overlayContents=true";
   return GURL(url_string);
 }
 
@@ -1036,9 +981,22 @@ void DevToolsWindow::CloseWindow() {
   web_contents_->GetRenderViewHost()->FirePageBeforeUnload(false);
 }
 
-void DevToolsWindow::SetWindowBounds(int x, int y, int width, int height) {
-  if (!IsDocked())
-    browser_->window()->SetBounds(gfx::Rect(x, y, width, height));
+void DevToolsWindow::SetContentsInsets(
+    int top, int left, int bottom, int right) {
+  if (contents_insets_.top() == top &&
+      contents_insets_.left() == left &&
+      contents_insets_.bottom() == bottom &&
+      contents_insets_.right() == right) {
+    return;
+  }
+
+  contents_insets_ = gfx::Insets(top, left, bottom, right);
+  if (IsDocked()) {
+    // Update inspected window.
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->UpdateDevTools();
+  }
 }
 
 void DevToolsWindow::MoveWindow(int x, int y) {
