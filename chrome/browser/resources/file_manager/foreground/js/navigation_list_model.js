@@ -10,11 +10,13 @@
  *
  * @param {string} path Path.
  * @param {DirectoryEntry} entry Entry. Can be null.
+ * @param {string} label Label.
  * @constructor
  */
-function NavigationModelItem(path, entry) {
+function NavigationModelItem(path, entry, label) {
   this.path_ = path;
   this.entry_ = entry;
+  this.label_ = label;
   this.resolvingQueue_ = new AsyncUtil.Queue();
 
   Object.seal(this);
@@ -22,6 +24,7 @@ function NavigationModelItem(path, entry) {
 
 NavigationModelItem.prototype = {
   get path() { return this.path_; },
+  get label() { return this.label_; }
 };
 
 /**
@@ -40,13 +43,14 @@ NavigationModelItem.prototype.getCachedEntry = function() {
  * @param {VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {string} path Path.
  * @param {DirectoryEntry} entry Entry. Can be null.
+ * @param {string} label Label.
  * @param {function(FileError)} errorCallback Called when the resolving is
  *     failed with the error.
  * @return {NavigationModelItem} Created NavigationModelItem.
  */
 NavigationModelItem.create = function(
-    volumeManager, path, entry, errorCallback) {
-  var item = new NavigationModelItem(path, entry);
+    volumeManager, path, entry, label, errorCallback) {
+  var item = new NavigationModelItem(path, entry, label);
 
   // If the given entry is null, try to resolve path to get an entry.
   if (!entry) {
@@ -111,12 +115,14 @@ function NavigationListModel(volumeManager, shortcutListModel) {
           this.volumeManager_,
           volumeInfo.mountPath + '/root',
           null,
+          volumeInfo.getLabel(),
           function() {});
     } else {
       return NavigationModelItem.create(
           this.volumeManager_,
           volumeInfo.mountPath,
           volumeInfo.root,
+          volumeInfo.getLabel(),
           function() {});
     }
   }.bind(this);
@@ -126,6 +132,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
         this.volumeManager_,
         path,
         null,  // Entry will be resolved.
+        PathUtil.getFolderLabel(path),
         function(error) {
           if (error.code == FileError.NOT_FOUND_ERR)
             this.onItemNotFoundError(item);

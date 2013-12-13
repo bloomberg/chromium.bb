@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function setUp() {
+  // Set up string assets.
+  loadTimeData.data = {
+    DRIVE_DIRECTORY_LABEL: 'My Drive',
+    DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+  };
+}
+
 function testModel() {
   var volumeManager = new MockVolumeManager();
   var shortcutListModel =

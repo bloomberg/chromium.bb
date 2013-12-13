@@ -58,6 +58,17 @@ VolumeInfo.prototype.getDisplayRootDirectoryURL = function() {
 };
 
 /**
+ * Obtains volume label.
+ * @return {string} Label for the volume.
+ */
+VolumeInfo.prototype.getLabel = function() {
+  if (this.volumeType === util.VolumeType.DRIVE)
+    return str('DRIVE_DIRECTORY_LABEL');
+  else
+    return PathUtil.getFolderLabel(this.mountPath);
+};
+
+/**
  * Utilities for volume manager implementation.
  */
 var volumeManagerUtil = {};

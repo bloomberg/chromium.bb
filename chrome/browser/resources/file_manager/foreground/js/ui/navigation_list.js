@@ -59,7 +59,7 @@ NavigationListItem.prototype.setModelItem =
     this.iconDiv_.setAttribute('volume-subtype', opt_deviceType);
   }
 
-  this.label_.textContent = PathUtil.getFolderLabel(modelItem.path);
+  this.label_.textContent = modelItem.label;
 
   if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
     this.eject_ = cr.doc.createElement('div');
