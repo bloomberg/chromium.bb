@@ -54,6 +54,8 @@ class APIListDataSource(object):
         experimental_apis = []
         all_apis = []
         for api_name, api_model in self._api_models.IterModels():
+          if not self._api_categorizer.IsDocumented(platform, api_name):
+            continue
           api = {
             'name': api_name,
             'description': api_model.description,

@@ -8,7 +8,7 @@ from extensions_paths import PUBLIC_TEMPLATES
 
 
 class APICategorizer(object):
-  ''' This class get api' category from documented apis.
+  ''' This class gets api category from documented apis.
   '''
 
   def __init__(self, file_system, compiled_fs_factory):
@@ -42,3 +42,6 @@ class APICategorizer(object):
     if api_name.startswith('experimental.'):
       return 'experimental'
     return 'chrome'
+
+  def IsDocumented(self, platform, api_name):
+    return (api_name in self._GenerateAPICategories(platform))
