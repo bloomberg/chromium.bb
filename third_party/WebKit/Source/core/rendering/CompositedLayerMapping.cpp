@@ -510,6 +510,10 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing()) {
         PluginView* pluginView = toPluginView(toRenderWidget(renderer)->widget());
         m_graphicsLayer->setContentsToPlatformLayer(pluginView->platformLayer());
+    } else if (renderer->node() && renderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(renderer->node())->contentFrame()) {
+        blink::WebLayer* layer = toHTMLFrameOwnerElement(renderer->node())->contentFrame()->remotePlatformLayer();
+        if (layer)
+            m_graphicsLayer->setContentsToPlatformLayer(layer);
     } else if (renderer->isVideo()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer->node());
         m_graphicsLayer->setContentsToPlatformLayer(mediaElement->platformLayer());

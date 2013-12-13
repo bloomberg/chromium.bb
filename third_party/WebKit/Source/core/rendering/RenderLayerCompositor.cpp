@@ -1787,6 +1787,9 @@ bool RenderLayerCompositor::requiresCompositingForFrame(RenderObject* renderer) 
     if (!frameRenderer->requiresAcceleratedCompositing())
         return false;
 
+    if (frameRenderer->node() && frameRenderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(frameRenderer->node())->contentFrame() && toHTMLFrameOwnerElement(frameRenderer->node())->contentFrame()->remotePlatformLayer())
+        return true;
+
     // FIXME: this seems bogus. If we don't know the layout position/size of the frame yet, wouldn't that be handled elsehwere?
     m_needsToRecomputeCompositingRequirements = true;
 

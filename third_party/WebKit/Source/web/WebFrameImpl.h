@@ -82,6 +82,7 @@ public:
     virtual void setName(const WebString&);
     virtual long long embedderIdentifier() const;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const;
+    virtual void setRemoteWebLayer(WebLayer*);
     virtual WebSize scrollOffset() const;
     virtual void setScrollOffset(const WebSize&);
     virtual WebSize minimumScrollOffset() const;

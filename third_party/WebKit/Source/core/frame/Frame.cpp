@@ -65,6 +65,7 @@
 #include "core/svg/SVGDocument.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "public/platform/WebLayer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
@@ -119,6 +120,7 @@ inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
     , m_orientation(0)
 #endif
     , m_inViewSourceMode(false)
+    , m_remotePlatformLayer(0)
 {
     ASSERT(m_page);
 

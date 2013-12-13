@@ -188,6 +188,7 @@
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
@@ -553,6 +554,19 @@ WebVector<WebIconURL> WebFrameImpl::iconURLs(int iconTypesMask) const
     if (frame()->loader().state() == FrameStateComplete)
         return frame()->document()->iconURLs(iconTypesMask);
     return WebVector<WebIconURL>();
+}
+
+void WebFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
+{
+    if (!frame())
+        return;
+
+    if (frame()->remotePlatformLayer())
+        GraphicsLayer::unregisterContentsLayer(frame()->remotePlatformLayer());
+    if (webLayer)
+        GraphicsLayer::registerContentsLayer(webLayer);
+    frame()->setRemotePlatformLayer(webLayer);
+    frame()->ownerElement()->setNeedsStyleRecalc(WebCore::SubtreeStyleChange, WebCore::StyleChangeFromRenderer);
 }
 
 WebSize WebFrameImpl::scrollOffset() const

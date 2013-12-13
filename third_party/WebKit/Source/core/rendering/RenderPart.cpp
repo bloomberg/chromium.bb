@@ -25,8 +25,9 @@
 #include "config.h"
 #include "core/rendering/RenderPart.h"
 
-#include "core/html/HTMLFrameElementBase.h"
+#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
@@ -85,6 +86,9 @@ bool RenderPart::requiresAcceleratedCompositing() const
         return false;
 
     HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(node());
+    if (element->contentFrame() && element->contentFrame()->remotePlatformLayer())
+        return true;
+
     if (Document* contentDocument = element->contentDocument()) {
         if (RenderView* view = contentDocument->renderView())
             return view->usesCompositing();

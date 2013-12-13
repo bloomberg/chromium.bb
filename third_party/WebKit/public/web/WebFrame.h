@@ -62,6 +62,7 @@ class WebFormElement;
 class WebFrameClient;
 class WebHistoryItem;
 class WebInputElement;
+class WebLayer;
 class WebPerformance;
 class WebRange;
 class WebSecurityOrigin;
@@ -154,6 +155,11 @@ public:
     // WebIconURL::Type values, used to select from the available set of icon
     // URLs
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const = 0;
+
+    // For a WebFrame with contents being rendered in another process, this
+    // sets a layer for use by the in-process compositor. WebLayer should be
+    // null if the content is being rendered in the current process.
+    virtual void setRemoteWebLayer(blink::WebLayer*) = 0;
 
 
     // Geometry -----------------------------------------------------------

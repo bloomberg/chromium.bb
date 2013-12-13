@@ -37,6 +37,10 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
+namespace blink {
+class WebLayer;
+}
+
 namespace WebCore {
 
     class AnimationController;
@@ -152,6 +156,9 @@ namespace WebCore {
 
         int64_t frameID() const { return m_frameInit->frameID(); }
 
+        void setRemotePlatformLayer(blink::WebLayer* remotePlatformLayer) { m_remotePlatformLayer = remotePlatformLayer; }
+        blink::WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
+
     // ======== All public functions below this point are candidates to move out of Frame into another class. ========
 
         bool inScope(TreeScope*) const;
@@ -236,6 +243,8 @@ namespace WebCore {
 #endif
 
         bool m_inViewSourceMode;
+
+        blink::WebLayer* m_remotePlatformLayer;
     };
 
     inline void Frame::init()
