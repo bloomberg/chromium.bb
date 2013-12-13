@@ -890,3 +890,41 @@ TEST_F('HistoryWebUIIDNTest', 'basic', function() {
 
   testDone();
 });
+
+/**
+ * Fixture for a test that uses the real backend and tests how the history
+ * page deals with odd schemes in URLs.
+ */
+function HistoryWebUIWithSchemesTest() {}
+
+HistoryWebUIWithSchemesTest.prototype = {
+  __proto__: HistoryWebUIRealBackendTest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    // Add a bunch of entries on the same day, including some weird schemes.
+    GEN('  AddPageToHistory(12, "http://google.com", "Google");');
+    GEN('  AddPageToHistory(13, "file:///tmp/foo", "");');
+    GEN('  AddPageToHistory(14, "mailto:chromium@chromium.org", "");');
+    GEN('  AddPageToHistory(15, "tel:555123456", "");');
+  },
+
+  setUp: function() {
+    // Show the filter controls as if the command line switch was active.
+    $('top-container').hidden = true;
+    $('history-page').classList.add('big-topbar-page');
+    $('filter-controls').hidden = false;
+    expectFalse($('filter-controls').hidden);
+  },
+};
+
+TEST_F('HistoryWebUIWithSchemesTest', 'groupingWithSchemes', function() {
+  // Switch to the week view.
+  $('timeframe-filter-week').click();
+  waitForCallback('historyResult', function() {
+    // Each URL should be organized under a different "domain".
+    expectEquals(document.querySelectorAll('.entry').length, 4);
+    expectEquals(document.querySelectorAll('.site-domain-wrapper').length, 4);
+    testDone();
+  });
+});

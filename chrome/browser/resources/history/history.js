@@ -1137,8 +1137,10 @@ HistoryView.prototype.groupVisitsByDomain_ = function(visits, results) {
   };
   domains.sort(sortByVisits);
 
-  for (var i = 0, domain; domain = domains[i]; i++)
+  for (var i = 0; i < domains.length; ++i) {
+    var domain = domains[i];
     this.getGroupedVisitsDOM_(results, domain, visitsByDomain[domain]);
+  }
 };
 
 /**

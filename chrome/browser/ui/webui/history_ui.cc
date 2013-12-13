@@ -316,8 +316,14 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
     const ProfileSyncService* sync_service) const {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   SetUrlAndTitle(result.get());
-  result->SetString("domain",
-                    net::IDNToUnicode(url.host(), accept_languages));
+
+  string16 domain = net::IDNToUnicode(url.host(), accept_languages);
+  // When the domain is empty, use the scheme instead. This allows for a
+  // sensible treatment of e.g. file: URLs when group by domain is on.
+  if (domain.empty())
+    domain = UTF8ToUTF16(url.scheme() + ":");
+
+  result->SetString("domain", domain);
   result->SetDouble("time", time.ToJsTime());
 
   // Pass the timestamps in a list.
