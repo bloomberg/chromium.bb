@@ -146,6 +146,7 @@ infer_devid(const char *batch_filename)
 		{ "gen5", PCI_CHIP_ILD_G },
 		{ "gen6", PCI_CHIP_SANDYBRIDGE_GT2 },
 		{ "gen7", PCI_CHIP_IVYBRIDGE_GT2 },
+		{ "gen8", 0x1616 },
 		{ NULL, 0 },
 	};
 	int i;
