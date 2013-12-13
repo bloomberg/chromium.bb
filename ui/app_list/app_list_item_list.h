@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "sync/api/string_ordinal.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_list_observer.h"
 
@@ -67,17 +68,29 @@ class APP_LIST_EXPORT AppListItemList {
   // Triggers observers_.OnListItemMoved().
   void MoveItem(size_t from_index, size_t to_index);
 
-  AppListItemModel* item_at(size_t index) { return app_list_items_[index]; }
+  // Sets the position of |item| which is expected to be a member of
+  // |app_list_items_| and sorts the list accordingly.
+  void SetItemPosition(AppListItemModel* item,
+                       const syncer::StringOrdinal& new_position);
+
+  AppListItemModel* item_at(size_t index) {
+    DCHECK_LT(index, app_list_items_.size());
+    return app_list_items_[index];
+  }
   size_t item_count() const { return app_list_items_.size(); }
 
  private:
   // Deletes item at |index| and signals observers.
   void DeleteItemAt(size_t index);
 
-  // Returns the index at which to insert |item| in |app_list_items_| based on
-  // |item|->position(). If |item|->position() is not valid, returns
-  // |app_list_items_|.item_count() and sets |item|->position() appropriately.
-  size_t GetItemSortOrderIndex(AppListItemModel* item);
+  // If |item|->position() is not a valid ordinal, sets |item|->position()
+  // to a valid ordinal after the last item in the list.
+  void EnsureValidItemPosition(AppListItemModel* item);
+
+  // Returns the index at which to insert an item in |app_list_items_| based on
+  // |position| (which must be valid) and |id| (if the positions are equal).
+  size_t GetItemSortOrderIndex(const syncer::StringOrdinal& position,
+                               const std::string& id);
 
   ScopedVector<AppListItemModel> app_list_items_;
   ObserverList<AppListItemListObserver> observers_;

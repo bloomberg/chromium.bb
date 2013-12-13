@@ -486,8 +486,9 @@ TEST_F(AppsGridControllerTest, ModelAdd) {
   app_list::AppListItemModel* item1 = item_list->item_at(1);
   app_list::AppListItemModel* item3 =
       model()->CreateItem("Item Three", "Item Three");
-  item3->set_position(item0->position().CreateBetween(item1->position()));
   item_list->AddItem(item3);
+  item_list->SetItemPosition(
+      item3, item0->position().CreateBetween(item1->position()));
   EXPECT_EQ(4u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item Three,Item 1,Item 2|"), GetViewContent());
 }

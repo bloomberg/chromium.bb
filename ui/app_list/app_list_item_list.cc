@@ -43,7 +43,10 @@ bool AppListItemList::FindItemIndex(const std::string& id, size_t* index) {
 }
 
 size_t AppListItemList::AddItem(AppListItemModel* item) {
-  size_t index = GetItemSortOrderIndex(item);
+  CHECK(std::find(app_list_items_.begin(), app_list_items_.end(), item)
+        == app_list_items_.end());
+  EnsureValidItemPosition(item);
+  size_t index = GetItemSortOrderIndex(item->position(), item->id());
   app_list_items_.insert(app_list_items_.begin() + index, item);
   FOR_EACH_OBSERVER(AppListItemListObserver,
                     observers_,
@@ -136,18 +139,52 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
   if (prev && next && prev->position().Equals(next->position()))
     prev = NULL;
 
+  syncer::StringOrdinal new_position;
+  if (!prev)
+    new_position = next->position().CreateBefore();
+  else if (!next)
+    new_position = prev->position().CreateAfter();
+  else
+    new_position = prev->position().CreateBetween(next->position());
   VLOG(2) << "Move: " << target_item->position().ToDebugString()
           << " Prev: " << (prev ? prev->position().ToDebugString() : "(none)")
-          << " Next: " << (next ? next->position().ToDebugString() : "(none)");
-  if (!prev)
-    target_item->set_position(next->position().CreateBefore());
-  else if (!next)
-    target_item->set_position(prev->position().CreateAfter());
-  else
-    target_item->set_position(prev->position().CreateBetween(next->position()));
+          << " Next: " << (next ? next->position().ToDebugString() : "(none)")
+          << " -> " << new_position.ToDebugString();
+  target_item->set_position(new_position);
   FOR_EACH_OBSERVER(AppListItemListObserver,
                     observers_,
                     OnListItemMoved(from_index, to_index, target_item));
+}
+
+void AppListItemList::SetItemPosition(
+    AppListItemModel* item,
+    const syncer::StringOrdinal& new_position) {
+  DCHECK(item);
+  size_t from_index;
+  if (!FindItemIndex(item->id(), &from_index)) {
+    LOG(ERROR) << "SetItemPosition: Not in list: " << item->id().substr(0, 8);
+    return;
+  }
+  DCHECK(app_list_items_[from_index] == item);
+  // First check if the order would remain the same, in which case just update
+  // the position.
+  size_t to_index = GetItemSortOrderIndex(new_position, item->id());
+  if (to_index == from_index) {
+    VLOG(2) << "SetItemPosition: No change: " << item->id().substr(0, 8);
+    item->set_position(new_position);
+    return;
+  }
+  // Remove the item and get the updated to index.
+  app_list_items_.weak_erase(app_list_items_.begin() + from_index);
+  to_index = GetItemSortOrderIndex(new_position, item->id());
+  VLOG(2) << "SetItemPosition: " << item->id().substr(0, 8)
+          << " -> " << new_position.ToDebugString()
+          << " From: " << from_index << " To: " << to_index;
+  item->set_position(new_position);
+  app_list_items_.insert(app_list_items_.begin() + to_index, item);
+  FOR_EACH_OBSERVER(AppListItemListObserver,
+                    observers_,
+                    OnListItemMoved(from_index, to_index, item));
 }
 
 // AppListItemList private
@@ -157,26 +194,31 @@ void AppListItemList::DeleteItemAt(size_t index) {
   // |item| will be deleted on destruction.
 }
 
-size_t AppListItemList::GetItemSortOrderIndex(AppListItemModel* item) {
+void AppListItemList::EnsureValidItemPosition(AppListItemModel* item) {
   syncer::StringOrdinal position = item->position();
-  if (!position.IsValid()) {
-    size_t nitems = app_list_items_.size();
-    if (nitems == 0) {
-      position = syncer::StringOrdinal::CreateInitialOrdinal();
-    } else {
-      position = app_list_items_[nitems - 1]->position().CreateAfter();
+  if (position.IsValid())
+    return;
+  size_t nitems = app_list_items_.size();
+  if (nitems == 0) {
+    position = syncer::StringOrdinal::CreateInitialOrdinal();
+  } else {
+    position = app_list_items_[nitems - 1]->position().CreateAfter();
+  }
+  item->set_position(position);
+}
+
+size_t AppListItemList::GetItemSortOrderIndex(
+    const syncer::StringOrdinal& position,
+    const std::string& id) {
+  DCHECK(position.IsValid());
+  for (size_t index = 0; index < app_list_items_.size(); ++index) {
+    if (position.LessThan(app_list_items_[index]->position()) ||
+        (position.Equals(app_list_items_[index]->position()) &&
+         (id < app_list_items_[index]->id()))) {
+      return index;
     }
-    item->set_position(position);
-    return nitems;
   }
-  // Note: app_list_items_ is sorted by convention, but sorting is not enforced
-  // (items' positions might be changed outside this class).
-  size_t index = 0;
-  for (; index < app_list_items_.size(); ++index) {
-    if (position.LessThan(app_list_items_[index]->position()))
-      break;
-  }
-  return index;
+  return app_list_items_.size();
 }
 
 }  // namespace app_list

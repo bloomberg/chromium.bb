@@ -19,6 +19,8 @@ class MenuModel;
 
 namespace app_list {
 
+class AppListItemList;
+class AppListItemListTest;
 class AppListItemModelObserver;
 
 // AppListItemModel provides icon and title to be shown in a AppListItemView
@@ -48,10 +50,6 @@ class APP_LIST_EXPORT AppListItemModel {
 
   const std::string& id() const { return id_; }
   const syncer::StringOrdinal& position() const { return position_; }
-  void set_position(const syncer::StringOrdinal& new_position) {
-    DCHECK(new_position.IsValid());
-    position_ = new_position;
-  }
 
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
@@ -67,6 +65,19 @@ class APP_LIST_EXPORT AppListItemModel {
   // no menu for the item (e.g. during install).
   // Note the returned menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
+
+  // Utility functions for sync integration tests.
+  virtual bool CompareForTest(const AppListItemModel* other) const;
+  virtual std::string ToDebugString() const;
+
+ protected:
+  friend class AppListItemList;
+  friend class AppListItemListTest;
+
+  void set_position(const syncer::StringOrdinal& new_position) {
+    DCHECK(new_position.IsValid());
+    position_ = new_position;
+  }
 
  private:
   friend class AppListModelTest;

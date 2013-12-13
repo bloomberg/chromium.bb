@@ -161,8 +161,9 @@ TEST_F(AppListModelTest, ModelAddItem) {
   AppListItemModel* item1 = model_.item_list()->item_at(1);
   ASSERT_TRUE(item1);
   AppListItemModel* item2 = model_.CreateItem("Added Item 2", "Added Item 2");
-  item2->set_position(item0->position().CreateBetween(item1->position()));
   model_.item_list()->AddItem(item2);
+  model_.item_list()->SetItemPosition(
+      item2, item0->position().CreateBetween(item1->position()));
   EXPECT_EQ(num_apps + 2, model_.item_list()->item_count());
   EXPECT_EQ("Added Item 2", model_.item_list()->item_at(1)->id());
 }

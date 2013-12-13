@@ -5,34 +5,38 @@
 #include "ui/app_list/test/app_list_test_model.h"
 
 #include "base/strings/stringprintf.h"
-#include "ui/app_list/app_list_item_model.h"
 
 namespace app_list {
 namespace test {
 
 // static
-const char AppListTestModel::kAppType[] = "FolderItem";
+const char AppListTestModel::kAppType[] = "TestItem";
 
-class AppListTestModel::AppListTestItemModel : public AppListItemModel {
- public:
-  AppListTestItemModel(const std::string& id, AppListTestModel* model)
-      : AppListItemModel(id),
-        model_(model) {
-  }
-  virtual ~AppListTestItemModel() {}
+// AppListTestModel::AppListTestItemModel
 
-  virtual void Activate(int event_flags) OVERRIDE {
-    model_->ItemActivated(this);
-  }
+AppListTestModel::AppListTestItemModel::AppListTestItemModel(
+    const std::string& id,
+    AppListTestModel* model)
+    : AppListItemModel(id),
+      model_(model) {
+}
+AppListTestModel::AppListTestItemModel::~AppListTestItemModel() {
+}
 
-  virtual const char* GetAppType() const OVERRIDE {
-    return AppListTestModel::kAppType;
-  }
+void AppListTestModel::AppListTestItemModel::Activate(int event_flags) {
+  model_->ItemActivated(this);
+}
 
- private:
-  AppListTestModel* model_;
-  DISALLOW_COPY_AND_ASSIGN(AppListTestItemModel);
-};
+const char* AppListTestModel::AppListTestItemModel::GetAppType() const {
+  return AppListTestModel::kAppType;
+}
+
+void AppListTestModel::AppListTestItemModel::SetPosition(
+    const syncer::StringOrdinal& new_position) {
+  set_position(new_position);
+}
+
+// AppListTestModel
 
 AppListTestModel::AppListTestModel()
     : activate_count_(0),
@@ -63,16 +67,17 @@ std::string AppListTestModel::GetModelContent() {
   return content;
 }
 
-AppListItemModel* AppListTestModel::CreateItem(const std::string& title,
-                                               const std::string& full_name) {
-  AppListItemModel* item = new AppListTestItemModel(title, this);
+AppListTestModel::AppListTestItemModel* AppListTestModel::CreateItem(
+    const std::string& title,
+    const std::string& full_name) {
+  AppListTestItemModel* item = new AppListTestItemModel(title, this);
   size_t nitems = item_list()->item_count();
   syncer::StringOrdinal position;
   if (nitems == 0)
     position = syncer::StringOrdinal::CreateInitialOrdinal();
   else
     position = item_list()->item_at(nitems - 1)->position().CreateAfter();
-  item->set_position(position);
+  item->SetPosition(position);
   item->SetTitleAndFullName(title, full_name);
   return item;
 }

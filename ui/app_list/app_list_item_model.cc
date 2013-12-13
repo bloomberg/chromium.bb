@@ -85,4 +85,15 @@ ui::MenuModel* AppListItemModel::GetContextMenuModel() {
   return NULL;
 }
 
+bool AppListItemModel::CompareForTest(const AppListItemModel* other) const {
+  return id_ == other->id_ &&
+      title_ == other->title_ &&
+      position_.Equals(other->position_);
+}
+
+std::string AppListItemModel::ToDebugString() const {
+  return id_.substr(0, 8) + " '" + title_ + "'"
+      + " [" + position_.ToDebugString() + "]";
+}
+
 }  // namespace app_list
