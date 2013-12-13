@@ -32,10 +32,6 @@
 #include "ui/events/event.h"
 #include "ui/views/corewm/window_animations.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#endif
-
 using extensions::Extension;
 
 namespace {
@@ -196,10 +192,6 @@ AppShortcutLauncherItemController::GetRunningApplications() {
 }
 
 bool AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
-#if defined(OS_CHROMEOS)
-  if (!app_id().empty())
-    chromeos::default_pinned_apps_field_trial::RecordShelfAppClick(app_id());
-#endif
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event.type() == ui::ET_KEY_RELEASED) {

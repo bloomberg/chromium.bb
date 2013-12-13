@@ -696,7 +696,6 @@
         'browser/chromeos/keyboard_driven_event_rewriter_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
-        'browser/chromeos/login/default_pinned_apps_field_trial_unittest.cc',
         'browser/chromeos/login/existing_user_controller_auto_login_unittest.cc',
         'browser/chromeos/login/hwid_checker_unittest.cc',
         'browser/chromeos/login/merge_session_load_page_unittest.cc',

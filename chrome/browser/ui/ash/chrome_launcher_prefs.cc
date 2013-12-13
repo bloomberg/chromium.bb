@@ -11,10 +11,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#endif
-
 namespace {
 
 // App ID of default pinned apps.
@@ -26,13 +22,6 @@ const char* kDefaultPinnedApps[] = {
 };
 
 base::ListValue* CreateDefaultPinnedAppsList() {
-#if defined(OS_CHROMEOS)
-  base::ListValue* alternate = chromeos::default_pinned_apps_field_trial::
-      GetAlternateDefaultPinnedApps();
-  if (alternate)
-    return alternate;
-#endif
-
   scoped_ptr<base::ListValue> apps(new base::ListValue);
   for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i)
     apps->Append(ash::CreateAppDict(kDefaultPinnedApps[i]));

@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/auth_sync_observer.h"
 #include "chrome/browser/chromeos/login/auth_sync_observer_factory.h"
-#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
@@ -1211,8 +1210,6 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {
   user_image_manager_->UserLoggedIn(user_id, is_current_user_new_, false);
 
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
-
-  default_pinned_apps_field_trial::SetupForUser(user_id, is_current_user_new_);
 
   // Make sure that new data is persisted to Local State.
   g_browser_process->local_state()->CommitPendingWrite();

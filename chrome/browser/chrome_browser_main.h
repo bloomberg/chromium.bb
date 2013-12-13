@@ -78,9 +78,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PreBrowserStart();
   virtual void PostBrowserStart();
 
-  // Override this in subclasses to initialize platform specific field trials.
-  virtual void SetupPlatformFieldTrials();
-
   // Displays a warning message that we can't find any locale data files.
   virtual void ShowMissingLocaleMessageBox() = 0;
 

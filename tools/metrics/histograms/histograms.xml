@@ -1691,6 +1691,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Cros.ClickOnShelf" enum="CrosShelfClickTarget">
+  <obsolete>
+    Deprecated as of 12/2013. Default pinned apps trial is finished.
+  </obsolete>
   <summary>Chrome OS shelf clicks.</summary>
 </histogram>
 
@@ -22350,6 +22353,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="CrosShelfClickTarget" type="int">
+  <obsolete>
+    Deprecated as of 12/2013. Default pinned apps trial is finished.
+  </obsolete>
   <int value="0" label="Chrome"/>
   <int value="1" label="AppLauncher"/>
   <int value="2" label="Gmail"/>
@@ -31156,6 +31162,9 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="DefaultPinnedApps">
+  <obsolete>
+    Deprecated as of 12/2013. Default pinned apps trial is finished.
+  </obsolete>
   <group name="Existing"/>
   <group name="Control"/>
   <group name="Alternate"/>

@@ -36,10 +36,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/corewm/window_animations.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#endif
-
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ChromeLauncherController* launcher_controller)
     : LauncherItemController(TYPE_SHORTCUT,
@@ -207,11 +203,6 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
 
 bool BrowserShortcutLauncherItemController::ItemSelected(
     const ui::Event& event) {
-#if defined(OS_CHROMEOS)
-  chromeos::default_pinned_apps_field_trial::RecordShelfClick(
-      chromeos::default_pinned_apps_field_trial::CHROME);
-#endif
-
   if (event.flags() & ui::EF_CONTROL_DOWN) {
     launcher_controller()->CreateNewWindow();
     return true;

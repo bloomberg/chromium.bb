@@ -629,8 +629,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // This must be called after the local state is initialized.
   browser_field_trials_.SetupFieldTrials(local_state_);
 
-  SetupPlatformFieldTrials();
-
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
   // for posting tasks via base::Bind. Its deleted when it goes out of scope.
   // Even though base::Bind does AddRef and Release, the object will not be
@@ -1095,10 +1093,6 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   // Allow ProcessSingleton to process messages.
   process_singleton_->Unlock();
 #endif
-}
-
-void ChromeBrowserMainParts::SetupPlatformFieldTrials() {
-  // Base class implementation of this does nothing.
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

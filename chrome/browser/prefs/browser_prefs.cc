@@ -566,6 +566,10 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
     local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
                             current_version);
   }
+
+#if defined(OS_CHROMEOS)
+  chromeos::default_pinned_apps_field_trial::MigratePrefs(local_state);
+#endif
 }
 
 }  // namespace chrome

@@ -60,8 +60,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void PostMainMessageLoopRun() OVERRIDE;
   virtual void PostDestroyThreads() OVERRIDE;
 
-  virtual void SetupPlatformFieldTrials() OVERRIDE;
-
  private:
   scoped_ptr<contacts::ContactManager> contact_manager_;
   scoped_ptr<DisplayConfigurationObserver> display_configuration_observer_;
