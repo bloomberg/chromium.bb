@@ -57,7 +57,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual ash::MediaDelegate* CreateMediaDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
-  virtual void RecordUserMetricsAction(ash::UserMetricsAction action) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root) OVERRIDE;
   virtual ash::RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;

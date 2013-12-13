@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -149,11 +150,15 @@ class IMEDetailedView : public TrayDetailsView,
     if (sender == footer()->content()) {
       TransitionToDefaultView();
     } else if (sender == settings_) {
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          ash::UMA_STATUS_AREA_IME_SHOW_DETAILED);
       delegate->ShowIMESettings();
     } else {
       std::map<views::View*, std::string>::const_iterator ime_find;
       ime_find = ime_map_.find(sender);
       if (ime_find != ime_map_.end()) {
+        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+            ash::UMA_STATUS_AREA_IME_SWITCH_MODE);
         std::string ime_id = ime_find->second;
         delegate->SwitchIME(ime_id);
         GetWidget()->Close();

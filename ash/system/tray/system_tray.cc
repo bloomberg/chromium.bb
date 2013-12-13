@@ -5,10 +5,10 @@
 #include "ash/system/tray/system_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/date/tray_date.h"
@@ -436,6 +436,10 @@ int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
 void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
                                            int arrow_offset,
                                            bool persistent) {
+  if (creation_type != BUBBLE_USE_EXISTING) {
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        ash::UMA_STATUS_AREA_MENU_OPENED);
+  }
   ShowItems(items_.get(), false, true, creation_type, arrow_offset, persistent);
 }
 

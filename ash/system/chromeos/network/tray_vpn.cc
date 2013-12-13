@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/tray_vpn.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
@@ -134,6 +135,8 @@ views::View* TrayVPN::CreateDetailedView(user::LoginStatus status) {
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
 
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::UMA_STATUS_AREA_DETAILED_VPN_VIEW);
   detailed_ = new tray::NetworkStateListDetailedView(
       this, tray::NetworkStateListDetailedView::LIST_TYPE_VPN, status);
   detailed_->Init();

@@ -7,9 +7,9 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/gestures/overview_gesture_handler.h"
@@ -58,8 +58,7 @@ void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
       Shell::GetInstance()->delegate()) {
-    Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-      UMA_MOUSE_DOWN);
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_MOUSE_DOWN);
   }
 #endif
 }

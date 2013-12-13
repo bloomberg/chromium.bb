@@ -5,8 +5,8 @@
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 
 #include "ash/ash_switches.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/caption_buttons/alternate_frame_size_button.h"
 #include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "ash/wm/caption_buttons/frame_maximize_button.h"
@@ -209,7 +209,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   } else {
     return;
   }
-  ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(action);
+  ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {

@@ -8,6 +8,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
@@ -380,6 +381,10 @@ class VolumeView : public ActionableView,
       // 1%, which is beyond cras audio api's granularity for output volume.
       if (std::abs(volume - old_volume) < 1)
         return;
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          is_default_view_ ?
+          ash::UMA_STATUS_AREA_CHANGED_VOLUME_MENU :
+          ash::UMA_STATUS_AREA_CHANGED_VOLUME_POPUP);
       if (volume > old_volume)
         HandleVolumeUp(volume);
       else
@@ -388,7 +393,7 @@ class VolumeView : public ActionableView,
     icon_->Update();
   }
 
-  // Overriden from ActinableView.
+  // Overriden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     if (!more_->visible())
       return false;
@@ -567,6 +572,8 @@ views::View* TrayAudio::CreateDetailedView(user::LoginStatus status) {
     volume_view_ = new tray::VolumeView(this, false);
     return volume_view_;
   } else {
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        ash::UMA_STATUS_AREA_DETAILED_AUDIO_VIEW);
     audio_detail_ = new tray::AudioDetailedView(this, status);
     return audio_detail_;
   }

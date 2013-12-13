@@ -11,6 +11,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session_state_delegate.h"
 #include "ash/session_state_observer.h"
 #include "ash/shell.h"
@@ -689,11 +690,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (device->IsPaired() && !device->IsConnectable())
       return;
     if (device->IsPaired() || !device->IsPairable()) {
+      ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_KNOWN_DEVICE);
       device->Connect(
           NULL,
           base::Bind(&base::DoNothing),
           base::Bind(&BluetoothDeviceConnectError));
     } else {  // Show paring dialog for the unpaired device.
+      ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          ash::UMA_STATUS_AREA_BLUETOOTH_CONNECT_UNKNOWN_DEVICE);
       BluetoothPairingDialog* dialog =
           new BluetoothPairingDialog(GetNativeWindow(), device);
       // The dialog deletes itself on close.

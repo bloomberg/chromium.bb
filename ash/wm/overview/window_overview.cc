@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
@@ -144,7 +144,7 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
   }
   ash::Shell::GetInstance()->PrependPreTargetHandler(this);
   Shell* shell = Shell::GetInstance();
-  shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
+  shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   HideAndTrackNonOverviewWindows();
 }
 

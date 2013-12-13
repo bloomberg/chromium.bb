@@ -23,14 +23,12 @@
 #include "chrome/browser/ui/ash/user_action_handler.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
@@ -128,147 +126,6 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
 
 aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
   return new UserActionHandler;
-}
-
-void ChromeShellDelegate::RecordUserMetricsAction(
-    ash::UserMetricsAction action) {
-  switch (action) {
-    case ash::UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_KeyboardBrightnessDown_F6"));
-      break;
-    case ash::UMA_ACCEL_KEYBOARD_BRIGHTNESS_UP_F7:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_KeyboardBrightnessUp_F7"));
-      break;
-    case ash::UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_LockScreen_LockButton"));
-      break;
-    case ash::UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_LockScreen_PowerButton"));
-      break;
-    case ash::UMA_ACCEL_MAXIMIZE_RESTORE_F4:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_Maximize_Restore_F4"));
-      break;
-    case ash::UMA_ACCEL_PREVWINDOW_F5:
-      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_F5"));
-      break;
-    case ash::UMA_ACCEL_EXIT_FIRST_Q:
-      content::RecordAction(content::UserMetricsAction("Accel_Exit_First_Q"));
-      break;
-    case ash::UMA_ACCEL_EXIT_SECOND_Q:
-      content::RecordAction(content::UserMetricsAction("Accel_Exit_Second_Q"));
-      break;
-    case ash::UMA_ACCEL_SHUT_DOWN_POWER_BUTTON:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_ShutDown_PowerButton"));
-      break;
-    case ash::UMA_CLOSE_THROUGH_CONTEXT_MENU:
-      content::RecordAction(content::UserMetricsAction("CloseFromContextMenu"));
-      break;
-    case ash::UMA_GESTURE_OVERVIEW:
-      content::RecordAction(content::UserMetricsAction("Gesture_Overview"));
-      break;
-    case ash::UMA_LAUNCHER_CLICK_ON_APP:
-      content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
-      break;
-    case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
-      content::RecordAction(
-          content::UserMetricsAction("Launcher_ClickOnApplistButton"));
-#if defined(OS_CHROMEOS)
-      chromeos::default_pinned_apps_field_trial::RecordShelfClick(
-          chromeos::default_pinned_apps_field_trial::APP_LAUNCHER);
-#endif
-      break;
-    case ash::UMA_MOUSE_DOWN:
-      content::RecordAction(content::UserMetricsAction("Mouse_Down"));
-      break;
-    case ash::UMA_SHELF_ALIGNMENT_SET_BOTTOM:
-      content::RecordAction(
-          content::UserMetricsAction("Shelf_AlignmentSetBottom"));
-      break;
-    case ash::UMA_SHELF_ALIGNMENT_SET_LEFT:
-      content::RecordAction(
-          content::UserMetricsAction("Shelf_AlignmentSetLeft"));
-      break;
-    case ash::UMA_SHELF_ALIGNMENT_SET_RIGHT:
-      content::RecordAction(
-          content::UserMetricsAction("Shelf_AlignmentSetRight"));
-      break;
-    case ash::UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
-      content::RecordAction(
-          content::UserMetricsAction("Caption_ClickTogglesMaximize"));
-      break;
-    case ash::UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE:
-      content::RecordAction(
-          content::UserMetricsAction("Caption_GestureTogglesMaximize"));
-      break;
-    case ash::UMA_TOUCHPAD_GESTURE_OVERVIEW:
-      content::RecordAction(
-          content::UserMetricsAction("Touchpad_Gesture_Overview"));
-      break;
-    case ash::UMA_TOUCHSCREEN_TAP_DOWN:
-      content::RecordAction(content::UserMetricsAction("Touchscreen_Down"));
-      break;
-    case ash::UMA_TRAY_HELP:
-      content::RecordAction(content::UserMetricsAction("Tray_Help"));
-      break;
-    case ash::UMA_TRAY_LOCK_SCREEN:
-      content::RecordAction(content::UserMetricsAction("Tray_LockScreen"));
-      break;
-    case ash::UMA_TRAY_SHUT_DOWN:
-      content::RecordAction(content::UserMetricsAction("Tray_ShutDown"));
-      break;
-    case ash::UMA_WINDOW_APP_CLOSE_BUTTON_CLICK:
-      content::RecordAction(content::UserMetricsAction("AppCloseButton_Clk"));
-      break;
-    case ash::UMA_WINDOW_CLOSE_BUTTON_CLICK:
-      content::RecordAction(content::UserMetricsAction("CloseButton_Clk"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Clk_ExitFS"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE:
-      content::RecordAction(
-          content::UserMetricsAction("MaxButton_Clk_Restore"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE:
-      content::RecordAction(
-          content::UserMetricsAction("MaxButton_Clk_Maximize"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE:
-      content::RecordAction(content::UserMetricsAction("MinButton_Clk"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Maximize"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT:
-      content::RecordAction(content::UserMetricsAction("MaxButton_MaxLeft"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT:
-      content::RecordAction(content::UserMetricsAction("MaxButton_MaxRight"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Minimize"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Restore"));
-      break;
-    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_SHOW_BUBBLE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_ShowBubble"));
-      break;
-    case ash::UMA_WINDOW_OVERVIEW:
-      content::RecordAction(
-          content::UserMetricsAction("WindowSelector_Overview"));
-      break;
-    case ash::UMA_WINDOW_SELECTION:
-      content::RecordAction(
-          content::UserMetricsAction("WindowSelector_Selection"));
-      break;
-  }
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::Window* root) {

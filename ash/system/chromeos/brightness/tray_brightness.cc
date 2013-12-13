@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_constants.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
@@ -173,6 +174,8 @@ views::View* TrayBrightness::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayBrightness::CreateDetailedView(user::LoginStatus status) {
   CHECK(brightness_view_ == NULL);
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::UMA_STATUS_AREA_DETAILED_BRIGHTNESS_VIEW);
   brightness_view_ = new tray::BrightnessView(current_percent_);
   is_default_view_ = false;
   return brightness_view_;
@@ -203,6 +206,8 @@ bool TrayBrightness::ShouldShowLauncher() const {
 }
 
 void TrayBrightness::BrightnessChanged(int level, bool user_initiated) {
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
   double percent = static_cast<double>(level);
   HandleBrightnessChanged(percent, user_initiated);
 }

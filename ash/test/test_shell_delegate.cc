@@ -139,9 +139,6 @@ aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
   return NULL;
 }
 
-void TestShellDelegate::RecordUserMetricsAction(UserMetricsAction action) {
-}
-
 ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::Window* root) {
   return NULL;
 }

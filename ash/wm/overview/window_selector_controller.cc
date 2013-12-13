@@ -4,10 +4,10 @@
 
 #include "ash/wm/overview/window_selector_controller.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/window_state.h"
@@ -86,7 +86,7 @@ void WindowSelectorController::OnSelectionCanceled() {
 void WindowSelectorController::OnSelectionStarted() {
   Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
   Shell* shell = Shell::GetInstance();
-  shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_SELECTION);
+  shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_SELECTION);
   if (!last_selection_time_.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES(
         "Ash.WindowSelector.TimeBetweenUse",

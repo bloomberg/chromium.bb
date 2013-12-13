@@ -4,6 +4,7 @@
 
 #include "ash/system/date/tray_date.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -129,16 +130,15 @@ class DateDefaultView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     ash::Shell* shell = ash::Shell::GetInstance();
-    ash::ShellDelegate* shell_delegate = shell->delegate();
     ash::SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
     if (sender == help_) {
-      shell_delegate->RecordUserMetricsAction(ash::UMA_TRAY_HELP);
+      shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_HELP);
       tray_delegate->ShowHelp();
     } else if (sender == shutdown_) {
-      shell_delegate->RecordUserMetricsAction(ash::UMA_TRAY_SHUT_DOWN);
+      shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_SHUT_DOWN);
       tray_delegate->ShutDown();
     } else if (sender == lock_) {
-      shell_delegate->RecordUserMetricsAction(ash::UMA_TRAY_LOCK_SCREEN);
+      shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_LOCK_SCREEN);
       tray_delegate->RequestLockScreen();
     } else {
       NOTREACHED();

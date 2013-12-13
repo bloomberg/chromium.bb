@@ -50,7 +50,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual MediaDelegate* CreateMediaDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
-  virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root) OVERRIDE;
   virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;

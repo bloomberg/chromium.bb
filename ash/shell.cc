@@ -83,6 +83,7 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
@@ -576,7 +577,7 @@ Shell::Shell(ShellDelegate* delegate)
           gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
 
   output_configurator_->Init(!is_panel_fitting_disabled);
-  periodic_metrics_recorder_.reset(new PeriodicMetricsRecorder);
+  user_metrics_recorder_.reset(new UserMetricsRecorder);
 
   base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
       output_configurator());

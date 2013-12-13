@@ -54,7 +54,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual ash::NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual ash::MediaDelegate* CreateMediaDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
-  virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window) OVERRIDE;
   virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;

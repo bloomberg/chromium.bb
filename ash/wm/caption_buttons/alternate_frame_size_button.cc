@@ -4,8 +4,8 @@
 
 #include "ash/wm/caption_buttons/alternate_frame_size_button.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -189,7 +189,7 @@ bool AlternateFrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
     SnapSizer::SnapWindow(ash::wm::GetWindowState(frame_->GetNativeWindow()),
                           snap_type_ == SNAP_LEFT ?
                               SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE);
-    ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         snap_type_ == SNAP_LEFT ?
             ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
             ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);

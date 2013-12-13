@@ -4,10 +4,10 @@
 
 #include "ash/wm/caption_buttons/frame_maximize_button.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/caption_buttons/frame_maximize_button_observer.h"
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
@@ -530,7 +530,7 @@ void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
     case SNAP_LEFT:
     case SNAP_RIGHT: {
       snap_sizer->SnapWindowToTargetBounds();
-      shell->delegate()->RecordUserMetricsAction(
+      shell->metrics()->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT ?
               UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
               UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
@@ -538,17 +538,17 @@ void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
     }
     case SNAP_MAXIMIZE:
       frame_->Maximize();
-      shell->delegate()->RecordUserMetricsAction(
+      shell->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE);
       break;
     case SNAP_MINIMIZE:
       frame_->Minimize();
-      shell->delegate()->RecordUserMetricsAction(
+      shell->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE);
       break;
     case SNAP_RESTORE:
       frame_->Restore();
-      shell->delegate()->RecordUserMetricsAction(
+      shell->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE);
       break;
     case SNAP_NONE:

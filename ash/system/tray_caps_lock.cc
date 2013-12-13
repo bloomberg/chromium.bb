@@ -5,6 +5,7 @@
 #include "ash/system/tray_caps_lock.h"
 
 #include "ash/caps_lock_delegate.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
@@ -94,6 +95,10 @@ class CapsLockDefaultView : public ActionableView {
 
   // Overridden from ActionableView:
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled() ?
+        ash::UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
+        ash::UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
     Shell::GetInstance()->caps_lock_delegate()->ToggleCapsLock();
     return true;
   }
@@ -154,6 +159,8 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   detailed_->AddChildView(label);
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::UMA_STATUS_AREA_CAPS_LOCK_DETAILED);
 
   return detailed_;
 }
@@ -179,6 +186,8 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled,
   } else {
     if (enabled) {
       if (!message_shown_) {
+        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+            ash::UMA_STATUS_AREA_CAPS_LOCK_POPUP);
         PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
         message_shown_ = true;
       }

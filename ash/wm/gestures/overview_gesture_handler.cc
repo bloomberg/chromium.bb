@@ -4,8 +4,8 @@
 
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ui/aura/window.h"
@@ -74,7 +74,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
-  shell->delegate()->RecordUserMetricsAction(UMA_TOUCHPAD_GESTURE_OVERVIEW);
+  shell->metrics()->RecordUserMetricsAction(UMA_TOUCHPAD_GESTURE_OVERVIEW);
   shell->window_selector_controller()->ToggleOverview();
   return true;
 }
@@ -101,7 +101,7 @@ bool OverviewGestureHandler::ProcessGestureEvent(
   }
 
   Shell* shell = Shell::GetInstance();
-  shell->delegate()->RecordUserMetricsAction(UMA_GESTURE_OVERVIEW);
+  shell->metrics()->RecordUserMetricsAction(UMA_GESTURE_OVERVIEW);
   shell->window_selector_controller()->ToggleOverview();
   return true;
 }

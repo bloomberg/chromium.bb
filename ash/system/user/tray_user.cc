@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
 #include "ash/root_window_controller.h"
@@ -799,6 +800,8 @@ void UserView::Layout() {
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        ash::UMA_STATUS_AREA_SIGN_OUT);
     Shell::GetInstance()->system_tray_delegate()->SignOut();
   } else if (sender == user_card_view_ && SupportsMultiProfile()) {
     if (!multiprofile_index_) {

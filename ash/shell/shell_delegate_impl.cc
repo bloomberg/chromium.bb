@@ -158,9 +158,6 @@ aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
   return NULL;
 }
 
-void ShellDelegateImpl::RecordUserMetricsAction(UserMetricsAction action) {
-}
-
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::Window* root) {
   return new ContextMenu(root);
 }

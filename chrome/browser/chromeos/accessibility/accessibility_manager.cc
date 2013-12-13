@@ -6,6 +6,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/event_rewriter_event_filter.h"
@@ -414,6 +415,10 @@ void AccessibilityManager::EnableSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
+
+  ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      enabled ? ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK
+              : ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK);
 
   spoken_feedback_notification_ = notify;
 
