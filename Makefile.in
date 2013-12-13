@@ -1598,7 +1598,6 @@ am__set_TESTS_bases = \
 RECHECK_LOGS = $(TEST_LOGS)
 TEST_SUITE_LOG = test-suite.log
 TEST_EXTENSIONS = @EXEEXT@ .test
-LOG_DRIVER = $(SHELL) $(top_srcdir)/autotools/test-driver
 LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
   case '$@' in \
@@ -1917,10 +1916,14 @@ lib_LIBRARIES = $(am__append_5) $(am__append_7)
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk_machine_readable_test
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
-@ANDROID_HOST_FALSE@TESTS_ENVIRONMENT = 
+# The default Autotools test driver script.
+@ANDROID_HOST_FALSE@LOG_DRIVER = $(top_srcdir)/autotools/test-driver
 
-# Wrapper script to run unit test programs on a connected Android device.
-@ANDROID_HOST_TRUE@TESTS_ENVIRONMENT = $(top_srcdir)/android/test-shell.sh
+# Since Autotools 1.2, tests are run through a special "test driver" script.
+# Unfortunately, it's not possible anymore to specify an alternative shell to
+# run them on connected devices, so use a slightly modified version of the
+# driver for Android.
+@ANDROID_HOST_TRUE@LOG_DRIVER = $(top_srcdir)/android/test-driver
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_SOURCES = \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
 
