@@ -288,6 +288,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.allow_running_insecure_content);
   settings->setPasswordEchoEnabled(prefs.password_echo_enabled);
   settings->setShouldPrintBackgrounds(prefs.should_print_backgrounds);
+  settings->setShouldClearDocumentBackground(
+      prefs.should_clear_document_background);
   settings->setEnableScrollAnimator(prefs.enable_scroll_animator);
   settings->setVisualWordMovementEnabled(prefs.visual_word_movement_enabled);
 

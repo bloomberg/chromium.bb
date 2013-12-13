@@ -129,6 +129,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool allow_running_insecure_content;
   bool password_echo_enabled;
   bool should_print_backgrounds;
+  bool should_clear_document_background;
   bool enable_scroll_animator;
   bool visual_word_movement_enabled;
   bool css_variables_enabled;

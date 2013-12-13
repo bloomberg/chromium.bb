@@ -177,6 +177,7 @@ void AwSettings::WebContentsDestroyed(content::WebContents* web_contents) {
 // static
 void AwSettings::PopulateFixedPreferences(WebPreferences* web_prefs) {
   web_prefs->shrinks_standalone_images_to_fit = false;
+  web_prefs->should_clear_document_background = false;
 }
 
 void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
