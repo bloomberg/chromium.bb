@@ -99,19 +99,20 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Submits a byte array to the given input buffer. Call this after getting an
   // available buffer from DequeueInputBuffer().  If |data| is NULL, assume the
   // input buffer has already been populated (but still obey |size|).
+  // |data_size| must be less than kint32max (because Java).
   MediaCodecStatus QueueInputBuffer(int index,
                                     const uint8* data,
-                                    int orig_data_size,
+                                    size_t data_size,
                                     const base::TimeDelta& presentation_time);
 
-  // Similar to the above call, but submits a buffer that is encrypted.
-  // Note: NULL |subsamples| indicates the whole buffer is encrypted.  If |data|
-  // is NULL, assume the input buffer has already been populated (but still obey
-  // |data_size|).
+  // Similar to the above call, but submits a buffer that is encrypted.  Note:
+  // NULL |subsamples| indicates the whole buffer is encrypted.  If |data| is
+  // NULL, assume the input buffer has already been populated (but still obey
+  // |data_size|).  |data_size| must be less than kint32max (because Java).
   MediaCodecStatus QueueSecureInputBuffer(
       int index,
       const uint8* data,
-      int orig_data_size,
+      size_t data_size,
       const uint8* key_id,
       int key_id_size,
       const uint8* iv,
