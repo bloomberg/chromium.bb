@@ -4,10 +4,17 @@
 
 module sample {
 
+enum BarType {
+  BAR_VERTICAL = 1,
+  BAR_HORIZONTAL = 2,
+  BAR_INVALID
+};
+
 struct Bar {
   uint8 alpha @0;
   uint8 beta @1;
   uint8 gamma @2;
+  int32 type @3;
 };
 
 [RequiredFields=7]

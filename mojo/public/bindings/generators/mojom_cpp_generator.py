@@ -86,6 +86,7 @@ class CPPGenerator(mojom_generator.Generator):
       Template("  const $TYPE $FIELD() const { return ${FIELD}_.ptr; }")
   handle_getter_template = \
       Template("  $TYPE* $FIELD() const { return &${FIELD}_; }")
+  enum_field_template = Template("  $NAME$EQUALS$VALUE,")
   wrapper_setter_template = \
       Template("    void set_$FIELD($TYPE $FIELD) { " \
                "data_->set_$FIELD($FIELD); }")
@@ -398,6 +399,21 @@ class CPPGenerator(mojom_generator.Generator):
         self.module.structs)
     return '\n'.join(struct_decls)
 
+  def GetEnumFields(self, enum):
+    fields = Lines(self.enum_field_template)
+    for field in enum.fields:
+      if field.value:
+        fields.Add(NAME=field.name, EQUALS = " = ", VALUE = field.value)
+      else:
+        fields.Add(NAME=field.name, EQUALS = "", VALUE = "")
+    return fields
+
+  def GetEnumDeclarations(self):
+    decls = Lines(self.GetTemplate("enum_declaration"))
+    for enum in self.module.enums:
+      decls.Add(NAME = enum.name, ENUM_FIELDS = self.GetEnumFields(enum))
+    return decls
+
   def GetWrapperDeclaration(self, name, ps, template, subs = {}):
     setters = []
     getters = []
@@ -467,6 +483,7 @@ class CPPGenerator(mojom_generator.Generator):
     self.WriteTemplateToFile("module.h",
         HEADER_GUARD = self.GetHeaderGuard(self.module.name),
         INTERNAL_HEADER = self.GetHeaderFile(self.module.name, "internal"),
+        ENUM_DECLARATIONS = self.GetEnumDeclarations(),
         WRAPPER_CLASS_DECLARATIONS = self.GetWrapperClassDeclarations(),
         INTERFACE_CLASS_DECLARATIONS = self.GetInterfaceClassDeclarations(),
         INTERFACE_PROXY_DECLARATIONS = self.GetInterfaceProxyDeclarations(),

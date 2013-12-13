@@ -165,6 +165,7 @@ class JSGenerator(mojom_generator.Generator):
   @UseJinja("js_templates/module.js.tmpl", filters=filters)
   def GenerateModule(self):
     return {
+      "enums": self.module.enums,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "interfaces": self.module.interfaces,
     }

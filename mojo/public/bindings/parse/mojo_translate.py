@@ -75,6 +75,13 @@ def MapMethods(methods):
                   'ordinal': MapOrdinal(method[3])})
   return out
 
+def MapEnumFields(fields):
+  out = []
+  for field in fields:
+    if field[0] == 'ENUM_FIELD':
+      out.append({'name': field[1],
+                  'value': field[2]})
+  return out
 
 class MojomBuilder():
 
@@ -96,16 +103,27 @@ class MojomBuilder():
     interface['methods'] = MapMethods(methods)
     self.mojom['interfaces'].append(interface)
 
+  def AddEnum(self, name, fields):
+    # TODO(mpcomplete): add support for specifying enums as types. Right now
+    # we just use int32.
+    enum = {}
+    enum['name'] = name
+    enum['fields'] = MapEnumFields(fields)
+    self.mojom['enums'].append(enum)
+
   def AddModule(self, name, namespace, contents):
     self.mojom['name'] = name
     self.mojom['namespace'] = namespace
     self.mojom['structs'] = []
     self.mojom['interfaces'] = []
+    self.mojom['enums'] = []
     for item in contents:
       if item[0] == 'STRUCT':
         self.AddStruct(name=item[1], attributes=item[2], fields=item[3])
       elif item[0] == 'INTERFACE':
         self.AddInterface(name=item[1], attributes=item[2], methods=item[3])
+      elif item[0] == 'ENUM':
+        self.AddEnum(name=item[1], fields=item[2])
 
   def Build(self, tree, name):
     if tree[0] == 'MODULE':

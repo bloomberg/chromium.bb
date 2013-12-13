@@ -57,6 +57,7 @@ class Lexer(object):
     'MODULE',
     'STRUCT',
     'INTERFACE',
+    'ENUM',
     'VOID',
 
     'LCURLY',
@@ -104,6 +105,10 @@ class Lexer(object):
     r'interface'
     return t
 
+  def t_ENUM(self, t):
+    r'enum'
+    return t
+
   def t_VOID(self, t):
     r'void'
     return t
@@ -142,7 +147,8 @@ class Parser(object):
 
   def p_definition(self, p):
     """definition : struct
-                  | interface"""
+                  | interface
+                  | enum"""
     p[0] = p[1]
 
   def p_attribute_section(self, p):
@@ -220,6 +226,27 @@ class Parser(object):
                | """
     if len(p) > 1:
       p[0] = p[1]
+
+  def p_enum(self, p):
+    """enum : ENUM NAME LCURLY enum_fields RCURLY SEMICOLON"""
+    p[0] = ('ENUM', p[2], p[4])
+
+  def p_enum_fields(self, p):
+    """enum_fields : enum_field
+                   | enum_field COMMA enum_fields
+                   |"""
+    if len(p) == 2:
+      p[0] = ListFromConcat(p[1])
+    elif len(p) > 3:
+      p[0] = ListFromConcat(p[1], p[3])
+
+  def p_enum_field(self, p):
+    """enum_field : NAME
+                  | NAME EQUALS NUMBER"""
+    if len(p) == 2:
+      p[0] = ('ENUM_FIELD', p[1], None)
+    else:
+      p[0] = ('ENUM_FIELD', p[1], p[3])
 
   def p_error(self, e):
     print('error: %s'%e)

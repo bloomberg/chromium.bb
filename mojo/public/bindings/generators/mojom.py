@@ -117,6 +117,18 @@ class Interface(object):
     return method;
 
 
+class EnumField(object):
+  def __init__(self, name = None, value = None):
+    self.name = name
+    self.value = value
+
+
+class Enum(object):
+  def __init__(self, name = None):
+    self.name = name
+    self.fields = []
+
+
 class Module(object):
   def __init__(self, name = None, namespace = None):
     self.name = name

@@ -6,6 +6,21 @@ define([
     "mojo/apps/js/bindings/core",
     "mojo/apps/js/bindings/codec",
   ], function(core, codec) {
+{%- for enum in enums %}
+
+  // Enum: {{enum.name}}
+  var {{enum.name}} = {
+{%-   set next_value = 0 %}
+{%-   for field in enum.fields %}
+{%-     if field.value %}
+{%-       set next_value = field.value|int  %}
+{%-     endif %}
+    {{field.name}}: {{next_value}},
+{%-     set next_value = next_value + 1 %}
+{%-   endfor %}
+  };
+{%- endfor %}
+
 {%- for struct in structs %}
 
   function {{struct.name}}() {
@@ -114,6 +129,9 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor %}
 
   var exports = {};
+{%- for enum in enums %}
+  exports.{{enum.name}} = {{enum.name}};
+{%- endfor %}
 {%- for struct in structs if struct.exported %}
   exports.{{struct.name}} = {{struct.name}};
 {%- endfor %}

@@ -17,6 +17,7 @@ define([
     bar.alpha = 1;
     bar.beta = 2;
     bar.gamma = 3;
+    bar.type = 0x08070605;
     bar.extraProperty = "banana";
 
     var messageName = 42;
@@ -32,10 +33,10 @@ define([
       42, 0, 0, 0,
 
       16, 0, 0, 0,
-       3, 0, 0, 0,
+       4, 0, 0, 0,
 
        1, 2, 3, 0,
-       0, 0, 0, 0,
+       5, 6, 7, 8,
     ]);
 
     expect(message.memory).toEqual(expectedMemory);
