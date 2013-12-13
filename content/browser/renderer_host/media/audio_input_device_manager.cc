@@ -187,6 +187,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
     input_params.sample_rate = params.sample_rate();
     input_params.channel_layout = params.channel_layout();
     input_params.frames_per_buffer = params.frames_per_buffer();
+    input_params.effects = params.effects();
 
     // Add preferred output device information if a matching output device
     // exists.

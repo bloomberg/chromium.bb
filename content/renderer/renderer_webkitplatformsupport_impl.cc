@@ -726,7 +726,8 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       layout, input_channels,
-      static_cast<int>(sample_rate), 16, buffer_size);
+      static_cast<int>(sample_rate), 16, buffer_size,
+      media::AudioParameters::NO_EFFECTS);
 
   return new RendererWebAudioDeviceImpl(params, callback, session_id);
 }

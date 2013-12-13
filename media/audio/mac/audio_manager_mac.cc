@@ -674,16 +674,20 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     }
   }
 
+  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED)
+    channel_layout = CHANNEL_LAYOUT_DISCRETE;
+  else
+    hardware_channels = ChannelLayoutToChannelCount(channel_layout);
+
   AudioParameters params(
       AudioParameters::AUDIO_PCM_LOW_LATENCY,
       channel_layout,
+      hardware_channels,
       input_channels,
       hardware_sample_rate,
       16,
-      buffer_size);
-
-  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED)
-    params.SetDiscreteChannels(hardware_channels);
+      buffer_size,
+      AudioParameters::NO_EFFECTS);
 
   return params;
 }

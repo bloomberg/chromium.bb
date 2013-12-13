@@ -168,7 +168,8 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
         .WillOnce(Return());
     capturer_->SetCapturerSource(capturer_source_,
                                  params_.channel_layout(),
-                                 params_.sample_rate());
+                                 params_.sample_rate(),
+                                 params_.effects());
   }
 
   media::AudioParameters params_;
@@ -460,7 +461,8 @@ TEST_F(WebRtcLocalAudioTrackTest, SetNewSourceForCapturerAfterStartTrack) {
   EXPECT_CALL(*new_source.get(), OnStart());
   capturer_->SetCapturerSource(new_source,
                                params_.channel_layout(),
-                               params_.sample_rate());
+                               params_.sample_rate(),
+                               params_.effects());
 
   // Stop the track.
   EXPECT_CALL(*new_source.get(), OnStop());
@@ -504,7 +506,8 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
   EXPECT_CALL(*new_source.get(), OnInitialize(_, new_capturer.get(), 0));
   new_capturer->SetCapturerSource(new_source,
                                   media::CHANNEL_LAYOUT_MONO,
-                                  44100);
+                                  44100,
+                                  media::AudioParameters::NO_EFFECTS);
 
   // Setup the second audio track, connect it to the new capturer and start it.
   EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(true));
@@ -560,11 +563,12 @@ TEST_F(WebRtcLocalAudioTrackTest, TrackWorkWithSmallBufferSize) {
   scoped_refptr<MockCapturerSource> source(
       new MockCapturerSource(capturer.get()));
   capturer->Initialize(-1, params.channel_layout(), params.sample_rate(),
-                       params.frames_per_buffer(), 0, std::string(), 0, 0);
+                       params.frames_per_buffer(), 0, std::string(), 0, 0,
+                       params.effects());
 
   EXPECT_CALL(*source.get(), OnInitialize(_, capturer.get(), 0));
   capturer->SetCapturerSource(source, params.channel_layout(),
-                              params.sample_rate());
+                              params.sample_rate(), params.effects());
 
   // Setup a audio track, connect it to the capturer and start it.
   EXPECT_CALL(*source.get(), SetAutomaticGainControl(true));
