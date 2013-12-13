@@ -5,6 +5,7 @@
 #include "data_fetcher_shared_memory.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 
 namespace {
 
@@ -45,10 +46,13 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.MotionDefaultAvailable", false);
       return SetMotionBuffer(motion_buffer_, true);
     case CONSUMER_TYPE_ORIENTATION:
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationDefaultAvailable",
+          false);
       return SetOrientationBuffer(orientation_buffer_, true);
     default:
       NOTREACHED();

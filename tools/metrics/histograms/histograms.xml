@@ -5626,6 +5626,38 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InertialSensor.MotionDefaultAvailable" enum="BooleanAvailable">
+  <summary>
+    This histogram counts the number of Device Motion API invocations in the
+    default implementation (Linux and CrOS). The default implementation does not
+    provide any sensors so the result is always false.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.MotionMacAvailable" enum="BooleanAvailable">
+  <summary>
+    Whether the sudden motion sensor was available at the start of Device Motion
+    on the MacOS platform.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.OrientationDefaultAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    This histogram counts the number of Device Orientation API invocations in
+    the default implementation (Linux and CrOS). The default implementation does
+    not provide any sensors so the result is always false.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.OrientationMacAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the sudden motion sensor was available at the start of Device
+    Orientation on the MacOS platform.
+  </summary>
+</histogram>
+
 <histogram name="InertialSensor.RotationVectorAndroidAvailable"
     enum="BooleanAvailable">
   <summary>

@@ -5,6 +5,7 @@
 #include "data_fetcher_shared_memory.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "third_party/sudden_motion_sensor/sudden_motion_sensor_mac.h"
 
 namespace {
@@ -124,12 +125,16 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       if (!sudden_motion_sensor_)
         sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.MotionMacAvailable",
+          sudden_motion_sensor_.get() != NULL);
       return sudden_motion_sensor_.get() != NULL;
     case CONSUMER_TYPE_ORIENTATION:
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       if (!sudden_motion_sensor_)
         sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+      UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationMacAvailable",
+          sudden_motion_sensor_.get() != NULL);
       return sudden_motion_sensor_.get() != NULL;
     default:
       NOTREACHED();
