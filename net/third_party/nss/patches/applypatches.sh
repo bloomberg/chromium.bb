@@ -79,3 +79,5 @@ patch -p4 < $patches_dir/cipherorder.patch
 patch -p5 < $patches_dir/tls12backuphash2.patch
 
 patch -p4 < $patches_dir/fallbackscsv.patch
+
+patch -p4 < $patches_dir/disableticketrenewal.patch

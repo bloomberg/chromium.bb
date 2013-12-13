@@ -159,6 +159,10 @@ Patches:
   * Add TLS_FALLBACK_SCSV cipher suite to version fallback connections.
     patches/fallbackscsv.patch
 
+  * Disable session ticket renewal.
+    https://bugzilla.mozilla.org/show_bug.cgi?id=930857
+    patches/disableticketrenewal.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

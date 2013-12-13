@@ -1,0 +1,17 @@
+Index: net/third_party/nss/ssl/sslnonce.c
+===================================================================
+--- net/third_party/nss/ssl/sslnonce.c	(revision 240143)
++++ net/third_party/nss/ssl/sslnonce.c	(working copy)
+@@ -438,6 +438,12 @@
+     /* We need to lock the cache, as this sid might already be in the cache. */
+     LOCK_CACHE;
+ 
++    /* Don't modify sid if it has ever been cached. */
++    if (sid->cached != never_cached) {
++	UNLOCK_CACHE;
++	return SECSuccess;
++    }
++
+     /* A server might have sent us an empty ticket, which has the
+      * effect of clearing the previously known ticket.
+      */

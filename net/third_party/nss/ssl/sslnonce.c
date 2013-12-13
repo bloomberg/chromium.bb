@@ -438,6 +438,12 @@ ssl3_SetSIDSessionTicket(sslSessionID *sid, NewSessionTicket *session_ticket)
     /* We need to lock the cache, as this sid might already be in the cache. */
     LOCK_CACHE;
 
+    /* Don't modify sid if it has ever been cached. */
+    if (sid->cached != never_cached) {
+	UNLOCK_CACHE;
+	return SECSuccess;
+    }
+
     /* A server might have sent us an empty ticket, which has the
      * effect of clearing the previously known ticket.
      */
