@@ -73,6 +73,11 @@
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',
 
+            # Dependencies of autofill
+            'components.gyp:autofill_core_browser',
+            'components.gyp:autofill_core_common',
+            'components.gyp:autofill_core_test_support',
+
             # Dependencies of dom_distiller
             'components.gyp:distilled_page_proto',
             'components.gyp:dom_distiller_core',
@@ -99,10 +104,6 @@
           'conditions': [
             ['OS != "ios"', {
               'dependencies': [
-                # Dependencies of autofill
-                'components.gyp:autofill_core_browser',
-                'components.gyp:autofill_core_common',
-
                 # Dependencies of browser_context_keyed_service
                 'components.gyp:browser_context_keyed_service',
 
@@ -134,6 +135,7 @@
                 # TODO(asvitkine): Bring up variations/ unittests on iOS.
                 # TODO(blundell): Bring up json_schema/ unittests on iOS.
                 ['include', '^auto_login_parser/'],
+                ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^precache/'],
                 ['include', '^translate/'],
