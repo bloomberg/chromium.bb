@@ -13,6 +13,7 @@
 #include "base/test/perf_time_logger.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/public/browser/cookie_crypto_delegate.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         temp_dir_.path().Append(cookie_filename),
         client_task_runner(),
         background_task_runner(),
-        false, NULL);
+        false, NULL,
+        scoped_ptr<content::CookieCryptoDelegate>());
     std::vector<net::CanonicalCookie*> cookies;
     Load();
     ASSERT_EQ(0u, cookies_.size());
@@ -97,7 +99,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         temp_dir_.path().Append(cookie_filename),
         client_task_runner(),
         background_task_runner(),
-        false, NULL);
+        false, NULL,
+        scoped_ptr<content::CookieCryptoDelegate>());
   }
 
   virtual void TearDown() OVERRIDE {
