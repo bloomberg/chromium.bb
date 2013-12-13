@@ -57,9 +57,9 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
                                  uint32_t* num_handles,
                                  MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult CreateDataPipe(
-      const struct MojoCreateDataPipeOptions* options,
-      MojoHandle* producer_handle,
-      MojoHandle* consumer_handle) OVERRIDE;
+      const MojoCreateDataPipeOptions* options,
+      MojoHandle* data_pipe_producer_handle,
+      MojoHandle* data_pipe_consumer_handle) OVERRIDE;
   virtual MojoResult WriteData(MojoHandle data_pipe_producer_handle,
                                const void* elements,
                                uint32_t* num_elements,

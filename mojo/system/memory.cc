@@ -11,8 +11,22 @@
 namespace mojo {
 namespace system {
 
+// TODO(vtl): Can I make this use the non-templatized function without a
+// performance hit?
 template <size_t size>
 bool VerifyUserPointerForSize(const void* pointer, size_t count) {
+  if (count > std::numeric_limits<size_t>::max() / size)
+    return false;
+
+  // TODO(vtl): If running in kernel mode, do a full verification. For now, just
+  // check that it's non-null if |size| is nonzero. (A faster user mode
+  // implementation is also possible if this check is skipped.)
+  return count == 0 || !!pointer;
+}
+
+bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerForSize(const void* pointer,
+                                                      size_t size,
+                                                      size_t count) {
   if (count > std::numeric_limits<size_t>::max() / size)
     return false;
 
@@ -26,6 +40,8 @@ bool VerifyUserPointerForSize(const void* pointer, size_t count) {
 template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerForSize<1>(
     const void*, size_t);
 template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerForSize<4>(
+    const void*, size_t);
+template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerForSize<8>(
     const void*, size_t);
 
 }  // namespace system

@@ -41,10 +41,9 @@ class MOJO_SYSTEM_EXPORT CorePrivate {
                                  MojoHandle* handles,
                                  uint32_t* num_handles,
                                  MojoReadMessageFlags flags) = 0;
-  virtual MojoResult CreateDataPipe(
-      const struct MojoCreateDataPipeOptions* options,
-      MojoHandle* producer_handle,
-      MojoHandle* consumer_handle) = 0;
+  virtual MojoResult CreateDataPipe(const MojoCreateDataPipeOptions* options,
+                                    MojoHandle* data_pipe_producer_handle,
+                                    MojoHandle* data_pipe_consumer_handle) = 0;
   virtual MojoResult WriteData(MojoHandle data_pipe_producer_handle,
                                const void* elements,
                                uint32_t* num_elements,

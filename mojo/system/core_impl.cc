@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/system/data_pipe_producer_dispatcher.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/limits.h"
 #include "mojo/system/memory.h"
@@ -349,11 +350,49 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
   return rv;
 }
 
-MojoResult CoreImpl::CreateDataPipe(
-    const struct MojoCreateDataPipeOptions* options,
-    MojoHandle* producer_handle,
-    MojoHandle* consumer_handle) {
-  // TODO(vtl)
+MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
+                                    MojoHandle* data_pipe_producer_handle,
+                                    MojoHandle* data_pipe_consumer_handle) {
+  if (options && !VerifyUserPointer<void>(options, sizeof(*options)))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!VerifyUserPointer<MojoHandle>(data_pipe_producer_handle, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+/* TODO(vtl): The rest of the code will look something like this:
+  scoped_refptr<LocalDataPipe> data_pipe(new LocalDataPipe());
+  MojoResult result = data_pipe->Init(options);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  scoped_refptr<DataPipeProducerDispatcher> producer_dispatcher(
+      new DataPipeProducerDispatcher());
+  scoped_refptr<DataPipeConsumerDispatcher> consumer_dispatcher(
+      new DataPipeConsumerDispatcher());
+
+  MojoHandle producer_handle, consumer_handle;
+  {
+    base::AutoLock locker(handle_table_lock_);
+
+    producer_handle = AddDispatcherNoLock(producer_dispatcher);
+    if (producer_handle == MOJO_HANDLE_INVALID)
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+    consumer_handle = AddDispatcherNoLock(consumer_dispatcher);
+    if (consumer_handle == MOJO_HANDLE_INVALID) {
+      handle_table_.erase(producer_handle);
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+    }
+  }
+
+  producer_dispatcher->Init(data_pipe);
+  consumer_dispatcher->Init(data_pipe);
+
+  *data_pipe_producer_handle = producer_handle;
+  *data_pipe_consumer_handle = consumer_handle;
+  return MOJO_RESULT_OK;
+*/
   NOTIMPLEMENTED();
   return MOJO_RESULT_UNIMPLEMENTED;
 }
@@ -431,8 +470,8 @@ CoreImpl::CoreImpl()
 }
 
 CoreImpl::~CoreImpl() {
-  // This should usually not be reached (the singleton lives forever), except
-  // in tests.
+  // This should usually not be reached (the singleton lives forever), except in
+  // tests.
 }
 
 scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {

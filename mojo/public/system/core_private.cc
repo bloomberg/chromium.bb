@@ -65,11 +65,12 @@ MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
                              num_handles, flags);
 }
 
-MojoResult MojoCreateDataPipe(const struct MojoCreateDataPipeOptions* options,
-                              MojoHandle* producer_handle,
-                              MojoHandle* consumer_handle) {
+MojoResult MojoCreateDataPipe(const MojoCreateDataPipeOptions* options,
+                              MojoHandle* data_pipe_producer_handle,
+                              MojoHandle* data_pipe_consumer_handle) {
   assert(g_core);
-  return g_core->CreateDataPipe(options, producer_handle, consumer_handle);
+  return g_core->CreateDataPipe(options, data_pipe_producer_handle,
+                                data_pipe_consumer_handle);
 }
 
 MojoResult MojoWriteData(MojoHandle data_pipe_producer_handle,

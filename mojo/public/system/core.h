@@ -406,8 +406,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
 
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
     const struct MojoCreateDataPipeOptions* options,
-    MojoHandle* producer_handle,
-    MojoHandle* consumer_handle);
+    MojoHandle* data_pipe_producer_handle,
+    MojoHandle* data_pipe_consumer_handle);
 
 MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
     MojoHandle data_pipe_producer_handle,
@@ -415,6 +415,11 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
     uint32_t* num_elements,
     MojoWriteDataFlags flags);
 
+// TODO(vtl): Note to self: |buffer_num_elements| is an "in-out" parameter:
+// on the "in" side, |*buffer_num_elements| is the number requested; on success,
+// on the "out" side, it's the number available (which may be GREATER or LESS
+// than the number requested; if the "all-or-nothing" flag is set, it's AT LEAST
+// the number requested).
 MOJO_SYSTEM_EXPORT MojoResult MojoBeginWriteData(
     MojoHandle data_pipe_producer_handle,
     void** buffer,

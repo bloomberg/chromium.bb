@@ -5,7 +5,6 @@
 #include "mojo/system/message_pipe.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/local_message_pipe_endpoint.h"

@@ -101,7 +101,7 @@ scoped_refptr<Dispatcher>
 MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
 
-  scoped_refptr<MessagePipeDispatcher> rv = new MessagePipeDispatcher;
+  scoped_refptr<MessagePipeDispatcher> rv = new MessagePipeDispatcher();
   rv->Init(message_pipe_, port_);
   message_pipe_ = NULL;
   port_ = kInvalidPort;

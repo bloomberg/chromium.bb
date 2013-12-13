@@ -45,7 +45,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
                                          MojoWaitFlags flags,
                                          MojoResult wake_result) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
-
   virtual scoped_refptr<Dispatcher>
       CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
 
