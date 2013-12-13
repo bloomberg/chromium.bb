@@ -163,6 +163,11 @@ class CONTENT_EXPORT DownloadItemImpl
   // INTERRUPTED state.
   virtual ResumeMode GetResumeMode() const;
 
+  // Notify the download item that new origin information is available due to a
+  // resumption request receiving a response.
+  virtual void MergeOriginInfoOnResume(
+      const DownloadCreateInfo& new_create_info);
+
   // State transition operations on regular downloads --------------------------
 
   // Start the download.

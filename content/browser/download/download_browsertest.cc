@@ -1125,12 +1125,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
-  GURL url = test_server()->GetURL(
-      base::StringPrintf(
-          // First download hits an RST, rest don't, precondition fail.
-          "rangereset?size=%d&rst_boundary=%d&"
-          "token=NoRange&rst_limit=1&fail_precondition=2",
-          GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
+  GURL url = test_server()->GetURL(base::StringPrintf(
+      // First download hits an RST, rest don't, precondition fail.
+      "rangereset?size=%d&rst_boundary=%d&"
+      "token=BadPrecondition&rst_limit=1&fail_precondition=2",
+      GetSafeBufferChunk() * 3,
+      GetSafeBufferChunk()));
 
   // Start the download and wait for first data chunk.
   DownloadItem* download(StartDownloadAndReturnItem(url));
@@ -1142,6 +1142,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ConfirmFileStatusForResume(
       download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
       base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
+  EXPECT_EQ("BadPrecondition2", download->GetETag());
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));
@@ -1151,6 +1152,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ConfirmFileStatusForResume(
       download, true, GetSafeBufferChunk() * 3, GetSafeBufferChunk() * 3,
       base::FilePath(FILE_PATH_LITERAL("rangereset")));
+  EXPECT_EQ("BadPrecondition0", download->GetETag());
 
   static const RecordingDownloadObserver::RecordStruct expected_record[] = {
     // Result of RST

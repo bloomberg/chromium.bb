@@ -611,4 +611,14 @@ void RecordSavePackageEvent(SavePackageEvent event) {
                             SAVE_PACKAGE_LAST_ENTRY);
 }
 
+void RecordOriginStateOnResumption(bool is_partial,
+                                   int state) {
+  if (is_partial)
+    UMA_HISTOGRAM_ENUMERATION("Download.OriginStateOnPartialResumption", state,
+                              ORIGIN_STATE_ON_RESUMPTION_MAX);
+  else
+    UMA_HISTOGRAM_ENUMERATION("Download.OriginStateOnFullResumption", state,
+                              ORIGIN_STATE_ON_RESUMPTION_MAX);
+}
+
 }  // namespace content

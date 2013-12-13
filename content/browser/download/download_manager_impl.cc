@@ -398,6 +398,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     }
     download = item_iterator->second;
     DCHECK_EQ(DownloadItem::INTERRUPTED, download->GetState());
+    download->MergeOriginInfoOnResume(*info);
   }
 
   base::FilePath default_download_directory;

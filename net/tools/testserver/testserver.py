@@ -1573,7 +1573,10 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.send_header('Content-Type', 'application/octet-stream')
     self.send_header('Content-Length', last_byte - first_byte + 1)
     if send_verifiers:
-      self.send_header('Etag', '"XYZZY"')
+      # If fail_precondition is non-zero, then the ETag for each request will be
+      # different.
+      etag = "%s%d" % (token, fail_precondition)
+      self.send_header('ETag', etag)
       self.send_header('Last-Modified', 'Tue, 19 Feb 2013 14:32 EST')
     self.end_headers()
 

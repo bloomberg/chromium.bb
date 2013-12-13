@@ -3209,6 +3209,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Download.OriginStateOnFullResumption"
+    enum="DownloadOriginStateOnResumption">
+  <summary>
+    Changes observed when a response is received for a full download resumption
+    request.
+  </summary>
+</histogram>
+
+<histogram name="Download.OriginStateOnPartialResumption"
+    enum="DownloadOriginStateOnResumption">
+  <summary>
+    Changes observed when a response is received for a partial (byte-range)
+    download resumption request.
+  </summary>
+</histogram>
+
 <histogram name="Download.PotentialBandwidth" units="Bytes/second">
   <summary>
     The maximum bandwidth (per read) that Chrome could have provided for the
@@ -22792,6 +22808,17 @@ other types of suffix sets.
   <int value="0" label="Opened with plaform handler by default"/>
   <int value="1" label="Opened in browser by default"/>
   <int value="2" label="Opened with plaform handler by user choice"/>
+</enum>
+
+<enum name="DownloadOriginStateOnResumption" type="int">
+  <int value="0" label="No changes"/>
+  <int value="1" label="New redirects"/>
+  <int value="2" label="New validators"/>
+  <int value="3" label="New redirects + validators"/>
+  <int value="4" label="New Content-Disposition"/>
+  <int value="5" label="New redirects + Content-Disposition"/>
+  <int value="6" label="New validators + Content-Disposition"/>
+  <int value="7" label="New redirects + validators + Content-Disposition"/>
 </enum>
 
 <enum name="DownloadSavePackageEvent" type="int">
