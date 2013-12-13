@@ -29,12 +29,17 @@
  */
 
 [
-    Constructor(double doubleArg,
-                DOMString stringArg,
-                TestInterfaceEmpty testInterfaceEmptyArg,
-                Dictionary dictionaryArg,
-                sequence<DOMString> sequenceStringArg,
-                optional Dictionary optionalDictionaryArg),
+    Constructor(
+        double doubleArg,
+        DOMString stringArg,
+        TestInterfaceEmpty testInterfaceEmptyArg,
+        Dictionary dictionaryArg,
+        sequence<DOMString> sequenceStringArg,
+        optional Dictionary optionalDictionaryArg,
+        [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
+        [Default=NullString] optional DOMString defaultNullStringOptionalStringArg,
+        [Default=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg,
+        [Default=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg),
     ConstructorCallWith=ExecutionContext&Document,
     MeasureAs=TestFeature,
     RaisesException=Constructor,
