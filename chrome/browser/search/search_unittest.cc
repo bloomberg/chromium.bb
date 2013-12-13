@@ -851,9 +851,26 @@ TEST_F(DisplaySearchButtonTest, Never) {
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
 }
 
+TEST_F(DisplaySearchButtonTest, CommandLineNever) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableSearchButtonInOmnibox);
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
+
+  // Command-line disable should override Finch.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:1"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
+}
+
 TEST_F(DisplaySearchButtonTest, ForSearchTermReplacement) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 display_search_button:1"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, CommandLineForSearchTermReplacement) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSearchButtonInOmniboxForStr);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR, GetDisplaySearchButtonConditions());
 }
 
@@ -864,9 +881,23 @@ TEST_F(DisplaySearchButtonTest, ForSearchTermReplacementOrInputInProgress) {
             GetDisplaySearchButtonConditions());
 }
 
+TEST_F(DisplaySearchButtonTest,
+       CommandLineForSearchTermReplacementOrInputInProgress) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSearchButtonInOmniboxForStrOrIip);
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP,
+            GetDisplaySearchButtonConditions());
+}
+
 TEST_F(DisplaySearchButtonTest, Always) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 display_search_button:3"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_ALWAYS, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, CommandLineAlways) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSearchButtonInOmniboxAlways);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_ALWAYS, GetDisplaySearchButtonConditions());
 }
 
@@ -890,9 +921,24 @@ TEST_F(OriginChipTest, NoOriginChip) {
   EXPECT_FALSE(ShouldDisplayOriginChip());
 }
 
+TEST_F(OriginChipTest, CommandLineNoOriginChip) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableOriginChip);
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+
+  // Command-line disable should override Finch.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+}
+
 TEST_F(OriginChipTest, OriginChip) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+}
+
+TEST_F(OriginChipTest, CommandLineOriginChip) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableOriginChip);
   EXPECT_TRUE(ShouldDisplayOriginChip());
 }
 

@@ -341,6 +341,23 @@ const Experiment::Choice kNumRasterThreadsChoices[] = {
   { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, cc::switches::kNumRasterThreads, "4" }
 };
 
+// We're using independent flags here (as opposed to a common flag with
+// different values) to be able to enable/disable the entire experience
+// associated with this feature server-side from the FieldTrial (the complete
+// experience includes other flag changes as well). It is not currently possible
+// to do that with "flag=value" flags.
+const Experiment::Choice kSearchButtonInOmniboxChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableSearchButtonInOmnibox, ""},
+  { IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLE_FOR_STR,
+    switches::kEnableSearchButtonInOmniboxForStr, ""},
+  { IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLE_FOR_STR_OR_IIP,
+    switches::kEnableSearchButtonInOmniboxForStrOrIip, ""},
+  { IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLED,
+    switches::kEnableSearchButtonInOmniboxAlways, ""}
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1928,6 +1945,21 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_NUM_RASTER_THREADS_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kNumRasterThreadsChoices)
+  },
+  {
+    "origin-chip",
+    IDS_FLAGS_ORIGIN_CHIP_NAME,
+    IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION,
+    kOsCrOS | kOsWin,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOriginChip,
+                              switches::kDisableOriginChip)
+  },
+  {
+    "search-button-in-omnibox",
+    IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_NAME,
+    IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_DESCRIPTION,
+    kOsCrOS | kOsMac | kOsWin,
+    MULTI_VALUE_TYPE(kSearchButtonInOmniboxChoices)
   }
 };
 

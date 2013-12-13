@@ -6767,6 +6767,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
         Provides an off switch for enhanced bookmarks experiment
       </message>
+      <message name="IDS_FLAGS_ORIGIN_CHIP_NAME" desc="Name of about:flags option to enable the display of the Origin Chip experiment.">
+        Enable origin chip
+      </message>
+      <message name="IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION" desc="Description of about:flags option to enable the display of the Origin Chip experiment.">
+        Moves the URL out of the Omnibox and shows the hostname in the origin chip in the toolbar.
+      </message>
+      <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_NAME" desc="Name of about:flags option to enable the search button in omnibox experiment.">
+        Enable search button in Omnibox
+      </message>
+      <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_DESCRIPTION" desc="Description of about:flags option to enable the search button in omnibox experiment.">
+        Places a search button in the Omnibox.
+      </message>
+      <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLE_FOR_STR" desc="Option in a drop-down menu to enable the display of the search button in the omnibox on search result pages.">
+        Enabled on search result pages
+      </message>
+      <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLE_FOR_STR_OR_IIP" desc="Option in a drop-down menu to enable the display of the search button in the omnibox on search result pages or whenever input is in progress.">
+        Enabled on search result pages or when input in progress
+      </message>
+      <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_ENABLED" desc="Option in a drop-down menu to enable the display of the search button at all times (on all pages).">
+        Enabled on all pages
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
