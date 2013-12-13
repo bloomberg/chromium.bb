@@ -45,7 +45,10 @@ WebSocketHandshakeRequestInfo::WebSocketHandshakeRequestInfo() : m_private(WebSo
     m_private->setRequestMethod("GET");
 }
 
-WebSocketHandshakeRequestInfo::~WebSocketHandshakeRequestInfo() { }
+WebSocketHandshakeRequestInfo::~WebSocketHandshakeRequestInfo()
+{
+    m_private.reset();
+}
 
 void WebSocketHandshakeRequestInfo::setURL(const WebURL& url)
 {
