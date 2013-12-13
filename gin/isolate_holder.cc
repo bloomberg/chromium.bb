@@ -53,25 +53,27 @@ IsolateHolder::IsolateHolder()
   constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
                                 base::SysInfo::NumberOfProcessors());
   v8::SetResourceConstraints(isolate_, &constraints);
-  v8::Isolate::Scope isolate_scope(isolate_);
-  v8::HandleScope handle_scope(isolate_);
-  isolate_data_.reset(new PerIsolateData(isolate_));
-  InitFunctionTemplates(isolate_data_.get());
+  Init();
 }
 
 IsolateHolder::IsolateHolder(v8::Isolate* isolate)
     : isolate_owner_(false),
       isolate_(isolate) {
   EnsureV8Initialized(false);
-  v8::Isolate::Scope isolate_scope(isolate_);
-  v8::HandleScope handle_scope(isolate_);
-  isolate_data_.reset(new PerIsolateData(isolate_));
+  Init();
 }
 
 IsolateHolder::~IsolateHolder() {
   isolate_data_.reset();
   if (isolate_owner_)
     isolate_->Dispose();
+}
+
+void IsolateHolder::Init() {
+  v8::Isolate::Scope isolate_scope(isolate_);
+  v8::HandleScope handle_scope(isolate_);
+  isolate_data_.reset(new PerIsolateData(isolate_));
+  InitFunctionTemplates(isolate_data_.get());
 }
 
 }  // namespace gin

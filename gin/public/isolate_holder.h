@@ -37,6 +37,8 @@ class GIN_EXPORT IsolateHolder {
   v8::Isolate* isolate() { return isolate_; }
 
  private:
+  void Init();
+
   bool isolate_owner_;
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;
