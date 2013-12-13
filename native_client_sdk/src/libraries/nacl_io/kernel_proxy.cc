@@ -18,27 +18,27 @@
 #include <iterator>
 #include <string>
 
-#include "nacl_io/fuse_mount_factory.h"
+#include "nacl_io/devfs/dev_fs.h"
+#include "nacl_io/filesystem.h"
+#include "nacl_io/fusefs/fuse_fs_factory.h"
 #include "nacl_io/host_resolver.h"
+#include "nacl_io/html5fs/html5_fs.h"
+#include "nacl_io/httpfs/http_fs.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
-#include "nacl_io/mount.h"
-#include "nacl_io/mount_dev.h"
-#include "nacl_io/mount_html5fs.h"
-#include "nacl_io/mount_http.h"
-#include "nacl_io/mount_mem.h"
-#include "nacl_io/mount_node.h"
-#include "nacl_io/mount_node_pipe.h"
-#include "nacl_io/mount_node_tcp.h"
-#include "nacl_io/mount_node_udp.h"
-#include "nacl_io/mount_passthrough.h"
-#include "nacl_io/mount_stream.h"
+#include "nacl_io/memfs/mem_fs.h"
+#include "nacl_io/node.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/osstat.h"
+#include "nacl_io/passthroughfs/passthrough_fs.h"
 #include "nacl_io/path.h"
 #include "nacl_io/pepper_interface.h"
-#include "nacl_io/typed_mount_factory.h"
+#include "nacl_io/pipe/pipe_node.h"
+#include "nacl_io/socket/tcp_node.h"
+#include "nacl_io/socket/udp_node.h"
+#include "nacl_io/stream/stream_fs.h"
+#include "nacl_io/typed_fs_factory.h"
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"
 #include "sdk_util/string_util.h"
@@ -58,7 +58,7 @@ KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL),
 
 KernelProxy::~KernelProxy() {
   // Clean up the MountFactories.
-  for (MountFactoryMap_t::iterator i = factories_.begin();
+  for (FsFactoryMap_t::iterator i = factories_.begin();
        i != factories_.end();
        ++i) {
     delete i->second;
@@ -72,11 +72,11 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   ppapi_ = ppapi;
   dev_ = 1;
 
-  factories_["memfs"] = new TypedMountFactory<MountMem>;
-  factories_["dev"] = new TypedMountFactory<MountDev>;
-  factories_["html5fs"] = new TypedMountFactory<MountHtml5Fs>;
-  factories_["httpfs"] = new TypedMountFactory<MountHttp>;
-  factories_["passthroughfs"] = new TypedMountFactory<MountPassthrough>;
+  factories_["memfs"] = new TypedFsFactory<MemFs>;
+  factories_["dev"] = new TypedFsFactory<DevFs>;
+  factories_["html5fs"] = new TypedFsFactory<Html5Fs>;
+  factories_["httpfs"] = new TypedFsFactory<HttpFs>;
+  factories_["passthroughfs"] = new TypedFsFactory<PassthroughFs>;
 
   int result;
   result = mount("", "/", "passthroughfs", 0, NULL);
@@ -112,10 +112,10 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   host_resolver_.Init(ppapi_);
 #endif
 
-  MountInitArgs args;
+  FsInitArgs args;
   args.dev = dev_++;
   args.ppapi = ppapi_;
-  stream_mount_.reset(new MountStream());
+  stream_mount_.reset(new StreamFs());
   result = stream_mount_->Init(args);
   if (result != 0) {
     assert(false);
@@ -125,18 +125,18 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   return rtn;
 }
 
-bool KernelProxy::RegisterMountType(const char* mount_type,
+bool KernelProxy::RegisterFsType(const char* fs_type,
                                     fuse_operations* fuse_ops) {
-  MountFactoryMap_t::iterator iter = factories_.find(mount_type);
+  FsFactoryMap_t::iterator iter = factories_.find(fs_type);
   if (iter != factories_.end())
     return false;
 
-  factories_[mount_type] = new FuseMountFactory(fuse_ops);
+  factories_[fs_type] = new FuseFsFactory(fuse_ops);
   return true;
 }
 
-bool KernelProxy::UnregisterMountType(const char* mount_type) {
-  MountFactoryMap_t::iterator iter = factories_.find(mount_type);
+bool KernelProxy::UnregisterFsType(const char* fs_type) {
+  FsFactoryMap_t::iterator iter = factories_.find(fs_type);
   if (iter == factories_.end())
     return false;
 
@@ -146,27 +146,27 @@ bool KernelProxy::UnregisterMountType(const char* mount_type) {
 }
 
 int KernelProxy::open_resource(const char* path) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
 
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  ScopedMountNode node;
-  error = mnt->OpenResource(rel, &node);
+  ScopedNode node;
+  error = fs->OpenResource(rel, &node);
   if (error) {
     // OpenResource failed, try Open().
-    error = mnt->Open(rel, O_RDONLY, &node);
+    error = fs->Open(rel, O_RDONLY, &node);
     if (error) {
       errno = error;
       return -1;
     }
   }
 
-  ScopedKernelHandle handle(new KernelHandle(mnt, node));
+  ScopedKernelHandle handle(new KernelHandle(fs, node));
   error = handle->Init(O_RDONLY);
   if (error) {
     errno = error;
@@ -177,16 +177,16 @@ int KernelProxy::open_resource(const char* path) {
 }
 
 int KernelProxy::open(const char* path, int open_flags) {
-  ScopedMount mnt;
-  ScopedMountNode node;
+  ScopedFilesystem fs;
+  ScopedNode node;
 
-  Error error = AcquireMountAndNode(path, open_flags, &mnt, &node);
+  Error error = AcquireFsAndNode(path, open_flags, &fs, &node);
   if (error) {
     errno = error;
     return -1;
   }
 
-  ScopedKernelHandle handle(new KernelHandle(mnt, node));
+  ScopedKernelHandle handle(new KernelHandle(fs, node));
   error = handle->Init(open_flags);
   if (error) {
     errno = error;
@@ -197,8 +197,8 @@ int KernelProxy::open(const char* path, int open_flags) {
 }
 
 int KernelProxy::pipe(int pipefds[2]) {
-  MountNodePipe* pipe = new MountNodePipe(stream_mount_.get());
-  ScopedMountNode node(pipe);
+  PipeNode* pipe = new PipeNode(stream_mount_.get());
+  ScopedNode node(pipe);
 
   if (pipe->Init(O_RDWR) == 0) {
     ScopedKernelHandle handle0(new KernelHandle(stream_mount_, node));
@@ -331,16 +331,16 @@ int KernelProxy::utime(const char* filename, const struct utimbuf* times) {
 }
 
 int KernelProxy::mkdir(const char* path, mode_t mode) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
 
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  error = mnt->Mkdir(rel, mode);
+  error = fs->Mkdir(rel, mode);
   if (error) {
     errno = error;
     return -1;
@@ -350,16 +350,16 @@ int KernelProxy::mkdir(const char* path, mode_t mode) {
 }
 
 int KernelProxy::rmdir(const char* path) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
 
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  error = mnt->Rmdir(rel);
+  error = fs->Rmdir(rel);
   if (error) {
     errno = error;
     return -1;
@@ -387,7 +387,7 @@ int KernelProxy::mount(const char* source,
   std::string abs_path = GetAbsParts(target).Join();
 
   // Find a factory of that type
-  MountFactoryMap_t::iterator factory = factories_.find(filesystemtype);
+  FsFactoryMap_t::iterator factory = factories_.find(filesystemtype);
   if (factory == factories_.end()) {
     errno = ENODEV;
     return -1;
@@ -415,19 +415,19 @@ int KernelProxy::mount(const char* source,
     }
   }
 
-  MountInitArgs args;
+  FsInitArgs args;
   args.dev = dev_++;
   args.string_map = smap;
   args.ppapi = ppapi_;
 
-  ScopedMount mnt;
-  Error error = factory->second->CreateMount(args, &mnt);
+  ScopedFilesystem fs;
+  Error error = factory->second->CreateFilesystem(args, &fs);
   if (error) {
     errno = error;
     return -1;
   }
 
-  error = AttachMountAtPath(mnt, abs_path);
+  error = AttachFsAtPath(fs, abs_path);
   if (error) {
     errno = error;
     return -1;
@@ -437,7 +437,7 @@ int KernelProxy::mount(const char* source,
 }
 
 int KernelProxy::umount(const char* path) {
-  Error error = DetachMountAtPath(path);
+  Error error = DetachFsAtPath(path);
   if (error) {
     errno = error;
     return -1;
@@ -611,16 +611,16 @@ off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
 }
 
 int KernelProxy::unlink(const char* path) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
 
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  error = mnt->Unlink(rel);
+  error = fs->Unlink(rel);
   if (error) {
     errno = error;
     return -1;
@@ -640,23 +640,23 @@ int KernelProxy::lstat(const char* path, struct stat* buf) {
 }
 
 int KernelProxy::rename(const char* path, const char* newpath) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  ScopedMount newmnt;
+  ScopedFilesystem newfs;
   Path newrel;
-  error = AcquireMountAndRelPath(newpath, &newmnt, &newrel);
+  error = AcquireFsAndRelPath(newpath, &newfs, &newrel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  if (newmnt.get() != mnt.get()) {
+  if (newfs.get() != fs.get()) {
     // Renaming accross mountpoints is not allowed
     errno = EXDEV;
     return -1;
@@ -666,7 +666,7 @@ int KernelProxy::rename(const char* path, const char* newpath) {
   if (rel == newrel)
     return 0;
 
-  error = mnt->Rename(rel, newrel);
+  error = fs->Rename(rel, newrel);
   if (error) {
     errno = error;
     return -1;
@@ -676,16 +676,16 @@ int KernelProxy::rename(const char* path, const char* newpath) {
 }
 
 int KernelProxy::remove(const char* path) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
 
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  error = mnt->Remove(rel);
+  error = fs->Remove(rel);
   if (error) {
     errno = error;
     return -1;
@@ -751,16 +751,16 @@ int KernelProxy::fcntl(int fd, int request, va_list args) {
 }
 
 int KernelProxy::access(const char* path, int amode) {
-  ScopedMount mnt;
+  ScopedFilesystem fs;
   Path rel;
 
-  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  Error error = AcquireFsAndRelPath(path, &fs, &rel);
   if (error) {
     errno = error;
     return -1;
   }
 
-  error = mnt->Access(rel, amode);
+  error = fs->Access(rel, amode);
   if (error) {
     errno = error;
     return -1;
@@ -1184,9 +1184,9 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
     return -1;
   }
 
-  MountNodeSocket* sock = new MountNodeTCP(stream_mount_.get(), new_sock);
+  SocketNode* sock = new TcpNode(stream_mount_.get(), new_sock);
 
-  // The MountNodeSocket now holds a reference to the new socket
+  // The SocketNode now holds a reference to the new socket
   // so we release ours.
   ppapi_->ReleaseResource(new_sock);
   error = sock->Init(O_RDWR);
@@ -1195,7 +1195,7 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
     return -1;
   }
 
-  ScopedMountNode node(sock);
+  ScopedNode node(sock);
   ScopedKernelHandle new_handle(new KernelHandle(stream_mount_, node));
   error = new_handle->Init(O_RDWR);
   if (error != 0) {
@@ -1529,14 +1529,14 @@ int KernelProxy::socket(int domain, int type, int protocol) {
     type &= ~SOCK_NONBLOCK;
   }
 
-  MountNodeSocket* sock = NULL;
+  SocketNode* sock = NULL;
   switch (type) {
     case SOCK_DGRAM:
-      sock = new MountNodeUDP(stream_mount_.get());
+      sock = new UdpNode(stream_mount_.get());
       break;
 
     case SOCK_STREAM:
-      sock = new MountNodeTCP(stream_mount_.get());
+      sock = new TcpNode(stream_mount_.get());
       break;
 
     case SOCK_SEQPACKET:
@@ -1550,7 +1550,7 @@ int KernelProxy::socket(int domain, int type, int protocol) {
       return -1;
   }
 
-  ScopedMountNode node(sock);
+  ScopedNode node(sock);
   Error rtn = sock->Init(O_RDWR);
   if (rtn != 0) {
     errno = rtn;
