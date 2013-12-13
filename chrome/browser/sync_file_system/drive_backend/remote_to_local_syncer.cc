@@ -280,15 +280,32 @@ void RemoteToLocalSyncer::HandleMissingRemoteMetadata(
       dirty_tracker_->file_id(),
       base::Bind(&RemoteToLocalSyncer::DidGetRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 metadata_database()->GetLargestKnownChangeID()));
+                 callback));
 }
 
 void RemoteToLocalSyncer::DidGetRemoteMetadata(
     const SyncStatusCallback& callback,
-    int64 change_id,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK &&
+      error != google_apis::HTTP_NOT_FOUND) {
+    callback.Run(status);
+    return;
+  }
+
+  if (error == google_apis::HTTP_NOT_FOUND) {
+    metadata_database()->UpdateByDeletedRemoteFile(
+        dirty_tracker_->file_id(), callback);
+    return;
+  }
+
+  if (!entry) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
   metadata_database()->UpdateByFileResource(
       *drive::util::ConvertResourceEntryToFileResource(*entry),
       base::Bind(&RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata,
@@ -518,8 +535,15 @@ void RemoteToLocalSyncer::DidListFolderContent(
     scoped_ptr<FileIDList> children,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  if (!resource_list) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
@@ -659,8 +683,9 @@ void RemoteToLocalSyncer::DidDownloadFile(const SyncStatusCallback& callback,
                                           webkit_blob::ScopedFile file,
                                           google_apis::GDataErrorCode error,
                                           const base::FilePath&) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 

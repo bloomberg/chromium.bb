@@ -11,6 +11,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -60,9 +61,16 @@ void ListChangesTask::DidListChanges(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
-  if (error != google_apis::HTTP_SUCCESS) {
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_ERROR, FROM_HERE, "Failed to fetch change list.");
     callback.Run(SYNC_STATUS_NETWORK_ERROR);
+    return;
+  }
+
+  if (!resource_list) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 

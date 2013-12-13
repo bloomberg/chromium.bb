@@ -107,7 +107,6 @@ class RemoteToLocalSyncer : public SyncTask {
   // Note: if the file is not found, it should be handled as if deleted.
   void HandleMissingRemoteMetadata(const SyncStatusCallback& callback);
   void DidGetRemoteMetadata(const SyncStatusCallback& callback,
-                            int64 change_id,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::ResourceEntry> entry);
   void DidUpdateDatabaseForRemoteMetadata(const SyncStatusCallback& callback,

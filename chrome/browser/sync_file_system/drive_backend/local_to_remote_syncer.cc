@@ -320,11 +320,12 @@ void LocalToRemoteSyncer::DeleteRemoteFile(
 void LocalToRemoteSyncer::DidDeleteRemoteFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
-  if (error != google_apis::HTTP_SUCCESS &&
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK &&
       error != google_apis::HTTP_NOT_FOUND &&
       error != google_apis::HTTP_PRECONDITION &&
       error != google_apis::HTTP_CONFLICT) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    callback.Run(status);
     return;
   }
 

@@ -51,9 +51,9 @@ void FolderCreator::DidCreateFolder(
     const FileIDCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error != google_apis::HTTP_SUCCESS &&
-      error != google_apis::HTTP_CREATED) {
-    callback.Run(std::string(), GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(std::string(), status);
     return;
   }
 
@@ -69,8 +69,15 @@ void FolderCreator::DidListFolders(
     ScopedVector<google_apis::ResourceEntry> candidates,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(std::string(), GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(std::string(), status);
+    return;
+  }
+
+  if (!resource_list) {
+    NOTREACHED();
+    callback.Run(std::string(), SYNC_STATUS_FAILED);
     return;
   }
 
