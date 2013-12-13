@@ -62,7 +62,7 @@ void DocumentThreadableLoader::loadResourceSynchronously(Document* document, con
 PassRefPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document* document, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
 {
     RefPtr<DocumentThreadableLoader> loader = adoptRef(new DocumentThreadableLoader(document, client, LoadAsynchronously, request, options));
-    if (!loader->m_resource)
+    if (!loader->resource())
         loader = 0;
     return loader.release();
 }
@@ -138,8 +138,6 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequestWithPreflight(const R
 
 DocumentThreadableLoader::~DocumentThreadableLoader()
 {
-    if (m_resource)
-        m_resource->removeClient(this);
 }
 
 void DocumentThreadableLoader::cancel()
@@ -152,14 +150,14 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
     RefPtr<DocumentThreadableLoader> protect(this);
 
     // Cancel can re-enter and m_resource might be null here as a result.
-    if (m_client && m_resource) {
+    if (m_client && resource()) {
         ResourceError errorForCallback = error;
         if (errorForCallback.isNull()) {
             // FIXME: This error is sent to the client in didFail(), so it should not be an internal one. Use FrameLoaderClient::cancelledError() instead.
-            errorForCallback = ResourceError(errorDomainBlinkInternal, 0, m_resource->url().string(), "Load cancelled");
+            errorForCallback = ResourceError(errorDomainBlinkInternal, 0, resource()->url().string(), "Load cancelled");
             errorForCallback.setIsCancellation(true);
         }
-        didFail(m_resource->identifier(), errorForCallback);
+        didFail(resource()->identifier(), errorForCallback);
     }
     clearResource();
     m_client = 0;
@@ -167,26 +165,14 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
 
 void DocumentThreadableLoader::setDefersLoading(bool value)
 {
-    if (m_resource)
-        m_resource->setDefersLoading(value);
-}
-
-void DocumentThreadableLoader::clearResource()
-{
-    // Script can cancel and restart a request reentrantly within removeClient(),
-    // which could lead to calling Resource::removeClient() multiple times for
-    // this DocumentThreadableLoader. Save off a copy of m_resource and clear it to
-    // prevent the reentrancy.
-    if (ResourcePtr<RawResource> resource = m_resource) {
-        m_resource = 0;
-        resource->removeClient(this);
-    }
+    if (resource())
+        resource()->setDefersLoading(value);
 }
 
 void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == m_resource);
+    ASSERT_UNUSED(resource, resource == this->resource());
 
     RefPtr<DocumentThreadableLoader> protect(this);
     if (!isAllowedByPolicy(request.url())) {
@@ -220,8 +206,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         }
 
         if (allowRedirect) {
-            if (m_resource)
-                clearResource();
+            clearResource();
 
             RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(redirectResponse.url());
             RefPtr<SecurityOrigin> requestOrigin = SecurityOrigin::create(request.url());
@@ -259,14 +244,14 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
     ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == m_resource);
+    ASSERT_UNUSED(resource, resource == this->resource());
     m_client->didSendData(bytesSent, totalBytesToBeSent);
 }
 
 void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength)
 {
     ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == m_resource);
+    ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(!m_actualRequest);
 
     m_client->didDownloadData(dataLength);
@@ -274,8 +259,8 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
 
 void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
-    ASSERT_UNUSED(resource, resource == m_resource);
-    didReceiveResponse(m_resource->identifier(), response);
+    ASSERT_UNUSED(resource, resource == this->resource());
+    didReceiveResponse(resource->identifier(), response);
 }
 
 void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
@@ -285,7 +270,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
     String accessControlErrorDescription;
     if (m_actualRequest) {
         DocumentLoader* loader = m_document->frame()->loader().documentLoader();
-        InspectorInstrumentation::didReceiveResourceResponse(m_document->frame(), identifier, loader, response, m_resource ? m_resource->loader() : 0);
+        InspectorInstrumentation::didReceiveResourceResponse(m_document->frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
             preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
@@ -320,8 +305,8 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
 
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, int dataLength)
 {
-    ASSERT_UNUSED(resource, resource == m_resource);
-    didReceiveData(m_resource->identifier(), data, dataLength);
+    ASSERT(resource == this->resource());
+    didReceiveData(resource->identifier(), data, dataLength);
 }
 
 void DocumentThreadableLoader::didReceiveData(unsigned long identifier, const char* data, int dataLength)
@@ -340,14 +325,14 @@ void DocumentThreadableLoader::didReceiveData(unsigned long identifier, const ch
 void DocumentThreadableLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == m_resource);
+    ASSERT(resource == this->resource());
 
     m_timeoutTimer.stop();
 
-    if (m_resource->errorOccurred())
-        didFail(m_resource->identifier(), m_resource->resourceError());
+    if (resource->errorOccurred())
+        didFail(resource->identifier(), resource->resourceError());
     else
-        didFinishLoading(m_resource->identifier(), m_resource->loadFinishTime());
+        didFinishLoading(resource->identifier(), resource->loadFinishTime());
 }
 
 void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double finishTime)
@@ -376,7 +361,7 @@ void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer
     // Using values from net/base/net_error_list.h ERR_TIMED_OUT,
     // Same as existing FIXME above - this error should be coming from FrameLoaderClient to be identifiable.
     static const int timeoutError = -7;
-    ResourceError error("net", timeoutError, m_resource->url(), String());
+    ResourceError error("net", timeoutError, resource()->url(), String());
     error.setIsTimeout(true);
     cancelWithError(error);
 }
@@ -426,14 +411,11 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
             m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0);
 
         FetchRequest newRequest(request, m_options.initiator, options);
-        ASSERT(!m_resource);
-        m_resource = m_document->fetcher()->fetchRawResource(newRequest);
-        if (m_resource) {
-            if (m_resource->loader()) {
-                unsigned long identifier = m_resource->identifier();
-                InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
-            }
-            m_resource->addClient(this);
+        ASSERT(!resource());
+        setResource(m_document->fetcher()->fetchRawResource(newRequest));
+        if (resource() && resource()->loader()) {
+            unsigned long identifier = resource()->identifier();
+            InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
         }
         return;
     }

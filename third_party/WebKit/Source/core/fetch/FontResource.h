@@ -42,6 +42,8 @@ class FontCustomPlatformData;
 
 class FontResource : public Resource {
 public:
+    typedef ResourceClient ClientType;
+
     FontResource(const ResourceRequest&);
     virtual ~FontResource();
 

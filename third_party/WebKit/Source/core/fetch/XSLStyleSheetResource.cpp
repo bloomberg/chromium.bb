@@ -37,7 +37,7 @@
 namespace WebCore {
 
 XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, XSLStyleSheet)
+    : StyleSheetResource(resourceRequest, XSLStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/xsl"))
 {
     ASSERT(RuntimeEnabledFeatures::xsltEnabled());

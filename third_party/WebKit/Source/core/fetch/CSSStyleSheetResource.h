@@ -27,6 +27,7 @@
 #define CSSStyleSheetResource_h
 
 #include "core/fetch/ResourcePtr.h"
+#include "core/fetch/StyleSheetResource.h"
 
 namespace WebCore {
 
@@ -35,7 +36,7 @@ class ResourceClient;
 class StyleSheetContents;
 class TextResourceDecoder;
 
-class CSSStyleSheetResource : public Resource {
+class CSSStyleSheetResource : public StyleSheetResource {
 public:
     CSSStyleSheetResource(const ResourceRequest&, const String& charset);
     virtual ~CSSStyleSheetResource();

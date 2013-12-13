@@ -32,6 +32,8 @@ class RawResourceClient;
 
 class RawResource : public Resource {
 public:
+    typedef RawResourceClient ClientType;
+
     RawResource(const ResourceRequest&, Type);
 
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't

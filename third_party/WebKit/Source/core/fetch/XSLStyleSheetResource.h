@@ -27,13 +27,14 @@
 #define XSLStyleSheetResource_h
 
 #include "core/fetch/ResourcePtr.h"
+#include "core/fetch/StyleSheetResource.h"
 
 namespace WebCore {
 
 class ResourceFetcher;
 class TextResourceDecoder;
 
-class XSLStyleSheetResource : public Resource {
+class XSLStyleSheetResource : public StyleSheetResource {
 public:
     XSLStyleSheetResource(const ResourceRequest&);
 

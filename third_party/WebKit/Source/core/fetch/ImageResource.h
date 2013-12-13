@@ -45,6 +45,8 @@ class ImageResource : public Resource, public ImageObserver {
     friend class MemoryCache;
 
 public:
+    typedef ImageResourceClient ClientType;
+
     ImageResource(const ResourceRequest&);
     ImageResource(WebCore::Image*);
     virtual ~ImageResource();

@@ -382,9 +382,6 @@ LinkStyle::~LinkStyle()
 {
     if (m_sheet)
         m_sheet->clearOwnerNode();
-
-    if (m_resource)
-        m_resource->removeClient(this);
 }
 
 Document& LinkStyle::document()
@@ -579,10 +576,9 @@ void LinkStyle::process()
     if ((m_disabledState != Disabled) && m_owner->relAttribute().isStyleSheet()
         && shouldLoadResource() && builder.url().isValid()) {
 
-        if (m_resource) {
+        if (resource()) {
             removePendingSheet();
-            m_resource->removeClient(this);
-            m_resource = 0;
+            clearResource();
         }
 
         if (!m_owner->shouldLoadLink())
@@ -606,11 +602,9 @@ void LinkStyle::process()
 
         // Load stylesheets that are not needed for the rendering immediately with low priority.
         FetchRequest request = builder.build(blocking);
-        m_resource = document().fetcher()->fetchCSSStyleSheet(request);
+        setResource(document().fetcher()->fetchCSSStyleSheet(request));
 
-        if (m_resource)
-            m_resource->addClient(this);
-        else {
+        if (!resource()) {
             // The request may have been denied if (for example) the stylesheet is local and the document is remote.
             m_loading = false;
             removePendingSheet();

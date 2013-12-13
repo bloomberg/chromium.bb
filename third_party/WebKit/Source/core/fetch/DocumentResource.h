@@ -34,6 +34,8 @@ class Document;
 
 class DocumentResource : public Resource {
 public:
+    typedef ResourceClient ClientType;
+
     DocumentResource(const ResourceRequest&, Type);
     virtual ~DocumentResource();
 

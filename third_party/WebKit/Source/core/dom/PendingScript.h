@@ -27,22 +27,23 @@
 #define PendingScript_h
 
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ResourceOwner.h"
+#include "core/fetch/ScriptResource.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
-class ScriptResource;
 class Element;
+class ScriptResource;
 
 // A container for an external script which may be loaded and executed.
 //
 // A ResourcePtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.
-class PendingScript : public ResourceClient {
+class PendingScript : public ResourceOwner<ScriptResource> {
 public:
     PendingScript()
         : m_watchingForLoad(false)
@@ -58,7 +59,7 @@ public:
     }
 
     PendingScript(const PendingScript& other)
-        : ResourceClient(other)
+        : ResourceOwner(other)
         , m_watchingForLoad(other.m_watchingForLoad)
         , m_element(other.m_element)
         , m_startingPosition(other.m_startingPosition)
@@ -76,7 +77,7 @@ public:
         m_watchingForLoad = other.m_watchingForLoad;
         m_element = other.m_element;
         m_startingPosition = other.m_startingPosition;
-        setScriptResource(other.resource());
+        this->ResourceOwner<ScriptResource, ResourceClient>::operator=(other);
 
         return *this;
     }
@@ -91,7 +92,6 @@ public:
     void setElement(Element* element) { m_element = element; }
     PassRefPtr<Element> releaseElementAndClear();
 
-    ScriptResource* resource() const;
     void setScriptResource(ScriptResource*);
 
     virtual void notifyFinished(Resource*);
@@ -100,7 +100,6 @@ private:
     bool m_watchingForLoad;
     RefPtr<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
-    ResourcePtr<ScriptResource> m_resource;
 };
 
 }

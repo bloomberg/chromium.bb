@@ -36,6 +36,7 @@ public:
 
     Resource* get() const { return m_resource; }
     bool operator!() const { return !m_resource; }
+    void clear() { setResource(0); }
 
     // This conversion operator allows implicit conversion to bool but not to other integer types.
     typedef Resource* ResourcePtrBase::*UnspecifiedBoolType;

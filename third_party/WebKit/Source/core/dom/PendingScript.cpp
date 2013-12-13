@@ -33,8 +33,6 @@ namespace WebCore {
 
 PendingScript::~PendingScript()
 {
-    if (m_resource)
-        m_resource->removeClient(this);
 }
 
 PassRefPtr<Element> PendingScript::releaseElementAndClear()
@@ -47,18 +45,7 @@ PassRefPtr<Element> PendingScript::releaseElementAndClear()
 
 void PendingScript::setScriptResource(ScriptResource* resource)
 {
-    if (m_resource == resource)
-        return;
-    if (m_resource)
-        m_resource->removeClient(this);
-    m_resource = resource;
-    if (m_resource)
-        m_resource->addClient(this);
-}
-
-ScriptResource* PendingScript::resource() const
-{
-    return m_resource.get();
+    setResource(resource);
 }
 
 void PendingScript::notifyFinished(Resource*)

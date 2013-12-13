@@ -38,6 +38,8 @@ class TextResourceDecoder;
 
 class ShaderResource : public Resource {
 public:
+    typedef ResourceClient ClientType;
+
     ShaderResource(const ResourceRequest&);
     virtual ~ShaderResource();
 

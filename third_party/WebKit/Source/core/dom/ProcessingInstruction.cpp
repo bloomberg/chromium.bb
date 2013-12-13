@@ -39,7 +39,6 @@ namespace WebCore {
 inline ProcessingInstruction::ProcessingInstruction(Document& document, const String& target, const String& data)
     : CharacterData(document, data, CreateOther)
     , m_target(target)
-    , m_resource(0)
     , m_loading(false)
     , m_alternate(false)
     , m_createdByParser(false)
@@ -58,9 +57,6 @@ ProcessingInstruction::~ProcessingInstruction()
 {
     if (m_sheet)
         m_sheet->clearOwnerNode();
-
-    if (m_resource)
-        m_resource->removeClient(this);
 
     if (inDocument())
         document().styleEngine()->removeStyleSheetCandidateNode(this);
@@ -123,35 +119,28 @@ void ProcessingInstruction::checkStyleSheet()
                 m_loading = false;
             }
         } else {
-            if (m_resource) {
-                m_resource->removeClient(this);
-                m_resource = 0;
-            }
+            clearResource();
 
             String url = document().completeURL(href).string();
             if (!dispatchBeforeLoadEvent(url))
                 return;
 
-            m_loading = true;
-            document().styleEngine()->addPendingSheet();
+            ResourcePtr<StyleSheetResource> resource;
             FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
-            if (m_isXSL)
-                m_resource = document().fetcher()->fetchXSLStyleSheet(request);
-            else
-            {
+            if (m_isXSL) {
+                resource = document().fetcher()->fetchXSLStyleSheet(request);
+            } else {
                 String charset = attrs.get("charset");
                 if (charset.isEmpty())
                     charset = document().charset();
                 request.setCharset(charset);
-
-                m_resource = document().fetcher()->fetchCSSStyleSheet(request);
+                resource = document().fetcher()->fetchCSSStyleSheet(request);
             }
-            if (m_resource)
-                m_resource->addClient(this);
-            else {
-                // The request may have been denied if (for example) the stylesheet is local and the document is remote.
-                m_loading = false;
-                document().styleEngine()->removePendingSheet(this);
+
+            if (resource) {
+                m_loading = true;
+                document().styleEngine()->addPendingSheet();
+                setResource(resource);
             }
         }
     }
@@ -214,10 +203,7 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
     else if (m_isXSL)
         toXSLStyleSheet(m_sheet.get())->parseString(sheet);
 
-    if (m_resource)
-        m_resource->removeClient(this);
-    m_resource = 0;
-
+    clearResource();
     m_loading = false;
 
     if (m_isCSS)
@@ -228,7 +214,7 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
 
 void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)
 {
-    ASSERT(!m_resource);
+    ASSERT(!resource());
     ASSERT(!m_loading);
     m_sheet = sheet;
     sheet->setTitle(m_title);

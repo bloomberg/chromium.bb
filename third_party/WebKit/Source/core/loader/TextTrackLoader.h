@@ -27,7 +27,7 @@
 #define TextTrackLoader_h
 
 #include "core/fetch/RawResource.h"
-#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ResourceOwner.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "platform/Timer.h"
 #include "wtf/OwnPtr.h"
@@ -37,7 +37,7 @@ namespace WebCore {
 class Document;
 class TextTrackLoader;
 
-class TextTrackLoaderClient {
+class TextTrackLoaderClient : public ResourceOwner<RawResource> {
 public:
     virtual ~TextTrackLoaderClient() { }
 
@@ -46,7 +46,7 @@ public:
     virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
-class TextTrackLoader : public RawResourceClient, private VTTParserClient {
+class TextTrackLoader : public ResourceOwner<RawResource>, private VTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -82,7 +82,6 @@ private:
 
     TextTrackLoaderClient& m_client;
     OwnPtr<VTTParser> m_cueParser;
-    ResourcePtr<RawResource> m_resource;
     // FIXME: Remove this pointer and get the Document from m_client.
     Document& m_document;
     Timer<TextTrackLoader> m_cueLoadTimer;

@@ -23,7 +23,8 @@
 #define ProcessingInstruction_h
 
 #include "core/dom/CharacterData.h"
-#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ResourceOwner.h"
+#include "core/fetch/StyleSheetResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 
 namespace WebCore {
@@ -31,7 +32,7 @@ namespace WebCore {
 class StyleSheet;
 class CSSStyleSheet;
 
-class ProcessingInstruction FINAL : public CharacterData, private StyleSheetResourceClient {
+class ProcessingInstruction FINAL : public CharacterData, private ResourceOwner<StyleSheetResource> {
 public:
     static PassRefPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
     virtual ~ProcessingInstruction();
@@ -76,7 +77,6 @@ private:
     String m_localHref;
     String m_title;
     String m_media;
-    ResourcePtr<Resource> m_resource;
     RefPtr<StyleSheet> m_sheet;
     bool m_loading;
     bool m_alternate;

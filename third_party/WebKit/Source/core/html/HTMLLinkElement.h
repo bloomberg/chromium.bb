@@ -27,7 +27,8 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/DOMSettableTokenList.h"
 #include "core/dom/IconURL.h"
-#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ResourceOwner.h"
+#include "core/fetch/StyleSheetResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/LinkRelAttribute.h"
@@ -54,7 +55,7 @@ typedef EventSender<HTMLLinkElement> LinkEventSender;
 // changing @rel makes it harder to move such a design so we are
 // sticking current way so far.
 //
-class LinkStyle FINAL : public LinkResource, StyleSheetResourceClient {
+class LinkStyle FINAL : public LinkResource, ResourceOwner<StyleSheetResource> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<LinkStyle> create(HTMLLinkElement* owner);
@@ -84,7 +85,7 @@ public:
 
 private:
     // From ResourceClient
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
+    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) OVERRIDE;
 
     enum DisabledState {
         Unset,
@@ -108,7 +109,6 @@ private:
     void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
     Document& document();
 
-    ResourcePtr<CSSStyleSheetResource> m_resource;
     RefPtr<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;

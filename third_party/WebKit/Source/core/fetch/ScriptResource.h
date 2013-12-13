@@ -35,6 +35,8 @@ class TextResourceDecoder;
 
 class ScriptResource : public Resource {
 public:
+    typedef ResourceClient ClientType;
+
     ScriptResource(const ResourceRequest&, const String& charset);
     virtual ~ScriptResource();
 
