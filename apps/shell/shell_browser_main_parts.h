@@ -31,6 +31,7 @@ namespace apps {
 
 class ShellBrowserContext;
 class ShellExtensionsBrowserClient;
+class ShellExtensionsClient;
 
 // Handles initialization of AppShell.
 class ShellBrowserMainParts : public content::BrowserMainParts {
@@ -60,6 +61,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 
  private:
   scoped_ptr<ShellBrowserContext> browser_context_;
+  scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
 
   // Enable a minimal set of views::corewm to be initialized.

@@ -29,14 +29,12 @@ include_rules = [
   "+chrome/browser/extensions/api/app_runtime/app_runtime_api.h",
   "+chrome/browser/extensions/api/file_handlers/app_file_handler_util.h",
   "+chrome/browser/extensions/api/file_system/file_system_api.h",
-  "+chrome/browser/extensions/event_router.h",
   "+chrome/browser/extensions/extension_function_dispatcher.h",
   "+chrome/browser/extensions/extension_icon_image.h",
   "+chrome/browser/extensions/extension_host.h",
   "+chrome/browser/extensions/extension_keybinding_registry.h",
   "+chrome/browser/extensions/extension_prefs.h",
   "+chrome/browser/extensions/extension_prefs_factory.h",
-  "+chrome/browser/extensions/extension_process_manager.h",
   "+chrome/browser/extensions/extension_service.h",
   "+chrome/browser/extensions/extension_system.h",
   "+chrome/browser/extensions/extension_system_factory.h",
@@ -45,11 +43,9 @@ include_rules = [
   "+chrome/browser/extensions/unpacked_installer.h",
   "+chrome/common/extensions/api/app_runtime.h",
   "+chrome/common/extensions/api/app_window.h",
-  "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/extension_messages.h",
   "+chrome/common/extensions/extension_set.h",
   "+chrome/common/extensions/manifest_handlers/icons_handler.h",
-  "+chrome/common/extensions/permissions/permission_set.h",
 ]
 
 specific_include_rules = {

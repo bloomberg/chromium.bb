@@ -9,6 +9,8 @@ include_rules = [
   # TODO(jamescook): Remove these. http://crbug.com/305404
   # Chrome pieces for bring-up.
   "+chrome/common/chrome_paths.h",
+  "+chrome/browser/extensions/extension_prefs.h",
+
   # Pieces of content_shell reused in app_shell.
   "+content/shell/browser/shell_browser_context.h",
 ]

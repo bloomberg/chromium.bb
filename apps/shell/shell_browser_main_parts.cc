@@ -7,6 +7,7 @@
 #include "apps/app_load_service.h"
 #include "apps/shell/shell_browser_context.h"
 #include "apps/shell/shell_extensions_browser_client.h"
+#include "apps/shell/shell_extensions_client.h"
 #include "apps/shell/web_view_window.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -97,7 +98,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext);
 
-  // TODO(jamescook): Initialize ExtensionsClient.
+  extensions_client_.reset(new ShellExtensionsClient());
+  extensions::ExtensionsClient::Set(extensions_client_.get());
+
   extensions_browser_client_.reset(
       new ShellExtensionsBrowserClient(browser_context_.get()));
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());

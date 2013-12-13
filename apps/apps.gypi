@@ -134,6 +134,8 @@
             'shell/shell_content_client.h',
             'shell/shell_extensions_browser_client.cc',
             'shell/shell_extensions_browser_client.h',
+            'shell/shell_extensions_client.cc',
+            'shell/shell_extensions_client.h',
             'shell/shell_main_delegate.cc',
             'shell/shell_main_delegate.h',
             'shell/shell_main.cc',
