@@ -28,6 +28,12 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
     const PrepareChangeCallback& callback) {
   SyncFileMetadata local_metadata;
 
+  if (fileapi::VirtualPath::IsRootPath(url.path())) {
+    // Origin root directory case.
+    local_metadata = SyncFileMetadata(
+        SYNC_FILE_TYPE_DIRECTORY, 0, base::Time::Now());
+  }
+
   URLToFileMetadata::iterator found_metadata = local_file_metadata_.find(url);
   if (found_metadata != local_file_metadata_.end())
     local_metadata = found_metadata->second;

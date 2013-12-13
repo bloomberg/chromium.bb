@@ -261,9 +261,19 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     }
   } else {
     DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Detected folder update.");
-    HandleFolderUpdate(callback);
+    if (synced_details.missing()) {
+      util::Log(logging::LOG_VERBOSE, FROM_HERE,
+                "[Remote -> Local]: Detected folder update.");
+      HandleFolderUpdate(callback);
+      return;
+    }
+    if (dirty_tracker_->needs_folder_listing()) {
+      util::Log(logging::LOG_VERBOSE, FROM_HERE,
+                "[Remote -> Local]: Needs listing folder.");
+      ListFolderContent(callback);
+      return;
+    }
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
@@ -572,8 +582,10 @@ void RemoteToLocalSyncer::DidListFolderContent(
 void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
                                         SyncStatusCode status) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Remote -> Local]: Finished: action=%s, tracker=%" PRId64,
-            SyncActionToString(sync_action_), dirty_tracker_->tracker_id());
+            "[Remote -> Local]: Finished: action=%s, tracker=%" PRId64
+            " status=%s",
+            SyncActionToString(sync_action_), dirty_tracker_->tracker_id(),
+            SyncStatusCodeToString(status));
 
   if (sync_root_deletion_) {
     callback.Run(SYNC_STATUS_OK);

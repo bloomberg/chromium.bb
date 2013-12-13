@@ -227,9 +227,6 @@ TEST_F(RemoteToLocalSyncerTest, AddNewFile) {
 
   // Create expected changes.
   // TODO(nhiroki): Clean up creating URL part.
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
   AppendExpectedChange(URL(kOrigin, "folder1"),
                        FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                        SYNC_FILE_TYPE_DIRECTORY);
@@ -259,9 +256,6 @@ TEST_F(RemoteToLocalSyncerTest, DeleteFile) {
   const std::string folder = CreateRemoteFolder(app_root, "folder");
   const std::string file = CreateRemoteFile(app_root, "file", "data");
 
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
   AppendExpectedChange(URL(kOrigin, "folder"),
                        FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                        SYNC_FILE_TYPE_DIRECTORY);
@@ -302,9 +296,6 @@ TEST_F(RemoteToLocalSyncerTest, DeleteNestedFiles) {
   const std::string folder2 = CreateRemoteFolder(folder1, "folder2");
   const std::string file2 = CreateRemoteFile(folder1, "file2", "data2");
 
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
   AppendExpectedChange(URL(kOrigin, "folder1"),
                        FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                        SYNC_FILE_TYPE_DIRECTORY);
@@ -343,10 +334,6 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFolder) {
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
-
   CreateLocalFolder(URL(kOrigin, "folder"));
   CreateRemoteFile(app_root, "folder", "data");
 
@@ -367,10 +354,6 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFile) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
 
   RunSyncerUntilIdle();
   VerifyConsistency();
@@ -398,10 +381,6 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFolder) {
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
-
   CreateLocalFolder(URL(kOrigin, "folder"));
   CreateRemoteFolder(app_root, "folder");
 
@@ -421,10 +400,6 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFile) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-
-  AppendExpectedChange(URL(kOrigin, ""),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
 
   CreateLocalFile(URL(kOrigin, "file"));
   CreateRemoteFile(app_root, "file", "data");
@@ -447,18 +422,10 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateNestedFolderOnFile) {
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  AppendExpectedChange(URL(kOrigin, "/"),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
-
   RunSyncerUntilIdle();
   VerifyConsistency();
 
   const std::string folder = CreateRemoteFolder(app_root, "folder");
-
-  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  RunSyncerUntilIdle();
-
   CreateLocalFile(URL(kOrigin, "/folder"));
   CreateRemoteFile(folder, "file", "data");
 
@@ -478,10 +445,6 @@ TEST_F(RemoteToLocalSyncerTest, AppRootDeletion) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-
-  AppendExpectedChange(URL(kOrigin, "/"),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
 
   RunSyncerUntilIdle();
   VerifyConsistency();
