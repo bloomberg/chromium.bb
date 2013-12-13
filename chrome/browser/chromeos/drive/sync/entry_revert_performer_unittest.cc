@@ -118,7 +118,6 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
   fake_service()->TrashResource(
       entry.resource_id(),
-      std::string(),  // etag
       google_apis::test_util::CreateCopyResultCallback(&gdata_error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, gdata_error);

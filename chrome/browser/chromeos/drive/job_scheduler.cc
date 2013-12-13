@@ -432,7 +432,6 @@ void JobScheduler::TrashResource(
       &DriveServiceInterface::TrashResource,
       base::Unretained(drive_service_),
       resource_id,
-      "",  // etag
       base::Bind(&JobScheduler::OnEntryActionJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

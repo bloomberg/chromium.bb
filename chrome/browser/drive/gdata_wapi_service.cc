@@ -383,17 +383,17 @@ CancelCallback GDataWapiService::DeleteResource(
 
 CancelCallback GDataWapiService::TrashResource(
     const std::string& resource_id,
-    const std::string& etag,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  const std::string empty_etag;
   return sender_->StartRequestWithRetry(
       new DeleteResourceRequest(sender_.get(),
                                 url_generator_,
                                 callback,
                                 resource_id,
-                                etag));
+                                empty_etag));
 }
 
 CancelCallback GDataWapiService::AddNewDirectory(

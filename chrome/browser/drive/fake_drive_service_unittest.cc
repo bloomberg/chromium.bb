@@ -300,7 +300,6 @@ TEST_F(FakeDriveServiceTest, Search_Trashed) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
-                              std::string(),  // etag
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -495,7 +494,6 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
-                              std::string(),  // etag
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(HTTP_SUCCESS, error);
@@ -974,7 +972,6 @@ TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
-                              std::string(),  // etag
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -984,7 +981,6 @@ TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
 
   error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
-                              std::string(),  // etag
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_NOT_FOUND, error);
@@ -997,7 +993,6 @@ TEST_F(FakeDriveServiceTest, TrashResource_NonexistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:nonexisting_resource_id",
-                              std::string(),  // etag
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -1011,7 +1006,6 @@ TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
-                              std::string(),  // etag
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 

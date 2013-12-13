@@ -155,7 +155,6 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback TrashResource(
       const std::string& resource_id,
-      const std::string& etag,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback DownloadFile(
       const base::FilePath& local_cache_path,

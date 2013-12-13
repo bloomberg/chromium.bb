@@ -106,7 +106,6 @@ CancelCallback DummyDriveService::DeleteResource(
 
 CancelCallback DummyDriveService::TrashResource(
     const std::string& resource_id,
-    const std::string& etag,
     const EntryActionCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::DownloadFile(

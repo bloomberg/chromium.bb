@@ -571,7 +571,6 @@ CancelCallback DriveAPIService::DeleteResource(
 
 CancelCallback DriveAPIService::TrashResource(
     const std::string& resource_id,
-    const std::string& etag,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
