@@ -276,13 +276,18 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
 }
 
 void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
+  GetDeviceListByType(NetworkTypePattern::Default(), list);
+}
+
+void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
+                                              DeviceStateList* list) const {
   DCHECK(list);
   list->clear();
   for (ManagedStateList::const_iterator iter = device_list_.begin();
        iter != device_list_.end(); ++iter) {
     const DeviceState* device = (*iter)->AsDeviceState();
     DCHECK(device);
-    if (device->update_received())
+    if (device->update_received() && device->Matches(type))
       list->push_back(device);
   }
 }

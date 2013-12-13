@@ -163,6 +163,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // only on the UI thread).
   void GetDeviceList(DeviceStateList* list) const;
 
+  // Like GetDeviceList() but only returns networks with matching |type|.
+  void GetDeviceListByType(const NetworkTypePattern& type,
+                           DeviceStateList* list) const;
+
   // Sets |list| to contain the list of favorite (aka "preferred") networks.
   // See GetNetworkList() for usage, and notes for |favorite_list_|.
   // Favorites that are visible have the same path() as the entries in

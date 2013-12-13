@@ -280,7 +280,8 @@ enum NetworkTypeBitFlag {
   kNetworkTypeWimax = 1 << 2,
   kNetworkTypeCellular = 1 << 3,
   kNetworkTypeVPN = 1 << 4,
-  kNetworkTypeEthernetEap = 1 << 5
+  kNetworkTypeEthernetEap = 1 << 5,
+  kNetworkTypeBluetooth = 1 << 6
 };
 
 struct ShillToBitFlagEntry {
@@ -292,7 +293,8 @@ struct ShillToBitFlagEntry {
   { shill::kTypeWifi, kNetworkTypeWifi },
   { shill::kTypeWimax, kNetworkTypeWimax },
   { shill::kTypeCellular, kNetworkTypeCellular },
-  { shill::kTypeVPN, kNetworkTypeVPN }
+  { shill::kTypeVPN, kNetworkTypeVPN },
+  { shill::kTypeBluetooth, kNetworkTypeBluetooth }
 };
 
 NetworkTypeBitFlag ShillNetworkTypeToFlag(const std::string& shill_type) {
