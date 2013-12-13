@@ -368,7 +368,7 @@ bool EventRewriter::RewriteWithKeyboardRemappingsByKeyCode(
 const PrefService* EventRewriter::GetPrefService() const {
   if (pref_service_for_testing_)
     return pref_service_for_testing_;
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = ProfileManager::GetDefaultProfile();
   return profile ? profile->GetPrefs() : NULL;
 }
 
