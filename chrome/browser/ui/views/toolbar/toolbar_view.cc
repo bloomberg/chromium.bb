@@ -584,7 +584,7 @@ void ToolbarView::Layout() {
   site_chip_width = std::max(0, std::min(site_chip_width,
       (available_width - kStandardSpacing) / 2));
   if (site_chip_view_->visible())
-    available_width -= site_chip_width;
+    available_width -= site_chip_width + kStandardSpacing;
 
   int location_height = location_bar_->GetPreferredSize().height();
   int location_y = (height() - location_height + 1) / 2;

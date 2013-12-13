@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/toolbar/site_chip_view.h"
 
 #include "base/files/file_path.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -101,10 +103,14 @@ void SiteChipExtensionIcon::OnExtensionIconImageChanged(
 namespace {
 
 const int kEdgeThickness = 5;
-const int k16x16IconLeadingSpacing = 3;
-const int k16x16IconTrailingSpacing = 3;
+const int k16x16IconLeadingSpacing = 1;
+const int k16x16IconTrailingSpacing = 2;
 const int kIconTextSpacing = 3;
 const int kTrailingLabelMargin = 0;
+
+const SkColor kEVBackgroundColor = SkColorSetRGB(163, 226, 120);
+const SkColor kMalwareBackgroundColor = SkColorSetRGB(145, 0, 0);
+const SkColor kBrokenSSLBackgroundColor = SkColorSetRGB(253, 196, 36);
 
 // Detect client-side or SB malware/phishing hits.
 bool IsMalware(const GURL& url, content::WebContents* tab) {
@@ -327,14 +333,20 @@ void SiteChipView::Update(content::WebContents* web_contents) {
   url_malware_ = url_malware;
   security_level_ = security_level;
 
-  if (url_malware_)
+  SkColor label_background =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  if (url_malware_) {
     painter_ = malware_background_painter_.get();
-  else if (security_level_ == ToolbarModel::SECURITY_ERROR)
+    label_background = kMalwareBackgroundColor;
+  } else if (security_level_ == ToolbarModel::SECURITY_ERROR) {
     painter_ = broken_ssl_background_painter_.get();
-  else if (security_level_ == ToolbarModel::EV_SECURE)
+    label_background = kBrokenSSLBackgroundColor;
+  } else if (security_level_ == ToolbarModel::EV_SECURE) {
     painter_ = ev_background_painter_.get();
-  else
+    label_background = kEVBackgroundColor;
+  } else {
     painter_ = NULL;
+  }
 
   string16 host = SiteLabelFromURL(url_displayed_);
   if (security_level_ == ToolbarModel::EV_SECURE) {
@@ -345,13 +357,7 @@ void SiteChipView::Update(content::WebContents* web_contents) {
 
   host_label_->SetText(host);
   host_label_->SetTooltipText(host);
-  // TODO(gbillock): Instead of this, just set
-  // host_label_->SetBackgroundColor() to either the COLOR_TOOLBAR or
-  // the painter background color if we're using a background painter.
-  SkColor toolbar_background =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  host_label_->SetEnabledColor(
-      color_utils::GetReadableColor(SK_ColorBLACK, toolbar_background));
+  host_label_->SetBackgroundColor(label_background);
 
   int icon = toolbar_view_->GetToolbarModel()->GetIconForSecurityLevel(
       security_level_);
@@ -440,10 +446,13 @@ void SiteChipView::OnPaint(gfx::Canvas* canvas) {
 // this button.
 void SiteChipView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
+  UMA_HISTOGRAM_COUNTS("SiteChip.Pressed", 1);
+  content::RecordAction(content::UserMetricsAction("SiteChipPress"));
+
   toolbar_view_->location_bar()->GetOmniboxView()->SetFocus();
-  toolbar_view_->location_bar()->GetOmniboxView()->SelectAll(true);
   toolbar_view_->location_bar()->GetOmniboxView()->model()->
       SetCaretVisibility(true);
+  toolbar_view_->location_bar()->GetOmniboxView()->ShowURL();
 }
 
 void SiteChipView::WriteDragDataForView(View* sender,

@@ -1696,6 +1696,7 @@
 0x3b86156dcf560cdb	ShowSections_RecentSitesEnabled
 0x5118181c3ece5e84	ShowSessions
 0x1a4ebb180ba59b06	Shutdown
+0x09d79ad36a385dc7	SiteChipPress
 0x26f93e6e68e28a69	Star
 0x2fbe99005588ef01	StartupTick
 0x61d88befbaefa89a	StatusArea_Accessability_DetailedView
