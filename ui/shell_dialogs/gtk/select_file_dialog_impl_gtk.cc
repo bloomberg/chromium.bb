@@ -291,12 +291,14 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
 
 void SelectFileDialogImplGTK::FileSelected(GtkWidget* dialog,
                                            const base::FilePath& path) {
-  if (type_ == SELECT_SAVEAS_FILE)
+  if (type_ == SELECT_SAVEAS_FILE) {
     *last_saved_path_ = path.DirName();
-  else if (type_ == SELECT_OPEN_FILE || type_ == SELECT_FOLDER)
+  } else if (type_ == SELECT_OPEN_FILE || type_ == SELECT_FOLDER ||
+             type_ == SELECT_UPLOAD_FOLDER) {
     *last_opened_path_ = path.DirName();
-  else
+  } else {
     NOTREACHED();
+  }
 
   if (listener_) {
     GtkFileFilter* selected_filter =
