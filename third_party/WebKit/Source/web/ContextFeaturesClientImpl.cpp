@@ -138,13 +138,28 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
     if (!m_client)
         return defaultValue;
 
+#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
+    WebFrameImpl* frame = WebFrameImpl::fromFrame(document->frame());
+    if (!frame)
+        return defaultValue;
+#endif
+
     switch (type) {
+#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
+    case ContextFeatures::StyleScoped:
+        return m_client->allowWebComponents(frame, defaultValue);
+    case ContextFeatures::MutationEvents:
+        return m_client->allowMutationEvents(frame, defaultValue);
+    case ContextFeatures::PushState:
+        return m_client->allowPushState(frame);
+#else
     case ContextFeatures::StyleScoped:
         return m_client->allowWebComponents(WebDocument(document), defaultValue);
     case ContextFeatures::MutationEvents:
         return m_client->allowMutationEvents(WebDocument(document), defaultValue);
     case ContextFeatures::PushState:
         return m_client->allowPushState(WebDocument(document));
+#endif
     default:
         return defaultValue;
     }
