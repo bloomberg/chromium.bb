@@ -526,9 +526,8 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     if (original_size > 0 &&
         base::GetFileSize(db_path, &final_size) &&
         final_size > 0) {
-      int percentage = static_cast<int>(original_size * 100 / final_size);
       UMA_HISTOGRAM_PERCENTAGE("History.FaviconsRecoveredPercentage",
-                               std::max(100, percentage));
+                               final_size * 100 / original_size);
     }
 
     // Using 10,000 because these cases mostly care about "none

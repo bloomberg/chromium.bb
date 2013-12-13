@@ -295,7 +295,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
       base::GetFileSize(db_path, &final_size) &&
       final_size > 0) {
     UMA_HISTOGRAM_PERCENTAGE("History.TopSitesRecoveredPercentage",
-                             original_size * 100 / final_size);
+                             final_size * 100 / original_size);
   }
 
   // Using 10,000 because these cases mostly care about "none recovered" and
