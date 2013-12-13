@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/app_shell_browser_main_parts.h"
+#include "apps/shell/shell_browser_main_parts.h"
 
 #include "apps/app_load_service.h"
-#include "apps/shell/app_shell_browser_context.h"
-#include "apps/shell/app_shell_extensions_browser_client.h"
+#include "apps/shell/shell_browser_context.h"
+#include "apps/shell/shell_extensions_browser_client.h"
 #include "apps/shell/web_view_window.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -26,14 +26,14 @@
 
 namespace apps {
 
-AppShellBrowserMainParts::AppShellBrowserMainParts(
+ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters) {
 }
 
-AppShellBrowserMainParts::~AppShellBrowserMainParts() {
+ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
 
-void AppShellBrowserMainParts::CreateRootWindow() {
+void ShellBrowserMainParts::CreateRootWindow() {
   // TODO(jamescook): Replace this with a real Screen implementation.
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
@@ -43,7 +43,7 @@ void AppShellBrowserMainParts::CreateRootWindow() {
   wm_test_helper_->root_window()->host()->Show();
 }
 
-void AppShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
+void ShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
   base::FilePath current_dir;
   CHECK(file_util::GetCurrentDirectory(&current_dir));
 
@@ -62,24 +62,24 @@ void AppShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
   }
 }
 
-void AppShellBrowserMainParts::PreMainMessageLoopStart() {
+void ShellBrowserMainParts::PreMainMessageLoopStart() {
   // TODO(jamescook): Initialize touch here?
 }
 
-void AppShellBrowserMainParts::PostMainMessageLoopStart() {
+void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
-void AppShellBrowserMainParts::PreEarlyInitialization() {
+void ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
-int AppShellBrowserMainParts::PreCreateThreads() {
+int ShellBrowserMainParts::PreCreateThreads() {
   // TODO(jamescook): Initialize chromeos::CrosSettings here?
 
   // Return no error.
   return 0;
 }
 
-void AppShellBrowserMainParts::PreMainMessageLoopRun() {
+void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // Set up all the paths to load files.
   chrome::RegisterPathProvider();
@@ -95,11 +95,11 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(jamescook): Initialize chromeos::UserManager.
 
   // Initialize our "profile" equivalent.
-  browser_context_.reset(new AppShellBrowserContext);
+  browser_context_.reset(new ShellBrowserContext);
 
   // TODO(jamescook): Initialize ExtensionsClient.
   extensions_browser_client_.reset(
-      new AppShellExtensionsBrowserClient(browser_context_.get()));
+      new ShellExtensionsBrowserClient(browser_context_.get()));
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   // TODO(jamescook): Initialize policy::ProfilePolicyConnector.
@@ -123,14 +123,14 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
   }
 }
 
-bool AppShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
+bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
   base::RunLoop run_loop;
   run_loop.Run();
   *result_code = content::RESULT_CODE_NORMAL_EXIT;
   return true;
 }
 
-void AppShellBrowserMainParts::PostMainMessageLoopRun() {
+void ShellBrowserMainParts::PostMainMessageLoopRun() {
   extensions::ExtensionsBrowserClient::Set(NULL);
   extensions_browser_client_.reset();
   browser_context_.reset();

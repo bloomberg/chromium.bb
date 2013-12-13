@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_APP_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
-#define APPS_SHELL_APP_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
+#ifndef APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
+#define APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -14,12 +14,12 @@ namespace apps {
 
 // An ExtensionsBrowserClient that supports a single content::BrowserContent
 // with no related incognito context.
-class AppShellExtensionsBrowserClient
+class ShellExtensionsBrowserClient
     : public extensions::ExtensionsBrowserClient {
  public:
   // |context| is the single BrowserContext used for IsValidContext() below.
-  explicit AppShellExtensionsBrowserClient(content::BrowserContext* context);
-  virtual ~AppShellExtensionsBrowserClient();
+  explicit ShellExtensionsBrowserClient(content::BrowserContext* context);
+  virtual ~ShellExtensionsBrowserClient();
 
   // extensions::ExtensionsBrowserClient overrides:
   virtual bool IsShuttingDown() OVERRIDE;
@@ -49,9 +49,9 @@ class AppShellExtensionsBrowserClient
   // The PrefService for |browser_context_|.
   scoped_ptr<PrefService> prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShellExtensionsBrowserClient);
+  DISALLOW_COPY_AND_ASSIGN(ShellExtensionsBrowserClient);
 };
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_APP_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
+#endif  // APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_

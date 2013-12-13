@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_APP_SHELL_APP_SORTING_H_
-#define APPS_SHELL_APP_SHELL_APP_SORTING_H_
+#ifndef APPS_SHELL_SHELL_APP_SORTING_H_
+#define APPS_SHELL_SHELL_APP_SORTING_H_
 
 #include "base/compiler_specific.h"
 #include "extensions/browser/app_sorting.h"
@@ -12,10 +12,10 @@ namespace apps {
 
 // A stub AppSorting. Since app_shell only runs a single app we don't need to
 // sort them.
-class AppShellAppSorting : public extensions::AppSorting {
+class ShellAppSorting : public extensions::AppSorting {
  public:
-  AppShellAppSorting();
-  virtual ~AppShellAppSorting();
+  ShellAppSorting();
+  virtual ~ShellAppSorting();
 
   // extensions::AppSorting overrides:
   virtual void SetExtensionScopedPrefs(extensions::ExtensionScopedPrefs* prefs)
@@ -56,9 +56,9 @@ class AppShellAppSorting : public extensions::AppSorting {
   virtual void MarkExtensionAsHidden(const std::string& extension_id) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppShellAppSorting);
+  DISALLOW_COPY_AND_ASSIGN(ShellAppSorting);
 };
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_APP_SHELL_APP_SORTING_H_
+#endif  // APPS_SHELL_SHELL_APP_SORTING_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/app_shell_content_client.h"
+#include "apps/shell/shell_content_client.h"
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,33 +12,33 @@
 
 namespace apps {
 
-AppShellContentClient::AppShellContentClient() {}
+ShellContentClient::ShellContentClient() {}
 
-AppShellContentClient::~AppShellContentClient() {}
+ShellContentClient::~ShellContentClient() {}
 
-std::string AppShellContentClient::GetUserAgent() const {
+std::string ShellContentClient::GetUserAgent() const {
   // TODO(derat): Figure out what this should be for app_shell and determine
   // whether we need to include a version number to placate browser sniffing.
   return webkit_glue::BuildUserAgentFromProduct("Chrome");
 }
 
-string16 AppShellContentClient::GetLocalizedString(int message_id) const {
+string16 ShellContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::StringPiece AppShellContentClient::GetDataResource(
+base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
   return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
-base::RefCountedStaticMemory* AppShellContentClient::GetDataResourceBytes(
+base::RefCountedStaticMemory* ShellContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
-gfx::Image& AppShellContentClient::GetNativeImageNamed(int resource_id) const {
+gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 

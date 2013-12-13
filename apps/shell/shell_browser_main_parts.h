@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_APP_SHELL_BROWSER_MAIN_PARTS_H_
-#define APPS_SHELL_APP_SHELL_BROWSER_MAIN_PARTS_H_
+#ifndef APPS_SHELL_SHELL_BROWSER_MAIN_PARTS_H_
+#define APPS_SHELL_SHELL_BROWSER_MAIN_PARTS_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -29,17 +29,17 @@ class WMTestHelper;
 
 namespace apps {
 
-class AppShellBrowserContext;
-class AppShellExtensionsBrowserClient;
+class ShellBrowserContext;
+class ShellExtensionsBrowserClient;
 
 // Handles initialization of AppShell.
-class AppShellBrowserMainParts : public content::BrowserMainParts {
+class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
-  explicit AppShellBrowserMainParts(
+  explicit ShellBrowserMainParts(
       const content::MainFunctionParams& parameters);
-  virtual ~AppShellBrowserMainParts();
+  virtual ~ShellBrowserMainParts();
 
-  AppShellBrowserContext* browser_context() {
+  ShellBrowserContext* browser_context() {
     return browser_context_.get();
   }
 
@@ -59,15 +59,15 @@ class AppShellBrowserMainParts : public content::BrowserMainParts {
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
-  scoped_ptr<AppShellBrowserContext> browser_context_;
-  scoped_ptr<AppShellExtensionsBrowserClient> extensions_browser_client_;
+  scoped_ptr<ShellBrowserContext> browser_context_;
+  scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShellBrowserMainParts);
+  DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_APP_SHELL_BROWSER_MAIN_PARTS_H_
+#endif  // APPS_SHELL_SHELL_BROWSER_MAIN_PARTS_H_

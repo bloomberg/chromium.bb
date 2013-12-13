@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/app_shell_content_browser_client.h"
+#include "apps/shell/shell_content_browser_client.h"
 
-#include "apps/shell/app_shell_browser_context.h"
-#include "apps/shell/app_shell_browser_main_parts.h"
+#include "apps/shell/shell_browser_context.h"
+#include "apps/shell/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_browser_context.h"
 
 namespace apps {
 
-AppShellContentBrowserClient::AppShellContentBrowserClient()
+ShellContentBrowserClient::ShellContentBrowserClient()
     : browser_main_parts_(NULL) {
 }
 
-AppShellContentBrowserClient::~AppShellContentBrowserClient() {
+ShellContentBrowserClient::~ShellContentBrowserClient() {
 }
 
-content::BrowserMainParts* AppShellContentBrowserClient::CreateBrowserMainParts(
+content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  browser_main_parts_ = new AppShellBrowserMainParts(parameters);
+  browser_main_parts_ = new ShellBrowserMainParts(parameters);
   return browser_main_parts_;
 }
 
 net::URLRequestContextGetter*
-AppShellContentBrowserClient::CreateRequestContext(
+ShellContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
     content::ProtocolHandlerMap* protocol_handlers) {
   // TODO(jamescook): Should this be an off-the-record context?

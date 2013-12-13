@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_APP_SHELL_BROWSER_CONTEXT_H_
-#define APPS_SHELL_APP_SHELL_BROWSER_CONTEXT_H_
+#ifndef APPS_SHELL_SHELL_BROWSER_CONTEXT_H_
+#define APPS_SHELL_SHELL_BROWSER_CONTEXT_H_
 
 #include "base/compiler_specific.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -12,10 +12,10 @@ namespace apps {
 
 // The BrowserContext used by the content, apps and extensions systems in
 // app_shell.
-class AppShellBrowserContext : public content::ShellBrowserContext {
+class ShellBrowserContext : public content::ShellBrowserContext {
  public:
-  AppShellBrowserContext();
-  virtual ~AppShellBrowserContext();
+  ShellBrowserContext();
+  virtual ~ShellBrowserContext();
 
   // HACK: Pad the virtual function table so we trip an assertion if someone
   // tries to use |this| as a Profile.
@@ -30,9 +30,9 @@ class AppShellBrowserContext : public content::ShellBrowserContext {
   virtual void ProfileFunctionCallOnNonProfileBrowserContext9();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppShellBrowserContext);
+  DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_APP_SHELL_BROWSER_CONTEXT_H_
+#endif  // APPS_SHELL_SHELL_BROWSER_CONTEXT_H_

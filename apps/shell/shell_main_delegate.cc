@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/app_shell_main_delegate.h"
+#include "apps/shell/shell_main_delegate.h"
 
-#include "apps/shell/app_shell_content_browser_client.h"
+#include "apps/shell/shell_content_browser_client.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -14,29 +14,28 @@
 
 namespace apps {
 
-AppShellMainDelegate::AppShellMainDelegate() {
+ShellMainDelegate::ShellMainDelegate() {
 }
 
-AppShellMainDelegate::~AppShellMainDelegate() {
+ShellMainDelegate::~ShellMainDelegate() {
 }
 
-bool AppShellMainDelegate::BasicStartupComplete(int* exit_code) {
+bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   // TODO(jamescook): Initialize logging here.
   SetContentClient(&content_client_);
   return false;
 }
 
-void AppShellMainDelegate::PreSandboxStartup() {
+void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
-content::ContentBrowserClient*
-AppShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new apps::AppShellContentBrowserClient);
+content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
+  browser_client_.reset(new apps::ShellContentBrowserClient);
   return browser_client_.get();
 }
 
-void AppShellMainDelegate::InitializeResourceBundle() {
+void ShellMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 }
 

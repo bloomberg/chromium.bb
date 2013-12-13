@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_APP_SHELL_CONTENT_BROWSER_CLIENT_H_
-#define APPS_SHELL_APP_SHELL_CONTENT_BROWSER_CLIENT_H_
+#ifndef APPS_SHELL_SHELL_CONTENT_BROWSER_CLIENT_H_
+#define APPS_SHELL_SHELL_CONTENT_BROWSER_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace apps {
-class AppShellBrowserMainParts;
+class ShellBrowserMainParts;
 
-class AppShellContentBrowserClient : public content::ContentBrowserClient {
+class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
-  AppShellContentBrowserClient();
-  virtual ~AppShellContentBrowserClient();
+  ShellContentBrowserClient();
+  virtual ~ShellContentBrowserClient();
 
   // content::ContentBrowserClient overrides.
   virtual content::BrowserMainParts* CreateBrowserMainParts(
@@ -27,11 +27,11 @@ class AppShellContentBrowserClient : public content::ContentBrowserClient {
 
  private:
   // Owned by content::BrowserMainLoop.
-  AppShellBrowserMainParts* browser_main_parts_;
+  ShellBrowserMainParts* browser_main_parts_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShellContentBrowserClient);
+  DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);
 };
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_APP_SHELL_CONTENT_BROWSER_CLIENT_H_
+#endif  // APPS_SHELL_SHELL_CONTENT_BROWSER_CLIENT_H_

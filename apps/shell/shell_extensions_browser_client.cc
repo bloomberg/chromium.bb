@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/app_shell_extensions_browser_client.h"
+#include "apps/shell/shell_extensions_browser_client.h"
 
-#include "apps/shell/app_shell_app_sorting.h"
+#include "apps/shell/shell_app_sorting.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
@@ -25,7 +25,7 @@ void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 namespace apps {
 
-AppShellExtensionsBrowserClient::AppShellExtensionsBrowserClient(
+ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
     BrowserContext* context)
     : browser_context_(context) {
   // Set up the preferences service.
@@ -43,65 +43,64 @@ AppShellExtensionsBrowserClient::AppShellExtensionsBrowserClient(
   user_prefs::UserPrefs::Set(browser_context_, prefs_.get());
 }
 
-AppShellExtensionsBrowserClient::~AppShellExtensionsBrowserClient() {}
+ShellExtensionsBrowserClient::~ShellExtensionsBrowserClient() {}
 
-bool AppShellExtensionsBrowserClient::IsShuttingDown() {
+bool ShellExtensionsBrowserClient::IsShuttingDown() {
   return false;
 }
 
-bool AppShellExtensionsBrowserClient::AreExtensionsDisabled(
+bool ShellExtensionsBrowserClient::AreExtensionsDisabled(
     const CommandLine& command_line,
     BrowserContext* context) {
   return false;
 }
 
-bool AppShellExtensionsBrowserClient::IsValidContext(BrowserContext* context) {
+bool ShellExtensionsBrowserClient::IsValidContext(BrowserContext* context) {
   return context == browser_context_;
 }
 
-bool AppShellExtensionsBrowserClient::IsSameContext(BrowserContext* first,
-                                                    BrowserContext* second) {
+bool ShellExtensionsBrowserClient::IsSameContext(BrowserContext* first,
+                                                 BrowserContext* second) {
   return first == second;
 }
 
-bool AppShellExtensionsBrowserClient::HasOffTheRecordContext(
+bool ShellExtensionsBrowserClient::HasOffTheRecordContext(
     BrowserContext* context) {
   return false;
 }
 
-BrowserContext* AppShellExtensionsBrowserClient::GetOffTheRecordContext(
+BrowserContext* ShellExtensionsBrowserClient::GetOffTheRecordContext(
     BrowserContext* context) {
   // app_shell only supports a single context.
   return NULL;
 }
 
-BrowserContext* AppShellExtensionsBrowserClient::GetOriginalContext(
+BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
     BrowserContext* context) {
   return context;
 }
 
-PrefService* AppShellExtensionsBrowserClient::GetPrefServiceForContext(
+PrefService* ShellExtensionsBrowserClient::GetPrefServiceForContext(
     BrowserContext* context) {
   return prefs_.get();
 }
 
-bool AppShellExtensionsBrowserClient::DeferLoadingBackgroundHosts(
+bool ShellExtensionsBrowserClient::DeferLoadingBackgroundHosts(
     BrowserContext* context) const {
   return false;
 }
 
-bool AppShellExtensionsBrowserClient::DidVersionUpdate(
-    BrowserContext* context) {
+bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   // TODO(jamescook): We might want to tell extensions when app_shell updates.
   return false;
 }
 
 scoped_ptr<extensions::AppSorting>
-AppShellExtensionsBrowserClient::CreateAppSorting() {
-  return scoped_ptr<extensions::AppSorting>(new AppShellAppSorting).Pass();
+ShellExtensionsBrowserClient::CreateAppSorting() {
+  return scoped_ptr<extensions::AppSorting>(new ShellAppSorting).Pass();
 }
 
-bool AppShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
+bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
 }
 
