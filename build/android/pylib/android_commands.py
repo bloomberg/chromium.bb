@@ -1757,6 +1757,36 @@ class AndroidCommands(object):
           'no test results... device setup correctly?')
     return test_results[0]
 
+  def DismissCrashDialogIfNeeded(self):
+    """Dismiss the error/ANR dialog if present.
+
+    Returns: Name of the crashed package if a dialog is focused,
+             None otherwise.
+    """
+    re_focus = re.compile(
+        r'\s*mCurrentFocus.*Application (Error|Not Responding): (\S+)}')
+
+    def _FindFocusedWindow():
+      match = None
+      for line in self.RunShellCommand('dumpsys window windows'):
+        match = re.match(re_focus, line)
+        if match:
+          break
+      return match
+
+    match = _FindFocusedWindow()
+    if not match:
+      return
+    package = match.group(2)
+    logging.warning('Trying to dismiss %s dialog for %s' % match.groups())
+    self.SendKeyEvent(KEYCODE_DPAD_RIGHT)
+    self.SendKeyEvent(KEYCODE_DPAD_RIGHT)
+    self.SendKeyEvent(KEYCODE_ENTER)
+    match = _FindFocusedWindow()
+    if match:
+      logging.error('Still showing a %s dialog for %s' % match.groups())
+    return package
+
 
 class NewLineNormalizer(object):
   """A file-like object to normalize EOLs to '\n'.

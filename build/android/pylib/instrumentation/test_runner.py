@@ -340,15 +340,19 @@ class TestRunner(base_test_runner.BaseTestRunner):
       duration_ms = int(time.time()) * 1000 - start_date_ms
       status_code = raw_result.GetStatusCode()
       if status_code:
+        result_type = base_test_result.ResultType.FAIL
+        if self.options.screenshot_failures:
+          self._TakeScreenshot(test)
         log = raw_result.GetFailureReason()
         if not log:
           log = 'No information.'
-        if (self.options.screenshot_failures or
-            log.find('INJECT_EVENTS perm') >= 0):
-          self._TakeScreenshot(test)
+        elif log.find('INJECT_EVENTS perm') >= 0:
+          package = self.adb.DismissCrashDialogIfNeeded()
+          # Assume test package convention of ".test" suffix
+          if package and package in self.test_pkg.GetPackageName():
+            result_type = base_test_result.ResultType.CRASH
         result = test_result.InstrumentationTestResult(
-            test, base_test_result.ResultType.FAIL, start_date_ms, duration_ms,
-            log=log)
+            test, result_type, start_date_ms, duration_ms, log=log)
       else:
         result = test_result.InstrumentationTestResult(
             test, base_test_result.ResultType.PASS, start_date_ms, duration_ms)
