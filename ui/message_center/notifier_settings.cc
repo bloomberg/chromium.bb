@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
@@ -34,6 +35,19 @@ bool NotifierId::operator==(const NotifierId& other) const {
     return url == other.url;
 
   return id == other.id;
+}
+
+bool NotifierId::operator<(const NotifierId& other) const {
+  if (type != other.type)
+    return type < other.type;
+
+  if (profile_id != other.profile_id)
+    return profile_id < other.profile_id;
+
+  if (type == WEB_PAGE)
+    return url < other.url;
+
+  return id < other.id;
 }
 
 Notifier::Notifier(const NotifierId& notifier_id,

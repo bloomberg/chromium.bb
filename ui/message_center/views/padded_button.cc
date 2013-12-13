@@ -97,4 +97,3 @@ gfx::Point PaddedButton::ComputePaddedImagePaintPosition(
 }
 
 }  // namespace message_center
-

@@ -18,6 +18,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -55,7 +56,8 @@ enum PopupAlignment {
 // contents of each toast are for the message center and layout strategy would
 // be slightly different.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
-    : public MessageCenterObserver,
+    : public MessageCenterController,
+      public MessageCenterObserver,
       public gfx::DisplayObserver {
  public:
   // |parent| specifies the parent widget of the toast windows. The default
@@ -67,6 +69,22 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                          MessageCenterTray* tray,
                          bool first_item_has_no_margin);
   virtual ~MessagePopupCollection();
+
+  // Overridden from MessageCenterController:
+  virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
+  virtual void RemoveNotification(const std::string& notification_id,
+                                  bool by_user) OVERRIDE;
+  virtual void DisableNotificationsFromThisSource(
+      const NotifierId& notifier_id) OVERRIDE;
+  virtual void ShowNotifierSettingsBubble() OVERRIDE;
+  virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
+  virtual void ClickOnNotificationButton(const std::string& notification_id,
+                                         int button_index) OVERRIDE;
+  virtual void ExpandNotification(const std::string& notification_id) OVERRIDE;
+  virtual void GroupBodyClicked(const std::string& last_notification_id)
+      OVERRIDE;
+  virtual void ExpandGroup(const NotifierId& notifier_id) OVERRIDE;
+  virtual void RemoveGroup(const NotifierId& notifier_id) OVERRIDE;
 
   void MarkAllPopupsShown();
 

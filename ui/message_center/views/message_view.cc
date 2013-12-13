@@ -40,7 +40,8 @@ const int kShowSettingsCommand = 1;
 class MenuModel : public ui::SimpleMenuModel,
                   public ui::SimpleMenuModel::Delegate {
  public:
-  MenuModel(message_center::MessageView* message_view,
+  MenuModel(message_center::MessageViewController* controller,
+            message_center::NotifierId notifier_id,
             const string16& display_source);
   virtual ~MenuModel();
 
@@ -54,14 +55,17 @@ class MenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
-  message_center::MessageView* message_view_;  // Weak, owns us.
+  message_center::MessageViewController* controller_;
+  message_center::NotifierId notifier_id_;
   DISALLOW_COPY_AND_ASSIGN(MenuModel);
 };
 
-MenuModel::MenuModel(message_center::MessageView* message_view,
+MenuModel::MenuModel(message_center::MessageViewController* controller,
+                     message_center::NotifierId notifier_id,
                      const string16& display_source)
     : ui::SimpleMenuModel(this),
-      message_view_(message_view) {
+      controller_(controller),
+      notifier_id_(notifier_id) {
   // Add 'disable notifications' menu item.
   if (!display_source.empty()) {
     AddItem(kTogglePermissionCommand,
@@ -96,10 +100,10 @@ bool MenuModel::GetAcceleratorForCommandId(int command_id,
 void MenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case kTogglePermissionCommand:
-      message_view_->DisableNotificationsFromThisSource();
+      controller_->DisableNotificationsFromThisSource(notifier_id_);
       break;
     case kShowSettingsCommand:
-        message_view_->ShowNotifierSettingsBubble();
+        controller_->ShowNotifierSettingsBubble();
       break;
     default:
       NOTREACHED();
@@ -112,7 +116,8 @@ namespace message_center {
 
 class MessageViewContextMenuController : public views::ContextMenuController {
  public:
-  MessageViewContextMenuController(MessageView* message_view,
+  MessageViewContextMenuController(MessageViewController* controller,
+                                   const NotifierId& notifier_id,
                                    const string16& display_source);
   virtual ~MessageViewContextMenuController();
 
@@ -122,14 +127,17 @@ class MessageViewContextMenuController : public views::ContextMenuController {
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
-  MessageView* message_view_;  // Weak, owns us.
+  MessageViewController* controller_;  // Weak, owns us.
+  NotifierId notifier_id_;
   string16 display_source_;
 };
 
 MessageViewContextMenuController::MessageViewContextMenuController(
-    MessageView* message_view,
+    MessageViewController* controller,
+    const NotifierId& notifier_id,
     const string16& display_source)
-    : message_view_(message_view),
+    : controller_(controller),
+      notifier_id_(notifier_id),
       display_source_(display_source) {
 }
 
@@ -140,7 +148,7 @@ void MessageViewContextMenuController::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  MenuModel menu_model(message_view_, display_source_);
+  MenuModel menu_model(controller_, notifier_id_, display_source_);
   if (menu_model.GetItemCount() == 0)
     return;
 
@@ -155,9 +163,17 @@ void MessageViewContextMenuController::ShowContextMenuForView(
       views::MenuRunner::HAS_MNEMONICS));
 }
 
-MessageView::MessageView(const string16& display_source)
-    : context_menu_controller_(
-        new MessageViewContextMenuController(this, display_source)),
+MessageView::MessageView(MessageViewController* controller,
+                         const std::string& notification_id,
+                         const NotifierId& notifier_id,
+                         const string16& display_source)
+    : controller_(controller),
+      notification_id_(notification_id),
+      notifier_id_(notifier_id),
+      context_menu_controller_(
+        new MessageViewContextMenuController(controller,
+                                             notifier_id,
+                                             display_source)),
       scroller_(NULL) {
   set_focusable(true);
   set_context_menu_controller(context_menu_controller_.get());
@@ -214,7 +230,7 @@ bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return false;
 
-  ClickOnNotification();
+  controller_->ClickOnNotification(notification_id_);
   return true;
 }
 
@@ -223,11 +239,11 @@ bool MessageView::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   if (event.key_code() == ui::VKEY_RETURN) {
-    ClickOnNotification();
+    controller_->ClickOnNotification(notification_id_);
     return true;
   } else if ((event.key_code() == ui::VKEY_DELETE ||
               event.key_code() == ui::VKEY_BACK)) {
-    RemoveNotification(true);  // By user.
+    controller_->RemoveNotification(notification_id_, true);  // By user.
     return true;
   }
 
@@ -240,7 +256,7 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
   if (event.flags() != ui::EF_NONE || event.flags() != ui::VKEY_SPACE)
     return false;
 
-  ClickOnNotification();
+  controller_->ClickOnNotification(notification_id_);
   return true;
 }
 
@@ -263,7 +279,7 @@ void MessageView::OnBlur() {
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    ClickOnNotification();
+    controller_->ClickOnNotification(notification_id_);
     event->SetHandled();
     return;
   }
@@ -284,12 +300,12 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
 void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   if (sender == close_button()) {
-    RemoveNotification(true);  // By user.
+    controller_->RemoveNotification(notification_id_, true);  // By user.
   }
 }
 
 void MessageView::OnSlideOut() {
-  RemoveNotification(true);  // By user.
+  controller_->RemoveNotification(notification_id_, true);  // By user.
 }
 
 }  // namespace message_center

@@ -1591,6 +1591,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD" desc="The button label for the screenshot notification which copies the screenshot image to clipboard on click.">
         Copy to clipboard
       </message>
+      <message name="IDS_MESSAGE_CENTER_MORE_FROM" desc="Indicates how many more notifications came from the given source.">
+        <ph name="number_of_notifications">$1<ex>20</ex></ph> more from <ph name="source_of_notifications">$2<ex>GMail</ex></ph>
+      </message>
 
       <!-- App list -->
       <message name="IDS_APP_LIST_HELP" desc="The menu entry to show the app list help UI.">

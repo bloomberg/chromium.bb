@@ -11,6 +11,8 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace gfx {
@@ -23,6 +25,7 @@ class Button;
 
 namespace message_center {
 
+class GroupView;
 class MessageCenter;
 class MessageCenterBubble;
 class NotificationCenterButton;
@@ -38,6 +41,7 @@ class NotifierSettingsView;
 
 class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                                                 public MessageCenterObserver,
+                                                public MessageCenterController,
                                                 public gfx::AnimationDelegate {
  public:
   MessageCenterView(MessageCenter* message_center,
@@ -74,6 +78,22 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                                      bool by_user) OVERRIDE;
   virtual void OnNotificationUpdated(const std::string& id) OVERRIDE;
 
+  // Overridden from MessageCenterController:
+  virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
+  virtual void RemoveNotification(const std::string& notification_id,
+                                  bool by_user) OVERRIDE;
+  virtual void DisableNotificationsFromThisSource(
+      const NotifierId& notifier_id) OVERRIDE;
+  virtual void ShowNotifierSettingsBubble() OVERRIDE;
+  virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
+  virtual void ClickOnNotificationButton(const std::string& notification_id,
+                                         int button_index) OVERRIDE;
+  virtual void ExpandNotification(const std::string& notification_id) OVERRIDE;
+  virtual void GroupBodyClicked(const std::string& last_notification_id)
+      OVERRIDE;
+  virtual void ExpandGroup(const NotifierId& notifier_id) OVERRIDE;
+  virtual void RemoveGroup(const NotifierId& notifier_id) OVERRIDE;
+
   // Overridden from gfx::AnimationDelegate:
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
@@ -82,16 +102,28 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
  private:
   friend class MessageCenterViewTest;
 
+  void AddMessageViewAt(MessageView* view, int index);
+  void AddGroupPlaceholder(const NotifierId& group_id,
+                           const Notification& notification,
+                           const gfx::ImageSkia& group_icon,
+                           int group_size,
+                           int index);
   void AddNotificationAt(const Notification& notification, int index);
   void NotificationsChanged();
   void SetNotificationViewForTest(MessageView* view);
 
   MessageCenter* message_center_;  // Weak reference.
   MessageCenterTray* tray_;  // Weak reference.
+
   // Map notification_id->NotificationView*. It contains all NotificaitonViews
   // currently displayed in MessageCenter.
   typedef std::map<std::string, NotificationView*> NotificationViewsMap;
   NotificationViewsMap notification_views_;  // Weak.
+
+  // List of all GroupViews. GroupView is responsible for multiple Notifications
+  // from the same source.
+  typedef std::list<GroupView*> GroupViews;
+  GroupViews group_views_;  // Weak.
 
   // Child views.
   views::ScrollView* scroller_;

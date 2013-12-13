@@ -10,8 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -20,8 +22,10 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/message_center_util.h"
+#include "ui/message_center/views/group_view.h"
 #include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
@@ -51,6 +55,8 @@ const int kMinScrollViewHeight = 100;
 
 const int kDefaultAnimationDurationMs = 120;
 const int kDefaultFrameRateHz = 60;
+
+const int kMaxNotificationCountFromSingleDisplaySource = 1;
 
 }  // namespace
 
@@ -663,14 +669,68 @@ void MessageCenterView::SetNotifications(
     return;
 
   notification_views_.clear();
+
+  // Count how many times each Notifier is encountered. We group Notifications
+  // by NotifierId.
+  std::map<NotifierId, int> groups;
   int index = 0;
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end();
-       ++iter, ++index) {
-    AddNotificationAt(*(*iter), index);
-    if (notification_views_.size() >= kMaxVisibleMessageCenterNotifications)
-      break;
+
+  if (IsExperimentalNotificationUIEnabled()) {
+    for (NotificationList::Notifications::const_iterator iter =
+             notifications.begin(); iter != notifications.end(); ++iter) {
+      NotifierId group_id = (*iter)->notifier_id();
+      std::map<NotifierId, int>::iterator group_iter = groups.find(group_id);
+      if (group_iter != groups.end())
+        group_iter->second++;
+      else
+        groups[group_id] = 1;
+    }
+
+    // TODO(dimich): Find a better group icon. Preferably associated with
+    // the group (notifier icon?).
+    gfx::ImageSkia* group_icon = ui::ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_FOLDER_CLOSED);
+
+    for (NotificationList::Notifications::const_iterator iter =
+             notifications.begin(); iter != notifications.end(); ++iter) {
+      // See if the notification's NotifierId is encountered too many
+      // times - in this case replace all notifications from this source with
+      // a synthetic placeholder that says "N more". Mark the NotifierId
+      // as "seen" by setting count to 0 so the subsequent notificaitons from
+      // the same source are ignored.
+      std::map<NotifierId, int>::iterator group_iter =
+          groups.find((*iter)->notifier_id());
+      // We should have collected all groups in the loop above.
+      DCHECK(group_iter != groups.end());
+
+      if (group_iter->second > kMaxNotificationCountFromSingleDisplaySource) {
+        AddGroupPlaceholder(group_iter->first,
+                            *(*iter),
+                            group_icon ? *group_icon : gfx::ImageSkia(),
+                            group_iter->second,
+                            index++);
+        group_iter->second = 0; // Mark.
+      } else if (group_iter->second == 0) {  // Marked, skip.
+        continue;
+      } else {  // Ungrouped notifications
+        AddNotificationAt(*(*iter), index++);
+      }
+
+      message_center_->DisplayedNotification((*iter)->id());
+      if (notification_views_.size() >= kMaxVisibleMessageCenterNotifications)
+        break;
+    }
+  } else {
+    for (NotificationList::Notifications::const_iterator iter =
+             notifications.begin(); iter != notifications.end(); ++iter) {
+      AddNotificationAt(*(*iter), index++);
+
+      message_center_->DisplayedNotification((*iter)->id());
+      if (notification_views_.size() >= kMaxVisibleMessageCenterNotifications)
+        break;
+    }
   }
+
   NotificationsChanged();
   scroller_->RequestFocus();
 }
@@ -867,6 +927,7 @@ void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
   NotificationsChanged();
 }
 
+// TODO(dimich): update for GROUP_VIEW
 void MessageCenterView::OnNotificationAdded(const std::string& id) {
   int index = 0;
   const NotificationList::Notifications& notifications =
@@ -884,6 +945,7 @@ void MessageCenterView::OnNotificationAdded(const std::string& id) {
   NotificationsChanged();
 }
 
+// TODO(dimich): update for GROUP_VIEW
 void MessageCenterView::OnNotificationRemoved(const std::string& id,
                                               bool by_user) {
   NotificationViewsMap::iterator view_iter = notification_views_.find(id);
@@ -919,6 +981,7 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
   NotificationsChanged();
 }
 
+// TODO(dimich): update for GROUP_VIEW
 void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   NotificationViewsMap::const_iterator view_iter = notification_views_.find(id);
   if (view_iter == notification_views_.end())
@@ -936,9 +999,8 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
       if (IsExperimentalNotificationUIEnabled())
         expanded = (*iter)->is_expanded();
       NotificationView* view =
-          NotificationView::Create(*(*iter),
-                                   message_center_,
-                                   tray_,
+          NotificationView::Create(this,
+                                   *(*iter),
                                    expanded,
                                    false); // Not creating a top-level
                                            // notification.
@@ -949,6 +1011,70 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
       break;
     }
   }
+}
+
+void MessageCenterView::ClickOnNotification(
+    const std::string& notification_id) {
+  message_center_->ClickOnNotification(notification_id);
+}
+
+void MessageCenterView::RemoveNotification(const std::string& notification_id,
+                                           bool by_user) {
+  message_center_->RemoveNotification(notification_id, by_user);
+}
+
+void MessageCenterView::DisableNotificationsFromThisSource(
+    const NotifierId& notifier_id) {
+  message_center_->DisableNotificationsByNotifier(notifier_id);
+}
+
+void MessageCenterView::ShowNotifierSettingsBubble() {
+  tray_->ShowNotifierSettingsBubble();
+}
+
+bool MessageCenterView::HasClickedListener(const std::string& notification_id) {
+  return message_center_->HasClickedListener(notification_id);
+}
+
+void MessageCenterView::ClickOnNotificationButton(
+    const std::string& notification_id,
+    int button_index) {
+  message_center_->ClickOnNotificationButton(notification_id, button_index);
+}
+
+void MessageCenterView::ExpandNotification(const std::string& notification_id) {
+  message_center_->ExpandNotification(notification_id);
+}
+
+void MessageCenterView::GroupBodyClicked(
+    const std::string& last_notification_id) {
+  message_center_->ClickOnNotification(last_notification_id);
+}
+
+// When clicked on the "N more" button, perform some reasonable action.
+// TODO(dimich): find out what the reasonable action could be.
+void MessageCenterView::ExpandGroup(const NotifierId& notifier_id) {
+  NOTIMPLEMENTED();
+}
+
+// Click on Close button on a GroupView should remove all notifications
+// represented by this GroupView.
+void MessageCenterView::RemoveGroup(const NotifierId& notifier_id) {
+  std::vector<std::string> notifications_to_remove;
+
+  // Can not remove notifications while iterating the list. Collect the ids
+  // and then run separate loop to remove notifications.
+  const NotificationList::Notifications& notifications =
+      message_center_->GetVisibleNotifications();
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    if ((*iter)->notifier_id() == notifier_id)
+      notifications_to_remove.push_back((*iter)->id());
+  }
+
+  for (size_t i = 0; i < notifications_to_remove.size(); ++i)
+    // "by_user" = true
+    message_center_->RemoveNotification(notifications_to_remove[i], true);
 }
 
 void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
@@ -991,6 +1117,27 @@ void MessageCenterView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
+
+void MessageCenterView::AddMessageViewAt(MessageView* view, int index) {
+  view->set_scroller(scroller_);
+  message_list_view_->AddNotificationAt(view, index);
+}
+
+void MessageCenterView::AddGroupPlaceholder(
+    const NotifierId& group_id,
+    const Notification& last_notification,
+    const gfx::ImageSkia& group_icon,
+    int group_size,
+    int index) {
+  GroupView* view = new GroupView(this,
+                                  group_id,
+                                  last_notification,
+                                  group_icon,
+                                  group_size);
+  group_views_.push_back(view);
+  AddMessageViewAt(view, index);
+}
+
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
   // NotificationViews are expanded by default here until
@@ -999,20 +1146,17 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
   if (IsExperimentalNotificationUIEnabled())
     expanded = notification.is_expanded();
   NotificationView* view =
-      NotificationView::Create(notification,
-                               message_center_,
-                               tray_,
+      NotificationView::Create(this,
+                               notification,
                                expanded,
                                false);  // Not creating a top-level
                                         // notification.
-  view->set_scroller(scroller_);
   notification_views_[notification.id()] = view;
-  message_list_view_->AddNotificationAt(view, index);
-  message_center_->DisplayedNotification(notification.id());
+  AddMessageViewAt(view, index);
 }
 
 void MessageCenterView::NotificationsChanged() {
-  bool no_message_views = notification_views_.empty();
+  bool no_message_views = notification_views_.empty() && group_views_.empty();
 
   // When the child view is removed from the hierarchy, its focus is cleared.
   // In this case we want to save which view has focus so that the user can

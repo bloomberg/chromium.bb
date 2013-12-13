@@ -287,6 +287,68 @@ void ToastContentsView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_WINDOW;
 }
 
+void ToastContentsView::ClickOnNotification(
+    const std::string& notification_id) {
+  if (collection_)
+    collection_->ClickOnNotification(notification_id);
+}
+
+void ToastContentsView::RemoveNotification(
+    const std::string& notification_id,
+    bool by_user) {
+  if (collection_)
+    collection_->RemoveNotification(notification_id, by_user);
+}
+
+void ToastContentsView::DisableNotificationsFromThisSource(
+    const NotifierId& notifier_id) {
+  if (collection_)
+    collection_->DisableNotificationsFromThisSource(notifier_id);
+}
+
+void ToastContentsView::ShowNotifierSettingsBubble() {
+  if (collection_)
+    collection_->ShowNotifierSettingsBubble();
+}
+
+bool ToastContentsView::HasClickedListener(
+    const std::string& notification_id) {
+  if (!collection_)
+    return false;
+  return collection_->HasClickedListener(notification_id);
+}
+
+void ToastContentsView::ClickOnNotificationButton(
+    const std::string& notification_id,
+    int button_index) {
+  if (collection_)
+    collection_->ClickOnNotificationButton(notification_id, button_index);
+}
+
+void ToastContentsView::ExpandNotification(
+    const std::string& notification_id) {
+  if (collection_)
+    collection_->ExpandNotification(notification_id);
+}
+
+void ToastContentsView::GroupBodyClicked(
+    const std::string& last_notification_id) {
+  // No group views in popup collection.
+  NOTREACHED();
+}
+
+// When clicked on the "N more" button, perform some reasonable action.
+// TODO(dimich): find out what the reasonable action could be.
+void ToastContentsView::ExpandGroup(const NotifierId& notifier_id) {
+  // No group views in popup collection.
+  NOTREACHED();
+}
+
+void ToastContentsView::RemoveGroup(const NotifierId& notifier_id) {
+  // No group views in popup collection.
+  NOTREACHED();
+}
+
 void ToastContentsView::CreateWidget(gfx::NativeView parent) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.keep_on_top = true;

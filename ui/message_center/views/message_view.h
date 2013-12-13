@@ -21,8 +21,18 @@ class ScrollView;
 
 namespace message_center {
 
-class MessageCenter;
-class MessageCenterTray;
+// Interface that MessageView uses to report clicks and other user actions.
+// Provided by creator of MessageView.
+class MessageViewController {
+ public:
+  virtual void ClickOnNotification(const std::string& notification_id) = 0;
+  virtual void RemoveNotification(const std::string& notification_id,
+                                  bool by_user) = 0;
+  virtual void DisableNotificationsFromThisSource(
+      const NotifierId& notifier_id) = 0;
+  virtual void ShowNotifierSettingsBubble() = 0;
+};
+
 class MessageViewContextMenuController;
 
 // Individual notifications constants.
@@ -35,14 +45,11 @@ const int kWebNotificationIconSize = 40;
 class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                                           public views::ButtonListener {
  public:
-  MessageView(const string16& display_source);
+  MessageView(MessageViewController* controller,
+              const std::string& notification_id,
+              const NotifierId& notifier_id,
+              const string16& display_source);
   virtual ~MessageView();
-
-  // Overrided by derived classes.
-  virtual void ClickOnNotification() = 0;
-  virtual void RemoveNotification(bool by_user) = 0;
-  virtual void DisableNotificationsFromThisSource() = 0;
-  virtual void ShowNotifierSettingsBubble() = 0;
 
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
@@ -72,6 +79,8 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                              const ui::Event& event) OVERRIDE;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
+  std::string notification_id() { return notification_id_; }
+  NotifierId notifier_id() { return notifier_id_; }
 
  protected:
   // Overridden from views::SlideOutView:
@@ -81,6 +90,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   views::ScrollView* scroller() { return scroller_; }
 
  private:
+  MessageViewController* controller_;
+  std::string notification_id_;
+  NotifierId notifier_id_;
   scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
   scoped_ptr<views::ImageButton> close_button_;
   views::ScrollView* scroller_;

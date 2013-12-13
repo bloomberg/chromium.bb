@@ -51,6 +51,8 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
   explicit NotifierId(const GURL& url);
 
   bool operator==(const NotifierId& other) const;
+  // Allows NotifierId to be used as a key in std::map.
+  bool operator<(const NotifierId& other) const;
 
   NotifierType type;
 
