@@ -115,7 +115,26 @@ void FolderCreator::DidListFolders(
   std::string file_id = oldest->resource_id();
 
   metadata_database_->UpdateByFileResourceList(
-      files.Pass(), base::Bind(callback, file_id));
+      files.Pass(), base::Bind(&FolderCreator::DidUpdateDatabase,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               file_id, callback));
+}
+
+void FolderCreator::DidUpdateDatabase(const std::string& file_id,
+                                      const FileIDCallback& callback,
+                                      SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(std::string(), status);
+    return;
+  }
+
+  DCHECK(!file_id.empty());
+  if (!metadata_database_->FindFileByFileID(file_id, NULL)) {
+    callback.Run(std::string(), SYNC_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  callback.Run(file_id, status);
 }
 
 }  // namespace drive_backend

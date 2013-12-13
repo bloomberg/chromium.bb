@@ -47,6 +47,9 @@ class FolderCreator {
                       ScopedVector<google_apis::ResourceEntry> candidates,
                       google_apis::GDataErrorCode error,
                       scoped_ptr<google_apis::ResourceList> resource_list);
+  void DidUpdateDatabase(const std::string& file_id,
+                         const FileIDCallback& callback,
+                         SyncStatusCode status);
 
   drive::DriveServiceInterface* drive_service_;
   MetadataDatabase* metadata_database_;
