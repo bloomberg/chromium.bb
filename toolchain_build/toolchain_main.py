@@ -106,6 +106,7 @@ class PackageBuilder(object):
     """
     self._packages = packages
     self.DecodeArgs(packages, args)
+    self.SetupLogging()
     self._build_once = once.Once(
         use_cached_results=self._options.use_cached_results,
         cache_results=self._options.cache_results,
@@ -120,13 +121,17 @@ class PackageBuilder(object):
 
   def Main(self):
     """Main entry point."""
-    file_tools.MakeDirectoryIfAbsent(self._options.output)
-    log_tools.SetupLogging(self._options.verbose,
-                           open(os.path.join(self._options.output,
-                                             'toolchain_build.log'), 'w'))
     if self._options.sync_sources:
       self.SyncAll()
     self.BuildAll()
+
+  def SetupLogging(self):
+    """Setup python logging based on options."""
+    if self._options.verbose:
+      logging.getLogger().setLevel(logging.DEBUG)
+    else:
+      logging.getLogger().setLevel(logging.INFO)
+    logging.basicConfig(format='%(levelname)s: %(message)s')
 
   def SyncPackageGitRepo(self, package):
     """Sync the git repo specified by a package.
@@ -189,7 +194,6 @@ class PackageBuilder(object):
         return
 
     print >>sys.stderr, '@@@BUILD_STEP %s (%s)@@@' % (package, type_text)
-    logging.debug('Building %s package %s' % (type_text, package))
 
     dependencies = package_info.get('dependencies', [])
 
@@ -285,6 +289,7 @@ class PackageBuilder(object):
 
   def BuildAll(self):
     """Build all packages selected and their dependencies."""
+    file_tools.MakeDirectoryIfAbsent(self._options.output)
     for target in self._targets:
       self.BuildPackage(target)
 
