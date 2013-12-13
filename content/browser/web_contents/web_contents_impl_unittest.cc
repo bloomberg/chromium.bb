@@ -2077,7 +2077,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
       NavigationEntryImpl::FromNavigationEntry(
           other_controller.GetEntryAtIndex(0))->site_instance(), 1,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller());
+  other_controller.CopyStateFromAndPrune(&controller(), false);
 
   // The merged controller should only have two entries: url1 and url2.
   ASSERT_EQ(2, other_controller.GetEntryCount());

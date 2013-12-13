@@ -99,7 +99,7 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
       *target_contents = source_contents;
     } else {
       instant_ntp->GetController().CopyStateFromAndPrune(
-          &source_contents->GetController());
+          &source_contents->GetController(), false);
       ReplaceWebContentsAt(
           browser_->tab_strip_model()->GetIndexOfWebContents(source_contents),
           instant_ntp.Pass());

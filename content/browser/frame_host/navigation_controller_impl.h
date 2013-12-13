@@ -88,8 +88,8 @@ class CONTENT_EXPORT NavigationControllerImpl
                                  int index) OVERRIDE;
   virtual void CopyStateFrom(
       const NavigationController& source) OVERRIDE;
-  virtual void CopyStateFromAndPrune(
-      NavigationController* source) OVERRIDE;
+  virtual void CopyStateFromAndPrune(NavigationController* source,
+                                     bool replace_entry) OVERRIDE;
   virtual bool CanPruneAllButLastCommitted() OVERRIDE;
   virtual void PruneAllButLastCommitted() OVERRIDE;
   virtual void ClearAllScreenshots() OVERRIDE;

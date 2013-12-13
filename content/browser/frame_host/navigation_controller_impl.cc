@@ -1233,7 +1233,8 @@ void NavigationControllerImpl::CopyStateFrom(
 }
 
 void NavigationControllerImpl::CopyStateFromAndPrune(
-    NavigationController* temp) {
+    NavigationController* temp,
+    bool replace_entry) {
   // It is up to callers to check the invariants before calling this.
   CHECK(CanPruneAllButLastCommitted());
 
@@ -1257,7 +1258,8 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   // We now have one entry, possibly with a new pending entry.  Ensure that
   // adding the entries from source won't put us over the limit.
   DCHECK_EQ(1, GetEntryCount());
-  source->PruneOldestEntryIfFull();
+  if (!replace_entry)
+    source->PruneOldestEntryIfFull();
 
   // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
   // we don't want to copy over the transient entry.  Ignore any pending entry,
@@ -1267,6 +1269,13 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
     max_source_index = source->GetEntryCount();
   else
     max_source_index++;
+
+  // Ignore the source's current entry if merging with replacement.
+  // TODO(davidben): This should preserve entries forward of the current
+  // too. http://crbug.com/317872
+  if (replace_entry && max_source_index > 0)
+    max_source_index--;
+
   InsertEntriesFrom(*source, max_source_index);
 
   // Adjust indices such that the last entry and pending are at the end now.

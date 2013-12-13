@@ -3129,7 +3129,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain the 3 urls: url1, url2 and url3.
 
@@ -3144,10 +3144,12 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(1, other_controller.GetEntryAtIndex(1)->GetPageID());
   EXPECT_EQ(0, other_controller.GetEntryAtIndex(2)->GetPageID());
 
-  // A new SiteInstance should be used for the new tab.
+  // A new SiteInstance in a different BrowsingInstance should be used for the
+  // new tab.
   SiteInstance* instance3 =
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(2));
   EXPECT_NE(instance3, instance1);
+  EXPECT_FALSE(instance3->IsRelatedSiteInstance(instance1));
 
   // The max page ID map should be copied over and updated with the max page ID
   // from the current tab.
@@ -3175,7 +3177,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url3
 
@@ -3213,7 +3215,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(1)), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url2, url4
 
@@ -3253,7 +3255,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneNotLast) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url2, url3
 
@@ -3294,7 +3296,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain url1, url3, and a pending entry
   // for url4.
@@ -3341,7 +3343,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending2) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain url1, url2a, and a pending entry
   // for url2b.
@@ -3385,7 +3387,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneSourcePending) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // other_controller should now contain: url1, url2, url3
 
@@ -3432,7 +3434,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller);
+  other_controller.CopyStateFromAndPrune(&controller, false);
 
   // We should have received a pruned notification.
   EXPECT_EQ(1, listener.notification_count_);
@@ -3450,6 +3452,109 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
   EXPECT_EQ(url4, other_controller.GetEntryAtIndex(2)->GetURL());
   EXPECT_EQ(1, other_controller.GetEntryAtIndex(0)->GetPageID());
   EXPECT_EQ(2, other_controller.GetEntryAtIndex(1)->GetPageID());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(2)->GetPageID());
+
+  NavigationControllerImpl::set_max_entry_count_for_testing(original_count);
+}
+
+// Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest, with
+// replace_entry set to true.
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneReplaceEntry) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL url3("http://foo/3");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  // First two entries should have the same SiteInstance.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0));
+  SiteInstance* instance2 =
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1));
+  EXPECT_EQ(instance1, instance2);
+  EXPECT_EQ(0, controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(1, controller.GetEntryAtIndex(1)->GetPageID());
+  EXPECT_EQ(1, contents()->GetMaxPageIDForSiteInstance(instance1));
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller = other_contents->GetController();
+  other_contents->NavigateAndCommit(url3);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller, true);
+
+  // other_controller should now contain the 2 urls: url1 and url3.
+
+  ASSERT_EQ(2, other_controller.GetEntryCount());
+
+  ASSERT_EQ(1, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(1)->GetPageID());
+
+  // A new SiteInstance in a different BrowsingInstance should be used for the
+  // new tab.
+  SiteInstance* instance3 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(1));
+  EXPECT_NE(instance3, instance1);
+  EXPECT_FALSE(instance3->IsRelatedSiteInstance(instance1));
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  EXPECT_EQ(1, other_contents->GetMaxPageIDForSiteInstance(instance1));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance3));
+}
+
+// Tests CopyStateFromAndPrune with 3 urls in source, 1 in dest, when the max
+// entry count is 3 and replace_entry is true.  We should not prune entries.
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntriesReplaceEntry) {
+  NavigationControllerImpl& controller = controller_impl();
+  size_t original_count = NavigationControllerImpl::max_entry_count();
+  const int kMaxEntryCount = 3;
+
+  NavigationControllerImpl::set_max_entry_count_for_testing(kMaxEntryCount);
+
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL url3("http://foo/3");
+  const GURL url4("http://foo/4");
+
+  // Create a PrunedListener to observe prune notifications.
+  PrunedListener listener(&controller);
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  NavigateAndCommit(url3);
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller = other_contents->GetController();
+  other_contents->NavigateAndCommit(url4);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller, true);
+
+  // We should have received no pruned notification.
+  EXPECT_EQ(0, listener.notification_count_);
+
+  // other_controller should now contain only 3 urls: url1, url2 and url4.
+
+  ASSERT_EQ(3, other_controller.GetEntryCount());
+
+  ASSERT_EQ(2, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url4, other_controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(1, other_controller.GetEntryAtIndex(1)->GetPageID());
   EXPECT_EQ(0, other_controller.GetEntryAtIndex(2)->GetPageID());
 
   NavigationControllerImpl::set_max_entry_count_for_testing(original_count);

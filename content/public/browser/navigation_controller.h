@@ -408,10 +408,13 @@ class NavigationController {
   // this:   E F *G*
   // result: A B C *G*
   // If there is a pending entry after *G* in |this|, it is also preserved.
+  // If |replace_entry| is true, the current entry in |source| is replaced. So
+  // the result above would be A B *G*.
   // This ignores any pending or transient entries in |source|.  Callers must
   // ensure that |CanPruneAllButLastCommitted| returns true before calling this,
   // or it will crash.
-  virtual void CopyStateFromAndPrune(NavigationController* source) = 0;
+  virtual void CopyStateFromAndPrune(NavigationController* source,
+                                     bool replace_entry) = 0;
 
   // Returns whether it is safe to call PruneAllButLastCommitted or
   // CopyStateFromAndPrune.  There must be a last committed entry, no transient

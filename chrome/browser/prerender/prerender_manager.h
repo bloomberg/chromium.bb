@@ -427,7 +427,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     PendingSwap(PrerenderManager* manager,
                 content::WebContents* target_contents,
                 PrerenderData* prerender_data,
-                const GURL& url);
+                const GURL& url,
+                bool should_replace_current_entry);
     virtual ~PendingSwap();
 
     void set_swap_successful(bool swap_successful) {
@@ -466,10 +467,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     void OnMergeCompleted(content::SessionStorageNamespace::MergeResult result);
     void OnMergeTimeout();
 
+    // Prerender parameters.
     PrerenderManager* manager_;
     content::WebContents* target_contents_;
     PrerenderData* prerender_data_;
     GURL url_;
+    bool should_replace_current_entry_;
+
     base::TimeTicks start_time_;
     std::vector<PrerenderTracker::ChildRouteIdPair> rvh_ids_;
     base::OneShotTimer<PendingSwap> merge_timeout_;
@@ -657,10 +661,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Swaps a prerender |prerender_data| for |url| into the tab, replacing
   // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
-  // if a swap-in was not possible.
+  // if a swap-in was not possible.  If |should_replace_current_entry| is true,
+  // the current history entry in |web_contents| is replaced.
   content::WebContents* SwapInternal(const GURL& url,
                                      content::WebContents* web_contents,
-                                     PrerenderData* prerender_data);
+                                     PrerenderData* prerender_data,
+                                     bool should_replace_current_entry);
 
   // The configuration.
   Config config_;
