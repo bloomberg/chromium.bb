@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/url_matcher_helpers.h"
+#include "components/url_matcher/url_matcher_helpers.h"
 
 #include "base/values.h"
 
-namespace extensions {
+namespace url_matcher {
 namespace url_matcher_helpers {
 
 // Converts a ValueList |value| of strings into a vector. Returns true if
@@ -28,4 +28,4 @@ bool GetAsStringVector(const base::Value* value,
 }
 
 }  // namespace url_matcher_helpers
-}  // namespace extensions
+}  // namespace url_matcher

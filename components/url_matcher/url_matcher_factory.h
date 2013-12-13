@@ -1,23 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_MATCHER_URL_MATCHER_FACTORY_H_
-#define EXTENSIONS_COMMON_MATCHER_URL_MATCHER_FACTORY_H_
+#ifndef COMPONENTS_URL_MATCHER_URL_MATCHER_FACTORY_H_
+#define COMPONENTS_URL_MATCHER_URL_MATCHER_FACTORY_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher_export.h"
 
 namespace base {
 class DictionaryValue;
 class Value;
 }
 
-namespace extensions {
+namespace url_matcher {
 
-class URLMatcherFactory {
+class URL_MATCHER_EXPORT URLMatcherFactory {
  public:
   // Creates a URLMatcherConditionSet from a UrlFilter dictionary as defined in
   // the declarative API. |url_fetcher_dict| contains the dictionary passed
@@ -57,6 +58,6 @@ class URLMatcherFactory {
   DISALLOW_IMPLICIT_CONSTRUCTORS(URLMatcherFactory);
 };
 
-}  // namespace extensions
+}  // namespace url_matcher
 
-#endif  // EXTENSIONS_COMMON_MATCHER_URL_MATCHER_FACTORY_H_
+#endif  // COMPONENTS_URL_MATCHER_URL_MATCHER_FACTORY_H_

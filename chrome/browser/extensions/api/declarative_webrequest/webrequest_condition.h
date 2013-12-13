@@ -14,7 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {
@@ -44,8 +44,8 @@ struct WebRequestDataWithMatchIds {
   ~WebRequestDataWithMatchIds();
 
   const WebRequestData* data;
-  std::set<URLMatcherConditionSet::ID> url_match_ids;
-  std::set<URLMatcherConditionSet::ID> first_party_url_match_ids;
+  std::set<url_matcher::URLMatcherConditionSet::ID> url_match_ids;
+  std::set<url_matcher::URLMatcherConditionSet::ID> first_party_url_match_ids;
 };
 
 // Representation of a condition in the Declarative WebRequest API. A condition
@@ -70,8 +70,9 @@ class WebRequestCondition {
   typedef WebRequestDataWithMatchIds MatchData;
 
   WebRequestCondition(
-      scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
-      scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_conditions,
+      scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions,
+      scoped_refptr<url_matcher::URLMatcherConditionSet>
+          first_party_url_matcher_conditions,
       const WebRequestConditionAttributes& condition_attributes);
   ~WebRequestCondition();
 
@@ -79,7 +80,7 @@ class WebRequestCondition {
   // the description |condition| passed by the extension API.
   static scoped_ptr<WebRequestCondition> Create(
       const Extension* extension,
-      URLMatcherConditionFactory* url_matcher_condition_factory,
+      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error);
 
@@ -88,7 +89,7 @@ class WebRequestCondition {
 
   // If this condition has url attributes, appends them to |condition_sets|.
   void GetURLMatcherConditionSets(
-      URLMatcherConditionSet::Vector* condition_sets) const;
+      url_matcher::URLMatcherConditionSet::Vector* condition_sets) const;
 
   // Returns a bit vector representing extensions::RequestStage. The bit vector
   // contains a 1 for each request stage during which the condition can be
@@ -97,8 +98,9 @@ class WebRequestCondition {
 
  private:
   // URL attributes of this condition.
-  scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
-  scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_conditions_;
+  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions_;
+  scoped_refptr<url_matcher::URLMatcherConditionSet>
+      first_party_url_matcher_conditions_;
 
   // All non-UrlFilter attributes of this condition.
   WebRequestConditionAttributes condition_attributes_;

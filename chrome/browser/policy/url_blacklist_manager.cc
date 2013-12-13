@@ -30,12 +30,12 @@
 #endif
 
 using content::BrowserThread;
-using extensions::URLMatcher;
-using extensions::URLMatcherCondition;
-using extensions::URLMatcherConditionFactory;
-using extensions::URLMatcherConditionSet;
-using extensions::URLMatcherPortFilter;
-using extensions::URLMatcherSchemeFilter;
+using url_matcher::URLMatcher;
+using url_matcher::URLMatcherCondition;
+using url_matcher::URLMatcherConditionFactory;
+using url_matcher::URLMatcherConditionSet;
+using url_matcher::URLMatcherPortFilter;
+using url_matcher::URLMatcherSchemeFilter;
 
 namespace policy {
 
@@ -236,9 +236,8 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
 }
 
 // static
-scoped_refptr<extensions::URLMatcherConditionSet>
-URLBlacklist::CreateConditionSet(
-    extensions::URLMatcher* url_matcher,
+scoped_refptr<URLMatcherConditionSet> URLBlacklist::CreateConditionSet(
+    URLMatcher* url_matcher,
     int id,
     const std::string& scheme,
     const std::string& host,

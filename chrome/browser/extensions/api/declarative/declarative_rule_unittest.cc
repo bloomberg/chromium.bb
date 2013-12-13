@@ -8,14 +8,17 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "components/url_matcher/url_matcher_constants.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/matcher/url_matcher_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
-
 using base::test::ParseJson;
+using url_matcher::URLMatcher;
+using url_matcher::URLMatcherConditionFactory;
+using url_matcher::URLMatcherConditionSet;
+
+namespace extensions {
 
 namespace {
 

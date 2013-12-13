@@ -29,6 +29,7 @@
         'sync_file_system_proto',
         '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:onc_component',
+        '../components/components.gyp:url_matcher',
         '../components/components.gyp:wifi_component',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',

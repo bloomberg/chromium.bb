@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/url_matcher_constants.h"
+#include "components/url_matcher/url_matcher_constants.h"
 
-namespace extensions {
+namespace url_matcher {
 namespace url_matcher_constants {
 
 // Keys of dictionaries for URL constraints
@@ -31,4 +31,4 @@ const char kURLPrefixKey[] = "urlPrefix";
 const char kURLSuffixKey[] = "urlSuffix";
 
 }  // namespace url_matcher_constants
-}  // namespace extensions
+}  // namespace url_matcher

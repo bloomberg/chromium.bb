@@ -19,6 +19,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
+using url_matcher::URLMatcherConditionSet;
+
 namespace extensions {
 
 ContentRulesRegistry::ContentRulesRegistry(Profile* profile,

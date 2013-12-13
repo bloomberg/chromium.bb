@@ -12,13 +12,17 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "extensions/common/matcher/url_matcher_factory.h"
+#include "components/url_matcher/url_matcher_factory.h"
 #include "net/url_request/url_request.h"
+
+using url_matcher::URLMatcherConditionFactory;
+using url_matcher::URLMatcherConditionSet;
+using url_matcher::URLMatcherFactory;
 
 namespace keys = extensions::declarative_webrequest_constants;
 
 namespace {
-static extensions::URLMatcherConditionSet::ID g_next_id = 0;
+static URLMatcherConditionSet::ID g_next_id = 0;
 
 // TODO(battre): improve error messaging to give more meaningful messages
 // to the extension developer.

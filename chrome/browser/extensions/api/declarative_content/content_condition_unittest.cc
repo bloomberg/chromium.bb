@@ -10,15 +10,17 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
-namespace {
-
 using testing::ElementsAre;
 using testing::HasSubstr;
+using url_matcher::URLMatcher;
+using url_matcher::URLMatcherConditionSet;
+
+namespace extensions {
+namespace {
 
 TEST(DeclarativeContentConditionTest, UnknownConditionName) {
   URLMatcher matcher;

@@ -18,10 +18,10 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/common/matcher/url_matcher.h"
 
 class Profile;
 class ContentPermissions;
@@ -116,7 +116,8 @@ class ContentRulesRegistry : public RulesRegistry,
   // ExtensionMsg_WatchPages.
   void InstructRenderProcess(content::RenderProcessHost* process);
 
-  typedef std::map<URLMatcherConditionSet::ID, ContentRule*> URLMatcherIdToRule;
+  typedef std::map<url_matcher::URLMatcherConditionSet::ID, ContentRule*>
+      URLMatcherIdToRule;
   typedef std::map<ContentRule::GlobalRuleId, linked_ptr<ContentRule> >
       RulesMap;
 
@@ -131,7 +132,7 @@ class ContentRulesRegistry : public RulesRegistry,
   std::map<int, std::set<ContentRule*> > active_rules_;
 
   // Matches URLs for the page_url condition.
-  URLMatcher url_matcher_;
+  url_matcher::URLMatcher url_matcher_;
 
   // All CSS selectors any rule's conditions watch for.
   std::vector<std::string> watched_css_selectors_;

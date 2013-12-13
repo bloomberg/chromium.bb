@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/url_matcher_factory.h"
+#include "components/url_matcher/url_matcher_factory.h"
 
 #include <algorithm>
 #include <cctype>
@@ -11,34 +11,36 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "extensions/common/error_utils.h"
-#include "extensions/common/matcher/url_matcher_constants.h"
-#include "extensions/common/matcher/url_matcher_helpers.h"
+#include "components/url_matcher/url_matcher_constants.h"
+#include "components/url_matcher/url_matcher_helpers.h"
 #include "third_party/re2/re2/re2.h"
 
-namespace helpers = extensions::url_matcher_helpers;
-namespace keys = extensions::url_matcher_constants;
+namespace url_matcher {
+
+namespace helpers = url_matcher_helpers;
+namespace keys = url_matcher_constants;
 
 namespace {
+
 // Error messages:
 const char kInvalidPortRanges[] = "Invalid port ranges in UrlFilter.";
 const char kVectorOfStringsExpected[] =
-    "UrlFilter attribute '*' expected a vector of strings as parameter.";
+    "UrlFilter attribute '%s' expected a vector of strings as parameter.";
 const char kUnknownURLFilterAttribute[] =
-    "Unknown attribute '*' in UrlFilter.";
+    "Unknown attribute '%s' in UrlFilter.";
 const char kAttributeExpectedString[] =
-    "UrlFilter attribute '*' expected a string value.";
+    "UrlFilter attribute '%s' expected a string value.";
 const char kUnparseableRegexString[] =
-    "Could not parse regular expression '*': *";
-const char kLowerCaseExpected[] = "* values need to be in lower case.";
+    "Could not parse regular expression '%s': %s";
+const char kLowerCaseExpected[] = "%s values need to be in lower case.";
 
-// Registry for all factory methods of extensions::URLMatcherConditionFactory
+// Registry for all factory methods of URLMatcherConditionFactory
 // that allows translating string literals from the extension API into
 // the corresponding factory method to be called.
 class URLMatcherConditionFactoryMethods {
  public:
   URLMatcherConditionFactoryMethods() {
-    typedef extensions::URLMatcherConditionFactory F;
+    typedef URLMatcherConditionFactory F;
     factory_methods_[keys::kHostContainsKey] = &F::CreateHostContainsCondition;
     factory_methods_[keys::kHostEqualsKey] = &F::CreateHostEqualsCondition;
     factory_methods_[keys::kHostPrefixKey] = &F::CreateHostPrefixCondition;
@@ -72,8 +74,8 @@ class URLMatcherConditionFactoryMethods {
   // |pattern_value| (e.g. "example.com").
   // The |pattern_type| needs to be known to this class (see Contains()) or
   // a CHECK is triggered.
-  extensions::URLMatcherCondition Call(
-      extensions::URLMatcherConditionFactory* url_matcher_condition_factory,
+  URLMatcherCondition Call(
+      URLMatcherConditionFactory* url_matcher_condition_factory,
       const std::string& pattern_type,
       const std::string& pattern_value) const {
     FactoryMethods::const_iterator i = factory_methods_.find(pattern_type);
@@ -83,8 +85,8 @@ class URLMatcherConditionFactoryMethods {
   }
 
  private:
-  typedef extensions::URLMatcherCondition
-      (extensions::URLMatcherConditionFactory::* FactoryMethod)
+  typedef URLMatcherCondition
+      (URLMatcherConditionFactory::* FactoryMethod)
       (const std::string& prefix);
   typedef std::map<std::string, FactoryMethod> FactoryMethods;
 
@@ -97,8 +99,6 @@ static base::LazyInstance<URLMatcherConditionFactoryMethods>
     g_url_matcher_condition_factory_methods = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace extensions {
 
 // static
 scoped_refptr<URLMatcherConditionSet>
@@ -140,9 +140,8 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
         return scoped_refptr<URLMatcherConditionSet>(NULL);
     } else {
       // Handle unknown attributes.
-      *error = ErrorUtils::FormatErrorMessage(
-          kUnknownURLFilterAttribute,
-          condition_attribute_name);
+      *error = base::StringPrintf(kUnknownURLFilterAttribute,
+                                  condition_attribute_name.c_str());
       return scoped_refptr<URLMatcherConditionSet>(NULL);
     }
   }
@@ -187,8 +186,8 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
     std::string* error) {
   std::string str_value;
   if (!value->GetAsString(&str_value)) {
-    *error = ErrorUtils::FormatErrorMessage(kAttributeExpectedString,
-                                            condition_attribute_name);
+    *error = base::StringPrintf(kAttributeExpectedString,
+                                condition_attribute_name.c_str());
     return URLMatcherCondition();
   }
   if (condition_attribute_name == keys::kHostContainsKey ||
@@ -196,8 +195,7 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
       condition_attribute_name == keys::kHostSuffixKey ||
       condition_attribute_name == keys::kHostEqualsKey) {
     if (ContainsUpperCase(str_value)) {
-      *error = ErrorUtils::FormatErrorMessage(kLowerCaseExpected,
-                                              "Host");
+      *error = base::StringPrintf(kLowerCaseExpected, "Host");
       return URLMatcherCondition();
     }
   }
@@ -207,8 +205,8 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
       condition_attribute_name == keys::kOriginAndPathMatchesKey) {
     re2::RE2 regex(str_value);
     if (!regex.ok()) {
-      *error = ErrorUtils::FormatErrorMessage(kUnparseableRegexString,
-                                              str_value, regex.error());
+      *error = base::StringPrintf(
+          kUnparseableRegexString, str_value.c_str(), regex.error().c_str());
       return URLMatcherCondition();
     }
   }
@@ -222,15 +220,13 @@ scoped_ptr<URLMatcherSchemeFilter> URLMatcherFactory::CreateURLMatcherScheme(
     std::string* error) {
   std::vector<std::string> schemas;
   if (!helpers::GetAsStringVector(value, &schemas)) {
-    *error = ErrorUtils::FormatErrorMessage(kVectorOfStringsExpected,
-                                            keys::kSchemesKey);
+    *error = base::StringPrintf(kVectorOfStringsExpected, keys::kSchemesKey);
     return scoped_ptr<URLMatcherSchemeFilter>();
   }
   for (std::vector<std::string>::const_iterator it = schemas.begin();
        it != schemas.end(); ++it) {
     if (ContainsUpperCase(*it)) {
-      *error = ErrorUtils::FormatErrorMessage(kLowerCaseExpected,
-                                              "Scheme");
+      *error = base::StringPrintf(kLowerCaseExpected, "Scheme");
       return scoped_ptr<URLMatcherSchemeFilter>();
     }
   }
@@ -274,4 +270,4 @@ scoped_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
   return scoped_ptr<URLMatcherPortFilter>(new URLMatcherPortFilter(ranges));
 }
 
-}  // namespace extensions
+}  // namespace url_matcher

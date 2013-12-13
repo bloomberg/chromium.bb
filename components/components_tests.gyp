@@ -46,6 +46,11 @@
             'translate/common/translate_metrics_unittest.cc',
             'translate/common/translate_util_unittest.cc',
             'translate/language_detection/language_detection_util_unittest.cc',
+            'url_matcher/regex_set_matcher_unittest.cc',
+            'url_matcher/string_pattern_unittest.cc',
+            'url_matcher/substring_set_matcher_unittest.cc',
+            'url_matcher/url_matcher_factory_unittest.cc',
+            'url_matcher/url_matcher_unittest.cc',
             # TODO(asvitkine): These should be tested on iOS too.
             'variations/entropy_provider_unittest.cc',
             'variations/metrics_util_unittest.cc',
@@ -116,6 +121,9 @@
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
                 'components.gyp:sessions',
                 'components.gyp:sessions_test_support',
+
+                # Dependencies of url_matcher.
+                'components.gyp:url_matcher',
 
                 # Dependencies of visitedlink
                 'components.gyp:visitedlink_browser',

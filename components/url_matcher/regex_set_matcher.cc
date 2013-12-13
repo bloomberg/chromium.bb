@@ -1,17 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/regex_set_matcher.h"
+#include "components/url_matcher/regex_set_matcher.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "extensions/common/matcher/substring_set_matcher.h"
+#include "components/url_matcher/substring_set_matcher.h"
 #include "third_party/re2/re2/filtered_re2.h"
 #include "third_party/re2/re2/re2.h"
 
-namespace extensions {
+namespace url_matcher {
 
 RegexSetMatcher::RegexSetMatcher() {}
 
@@ -110,4 +110,4 @@ void RegexSetMatcher::DeleteSubstringPatterns() {
   STLDeleteElements(&substring_patterns_);
 }
 
-}  // namespace extensions
+}  // namespace url_matcher

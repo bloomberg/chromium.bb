@@ -21,8 +21,8 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/common/extensions/api/events.h"
+#include "components/url_matcher/url_matcher.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/matcher/url_matcher.h"
 
 namespace base {
 class Time;
@@ -64,7 +64,7 @@ class DeclarativeConditionSet {
   // |error| and returns NULL in case of an error.
   static scoped_ptr<DeclarativeConditionSet> Create(
       const Extension* extension,
-      URLMatcherConditionFactory* url_matcher_condition_factory,
+      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const AnyVector& conditions,
       std::string* error);
 
@@ -80,12 +80,12 @@ class DeclarativeConditionSet {
   // IsFulfilled(|match_data|). If there is no such condition, then false is
   // returned. If |url_match_trigger| is -1, this function returns whether any
   // of the conditions without URL attributes is satisfied.
-  bool IsFulfilled(URLMatcherConditionSet::ID url_match_trigger,
+  bool IsFulfilled(url_matcher::URLMatcherConditionSet::ID url_match_trigger,
                    const typename ConditionT::MatchData& match_data) const;
 
   // Appends the URLMatcherConditionSet from all conditions to |condition_sets|.
   void GetURLMatcherConditionSets(
-      URLMatcherConditionSet::Vector* condition_sets) const;
+      url_matcher::URLMatcherConditionSet::Vector* condition_sets) const;
 
   // Returns whether there are some conditions without UrlFilter attributes.
   bool HasConditionsWithoutUrls() const {
@@ -93,7 +93,7 @@ class DeclarativeConditionSet {
   }
 
  private:
-  typedef std::map<URLMatcherConditionSet::ID, const ConditionT*>
+  typedef std::map<url_matcher::URLMatcherConditionSet::ID, const ConditionT*>
       URLMatcherIdToCondition;
 
   DeclarativeConditionSet(
@@ -216,7 +216,7 @@ class DeclarativeRule {
   // check is needed.  If |error| is empty, the translation was successful and
   // the returned rule is internally consistent.
   static scoped_ptr<DeclarativeRule> Create(
-      URLMatcherConditionFactory* url_matcher_condition_factory,
+      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const Extension* extension,
       base::Time extension_installation_time,
       linked_ptr<JsonRule> rule,
@@ -260,7 +260,7 @@ class DeclarativeRule {
 
 template<typename ConditionT>
 bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
-    URLMatcherConditionSet::ID url_match_trigger,
+    url_matcher::URLMatcherConditionSet::ID url_match_trigger,
     const typename ConditionT::MatchData& match_data) const {
   if (url_match_trigger == -1) {
     // Invalid trigger -- indication that we should only check conditions
@@ -282,7 +282,7 @@ bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
 
 template<typename ConditionT>
 void DeclarativeConditionSet<ConditionT>::GetURLMatcherConditionSets(
-    URLMatcherConditionSet::Vector* condition_sets) const {
+    url_matcher::URLMatcherConditionSet::Vector* condition_sets) const {
   for (typename Conditions::const_iterator i = conditions_.begin();
        i != conditions_.end(); ++i) {
     (*i)->GetURLMatcherConditionSets(condition_sets);
@@ -294,7 +294,7 @@ template<typename ConditionT>
 scoped_ptr<DeclarativeConditionSet<ConditionT> >
 DeclarativeConditionSet<ConditionT>::Create(
     const Extension* extension,
-    URLMatcherConditionFactory* url_matcher_condition_factory,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     const AnyVector& conditions,
     std::string* error) {
   Conditions result;
@@ -311,7 +311,7 @@ DeclarativeConditionSet<ConditionT>::Create(
 
   URLMatcherIdToCondition match_id_to_condition;
   std::vector<const ConditionT*> conditions_without_urls;
-  URLMatcherConditionSet::Vector condition_sets;
+  url_matcher::URLMatcherConditionSet::Vector condition_sets;
 
   for (typename Conditions::const_iterator i = result.begin();
        i != result.end(); ++i) {
@@ -320,7 +320,7 @@ DeclarativeConditionSet<ConditionT>::Create(
     if (condition_sets.empty()) {
       conditions_without_urls.push_back(i->get());
     } else {
-      for (URLMatcherConditionSet::Vector::const_iterator
+      for (url_matcher::URLMatcherConditionSet::Vector::const_iterator
                match_set = condition_sets.begin();
            match_set != condition_sets.end(); ++match_set)
         match_id_to_condition[(*match_set)->id()] = i->get();
@@ -429,7 +429,7 @@ DeclarativeRule<ConditionT, ActionT>::DeclarativeRule(
 template<typename ConditionT, typename ActionT>
 scoped_ptr<DeclarativeRule<ConditionT, ActionT> >
 DeclarativeRule<ConditionT, ActionT>::Create(
-    URLMatcherConditionFactory* url_matcher_condition_factory,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     const Extension* extension,
     base::Time extension_installation_time,
     linked_ptr<JsonRule> rule,

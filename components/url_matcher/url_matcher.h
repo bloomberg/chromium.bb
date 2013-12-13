@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_MATCHER_URL_MATCHER_H_
-#define EXTENSIONS_COMMON_MATCHER_URL_MATCHER_H_
+#ifndef COMPONENTS_URL_MATCHER_URL_MATCHER_H_
+#define COMPONENTS_URL_MATCHER_URL_MATCHER_H_
 
 #include <set>
 #include <vector>
@@ -11,8 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "extensions/common/matcher/regex_set_matcher.h"
-#include "extensions/common/matcher/substring_set_matcher.h"
+#include "components/url_matcher/regex_set_matcher.h"
+#include "components/url_matcher/substring_set_matcher.h"
+#include "components/url_matcher/url_matcher_export.h"
 
 class GURL;
 
@@ -20,7 +21,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace extensions {
+namespace url_matcher {
 
 // This class represents a single URL matching condition, e.g. a match on the
 // host suffix or the containment of a string in the query component of a GURL.
@@ -31,7 +32,7 @@ namespace extensions {
 // URLMatcherConditionFactory is not capable of expressing that alone.
 //
 // Also supported is matching regular expressions against the URL (URL_MATCHES).
-class URLMatcherCondition {
+class URL_MATCHER_EXPORT URLMatcherCondition {
  public:
   enum Criterion {
     HOST_PREFIX,
@@ -116,7 +117,7 @@ class URLMatcherCondition {
 // IMPORTANT: The URLMatcherConditionFactory owns the StringPattern
 // referenced by created URLMatcherConditions. Therefore, it must outlive
 // all created URLMatcherCondition and the SubstringSetMatcher.
-class URLMatcherConditionFactory {
+class URL_MATCHER_EXPORT URLMatcherConditionFactory {
  public:
   URLMatcherConditionFactory();
   ~URLMatcherConditionFactory();
@@ -214,7 +215,7 @@ class URLMatcherConditionFactory {
 
 // This class represents a filter for the URL scheme to be hooked up into a
 // URLMatcherConditionSet.
-class URLMatcherSchemeFilter {
+class URL_MATCHER_EXPORT URLMatcherSchemeFilter {
  public:
   explicit URLMatcherSchemeFilter(const std::string& filter);
   explicit URLMatcherSchemeFilter(const std::vector<std::string>& filters);
@@ -229,7 +230,7 @@ class URLMatcherSchemeFilter {
 
 // This class represents a filter for port numbers to be hooked up into a
 // URLMatcherConditionSet.
-class URLMatcherPortFilter {
+class URL_MATCHER_EXPORT URLMatcherPortFilter {
  public:
   // Boundaries of a port range (both ends are included).
   typedef std::pair<int, int> Range;
@@ -250,7 +251,8 @@ class URLMatcherPortFilter {
 
 // This class represents a set of conditions that all need to match on a
 // given URL in order to be considered a match.
-class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
+class URL_MATCHER_EXPORT URLMatcherConditionSet
+    : public base::RefCounted<URLMatcherConditionSet> {
  public:
   typedef int ID;
   typedef std::set<URLMatcherCondition> Conditions;
@@ -285,7 +287,7 @@ class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
 
 // This class allows matching one URL against a large set of
 // URLMatcherConditionSets at the same time.
-class URLMatcher {
+class URL_MATCHER_EXPORT URLMatcher {
  public:
   URLMatcher();
   ~URLMatcher();
@@ -350,6 +352,6 @@ class URLMatcher {
   DISALLOW_COPY_AND_ASSIGN(URLMatcher);
 };
 
-}  // namespace extensions
+}  // namespace url_matcher
 
-#endif  // EXTENSIONS_COMMON_MATCHER_URL_MATCHER_H_
+#endif  // COMPONENTS_URL_MATCHER_URL_MATCHER_H_

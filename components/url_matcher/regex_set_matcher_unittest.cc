@@ -1,17 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/regex_set_matcher.h"
+#include "components/url_matcher/regex_set_matcher.h"
 
 #include <set>
 
 #include "base/stl_util.h"
-#include "url/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
-using extensions::StringPattern;
-using extensions::RegexSetMatcher;
+namespace url_matcher {
 
 TEST(RegexSetMatcherTest, MatchRegexes) {
   StringPattern pattern_1("ab.*c", 42);
@@ -59,3 +58,5 @@ TEST(RegexSetMatcherTest, CaseSensitivity) {
   EXPECT_EQ(1U, result2.size());
   EXPECT_TRUE(ContainsKey(result2, 57));
 }
+
+}  // namespace url_matcher

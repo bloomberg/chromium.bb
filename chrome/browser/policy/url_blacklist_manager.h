@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
 
 class GURL;
 class PrefService;
@@ -79,9 +79,9 @@ class URLBlacklist {
   // Creates a condition set that can be used with the |url_matcher|. |id| needs
   // to be a unique number that will be returned by the |url_matcher| if the URL
   // matches that condition set.
-  static scoped_refptr<extensions::URLMatcherConditionSet> CreateConditionSet(
-      extensions::URLMatcher* url_matcher,
-      extensions::URLMatcherConditionSet::ID id,
+  static scoped_refptr<url_matcher::URLMatcherConditionSet> CreateConditionSet(
+      url_matcher::URLMatcher* url_matcher,
+      url_matcher::URLMatcherConditionSet::ID id,
       const std::string& scheme,
       const std::string& host,
       bool match_subdomains,
@@ -95,9 +95,9 @@ class URLBlacklist {
   static bool FilterTakesPrecedence(const FilterComponents& lhs,
                                     const FilterComponents& rhs);
 
-  extensions::URLMatcherConditionSet::ID id_;
-  std::map<extensions::URLMatcherConditionSet::ID, FilterComponents> filters_;
-  scoped_ptr<extensions::URLMatcher> url_matcher_;
+  url_matcher::URLMatcherConditionSet::ID id_;
+  std::map<url_matcher::URLMatcherConditionSet::ID, FilterComponents> filters_;
+  scoped_ptr<url_matcher::URLMatcher> url_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(URLBlacklist);
 };

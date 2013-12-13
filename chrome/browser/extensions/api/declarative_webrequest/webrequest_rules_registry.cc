@@ -20,6 +20,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/url_request/url_request.h"
 
+using url_matcher::URLMatcherConditionSet;
+
 namespace {
 
 const char kActionCannotBeExecuted[] = "The action '*' can never be executed "

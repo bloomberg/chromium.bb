@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_MATCHER_SUBSTRING_SET_MATCHER_H_
-#define EXTENSIONS_COMMON_MATCHER_SUBSTRING_SET_MATCHER_H_
+#ifndef COMPONENTS_URL_MATCHER_SUBSTRING_SET_MATCHER_H_
+#define COMPONENTS_URL_MATCHER_SUBSTRING_SET_MATCHER_H_
 
 #include <limits>
 #include <map>
@@ -12,13 +12,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "extensions/common/matcher/string_pattern.h"
+#include "components/url_matcher/string_pattern.h"
+#include "components/url_matcher/url_matcher_export.h"
 
-namespace extensions {
+namespace url_matcher {
 
 // Class that store a set of string patterns and can find for a string S,
 // which string patterns occur in S.
-class SubstringSetMatcher {
+class URL_MATCHER_EXPORT SubstringSetMatcher {
  public:
   SubstringSetMatcher();
   ~SubstringSetMatcher();
@@ -135,6 +136,6 @@ class SubstringSetMatcher {
   DISALLOW_COPY_AND_ASSIGN(SubstringSetMatcher);
 };
 
-}  // namespace extensions
+}  // namespace url_matcher
 
-#endif  // EXTENSIONS_COMMON_MATCHER_SUBSTRING_SET_MATCHER_H_
+#endif  // COMPONENTS_URL_MATCHER_SUBSTRING_SET_MATCHER_H_

@@ -14,17 +14,17 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/common/matcher/url_matcher.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using extensions::URLMatcher;
-using extensions::URLMatcherConditionSet;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
 using net::registry_controlled_domains::GetRegistryLength;
+using url_matcher::URLMatcher;
+using url_matcher::URLMatcherConditionSet;
 
 struct ManagedModeURLFilter::Contents {
   URLMatcher url_matcher;
@@ -93,7 +93,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
     return false;
   }
 
-  scoped_refptr<extensions::URLMatcherConditionSet> condition_set =
+  scoped_refptr<URLMatcherConditionSet> condition_set =
       policy::URLBlacklist::CreateConditionSet(
           &contents_->url_matcher, ++matcher_id_,
           scheme, host, match_subdomains, port, path);

@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
 
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace extensions {
+namespace url_matcher {
 
 //
 // URLMatcherCondition
@@ -679,4 +679,4 @@ TEST(URLMatcherTest, TestOriginAndPathRegExNegative) {
   EXPECT_EQ(0u, matcher.MatchURL(url).size());
 }
 
-}  // namespace extensions
+}  // namespace url_matcher

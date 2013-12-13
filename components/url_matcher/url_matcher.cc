@@ -1,18 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
 
 #include <algorithm>
 #include <iterator>
 
 #include "base/logging.h"
-#include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
-namespace extensions {
+namespace url_matcher {
 
 // This set of classes implement a mapping of URL Component Patterns, such as
 // host_prefix, host_suffix, host_equals, ..., etc., to StringPatterns
@@ -878,4 +877,4 @@ void URLMatcher::UpdateInternalDatastructures() {
   UpdateConditionFactory();
 }
 
-}  // namespace extensions
+}  // namespace url_matcher

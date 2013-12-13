@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_MATCHER_REGEX_SET_MATCHER_H_
-#define EXTENSIONS_COMMON_MATCHER_REGEX_SET_MATCHER_H_
+#ifndef COMPONENTS_URL_MATCHER_REGEX_SET_MATCHER_H_
+#define COMPONENTS_URL_MATCHER_REGEX_SET_MATCHER_H_
 
 #include <map>
 #include <set>
@@ -11,20 +11,21 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "extensions/common/matcher/string_pattern.h"
-#include "extensions/common/matcher/substring_set_matcher.h"
+#include "components/url_matcher/string_pattern.h"
+#include "components/url_matcher/substring_set_matcher.h"
+#include "components/url_matcher/url_matcher_export.h"
 
 namespace re2 {
 class FilteredRE2;
 }
 
-namespace extensions {
+namespace url_matcher {
 
 // Efficiently matches URLs against a collection of regular expressions,
 // using FilteredRE2 to reduce the number of regexes that must be matched
 // by pre-filtering with substring matching. See:
 // http://swtch.com/~rsc/regexp/regexp3.html#analysis
-class RegexSetMatcher {
+class URL_MATCHER_EXPORT RegexSetMatcher {
  public:
   RegexSetMatcher();
   virtual ~RegexSetMatcher();
@@ -77,6 +78,6 @@ class RegexSetMatcher {
   std::vector<const StringPattern*> substring_patterns_;
 };
 
-}  // namespace extensions
+}  // namespace url_matcher
 
-#endif  // EXTENSIONS_COMMON_MATCHER_REGEX_SET_MATCHER_H_
+#endif  // COMPONENTS_URL_MATCHER_REGEX_SET_MATCHER_H_

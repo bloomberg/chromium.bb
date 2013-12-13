@@ -10,16 +10,16 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "components/url_matcher/url_matcher_constants.h"
 #include "content/public/browser/resource_request_info.h"
-#include "extensions/common/matcher/url_matcher_constants.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
+using url_matcher::URLMatcher;
+using url_matcher::URLMatcherConditionSet;
 
-namespace keys = declarative_webrequest_constants;
-namespace keys2 = url_matcher_constants;
+namespace extensions {
 
 TEST(WebRequestConditionTest, CreateCondition) {
   // Necessary for TestURLRequest.

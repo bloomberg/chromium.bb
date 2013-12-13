@@ -2616,6 +2616,7 @@
             '../components/components.gyp:dom_distiller_content',
             '../components/components.gyp:navigation_interception',
             '../components/components.gyp:sessions',
+            '../components/components.gyp:url_matcher',
             '../components/components.gyp:visitedlink_browser',
             '../components/components.gyp:visitedlink_common',
             '../components/components.gyp:web_modal',

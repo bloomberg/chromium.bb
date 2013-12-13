@@ -1,16 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_MATCHER_STRING_PATTERN_H_
-#define EXTENSIONS_COMMON_MATCHER_STRING_PATTERN_H_
+#ifndef COMPONENTS_URL_MATCHER_STRING_PATTERN_H_
+#define COMPONENTS_URL_MATCHER_STRING_PATTERN_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "components/url_matcher/url_matcher_export.h"
 
-namespace extensions {
+namespace url_matcher {
 
 // An individual pattern of a substring or regex matcher. A pattern consists of
 // a string (interpreted as individual bytes, no character encoding) and an
@@ -19,7 +20,7 @@ namespace extensions {
 // RegexMatcher::MatchURL() to help the caller to figure out what
 // patterns matched a string. All patterns registered to a matcher
 // need to contain unique IDs.
-class StringPattern {
+class URL_MATCHER_EXPORT StringPattern {
  public:
   typedef int ID;
 
@@ -37,6 +38,6 @@ class StringPattern {
   DISALLOW_COPY_AND_ASSIGN(StringPattern);
 };
 
-}  // namespace extensions
+}  // namespace url_matcher
 
-#endif  // EXTENSIONS_COMMON_MATCHER_STRING_PATTERN_H_
+#endif  // COMPONENTS_URL_MATCHER_STRING_PATTERN_H_

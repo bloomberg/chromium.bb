@@ -4,8 +4,12 @@
 
 #include "extensions/common/event_filter.h"
 
-#include "extensions/common/matcher/url_matcher_factory.h"
+#include "components/url_matcher/url_matcher_factory.h"
 #include "ipc/ipc_message.h"
+
+using url_matcher::URLMatcher;
+using url_matcher::URLMatcherConditionSet;
+using url_matcher::URLMatcherFactory;
 
 namespace extensions {
 

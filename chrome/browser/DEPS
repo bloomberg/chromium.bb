@@ -19,6 +19,7 @@ include_rules = [
   "+components/sessions",
   "+components/startup_metric_utils",
   "+components/translate/common",
+  "+components/url_matcher",
   "+components/user_prefs",
   "+components/webdata",
   "+components/web_modal",

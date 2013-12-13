@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
-#include "extensions/common/matcher/url_matcher.h"
+#include "components/url_matcher/url_matcher.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -25,7 +25,7 @@ struct RendererContentMatchData {
   ~RendererContentMatchData();
   // Match IDs for the URL of the top-level page the renderer is
   // returning data for.
-  std::set<URLMatcherConditionSet::ID> page_url_matches;
+  std::set<url_matcher::URLMatcherConditionSet::ID> page_url_matches;
   // All watched CSS selectors that match on frames with the same
   // origin as the page's main frame.
   base::hash_set<std::string> css_selectors;
@@ -54,7 +54,7 @@ class ContentCondition {
   typedef RendererContentMatchData MatchData;
 
   ContentCondition(
-      scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
+      scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions,
       const std::vector<std::string>& css_selectors);
   ~ContentCondition();
 
@@ -63,7 +63,7 @@ class ContentCondition {
   // an instance of declarativeContent.PageStateMatcher.
   static scoped_ptr<ContentCondition> Create(
       const Extension* extension,
-      URLMatcherConditionFactory* url_matcher_condition_factory,
+      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error);
 
@@ -75,13 +75,13 @@ class ContentCondition {
   // for all URL patterns that need to be matched by this ContentCondition.
   // This ID is registered in a URLMatcher that can inform us in case of a
   // match.
-  URLMatcherConditionSet::ID url_matcher_condition_set_id() const {
+  url_matcher::URLMatcherConditionSet::ID url_matcher_condition_set_id() const {
     return url_matcher_conditions_->id();
   }
 
   // If this Condition has a url filter, appends it to |condition_sets|.
   void GetURLMatcherConditionSets(
-      URLMatcherConditionSet::Vector* condition_sets) const {
+      url_matcher::URLMatcherConditionSet::Vector* condition_sets) const {
     if (url_matcher_conditions_.get())
       condition_sets->push_back(url_matcher_conditions_);
   }
@@ -98,7 +98,7 @@ class ContentCondition {
   }
 
  private:
-  scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
+  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions_;
   std::vector<std::string> css_selectors_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);

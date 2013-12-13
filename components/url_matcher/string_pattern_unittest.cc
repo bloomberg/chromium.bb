@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/string_pattern.h"
+#include "components/url_matcher/string_pattern.h"
 
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::StringPattern;
+namespace url_matcher {
 
 TEST(StringPatternTest, StringPattern) {
   StringPattern r1("Test", 2);
@@ -21,3 +21,5 @@ TEST(StringPatternTest, StringPattern) {
   StringPattern r3("ZZZZ", 2);
   EXPECT_TRUE(r1 < r3);
 }
+
+}  // namespace url_matcher

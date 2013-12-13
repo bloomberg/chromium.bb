@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/substring_set_matcher.h"
+#include "components/url_matcher/substring_set_matcher.h"
 
 #include <set>
 #include <string>
@@ -10,10 +10,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::StringPattern;
-using extensions::SubstringSetMatcher;
+namespace url_matcher {
 
 namespace {
+
 void TestOnePattern(const std::string& test_string,
                     const std::string& pattern,
                     bool is_match) {
@@ -65,7 +65,8 @@ void TestTwoPatterns(const std::string& test_string,
     EXPECT_EQ(is_match_2, matches.find(2) != matches.end()) << test;
   }
 }
-}
+
+}  // namespace
 
 TEST(SubstringSetMatcherTest, TestMatcher) {
   // Test overlapping patterns
@@ -165,3 +166,5 @@ TEST(SubstringSetMatcherTest, TestEmptyMatcher) {
   matcher.Match("abd", &matches);
   EXPECT_TRUE(matches.empty());
 }
+
+}  // namespace url_matcher

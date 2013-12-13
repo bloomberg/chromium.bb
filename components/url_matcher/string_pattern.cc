@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/string_pattern.h"
+#include "components/url_matcher/string_pattern.h"
 
-namespace extensions {
+namespace url_matcher {
 
 StringPattern::StringPattern(const std::string& pattern,
                              StringPattern::ID id)
@@ -17,4 +17,4 @@ bool StringPattern::operator<(const StringPattern& rhs) const {
   return pattern_ < rhs.pattern_;
 }
 
-}  // namespace extensions
+}  // namespace url_matcher

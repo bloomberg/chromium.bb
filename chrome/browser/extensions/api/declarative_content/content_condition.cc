@@ -7,12 +7,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
-#include "extensions/common/matcher/url_matcher_factory.h"
+#include "components/url_matcher/url_matcher_factory.h"
+
+using url_matcher::URLMatcherConditionFactory;
+using url_matcher::URLMatcherConditionSet;
+using url_matcher::URLMatcherFactory;
 
 namespace keys = extensions::declarative_content_constants;
 
 namespace {
-static extensions::URLMatcherConditionSet::ID g_next_id = 0;
+static URLMatcherConditionSet::ID g_next_id = 0;
 
 // TODO(jyasskin): improve error messaging to give more meaningful messages
 // to the extension developer.

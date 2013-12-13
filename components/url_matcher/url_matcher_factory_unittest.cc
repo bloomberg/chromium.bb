@@ -1,18 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/matcher/url_matcher_factory.h"
+#include "components/url_matcher/url_matcher_factory.h"
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "extensions/common/matcher/url_matcher_constants.h"
+#include "components/url_matcher/url_matcher_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace extensions {
+namespace url_matcher {
 
 namespace keys = url_matcher_constants;
 
@@ -336,4 +336,4 @@ TEST(URLMatcherFactoryTest, CaseSensitivity) {
   }
 }
 
-}  // namespace extensions
+}  // namespace url_matcher

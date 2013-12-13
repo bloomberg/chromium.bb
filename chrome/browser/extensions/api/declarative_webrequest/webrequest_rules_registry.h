@@ -21,8 +21,8 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
+#include "components/url_matcher/url_matcher.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/common/matcher/url_matcher.h"
 
 class Profile;
 class WebRequestPermissions;
@@ -127,10 +127,11 @@ class WebRequestRulesRegistry : public RulesRegistry {
   FRIEND_TEST_ALL_PREFIXES(WebRequestRulesRegistrySimpleTest,
                            HostPermissionsChecker);
 
-  typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
+  typedef std::map<url_matcher::URLMatcherConditionSet::ID, WebRequestRule*>
+      RuleTriggers;
   typedef std::map<WebRequestRule::RuleId, linked_ptr<WebRequestRule> >
       RulesMap;
-  typedef std::set<URLMatcherConditionSet::ID> URLMatches;
+  typedef std::set<url_matcher::URLMatcherConditionSet::ID> URLMatches;
   typedef std::set<const WebRequestRule*> RuleSet;
 
   // This bundles all consistency checkers. Returns true in case of consistency
@@ -158,9 +159,9 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // and add every of the rule's URLMatcherConditionSet to
   // |remove_from_url_matcher|, so that the caller can remove them from the
   // matcher later.
-  void CleanUpAfterRule(
-      const WebRequestRule* rule,
-      std::vector<URLMatcherConditionSet::ID>* remove_from_url_matcher);
+  void CleanUpAfterRule(const WebRequestRule* rule,
+                        std::vector<url_matcher::URLMatcherConditionSet::ID>*
+                            remove_from_url_matcher);
 
   // This is a helper function to GetMatches. Rules triggered by |url_matches|
   // get added to |result| if one of their conditions is fulfilled.
@@ -180,7 +181,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
 
   std::map<WebRequestRule::ExtensionId, RulesMap> webrequest_rules_;
 
-  URLMatcher url_matcher_;
+  url_matcher::URLMatcher url_matcher_;
 
   void* profile_id_;
   scoped_refptr<InfoMap> extension_info_map_;
