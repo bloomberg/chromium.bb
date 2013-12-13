@@ -628,7 +628,15 @@ TEST_F(HostResolverImplTest, EmptyDotsHost) {
   }
 }
 
-TEST_F(HostResolverImplTest, LongHost) {
+#if defined(THREAD_SANITIZER)
+// There's a data race in this test that may lead to use-after-free.
+// If the test starts to crash without ThreadSanitizer it needs to be disabled
+// globally. See http://crbug.com/268946.
+#define MAYBE_LongHost DISABLED_LongHost
+#else
+#define MAYBE_LongHost LongHost
+#endif
+TEST_F(HostResolverImplTest, MAYBE_LongHost) {
   Request* req = CreateRequest(std::string(4097, 'a'), 5555);
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
 }
