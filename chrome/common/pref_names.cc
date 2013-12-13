@@ -2637,10 +2637,13 @@ const char kDRMSalt[] = "settings.privacy.drm_salt";
 // enables the use of remote attestation for content protection.
 const char kEnableDRM[] = "settings.privacy.drm_enabled";
 
-// A boolean per-profile pref that signals if the watchdog extension is
+// An integer per-profile pref that signals if the watchdog extension is
 // installed and active. We need to know if the watchdog extension active for
 // ActivityLog initialization before the extension system is initialized.
 const char kWatchdogExtensionActive[] =
+    "profile.extensions.activity_log.num_consumers_active";
+// The old version was a bool.
+const char kWatchdogExtensionActiveOld[] =
     "profile.extensions.activity_log.watchdog_extension_active";
 
 // A dictionary pref which maps profile names to dictionary values which hold

@@ -197,8 +197,9 @@ class ActivityLog : public BrowserContextKeyedService,
   InstallTracker* tracker_;
 
   // Set if the watchdog app is installed and enabled. Maintained by
-  // kWatchdogExtensionActive pref variable.
-  bool watchdog_app_active_;
+  // kWatchdogExtensionActive pref variable. Since there are multiple valid
+  // extension IDs, this needs to be an int to count how many are installed.
+  int watchdog_apps_active_;
 
   FRIEND_TEST_ALL_PREFIXES(ActivityLogApiTest, TriggerEvent);
   FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, AppAndCommandLine);

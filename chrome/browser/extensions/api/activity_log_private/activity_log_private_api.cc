@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
 
@@ -23,13 +25,6 @@ namespace activity_log_private = api::activity_log_private;
 using api::activity_log_private::ActivityResultSet;
 using api::activity_log_private::ExtensionActivity;
 using api::activity_log_private::Filter;
-
-const char kActivityLogExtensionId[] = "fpofdchlamddhnajleknffcbmnjfahpg";
-const char kActivityLogTestExtensionId[] = "abjoigjokfeibfhiahiijggogladbmfm";
-// TODO(mvrable): Delete kActivityLogObsoleteExtensionId after ensuring that it
-// is no longer in use.
-const char kActivityLogObsoleteExtensionId[] =
-    "hhcnncjlpehbepkbgccanfpkneoejnpb";
 
 static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLogAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -74,9 +69,8 @@ void ActivityLogAPI::Shutdown() {
 
 // static
 bool ActivityLogAPI::IsExtensionWhitelisted(const std::string& extension_id) {
-  return (extension_id == kActivityLogExtensionId ||
-          extension_id == kActivityLogTestExtensionId ||
-          extension_id == kActivityLogObsoleteExtensionId);
+  return FeatureProvider::GetPermissionFeatures()->
+      GetFeature("activityLogPrivate")->IsIdInWhitelist(extension_id);
 }
 
 void ActivityLogAPI::OnListenerAdded(const EventListenerInfo& details) {
