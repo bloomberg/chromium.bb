@@ -885,6 +885,12 @@ struct weston_surface {
 	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
 	void *configure_private;
 
+	/* If non-NULL, this function will be called on surface->output::
+	 * destroy, after the output is removed from the compositor's
+	 * output list and the remaining outputs moved.
+	 */
+	void (*output_destroyed)(struct weston_surface *surface);
+
 	/* Parent's list of its sub-surfaces, weston_subsurface:parent_link.
 	 * Contains also the parent itself as a dummy weston_subsurface,
 	 * if the list is not empty.

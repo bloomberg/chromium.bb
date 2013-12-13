@@ -2206,6 +2206,10 @@ set_fullscreen(struct shell_surface *shsurf,
 }
 
 static void
+weston_view_set_initial_position(struct weston_view *view,
+				 struct desktop_shell *shell);
+
+static void
 unset_fullscreen(struct shell_surface *shsurf)
 {
 	/* Unset the fullscreen output, driver configuration and transforms. */
@@ -2225,8 +2229,12 @@ unset_fullscreen(struct shell_surface *shsurf)
 		weston_surface_destroy(shsurf->fullscreen.black_view->surface);
 	shsurf->fullscreen.black_view = NULL;
 
-	weston_view_set_position(shsurf->view,
-				 shsurf->saved_x, shsurf->saved_y);
+	if (shsurf->saved_position_valid)
+		weston_view_set_position(shsurf->view,
+					 shsurf->saved_x, shsurf->saved_y);
+	else
+		weston_view_set_initial_position(shsurf->view, shsurf->shell);
+
 	if (shsurf->saved_rotation_valid) {
 		wl_list_insert(&shsurf->view->geometry.transformation_list,
 		               &shsurf->rotation.transform.link);
@@ -2323,9 +2331,12 @@ unset_maximized(struct shell_surface *shsurf)
 {
 	/* undo all maximized things here */
 	shsurf->output = get_default_output(shsurf->surface->compositor);
-	weston_view_set_position(shsurf->view,
-				 shsurf->saved_x,
-				 shsurf->saved_y);
+
+	if (shsurf->saved_position_valid)
+		weston_view_set_position(shsurf->view,
+					 shsurf->saved_x, shsurf->saved_y);
+	else
+		weston_view_set_initial_position(shsurf->view, shsurf->shell);
 
 	if (shsurf->saved_rotation_valid) {
 		wl_list_insert(&shsurf->view->geometry.transformation_list,
@@ -2907,6 +2918,8 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 
 static void
 shell_surface_configure(struct weston_surface *, int32_t, int32_t);
+static void
+shell_surface_output_destroyed(struct weston_surface *);
 
 struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
@@ -2943,6 +2956,7 @@ create_common_surface(void *shell, struct weston_surface *surface,
 
 	surface->configure = shell_surface_configure;
 	surface->configure_private = shsurf;
+	surface->output_destroyed = shell_surface_output_destroyed;
 
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
@@ -4953,6 +4967,14 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 			  shsurf->view->geometry.x + to_x - from_x,
 			  shsurf->view->geometry.y + to_y - from_y);
 	}
+}
+
+static void
+shell_surface_output_destroyed(struct weston_surface *es)
+{
+	struct shell_surface *shsurf = get_shell_surface(es);
+
+	shsurf->saved_position_valid = false;
 }
 
 static void launch_desktop_shell_process(void *data);
