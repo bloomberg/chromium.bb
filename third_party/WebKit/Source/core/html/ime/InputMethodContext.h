@@ -58,6 +58,8 @@ public:
     Composition* composition();
     String locale() const;
     HTMLElement* target() const;
+    unsigned compositionStartOffset();
+    unsigned compositionEndOffset();
     void confirmComposition();
 
     String compositionText() const;

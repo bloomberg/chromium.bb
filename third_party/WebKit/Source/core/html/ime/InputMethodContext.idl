@@ -33,6 +33,9 @@ interface InputMethodContext : EventTarget {
     readonly attribute Composition composition;
     readonly attribute DOMString locale;
     readonly attribute HTMLElement target;
+    readonly attribute unsigned long compositionStartOffset;
+    readonly attribute unsigned long compositionEndOffset;
+
     void confirmComposition();
 
     attribute EventHandler oncandidatewindowshow;
