@@ -180,19 +180,15 @@ namespace WebCore {
         return v8StringToWebCoreString<AtomicString>(value, Externalize);
     }
 
-    // Convert v8 types to a WTF::String. If the V8 string is not already
-    // an external string then it is transformed into an external string at this
-    // point to avoid repeated conversions.
-    //
-    // FIXME: Replace all the call sites with V8TRYCATCH_FOR_V8STRINGRESOURCE().
-    // Using this method will lead to a wrong behavior, because you cannot stop the
-    // execution when an exception is thrown inside stringResource.prepare().
+    // This method will return a null String if the v8::Value does not contain a v8::String.
+    // It will not call ToString() on the v8::Value. If you want ToString() to be called,
+    // please use the V8TRYCATCH_FOR_V8STRINGRESOURCE_*() macros instead.
     inline String toCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
     {
-        V8StringResource<WithUndefinedOrNullCheck> stringResource(value);
-        if (!stringResource.prepare())
+        if (value.IsEmpty() || !value->IsString())
             return String();
-        return stringResource;
+
+        return toCoreString(value.As<v8::String>());
     }
 
     // Convert a string to a V8 string.

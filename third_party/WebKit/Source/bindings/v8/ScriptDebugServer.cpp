@@ -383,8 +383,11 @@ void ScriptDebugServer::handleProgramBreak(v8::Handle<v8::Object> executionState
     Vector<String> breakpointIds;
     if (!hitBreakpointNumbers.IsEmpty()) {
         breakpointIds.resize(hitBreakpointNumbers->Length());
-        for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++)
-            breakpointIds[i] = toCoreStringWithUndefinedOrNullCheck(hitBreakpointNumbers->Get(i));
+        for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {
+            v8::Handle<v8::Value> hitBreakpointNumber = hitBreakpointNumbers->Get(i);
+            ASSERT(!hitBreakpointNumber.IsEmpty() && hitBreakpointNumber->IsInt32());
+            breakpointIds[i] = String::number(hitBreakpointNumber->Int32Value());
+        }
     }
 
     m_executionState.set(m_isolate, executionState);
@@ -488,7 +491,9 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
 
 void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> object)
 {
-    String sourceID = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "id")));
+    v8::Handle<v8::Value> id = object->Get(v8AtomicString(m_isolate, "id"));
+    ASSERT(!id.IsEmpty() && id->IsInt32());
+    String sourceID = String::number(id->Int32Value());
 
     ScriptDebugListener::Script script;
     script.url = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "name")));
