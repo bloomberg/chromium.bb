@@ -594,7 +594,6 @@ ImageEditor.prototype.onKeyDown = function(event) {
     case 'U+0052':  // 'r'
       this.enterModeByName_('rotate_right');
       return true;
-
   }
   return false;
 };
@@ -742,7 +741,6 @@ ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
                                                     true /* touch */);
     this.dragHappened_ = false;
   }
-  e.preventDefault();
 };
 
 /**
@@ -770,7 +768,6 @@ ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
     this.previousTouchStartInfo_ = null;
   }
   this.onTouchCancel(e);
-  e.preventDefault();
 };
 
 /**
@@ -817,7 +814,6 @@ ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
     this.dragHandler_(position.x, position.y);
     this.lockMouse_(true);
   }
-  e.preventDefault();
 };
 
 /**
@@ -831,7 +827,6 @@ ImageEditor.MouseControl.prototype.onMouseDown = function(e) {
                                                   false /* mouse */);
   this.dragHappened_ = false;
   this.updateCursor_(position);
-  e.preventDefault();
 };
 
 /**
@@ -847,7 +842,6 @@ ImageEditor.MouseControl.prototype.onMouseUp = function(e) {
   this.dragHandler_ = null;
   this.dragHappened_ = false;
   this.lockMouse_(false);
-  e.preventDefault();
 };
 
 /**
@@ -869,7 +863,6 @@ ImageEditor.MouseControl.prototype.onMouseMove = function(e) {
     this.dragHappened_ = true;
     this.lockMouse_(true);
   }
-  e.preventDefault();
 };
 
 /**
@@ -1027,7 +1020,16 @@ ImageEditor.Toolbar.prototype.addRange = function(
   label.className = 'label ' + name;
   this.add(label);
   this.add(range);
-  if (opt_showNumeric) this.add(numeric);
+
+  if (opt_showNumeric)
+    this.add(numeric);
+
+  // Swallow the left and right keys, so they are not handled by other
+  // listeners.
+  range.addEventListener('keydown', function(e) {
+    if (e.keyIdentifier === 'Left' || e.keyIdentifier === 'Right')
+      e.stopPropagation();
+  });
 
   return range;
 };
