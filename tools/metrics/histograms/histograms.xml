@@ -9158,6 +9158,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicEphemeralPortsSuggested">
+  <summary>The number of ports suggested per server.</summary>
+</histogram>
+
 <histogram name="Net.QuicNumSentClientHellos">
   <summary>The number of client hello messages sent.</summary>
 </histogram>
