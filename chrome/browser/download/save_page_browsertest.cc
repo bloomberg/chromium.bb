@@ -448,14 +448,13 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   explicit DelayingDownloadManagerDelegate(Profile* profile)
     : ChromeDownloadManagerDelegate(profile) {
   }
+  virtual ~DelayingDownloadManagerDelegate() {}
+
   virtual bool ShouldCompleteDownload(
       content::DownloadItem* item,
       const base::Closure& user_complete_callback) OVERRIDE {
     return false;
   }
-
- protected:
-  virtual ~DelayingDownloadManagerDelegate() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DelayingDownloadManagerDelegate);
@@ -463,11 +462,14 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
   GURL url = NavigateToMockURL("a");
-  DownloadManager* manager(GetDownloadManager());
-  scoped_refptr<DelayingDownloadManagerDelegate> delaying_delegate(
+  scoped_ptr<DelayingDownloadManagerDelegate> delaying_delegate(
       new DelayingDownloadManagerDelegate(browser()->profile()));
-  delaying_delegate->SetNextId(content::DownloadItem::kInvalidId + 1);
-  manager->SetDelegate(delaying_delegate.get());
+  delaying_delegate->GetDownloadIdReceiverCallback().Run(
+      content::DownloadItem::kInvalidId + 1);
+  DownloadServiceFactory::GetForBrowserContext(browser()->profile())->
+      SetDownloadManagerDelegateForTesting(
+          delaying_delegate.PassAs<ChromeDownloadManagerDelegate>());
+  DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
@@ -487,8 +489,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
 
   EXPECT_FALSE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-
-  manager->SetDelegate(NULL);
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323

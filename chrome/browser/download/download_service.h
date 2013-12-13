@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
@@ -58,7 +57,7 @@ class DownloadService : public BrowserContextKeyedService {
   // its DownloadManager.  Takes ownership of |delegate|, and destroys
   // the previous delegate.  For testing.
   void SetDownloadManagerDelegateForTesting(
-      ChromeDownloadManagerDelegate* delegate);
+      scoped_ptr<ChromeDownloadManagerDelegate> delegate);
 
   // Will be called to release references on other services as part
   // of Profile shutdown.
@@ -75,7 +74,7 @@ class DownloadService : public BrowserContextKeyedService {
   // ChromeDownloadManagerDelegate may be the target of callbacks from
   // the history service/DB thread and must be kept alive for those
   // callbacks.
-  scoped_refptr<ChromeDownloadManagerDelegate> manager_delegate_;
+  scoped_ptr<ChromeDownloadManagerDelegate> manager_delegate_;
 
   scoped_ptr<DownloadHistory> download_history_;
 

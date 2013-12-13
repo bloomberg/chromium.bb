@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
@@ -48,12 +47,12 @@ struct hash<extensions::CrxInstaller*> {
 
 // This is the Chrome side helper for the download system.
 class ChromeDownloadManagerDelegate
-    : public base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>,
-      public content::DownloadManagerDelegate,
+    : public content::DownloadManagerDelegate,
       public content::NotificationObserver,
       public DownloadTargetDeterminerDelegate {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
+  virtual ~ChromeDownloadManagerDelegate();
 
   // Should be called before the first call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.
@@ -61,9 +60,9 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 
-  // Callbacks passed to GetNextId() will not be called until SetNextId() is
-  // called.
-  void SetNextId(uint32 next_id);
+  // Callbacks passed to GetNextId() will not be called until the returned
+  // callback is called.
+  content::DownloadIdCallback GetDownloadIdReceiverCallback();
 
   // content::DownloadManagerDelegate
   virtual void Shutdown() OVERRIDE;
@@ -105,9 +104,6 @@ class ChromeDownloadManagerDelegate
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
  protected:
-  // So that test classes can inherit from this for override purposes.
-  virtual ~ChromeDownloadManagerDelegate();
-
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.
   content::DownloadManager* download_manager_;
@@ -164,6 +160,8 @@ class ChromeDownloadManagerDelegate
   void ShouldCompleteDownloadInternal(
     uint32 download_id,
     const base::Closure& user_complete_callback);
+
+  void SetNextId(uint32 id);
 
   void ReturnNextId(const content::DownloadIdCallback& callback);
 

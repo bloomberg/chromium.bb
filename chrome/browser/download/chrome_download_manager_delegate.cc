@@ -216,6 +216,8 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
 }
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
+  // If a DownloadManager was set for this, Shutdown() must be called.
+  DCHECK(!download_manager_);
 }
 
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
@@ -225,6 +227,13 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
+  download_manager_ = NULL;
+}
+
+content::DownloadIdCallback
+ChromeDownloadManagerDelegate::GetDownloadIdReceiverCallback() {
+  return base::Bind(&ChromeDownloadManagerDelegate::SetNextId,
+                    weak_ptr_factory_.GetWeakPtr());
 }
 
 void ChromeDownloadManagerDelegate::SetNextId(uint32 next_id) {

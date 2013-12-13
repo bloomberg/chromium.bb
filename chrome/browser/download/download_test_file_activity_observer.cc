@@ -24,10 +24,14 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
   explicit MockDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile),
         file_chooser_enabled_(false),
-        file_chooser_displayed_(false) {
+        file_chooser_displayed_(false),
+        weak_ptr_factory_(this) {
     if (!profile->IsOffTheRecord())
-      SetNextId(content::DownloadItem::kInvalidId + 1);
+      GetDownloadIdReceiverCallback().Run(
+          content::DownloadItem::kInvalidId + 1);
   }
+
+  virtual ~MockDownloadManagerDelegate() {}
 
   void EnableFileChooser(bool enable) {
     file_chooser_enabled_ = enable;
@@ -37,6 +41,10 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
     bool did_show = file_chooser_displayed_;
     file_chooser_displayed_ = false;
     return did_show;
+  }
+
+  base::WeakPtr<MockDownloadManagerDelegate> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
  protected:
@@ -54,26 +62,30 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
   virtual void OpenDownload(content::DownloadItem* item) OVERRIDE {}
 
  private:
-  virtual ~MockDownloadManagerDelegate() {}
-
   bool file_chooser_enabled_;
   bool file_chooser_displayed_;
+  base::WeakPtrFactory<MockDownloadManagerDelegate> weak_ptr_factory_;
 };
 
 DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
     Profile* profile) {
-  test_delegate_ = new MockDownloadManagerDelegate(profile);
+  scoped_ptr<MockDownloadManagerDelegate> mock_delegate(
+      new MockDownloadManagerDelegate(profile));
+  test_delegate_ = mock_delegate->GetWeakPtr();
   DownloadServiceFactory::GetForBrowserContext(profile)->
-      SetDownloadManagerDelegateForTesting(test_delegate_.get());
+      SetDownloadManagerDelegateForTesting(
+          mock_delegate.PassAs<ChromeDownloadManagerDelegate>());
 }
 
 DownloadTestFileActivityObserver::~DownloadTestFileActivityObserver() {
 }
 
 void DownloadTestFileActivityObserver::EnableFileChooser(bool enable) {
-  test_delegate_->EnableFileChooser(enable);
+  if (test_delegate_.get())
+    test_delegate_->EnableFileChooser(enable);
 }
 
 bool DownloadTestFileActivityObserver::TestAndResetDidShowFileChooser() {
-  return test_delegate_->TestAndResetDidShowFileChooser();
+  return test_delegate_.get() &&
+      test_delegate_->TestAndResetDidShowFileChooser();
 }

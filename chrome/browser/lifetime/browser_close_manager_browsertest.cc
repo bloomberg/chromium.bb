@@ -171,19 +171,20 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit TestDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile) {
-    SetNextId(content::DownloadItem::kInvalidId + 1);
+    GetDownloadIdReceiverCallback().Run(content::DownloadItem::kInvalidId + 1);
   }
+  virtual ~TestDownloadManagerDelegate() {}
 
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
       const content::DownloadTargetCallback& callback) OVERRIDE {
     content::DownloadTargetCallback dangerous_callback =
-        base::Bind(&TestDownloadManagerDelegate::SetDangerous, this, callback);
+        base::Bind(&TestDownloadManagerDelegate::SetDangerous, callback);
     return ChromeDownloadManagerDelegate::DetermineDownloadTarget(
         item, dangerous_callback);
   }
 
-  void SetDangerous(
+  static void SetDangerous(
       const content::DownloadTargetCallback& callback,
       const base::FilePath& target_path,
       content::DownloadItem::TargetDisposition disp,
@@ -194,9 +195,6 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
                  content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
                  intermediate_path);
   }
-
- private:
-  virtual ~TestDownloadManagerDelegate() {}
 };
 
 class FakeBackgroundModeManager : public BackgroundModeManager {
@@ -700,10 +698,11 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Set up the fake delegate that forces the download to be malicious.
-  scoped_refptr<TestDownloadManagerDelegate> test_delegate(
+  scoped_ptr<TestDownloadManagerDelegate> test_delegate(
       new TestDownloadManagerDelegate(browser()->profile()));
   DownloadServiceFactory::GetForBrowserContext(browser()->profile())->
-      SetDownloadManagerDelegateForTesting(test_delegate.get());
+      SetDownloadManagerDelegateForTesting(
+          test_delegate.PassAs<ChromeDownloadManagerDelegate>());
 
   // Run a dangerous download, but the user doesn't make a decision.
   // This .swf normally would be categorized as DANGEROUS_FILE, but

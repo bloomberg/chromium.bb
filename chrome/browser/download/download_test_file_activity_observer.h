@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_ACTIVITY_OBSERVER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_ACTIVITY_OBSERVER_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 
 class Profile;
 
@@ -34,7 +34,7 @@ class DownloadTestFileActivityObserver {
  private:
   class MockDownloadManagerDelegate;
 
-  scoped_refptr<MockDownloadManagerDelegate> test_delegate_;
+  base::WeakPtr<MockDownloadManagerDelegate> test_delegate_;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_ACTIVITY_OBSERVER_H_

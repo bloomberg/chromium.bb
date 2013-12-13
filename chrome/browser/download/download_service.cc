@@ -43,7 +43,7 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
   // In case the delegate has already been set by
   // SetDownloadManagerDelegateForTesting.
   if (!manager_delegate_.get())
-    manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
+    manager_delegate_.reset(new ChromeDownloadManagerDelegate(profile_));
 
   manager_delegate_->SetDownloadManager(manager);
 
@@ -55,8 +55,8 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
   if (!profile_->IsOffTheRecord()) {
     HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile_, Profile::EXPLICIT_ACCESS);
-    history->GetNextDownloadId(base::Bind(
-        &ChromeDownloadManagerDelegate::SetNextId, manager_delegate_));
+    history->GetNextDownloadId(
+        manager_delegate_->GetDownloadIdReceiverCallback());
     download_history_.reset(new DownloadHistory(
         manager,
         scoped_ptr<DownloadHistory::HistoryAdapter>(
@@ -135,17 +135,13 @@ void DownloadService::CancelAllDownloads() {
 }
 
 void DownloadService::SetDownloadManagerDelegateForTesting(
-    ChromeDownloadManagerDelegate* new_delegate) {
-  // Set the new delegate first so that if BrowserContext::GetDownloadManager()
-  // causes a new download manager to be created, we won't create a redundant
-  // ChromeDownloadManagerDelegate().
-  manager_delegate_ = new_delegate;
-  // Guarantee everything is properly initialized.
+    scoped_ptr<ChromeDownloadManagerDelegate> new_delegate) {
+  manager_delegate_.swap(new_delegate);
   DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
-  if (dm->GetDelegate() != new_delegate) {
-    dm->SetDelegate(new_delegate);
-    new_delegate->SetDownloadManager(dm);
-  }
+  dm->SetDelegate(manager_delegate_.get());
+  manager_delegate_->SetDownloadManager(dm);
+  if (new_delegate)
+    new_delegate->Shutdown();
 }
 
 bool DownloadService::IsShelfEnabled() {
@@ -169,6 +165,6 @@ void DownloadService::Shutdown() {
 #if !defined(OS_ANDROID)
   extension_event_router_.reset();
 #endif
-  manager_delegate_ = NULL;
+  manager_delegate_.reset();
   download_history_.reset();
 }
