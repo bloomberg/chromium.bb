@@ -343,7 +343,7 @@ function testRestoreAfterGeometryCacheChange() {
   chrome.test.runTests([
     function restorePositionAndSize() {
       chrome.app.window.create('test.html', {
-        bounds: { left: 200, top: 200, width: 200, height: 200 }, id: 'test-ps',
+        bounds: { left: 200, top: 200, width: 200, height: 200 }, id: 'test-ra',
       }, callbackPass(function(win) { waitForLoad(win, function(win) {
         var w = win.contentWindow;
         // The fuzzy factor here is related to the fact that depending on the
@@ -358,21 +358,48 @@ function testRestoreAfterGeometryCacheChange() {
         w.resizeTo(300, 300);
         w.moveTo(100, 100);
 
-        chrome.test.sendMessage('ListenGeometryChange', function(reply) {
-          win.onClosed.addListener(callbackPass(function() {
-            chrome.app.window.create('test.html', {
-              id: 'test-ps'
-            }, callbackPass(function(win) { waitForLoad(win, function(win) {
-              var w = win.contentWindow;
-              chrome.test.assertEq(100, w.screenX);
-              chrome.test.assertEq(100, w.screenY);
-              chrome.test.assertEq(300, w.outerWidth);
-              chrome.test.assertEq(300, w.outerHeight);
-            })}));
-          }));
+        chrome.app.window.create('test.html', {
+          bounds: { left: 200, top: 200, width: 200, height: 200 },
+          id: 'test-rb', frame: 'none'
+        }, callbackPass(function(win2) { waitForLoad(win2, function(win2) {
+          var w2 = win2.contentWindow;
+          chrome.test.assertEq(200, w2.screenX);
+          chrome.test.assertEq(200, w2.screenY);
+          chrome.test.assertEq(200, w2.innerWidth);
+          chrome.test.assertEq(200, w2.innerHeight);
 
-          win.close();
-        });
+          w2.resizeTo(100, 100);
+          w2.moveTo(300, 300);
+
+          chrome.test.sendMessage('ListenGeometryChange', function(reply) {
+            win.onClosed.addListener(callbackPass(function() {
+              chrome.app.window.create('test.html', {
+                id: 'test-ra'
+              }, callbackPass(function(win) { waitForLoad(win, function(win) {
+                var w = win.contentWindow;
+                chrome.test.assertEq(100, w.screenX);
+                chrome.test.assertEq(100, w.screenY);
+                chrome.test.assertEq(300, w.outerWidth);
+                chrome.test.assertEq(300, w.outerHeight);
+              })}));
+            }));
+
+            win2.onClosed.addListener(callbackPass(function() {
+              chrome.app.window.create('test.html', {
+                id: 'test-rb', frame: 'none'
+              },callbackPass(function(win2) { waitForLoad(win2, function(win2) {
+                var w = win2.contentWindow;
+                chrome.test.assertEq(300, w.screenX);
+                chrome.test.assertEq(300, w.screenY);
+                chrome.test.assertEq(100, w.outerWidth);
+                chrome.test.assertEq(100, w.outerHeight);
+              })}));
+            }));
+
+            win.close();
+            win2.close();
+          });
+        })}));
       })}));
     },
   ]);

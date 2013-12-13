@@ -26,7 +26,9 @@ class GeometryCacheChangeHelper : ShellWindowGeometryCache::Observer {
       : cache_(cache),
         extension_id_(extension_id),
         window_id_(window_id),
-        bounds_(bounds) {
+        bounds_(bounds),
+        satisfied_(false),
+        waiting_(false) {
     cache_->AddObserver(this);
   }
 
@@ -34,6 +36,10 @@ class GeometryCacheChangeHelper : ShellWindowGeometryCache::Observer {
   // provide a bound for |window_id_| that is entirely different (as in x/y/w/h)
   // from the initial |bounds_|.
   void WaitForEntirelyChanged() {
+    if (satisfied_)
+      return;
+
+    waiting_ = true;
     content::RunMessageLoop();
   }
 
@@ -49,8 +55,11 @@ class GeometryCacheChangeHelper : ShellWindowGeometryCache::Observer {
         bounds_.y() != bounds.y() &&
         bounds_.width() != bounds.width() &&
         bounds_.height() != bounds.height()) {
+      satisfied_ = true;
       cache_->RemoveObserver(this);
-      base::MessageLoopForUI::current()->Quit();
+
+      if (waiting_)
+        base::MessageLoopForUI::current()->Quit();
     }
   }
 
@@ -59,6 +68,8 @@ class GeometryCacheChangeHelper : ShellWindowGeometryCache::Observer {
   std::string extension_id_;
   std::string window_id_;
   gfx::Rect bounds_;
+  bool satisfied_;
+  bool waiting_;
 };
 
 // Helper class for tests related to the Apps Window API (chrome.app.window).
@@ -149,13 +160,19 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
 
   ASSERT_TRUE(geometry_listener.WaitUntilSatisfied());
 
-  GeometryCacheChangeHelper geo_change_helper(
+  GeometryCacheChangeHelper geo_change_helper_1(
       ShellWindowGeometryCache::Get(browser()->profile()), extension->id(),
       // The next line has information that has to stay in sync with the app.
-      "test-ps", gfx::Rect(200, 200, 200, 200));
+      "test-ra", gfx::Rect(200, 200, 200, 200));
 
-  // This call will block until the shell window geometry cache will be changed.
-  geo_change_helper.WaitForEntirelyChanged();
+  GeometryCacheChangeHelper geo_change_helper_2(
+      ShellWindowGeometryCache::Get(browser()->profile()), extension->id(),
+      // The next line has information that has to stay in sync with the app.
+      "test-rb", gfx::Rect(200, 200, 200, 200));
+
+  // These calls will block until the shell window geometry cache will change.
+  geo_change_helper_1.WaitForEntirelyChanged();
+  geo_change_helper_2.WaitForEntirelyChanged();
 
   ResultCatcher catcher;
   geometry_listener.Reply("");
