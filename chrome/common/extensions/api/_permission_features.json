@@ -229,10 +229,21 @@
       ]
     }
   ],
-  "debugger": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"]
-  },
+  "debugger": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "whitelist": [
+        "AE27D69DBE571F4B1694F05C89B710C646792231", // Published ADT.
+        // TODO(grv): clean up once Apps developer tool is published.
+        "5107DE9024C329EEA9C9A72D94C16723790C6422"  // Apps Developer Tool.              
+      ]
+    }
+  ],
   "developerPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],
@@ -783,10 +794,21 @@
     "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
-  "tabs": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"]
-  },
+  "tabs": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "whitelist": [
+        "AE27D69DBE571F4B1694F05C89B710C646792231", // Published ADT.
+        // TODO(grv): clean up once Apps developer tool is published.
+        "5107DE9024C329EEA9C9A72D94C16723790C6422"  // Apps Developer Tool.              
+      ]
+    }
+  ],
   "tabCapture": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
