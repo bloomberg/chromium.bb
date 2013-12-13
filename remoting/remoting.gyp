@@ -611,8 +611,6 @@
             'host/setup/daemon_controller_delegate_win.h',
             'host/setup/daemon_installer_win.cc',
             'host/setup/daemon_installer_win.h',
-            'host/setup/host_starter.cc',
-            'host/setup/host_starter.h',
             'host/setup/me2me_native_messaging_host.cc',
             'host/setup/me2me_native_messaging_host.h',
             'host/setup/oauth_client.cc',
@@ -755,7 +753,6 @@
             'remoting_host_event_logger',
             'remoting_host_logging',
             'remoting_infoplist_strings',
-            'remoting_host_setup_base',
             'remoting_jingle_glue',
             'remoting_resources',
           ],
@@ -1133,6 +1130,8 @@
             'remoting_host_setup_base',
           ],
           'sources': [
+            'host/setup/host_starter.cc',
+            'host/setup/host_starter.h',
             'host/setup/start_host.cc',
           ],
           'conditions': [
@@ -1472,42 +1471,6 @@
             },
           ],
         },  # end of target 'remoting_lib_rc'
-        {
-          'target_name': 'remoting_configurer',
-          'type': 'executable',
-          'defines': [
-            '_ATL_NO_EXCEPTIONS',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../crypto/crypto.gyp:crypto',
-            'remoting_host',
-            'remoting_host_setup_base',
-          ],
-          'sources': [
-            'host/branding.cc',
-            'host/setup/win/host_configurer.cc',
-            'host/setup/win/host_configurer.rc',
-            'host/setup/win/host_configurer_window.cc',
-            'host/setup/win/host_configurer_window.h',
-            'host/setup/win/host_configurer_resource.h',
-            'host/setup/win/load_string_from_resource.cc',
-            'host/setup/win/load_string_from_resource.h',
-            'host/setup/win/start_host_window.cc',
-            'host/setup/win/start_host_window.h',
-          ],
-          'msvs_settings': {
-            'VCManifestTool': {
-              'AdditionalManifestFiles': [
-                'host/win/common-controls.manifest',
-              ],
-            },
-            'VCLinkerTool': {
-              # 2 == /SUBSYSTEM:WINDOWS
-              'SubSystem': '2',
-            },
-          },
-        },  # end of target 'remoting_configurer'
         # The only difference between |remoting_console.exe| and
         # |remoting_host.exe| is that the former is a console application.
         # |remoting_console.exe| is used for debugging purposes.
