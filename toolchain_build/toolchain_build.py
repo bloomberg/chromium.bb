@@ -71,7 +71,7 @@ def CollectSources():
   # input hash calculation so that we don't rebuild the compiler when the
   # the only things that have changed are target libraries.
   sources['gcc'] = {
-        'type': 'build',
+        'type': 'source',
         'dependencies': ['gcc_libs'],
         'commands': [command.CopyTree('%(gcc_libs)s', '%(output)s', [
             'boehm-gc',

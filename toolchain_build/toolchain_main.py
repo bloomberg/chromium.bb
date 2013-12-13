@@ -48,7 +48,7 @@ class PackageBuilder(object):
 
     Args:
       packages: A dictionary with the following format. There are two types of
-                packages: source and build (described below)
+                packages: source and build (described below).
         {
           '<package name>': {
             'type': 'source',
@@ -58,6 +58,8 @@ class PackageBuilder(object):
                 # unpacked). Source package commands are run unconditionally
                 # unless sync is skipped via the command-line option. Source
                 # package contents are not memoized.
+            'dependencies':  # optional
+              [<list of package depdenencies>],
             'output_dirname': # optional
               '<directory name>', # Name of the directory to checkout sources
               # into (a subdirectory of the global source directory); defaults
@@ -183,7 +185,7 @@ class PackageBuilder(object):
     if 'commands' not in package_info:
       raise Exception('package %s does not have any commands' % package)
     if is_source_target:
-      for key in ('hashed_inputs', 'dependencies', 'tar_src', 'git_url',
+      for key in ('hashed_inputs', 'tar_src', 'git_url',
                   'git_revision', 'unpack_commands'):
         if key in package_info:
           raise Exception('Source package %s must not have %s keys.' %
