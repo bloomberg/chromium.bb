@@ -1,0 +1,6 @@
+This directory contains:
+-A directory of test dlls (dlls/) which contains several "dummy" dlls each 
+signed with varying degrees of validity (see cert_maker.bat for details)
+-A directory of test certs (certificates/) which are not used directly in the
+tests, but are useful for analyzing test failures.
+-A script "cert_maker.bat" to generate these certs and sign the dlls.

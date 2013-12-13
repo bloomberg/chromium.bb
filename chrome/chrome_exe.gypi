@@ -22,6 +22,8 @@
         'app/client_util.h',
         'app/metro_driver_win.cc',
         'app/metro_driver_win.h',
+        'app/signature_validator_win.cc',
+        'app/signature_validator_win.h',
         '<(DEPTH)/content/app/startup_helper_win.cc',
         '<(DEPTH)/content/public/common/content_switches.cc',
       ],
@@ -495,6 +497,7 @@
                 'ole32.dll',
                 'oleaut32.dll',
               ],
+              'AdditionalDependencies': [ 'wintrust.lib' ],
               # Set /SUBSYSTEM:WINDOWS for chrome.exe itself.
               'SubSystem': '2',
             },
