@@ -94,15 +94,22 @@ class CONTENT_EXPORT MediaStreamManager
   // creates a new request which is identified by a unique string that's
   // returned to the caller.  |render_process_id| and |render_view_id| refer to
   // the view where the infobar will appear to the user.
-  std::string GenerateStream(MediaStreamRequester* requester,
-                             int render_process_id,
-                             int render_view_id,
-                             ResourceContext* rc,
-                             int page_request_id,
-                             const StreamOptions& components,
-                             const GURL& security_origin);
+  void GenerateStream(MediaStreamRequester* requester,
+                      int render_process_id,
+                      int render_view_id,
+                      ResourceContext* rc,
+                      int page_request_id,
+                      const StreamOptions& components,
+                      const GURL& security_origin);
 
+  void CancelRequest(int render_process_id,
+                     int render_view_id,
+                     int page_request_id);
+
+  // Cancel an open request identified by |label|.
   virtual void CancelRequest(const std::string& label);
+
+  // Cancel all requests for the given |render_process_id|.
   void CancelAllRequests(int render_process_id);
 
   // Closes the stream device for a certain render view. The stream must have
@@ -119,24 +126,24 @@ class CONTENT_EXPORT MediaStreamManager
   // plug/unplug. The new device lists will be delivered via media observer to
   // MediaCaptureDevicesDispatcher.
   virtual std::string EnumerateDevices(MediaStreamRequester* requester,
-                                       int render_process_id,
-                                       int render_view_id,
-                                       ResourceContext* rc,
-                                       int page_request_id,
-                                       MediaStreamType type,
-                                       const GURL& security_origin);
+                               int render_process_id,
+                               int render_view_id,
+                               ResourceContext* rc,
+                               int page_request_id,
+                               MediaStreamType type,
+                               const GURL& security_origin);
 
   // Open a device identified by |device_id|.  |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
   // The request is identified using string returned to the caller.
-  std::string OpenDevice(MediaStreamRequester* requester,
-                         int render_process_id,
-                         int render_view_id,
-                         ResourceContext* rc,
-                         int page_request_id,
-                         const std::string& device_id,
-                         MediaStreamType type,
-                         const GURL& security_origin);
+  void OpenDevice(MediaStreamRequester* requester,
+                  int render_process_id,
+                  int render_view_id,
+                  ResourceContext* rc,
+                  int page_request_id,
+                  const std::string& device_id,
+                  MediaStreamType type,
+                  const GURL& security_origin);
 
   // Called by UI to make sure the device monitor is started so that UI receive
   // notifications about device changes.

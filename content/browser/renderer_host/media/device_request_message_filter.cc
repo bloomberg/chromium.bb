@@ -55,26 +55,9 @@ struct DeviceRequestMessageFilter::DeviceRequest {
   StreamDeviceInfoArray video_devices;
 };
 
-void DeviceRequestMessageFilter::StreamGenerated(
-    const std::string& label,
-    const StreamDeviceInfoArray& audio_devices,
-    const StreamDeviceInfoArray& video_devices) {
-  NOTIMPLEMENTED();
-}
-
-void DeviceRequestMessageFilter::StreamGenerationFailed(
-    const std::string& label) {
-  NOTIMPLEMENTED();
-}
-
-void DeviceRequestMessageFilter::DeviceStopped(
-    int render_view_id,
-    const std::string& label,
-    const StreamDeviceInfo& device) {
-  NOTIMPLEMENTED();
-}
-
 void DeviceRequestMessageFilter::DevicesEnumerated(
+    int render_view_id,
+    int page_request_id,
     const std::string& label,
     const StreamDeviceInfoArray& new_devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -125,12 +108,6 @@ void DeviceRequestMessageFilter::DevicesEnumerated(
   media_stream_manager_->CancelRequest(request_it->audio_devices_label);
   media_stream_manager_->CancelRequest(request_it->video_devices_label);
   requests_.erase(request_it);
-}
-
-void DeviceRequestMessageFilter::DeviceOpened(
-    const std::string& label,
-    const StreamDeviceInfo& video_device) {
-  NOTIMPLEMENTED();
 }
 
 bool DeviceRequestMessageFilter::OnMessageReceived(const IPC::Message& message,

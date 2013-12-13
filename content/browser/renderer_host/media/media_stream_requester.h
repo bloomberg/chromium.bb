@@ -18,24 +18,29 @@ namespace content {
 class CONTENT_EXPORT MediaStreamRequester {
  public:
   // Called as a reply of a successful call to GenerateStream.
-  virtual void StreamGenerated(const std::string& label,
+  virtual void StreamGenerated(int render_view_id,
+                               int page_request_id,
+                               const std::string& label,
                                const StreamDeviceInfoArray& audio_devices,
                                const StreamDeviceInfoArray& video_devices) = 0;
   // Called if GenerateStream failed.
-  virtual void StreamGenerationFailed(const std::string& label) = 0;
-
+  virtual void StreamGenerationFailed(int render_view_id,
+                                      int page_request_id) = 0;
   // Called if a device has been stopped by a user from UI or the device
   // has become unavailable.  |render_view_id| is the render view that requested
   // the device and |label| is the label of the request|.
   virtual void DeviceStopped(int render_view_id,
                              const std::string& label,
                              const StreamDeviceInfo& device) = 0;
-
   // Called as a reply of a successful call to EnumerateDevices.
-  virtual void DevicesEnumerated(const std::string& label,
+  virtual void DevicesEnumerated(int render_view_id,
+                                 int page_request_id,
+                                 const std::string& label,
                                  const StreamDeviceInfoArray& devices) = 0;
   // Called as a reply of a successful call to OpenDevice.
-  virtual void DeviceOpened(const std::string& label,
+  virtual void DeviceOpened(int render_view_id,
+                            int page_request_id,
+                            const std::string& label,
                             const StreamDeviceInfo& device_info) = 0;
 
  protected:

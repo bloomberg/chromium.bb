@@ -355,13 +355,13 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   return label;
 }
 
-std::string MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
-                                               int render_process_id,
-                                               int render_view_id,
-                                               ResourceContext* rc,
-                                               int page_request_id,
-                                               const StreamOptions& options,
-                                               const GURL& security_origin) {
+void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
+                                        int render_process_id,
+                                        int render_view_id,
+                                        ResourceContext* rc,
+                                        int page_request_id,
+                                        const StreamOptions& options,
+                                        const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "GenerateStream()";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -393,7 +393,22 @@ std::string MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaStreamManager::SetupRequest,
                  base::Unretained(this), label));
-  return label;
+}
+
+void MediaStreamManager::CancelRequest(int render_process_id,
+                                       int render_view_id,
+                                       int page_request_id) {
+  for (DeviceRequests::const_iterator request_it = requests_.begin();
+       request_it != requests_.end(); ++request_it) {
+    const DeviceRequest* request = request_it->second;
+    if (request->requesting_process_id == render_process_id &&
+        request->requesting_view_id == render_view_id &&
+        request->page_request_id == page_request_id) {
+      CancelRequest(request_it->first);
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void MediaStreamManager::CancelRequest(const std::string& label) {
@@ -558,7 +573,6 @@ std::string MediaStreamManager::EnumerateDevices(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaStreamManager::DoEnumerateDevices,
                  base::Unretained(this), label));
-
   return label;
 }
 
@@ -591,19 +605,18 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
   DVLOG(1) << "Enumerate Devices ({label = " << label <<  "})";
 }
 
-std::string MediaStreamManager::OpenDevice(
-    MediaStreamRequester* requester,
-    int render_process_id,
-    int render_view_id,
-    ResourceContext* rc,
-    int page_request_id,
-    const std::string& device_id,
-    MediaStreamType type,
-    const GURL& security_origin) {
+void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
+                                    int render_process_id,
+                                    int render_view_id,
+                                    ResourceContext* rc,
+                                    int page_request_id,
+                                    const std::string& device_id,
+                                    MediaStreamType type,
+                                    const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
-
+  DVLOG(1) << "OpenDevice ({page_request_id = " << page_request_id <<  "})";
   StreamOptions options;
   if (IsAudioMediaType(type)) {
     options.audio_requested = true;
@@ -615,7 +628,6 @@ std::string MediaStreamManager::OpenDevice(
         StreamOptions::Constraint(kMediaStreamSourceInfoId, device_id));
   } else {
     NOTREACHED();
-    return std::string();
   }
   DeviceRequest* request = new DeviceRequest(requester,
                                              render_process_id,
@@ -636,9 +648,6 @@ std::string MediaStreamManager::OpenDevice(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaStreamManager::SetupRequest,
                  base::Unretained(this), label));
-
-  DVLOG(1) << "OpenDevice ({label = " << label <<  "})";
-  return label;
 }
 
 void MediaStreamManager::EnsureDeviceMonitorStarted() {
@@ -1167,14 +1176,19 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
     }
   }
 
-  request->requester->StreamGenerated(label, audio_devices, video_devices);
+  request->requester->StreamGenerated(
+      request->requesting_view_id,
+      request->page_request_id,
+      label, audio_devices, video_devices);
 }
 
 void MediaStreamManager::FinalizeRequestFailed(
     const std::string& label,
     DeviceRequest* request) {
   if (request->requester)
-    request->requester->StreamGenerationFailed(label);
+    request->requester->StreamGenerationFailed(
+        request->requesting_view_id,
+        request->page_request_id);
 
   if (request->request_type == MEDIA_DEVICE_ACCESS &&
       !request->callback.is_null()) {
@@ -1187,20 +1201,29 @@ void MediaStreamManager::FinalizeRequestFailed(
 void MediaStreamManager::FinalizeOpenDevice(const std::string& label,
                                             DeviceRequest* request) {
   const StreamDeviceInfoArray& requested_devices = request->devices;
-  request->requester->DeviceOpened(label, requested_devices.front());
+  request->requester->DeviceOpened(request->requesting_view_id,
+                                   request->page_request_id,
+                                   label, requested_devices.front());
 }
 
 void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
                                                   DeviceRequest* request) {
   if (!request->security_origin.is_valid()) {
-    request->requester->DevicesEnumerated(label, StreamDeviceInfoArray());
+    request->requester->DevicesEnumerated(
+        request->requesting_view_id,
+        request->page_request_id,
+        label,
+        StreamDeviceInfoArray());
     return;
   }
   for (StreamDeviceInfoArray::iterator it = request->devices.begin();
        it != request->devices.end(); ++it) {
     TranslateDeviceIdToSourceId(request, &it->device);
   }
-  request->requester->DevicesEnumerated(label, request->devices);
+  request->requester->DevicesEnumerated(request->requesting_view_id,
+                                        request->page_request_id,
+                                        label,
+                                        request->devices);
 }
 
 void MediaStreamManager::FinalizeMediaAccessRequest(

@@ -188,11 +188,11 @@ class DeviceRequestMessageFilterTest : public testing::Test {
   }
 
   void FireAudioDeviceCallback() {
-    host_->DevicesEnumerated(kAudioLabel, physical_audio_devices_);
+    host_->DevicesEnumerated(-1, -1, kAudioLabel, physical_audio_devices_);
   }
 
   void FireVideoDeviceCallback() {
-    host_->DevicesEnumerated(kVideoLabel, physical_video_devices_);
+    host_->DevicesEnumerated(-1, -1, kVideoLabel, physical_video_devices_);
   }
 
   int next_device_id_;
