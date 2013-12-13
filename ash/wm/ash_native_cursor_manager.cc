@@ -62,7 +62,7 @@ void AshNativeCursorManager::SetDisplay(
     const gfx::Display& display,
     views::corewm::NativeCursorManagerDelegate* delegate) {
   if (image_cursors_->SetDisplay(display))
-    SetCursor(delegate->GetCurrentCursor(), delegate);
+    SetCursor(delegate->GetCursor(), delegate);
 }
 
 void AshNativeCursorManager::SetCursor(
@@ -75,7 +75,7 @@ void AshNativeCursorManager::SetCursor(
 
   delegate->CommitCursor(new_cursor);
 
-  if (delegate->GetCurrentVisibility())
+  if (delegate->IsCursorVisible())
     SetCursorOnAllRootWindows(new_cursor);
 }
 
@@ -86,8 +86,8 @@ void AshNativeCursorManager::SetCursorSet(
   delegate->CommitCursorSet(cursor_set);
 
   // Sets the cursor to reflect the scale change immediately.
-  if (delegate->GetCurrentVisibility())
-    SetCursor(delegate->GetCurrentCursor(), delegate);
+  if (delegate->IsCursorVisible())
+    SetCursor(delegate->GetCursor(), delegate);
 }
 
 void AshNativeCursorManager::SetScale(
@@ -97,7 +97,7 @@ void AshNativeCursorManager::SetScale(
   delegate->CommitScale(scale);
 
   // Sets the cursor to reflect the scale change immediately.
-  SetCursor(delegate->GetCurrentCursor(), delegate);
+  SetCursor(delegate->GetCursor(), delegate);
 }
 
 void AshNativeCursorManager::SetVisibility(
@@ -106,7 +106,7 @@ void AshNativeCursorManager::SetVisibility(
   delegate->CommitVisibility(visible);
 
   if (visible) {
-    SetCursor(delegate->GetCurrentCursor(), delegate);
+    SetCursor(delegate->GetCursor(), delegate);
   } else {
     gfx::NativeCursor invisible_cursor(ui::kCursorNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
@@ -128,7 +128,7 @@ void AshNativeCursorManager::SetMouseEventsEnabled(
     disabled_cursor_location_ = aura::Env::GetInstance()->last_mouse_location();
   }
 
-  SetVisibility(delegate->GetCurrentVisibility(), delegate);
+  SetVisibility(delegate->IsCursorVisible(), delegate);
   NotifyMouseEventsEnableStateChange(enabled);
 }
 

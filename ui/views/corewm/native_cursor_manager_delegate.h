@@ -19,11 +19,9 @@ class VIEWS_EXPORT NativeCursorManagerDelegate {
  public:
   virtual ~NativeCursorManagerDelegate() {}
 
-  virtual gfx::NativeCursor GetCurrentCursor() const = 0;
-  virtual bool GetCurrentVisibility() const = 0;
-  virtual float GetCurrentScale() const = 0;
-  virtual ui::CursorSetType GetCurrentCursorSet() const = 0;
-  virtual bool GetMouseEventsEnabled() const = 0;
+  // TODO(tdanderson): Possibly remove this interface.
+  virtual gfx::NativeCursor GetCursor() const = 0;
+  virtual bool IsCursorVisible() const = 0;
 
   virtual void CommitCursor(gfx::NativeCursor cursor) = 0;
   virtual void CommitVisibility(bool visible) = 0;

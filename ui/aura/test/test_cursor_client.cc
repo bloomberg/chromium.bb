@@ -24,6 +24,10 @@ TestCursorClient::~TestCursorClient() {
 void TestCursorClient::SetCursor(gfx::NativeCursor cursor) {
 }
 
+gfx::NativeCursor TestCursorClient::GetCursor() const {
+  return ui::kCursorNull;
+}
+
 void TestCursorClient::ShowCursor() {
   visible_ = true;
   FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
@@ -39,7 +43,15 @@ void TestCursorClient::HideCursor() {
 void TestCursorClient::SetCursorSet(ui::CursorSetType cursor_set) {
 }
 
+ui::CursorSetType TestCursorClient::GetCursorSet() const {
+  return ui::CURSOR_SET_NORMAL;
+}
+
 void TestCursorClient::SetScale(float scale) {
+}
+
+float TestCursorClient::GetScale() const {
+  return 1.f;
 }
 
 bool TestCursorClient::IsCursorVisible() const {

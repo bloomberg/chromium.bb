@@ -20,10 +20,13 @@ class TestCursorClient : public aura::client::CursorClient {
 
   // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor() const OVERRIDE;
   virtual void ShowCursor() OVERRIDE;
   virtual void HideCursor() OVERRIDE;
   virtual void SetCursorSet(ui::CursorSetType cursor_set) OVERRIDE;
+  virtual ui::CursorSetType GetCursorSet() const OVERRIDE;
   virtual void SetScale(float scale) OVERRIDE;
+  virtual float GetScale() const OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
   virtual void EnableMouseEvents() OVERRIDE;
   virtual void DisableMouseEvents() OVERRIDE;

@@ -38,7 +38,7 @@ void DesktopNativeCursorManager::SetDisplay(
   if (cursor_loader_updater_.get())
     cursor_loader_updater_->OnDisplayUpdated(display, cursor_loader_.get());
 
-  SetCursor(delegate->GetCurrentCursor(), delegate);
+  SetCursor(delegate->GetCursor(), delegate);
 }
 
 void DesktopNativeCursorManager::SetCursor(
@@ -48,7 +48,7 @@ void DesktopNativeCursorManager::SetCursor(
   cursor_loader_->SetPlatformCursor(&new_cursor);
   delegate->CommitCursor(new_cursor);
 
-  if (delegate->GetCurrentVisibility())
+  if (delegate->IsCursorVisible())
     root_window_->SetCursor(new_cursor);
 }
 
@@ -58,7 +58,7 @@ void DesktopNativeCursorManager::SetVisibility(
   delegate->CommitVisibility(visible);
 
   if (visible) {
-    SetCursor(delegate->GetCurrentCursor(), delegate);
+    SetCursor(delegate->GetCursor(), delegate);
   } else {
     gfx::NativeCursor invisible_cursor(ui::kCursorNone);
     cursor_loader_->SetPlatformCursor(&invisible_cursor);
@@ -88,7 +88,7 @@ void DesktopNativeCursorManager::SetMouseEventsEnabled(
   // TODO(erg): In the ash version, we set the last mouse location on Env. I'm
   // not sure this concept makes sense on the desktop.
 
-  SetVisibility(delegate->GetCurrentVisibility(), delegate);
+  SetVisibility(delegate->IsCursorVisible(), delegate);
 
   root_window_->OnMouseEventsEnableStateChanged(enabled);
 }

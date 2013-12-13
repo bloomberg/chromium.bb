@@ -25,6 +25,9 @@ class AURA_EXPORT CursorClient {
   // Notes that |window| has requested the change to |cursor|.
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 
+  // Returns the current cursor.
+  virtual gfx::NativeCursor GetCursor() const = 0;
+
   // Shows the cursor. This does not take effect When mouse events are disabled.
   virtual void ShowCursor() = 0;
 
@@ -35,8 +38,14 @@ class AURA_EXPORT CursorClient {
   // Sets the scale of the mouse cursor icon.
   virtual void SetScale(float scale) = 0;
 
+  // Gets the current scale of the mouse cursor icon.
+  virtual float GetScale() const = 0;
+
   // Sets the type of the mouse cursor icon.
   virtual void SetCursorSet(ui::CursorSetType cursor_set) = 0;
+
+  // Gets the type of the mouse cursor icon.
+  virtual ui::CursorSetType GetCursorSet() const = 0;
 
   // Gets whether the cursor is visible.
   virtual bool IsCursorVisible() const = 0;
