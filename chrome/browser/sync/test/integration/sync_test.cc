@@ -639,12 +639,12 @@ void SyncTest::DisableNetwork(Profile* profile) {
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
-bool SyncTest::EnableEncryption(int index, syncer::ModelType type) {
-  return GetClient(index)->EnableEncryptionForType(type);
+bool SyncTest::EnableEncryption(int index) {
+  return GetClient(index)->EnableEncryption();
 }
 
-bool SyncTest::IsEncrypted(int index, syncer::ModelType type) {
-  return GetClient(index)->IsTypeEncrypted(type);
+bool SyncTest::IsEncryptionComplete(int index) {
+  return GetClient(index)->IsEncryptionComplete();
 }
 
 bool SyncTest::AwaitQuiescence() {

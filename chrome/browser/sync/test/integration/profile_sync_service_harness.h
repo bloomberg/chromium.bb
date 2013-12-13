@@ -17,6 +17,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 
 class Profile;
+class StatusChangeChecker;
 
 namespace invalidation {
 class P2PInvalidationService;
@@ -53,8 +54,14 @@ class ProfileSyncServiceHarness
   // Sets the GAIA credentials with which to sign in to sync.
   void SetCredentials(const std::string& username, const std::string& password);
 
-  // Returns true if sync has been enabled on |profile_|.
-  bool IsSyncAlreadySetup();
+  // Returns true if exponential backoff is complete.
+  bool IsExponentialBackoffDone() const;
+
+  // Returns true if sync is disabled for this client.
+  bool IsSyncDisabled() const;
+
+  // Returns true if an auth error has been encountered.
+  bool HasAuthError() const;
 
   // Creates a ProfileSyncService for the profile passed at construction and
   // enables sync for all available datatypes. Returns true only after sync has
@@ -79,7 +86,7 @@ class ProfileSyncServiceHarness
 
   // Blocks the caller until this harness has completed a single sync cycle
   // since the previous one.  Returns true if a sync cycle has completed.
-  bool AwaitDataSyncCompletion(const std::string& reason);
+  bool AwaitDataSyncCompletion();
 
   // Blocks the caller until this harness has completed as many sync cycles as
   // are required to ensure its progress marker matches the latest available on
@@ -89,11 +96,11 @@ class ProfileSyncServiceHarness
   // If your test involves changes to multiple clients, you should use one of
   // the other Await* functions, such as AwaitMutualSyncCycleComplete.  Refer to
   // the documentation of those functions for more details.
-  bool AwaitFullSyncCompletion(const std::string& reason);
+  bool AwaitFullSyncCompletion();
 
   // Blocks the caller until sync has been disabled for this client. Returns
   // true if sync is disabled.
-  bool AwaitSyncDisabled(const std::string& reason);
+  bool AwaitSyncDisabled();
 
   // Blocks the caller until exponential backoff has been verified to happen.
   bool AwaitExponentialBackoffVerification();
@@ -107,8 +114,7 @@ class ProfileSyncServiceHarness
 
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
-  bool WaitUntilProgressMarkersMatch(
-      ProfileSyncServiceHarness* partner, const std::string& reason);
+  bool WaitUntilProgressMarkersMatch(ProfileSyncServiceHarness* partner);
 
   // Calling this acts as a barrier and blocks the caller until |this| and
   // |partner| have both completed a sync cycle.  When calling this method,
@@ -141,13 +147,13 @@ class ProfileSyncServiceHarness
   bool AwaitPassphraseAccepted();
 
   // Returns the ProfileSyncService member of the sync client.
-  ProfileSyncService* service() { return service_; }
+  ProfileSyncService* service() const { return service_; }
 
   // Returns the status of the ProfileSyncService member of the sync client.
-  ProfileSyncService::Status GetStatus();
+  ProfileSyncService::Status GetStatus() const;
 
   // See ProfileSyncService::ShouldPushChanges().
-  bool ServiceIsPushingChanges() { return service_->ShouldPushChanges(); }
+  bool ServiceIsPushingChanges() const { return service_->ShouldPushChanges(); }
 
   // Enables sync for a particular sync datatype. Returns true on success.
   bool EnableSyncForDatatype(syncer::ModelType datatype);
@@ -164,27 +170,36 @@ class ProfileSyncServiceHarness
   // Returns a snapshot of the current sync session.
   syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
 
-  // Encrypt the datatype |type|. This method will block while the sync backend
-  // host performs the encryption or a timeout is reached.
-  // PostCondition:
-  //   returns: True if |type| was encrypted and we are fully synced.
-  //            False if we timed out.
-  bool EnableEncryptionForType(syncer::ModelType type);
+  // Encrypts all datatypes. This method will block while the sync backend host
+  // performs the encryption, or a timeout is reached. Returns true if
+  // encryption is complete and we are fully synced, and false if we timed out.
+  bool EnableEncryption();
 
-  // Wait until |type| is encrypted or we time out.
-  // PostCondition:
-  //   returns: True if |type| is currently encrypted and we are fully synced.
-  //            False if we timed out.
-  bool WaitForTypeEncryption(syncer::ModelType type);
+  // Waits until encryption is complete for all datatypes. Returns true if
+  // encryption is complete and we are fully synced, and false if we timed out.
+  bool WaitForEncryption();
 
-  // Check if |type| is encrypted.
-  bool IsTypeEncrypted(syncer::ModelType type);
+  // Returns true if encryption is complete for all datatypes, and false
+  // otherwise.
+  bool IsEncryptionComplete() const;
 
   // Check if |type| is registered and the controller is running.
   bool IsTypeRunning(syncer::ModelType type);
 
   // Check if |type| is being synced.
   bool IsTypePreferred(syncer::ModelType type);
+
+  // Returns true if the sync client has no unsynced items.
+  bool IsDataSynced() const;
+
+  // Returns true if the sync client has no unsynced items and its progress
+  // markers are believed to be up to date.
+  //
+  // Although we can't detect when commits from other clients invalidate our
+  // local progress markers, we do know when our own commits have invalidated
+  // our timestmaps.  This check returns true when this client has, to the best
+  // of its knowledge, downloaded the latest progress markers.
+  bool IsFullySynced() const;
 
   // Get the number of sync entries this client has. This includes all top
   // level or permanent items, and can include recently deleted entries.
@@ -197,90 +212,32 @@ class ProfileSyncServiceHarness
   // Gets the |auto_start_enabled_| variable from the |service_|.
   bool AutoStartEnabled();
 
-  // Returns true if a status change took place, false on timeout.
-  bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
-                                    const std::string& reason);
+  // Runs the UI message loop and waits until the Run() method of |checker|
+  // returns true, indicating that the status change we are waiting for has
+  // taken place. Caller retains ownership of |checker|, which must outlive this
+  // method. Returns true if the status change was observed. In case of a
+  // timeout, we log the |source| of the call to this method, and return false.
+  bool AwaitStatusChange(StatusChangeChecker* checker,
+                         const std::string& source);
 
   // Returns a string that can be used as the value of an oauth2 refresh token.
   // This function guarantees that a different string is returned each time
   // it is called.
   std::string GenerateFakeOAuth2RefreshTokenString();
 
+  // Returns a string with relevant info about client's sync state (if
+  // available), annotated with |message|. Useful for logging.
+  std::string GetClientInfoString(const std::string& message) const;
+
+  // Returns true if this client has downloaded all the items that the
+  // other client has.
+  bool MatchesPartnerClient() const;
+
+  // Returns true if there is a backend migration in progress.
+  bool HasPendingBackendMigration() const;
+
  private:
   friend class StateChangeTimeoutEvent;
-
-  enum WaitState {
-    // The sync client has just been initialized.
-    INITIAL_WAIT_STATE = 0,
-
-    // The sync client awaits the OnBackendInitialized() callback.
-    WAITING_FOR_ON_BACKEND_INITIALIZED,
-
-    // The sync client is waiting for the first sync cycle to complete.
-    WAITING_FOR_INITIAL_SYNC,
-
-    // The sync client is waiting for data to be synced.
-    WAITING_FOR_DATA_SYNC,
-
-    // The sync client is waiting for data and progress markers to be synced.
-    WAITING_FOR_FULL_SYNC,
-
-    // The sync client anticipates incoming updates leading to a new sync cycle.
-    WAITING_FOR_UPDATES,
-
-    // The sync client is waiting for a passphrase to be required by the
-    // cryptographer.
-    WAITING_FOR_PASSPHRASE_REQUIRED,
-
-    // The sync client is waiting for its passphrase to be accepted by the
-    // cryptographer.
-    WAITING_FOR_PASSPHRASE_ACCEPTED,
-
-    // The sync client anticipates encryption of new datatypes.
-    WAITING_FOR_ENCRYPTION,
-
-    // The sync client is waiting for the datatype manager to be configured and
-    // for sync to be fully initialized. Used after a browser restart, where a
-    // full sync cycle is not expected to occur.
-    WAITING_FOR_SYNC_CONFIGURATION,
-
-    // The sync client is waiting for sync to be disabled for this client.
-    WAITING_FOR_SYNC_DISABLED,
-
-    // The sync client is in the exponential backoff mode. Verify that
-    // backoffs are triggered correctly.
-    WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION,
-
-    // The sync client is waiting for migration to start.
-    WAITING_FOR_MIGRATION_TO_START,
-
-    // The sync client is waiting for migration to finish.
-    WAITING_FOR_MIGRATION_TO_FINISH,
-
-    // The sync client is waiting for an actionable error from the server.
-    WAITING_FOR_ACTIONABLE_ERROR,
-
-    // The client verification is complete. We don't care about the state of
-    // the syncer any more.
-    WAITING_FOR_NOTHING,
-
-    // The sync client needs a passphrase in order to decrypt data.
-    SET_PASSPHRASE_FAILED,
-
-    // The sync client's credentials were rejected.
-    CREDENTIALS_REJECTED,
-
-    // The sync client cannot reach the server.
-    SERVER_UNREACHABLE,
-
-    // The sync client is fully synced and there are no pending updates.
-    FULLY_SYNCED,
-
-    // Syncing is disabled for the client.
-    SYNC_DISABLED,
-
-    NUMBER_OF_STATES,
-  };
 
   ProfileSyncServiceHarness(
       Profile* profile,
@@ -293,42 +250,14 @@ class ProfileSyncServiceHarness
   // listening.
   bool TryListeningToMigrationEvents();
 
-  // Called from the observer when the current wait state has been completed.
-  void SignalStateCompleteWithNextState(WaitState next_state);
-
   // Indicates that the operation being waited on is complete.
   void SignalStateComplete();
 
-  // Finite state machine for controlling state.  Returns true only if a state
-  // change has taken place.
-  bool RunStateChangeMachine();
-
   // A helper for implementing IsDataSynced() and IsFullySynced().
-  bool IsDataSyncedImpl(
-      const syncer::sessions::SyncSessionSnapshot& snapshot);
+  bool IsDataSyncedImpl() const;
 
-  // Returns true if the sync client has no unsynced items.
-  bool IsDataSynced();
-
-  // Returns true if the sync client has no unsynced items and its progress
-  // markers are believed to be up to date.
-  //
-  // Although we can't detect when commits from other clients invalidate our
-  // local progress markers, we do know when our own commits have invalidated
-  // our timestmaps.  This check returns true when this client has, to the best
-  // of its knowledge, downloaded the latest progress markers.
-  bool IsFullySynced();
-
-  // Returns true if there is a backend migration in progress.
-  bool HasPendingBackendMigration();
-
-  // Returns true if this client has downloaded all the items that the
-  // other client has.
-  bool MatchesOtherClient(ProfileSyncServiceHarness* partner);
-
-  // Returns a string with relevant info about client's sync state (if
-  // available), annotated with |message|. Useful for logging.
-  std::string GetClientInfoString(const std::string& message);
+  // Signals that sync setup is complete, and that PSS may begin syncing.
+  void FinishSyncSetup();
 
   // Gets the current progress marker of the current sync session for a
   // particular datatype. Returns an empty string if the progress marker isn't
@@ -337,14 +266,6 @@ class ProfileSyncServiceHarness
 
   // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
-
-  // When in WAITING_FOR_ENCRYPTION state, we check to see if this type is now
-  // encrypted to determine if we're done.
-  syncer::ModelType waiting_for_encryption_type_;
-
-  // The WaitState in which the sync client currently is. Helps determine what
-  // action to take when RunStateChangeMachine() is called.
-  WaitState wait_state_;
 
   // Sync profile associated with this sync client.
   Profile* profile_;
@@ -378,14 +299,18 @@ class ProfileSyncServiceHarness
   // Used for logging.
   const std::string profile_debug_name_;
 
+  // Flag indicating if sync was disabled.
+  // TODO(rsimha): This is temporary, and must be replaced by a check of the
+  // actual disabled state of ProfileSyncService.
+  bool is_sync_disabled_;
+
+  // Keeps track of the state change on which we are waiting. PSSHarness can
+  // wait on only one status change at a time.
+  StatusChangeChecker* status_change_checker_;
+
   // Keeps track of the number of attempts at exponential backoff and its
   // related bookkeeping information for verification.
-  RetryVerifier retry_verifier_;
-
-  // Flag set to true when we're waiting for a status change to happen. Used to
-  // avoid triggering internal state machine logic on unexpected sync observer
-  // callbacks.
-  bool waiting_for_status_change_;
+  scoped_ptr<RetryVerifier> retry_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };

@@ -43,13 +43,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
 
   ASSERT_TRUE(CheckInitialState(0));
 
+  // Add a new session to client 0 and wait for it to sync.
   ScopedWindowMap old_windows;
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0,
                                         GURL("http://127.0.0.1/bubba"),
                                         old_windows.GetMutable()));
-
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for session change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   // Get foreign session data from client 0.
   SyncedSessionVector sessions;

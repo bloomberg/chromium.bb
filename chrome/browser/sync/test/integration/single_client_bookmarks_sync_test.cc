@@ -40,8 +40,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
   // server.
   ASSERT_TRUE(GetClient(0)->AwaitExponentialBackoffVerification());
 
+  // Go online, wait for sync to complete, and verify that it did.
   EnableNetwork(GetProfile(0));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Commit changes."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
 
@@ -69,9 +70,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   const BookmarkNode* tier1_b_url0 = AddURL(
       0, tier1_b, 0, L"tier1_b_url0", GURL("http://www.nhl.com"));
 
+  // Setup sync, wait for its completion, and make sure changes were synced.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for initial sync completed."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   //  Ultimately we want to end up with the following model; but this test is
@@ -100,7 +101,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
       GURL("http://www.cnn.com"));
   ASSERT_TRUE(cnn != NULL);
   Move(0, tier1_a, bar, 1);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Bookmark moved."));
+
+  // Wait for the bookmark position change to sync.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   const BookmarkNode* porsche = AddURL(0, bar, 2, L"Porsche",
@@ -110,8 +113,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_EQ(tier1_a, tier1_a_url1->parent());
   Move(0, tier1_a_url2, tier1_a, 0);
   Move(0, tier1_a_url1, tier1_a, 2);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Rearrange stuff in tier1_a"));
+
+  // Wait for the rearranged hierarchy to sync.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   ASSERT_EQ(1, tier1_a_url0->parent()->GetIndexOf(tier1_a_url0));
@@ -132,7 +136,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   Move(0, porsche, bar, 0);
   SetTitle(0, wired, L"News Wired");
   SetTitle(0, porsche, L"ICanHazPorsche?");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Change title."));
+
+  // Wait for the title change to sync.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->child_count() - 1)->id());
@@ -147,8 +153,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 
   Move(0, wynn, tier3_b, 0);
   Move(0, leafs, tier3_b, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Move after addition of bookmarks."));
+
+  // Wait for newly added bookmarks to sync.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
 
@@ -182,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   SetFavicon(0, bookmark, icon_url, original_favicon,
              bookmarks_helper::FROM_SYNC);
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added bookmark"));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   scoped_refptr<base::RefCountedMemory> original_favicon_bytes =
@@ -230,14 +237,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ASSERT_TRUE(
       AddURL(0, GetBookmarkBarNode(0), 2, L"Gmail", GURL("http://gmail.com")));
 
+  // Set up sync, wait for its completion and verify that changes propagated.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for initial sync completed."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
-  // Remove all
+  // Remove all bookmarks and wait for sync completion.
   RemoveAll(0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("All Bookmarks removed."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   // Verify other node has no children now.
   EXPECT_EQ(0, GetOtherNode(0)->child_count());
   EXPECT_EQ(0, GetBookmarkBarNode(0)->child_count());

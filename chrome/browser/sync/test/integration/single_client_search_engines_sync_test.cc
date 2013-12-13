@@ -22,7 +22,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSearchEnginesSyncTest, Sanity) {
 
   search_engines_helper::AddSearchEngine(0, 0);
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for search engines to update."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(search_engines_helper::ServiceMatchesVerifier(0));
 }

@@ -26,6 +26,6 @@ class CrossPlatformSyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(CrossPlatformSyncTest, DISABLED_AddBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.co.uk")));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a bookmark."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }

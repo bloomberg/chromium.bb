@@ -151,11 +151,11 @@ class SyncTest : public InProcessBrowserTest {
   // Disable outgoing network connections for the given profile.
   virtual void DisableNetwork(Profile* profile);
 
-  // Encrypts the datatype |type| for profile |index|.
-  bool EnableEncryption(int index, syncer::ModelType type);
+  // Kicks off encryption for profile |index|.
+  bool EnableEncryption(int index);
 
-  // Checks if the datatype |type| is encrypted for profile |index|.
-  bool IsEncrypted(int index, syncer::ModelType type);
+  // Checks if encryption is complete for profile |index|.
+  bool IsEncryptionComplete(int index);
 
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.

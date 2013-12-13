@@ -22,10 +22,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientDictionarySyncTest, Sanity) {
 
   std::string word = "foo";
   ASSERT_TRUE(dictionary_helper::AddWord(0, word));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a word"));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 
   ASSERT_TRUE(dictionary_helper::RemoveWord(0, word));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Removed a word"));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 }

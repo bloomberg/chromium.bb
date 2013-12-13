@@ -17,7 +17,7 @@ SyncTimingHelper::~SyncTimingHelper() {}
 base::TimeDelta SyncTimingHelper::TimeSyncCycle(
     ProfileSyncServiceHarness* client) {
   base::Time start = base::Time::Now();
-  EXPECT_TRUE(client->AwaitFullSyncCompletion("Timing sync cycle."));
+  EXPECT_TRUE(client->AwaitFullSyncCompletion());
   return base::Time::Now() - start;
 }
 

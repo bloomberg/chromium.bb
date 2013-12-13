@@ -28,23 +28,25 @@ class SyncErrorTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  // Add an item, wait for sync, and trigger a birthday error on the server.
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   TriggerBirthdayError();
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
   SetTitle(0, node2, L"new_title2");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncDisabled("Birthday error."));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncDisabled());
 }
 
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, TransientErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  // Add an item, wait for sync, and trigger a transient error on the server.
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   TriggerTransientError();
 
   // Now make one more change so we will do another sync.
@@ -59,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   syncer::SyncProtocolError protocol_error;
   protocol_error.error_type = syncer::TRANSIENT_ERROR;
@@ -118,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   syncer::SyncProtocolError protocol_error;
   protocol_error.error_type = syncer::NOT_MY_BIRTHDAY;
@@ -130,8 +132,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
   SetTitle(0, node2, L"new_title2");
-  ASSERT_TRUE(
-      GetClient(0)->AwaitSyncDisabled("Birthday Error."));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncDisabled());
   ProfileSyncService::Status status = GetClient(0)->GetStatus();
   ASSERT_EQ(status.sync_protocol_error.error_type, protocol_error.error_type);
   ASSERT_EQ(status.sync_protocol_error.action, protocol_error.action);
@@ -154,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_DisableDatatypeWhileRunning) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   // TODO(lipalani)" Verify initial sync ended for typed url is false.
 }
 

@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   }
 
   // Enable encryption on client 0, should propagate to all other clients.
-  ASSERT_TRUE(EnableEncryption(0, syncer::SESSIONS));
+  ASSERT_TRUE(EnableEncryption(0));
 
   // Wait for sync.
   // TODO(zea): Fix sync completion detection so we don't need this. For now,
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(IsEncrypted(i, syncer::SESSIONS));
+    ASSERT_TRUE(IsEncryptionComplete(i));
     ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
   }
 }

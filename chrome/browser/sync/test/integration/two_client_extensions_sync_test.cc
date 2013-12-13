@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableExtensions) {
   InstallExtension(GetProfile(0), 1);
   InstallExtension(verifier(), 1);
   ASSERT_TRUE(
-      GetClient(0)->AwaitFullSyncCompletion("Installed an extension."));
+      GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_FALSE(AllProfilesHaveSameExtensionsAsVerifier());
 
   ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::EXTENSIONS));
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableSync) {
   InstallExtension(GetProfile(0), 0);
   InstallExtension(verifier(), 0);
   ASSERT_TRUE(
-      GetClient(0)->AwaitFullSyncCompletion("Installed an extension."));
+      GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
 

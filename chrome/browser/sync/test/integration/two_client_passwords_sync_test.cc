@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisablePasswords) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a password."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisableSync) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a password."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphrase) {
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase."));
+  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
@@ -236,13 +236,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(GetClient(0)->SetupSync());
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Initial sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   ASSERT_FALSE(GetClient(1)->SetupSync());
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Initial sync."));
+  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion());
 
   // Following ensures types are enabled and active (see bug 87572).
   syncer::ModelSafeRoutingInfo routes;
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(GetClient(0)->SetupSync());
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Initial sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   // Setup 1 with a different passphrase, so that it fails to sync.
   ASSERT_FALSE(GetClient(1)->SetupSync());
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   AddLogin(GetVerifierPasswordStore(), form0);
   AddLogin(GetPasswordStore(0), form0);
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a password."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   // Password hasn't been synced to 1 yet.
   ASSERT_FALSE(AllProfilesContainSamePasswordFormsAsVerifier());

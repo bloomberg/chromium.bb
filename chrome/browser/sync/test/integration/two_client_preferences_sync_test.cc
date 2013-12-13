@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisablePreferences) {
 
   GetClient(1)->DisableSyncForDatatype(syncer::PREFERENCES);
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Changed a preference."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_FALSE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   GetClient(1)->EnableSyncForDatatype(syncer::PREFERENCES);
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisableSync) {
 
   GetClient(1)->DisableSyncForAllDatatypes();
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Changed a preference."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_FALSE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   ChangeBooleanPref(1, prefs::kShowHomeButton);
@@ -530,10 +530,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        SingleClientEnabledEncryption) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::PREFERENCES));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::PREFERENCES));
-  ASSERT_TRUE(IsEncrypted(1, syncer::PREFERENCES));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
@@ -542,10 +542,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(EnableEncryption(0, syncer::PREFERENCES));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::PREFERENCES));
-  ASSERT_TRUE(IsEncrypted(1, syncer::PREFERENCES));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }
 
@@ -553,11 +553,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        BothClientsEnabledEncryption) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::PREFERENCES));
-  ASSERT_TRUE(EnableEncryption(1, syncer::PREFERENCES));
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(1));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0, syncer::PREFERENCES));
-  ASSERT_TRUE(IsEncrypted(1, syncer::PREFERENCES));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
@@ -566,12 +566,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
   ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::PREFERENCES));
+  ASSERT_TRUE(EnableEncryption(0));
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
   ChangeStringPref(1, prefs::kHomePage, "http://www.google.com/1");
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0, syncer::PREFERENCES));
-  ASSERT_TRUE(IsEncrypted(1, syncer::PREFERENCES));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(BooleanPrefMatches(
       prefs::kHomePageIsNewTabPage));
   ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
@@ -583,10 +583,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(EnableEncryption(0, syncer::PREFERENCES));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::PREFERENCES));
-  ASSERT_TRUE(IsEncrypted(1, syncer::PREFERENCES));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 
   ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));

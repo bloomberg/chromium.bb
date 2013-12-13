@@ -56,7 +56,7 @@ class SyncAuthTest : public SyncTest {
     std::wstring title = base::StringPrintf(L"Bookmark %d", bookmark_index);
     GURL url = GURL(base::StringPrintf("http://www.foo%d.com", bookmark_index));
     EXPECT_TRUE(AddURL(0, title, url) != NULL);
-    return GetClient(0)->AwaitFullSyncCompletion("Added a bookmark.");
+    return GetClient(0)->AwaitFullSyncCompletion();
   }
 
   // Sets the authenticated state of the python sync server to |auth_state| and
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, TokenExpiry) {
                                net::URLRequestStatus::SUCCESS);
 
   // Verify that the next sync cycle is successful, and uses the new auth token.
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Syncing with new token."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   std::string new_token = GetClient(0)->service()->GetAccessTokenForTest();
   ASSERT_NE(old_token, new_token);
 }

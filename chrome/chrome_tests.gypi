@@ -2353,6 +2353,8 @@
         'browser/sync/test/integration/search_engines_helper.h',
         'browser/sync/test/integration/sessions_helper.cc',
         'browser/sync/test/integration/sessions_helper.h',
+        'browser/sync/test/integration/status_change_checker.cc',
+        'browser/sync/test/integration/status_change_checker.h',
         'browser/sync/test/integration/sync_app_helper.cc',
         'browser/sync/test/integration/sync_app_helper.h',
         'browser/sync/test/integration/sync_datatype_helper.cc',

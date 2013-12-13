@@ -39,10 +39,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   ASSERT_EQ(new_url, urls[0].url());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for typed url change."));
-
-  // Verify client did not change.
+  // Wait for sync and verify client did not change.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
@@ -61,10 +59,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
   ASSERT_EQ(new_url, urls[0].url());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for typed url change."));
-
-  // Verify client did not change.
+  // Wait for sync and verify client did not change.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
@@ -83,16 +79,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteTyped) {
   ASSERT_EQ(new_url, urls[0].url());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for typed url change."));
-
-  // Verify client did not change.
+  // Wait for sync and verify client did not change.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  // Now delete the URL we just added.
+  // Now delete the URL we just added, wait for sync, and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for typed url change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
   AssertAllProfilesHaveSameURLsAsVerifier();
@@ -112,16 +105,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
   ASSERT_EQ(0U, urls.size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for typed url change."));
-
-  // Verify client did not change.
+  // Wait for sync and verify client did not change.
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  // Now delete the URL we just added.
+  // Now delete the URL we just added, wait for sync and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
-      "Waiting for typed url change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
   AssertAllProfilesHaveSameURLsAsVerifier();

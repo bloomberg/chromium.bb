@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DisableSync) {
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
   MakeABookmarkChange(0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a profile."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_FALSE(ProfilesMatch(0, 1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
   ASSERT_EQ(1U, GetAllProfiles(1).size());

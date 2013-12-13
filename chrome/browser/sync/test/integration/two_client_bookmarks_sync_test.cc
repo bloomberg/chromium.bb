@@ -1567,7 +1567,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a folder."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(AddFolder(1, IndexedFolderName(1)) != NULL);
@@ -1613,7 +1613,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, L"bar", bar_url) != NULL);
   ASSERT_TRUE(AddURL(0, GetOtherNode(0), 0, L"other", other_url) != NULL);
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a bookmark."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   ASSERT_TRUE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -1621,7 +1621,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_FALSE(HasNodeWithURL(1, other_url));
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Removed a bookmark."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
 
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -1767,10 +1767,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
@@ -1779,11 +1779,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
@@ -1792,11 +1792,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(EnableEncryption(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(1));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
@@ -1805,16 +1805,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0, syncer::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatchVerifier());
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
@@ -1823,10 +1823,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(EnableEncryption(0, syncer::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);
@@ -1851,10 +1851,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   // understand the bookmark updates.
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(EnableEncryption(0, syncer::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
   ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
 
   // Client 1 adds bookmarks between the first two and between the second two.
