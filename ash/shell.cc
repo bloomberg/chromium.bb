@@ -517,8 +517,9 @@ ShelfDelegate* Shell::GetShelfDelegate() {
     DCHECK(app_list_id);
     shelf_item_delegate_manager_->SetShelfItemDelegate(app_list_id,
                                                        controller.Pass());
-    shelf_window_watcher_.reset(
-        new internal::ShelfWindowWatcher(shelf_model_.get()));
+    shelf_window_watcher_.reset(new internal::ShelfWindowWatcher(
+                                        shelf_model_.get(),
+                                        shelf_item_delegate_manager_.get()));
   }
   return shelf_delegate_.get();
 }

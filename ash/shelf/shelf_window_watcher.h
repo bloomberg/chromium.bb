@@ -27,16 +27,17 @@ class ActivationClient;
 namespace ash {
 
 class ShelfModel;
+class ShelfItemDelegateManager;
 
 namespace internal {
-
 // ShelfWindowWatcher creates and handles a LauncherItem for windows that have
 // a LauncherItemDetails property in the default container.
 class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
                            public aura::WindowObserver,
                            public gfx::DisplayObserver {
  public:
-  ShelfWindowWatcher(ShelfModel* model);
+  ShelfWindowWatcher(ShelfModel* model,
+                     ShelfItemDelegateManager* item_delegate_manager);
   virtual ~ShelfWindowWatcher();
 
  private:
@@ -92,6 +93,7 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   // Owned by Shell.
   ShelfModel* model_;
+  ShelfItemDelegateManager* item_delegate_manager_;
 
   RootWindowObserver root_window_observer_;
 

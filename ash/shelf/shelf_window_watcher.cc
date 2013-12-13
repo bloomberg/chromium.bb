@@ -5,11 +5,14 @@
 #include "ash/shelf/shelf_window_watcher.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
+#include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -55,8 +58,11 @@ void ShelfWindowWatcher::RootWindowObserver::OnWindowDestroying(
   window_watcher_->OnRootWindowRemoved(window);
 }
 
-ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
+ShelfWindowWatcher::ShelfWindowWatcher(
+    ShelfModel* model,
+    ShelfItemDelegateManager* item_delegate_manager)
     : model_(model),
+      item_delegate_manager_(item_delegate_manager),
       root_window_observer_(this),
       observed_windows_(this),
       observed_root_windows_(&root_window_observer_),
@@ -79,10 +85,14 @@ void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
   const LauncherItemDetails* item_details =
       GetLauncherItemDetailsForWindow(window);
   LauncherItem item;
+  LauncherID id = model_->next_id();
   item.status = ash::wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
   SetLauncherItemDetailsForLauncherItem(&item, *item_details);
-  SetLauncherIDForWindow(model_->next_id(), window);
-  // TODO(simonhong): Create LauncherItemDelegate for LauncherItem.
+  SetLauncherIDForWindow(id, window);
+  scoped_ptr<ShelfItemDelegate> item_delegate(
+      new ShelfWindowWatcherItemDelegate(window));
+  // |item_delegate| is owned by |item_delegate_manager_|.
+  item_delegate_manager_->SetShelfItemDelegate(id, item_delegate.Pass());
   model_->Add(item);
 }
 

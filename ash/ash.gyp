@@ -233,6 +233,8 @@
         'shelf/shelf_widget.h',
         'shelf/shelf_window_watcher.cc',
         'shelf/shelf_window_watcher.h',
+        'shelf/shelf_window_watcher_item_delegate.cc',
+        'shelf/shelf_window_watcher_item_delegate.h',
         'shell.cc',
         'shell.h',
         'shell_delegate.h',
