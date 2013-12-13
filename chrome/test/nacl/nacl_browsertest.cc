@@ -17,8 +17,11 @@
 namespace {
 
 #if defined(OS_WIN)
+// crbug.com/98721
+#  define MAYBE_Crash DISABLED_Crash
 #  define MAYBE_SysconfNprocessorsOnln DISABLED_SysconfNprocessorsOnln
 #else
+#  define MAYBE_Crash Crash
 #  define MAYBE_SysconfNprocessorsOnln SysconfNprocessorsOnln
 #endif
 
@@ -55,6 +58,10 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPIPPPInstance, {
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_Crash, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash.html"));
 })
 
 // Some versions of Visual Studio does not like preprocessor
