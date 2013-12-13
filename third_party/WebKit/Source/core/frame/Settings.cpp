@@ -26,20 +26,10 @@
 #include "config.h"
 #include "core/frame/Settings.h"
 
-#include <limits>
-#include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/Chrome.h"
-#include "core/frame/Frame.h"
-#include "core/page/FrameTree.h"
-#include "core/frame/FrameView.h"
-#include "core/page/Page.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
-using namespace std;
-
 namespace WebCore {
-
 
 // NOTEs
 //  1) EditingMacBehavior comprises builds on Mac;

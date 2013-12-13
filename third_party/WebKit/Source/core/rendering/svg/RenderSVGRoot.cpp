@@ -25,10 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGRoot.h"
 
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"

@@ -54,12 +54,12 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
-#include "core/css/RuntimeCSSEnabled.h"
 #include "core/frame/animation/AnimationController.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"
@@ -70,15 +70,14 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/ShapeValue.h"
-#include "platform/fonts/FontFeatureSettings.h"
-#include "wtf/text/StringBuilder.h"
-
 #include "core/rendering/style/StyleCustomFilterProgram.h"
+#include "platform/fonts/FontFeatureSettings.h"
 #include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterTransformParameter.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

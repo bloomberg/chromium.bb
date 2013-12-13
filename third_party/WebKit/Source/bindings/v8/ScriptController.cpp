@@ -64,7 +64,6 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/plugins/PluginView.h"
 #include "platform/NotImplemented.h"

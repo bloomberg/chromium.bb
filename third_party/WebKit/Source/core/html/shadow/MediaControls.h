@@ -30,14 +30,12 @@
 #include "core/events/MouseEvent.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/shadow/MediaControlElements.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
 
 class Document;
 class Event;
-class Page;
 class MediaPlayer;
 
 class RenderBox;

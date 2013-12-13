@@ -30,7 +30,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MeterShadowElement.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderTheme.h"
 

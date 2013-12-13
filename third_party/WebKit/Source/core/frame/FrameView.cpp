@@ -39,6 +39,10 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/TextResourceDecoder.h"
+#include "core/frame/Frame.h"
+#include "core/frame/GraphicsLayerDebugInfo.h"
+#include "core/frame/Settings.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -49,11 +53,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
-#include "core/frame/GraphicsLayerDebugInfo.h"
 #include "core/page/FrameTree.h"
-#include "core/frame/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/LayoutIndicator.h"
@@ -71,6 +71,7 @@
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
+#include "platform/TraceEvent.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -79,8 +80,6 @@
 #include "platform/text/TextStream.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/TemporaryChange.h"
-
-#include "platform/TraceEvent.h"
 
 namespace WebCore {
 
