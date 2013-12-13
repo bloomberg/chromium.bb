@@ -6671,6 +6671,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_DESCRIPTION" desc="Description for the flag to disable sync of user account image.">
         Disables sync of user account image between different ChromeOS devices.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_ENABLE_CAST_NAME" desc="Name of the flag to enable Chromecast support.">
+          Enable Chromecast support
+        </message>
+        <message name="IDS_FLAGS_ENABLE_CAST_DESCRIPTION" desc="Description for the flag to disable playing videos remotely on Chromecast.">
+          Enable playing videos remotely on Chromecast.
+        </message>
+      </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_DISABLE_FIRST_RUN_UI_NAME" desc="Name of the flag to disable new first-run UI.">
           Disable new first-run UI.
