@@ -1321,8 +1321,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     base::string16 title16 = base::SysNSStringToUTF16(printTitle);
     base::string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
     print_dialog_cloud::CreatePrintDialogForFile(
-        ProfileManager::GetDefaultProfile(), NULL,
-        base::FilePath([inputPath UTF8String]), title16,
+        ProfileManager::GetActiveUserProfile(), NULL,
+        base::FilePath([inputPath fileSystemRepresentation]), title16,
         printTicket16, [mime UTF8String], /*delete_on_close=*/false);
   }
 }
@@ -1332,7 +1332,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   std::vector<GURL> gurlVector;
   for (NSString* file in filenames) {
     GURL gurl =
-        net::FilePathToFileURL(base::FilePath(base::SysNSStringToUTF8(file)));
+        net::FilePathToFileURL(base::FilePath([file fileSystemRepresentation]));
     gurlVector.push_back(gurl);
   }
   if (!gurlVector.empty())
