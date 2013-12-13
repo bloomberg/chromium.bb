@@ -85,24 +85,19 @@ std::vector<gfx::Rect> GetCompositionCharacterBounds(
   if (!client)
     return std::vector<gfx::Rect>();
 
-  std::vector<gfx::Rect> bounds;
-  if (client->HasCompositionText()) {
-    gfx::Range range;
-    if (client->GetCompositionTextRange(&range)) {
-      for (uint32 i = 0; i < range.length(); ++i) {
-        gfx::Rect rect;
-        if (!client->GetCompositionCharacterBounds(i, &rect))
-          break;
-        bounds.push_back(rect);
-      }
-    }
+  if (!client->HasCompositionText()) {
+    std::vector<gfx::Rect> caret;
+    caret.push_back(client->GetCaretBounds());
+    return caret;
   }
 
-  // Use the caret bounds as a fallback if no composition character bounds is
-  // available. One typical use case is PPAPI Flash, which does not support
-  // GetCompositionCharacterBounds at all. crbug.com/133472
-  if (bounds.empty())
-    bounds.push_back(client->GetCaretBounds());
+  std::vector<gfx::Rect> bounds;
+  for (uint32 i = 0;; ++i) {
+    gfx::Rect rect;
+    if (!client->GetCompositionCharacterBounds(i, &rect))
+      break;
+    bounds.push_back(rect);
+  }
   return bounds;
 }
 
