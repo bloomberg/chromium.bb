@@ -256,7 +256,7 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
             // for the initial paint to avoid potential double-painting caused by non-sensical "old" bounds.
             // We could handle this in the individual objects, but for now it's easier to have
             // parent containers call repaint().  (RenderBlock::layout* has similar logic.)
-            if (!childEverHadLayout)
+            if (!childEverHadLayout && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                 child->repaint();
         } else if (layoutSizeChanged)
             notlayoutedObjects.add(child);
