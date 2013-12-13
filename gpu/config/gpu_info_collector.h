@@ -53,6 +53,13 @@ GPU_EXPORT void MergeGPUInfo(GPUInfo* basic_gpu_info,
 GPU_EXPORT void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
                                const GPUInfo& context_gpu_info);
 
+// If multiple GPUs are detected, use GL_VENDOR string to determine which GPU
+// is currently active.
+// |gpu_info| is expected to be the merged GPUInfo after full info collection.
+// Upon return, |gpu_info->gpu| will contain the active GPU, assuming the
+// platform supports it. Return false if it's not supported.
+GPU_EXPORT bool DetermineActiveGPU(GPUInfo* gpu_info);
+
 // Advanced Micro Devices has interesting configurations on laptops were
 // there are two videocards that can alternatively a given process output.
 enum AMDVideoCardType {

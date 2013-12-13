@@ -182,5 +182,71 @@ TEST_F(GPUInfoCollectorTest, DISABLED_GLExtensionsGL) {
             gpu_info.gl_extensions);
 }
 
+#if defined(OS_LINUX)
+TEST(GPUInfoCollectorUtilTest, DetermineActiveGPU) {
+  const uint32 kIntelVendorID = 0x8086;
+  const uint32 kIntelDeviceID = 0x0046;
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = kIntelVendorID;
+  intel_gpu.device_id = kIntelDeviceID;
+
+  const uint32 kAMDVendorID = 0x1002;
+  const uint32 kAMDDeviceID = 0x68c1;
+  GPUInfo::GPUDevice amd_gpu;
+  amd_gpu.vendor_id = kAMDVendorID;
+  amd_gpu.device_id = kAMDDeviceID;
+
+  // One GPU, do nothing.
+  {
+    GPUInfo gpu_info;
+    gpu_info.gpu = amd_gpu;
+    EXPECT_TRUE(DetermineActiveGPU(&gpu_info));
+  }
+
+  // Two GPUs, switched.
+  {
+    GPUInfo gpu_info;
+    gpu_info.gpu = amd_gpu;
+    gpu_info.secondary_gpus.push_back(intel_gpu);
+    gpu_info.gl_vendor = "Intel Open Source Technology Center";
+    EXPECT_TRUE(DetermineActiveGPU(&gpu_info));
+    EXPECT_EQ(kIntelVendorID, gpu_info.gpu.vendor_id);
+    EXPECT_EQ(kIntelDeviceID, gpu_info.gpu.device_id);
+    EXPECT_EQ(kAMDVendorID, gpu_info.secondary_gpus[0].vendor_id);
+    EXPECT_EQ(kAMDDeviceID, gpu_info.secondary_gpus[0].device_id);
+  }
+
+  // Two GPUs, no switch necessary.
+  {
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(amd_gpu);
+    gpu_info.gl_vendor = "Intel Open Source Technology Center";
+    EXPECT_TRUE(DetermineActiveGPU(&gpu_info));
+    EXPECT_EQ(kIntelVendorID, gpu_info.gpu.vendor_id);
+    EXPECT_EQ(kIntelDeviceID, gpu_info.gpu.device_id);
+    EXPECT_EQ(kAMDVendorID, gpu_info.secondary_gpus[0].vendor_id);
+    EXPECT_EQ(kAMDDeviceID, gpu_info.secondary_gpus[0].device_id);
+  }
+
+  // Two GPUs, empty GL_VENDOR string.
+  {
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(amd_gpu);
+    EXPECT_FALSE(DetermineActiveGPU(&gpu_info));
+  }
+
+  // Two GPUs, unhandled GL_VENDOR string.
+  {
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(amd_gpu);
+    gpu_info.gl_vendor = "nouveau";
+    EXPECT_FALSE(DetermineActiveGPU(&gpu_info));
+  }
+}
+#endif
+
 }  // namespace gpu
 

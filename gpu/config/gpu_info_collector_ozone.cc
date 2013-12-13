@@ -34,4 +34,12 @@ void MergeGPUInfo(GPUInfo* basic_gpu_info,
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
+bool DetermineActiveGPU(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+  if (gpu_info->secondary_gpus.size() == 0)
+    return true;
+  // TODO(zmo): implement this.
+  return false;
+}
+
 }  // namespace gpu_info_collector

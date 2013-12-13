@@ -587,6 +587,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
     return;
 
   gpu::MergeGPUInfo(&gpu_info_, gpu_info);
+  gpu::DetermineActiveGPU(&gpu_info_);
   complete_gpu_info_already_requested_ =
       complete_gpu_info_already_requested_ || gpu_info_.finalized;
 
