@@ -49,7 +49,7 @@ public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<MediaStreamTrackSourcesRequest> create(String, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    static PassRefPtr<MediaStreamTrackSourcesRequest> create(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
     ~MediaStreamTrackSourcesRequest();
 
     String origin() { return m_origin; }
@@ -60,7 +60,7 @@ public:
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
-    MediaStreamTrackSourcesRequest(String, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    MediaStreamTrackSourcesRequest(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
 
     void scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequest>*);
 

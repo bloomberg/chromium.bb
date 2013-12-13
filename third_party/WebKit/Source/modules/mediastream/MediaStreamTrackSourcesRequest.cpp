@@ -34,12 +34,12 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(String origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
     return adoptRef(new MediaStreamTrackSourcesRequest(origin, callback));
 }
 
-MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(String origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
     : m_callback(callback)
     , m_scheduledEventTimer(this, &MediaStreamTrackSourcesRequest::scheduledEventTimerFired)
 {
