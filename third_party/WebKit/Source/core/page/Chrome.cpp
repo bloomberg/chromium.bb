@@ -359,6 +359,12 @@ PassRefPtr<DateTimeChooser> Chrome::openDateTimeChooser(DateTimeChooserClient* c
     return m_client->openDateTimeChooser(client, parameters);
 }
 
+void Chrome::openTextDataListChooser(HTMLInputElement& input)
+{
+    notifyPopupOpeningObservers();
+    m_client->openTextDataListChooser(input);
+}
+
 void Chrome::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
 {
     notifyPopupOpeningObservers();

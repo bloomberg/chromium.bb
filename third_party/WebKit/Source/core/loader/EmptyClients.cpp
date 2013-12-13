@@ -87,6 +87,10 @@ PassRefPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooser(DateTimeChoos
     return PassRefPtr<DateTimeChooser>();
 }
 
+void EmptyChromeClient::openTextDataListChooser(HTMLInputElement&)
+{
+}
+
 void EmptyChromeClient::runOpenPanel(Frame*, PassRefPtr<FileChooser>)
 {
 }

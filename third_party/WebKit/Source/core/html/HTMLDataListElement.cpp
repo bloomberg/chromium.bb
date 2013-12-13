@@ -55,6 +55,18 @@ PassRefPtr<HTMLCollection> HTMLDataListElement::options()
     return ensureCachedHTMLCollection(DataListOptions);
 }
 
+void HTMLDataListElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+{
+    HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    if (!changedByParser)
+        treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
+}
+
+void HTMLDataListElement::finishParsingChildren()
+{
+    treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
+}
+
 void HTMLDataListElement::optionElementChildrenChanged()
 {
     treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());

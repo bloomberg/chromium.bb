@@ -179,6 +179,8 @@ public:
     //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) = 0;
 
+    virtual void openTextDataListChooser(HTMLInputElement&) = 0;
+
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) = 0;
 
     // Asychronous request to enumerate all files in a directory chosen by the user.

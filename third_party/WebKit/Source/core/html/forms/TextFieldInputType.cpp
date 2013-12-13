@@ -46,10 +46,11 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/frame/Frame.h"
+#include "core/frame/Settings.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
+#include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
@@ -58,6 +59,43 @@
 namespace WebCore {
 
 using namespace HTMLNames;
+
+class DataListIndicatorElement FINAL : public HTMLDivElement {
+private:
+    inline DataListIndicatorElement(Document& document) : HTMLDivElement(document) { }
+    inline HTMLInputElement* hostInput() const { return toHTMLInputElement(shadowHost()); }
+
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE
+    {
+        return new RenderDetailsMarker(this);
+    }
+
+    virtual void defaultEventHandler(Event* event) OVERRIDE
+    {
+        if (event->type() != EventTypeNames::click)
+            return;
+        HTMLInputElement* host = hostInput();
+        if (host && !host->isDisabledOrReadOnly() && document().page()) {
+            document().page()->chrome().openTextDataListChooser(*host);
+            event->setDefaultHandled();
+        }
+    }
+
+    virtual bool willRespondToMouseClickEvents() OVERRIDE
+    {
+        return hostInput() && !hostInput()->isDisabledOrReadOnly() && document().page();
+    }
+
+public:
+    static PassRefPtr<DataListIndicatorElement> create(Document& document)
+    {
+        RefPtr<DataListIndicatorElement> element = adoptRef(new DataListIndicatorElement(document));
+        element->setPseudo(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
+        element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
+        return element.release();
+    }
+
+};
 
 TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
     : InputType(element)
@@ -248,7 +286,8 @@ void TextFieldInputType::createShadowSubtree()
 
     Document& document = element().document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
-    bool createsContainer = shouldHaveSpinButton || needsContainer();
+    bool shouldHaveDataListIndicator = element().hasValidDataListOptions();
+    bool createsContainer = shouldHaveSpinButton || shouldHaveDataListIndicator || needsContainer();
 
     RefPtr<TextControlInnerTextElement> innerEditor = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
@@ -269,8 +308,15 @@ void TextFieldInputType::createShadowSubtree()
         container->appendChild(InputFieldSpeechButtonElement::create(document));
 #endif
 
+    if (shouldHaveDataListIndicator)
+        container->appendChild(DataListIndicatorElement::create(document));
+    // FIXME: Because of a special handling for a spin button in
+    // RenderTextControlSingleLine, we need to put it to the last position. It's
+    // inconsistent with multiple-fields date/time types.
     if (shouldHaveSpinButton)
         container->appendChild(SpinButtonElement::create(document, *this));
+
+    // See listAttributeTargetChanged too.
 }
 
 Element* TextFieldInputType::containerElement() const
@@ -283,6 +329,35 @@ void TextFieldInputType::destroyShadowSubtree()
     InputType::destroyShadowSubtree();
     if (SpinButtonElement* spinButton = spinButtonElement())
         spinButton->removeSpinButtonOwner();
+}
+
+void TextFieldInputType::listAttributeTargetChanged()
+{
+    Element* picker = element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator());
+    bool didHavePickerIndicator = picker;
+    bool willHavePickerIndicator = element().hasValidDataListOptions();
+    if (didHavePickerIndicator == willHavePickerIndicator)
+        return;
+    if (willHavePickerIndicator) {
+        Document& document = element().document();
+        if (Element* container = containerElement()) {
+            container->insertBefore(DataListIndicatorElement::create(document), spinButtonElement());
+        } else {
+            // FIXME: The following code is similar to createShadowSubtree(),
+            // but they are different. We should simplify the code by making
+            // containerElement mandatory.
+            RefPtr<Element> rpContainer = TextControlInnerContainer::create(document);
+            rpContainer->setPseudo(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
+            RefPtr<Element> innerEditor = element().innerTextElement();
+            innerEditor->parentNode()->replaceChild(rpContainer.get(), innerEditor.get());
+            RefPtr<Element> editingViewPort = EditingViewPortElement::create(document);
+            editingViewPort->appendChild(innerEditor.release());
+            rpContainer->appendChild(editingViewPort.release());
+            rpContainer->appendChild(DataListIndicatorElement::create(document));
+        }
+    } else {
+        picker->remove(ASSERT_NO_EXCEPTION);
+    }
 }
 
 void TextFieldInputType::attributeChanged()

@@ -47,6 +47,8 @@ public:
 
 private:
     HTMLDataListElement(Document&);
+    virtual void childrenChanged(bool, Node*, Node*, int) OVERRIDE;
+    virtual void finishParsingChildren() OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLDataListElement, hasTagName(HTMLNames::datalistTag));

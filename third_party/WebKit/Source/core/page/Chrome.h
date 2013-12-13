@@ -39,6 +39,7 @@ class FileChooser;
 class FloatRect;
 class Frame;
 class Geolocation;
+class HTMLInputElement;
 class HitTestResult;
 class IntRect;
 class Node;
@@ -121,6 +122,7 @@ public:
 
     PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color& initialColor);
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
+    void openTextDataListChooser(HTMLInputElement&);
 
     void runOpenPanel(Frame*, PassRefPtr<FileChooser>);
     void enumerateChosenDirectory(FileChooser*);

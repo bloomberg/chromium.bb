@@ -1031,6 +1031,12 @@ void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)
     m_webView->hideAutofillPopup();
 }
 
+void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
+{
+    if (m_webView->autofillClient())
+        m_webView->autofillClient()->openTextDataListChooser(WebInputElement(&input));
+}
+
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 PassOwnPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebViewImpl* webView)
 {
