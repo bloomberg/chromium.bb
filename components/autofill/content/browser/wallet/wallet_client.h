@@ -175,10 +175,9 @@ class WalletClient : public net::URLFetcherDelegate {
   // Cancels and clears the current |request_| and |pending_requests_| (if any).
   void CancelRequests();
 
+  // Sets the user index and cancels any pending requests.
+  void SetUserIndex(size_t user_index);
   size_t user_index() const { return user_index_; }
-  void set_user_index(size_t user_index) {
-    user_index_ = user_index;
-  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WalletClientTest, PendingRequest);

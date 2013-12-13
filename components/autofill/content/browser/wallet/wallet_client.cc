@@ -506,6 +506,11 @@ void WalletClient::CancelRequests() {
   }
 }
 
+void WalletClient::SetUserIndex(size_t user_index) {
+  CancelRequests();
+  user_index_ = user_index;
+}
+
 void WalletClient::DoAcceptLegalDocuments(
     const std::vector<std::string>& document_ids,
     const std::string& google_transaction_id) {

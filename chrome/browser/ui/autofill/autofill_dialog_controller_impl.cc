@@ -2206,7 +2206,7 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   size_t user_index = 0;
   if (IsSignInContinueUrl(load_details->entry->GetVirtualURL(), &user_index)) {
-    GetWalletClient()->set_user_index(user_index);
+    GetWalletClient()->SetUserIndex(user_index);
     FetchWalletCookie();
 
     // NOTE: |HideSignIn()| may delete the WebContents which doesn't expect to
@@ -2372,7 +2372,7 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
     // Making sure the user index is in sync shouldn't be necessary, but is an
     // extra precaution. But if there is no active account (such as in the
     // PASSIVE_AUTH case), stick with the old active account.
-    GetWalletClient()->set_user_index(wallet_items_->active_account_index());
+    GetWalletClient()->SetUserIndex(wallet_items_->active_account_index());
 
     std::vector<std::string> usernames;
     for (size_t i = 0; i < wallet_items_->gaia_accounts().size(); ++i) {
@@ -2440,7 +2440,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
       account_chooser_model_->GetActiveWalletAccountIndex();
   if (account_chooser_model_->WalletIsSelected() &&
       client->user_index() != selected_user_index) {
-    client->set_user_index(selected_user_index);
+    client->SetUserIndex(selected_user_index);
     // Clear |wallet_items_| so we don't try to restore the selected instrument
     // and address.
     wallet_items_.reset();
