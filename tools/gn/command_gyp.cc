@@ -28,8 +28,6 @@ namespace commands {
 
 namespace {
 
-static const char kSwitchGypVars[] = "gyp_vars";
-
 typedef GypTargetWriter::TargetGroup TargetGroup;
 typedef std::map<Label, TargetGroup> CorrelatedTargetsMap;
 typedef std::map<SourceFile, std::vector<TargetGroup> > GroupedTargetsMap;
@@ -159,78 +157,6 @@ bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
       return false;
     }
   }
-  return true;
-}
-
-bool IsStringValueEqualTo(const Value& v, const char* cmp) {
-  if (v.type() != Value::STRING)
-    return false;
-  return v.string_value() == cmp;
-}
-
-bool GetGypVars(Scope::KeyValueMap* values) {
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  std::string args = cmdline->GetSwitchValueASCII(kSwitchGypVars);
-  if (args.empty())
-    return true;  // Nothing to set.
-
-  SourceFile empty_source_file;
-  InputFile vars_input_file(empty_source_file);
-  vars_input_file.SetContents(args);
-  vars_input_file.set_friendly_name("the command-line \"--gyp_vars\"");
-
-  Err err;
-  std::vector<Token> vars_tokens = Tokenizer::Tokenize(&vars_input_file, &err);
-  if (err.has_error()) {
-    err.PrintToStdout();
-    return false;
-  }
-
-  scoped_ptr<ParseNode> vars_root(Parser::Parse(vars_tokens, &err));
-  if (err.has_error()) {
-    err.PrintToStdout();
-    return false;
-  }
-
-  BuildSettings empty_build_settings;
-  Settings empty_settings(&empty_build_settings, std::string());
-  Scope vars_scope(&empty_settings);
-  vars_root->AsBlock()->ExecuteBlockInScope(&vars_scope, &err);
-  if (err.has_error()) {
-    err.PrintToStdout();
-    return false;
-  }
-
-  // Since our InputFile and parsing structure is going away, we need to
-  // break the dependency on those.
-  vars_scope.GetCurrentScopeValues(values);
-  for (Scope::KeyValueMap::iterator i = values->begin();
-       i != values->end(); ++i)
-    i->second.RecursivelySetOrigin(NULL);
-  return true;
-}
-
-// Returns a set of args from known GYP define values.
-bool GetArgsFromGypDefines(Scope::KeyValueMap* args) {
-  Scope::KeyValueMap gyp_defines;
-  if (!GetGypVars(&gyp_defines))
-    return false;
-
-  static const char kIsComponentBuild[] = "is_component_build";
-  Value component = gyp_defines["component"];
-  if (IsStringValueEqualTo(component, "shared_library")) {
-    (*args)[kIsComponentBuild] = Value(NULL, true);
-  } else {
-    (*args)[kIsComponentBuild] = Value(NULL, false);
-  }
-
-  // Windows SDK path. GYP and the GN build use the same name.
-  static const char kWinSdkPath[] = "windows_sdk_path";
-  Value win_sdk_path = gyp_defines[kWinSdkPath];
-  if (win_sdk_path.type() == Value::STRING &&
-      !win_sdk_path.string_value().empty())
-    (*args)[kWinSdkPath] = win_sdk_path;
-
   return true;
 }
 
@@ -399,13 +325,6 @@ int RunGyp(const std::vector<std::string>& args) {
   if (!setup_debug->DoSetup())
     return 1;
   const char kIsDebug[] = "is_debug";
-
-  Scope::KeyValueMap gyp_defines_args;
-  if (!GetArgsFromGypDefines(&gyp_defines_args))
-    return 1;
-  setup_debug->build_settings().build_args().AddArgOverrides(gyp_defines_args);
-  setup_debug->build_settings().build_args().AddArgOverride(
-      kIsDebug, Value(NULL, true));
 
   // Make a release build based on the debug one. We use a new directory for
   // the build output so that they don't stomp on each other.

@@ -78,7 +78,8 @@ def EscapeStringForGN(s):
   return '"' + s.replace('$', '\\$').replace('"', '\\"') + '"'
 
 
-def GetVarsStringForGN(supplemental_files):
+def GetGypVarsForGN(supplemental_files):
+  """Returns a dictionary of all GYP vars that we will be passing to GN."""
   vars_dict = {}
 
   for supplement in supplemental_files:
@@ -99,15 +100,33 @@ def GetVarsStringForGN(supplemental_files):
     # Some GYP variables have hyphens, which we don't support.
     key = FormatKeyForGN(tokens[0])
     if len(tokens) == 2:
-      vars_dict[key] = EscapeStringForGN(tokens[1])
+      vars_dict[key] = tokens[1]
     else:
       # No value supplied, treat it as a boolean and set it.
       vars_dict[key] = 'true'
 
-  vars_string = ''
-  for v in vars_dict:
-    vars_string = vars_string + v + '=' + vars_dict[v] + ' '
-  return vars_string.strip()  # Remove trailing space.
+  return vars_dict
+
+
+def GetArgsStringForGN(supplemental_files):
+  """Returns the args to pass to GN.
+  Based on a subset of the GYP variables that have been rewritten a bit."""
+
+  vars_dict = GetGypVarsForGN(supplemental_files)
+  gn_args = ''
+
+  # Map "component=shared_library" to "is_component_build=true"
+  if "component" in vars_dict and vars_dict["component"] == "shared_library":
+    gn_args += ' is_component_build=true'
+
+  # These string arguments get passed directly.
+  for v in ['window_sdk_path']:
+    if v in vars_dict:
+      gn_args += ' ' + v + '="' + EscapeStringForGN(vars_dict[v]) + '"'
+
+  # Set the GYP flag so BUILD files know they're being invoked in GYP mode.
+  gn_args += ' is_gyp=true'
+  return gn_args.strip()
 
 
 def additional_include_files(supplemental_files, args=[]):
@@ -161,15 +180,13 @@ def RunGN(supplemental_includes):
     return False
 
   print 'Generating gyp files from GN...'
-  gyp_vars = GetVarsStringForGN(supplemental_includes)
 
   # Need to pass both the source root (the bots don't run this command from
   # within the source tree) as well as set the is_gyp value so the BUILD files
   # to know they're being run under GYP.
   args = [gnpath, 'gyp', '-q',
           '--root=' + chrome_src,
-          '--args=is_gyp=true',
-          '--gyp_vars=' + gyp_vars + '']
+          '--args=' + GetArgsStringForGN(supplemental_includes)]
   return subprocess.call(args) == 0
 
 
