@@ -39,7 +39,6 @@
 #include "WebViewClient.h"
 #include "WebWidgetClient.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/chromium/FramelessScrollView.h"
 #include "platform/Cursor.h"
 #include "platform/NotImplemented.h"
 #include "platform/PlatformGestureEvent.h"
@@ -49,6 +48,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/scroll/FramelessScrollView.h"
 #include "public/platform/WebRect.h"
 #include <skia/ext/platform_canvas.h>
 

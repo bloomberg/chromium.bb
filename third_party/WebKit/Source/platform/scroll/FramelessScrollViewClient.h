@@ -32,14 +32,15 @@
 #define FramelessScrollViewClient_h
 
 #include "platform/HostWindow.h"
+#include "platform/PlatformExport.h"
 
 namespace WebCore {
-    class FramelessScrollView;
+class FramelessScrollView;
 
-    class FramelessScrollViewClient : public HostWindow {
-    public:
-        virtual void popupClosed(FramelessScrollView* popup_view) = 0;
-    };
+class PLATFORM_EXPORT FramelessScrollViewClient : public HostWindow {
+public:
+    virtual void popupClosed(FramelessScrollView*) = 0;
+};
 
 } // namespace WebCore
 

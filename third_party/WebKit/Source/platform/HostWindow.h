@@ -26,6 +26,7 @@
 #ifndef HostWindow_h
 #define HostWindow_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
@@ -39,7 +40,7 @@ class IntPoint;
 class IntRect;
 class IntSize;
 
-class HostWindow {
+class PLATFORM_EXPORT HostWindow {
     WTF_MAKE_NONCOPYABLE(HostWindow); WTF_MAKE_FAST_ALLOCATED;
 public:
     HostWindow() { }

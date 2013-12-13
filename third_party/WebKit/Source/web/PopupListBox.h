@@ -32,7 +32,7 @@
 #define PopupListBox_h
 
 #include "core/dom/Element.h"
-#include "core/platform/chromium/FramelessScrollView.h"
+#include "platform/scroll/FramelessScrollView.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
 

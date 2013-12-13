@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/FramelessScrollView.h"
+#include "platform/scroll/FramelessScrollView.h"
 
-#include "core/platform/chromium/FramelessScrollViewClient.h"
+#include "platform/scroll/FramelessScrollViewClient.h"
 
 namespace WebCore {
 
