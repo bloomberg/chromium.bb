@@ -31,6 +31,8 @@
 #include "config.h"
 #include "heap/Heap.h"
 
+#include "heap/ThreadState.h"
+
 #if OS(POSIX)
 #include <sys/mman.h>
 #include <unistd.h>
@@ -256,10 +258,12 @@ private:
 
 void Heap::init(intptr_t* startOfStack)
 {
+    ThreadState::init(startOfStack);
 }
 
 void Heap::shutdown()
 {
+    ThreadState::shutdown();
 }
 
 }

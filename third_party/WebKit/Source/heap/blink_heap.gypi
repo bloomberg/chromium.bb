@@ -34,6 +34,8 @@
       'Heap.cpp',
       'Heap.h',
       'HeapExport.h',
+      'ThreadState.cpp',
+      'ThreadState.h',
     ],
     'heap_test_files': [
       'HeapTest.cpp',
