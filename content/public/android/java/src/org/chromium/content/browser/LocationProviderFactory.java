@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,24 +12,43 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.chromium.base.ActivityStatus;
-import org.chromium.base.CalledByNative;
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
 
 import java.util.List;
-import java.util.concurrent.FutureTask;
 
 /**
- * Implements the Java side of LocationProviderAndroid.
- * Delegates all real functionality to the inner class.
- * See detailed documentation on
- * content/browser/geolocation/android_location_api_adapter.h.
- * Based on android.webkit.GeolocationService.java
+ * Factory to create a LocationProvider to allow us to inject
+ * a mock for tests.
  */
-class LocationProvider {
+public class LocationProviderFactory {
+    private static LocationProviderFactory.LocationProvider sProviderImpl;
 
-    // Log tag
-    private static final String TAG = "LocationProvider";
+    /**
+     * LocationProviderFactory.get() returns an instance of this interface.
+     */
+    public interface LocationProvider {
+        public void start(boolean gpsEnabled);
+        public void stop();
+        public boolean isRunning();
+    }
+
+    private LocationProviderFactory() {
+    }
+
+    @VisibleForTesting
+    public static void setLocationProviderImpl(LocationProviderFactory.LocationProvider provider) {
+        assert sProviderImpl == null;
+        sProviderImpl = provider;
+    }
+
+    public static LocationProvider get(Context context) {
+        if (sProviderImpl == null) {
+            sProviderImpl = new LocationProviderImpl(context);
+        }
+        return sProviderImpl;
+    }
 
     /**
      * This is the core of android location provider. It is a separate class for clarity
@@ -37,63 +56,42 @@ class LocationProvider {
      * ensures that the start/stop calls into this class are done in the UI thread.
      */
     private static class LocationProviderImpl
-            implements LocationListener, ActivityStatus.StateListener {
+            implements LocationListener, LocationProviderFactory.LocationProvider {
+
+        // Log tag
+        private static final String TAG = "LocationProvider";
 
         private Context mContext;
         private LocationManager mLocationManager;
         private boolean mIsRunning;
-        private boolean mShouldRunAfterActivityResume;
-        private boolean mIsGpsEnabled;
 
         LocationProviderImpl(Context context) {
             mContext = context;
-        }
-
-        @Override
-        public void onActivityStateChange(int state) {
-            if (state == ActivityStatus.PAUSED) {
-                mShouldRunAfterActivityResume |= mIsRunning;
-                unregisterFromLocationUpdates();
-            } else if (state == ActivityStatus.RESUMED) {
-                assert !mIsRunning;
-                if (mShouldRunAfterActivityResume) {
-                    registerForLocationUpdates();
-                }
-            }
         }
 
         /**
          * Start listening for location updates.
          * @param gpsEnabled Whether or not we're interested in high accuracy GPS.
          */
-        private void start(boolean gpsEnabled) {
-            if (!mIsRunning && !mShouldRunAfterActivityResume) {
-                // Currently idle so start listening to activity status changes.
-                ActivityStatus.registerStateListener(this);
-            }
-            mIsGpsEnabled = gpsEnabled;
-
-            if (ActivityStatus.getState() != ActivityStatus.RESUMED) {
-                mShouldRunAfterActivityResume = true;
-            } else {
-                unregisterFromLocationUpdates();
-                registerForLocationUpdates();
-            }
+        @Override
+        public void start(boolean gpsEnabled) {
+            unregisterFromLocationUpdates();
+            registerForLocationUpdates(gpsEnabled);
         }
 
         /**
          * Stop listening for location updates.
          */
-        private void stop() {
+        @Override
+        public void stop() {
             unregisterFromLocationUpdates();
-            ActivityStatus.unregisterStateListener(this);
-            mShouldRunAfterActivityResume = false;
         }
 
         /**
          * Returns true if we are currently listening for location updates, false if not.
          */
-        private boolean isRunning() {
+        @Override
+        public boolean isRunning() {
             return mIsRunning;
         }
 
@@ -108,7 +106,8 @@ class LocationProvider {
         }
 
         private void updateNewLocation(Location location) {
-            nativeNewLocationAvailable(location.getLatitude(), location.getLongitude(),
+            LocationProviderAdapter.newLocationAvailable(
+                    location.getLatitude(), location.getLongitude(),
                     location.getTime() / 1000.0,
                     location.hasAltitude(), location.getAltitude(),
                     location.hasAccuracy(), location.getAccuracy(),
@@ -140,7 +139,7 @@ class LocationProvider {
         /**
          * Registers this object with the location service.
          */
-        private void registerForLocationUpdates() {
+        private void registerForLocationUpdates(boolean isGpsEnabled) {
             ensureLocationManagerCreated();
             if (usePassiveOneShotLocation()) return;
 
@@ -153,7 +152,7 @@ class LocationProvider {
                 Criteria criteria = new Criteria();
                 mLocationManager.requestLocationUpdates(0, 0, criteria, this,
                         ThreadUtils.getUiThreadLooper());
-                if (mIsGpsEnabled) {
+                if (isGpsEnabled) {
                     criteria.setAccuracy(Criteria.ACCURACY_FINE);
                     mLocationManager.requestLocationUpdates(0, 0, criteria, this,
                             ThreadUtils.getUiThreadLooper());
@@ -205,65 +204,6 @@ class LocationProvider {
                     && providers.get(0).equals(LocationManager.PASSIVE_PROVIDER);
         }
     }
-
-    // Delegate handling the real work in the main thread.
-    private LocationProviderImpl mImpl;
-
-    private LocationProvider(Context context) {
-        mImpl = new LocationProviderImpl(context);
-    }
-
-    @CalledByNative
-    static LocationProvider create(Context context) {
-        return new LocationProvider(context);
-    }
-
-    /**
-     * Start listening for location updates until we're told to quit. May be
-     * called in any thread.
-     * @param gpsEnabled Whether or not we're interested in high accuracy GPS.
-     */
-    @CalledByNative
-    public boolean start(final boolean gpsEnabled) {
-        FutureTask<Void> task = new FutureTask<Void>(new Runnable() {
-            @Override
-            public void run() {
-                mImpl.start(gpsEnabled);
-            }
-        }, null);
-        ThreadUtils.runOnUiThread(task);
-        return true;
-    }
-
-    /**
-     * Stop listening for location updates. May be called in any thread.
-     */
-    @CalledByNative
-    public void stop() {
-        FutureTask<Void> task = new FutureTask<Void>(new Runnable() {
-            @Override
-            public void run() {
-                mImpl.stop();
-            }
-        }, null);
-        ThreadUtils.runOnUiThread(task);
-    }
-
-    /**
-     * Returns true if we are currently listening for location updates, false if not.
-     * Must be called only in the UI thread.
-     */
-    public boolean isRunning() {
-        assert ThreadUtils.runningOnUiThread();
-        return mImpl.isRunning();
-    }
-
-    // Native functions
-    public static native void nativeNewLocationAvailable(
-            double latitude, double longitude, double timeStamp,
-            boolean hasAltitude, double altitude,
-            boolean hasAccuracy, double accuracy,
-            boolean hasHeading, double heading,
-            boolean hasSpeed, double speed);
-    public static native void nativeNewErrorAvailable(String message);
 }
+
+

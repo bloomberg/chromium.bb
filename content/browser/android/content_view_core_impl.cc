@@ -107,7 +107,8 @@ ScopedJavaLocalRef<jobject> CreateJavaRect(
                                       static_cast<int>(rect.y()),
                                       static_cast<int>(rect.right()),
                                       static_cast<int>(rect.bottom())));
-};
+}
+
 }  // namespace
 
 // Enables a callback when the underlying WebContents is destroyed, to enable
@@ -173,7 +174,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
           kDefaultVSyncIntervalMicros * kDefaultBrowserCompositeVSyncFraction)),
       view_android_(view_android),
       window_android_(window_android),
-      device_orientation_(0) {
+      device_orientation_(0),
+      geolocation_needs_pause_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
@@ -263,6 +265,8 @@ void ContentViewCoreImpl::Observe(int type,
         }
       }
       SetFocusInternal(HasFocus());
+      if (geolocation_needs_pause_)
+        PauseOrResumeGeolocation(true);
       break;
     }
     case NOTIFICATION_RENDERER_PROCESS_CREATED: {
@@ -346,6 +350,26 @@ void ContentViewCoreImpl::PauseVideo() {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (host)
     host->Send(new ViewMsg_PauseVideo(host->GetRoutingID()));
+}
+
+void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {
+  geolocation_needs_pause_ = should_pause;
+  RenderViewHostImpl* rvh =
+      static_cast<RenderViewHostImpl*>(web_contents_->GetRenderViewHost());
+  if (rvh) {
+    scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher =
+        static_cast<RenderProcessHostImpl*>(
+            web_contents_->GetRenderProcessHost())->
+            geolocation_dispatcher_host();
+    if (geolocation_dispatcher.get()) {
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          base::Bind(&GeolocationDispatcherHost::PauseOrResume,
+          geolocation_dispatcher,
+          rvh->GetRoutingID(),
+          should_pause));
+      geolocation_needs_pause_ = false;
+    }
+  }
 }
 
 void ContentViewCoreImpl::OnTabCrashed() {

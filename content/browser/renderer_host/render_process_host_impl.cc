@@ -51,7 +51,6 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
-#include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -374,7 +373,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           supports_browser_plugin_(supports_browser_plugin),
           is_guest_(is_guest),
           gpu_observer_registered_(false),
-          power_monitor_broadcaster_(this) {
+          power_monitor_broadcaster_(this),
+          geolocation_dispatcher_host_(NULL) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -654,12 +654,13 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       g_browser_plugin_geolocation_context.Get() =
           new BrowserPluginGeolocationPermissionContext();
     }
-    AddFilter(GeolocationDispatcherHost::New(
-        GetID(), g_browser_plugin_geolocation_context.Get().get()));
+    geolocation_dispatcher_host_ = GeolocationDispatcherHost::New(
+        GetID(), g_browser_plugin_geolocation_context.Get().get());
   } else {
-    AddFilter(GeolocationDispatcherHost::New(
-        GetID(), browser_context->GetGeolocationPermissionContext()));
+    geolocation_dispatcher_host_ = GeolocationDispatcherHost::New(
+        GetID(), browser_context->GetGeolocationPermissionContext());
   }
+  AddFilter(geolocation_dispatcher_host_);
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
@@ -1439,6 +1440,7 @@ void RenderProcessHostImpl::Cleanup() {
     channel_.reset();
     gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
+    geolocation_dispatcher_host_ = NULL;
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
@@ -1739,6 +1741,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   channel_.reset();
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
+  geolocation_dispatcher_host_ = NULL;
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {

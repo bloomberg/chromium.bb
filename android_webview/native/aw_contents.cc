@@ -737,11 +737,13 @@ void AwContents::SetWindowVisibility(JNIEnv* env, jobject obj, bool visible) {
 void AwContents::SetIsPaused(JNIEnv* env, jobject obj, bool paused) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   browser_view_renderer_->SetIsPaused(paused);
-  if (paused) {
-    ContentViewCore* cvc =
-        ContentViewCore::FromWebContents(web_contents_.get());
-    if (cvc)
+  ContentViewCore* cvc =
+      ContentViewCore::FromWebContents(web_contents_.get());
+  if (cvc) {
+    cvc->PauseOrResumeGeolocation(paused);
+    if (paused) {
       cvc->PauseVideo();
+    }
   }
 }
 

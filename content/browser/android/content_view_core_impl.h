@@ -63,6 +63,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) OVERRIDE;
   virtual void PauseVideo() OVERRIDE;
+  virtual void PauseOrResumeGeolocation(bool should_pause) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -378,6 +379,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // The cache of device's current orientation set from Java side, this value
   // will be sent to Renderer once it is ready.
   int device_orientation_;
+
+  bool geolocation_needs_pause_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };
