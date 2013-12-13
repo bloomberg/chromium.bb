@@ -241,6 +241,42 @@
       <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_TOP_RIGHT" file="common/combobox_button_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_H_TOP_RIGHT" file="common/combobox_button_top_right_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_P_TOP_RIGHT" file="common/combobox_button_top_right_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_BOTTOM" file="common/combobox_button_bottom_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_BOTTOM" file="common/combobox_button_bottom_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_BOTTOM" file="common/combobox_button_bottom_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_BOTTOM_LEFT" file="common/combobox_button_bottom_left_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_BOTTOM_LEFT" file="common/combobox_button_bottom_left_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_BOTTOM_LEFT" file="common/combobox_button_bottom_left_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_BOTTOM_RIGHT" file="common/combobox_button_bottom_right_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_BOTTOM_RIGHT" file="common/combobox_button_bottom_right_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_BOTTOM_RIGHT" file="common/combobox_button_bottom_right_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_CENTER" file="common/combobox_button_center_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_CENTER" file="common/combobox_button_center_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_CENTER" file="common/combobox_button_center_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_LEFT" file="common/combobox_button_center_left_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_LEFT" file="common/combobox_button_center_left_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_LEFT" file="common/combobox_button_center_left_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_RIGHT" file="common/combobox_button_center_right_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_RIGHT" file="common/combobox_button_center_right_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_RIGHT" file="common/combobox_button_center_right_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_MENU_BOTTOM" file="common/combobox_button_menu_bottom_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_MENU_BOTTOM" file="common/combobox_button_menu_bottom_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_MENU_BOTTOM" file="common/combobox_button_menu_bottom_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_MENU_CENTER" file="common/combobox_button_menu_center_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_MENU_CENTER" file="common/combobox_button_menu_center_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_MENU_CENTER" file="common/combobox_button_menu_center_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_MENU_TOP" file="common/combobox_button_menu_top_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_MENU_TOP" file="common/combobox_button_menu_top_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_MENU_TOP" file="common/combobox_button_menu_top_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_TOP" file="common/combobox_button_top_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_TOP" file="common/combobox_button_top_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_TOP" file="common/combobox_button_top_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_TOP_LEFT" file="common/combobox_button_top_left_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_TOP_LEFT" file="common/combobox_button_top_left_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_TOP_LEFT" file="common/combobox_button_top_left_focused_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_TOP_RIGHT" file="common/combobox_button_top_right_focused.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_TOP_RIGHT" file="common/combobox_button_top_right_focused_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_TOP_RIGHT" file="common/combobox_button_top_right_focused_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_CENTER" file="content_bottom_center.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_LEFT_CORNER" file="content_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="content_bottom_right_corner.png" />
