@@ -126,7 +126,7 @@ class ListChangesTaskTest : public testing::Test,
               fake_drive_service_helper()->AddFile(
                   folder_id, "trashed file", "file content",
                   &deleted_file_id));
-    ASSERT_EQ(google_apis::HTTP_SUCCESS,
+    ASSERT_EQ(google_apis::HTTP_NO_CONTENT,
               fake_drive_service_helper()->DeleteResource(deleted_file_id));
   }
 
