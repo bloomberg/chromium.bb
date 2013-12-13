@@ -10,7 +10,7 @@ try {
     e = err;
 }
 
-shouldBeEqualToString("e.toString()", "InvalidAccessError: A parameter or an operation was not supported by the underlying object.");
+shouldBeEqualToString("e.toString()", "InvalidAccessError: Failed to execute 'rotateFromVector' on 'SVGMatrix': Arguments cannot be zero.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object DOMException]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object DOMExceptionPrototype]");
 shouldBeEqualToString("e.constructor.toString()", "function DOMException() { [native code] }");

@@ -106,12 +106,8 @@ public:
     SVGMatrix inverse(ExceptionState& exceptionState) const
     {
         AffineTransform transform = AffineTransform::inverse();
-        if (!isInvertible()) {
-            // FIXME: This used to have a more specific error message:
-            // "An attempt was made to invert a matrix that is not invertible."
-            // When switching to SVG2 style exceptions we lost this information.
-            exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
-        }
+        if (!isInvertible())
+            exceptionState.throwDOMException(InvalidStateError, "The matrix is not invertible.");
 
         return transform;
     }
@@ -119,7 +115,7 @@ public:
     SVGMatrix rotateFromVector(double x, double y, ExceptionState& exceptionState)
     {
         if (!x || !y)
-            exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+            exceptionState.throwDOMException(InvalidAccessError, "Arguments cannot be zero.");
 
         AffineTransform copy = *this;
         copy.rotateFromVector(x, y);

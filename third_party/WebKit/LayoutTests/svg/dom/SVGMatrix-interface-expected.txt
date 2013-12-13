@@ -192,7 +192,7 @@ PASS parseFloat(m.e) is 10
 PASS parseFloat(m.f) is 20
 
 Test throwing exception from inverse
-PASS m.inverse() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS m.inverse() threw exception InvalidStateError: Failed to execute 'inverse' on 'SVGMatrix': The matrix is not invertible..
 
 PASS successfullyParsed is true
 
