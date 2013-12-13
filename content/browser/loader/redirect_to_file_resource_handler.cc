@@ -155,6 +155,7 @@ void RedirectToFileResourceHandler::OnResponseCompleted(
     completed_during_write_ = true;
     completed_status_ = status;
     completed_security_info_ = security_info;
+    did_defer_ = true;
     *defer = true;
     return;
   }
