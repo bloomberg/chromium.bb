@@ -417,8 +417,7 @@ crbug.com/324045 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsRe
 crbug.com/324045 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
 crbug.com/324045 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
 
-# This test has no relevance to Windows XP. Maybe WontFix it?
-crbug.com/261277 [ XP ] fast/events/touch/gesture/pad-gesture-fling.html [ Failure ]
+crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Pass Failure ]
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
@@ -790,6 +789,8 @@ crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-acce
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
+
+crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
 # This test will pass once we implement SVG animation events using SVGDocumentExtensions
 crbug.com/323915 svg/animations/repeatn-remove-add-animation.html [ Failure ]
