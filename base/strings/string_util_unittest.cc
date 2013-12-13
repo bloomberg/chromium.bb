@@ -421,8 +421,10 @@ TEST(StringUtilTest, ConvertASCII) {
     std::wstring wide = ASCIIToWide(char_cases[i]);
     EXPECT_EQ(wchar_cases[i], wide);
 
+#if defined(OS_WIN)
     std::string ascii = WideToASCII(wchar_cases[i]);
     EXPECT_EQ(char_cases[i], ascii);
+#endif
   }
 
   EXPECT_FALSE(IsStringASCII("Google \x80Video"));
@@ -430,7 +432,9 @@ TEST(StringUtilTest, ConvertASCII) {
   // Convert empty strings.
   std::wstring wempty;
   std::string empty;
+#if defined(OS_WIN)
   EXPECT_EQ(empty, WideToASCII(wempty));
+#endif
   EXPECT_EQ(wempty, ASCIIToWide(empty));
 
   // Convert strings with an embedded NUL character.
@@ -440,10 +444,12 @@ TEST(StringUtilTest, ConvertASCII) {
   std::wstring wide_with_nul = ASCIIToWide(string_with_nul);
   EXPECT_EQ(static_cast<std::wstring::size_type>(length_with_nul),
             wide_with_nul.length());
+#if defined(OS_WIN)
   std::string narrow_with_nul = WideToASCII(wide_with_nul);
   EXPECT_EQ(static_cast<std::string::size_type>(length_with_nul),
             narrow_with_nul.length());
   EXPECT_EQ(0, string_with_nul.compare(narrow_with_nul));
+#endif
 }
 
 TEST(StringUtilTest, ToUpperASCII) {
@@ -1013,26 +1019,27 @@ TEST(StringUtilTest, LcpyTest) {
   // Test the normal case where we fit in our buffer.
   {
     char dst[10];
-    wchar_t wdst[10];
     EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "abcdefg", 8));
+
+#if defined(OS_WIN)
+    wchar_t wdst[10];
     EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"abcdefg", sizeof(wchar_t) * 8));
+#endif
   }
 
   // Test dst_size == 0, nothing should be written to |dst| and we should
   // have the equivalent of strlen(src).
   {
     char dst[2] = {1, 2};
-    wchar_t wdst[2] = {1, 2};
     EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", 0));
     EXPECT_EQ(1, dst[0]);
     EXPECT_EQ(2, dst[1]);
+
+#if defined(OS_WIN)
+    wchar_t wdst[2] = {1, 2};
     EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", 0));
-#if defined(WCHAR_T_IS_UNSIGNED)
-    EXPECT_EQ(1U, wdst[0]);
-    EXPECT_EQ(2U, wdst[1]);
-#else
     EXPECT_EQ(1, wdst[0]);
     EXPECT_EQ(2, wdst[1]);
 #endif
@@ -1041,31 +1048,37 @@ TEST(StringUtilTest, LcpyTest) {
   // Test the case were we _just_ competely fit including the null.
   {
     char dst[8];
-    wchar_t wdst[8];
     EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "abcdefg", 8));
+#if defined(OS_WIN)
+    wchar_t wdst[8];
     EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"abcdefg", sizeof(wchar_t) * 8));
+#endif
   }
 
   // Test the case were we we are one smaller, so we can't fit the null.
   {
     char dst[7];
-    wchar_t wdst[7];
     EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "abcdef", 7));
+#if defined(OS_WIN)
+    wchar_t wdst[7];
     EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"abcdef", sizeof(wchar_t) * 7));
+#endif
   }
 
   // Test the case were we are just too small.
   {
     char dst[3];
-    wchar_t wdst[3];
     EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "ab", 3));
+#if defined(OS_WIN)
+    wchar_t wdst[3];
     EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"ab", sizeof(wchar_t) * 3));
+#endif
   }
 }
 
