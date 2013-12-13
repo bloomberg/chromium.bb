@@ -36,9 +36,8 @@ class VideoCaptureDeviceMac;
 //  * Method -setCaptureDevice: must be called at least once with a device
 //    identifier from +deviceNames. Creates all the necessary AVFoundation
 //    objects on first call; it connects them ready for capture every time.
-//    It also configures a by default capture resolution of 1280x720@30fps. This
-//    method should not be called during capture (i.e. between -startCapture and
-//    -stopCapture).
+//    This method should not be called during capture (i.e. between
+//    -startCapture and -stopCapture).
 //  * -setCaptureWidth:height:frameRate: is called if a resolution or frame rate
 //    different than the by default one set by -setCaptureDevice: is needed.
 //    This method should not be called during capture. This method must be
@@ -58,8 +57,7 @@ class VideoCaptureDeviceMac;
     : NSObject<CrAVCaptureVideoDataOutputSampleBufferDelegate,
                PlatformVideoCapturingMac> {
  @private
-  // The following three attributes are set to default values 1280, 720, 30fps
-  // in -setCaptureDevice: or explicitly via -setCaptureHeight:width:frameRate:.
+  // The following attributes are set via -setCaptureHeight:width:frameRate:.
   int frameWidth_;
   int frameHeight_;
   int frameRate_;

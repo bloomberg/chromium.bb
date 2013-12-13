@@ -111,10 +111,7 @@
                         queue:dispatch_get_global_queue(
                             DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
   [captureSession_ addOutput:captureVideoDataOutput_];
-
-  // Set the default capture resolution. Needs to go after initialisation of
-  // |captureVideoDataOutput_|.
-  return [self setCaptureHeight:720 width:1280 frameRate:30];
+  return YES;
 }
 
 - (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate {
