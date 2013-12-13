@@ -28,8 +28,8 @@ def _import_OrderedDict():
   try:
     return collections.OrderedDict
   except AttributeError:
-    import ordered_dict
-    return ordered_dict.OrderedDict
+    import gyp.ordered_dict
+    return gyp.ordered_dict.OrderedDict
 OrderedDict = _import_OrderedDict()
 
 
