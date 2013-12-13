@@ -55,13 +55,10 @@ void ToggleMaximizedState(wm::WindowState* window_state) {
 namespace internal {
 
 WorkspaceEventHandler::WorkspaceEventHandler(aura::Window* owner)
-    : ToplevelWindowEventHandler(owner),
-      destroyed_(NULL) {
+    : ToplevelWindowEventHandler(owner) {
 }
 
 WorkspaceEventHandler::~WorkspaceEventHandler() {
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -91,14 +88,9 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
           event->IsOnlyLeftMouseButton() &&
           target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-        bool destroyed = false;
-        destroyed_ = &destroyed;
         ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
             ash::UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK);
         ToggleMaximizedState(target_state);
-        if (destroyed)
-          return;
-        destroyed_ = NULL;
       }
       multi_window_resize_controller_.Hide();
       HandleVerticalResizeDoubleClick(target_state, event);
@@ -122,7 +114,6 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       // TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP is counted once.
       TouchUMA::GetInstance()->RecordGestureAction(
           TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP);
-      // |this| may be destroyed from here.
       ToggleMaximizedState(wm::GetWindowState(target));
       event->StopPropagation();
       return;
