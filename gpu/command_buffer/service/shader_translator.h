@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "gpu/gpu_export.h"
-#include "third_party/angle_dx11/include/GLSLANG/ShaderLang.h"
+#include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 namespace gpu {
 namespace gles2 {

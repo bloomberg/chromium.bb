@@ -36,7 +36,6 @@ class DepsWhitelist(object):
       'testing/gtest',
       'third_party/WebKit',
       'third_party/angle',
-      'third_party/angle_dx11',
       ('third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/'
        'braille'),
       'third_party/freetype',

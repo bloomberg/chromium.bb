@@ -80,8 +80,8 @@ DEPOT_DEPS_NAME = {
     'viewvc': 'http://src.chromium.org/viewvc/blink?view=revision&revision='
   },
   'angle' : {
-    "src" : "src/third_party/angle_dx11",
-    "src_old" : "src/third_party/angle",
+    "src" : "src/third_party/angle",
+    "src_old" : "src/third_party/angle_dx11",
     "recurse" : True,
     "depends" : None,
     "from" : ['chromium'],

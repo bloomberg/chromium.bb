@@ -24,7 +24,7 @@
             '<(DEPTH)/gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
             '<(DEPTH)/skia/skia.gyp:skia',
             '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
-            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+            '<(angle_path)/src/build_angle.gyp:translator',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
           ],

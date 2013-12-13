@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/angle_dx11/include/GLSLANG/ShaderLang.h"
+#include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 int main(int argc, char** argv) {
   // On Android, AtExitManager is created in

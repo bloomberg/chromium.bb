@@ -57,7 +57,7 @@ include_rules = [
   "-tools",
 
   # Allow inclusion of third-party code:
-  "+third_party/angle_dx11",
+  "+third_party/angle",
   "+third_party/flac",
   "+third_party/libjingle",
   "+third_party/mozilla",

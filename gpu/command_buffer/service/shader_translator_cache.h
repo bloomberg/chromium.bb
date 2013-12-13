@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "gpu/command_buffer/service/shader_translator.h"
-#include "third_party/angle_dx11/include/GLSLANG/ShaderLang.h"
+#include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 namespace gpu {
 namespace gles2 {

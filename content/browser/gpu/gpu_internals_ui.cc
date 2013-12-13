@@ -28,7 +28,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/content_resources.h"
-#include "third_party/angle_dx11/src/common/version.h"
+#include "third_party/angle/src/common/version.h"
 
 namespace content {
 namespace {

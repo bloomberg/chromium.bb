@@ -1922,11 +1922,8 @@
       }],
     ],
 
-
-    # The path to the ANGLE library. TODO(apatrick): This is to help
-    # transition to a new version of ANGLE at a new location. After the
-    # transition is complete, this can be removed.
-    'angle_path': '<(DEPTH)/third_party/angle_dx11',
+    # The path to the ANGLE library.
+    'angle_path': '<(DEPTH)/third_party/angle',
 
     # List of default apps to install in new profiles.  The first list contains
     # the source files as found in svn.  The second list, used only for linux,

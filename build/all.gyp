@@ -164,7 +164,7 @@
             '../courgette/courgette.gyp:*',
             '../rlz/rlz.gyp:*',
             '../sandbox/sandbox.gyp:*',
-            '../third_party/angle_dx11/src/build_angle.gyp:*',
+            '<(angle_path)/src/build_angle.gyp:*',
             '../third_party/bspatch/bspatch.gyp:*',
           ],
         }, {
