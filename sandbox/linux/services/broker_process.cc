@@ -21,7 +21,6 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "base/process/process_metrics.h"
 #include "build/build_config.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
@@ -147,7 +146,6 @@ bool BrokerProcess::Init(bool (*sandbox_callback)(void)) {
     return false;
   }
 
-  DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
   int child_pid = fork();
   if (child_pid == -1) {
     close(socket_pair[0]);
