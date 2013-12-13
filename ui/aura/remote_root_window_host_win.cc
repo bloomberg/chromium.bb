@@ -217,6 +217,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnSetCursorPosAck)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktopDone,
                         OnDesktopActivated)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeCandidatePopupChanged,
+                        OnImeCandidatePopupChanged)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeCompositionChanged,
                         OnImeCompositionChanged)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeTextCommitted,
@@ -651,6 +653,14 @@ RemoteRootWindowHostWin::GetRemoteInputMethodPrivate() {
   ui::InputMethod* input_method = GetAshWindow()->GetProperty(
       aura::client::kRootWindowInputMethodKey);
   return ui::RemoteInputMethodPrivateWin::Get(input_method);
+}
+
+void RemoteRootWindowHostWin::OnImeCandidatePopupChanged(bool visible) {
+  ui::RemoteInputMethodPrivateWin* remote_input_method_private =
+      GetRemoteInputMethodPrivate();
+  if (!remote_input_method_private)
+    return;
+  remote_input_method_private->OnCandidatePopupChanged(visible);
 }
 
 void RemoteRootWindowHostWin::OnImeCompositionChanged(

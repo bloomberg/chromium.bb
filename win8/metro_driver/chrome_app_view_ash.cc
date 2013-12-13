@@ -24,6 +24,7 @@
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/file_picker_ash.h"
+#include "win8/metro_driver/ime/ime_popup_monitor.h"
 #include "win8/metro_driver/ime/input_source.h"
 #include "win8/metro_driver/ime/text_service.h"
 #include "win8/metro_driver/metro_driver.h"
@@ -639,6 +640,9 @@ ChromeAppViewAsh::Run() {
     OnInputSourceChanged();
   }
 
+  // Start receiving IME popup window notifications.
+  metro_driver::AddImePopupObserver(this);
+
   // And post the task that'll do the inner Metro message pumping to it.
   ui_loop_.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
   ui_loop_.Run();
@@ -650,6 +654,7 @@ ChromeAppViewAsh::Run() {
 IFACEMETHODIMP
 ChromeAppViewAsh::Uninitialize() {
   DVLOG(1) << __FUNCTION__;
+  metro_driver::RemoveImePopupObserver(this);
   input_source_.reset();
   text_service_.reset();
   window_ = nullptr;
@@ -841,6 +846,26 @@ void ChromeAppViewAsh::OnImeUpdateTextInputClient(
   if (!text_service_)
     return;
   text_service_->OnDocumentChanged(input_scopes, character_bounds);
+}
+
+void ChromeAppViewAsh::OnImePopupChanged(ImePopupObserver::EventType event) {
+  if (!ui_channel_)
+    return;
+  switch (event) {
+    case ImePopupObserver::kPopupShown:
+      ui_channel_->Send(new MetroViewerHostMsg_ImeCandidatePopupChanged(true));
+      return;
+    case ImePopupObserver::kPopupHidden:
+      ui_channel_->Send(new MetroViewerHostMsg_ImeCandidatePopupChanged(false));
+      return;
+    case ImePopupObserver::kPopupUpdated:
+      // TODO(kochi): Support this event for W3C IME API proposal.
+      // See crbug.com/238585.
+      return;
+    default:
+      NOTREACHED() << "unknown event type: " << event;
+      return;
+  }
 }
 
 void ChromeAppViewAsh::OnInputSourceChanged() {

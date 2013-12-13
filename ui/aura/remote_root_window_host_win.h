@@ -199,6 +199,7 @@ class AURA_EXPORT RemoteRootWindowHostWin
 
   // For Input Method support:
   ui::RemoteInputMethodPrivateWin* GetRemoteInputMethodPrivate();
+  void OnImeCandidatePopupChanged(bool visible);
   void OnImeCompositionChanged(
       const string16& text,
       int32 selection_start,

@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "ui/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"
+#include "win8/metro_driver/ime/ime_popup_observer.h"
 #include "win8/metro_driver/ime/input_source_observer.h"
 #include "win8/metro_driver/ime/text_service_delegate.h"
 
@@ -46,6 +47,7 @@ struct MetroViewerHostMsg_SaveAsDialogParams;
 
 class ChromeAppViewAsh
     : public mswr::RuntimeClass<winapp::Core::IFrameworkView>,
+      public metro_driver::ImePopupObserver,
       public metro_driver::InputSourceObserver,
       public metro_driver::TextServiceDelegate {
  public:
@@ -105,6 +107,9 @@ class ChromeAppViewAsh
 
 
  private:
+  // ImePopupObserver overrides.
+  virtual void OnImePopupChanged(ImePopupObserver::EventType event) OVERRIDE;
+
   // InputSourceObserver overrides.
   virtual void OnInputSourceChanged() OVERRIDE;
 
