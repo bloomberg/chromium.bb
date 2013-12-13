@@ -2993,9 +2993,32 @@ bind_output(struct wl_client *client,
 		wl_output_send_done(resource);
 }
 
+/* Move other outputs when one is removed so the space remains contiguos. */
+static void
+weston_compositor_remove_output(struct weston_compositor *compositor,
+				struct weston_output *remove_output)
+{
+	struct weston_output *output;
+	int offset = 0;
+
+	wl_list_for_each(output, &compositor->output_list, link) {
+		if (output == remove_output) {
+			offset = output->width;
+			continue;
+		}
+
+		if (offset > 0) {
+			weston_output_move(output,
+					   output->x - offset, output->y);
+			output->dirty = 1;
+		}
+	}
+}
+
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
+	weston_compositor_remove_output(output->compositor, output);
 	wl_list_remove(&output->link);
 
 	wl_signal_emit(&output->destroy_signal, output);

@@ -918,24 +918,10 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 static void
 x11_compositor_delete_window(struct x11_compositor *c, xcb_window_t window)
 {
-	struct x11_output *deleted_output, *output, *next;
-	int x_offset = 0;
+	struct x11_output *output;
 
-	deleted_output = x11_compositor_find_output(c, window);
-
-	wl_list_for_each_safe(output, next, &c->base.output_list, base.link) {
-		if (x_offset != 0) {
-			weston_output_move(&output->base,
-					   output->base.x - x_offset,
-					   output->base.y);
-			weston_output_damage(&output->base);
-		}
-
-		if (output == deleted_output) {
-			x_offset += output->base.width;
-			x11_output_destroy(&output->base);
-		}
-	}
+	output = x11_compositor_find_output(c, window);
+	x11_output_destroy(&output->base);
 
 	xcb_flush(c->conn);
 

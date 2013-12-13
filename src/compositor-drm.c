@@ -2222,7 +2222,6 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 	drmModeRes *resources;
 	struct drm_output *output, *next;
 	int x = 0, y = 0;
-	int x_offset = 0, y_offset = 0;
 	uint32_t connected = 0, disconnects = 0;
 	int i;
 
@@ -2272,17 +2271,10 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 	if (disconnects) {
 		wl_list_for_each_safe(output, next, &ec->base.output_list,
 				      base.link) {
-			if (x_offset != 0 || y_offset != 0) {
-				weston_output_move(&output->base,
-						 output->base.x - x_offset,
-						 output->base.y - y_offset);
-			}
-
 			if (disconnects & (1 << output->connector_id)) {
 				disconnects &= ~(1 << output->connector_id);
 				weston_log("connector %d disconnected\n",
 				       output->connector_id);
-				x_offset += output->base.width;
 				drm_output_destroy(&output->base);
 			}
 		}
