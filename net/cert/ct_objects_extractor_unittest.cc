@@ -123,6 +123,59 @@ TEST_F(CTObjectsExtractorTest, ComplementarySCTVerifies) {
   EXPECT_TRUE(log_->Verify(entry, *sct));
 }
 
+// Test that the extractor can parse OCSP responses.
+TEST_F(CTObjectsExtractorTest, ExtractSCTListFromOCSPResponse) {
+  std::string der_subject_cert(ct::GetDerEncodedFakeOCSPResponseCert());
+  scoped_refptr<X509Certificate> subject_cert =
+      X509Certificate::CreateFromBytes(der_subject_cert.data(),
+                                       der_subject_cert.length());
+  std::string der_issuer_cert(ct::GetDerEncodedFakeOCSPResponseIssuerCert());
+  scoped_refptr<X509Certificate> issuer_cert =
+      X509Certificate::CreateFromBytes(der_issuer_cert.data(),
+                                       der_issuer_cert.length());
+
+  std::string fake_sct_list = ct::GetFakeOCSPExtensionValue();
+  ASSERT_FALSE(fake_sct_list.empty());
+  std::string ocsp_response = ct::GetDerEncodedFakeOCSPResponse();
+
+  std::string extracted_sct_list;
+  EXPECT_TRUE(ct::ExtractSCTListFromOCSPResponse(
+      issuer_cert->os_cert_handle(), subject_cert->serial_number(),
+      ocsp_response, &extracted_sct_list));
+  EXPECT_EQ(extracted_sct_list, fake_sct_list);
+}
+
+// Test that the extractor honours serial number.
+TEST_F(CTObjectsExtractorTest, ExtractSCTListFromOCSPResponseMatchesSerial) {
+  std::string der_issuer_cert(ct::GetDerEncodedFakeOCSPResponseIssuerCert());
+  scoped_refptr<X509Certificate> issuer_cert =
+      X509Certificate::CreateFromBytes(der_issuer_cert.data(),
+                                       der_issuer_cert.length());
+
+  std::string ocsp_response = ct::GetDerEncodedFakeOCSPResponse();
+
+  std::string extracted_sct_list;
+  EXPECT_FALSE(ct::ExtractSCTListFromOCSPResponse(
+      issuer_cert->os_cert_handle(), test_cert_->serial_number(),
+      ocsp_response, &extracted_sct_list));
+}
+
+// Test that the extractor honours issuer ID.
+TEST_F(CTObjectsExtractorTest, ExtractSCTListFromOCSPResponseMatchesIssuer) {
+  std::string der_subject_cert(ct::GetDerEncodedFakeOCSPResponseCert());
+  scoped_refptr<X509Certificate> subject_cert =
+      X509Certificate::CreateFromBytes(der_subject_cert.data(),
+                                       der_subject_cert.length());
+
+  std::string ocsp_response = ct::GetDerEncodedFakeOCSPResponse();
+
+  std::string extracted_sct_list;
+  // Use test_cert_ for issuer - it is not the correct issuer of |subject_cert|.
+  EXPECT_FALSE(ct::ExtractSCTListFromOCSPResponse(
+      test_cert_->os_cert_handle(), subject_cert->serial_number(),
+      ocsp_response, &extracted_sct_list));
+}
+
 }  // namespace ct
 
 }  // namespace net

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -131,17 +132,14 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Public for ssl_client_socket_openssl_unittest.cc.
   virtual bool WasChannelIDSent() const;
 
-  // Returns true if the server sent Certificate Transparency SCTs
-  // via a TLS extension.
-  // Temporary glue for testing while the CT code hasn't landed.
-  // TODO(ekasper): expose received SCTs via SSLInfo instead.
-  virtual bool WereSignedCertTimestampsReceived() const;
-
  protected:
   virtual void set_channel_id_sent(bool channel_id_sent);
 
   virtual void set_signed_cert_timestamps_received(
       bool signed_cert_timestamps_received);
+
+  virtual void set_stapled_ocsp_response_received(
+      bool stapled_ocsp_response_received);
 
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
@@ -157,6 +155,14 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
       ServerBoundCertService* server_bound_cert_service);
 
  private:
+  // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
+                           ConnectSignedCertTimestampsEnabledTLSExtension);
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
+                           ConnectSignedCertTimestampsEnabledOCSP);
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
+                           ConnectSignedCertTimestampsDisabled);
+
   // True if NPN was responded to, independent of selecting SPDY or HTTP.
   bool was_npn_negotiated_;
   // True if NPN successfully negotiated SPDY.
@@ -167,6 +173,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   bool channel_id_sent_;
   // True if SCTs were received via a TLS extension.
   bool signed_cert_timestamps_received_;
+  // True if a stapled OCSP response was received.
+  bool stapled_ocsp_response_received_;
 };
 
 }  // namespace net

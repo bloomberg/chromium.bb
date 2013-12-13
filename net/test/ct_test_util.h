@@ -50,6 +50,18 @@ void GetPrecertSCT(scoped_refptr<SignedCertificateTimestamp>* sct);
 // Issuer key hash
 std::string GetDefaultIssuerKeyHash();
 
+// Fake OCSP response with an embedded SCT list.
+std::string GetDerEncodedFakeOCSPResponse();
+
+// The SCT list embedded in the response above.
+std::string GetFakeOCSPExtensionValue();
+
+// The cert the OCSP response is for.
+std::string GetDerEncodedFakeOCSPResponseCert();
+
+// The issuer of the previous cert.
+std::string GetDerEncodedFakeOCSPResponseIssuerCert();
+
 }  // namespace ct
 
 }  // namespace net

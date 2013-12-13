@@ -93,6 +93,7 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_objects_extractor.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/scoped_nss_types.h"
@@ -418,6 +419,7 @@ struct HandshakeState {
     server_cert_chain.Reset(NULL);
     server_cert = NULL;
     sct_list_from_tls_extension.clear();
+    stapled_ocsp_response.clear();
     resumed_handshake = false;
     ssl_connection_status = 0;
   }
@@ -449,6 +451,8 @@ struct HandshakeState {
   scoped_refptr<X509Certificate> server_cert;
   // SignedCertificateTimestampList received via TLS extension (RFC 6962).
   std::string sct_list_from_tls_extension;
+  // Stapled OCSP response received.
+  std::string stapled_ocsp_response;
 
   // True if the current handshake was the result of TLS session resumption.
   bool resumed_handshake;
@@ -760,10 +764,13 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
 
   // Updates the NSS and platform specific certificates.
   void UpdateServerCert();
-  // Update the nss_handshake_state_ with SignedCertificateTimestampLists
-  // received in the handshake, via a TLS extension or (to be implemented)
-  // OCSP stapling.
+  // Update the nss_handshake_state_ with the SignedCertificateTimestampList
+  // received in the handshake via a TLS extension.
   void UpdateSignedCertTimestamps();
+  // Update the OCSP response cache with the stapled response received in the
+  // handshake, and update nss_handshake_state_ with
+  // the SignedCertificateTimestampList received in the stapled OCSP response.
+  void UpdateStapledOCSPResponse();
   // Updates the nss_handshake_state_ with the negotiated security parameters.
   void UpdateConnectionStatus();
   // Record histograms for channel id support during full handshakes - resumed
@@ -1663,6 +1670,7 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
   RecordChannelIDSupportOnNSSTaskRunner();
   UpdateServerCert();
   UpdateSignedCertTimestamps();
+  UpdateStapledOCSPResponse();
   UpdateConnectionStatus();
   UpdateNextProto();
 
@@ -1834,43 +1842,6 @@ int SSLClientSocketNSS::Core::DoHandshake() {
       false_started_ = true;
       HandshakeSucceeded();
     }
-
-    // TODO(wtc): move this block of code to OwnAuthCertHandler.
-  #if defined(SSL_ENABLE_OCSP_STAPLING)
-    // TODO(agl): figure out how to plumb an OCSP response into the Mac
-    // system library and update IsOCSPStaplingSupported for Mac.
-    if (IsOCSPStaplingSupported()) {
-      const SECItemArray* ocsp_responses =
-          SSL_PeerStapledOCSPResponses(nss_fd_);
-      if (ocsp_responses->len) {
-  #if defined(OS_WIN)
-        if (nss_handshake_state_.server_cert) {
-          CRYPT_DATA_BLOB ocsp_response_blob;
-          ocsp_response_blob.cbData = ocsp_responses->items[0].len;
-          ocsp_response_blob.pbData = ocsp_responses->items[0].data;
-          BOOL ok = CertSetCertificateContextProperty(
-              nss_handshake_state_.server_cert->os_cert_handle(),
-              CERT_OCSP_RESPONSE_PROP_ID,
-              CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG,
-              &ocsp_response_blob);
-          if (!ok) {
-            VLOG(1) << "Failed to set OCSP response property: "
-                    << GetLastError();
-          }
-        }
-  #elif defined(USE_NSS)
-        CacheOCSPResponseFromSideChannelFunction cache_ocsp_response =
-            GetCacheOCSPResponseFromSideChannelFunction();
-
-        cache_ocsp_response(
-            CERT_GetDefaultCertDB(),
-            nss_handshake_state_.server_cert_chain[0], PR_Now(),
-            &ocsp_responses->items[0], NULL);
-  #endif
-      }
-    }
-  #endif
-    // Done!
   } else {
     PRErrorCode prerr = PR_GetError();
     net_error = HandleNSSError(prerr, true);
@@ -2434,6 +2405,46 @@ void SSLClientSocketNSS::Core::UpdateSignedCertTimestamps() {
   nss_handshake_state_.sct_list_from_tls_extension = std::string(
       reinterpret_cast<char*>(signed_cert_timestamps->data),
       signed_cert_timestamps->len);
+}
+
+void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
+  const SECItemArray* ocsp_responses =
+      SSL_PeerStapledOCSPResponses(nss_fd_);
+  if (!ocsp_responses || !ocsp_responses->len)
+    return;
+
+  nss_handshake_state_.stapled_ocsp_response = std::string(
+      reinterpret_cast<char*>(ocsp_responses->items[0].data),
+      ocsp_responses->items[0].len);
+
+  // TODO(agl): figure out how to plumb an OCSP response into the Mac
+  // system library and update IsOCSPStaplingSupported for Mac.
+  if (IsOCSPStaplingSupported()) {
+  #if defined(OS_WIN)
+    if (nss_handshake_state_.server_cert) {
+      CRYPT_DATA_BLOB ocsp_response_blob;
+      ocsp_response_blob.cbData = ocsp_responses->items[0].len;
+      ocsp_response_blob.pbData = ocsp_responses->items[0].data;
+      BOOL ok = CertSetCertificateContextProperty(
+          nss_handshake_state_.server_cert->os_cert_handle(),
+          CERT_OCSP_RESPONSE_PROP_ID,
+          CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG,
+          &ocsp_response_blob);
+      if (!ok) {
+        VLOG(1) << "Failed to set OCSP response property: "
+                << GetLastError();
+      }
+    }
+  #elif defined(USE_NSS)
+    CacheOCSPResponseFromSideChannelFunction cache_ocsp_response =
+        GetCacheOCSPResponseFromSideChannelFunction();
+
+    cache_ocsp_response(
+        CERT_GetDefaultCertDB(),
+        nss_handshake_state_.server_cert_chain[0], PR_Now(),
+        &ocsp_responses->items[0], NULL);
+  #endif
+  }  // IsOCSPStaplingSupported()
 }
 
 void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
@@ -3202,12 +3213,14 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
 
 // Added in NSS 3.15
 #ifdef SSL_ENABLE_OCSP_STAPLING
-  if (IsOCSPStaplingSupported()) {
-    rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_OCSP_STAPLING, PR_TRUE);
-    if (rv != SECSuccess) {
-      LogFailedNSSFunction(net_log_, "SSL_OptionSet",
-                           "SSL_ENABLE_OCSP_STAPLING");
-    }
+  // Request OCSP stapling even on platforms that don't support it, in
+  // order to extract Certificate Transparency information.
+  rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_OCSP_STAPLING,
+                     (IsOCSPStaplingSupported() ||
+                      ssl_config_.signed_cert_timestamps_enabled));
+  if (rv != SECSuccess) {
+    LogFailedNSSFunction(net_log_, "SSL_OptionSet",
+                         "SSL_ENABLE_OCSP_STAPLING");
   }
 #endif
 
@@ -3365,6 +3378,8 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
   set_channel_id_sent(core_->state().channel_id_sent);
   set_signed_cert_timestamps_received(
       !core_->state().sct_list_from_tls_extension.empty());
+  set_stapled_ocsp_response_received(
+      !core_->state().stapled_ocsp_response.empty());
 
   LeaveFunction(result);
   return result;
@@ -3522,10 +3537,12 @@ void SSLClientSocketNSS::VerifyCT() {
   // external communication.
   int result = cert_transparency_verifier_->Verify(
       server_cert_verify_result_.verified_cert,
-      std::string(), // SCT list from OCSP response
+      core_->state().stapled_ocsp_response,
       core_->state().sct_list_from_tls_extension,
       &ct_verify_result_,
       net_log_);
+  // TODO(ekasper): wipe stapled_ocsp_response and sct_list_from_tls_extension
+  // from the state after verification is complete, to conserve memory.
 
   VLOG(1) << "CT Verification complete: result " << result
           << " Invalid scts: " << ct_verify_result_.invalid_scts.size()
