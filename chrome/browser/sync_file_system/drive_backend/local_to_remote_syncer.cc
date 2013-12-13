@@ -309,7 +309,7 @@ void LocalToRemoteSyncer::DeleteRemoteFile(
   DCHECK(remote_file_tracker_->has_synced_details());
 
   sync_action_ = SYNC_ACTION_DELETED;
-  drive_service()->TrashResource(
+  drive_service()->DeleteResource(
       remote_file_tracker_->file_id(),
       remote_file_tracker_->synced_details().etag(),
       base::Bind(&LocalToRemoteSyncer::DidDeleteRemoteFile,
