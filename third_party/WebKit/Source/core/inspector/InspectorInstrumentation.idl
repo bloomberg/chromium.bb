@@ -452,7 +452,6 @@ interface InspectorConsoleInstrumentation {
 
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/inspector/ScriptProfile.h"
 
     // FIXME: Convert to ScriptArguments to match non-worker context.
     // Use the same implementation as above as a similar method dispatched on Page.
@@ -484,8 +483,11 @@ interface InspectorConsoleInstrumentation {
     [Console, Inline=FastReturn]
     void consoleTimelineEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
-    [Profiler]
-    void addProfile(ExecutionContext* context, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);
+    [Profiler, Inline=FastReturn]
+    void consoleProfile(ExecutionContext* context, const String& title, ScriptState* state);
+
+    [Profiler, Inline=FastReturn]
+    void consoleProfileEnd(ExecutionContext* context, const String& title);
 }
 
 interface InspectorDatabaseInstrumentation {
@@ -511,9 +513,6 @@ interface InspectorOverrides {
 
     [Page, Inline=FastReturn]
     bool overrideTextAutosizing(Page* page, [DefaultReturn] bool textAutosizing);
-
-    [Profiler]
-    String getCurrentUserInitiatedProfileName(ExecutionContext* context, bool incrementProfileNumber);
 }
 
 

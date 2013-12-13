@@ -30,13 +30,10 @@
 #include "core/frame/Console.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptProfiler.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/inspector/ScriptProfile.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/frame/Frame.h"
@@ -78,11 +75,6 @@ void Console::reportMessageToClient(MessageLevel level, const String& message, P
         stackTrace = PageConsole::formatStackTraceString(message, fullStack);
     }
     m_frame->page()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
-}
-
-bool Console::profilerEnabled()
-{
-    return InspectorInstrumentation::profilerEnabled(m_frame->page());
 }
 
 PassRefPtr<MemoryInfo> Console::memory() const

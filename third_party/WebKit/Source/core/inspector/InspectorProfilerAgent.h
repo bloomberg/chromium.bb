@@ -47,6 +47,7 @@ class InspectorOverlay;
 class InstrumentingAgents;
 class ScriptCallStack;
 class ScriptProfile;
+class ScriptState;
 
 typedef String ErrorString;
 
@@ -56,17 +57,14 @@ public:
     static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
-    void addProfile(PassRefPtr<ScriptProfile> prpProfile, PassRefPtr<ScriptCallStack>);
-    void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
+    void consoleProfile(const String& title, ScriptState*);
+    void consoleProfileEnd(const String& title);
 
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void setSamplingInterval(ErrorString*, int);
     virtual void start(ErrorString* = 0);
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
-
-    bool enabled();
-    String getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false);
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
@@ -79,9 +77,11 @@ public:
 
 private:
     InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
+    bool enabled();
     void doEnable();
-    void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
+    String getCurrentUserInitiatedProfileName(bool incrementProfileNumber);
+    void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
 
     InspectorConsoleAgent* m_consoleAgent;
     InjectedScriptManager* m_injectedScriptManager;

@@ -77,7 +77,6 @@ protected:
     virtual ~ConsoleBase();
     virtual ExecutionContext* context() = 0;
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) = 0;
-    virtual bool profilerEnabled() = 0;
 
 private:
     virtual void refConsole() = 0;

@@ -30,11 +30,9 @@
 #include "core/frame/Console.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptProfiler.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptProfile.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -115,37 +113,12 @@ void ConsoleBase::markTimeline(const String& title)
 
 void ConsoleBase::profile(ScriptState* state, const String& title)
 {
-    ExecutionContext* context = this->context();
-    if (!context)
-        return;
-
-    // FIXME: log a console message when profiling is disabled.
-    if (!profilerEnabled())
-        return;
-
-    String resolvedTitle = title;
-    if (title.isNull()) // no title so give it the next user initiated profile title.
-        resolvedTitle = InspectorInstrumentation::getCurrentUserInitiatedProfileName(context, true);
-
-    ScriptProfiler::start(resolvedTitle);
-    InspectorInstrumentation::addMessageToConsole(context, ConsoleAPIMessageSource, ProfileMessageType, DebugMessageLevel, resolvedTitle, String(), 0, 0, state);
+    InspectorInstrumentation::consoleProfile(context(), title, state);
 }
 
 void ConsoleBase::profileEnd(ScriptState* state, const String& title)
 {
-    ExecutionContext* context = this->context();
-    if (!context)
-        return;
-
-    if (!profilerEnabled())
-        return;
-
-    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(title);
-    if (!profile)
-        return;
-
-    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(1));
-    InspectorInstrumentation::addProfile(context, profile, callStack);
+    InspectorInstrumentation::consoleProfileEnd(context(), title);
 }
 
 void ConsoleBase::time(const String& title)

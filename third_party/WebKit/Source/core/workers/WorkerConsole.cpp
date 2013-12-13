@@ -31,17 +31,10 @@
 
 #include "core/workers/WorkerConsole.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptProfiler.h"
-#include "core/inspector/InspectorConsoleInstrumentation.h"
-#include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/inspector/ScriptProfile.h"
-#include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/TraceEvent.h"
 
 
 namespace WebCore {
@@ -67,11 +60,6 @@ ExecutionContext* WorkerConsole::context()
     if (!m_scope)
         return 0;
     return m_scope->executionContext();
-}
-
-bool WorkerConsole::profilerEnabled()
-{
-    return InspectorInstrumentation::profilerEnabled(m_scope);
 }
 
 // FIXME: add memory getter

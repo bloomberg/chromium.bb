@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
@@ -85,20 +86,31 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 {
 }
 
-void InspectorProfilerAgent::addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL)
+void InspectorProfilerAgent::consoleProfile(const String& title, ScriptState* state)
 {
-    RefPtr<ScriptProfile> profile = prpProfile;
-    if (!m_keepAliveProfile)
-        m_keepAliveProfile = profile;
-    if (m_frontend && m_state->getBoolean(ProfilerAgentState::profilerEnabled))
-        m_frontend->addProfileHeader(createCPUProfile(*profile), profile->title());
-    addProfileFinishedMessageToConsole(profile, lineNumber, sourceURL);
+    ASSERT(m_frontend && enabled());
+    String resolvedTitle = title;
+    if (title.isNull()) // no title so give it the next user initiated profile title.
+        resolvedTitle = getCurrentUserInitiatedProfileName(true);
+
+    ScriptProfiler::start(resolvedTitle);
+    m_consoleAgent->addMessageToConsole(ConsoleAPIMessageSource, ProfileMessageType, DebugMessageLevel, resolvedTitle, String(), 0, 0, state);
 }
 
-void InspectorProfilerAgent::addProfile(PassRefPtr<ScriptProfile> prpProfile, PassRefPtr<ScriptCallStack> callStack)
+void InspectorProfilerAgent::consoleProfileEnd(const String& title)
 {
+    ASSERT(m_frontend && enabled());
+    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(title);
+    if (!profile)
+        return;
+
+    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(1));
+
+    if (!m_keepAliveProfile)
+        m_keepAliveProfile = profile;
+    m_frontend->addProfileHeader(createCPUProfile(*profile), profile->title());
     const ScriptCallFrame& lastCaller = callStack->at(0);
-    addProfile(prpProfile, lastCaller.lineNumber(), lastCaller.sourceURL());
+    addProfileFinishedMessageToConsole(profile, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
 void InspectorProfilerAgent::addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL)
@@ -210,7 +222,7 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
     m_recordingCPUProfile = false;
     if (m_overlay)
         m_overlay->finishedRecordingProfile();
-    String title = getCurrentUserInitiatedProfileName();
+    String title = getCurrentUserInitiatedProfileName(false);
     RefPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(title);
     if (scriptProfile && profile) {
         *profile = createCPUProfile(*scriptProfile);

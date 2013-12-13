@@ -131,13 +131,6 @@ void willDestroyResourceImpl(Resource* cachedResource)
     }
 }
 
-bool profilerEnabledImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
-        return profilerAgent->enabled();
-    return false;
-}
-
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
