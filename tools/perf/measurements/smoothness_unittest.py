@@ -52,6 +52,10 @@ class SmoothnessUnitTest(
     self.assertEquals(0, len(results.failures))
 
     for category in timeline.TimelineThreadCategories.values():
-      value_name = "thread_time_" + category + "_running_percentage"
-      thread_time = results.FindAllPageSpecificValuesNamed(value_name)
-      self.assertEquals(len(thread_time), 1)
+      clock_time_name = timeline.ThreadTimePercentageName(category)
+      clock_time = results.FindAllPageSpecificValuesNamed(clock_time_name)
+      self.assertEquals(len(clock_time), 1)
+
+      cpu_time_name = timeline.ThreadCPUTimePercentageName(category)
+      cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
+      self.assertEquals(len(cpu_time), 1)

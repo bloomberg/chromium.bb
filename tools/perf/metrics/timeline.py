@@ -111,6 +111,12 @@ TimelineThreadCategories =  {
   "CompositorRasterWorker": "raster"
 }
 
+def ThreadTimePercentageName(category):
+  return "thread_" + category + "_clock_time_percentage"
+
+def ThreadCPUTimePercentageName(category):
+  return "thread_" + category + "_cpu_time_percentage"
+
 class ThreadTimesTimelineMetric(TimelineMetric):
   def __init__(self):
     super(ThreadTimesTimelineMetric, self).__init__(TRACING_MODE)
@@ -118,8 +124,11 @@ class ThreadTimesTimelineMetric(TimelineMetric):
   def AddResults(self, tab, results):
     # Default each category to zero for consistant results.
     category_clock_times = collections.defaultdict(float)
+    category_cpu_times = collections.defaultdict(float)
+
     for category in TimelineThreadCategories.values():
       category_clock_times[category] = 0
+      category_cpu_times[category] = 0
 
     # Add up thread time for all threads we care about.
     for thread in self._model.GetAllThreads():
@@ -135,8 +144,10 @@ class ThreadTimesTimelineMetric(TimelineMetric):
         thread_category = "other"
 
       # Sum and add top-level slice durations
-      clock_time = sum([event.duration for event in thread.toplevel_slices])
-      category_clock_times[thread_category] += clock_time
+      clock = sum([event.duration for event in thread.toplevel_slices])
+      category_clock_times[thread_category] += clock
+      cpu = sum([event.thread_duration for event in thread.toplevel_slices])
+      category_cpu_times[thread_category] += cpu
 
     # Now report each category. We report the percentage of time that
     # the thread is running rather than absolute time, to represent how
@@ -145,6 +156,12 @@ class ThreadTimesTimelineMetric(TimelineMetric):
     # in the same time period). It would be nice if we could correct
     # for that somehow.
     for category, category_time in category_clock_times.iteritems():
-      report_name = "thread_time_" + category + "_running_percentage"
+      report_name = ThreadTimePercentageName(category)
+      time_as_percentage = (category_time / self._model.bounds.bounds) * 100
+      results.Add(report_name, '%', time_as_percentage)
+
+    # Do the same for CPU (scheduled) time.
+    for category, category_time in category_cpu_times.iteritems():
+      report_name = ThreadCPUTimePercentageName(category)
       time_as_percentage = (category_time / self._model.bounds.bounds) * 100
       results.Add(report_name, '%', time_as_percentage)
