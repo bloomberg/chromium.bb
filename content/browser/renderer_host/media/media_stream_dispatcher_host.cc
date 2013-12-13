@@ -131,8 +131,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
   DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStream("
            << render_view_id << ", "
            << page_request_id << ", ["
-           << " audio:" << components.audio_type
-           << " video:" << components.video_type
+           << " audio:" << components.audio_requested
+           << " video:" << components.video_requested
            << " ], "
            << security_origin.spec() << ")";
 

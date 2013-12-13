@@ -99,16 +99,15 @@ class MediaStreamManagerTest : public ::testing::Test {
     const int render_process_id = 1;
     const int render_view_id = 1;
     const int page_request_id = 1;
-    StreamOptions components(MEDIA_DEVICE_AUDIO_CAPTURE,
-                             MEDIA_DEVICE_VIDEO_CAPTURE);
     const GURL security_origin;
     MediaStreamManager::MediaRequestResponseCallback callback =
         base::Bind(&MediaStreamManagerTest::ResponseCallback,
                    base::Unretained(this), index);
+    StreamOptions options(true, true);
     return media_stream_manager_->MakeMediaAccessRequest(render_process_id,
                                                          render_view_id,
                                                          page_request_id,
-                                                         components,
+                                                         options,
                                                          security_origin,
                                                          callback);
   }
@@ -147,9 +146,8 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   int render_process_id = 2;
   int render_view_id = 2;
   int page_request_id = 2;
-  StreamOptions components(MEDIA_DEVICE_AUDIO_CAPTURE,
-                           MEDIA_DEVICE_VIDEO_CAPTURE);
   GURL security_origin;
+  StreamOptions options(true, true);
   MediaStreamManager::MediaRequestResponseCallback callback =
       base::Bind(&MediaStreamManagerTest::ResponseCallback,
                  base::Unretained(this), 1);
@@ -157,7 +155,7 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
       render_process_id,
       render_view_id,
       page_request_id,
-      components,
+      options,
       security_origin,
       callback);
 

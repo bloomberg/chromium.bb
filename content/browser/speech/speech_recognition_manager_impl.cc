@@ -197,7 +197,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
         context.render_process_id,
         context.render_view_id,
         context.request_id,
-        StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
+        StreamOptions(true, false),
         GURL(context.context_name),
         base::Bind(
             &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,

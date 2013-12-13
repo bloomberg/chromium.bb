@@ -86,7 +86,7 @@ class CONTENT_EXPORT MediaStreamManager
       int render_process_id,
       int render_view_id,
       int page_request_id,
-      const StreamOptions& components,
+      const StreamOptions& options,
       const GURL& security_origin,
       const MediaRequestResponseCallback& callback);
 
@@ -236,11 +236,20 @@ class CONTENT_EXPORT MediaStreamManager
   // Prepare the request with label |label| by starting device enumeration if
   // needed.
   void SetupRequest(const std::string& label);
+  // Prepare |request| of type MEDIA_DEVICE_AUDIO_CAPTURE and/or
+  // MEDIA_DEVICE_VIDEO_CAPTURE for being posted to the UI by parsing
+  // StreamOptions::Constraints for requested device IDs.
+  bool SetupDeviceCaptureRequest(DeviceRequest* request);
+  // Prepare |request| of type MEDIA_TAB_AUDIO_CAPTURE and/or
+  // MEDIA_TAB_VIDEO_CAPTURE for being posted to the UI by parsing
+  // StreamOptions::Constraints for requested tab capture IDs.
   bool SetupTabCaptureRequest(DeviceRequest* request);
+  // Prepare |request| of type MEDIA_LOOPBACK_AUDIO_CAPTURE and/or
+  // MEDIA_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
+  // StreamOptions::Constraints for the requested desktop ID.
   bool SetupScreenCaptureRequest(DeviceRequest* request);
   // Called when a request has been setup and devices have been enumerated if
-  // needed. If a certain source id has been requested, the source id is
-  // translated to a real device id before the request is posted to UI.
+  // needed.
   void PostRequestToUI(const std::string& label, DeviceRequest* request);
   // Returns true if a device with |device_id| has already been requested with
   // a render procecss_id and render_view_id and type equal to the the values
@@ -279,7 +288,12 @@ class CONTENT_EXPORT MediaStreamManager
   void StartMonitoring();
   void StopMonitoring();
 
-  bool TranslateRequestedSourceIdToDeviceId(DeviceRequest* request);
+  // Finds the requested device id from constraints. The requested device type
+  // must be MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
+  bool GetRequestedDeviceCaptureId(const DeviceRequest* request,
+                                   MediaStreamType type,
+                                   std::string* device_id) const;
+
   void TranslateDeviceIdToSourceId(DeviceRequest* request,
                                    MediaStreamDevice* device);
 
@@ -291,7 +305,7 @@ class CONTENT_EXPORT MediaStreamManager
       ResourceContext* rc,
       const GURL& security_origin,
       const std::string& source_id,
-      std::string* device_id);
+      std::string* device_id) const;
 
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
   scoped_ptr<base::Thread> device_thread_;

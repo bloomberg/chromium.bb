@@ -29,6 +29,10 @@ void GetNativeMediaConstraints(
         new_constraint.key == kMediaStreamSourceId)
       continue;
 
+    // Ignore sourceId constraint since that has nothing to do with webrtc.
+    if (new_constraint.key == kMediaStreamSourceInfoId)
+      continue;
+
     // Ignore internal constraints set by JS.
     if (StartsWithASCII(
         new_constraint.key,

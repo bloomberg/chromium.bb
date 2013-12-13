@@ -18,15 +18,79 @@ const char kMediaStreamSourceSystem[] = "system";
 const char kMediaStreamRenderToAssociatedSink[] =
     "chromeRenderToAssociatedSink";
 
-StreamOptions::StreamOptions()
-    : audio_type(MEDIA_NO_SERVICE),
-      video_type(MEDIA_NO_SERVICE) {}
+namespace {
 
-StreamOptions::StreamOptions(MediaStreamType audio_type,
-                             MediaStreamType video_type)
-    : audio_type(audio_type), video_type(video_type) {
-  DCHECK(IsAudioMediaType(audio_type) || audio_type == MEDIA_NO_SERVICE);
-  DCHECK(IsVideoMediaType(video_type) || video_type == MEDIA_NO_SERVICE);
+bool GetFirstConstraintByName(const StreamOptions::Constraints& constraints,
+                              const std::string& name,
+                              std::string* value) {
+  for (StreamOptions::Constraints::const_iterator it = constraints.begin();
+      it != constraints.end(); ++it ) {
+    if (it->name == name) {
+      *value = it->value;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool GetFirstConstraintByName(const StreamOptions::Constraints& mandatory,
+                              const StreamOptions::Constraints& optional,
+                              const std::string& name,
+                              std::string* value,
+                              bool* is_mandatory) {
+  if (GetFirstConstraintByName(mandatory, name, value)) {
+      if (is_mandatory)
+        *is_mandatory = true;
+      return true;
+    }
+    if (is_mandatory)
+      *is_mandatory = false;
+    return GetFirstConstraintByName(optional, name, value);
+}
+
+} // namespace
+
+StreamOptions::StreamOptions()
+    : audio_requested(false),
+      video_requested(false) {}
+
+StreamOptions::StreamOptions(bool request_audio, bool request_video)
+    :  audio_requested(request_audio), video_requested(request_video) {
+}
+
+StreamOptions::~StreamOptions() {}
+
+StreamOptions::Constraint::Constraint() {}
+
+StreamOptions::Constraint::Constraint(const std::string& name,
+                                      const std::string& value)
+    : name(name), value(value) {
+}
+
+bool StreamOptions::GetFirstAudioConstraintByName(const std::string& name,
+                                                  std::string* value,
+                                                  bool* is_mandatory) const {
+  return GetFirstConstraintByName(mandatory_audio, optional_audio, name, value,
+                                  is_mandatory);
+}
+
+bool StreamOptions::GetFirstVideoConstraintByName(const std::string& name,
+                                                  std::string* value,
+                                                  bool* is_mandatory) const {
+  return GetFirstConstraintByName(mandatory_video, optional_video, name, value,
+                                  is_mandatory);
+}
+
+// static
+void StreamOptions::GetConstraintsByName(
+    const StreamOptions::Constraints& constraints,
+    const std::string& name,
+    std::vector<std::string>* values) {
+  for (StreamOptions::Constraints::const_iterator it = constraints.begin();
+      it != constraints.end(); ++it ) {
+    if (it->name == name)
+      values->push_back(it->value);
+  }
 }
 
 // static

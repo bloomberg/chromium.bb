@@ -28,20 +28,60 @@ CONTENT_EXPORT extern const char kMediaStreamSourceSystem[];
 // device belongs to.
 CONTENT_EXPORT extern const char kMediaStreamRenderToAssociatedSink[];
 
-// StreamOptions is a Chromium representation of WebKit's
-// WebUserMediaRequest Options. It describes the components
-// in a request for a new media stream.
-struct CONTENT_EXPORT StreamOptions {
+// StreamOptions is a Chromium representation of constraints
+// used in WebUserMediaRequest.
+// It describes properties requested by JS in a request for a new
+// media stream.
+class CONTENT_EXPORT StreamOptions {
+ public:
   StreamOptions();
-  StreamOptions(MediaStreamType audio_type, MediaStreamType video_type);
+  StreamOptions(bool request_audio, bool request_video);
+  ~StreamOptions();
 
-  // If not NO_SERVICE, the stream shall contain an audio input stream.
-  MediaStreamType audio_type;
-  std::string audio_device_id;
+  struct CONTENT_EXPORT Constraint {
+    Constraint();
+    Constraint(const std::string& name,
+               const std::string& value);
 
-  // If not NO_SERVICE, the stream shall contain a video input stream.
-  MediaStreamType video_type;
-  std::string video_device_id;
+    std::string name;
+    std::string value;
+  };
+  typedef std::vector<Constraint> Constraints;
+
+  bool audio_requested;
+  Constraints mandatory_audio;
+  Constraints optional_audio;
+
+  bool video_requested;
+  Constraints mandatory_video;
+  Constraints optional_video;
+
+  // Fetches |value| from the first audio constraint with a name that matches
+  // |name| from |mandatory_audio| and |optional_audio|. First mandatory
+  // constraints are searched, then optional.
+  // |is_mandatory| may be NULL but if it is provided, it is set
+  // to true if the found constraint is mandatory.
+  // Returns false if no constraint is found.
+  bool GetFirstAudioConstraintByName(const std::string& name,
+                                     std::string* value,
+                                     bool* is_mandatory) const;
+
+  // Fetches |value| from the first video constraint with a name that matches
+  // |name| from |mandatory_video| and |optional_video|. First mandatory
+  // constraints are searched, then optional.
+  // |is_mandatory| may be NULL but if it is provided, it is set
+  // to true if the found constraint is mandatory.
+  // Returns false if no constraint is found.
+  bool GetFirstVideoConstraintByName(const std::string& name,
+                                     std::string* value,
+                                     bool* is_mandatory) const;
+
+  // Fetches |values| from all constraint with a name that matches |name|
+  // from |constraints|.
+  static void GetConstraintsByName(
+      const StreamOptions::Constraints& constraints,
+      const std::string& name,
+      std::vector<std::string>* values);
 };
 
 // StreamDeviceInfo describes information about a device.

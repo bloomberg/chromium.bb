@@ -95,7 +95,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
   int GetNextIpcIdForTest() { return next_ipc_id_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStreamForDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);

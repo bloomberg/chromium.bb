@@ -32,19 +32,19 @@ void MockMediaStreamDispatcher::GenerateStream(
   audio_array_.clear();
   video_array_.clear();
 
-  if (IsAudioMediaType(components.audio_type)) {
+  if (components.audio_requested) {
     StreamDeviceInfo audio;
     audio.device.id = "audio_device_id" + base::IntToString(session_id_);
     audio.device.name = "microphone";
-    audio.device.type = components.audio_type;
+    audio.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
     audio.session_id = session_id_;
     audio_array_.push_back(audio);
   }
-  if (IsVideoMediaType(components.video_type)) {
+  if (components.video_requested) {
     StreamDeviceInfo video;
     video.device.id = "video_device_id" + base::IntToString(session_id_);
     video.device.name = "usb video camera";
-    video.device.type = components.video_type;
+    video.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
     video.session_id = session_id_;
     video_array_.push_back(video);
   }

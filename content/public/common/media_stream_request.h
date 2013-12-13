@@ -149,9 +149,6 @@ typedef std::vector<MediaStreamDevice> MediaStreamDevices;
 typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
 
 // Represents a request for media streams (audio/video).
-// It looks like the last 4 parameters should use StreamOptions instead, but
-// StreamOption depends on media_stream_request.h because it needs
-// MediaStreamDevice.
 // TODO(vrk): Decouple MediaStreamDevice from this header file so that
 // media_stream_options.h no longer depends on this file.
 // TODO(vrk,justinlin,wjia): Figure out a way to share this code cleanly between
