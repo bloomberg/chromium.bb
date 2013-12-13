@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/debug/leak_annotations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
@@ -104,8 +105,13 @@ void TtsPlatformImplLinux::Initialize() {
   if (!libspeechd_loader_.Load("libspeechd.so.2"))
     return;
 
-  conn_ = libspeechd_loader_.spd_open(
-      "chrome", "extension_api", NULL, SPD_MODE_THREADED);
+  {
+    // spd_open has memory leaks which are hard to suppress.
+    // http://crbug.com/317360
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    conn_ = libspeechd_loader_.spd_open(
+        "chrome", "extension_api", NULL, SPD_MODE_THREADED);
+  }
   if (!conn_)
     return;
 
