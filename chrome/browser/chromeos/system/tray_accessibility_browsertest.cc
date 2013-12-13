@@ -58,6 +58,9 @@ class TrayAccessibilityTest
   TrayAccessibilityTest() {}
   virtual ~TrayAccessibilityTest() {}
 
+  // The profile which should be used by tese tests.
+  Profile* GetProfile() { return ProfileManager::GetActiveUserProfile(); }
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
@@ -71,10 +74,8 @@ class TrayAccessibilityTest
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    AccessibilityManager::Get()->SetProfileForTest(
-        ProfileManager::GetDefaultProfile());
-    MagnificationManager::Get()->SetProfileForTest(
-        ProfileManager::GetDefaultProfile());
+    AccessibilityManager::Get()->SetProfileForTest(GetProfile());
+    MagnificationManager::Get()->SetProfileForTest(GetProfile());
   }
 
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
@@ -85,8 +86,7 @@ class TrayAccessibilityTest
 
   void SetShowAccessibilityOptionsInSystemTrayMenu(bool value) {
     if (GetParam() == PREF_SERVICE) {
-      Profile* profile = ProfileManager::GetDefaultProfile();
-      PrefService* prefs = profile->GetPrefs();
+      PrefService* prefs = GetProfile()->GetPrefs();
       prefs->SetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu, value);
     } else if (GetParam() == POLICY) {
       policy::PolicyMap policy_map;

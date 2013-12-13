@@ -220,10 +220,11 @@ void BluetoothDeviceConnectError(
 
 // Shows the settings sub page in the last active browser. If there is no such
 // browser, creates a new browser with the settings sub page.
-void ShowSettingsSubPageForAppropriateBrowser(const std::string& sub_page) {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
+void ShowSettingsSubPageForAppropriateBrowser(
+    const std::string& sub_page,
+    Profile* profile) {
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile,
+                                                 chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::ShowSettingsSubPage(displayer.browser(), sub_page);
 }
 
@@ -232,7 +233,9 @@ void ShowNetworkSettingsPage(const std::string& service_path) {
   page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
   content::RecordAction(
       content::UserMetricsAction("OpenInternetOptionsDialog"));
-  ShowSettingsSubPageForAppropriateBrowser(page);
+  ShowSettingsSubPageForAppropriateBrowser(
+      page,
+      ProfileManager::GetPrimaryUserProfile());
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
@@ -420,7 +423,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     content::RecordAction(
         content::UserMetricsAction("OpenChangeProfilePictureDialog"));
     ShowSettingsSubPageForAppropriateBrowser(
-        chrome::kChangeProfilePictureSubPage);
+        chrome::kChangeProfilePictureSubPage,
+        ProfileManager::GetActiveUserProfile());
   }
 
   virtual const std::string GetEnterpriseDomain() const OVERRIDE {
@@ -442,7 +446,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
-  virtual const base::string16 GetLocallyManagedUserManagerName() const OVERRIDE {
+  virtual const base::string16
+  GetLocallyManagedUserManagerName() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
       return base::string16();
     return UserManager::Get()->GetSupervisedUserManager()->
@@ -468,8 +473,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowSettings() OVERRIDE {
     chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetDefaultProfileOrOffTheRecord(),
-         chrome::HOST_DESKTOP_TYPE_ASH);
+        ProfileManager::GetActiveUserProfile(),
+        chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowSettings(displayer.browser());
   }
 
@@ -481,7 +486,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     content::RecordAction(content::UserMetricsAction("ShowDateOptions"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-    ShowSettingsSubPageForAppropriateBrowser(sub_page);
+    // Everybody can change the time zone (even though it is a device setting).
+    ShowSettingsSubPageForAppropriateBrowser(
+        sub_page,
+        ProfileManager::GetActiveUserProfile());
   }
 
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
@@ -496,12 +504,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowDisplaySettings() OVERRIDE {
     content::RecordAction(content::UserMetricsAction("ShowDisplayOptions"));
-    ShowSettingsSubPageForAppropriateBrowser(kDisplaySettingsSubPageName);
+    ShowSettingsSubPageForAppropriateBrowser(
+        kDisplaySettingsSubPageName,
+        ProfileManager::GetActiveUserProfile());
   }
 
   virtual void ShowChromeSlow() OVERRIDE {
     chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         ProfileManager::GetPrimaryUserProfile(),
          chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowSlow(displayer.browser());
   }
@@ -534,7 +544,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // TODO(tengs): Open the drive-specific settings page once we put it in.
     // For now just show Google Drive main page.
     chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         ProfileManager::GetActiveUserProfile(),
          chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowSingletonTabOverwritingNTP(
         displayer.browser(),
@@ -545,20 +555,21 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ShowIMESettings() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenLanguageOptionsDialog"));
-    ShowSettingsSubPageForAppropriateBrowser(chrome::kLanguageOptionsSubPage);
+    ShowSettingsSubPageForAppropriateBrowser(
+        chrome::kLanguageOptionsSubPage,
+        ProfileManager::GetActiveUserProfile());
   }
 
   virtual void ShowHelp() OVERRIDE {
-    chrome::ShowHelpForProfile(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
-        chrome::HOST_DESKTOP_TYPE_ASH,
-        chrome::HELP_SOURCE_MENU);
+    chrome::ShowHelpForProfile(ProfileManager::GetActiveUserProfile(),
+                               chrome::HOST_DESKTOP_TYPE_ASH,
+                               chrome::HELP_SOURCE_MENU);
   }
 
   virtual void ShowAccessibilityHelp() OVERRIDE {
     chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetDefaultProfileOrOffTheRecord(),
-         chrome::HOST_DESKTOP_TYPE_ASH);
+        ProfileManager::GetActiveUserProfile(),
+        chrome::HOST_DESKTOP_TYPE_ASH);
     accessibility::ShowAccessibilityHelp(displayer.browser());
   }
 
@@ -568,12 +579,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(
             IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
-    ShowSettingsSubPageForAppropriateBrowser(sub_page);
+    ShowSettingsSubPageForAppropriateBrowser(
+        sub_page,
+        ProfileManager::GetActiveUserProfile());
   }
 
   virtual void ShowPublicAccountInfo() OVERRIDE {
     chrome::ScopedTabbedBrowserDisplayer displayer(
-         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         ProfileManager::GetActiveUserProfile(),
          chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowPolicy(displayer.browser());
   }
@@ -594,7 +607,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       GURL url(google_util::StringAppendGoogleLocaleParam(
           chrome::kLearnMoreEnterpriseURL));
       chrome::ScopedTabbedBrowserDisplayer displayer(
-          ProfileManager::GetDefaultProfileOrOffTheRecord(),
+          ProfileManager::GetActiveUserProfile(),
           chrome::HOST_DESKTOP_TYPE_ASH);
       chrome::ShowSingletonTab(displayer.browser(), url);
     }
@@ -794,7 +807,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         content::UserMetricsAction("ShowBluetoothSettingsPage"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-    ShowSettingsSubPageForAppropriateBrowser(sub_page);
+    ShowSettingsSubPageForAppropriateBrowser(
+        sub_page,
+        ProfileManager::GetPrimaryUserProfile());
   }
 
   virtual void ToggleBluetooth() OVERRIDE {
@@ -1095,7 +1110,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       case chrome::NOTIFICATION_SESSION_STARTED: {
         ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
             GetUserLoginStatus());
-        SetProfile(ProfileManager::GetDefaultProfile());
+        SetProfile(ProfileManager::GetActiveUserProfile());
         break;
       }
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:

@@ -27,16 +27,15 @@ DeviceChangeHandler::~DeviceChangeHandler() {
   pointer_device_observer_->RemoveObserver(this);
 }
 
-// When we detect a touchpad is attached, apply touchpad settings of the last
-// used profile.
+// When we detect a touchpad is attached, apply touchpad settings of the
+// primary profile.
 void DeviceChangeHandler::TouchpadExists(bool exists) {
   if (!exists)
     return;
 
-  // Using GetDefaultProfile here because GetLastUsedProfile returns the
-  // LoginManager profile in browser tests.
-  PrefService* prefs =
-      g_browser_process->profile_manager()->GetDefaultProfile()->GetPrefs();
+  // Using GetPrimaryUserProfile here because this is a system setting which can
+  // only be set by the user which starts the session.
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
 
   const bool tap_dragging = prefs->GetBoolean(prefs::kTapDraggingEnabled);
   system::touchpad_settings::SetTapDragging(tap_dragging);
@@ -57,16 +56,15 @@ void DeviceChangeHandler::TouchpadExists(bool exists) {
   system::touchpad_settings::SetTapToClick(tap_to_click);
 }
 
-// When we detect a mouse is attached, apply mouse settings of the last
-// used profile.
+// When we detect a mouse is attached, apply mouse settings of the primary
+// profile.
 void DeviceChangeHandler::MouseExists(bool exists) {
   if (!exists)
     return;
 
-  // Using GetDefaultProfile here because GetLastUsedProfile returns the
-  // LoginManager profile in browser tests.
-  PrefService* prefs =
-      g_browser_process->profile_manager()->GetDefaultProfile()->GetPrefs();
+  // Using GetPrimaryUserProfile here because this is the property which can
+  // only be set by the user which starts the session.
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
 
   const int sensitivity = prefs->GetInteger(prefs::kMouseSensitivity);
   system::mouse_settings::SetSensitivity(sensitivity);
@@ -82,4 +80,3 @@ void DeviceChangeHandler::MouseExists(bool exists) {
 
 }  // namespace system
 }  // namespace chromeos
-
