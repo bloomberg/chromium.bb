@@ -5,7 +5,7 @@
 #include "content/public/common/sandbox_init.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
+#include "content/common/sandbox_seccomp_bpf_linux.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 
 namespace content {

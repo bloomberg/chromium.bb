@@ -181,9 +181,6 @@
               ],
               'defines': [
                 '<@(nacl_defines)',
-                # Allow .cc files to know if they're being compiled as part
-                # of nacl_helper.
-                'IN_NACL_HELPER=1',
               ],
               'sources': [
                 'nacl/loader/nacl_sandbox_linux.cc',
@@ -191,9 +188,9 @@
                 'nacl/loader/nacl_helper_linux.h',
                 '../base/posix/unix_domain_socket_linux.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
-                '../content/common/sandbox_linux/sandbox_bpf_base_policy_linux.cc',
-                '../content/common/sandbox_linux/sandbox_init_linux.cc',
-                '../content/common/sandbox_linux/sandbox_seccomp_bpf_linux.cc',
+                '../content/common/sandbox_bpf_base_policy_linux.cc',
+                '../content/common/sandbox_init_linux.cc',
+                '../content/common/sandbox_seccomp_bpf_linux.cc',
                 '../content/public/common/content_switches.cc',
               ],
               'conditions': [
