@@ -796,12 +796,12 @@ void LoginUtilsImpl::OnNewRefreshTokenAvaiable(Profile* user_profile) {
 
 void LoginUtilsImpl::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  Profile* user_profile = ProfileManager::GetDefaultProfile();
-  OAuth2LoginManager* login_manager =
-      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
-
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
+      !UserManager::Get()->IsLoggedInAsGuest() &&
       UserManager::Get()->IsUserLoggedIn()) {
+    Profile* user_profile = ProfileManager::GetDefaultProfile();
+    OAuth2LoginManager* login_manager =
+        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
     if (login_manager->state() ==
             OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
       // If we come online for the first time after successful offline login,

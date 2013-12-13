@@ -54,17 +54,17 @@ class ProfileManager : public base::NonThreadSafe,
   // TODO(skuhne): Move into ash's new user management function.
 
   // Get the profile for the user which created the current session.
+  // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetPrimaryUserProfile();
 
   // Get the profile for the currently active user.
+  // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetActiveUserProfile();
 
-  // Same as GetPrimaryUsersProfile only it will return the OffTheRecord profile
-  // when in guest login.
+  // Same as GetPrimaryUserProfile. Do not use!
   static Profile* GetPrimaryUserProfileOrOffTheRecord();
 
-  // Same as GetCurrentUsersProfile only it will return the OffTheRecord profile
-  // when in guest login.
+  // Same as GetPrimaryUserProfile. Do not use!
   static Profile* GetActiveUserProfileOrOffTheRecord();
 
   // The following DEPRECATED functions should be removed: crbug.com/83792.
@@ -85,11 +85,11 @@ class ProfileManager : public base::NonThreadSafe,
 
   // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Same as instance method but provides the default user_data_dir as well.
+  // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetDefaultProfile();
 
   // DEPRECATED: DO NOT USE unless in ChromeOS.
-  // Same as GetDefaultProfile() but returns OffTheRecord profile
-  // if guest login.
+  // Same as GetDefaultProfile(). Do not use.
   static Profile* GetDefaultProfileOrOffTheRecord();
 
   // Returns a profile for a specific profile directory within the user data

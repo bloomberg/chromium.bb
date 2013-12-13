@@ -229,7 +229,7 @@ bool ProfileManager::IsGetDefaultProfileAllowed() {
 }
 
 // static
-// TODO(nkostylev): Remove this method once all clients are migrated.
+// TODO(skuhne): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfile() {
   CHECK(s_allow_get_default_profile)
       << "GetDefaultProfile() called before allowed.";
@@ -238,18 +238,9 @@ Profile* ProfileManager::GetDefaultProfile() {
 }
 
 // static
-// TODO(nkostylev): Remove this method once all clients are migrated.
+// TODO(skuhne): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfileOrOffTheRecord() {
-  CHECK(s_allow_get_default_profile)
-      << "GetDefaultProfileOrOffTheRecord() called before allowed.";
-  // TODO (mukai,nkostylev): In the long term we should fix those cases that
-  // crash on Guest mode and have only one GetDefaultProfile() method.
-  Profile* profile = GetDefaultProfile();
-#if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetOffTheRecordProfile();
-#endif
-  return profile;
+  return GetDefaultProfile();
 }
 
 // static
@@ -437,6 +428,7 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
   if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();
   chromeos::UserManager* manager = chromeos::UserManager::Get();
+  // Note: The user manager will take care of guest profiles.
   return manager->GetProfileByUser(manager->GetPrimaryUser());
 #else
   return GetDefaultProfile();
@@ -452,30 +444,21 @@ Profile* ProfileManager::GetActiveUserProfile() {
   if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();
   chromeos::UserManager* manager = chromeos::UserManager::Get();
+  // Note: The user manager will take care of guest profiles.
   return manager->GetProfileByUser(manager->GetActiveUser());
 #else
   return GetDefaultProfile();
 #endif
 }
 
+// TODO(skuhne): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetPrimaryUserProfileOrOffTheRecord() {
-  Profile* profile = GetPrimaryUserProfile();
-#if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetOffTheRecordProfile();
-#endif
-  return profile;
+  return GetPrimaryUserProfile();
 }
 
+// TODO(skuhne): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetActiveUserProfileOrOffTheRecord() {
-  Profile* profile = GetActiveUserProfile();
-#if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetOffTheRecordProfile();
-#endif
-  return profile;
+  return GetActiveUserProfile();
 }
 
 Profile* ProfileManager::GetDefaultProfile(
@@ -498,9 +481,9 @@ Profile* ProfileManager::GetDefaultProfile(
     // user data in an unencrypted profile. But doing this makes
     // many of the browser and ui tests fail. We do return the OTR profile
     // if the login-profile switch is passed so that we can test this.
-    // TODO(davemoore) Fix the tests so they allow OTR profiles.
     if (ShouldGoOffTheRecord(profile))
       return profile->GetOffTheRecordProfile();
+    DCHECK(!chromeos::UserManager::Get()->IsLoggedInAsGuest());
     return profile;
   }
 
@@ -509,8 +492,16 @@ Profile* ProfileManager::GetDefaultProfile(
   // loaded yet.
   if (profile_info && !profile_info->created)
     default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
-#endif
+
+  Profile* profile = GetProfile(default_profile_dir);
+  // Some unit tests didn't initialize the UserManager.
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    return profile->GetOffTheRecordProfile();
+  return profile;
+#else
   return GetProfile(default_profile_dir);
+#endif
 }
 
 bool ProfileManager::IsValidProfile(Profile* profile) {
