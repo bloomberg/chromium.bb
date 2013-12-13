@@ -125,29 +125,9 @@ void DragWindowResizer::CompleteDrag(int event_flags) {
 
   if (dst_display.id() !=
       screen->GetDisplayNearestWindow(GetTarget()->GetRootWindow()).id()) {
-    // Adjust the size and position so that it doesn't exceed the size of
-    // work area.
-    const gfx::Size& size = dst_display.work_area().size();
-    gfx::Rect bounds = GetTarget()->bounds();
-    if (bounds.width() > size.width()) {
-      int diff = bounds.width() - size.width();
-      bounds.set_x(bounds.x() + diff / 2);
-      bounds.set_width(size.width());
-    }
-    if (bounds.height() > size.height())
-      bounds.set_height(size.height());
-
-    gfx::Rect dst_bounds =
-        ScreenAsh::ConvertRectToScreen(GetTarget()->parent(), bounds);
-
-    // Adjust the position so that the cursor is on the window.
-    if (!dst_bounds.Contains(last_mouse_location_in_screen)) {
-      if (last_mouse_location_in_screen.x() < dst_bounds.x())
-        dst_bounds.set_x(last_mouse_location_in_screen.x());
-      else if (last_mouse_location_in_screen.x() > dst_bounds.right())
-        dst_bounds.set_x(
-            last_mouse_location_in_screen.x() - dst_bounds.width());
-    }
+    const gfx::Rect dst_bounds =
+        ScreenAsh::ConvertRectToScreen(GetTarget()->parent(),
+                                       GetTarget()->bounds());
     GetTarget()->SetBoundsInScreen(dst_bounds, dst_display);
   }
 }

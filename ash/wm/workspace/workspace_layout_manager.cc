@@ -264,28 +264,22 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   if (window_state->window()->bounds().IsEmpty())
     return;
 
+  if (window_state->is_dragged())
+    return;
+
+  if (SetMaximizedOrFullscreenBounds(window_state))
+    return;
+
   Window* window = window_state->window();
   gfx::Rect bounds = window->bounds();
-
+  int min_width = bounds.width() * kMinimumPercentOnScreenArea;
+  int min_height = bounds.height() * kMinimumPercentOnScreenArea;
   // Use entire display instead of workarea because the workarea can
   // be further shrunk by the docked area. The logic ensures 30%
   // visibility which should be enough to see where the window gets
   // moved.
   gfx::Rect display_area = ScreenAsh::GetDisplayBoundsInParent(window);
 
-  if (window_state->is_dragged()) {
-    ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
-        display_area, &bounds);
-    if (window->bounds() != bounds)
-      window->SetBounds(bounds);
-    return;
-  }
-
-  if (SetMaximizedOrFullscreenBounds(window_state))
-    return;
-
-  int min_width = bounds.width() * kMinimumPercentOnScreenArea;
-  int min_height = bounds.height() * kMinimumPercentOnScreenArea;
   ash::wm::AdjustBoundsToEnsureWindowVisibility(
       display_area, min_width, min_height, &bounds);
   AdjustSnappedBounds(window_state, &bounds);

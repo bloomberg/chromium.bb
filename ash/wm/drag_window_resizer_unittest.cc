@@ -162,7 +162,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
 
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
-  UpdateDisplay("800x600,400x300");
+  UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
@@ -222,55 +222,6 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     int expected_x = -50 + 10;
     EXPECT_EQ(base::IntToString(expected_x) + ",10 50x60",
               window_->bounds().ToString());
-  }
-  // Dropping a window that is larger than the destination work area
-  // will shrink to fit to the work area.
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 700, 500),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  {
-    // Grab the top-right edge of the window and move the pointer to (0, 10)
-    // in the secondary root window's coordinates.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(699, 0), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 101, 10), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    // Window size should be adjusted to fit to the work area
-    EXPECT_EQ("400x253", window_->bounds().size().ToString());
-    gfx::Rect window_bounds_in_screen = window_->GetBoundsInScreen();
-    gfx::Rect intersect(window_->GetRootWindow()->GetBoundsInScreen());
-    intersect.Intersect(window_bounds_in_screen);
-    EXPECT_LE(10, intersect.width());
-    EXPECT_LE(10, intersect.height());
-    EXPECT_TRUE(window_bounds_in_screen.Contains(gfx::Point(800, 10)));
-  }
-
-  // Dropping a window that is larger than the destination work area
-  // will shrink to fit to the work area.
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 700, 500),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  {
-    // Grab the top-left edge of the window and move the pointer to (150, 10)
-    // in the secondary root window's coordinates. Make sure the window is
-    // shrink in such a way that it keeps the cursor within.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(0, 0), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 799, 10), ui::EF_CONTROL_DOWN);
-    resizer->Drag(CalculateDragPoint(*resizer, 850, 10), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    // Window size should be adjusted to fit to the work area
-    EXPECT_EQ("400x253", window_->bounds().size().ToString());
-    gfx::Rect window_bounds_in_screen = window_->GetBoundsInScreen();
-    gfx::Rect intersect(window_->GetRootWindow()->GetBoundsInScreen());
-    intersect.Intersect(window_bounds_in_screen);
-    EXPECT_LE(10, intersect.width());
-    EXPECT_LE(10, intersect.height());
-    EXPECT_TRUE(window_bounds_in_screen.Contains(gfx::Point(850, 10)));
   }
 }
 

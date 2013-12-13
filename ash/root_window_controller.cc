@@ -51,7 +51,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -98,46 +97,15 @@ aura::Window* CreateContainer(int window_id,
   return container;
 }
 
-float ToRelativeValue(int value, int src, int dst) {
-  return static_cast<float>(value) / static_cast<float>(src) * dst;
-}
-
-void MoveOriginRelativeToSize(const gfx::Size& src_size,
-                                const gfx::Size& dst_size,
-                                gfx::Rect* bounds_in_out) {
-  gfx::Point origin = bounds_in_out->origin();
-  bounds_in_out->set_origin(gfx::Point(
-      ToRelativeValue(origin.x(), src_size.width(), dst_size.width()),
-      ToRelativeValue(origin.y(), src_size.height(), dst_size.height())));
-}
-
 // Reparents |window| to |new_parent|.
 void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
-  const gfx::Size src_size = window->parent()->bounds().size();
-  const gfx::Size dst_size = new_parent->bounds().size();
   // Update the restore bounds to make it relative to the display.
   wm::WindowState* state = wm::GetWindowState(window);
   gfx::Rect restore_bounds;
   bool has_restore_bounds = state->HasRestoreBounds();
-
-  // TODO(oshima): snapped state should be handled by the layout manager.
-  bool update_bounds = state->IsNormalShowState() || state->IsMinimized();
-  gfx::Rect local_bounds;
-  if (update_bounds) {
-    local_bounds = state->window()->bounds();
-    MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
-  }
-
-  if (has_restore_bounds) {
+  if (has_restore_bounds)
     restore_bounds = state->GetRestoreBoundsInParent();
-    MoveOriginRelativeToSize(src_size, dst_size, &restore_bounds);
-  }
-
   new_parent->AddChild(window);
-
-  if (update_bounds)
-    window->SetBounds(local_bounds);
-
   if (has_restore_bounds)
     state->SetRestoreBoundsInParent(restore_bounds);
 }
