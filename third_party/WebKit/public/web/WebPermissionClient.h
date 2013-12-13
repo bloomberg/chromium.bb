@@ -31,8 +31,6 @@
 #ifndef WebPermissionClient_h
 #define WebPermissionClient_h
 
-#define WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS
-
 namespace blink {
 
 class WebDocument;
