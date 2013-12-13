@@ -59,6 +59,11 @@ struct fd_device_funcs {
 	void (*destroy)(struct fd_device *dev);
 };
 
+struct fd_bo_bucket {
+	uint32_t size;
+	struct list_head list;
+};
+
 struct fd_device {
 	int fd;
 	atomic_t refcnt;
@@ -75,7 +80,16 @@ struct fd_device {
 	void *handle_table, *name_table;
 
 	struct fd_device_funcs *funcs;
+
+	struct fd_bo_bucket cache_bucket[14 * 4];
+	int num_buckets;
+	time_t time;
 };
+
+void fd_cleanup_bo_cache(struct fd_device *dev, time_t time);
+
+/* for where @table_lock is already held: */
+void fd_device_del_locked(struct fd_device *dev);
 
 struct fd_pipe_funcs {
 	struct fd_ringbuffer * (*ringbuffer_new)(struct fd_pipe *pipe, uint32_t size);
@@ -120,6 +134,10 @@ struct fd_bo {
 	void *map;
 	atomic_t refcnt;
 	struct fd_bo_funcs *funcs;
+
+	int bo_reuse;
+	struct list_head list;   /* bucket-list entry */
+	time_t free_time;        /* time when added to bucket-list */
 };
 
 struct fd_bo *fd_bo_from_handle(struct fd_device *dev,

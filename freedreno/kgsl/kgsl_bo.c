@@ -80,9 +80,24 @@ static int kgsl_bo_offset(struct fd_bo *bo, uint64_t *offset)
 static int kgsl_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 {
 	uint32_t timestamp = kgsl_bo_get_timestamp(to_kgsl_bo(bo));
-	if (timestamp) {
-		fd_pipe_wait(pipe, timestamp);
+
+	if (op & DRM_FREEDRENO_PREP_NOSYNC) {
+		uint32_t current;
+		int ret;
+
+		ret = kgsl_pipe_timestamp(to_kgsl_pipe(pipe), &current);
+		if (ret)
+			return ret;
+
+		if (timestamp > current)
+			return -EBUSY;
+
+		return 0;
 	}
+
+	if (timestamp)
+		fd_pipe_wait(pipe, timestamp);
+
 	return 0;
 }
 

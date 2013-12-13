@@ -39,6 +39,44 @@ static void * dev_table;
 struct fd_device * kgsl_device_new(int fd);
 struct fd_device * msm_device_new(int fd);
 
+static void
+add_bucket(struct fd_device *dev, int size)
+{
+	unsigned int i = dev->num_buckets;
+
+	assert(i < ARRAY_SIZE(dev->cache_bucket));
+
+	list_inithead(&dev->cache_bucket[i].list);
+	dev->cache_bucket[i].size = size;
+	dev->num_buckets++;
+}
+
+static void
+init_cache_buckets(struct fd_device *dev)
+{
+	unsigned long size, cache_max_size = 64 * 1024 * 1024;
+
+	/* OK, so power of two buckets was too wasteful of memory.
+	 * Give 3 other sizes between each power of two, to hopefully
+	 * cover things accurately enough.  (The alternative is
+	 * probably to just go for exact matching of sizes, and assume
+	 * that for things like composited window resize the tiled
+	 * width/height alignment and rounding of sizes to pages will
+	 * get us useful cache hit rates anyway)
+	 */
+	add_bucket(dev, 4096);
+	add_bucket(dev, 4096 * 2);
+	add_bucket(dev, 4096 * 3);
+
+	/* Initialize the linked lists for BO reuse cache. */
+	for (size = 4 * 4096; size <= cache_max_size; size *= 2) {
+		add_bucket(dev, size);
+		add_bucket(dev, size + size * 1 / 4);
+		add_bucket(dev, size + size * 2 / 4);
+		add_bucket(dev, size + size * 3 / 4);
+	}
+}
+
 static struct fd_device * fd_device_new_impl(int fd)
 {
 	struct fd_device *dev;
@@ -69,6 +107,7 @@ static struct fd_device * fd_device_new_impl(int fd)
 	dev->fd = fd;
 	dev->handle_table = drmHashCreate();
 	dev->name_table = drmHashCreate();
+	init_cache_buckets(dev);
 
 	return dev;
 }
@@ -102,14 +141,27 @@ struct fd_device * fd_device_ref(struct fd_device *dev)
 	return dev;
 }
 
+static void fd_device_del_impl(struct fd_device *dev)
+{
+	fd_cleanup_bo_cache(dev, 0);
+	drmHashDestroy(dev->handle_table);
+	drmHashDestroy(dev->name_table);
+	drmHashDelete(dev_table, dev->fd);
+	dev->funcs->destroy(dev);
+}
+
+void fd_device_del_locked(struct fd_device *dev)
+{
+	if (!atomic_dec_and_test(&dev->refcnt))
+		return;
+	fd_device_del_impl(dev);
+}
+
 void fd_device_del(struct fd_device *dev)
 {
 	if (!atomic_dec_and_test(&dev->refcnt))
 		return;
 	pthread_mutex_lock(&table_lock);
-	drmHashDestroy(dev->handle_table);
-	drmHashDestroy(dev->name_table);
-	drmHashDelete(dev_table, dev->fd);
+	fd_device_del_impl(dev);
 	pthread_mutex_unlock(&table_lock);
-	dev->funcs->destroy(dev);
 }
