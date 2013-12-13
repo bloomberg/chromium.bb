@@ -1251,6 +1251,9 @@
     # Do not use it by default.
     'icu_use_data_file_flag%': 0,
 
+    # Force disable libstdc++ debug mode.
+    'disable_glibcxx_debug%': 0,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
@@ -2742,7 +2745,7 @@
               }],
             ],
           }],
-          ['OS=="linux" and target_arch!="ia32"', {
+          ['OS=="linux" and target_arch!="ia32" and disable_glibcxx_debug==0', {
             # Enable libstdc++ debugging facilities to help catch problems
             # early, see http://crbug.com/65151 .
             # TODO(phajdan.jr): Should we enable this for all of POSIX?
