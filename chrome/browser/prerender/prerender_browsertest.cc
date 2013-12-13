@@ -830,10 +830,10 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   void NavigateToDestURLInNewTab() const {
     // First, open a new tab.
-    current_browser()->OpenURL(
-        content::OpenURLParams(GURL(content::kAboutBlankURL), Referrer(),
-                               NEW_FOREGROUND_TAB,
-                               content::PAGE_TRANSITION_TYPED, false));
+    ui_test_utils::NavigateToURLWithDisposition(
+        current_browser(), GURL(content::kAboutBlankURL),
+        NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     // Next, navigate to the destination URL. The swap-in will not succeed,
     // due to session storage namespace mismatch. The merge is only kicked off
     // asynchronously.
