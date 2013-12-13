@@ -99,8 +99,12 @@ void CSSSelectorList::deleteSelectors()
     if (!m_selectorArray)
         return;
 
-    for (CSSSelector* s = m_selectorArray; !s->isLastInSelectorList(); ++s)
+    bool finished = false;
+    for (CSSSelector* s = m_selectorArray; !finished; ++s) {
+        finished = s->isLastInSelectorList();
         s->~CSSSelector();
+    }
+
     fastFree(m_selectorArray);
 }
 
