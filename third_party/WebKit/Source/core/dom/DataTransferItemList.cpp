@@ -65,7 +65,7 @@ PassRefPtr<DataTransferItem> DataTransferItemList::item(unsigned long index)
 void DataTransferItemList::deleteItem(unsigned long index, ExceptionState& exceptionState)
 {
     if (!m_clipboard->canWriteData()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The list is not writable.");
         return;
     }
     m_dataObject->deleteItem(index);

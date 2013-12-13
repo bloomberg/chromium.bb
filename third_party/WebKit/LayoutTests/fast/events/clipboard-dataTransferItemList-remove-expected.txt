@@ -23,7 +23,7 @@ PASS dataTansferItemList.length is 2
 PASS dataTansferItemList[1].type is "custom-data"
 * paste event
 PASS dataTansferItemList.length is 2
-PASS dataTansferItemList.remove(0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS dataTansferItemList.remove(0) threw exception InvalidStateError: Failed to execute 'remove' on 'DataTransferItemList': The list is not writable..
 PASS dataTansferItemList.length is 2
 PASS successfullyParsed is true
 
