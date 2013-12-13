@@ -553,7 +553,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
   if (command_line.HasSwitch(switches::kCloudPrintFile) &&
-      print_dialog_cloud::CreatePrintDialogFromCommandLine(command_line)) {
+      print_dialog_cloud::CreatePrintDialogFromCommandLine(last_used_profile,
+                                                           command_line)) {
     silent_launch = true;
   }
 

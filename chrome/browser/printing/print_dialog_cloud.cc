@@ -19,7 +19,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -724,7 +723,8 @@ void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
                                                  base::Closure());
 }
 
-bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
+bool CreatePrintDialogFromCommandLine(Profile* profile,
+                                      const CommandLine& command_line) {
   DCHECK(command_line.HasSwitch(switches::kCloudPrintFile));
   if (!command_line.GetSwitchValuePath(switches::kCloudPrintFile).empty()) {
     base::FilePath cloud_print_file;
@@ -753,7 +753,7 @@ bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
           switches::kCloudPrintDeleteFile);
 
       print_dialog_cloud::CreatePrintDialogForFile(
-          ProfileManager::GetDefaultProfile(),
+          profile,
           NULL,
           cloud_print_file,
           print_job_title,
