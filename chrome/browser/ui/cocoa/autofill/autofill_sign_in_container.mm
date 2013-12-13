@@ -37,18 +37,17 @@
 - (void)loadSignInPage {
   DCHECK(webContents_.get());
 
-  // Ensure initial minimum size doesn't cause resize.
-  NSSize initialMinSize = [[self view] frame].size;
-
-  // Ensure |maxSize_| is bigger than |initialMinSize|.
-  maxSize_.height = std::max(maxSize_.height, initialMinSize.height);
-  maxSize_.width = std::max(maxSize_.width, initialMinSize.width);
+  // Prevent accidentaly empty |maxSize_|.
+  if (NSEqualSizes(NSMakeSize(0, 0), maxSize_)) {
+    maxSize_ = [[[self view] window] frame].size;
+    maxSize_.height -= chrome_style::kClientBottomPadding;
+  }
 
   signInDelegate_.reset(
       new autofill::AutofillDialogSignInDelegate(
           dialog_, webContents_.get(),
           dialog_->delegate()->GetWebContents()->GetDelegate(),
-          gfx::Size(NSSizeToCGSize(initialMinSize)),
+          gfx::Size(NSSizeToCGSize(minSize_)),
           gfx::Size(NSSizeToCGSize(maxSize_))));
   webContents_->GetController().LoadURL(
       dialog_->delegate()->SignInUrl(),

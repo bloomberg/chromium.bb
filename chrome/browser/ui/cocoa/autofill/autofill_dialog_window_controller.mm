@@ -396,12 +396,7 @@ const CGFloat kMinimumContentsHeight = 101;
 
 - (content::NavigationController*)showSignIn {
   [self updateSignInSizeConstraints];
-  // Ensure |signInContainer_| is set to the same size as |mainContainer_|, to
-  // force its minimum size so that there will not be a resize until the
-  // contents are loaded.
-  [[signInContainer_ view] setFrameSize:[[mainContainer_ view] frame].size];
   [signInContainer_ loadSignInPage];
-
   [[signInContainer_ view] setHidden:NO];
   [self updateMainContainerVisibility];
   [self requestRelayout];
