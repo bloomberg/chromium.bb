@@ -41,10 +41,10 @@ class Element;
 class ElementAnimation {
 public:
     static CSSPropertyID camelCaseCSSPropertyNameToID(StringImpl* propertyName);
-    static void animate(Element*, Vector<Dictionary> keyframesDictionaryVector);
+    static void animate(Element*, Vector<Dictionary> keyframesDictionaryVector, double duration = 0);
 
 private:
-    static void startAnimation(Element*, Vector<Dictionary> keyframesDictionaryVector);
+    static void startAnimation(Element*, Vector<Dictionary> keyframesDictionaryVector, double duration = 0);
 
     friend class AnimationElementAnimationTest;
 };

@@ -35,7 +35,7 @@
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "wtf/text/StringBuilder.h"
-
+#include <algorithm>
 
 namespace WebCore {
 
@@ -66,7 +66,7 @@ CSSPropertyID ElementAnimation::camelCaseCSSPropertyNameToID(StringImpl* propert
     return id;
 }
 
-void ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+void ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
@@ -78,10 +78,10 @@ void ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDict
     if (!element->renderer())
         return;
 
-    startAnimation(element, keyframeDictionaryVector);
+    startAnimation(element, keyframeDictionaryVector, duration);
 }
 
-void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes;
     Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
@@ -135,8 +135,12 @@ void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyfr
 
     // FIXME: Totally hardcoded Timing for now. Will handle timing parameters later.
     Timing timing;
+    // FIXME: Currently there is no way to tell whether or not an iterationDuration
+    // has been specified (becauser the default argument is 0). So any animation
+    // created using Element.animate() will have a timing with hasIterationDuration()
+    // == true.
     timing.hasIterationDuration = true;
-    timing.iterationDuration = 1;
+    timing.iterationDuration = std::max<double>(duration, 0);
 
     RefPtr<Animation> animation = Animation::create(element, effect, timing);
     DocumentTimeline* timeline = element->document().timeline();

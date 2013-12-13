@@ -29,5 +29,5 @@
  */
 
 partial interface Element {
-    [RuntimeEnabled=WebAnimationsAPI] void animate(sequence<Dictionary> keyframes);
+    [RuntimeEnabled=WebAnimationsAPI] void animate(sequence<Dictionary> keyframes, optional double duration);
 };

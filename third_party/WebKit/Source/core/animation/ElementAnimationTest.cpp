@@ -75,6 +75,11 @@ protected:
     {
         ElementAnimation::startAnimation(element, keyframesDictionaryVector);
     }
+
+    void startAnimationWithSpecifiedDuration(Element* element, Vector<Dictionary> keyframesDictionaryVector, double duration)
+    {
+        ElementAnimation::startAnimation(element, keyframesDictionaryVector, duration);
+    }
 };
 
 TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
@@ -104,7 +109,7 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
     ASSERT_TRUE(jsKeyframes[1].get("width", value2));
     ASSERT_EQ("0px", value2);
 
-    startAnimation(element.get(), jsKeyframes);
+    startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, 0);
 
     Player* player = document->timeline()->players().at(0).get();
 
@@ -141,6 +146,63 @@ TEST_F(AnimationElementAnimationTest, ParseCamelCasePropertyNames)
     EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("-webkit-transform").impl()));
     EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("webkitTransform").impl()));
     EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("cssFloat").impl()));
+}
+
+TEST_F(AnimationElementAnimationTest, CanSetDuration)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+    double duration = 2;
+
+    startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, duration);
+
+    Player* player = document->timeline()->players().at(0).get();
+
+    EXPECT_TRUE(player->source()->specified().hasIterationDuration);
+    EXPECT_EQ(duration, player->source()->specified().iterationDuration);
+}
+
+TEST_F(AnimationElementAnimationTest, CanOmitSpecifiedDuration)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+
+    startAnimation(element.get(), jsKeyframes);
+
+    Player* player = document->timeline()->players().at(0).get();
+
+    // FIXME: This is correct for the moment, as using c++ default arguments means
+    // there is no way to tell whether a duration has been specified by the user.
+    // Once we implment timing object arguments we should be able to tell, and this
+    // check should be changed to EXPECT_FALSE.
+    EXPECT_TRUE(player->source()->specified().hasIterationDuration);
+    EXPECT_EQ(0, player->source()->specified().iterationDuration);
+}
+
+TEST_F(AnimationElementAnimationTest, ClipNegativeDurationToZero)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+    double duration = -2;
+
+    startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, duration);
+
+    Player* player = document->timeline()->players().at(0).get();
+
+    EXPECT_TRUE(player->source()->specified().hasIterationDuration);
+    EXPECT_EQ(0, player->source()->specified().iterationDuration);
 }
 
 } // namespace WebCore
