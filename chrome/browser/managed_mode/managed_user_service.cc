@@ -55,6 +55,7 @@ using content::BrowserThread;
 const char kManagedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
 const char kManagedUserAccessRequestTime[] = "timestamp";
+const char kManagedUserName[] = "name";
 const char kOpenManagedProfileKeyPrefix[] = "X-ManagedUser-Events-OpenProfile";
 const char kQuitBrowserKeyPrefix[] = "X-ManagedUser-Events-QuitBrowser";
 const char kSwitchFromManagedProfileKeyPrefix[] =
@@ -458,6 +459,8 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
 
   // TODO(sergiu): Use sane time here when it's ready.
   dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
+
+  dict->SetString(kManagedUserName, profile_->GetProfileName());
 
   GetSettingsService()->UploadItem(key, dict.PassAs<Value>());
 }
