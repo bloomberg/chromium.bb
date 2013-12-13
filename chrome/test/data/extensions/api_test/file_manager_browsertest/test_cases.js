@@ -1173,16 +1173,26 @@ testcase.shareDirectory = function() {
   testcase.intermediate.share('photos');
 };
 
+testcase.executeDefaultTaskOnDrive = function(root) {
+  testcase.intermediate.executeDefaultTask(true);
+};
+
+testcase.executeDefaultTaskOnDownloads = function(root) {
+  testcase.intermediate.executeDefaultTask(false);
+};
+
 /**
  * Tests executing the default task when there is only one task.
  */
-testcase.executeDefaultTask = function() {
+testcase.intermediate.executeDefaultTask = function(drive) {
+  var root = drive ? '/drive/root' : '/Downloads';
+  var taskId = drive ? 'dummytaskid|drive|open-with' : 'dummytaskid|open-with'
   var appId;
   StepsRunner.run([
     // Set up File Manager.
     function() {
       var appState = {
-        defaultPath: '/drive/root'
+        defaultPath: root
       };
       setupAndWaitUntilReady(appState, this.next);
     },
@@ -1198,7 +1208,7 @@ testcase.executeDefaultTask = function() {
               driveApp: false,
               iconUrl: 'chrome://theme/IDR_DEFAULT_FAVICON',  // Dummy icon
               isDefault: true,
-              taskId: 'dummytaskid|drive|open-with',
+              taskId: taskId,
               title: 'The dummy task for test'
             }
           ]],
@@ -1225,7 +1235,7 @@ testcase.executeDefaultTask = function() {
       callRemoteTestUtil(
           'waitUntilTaskExecutes',
           appId,
-          ['dummytaskid|drive|open-with'],
+          [taskId],
           this.next);
     },
     // Check the error.
