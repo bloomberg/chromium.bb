@@ -2996,6 +2996,8 @@ bind_output(struct wl_client *client,
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
+	wl_list_remove(&output->link);
+
 	wl_signal_emit(&output->destroy_signal, output);
 
 	free(output->name);

@@ -1146,7 +1146,6 @@ drm_output_destroy(struct weston_output *output_base)
 	weston_plane_release(&output->cursor_plane);
 
 	weston_output_destroy(&output->base);
-	wl_list_remove(&output->base.link);
 
 	free(output);
 }

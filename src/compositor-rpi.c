@@ -278,7 +278,6 @@ rpi_output_destroy(struct weston_output *base)
 	 */
 	rpi_flippipe_release(&output->flippipe);
 
-	wl_list_remove(&output->base.link);
 	weston_output_destroy(&output->base);
 
 	vc_dispmanx_display_close(output->display);

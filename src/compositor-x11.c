@@ -483,7 +483,6 @@ x11_output_destroy(struct weston_output *output_base)
 	struct x11_compositor *compositor =
 		(struct x11_compositor *)output->base.compositor;
 
-	wl_list_remove(&output->base.link);
 	wl_event_source_remove(output->finish_frame_timer);
 
 	if (compositor->use_pixman) {

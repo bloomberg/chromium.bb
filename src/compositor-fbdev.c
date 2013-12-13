@@ -692,7 +692,6 @@ fbdev_output_destroy(struct weston_output *base)
 	}
 
 	/* Remove the output. */
-	wl_list_remove(&output->base.link);
 	weston_output_destroy(&output->base);
 
 	free(output);
