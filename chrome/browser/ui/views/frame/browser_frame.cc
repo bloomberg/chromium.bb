@@ -96,6 +96,10 @@ void BrowserFrame::InitBrowserFrame() {
   if (browser_view_->browser()->host_desktop_type() ==
       chrome::HOST_DESKTOP_TYPE_ASH || chrome::ShouldOpenAshOnStartup()) {
     params.context = ash::Shell::GetPrimaryRootWindow();
+#if defined(OS_WIN)
+   // If this window is under ASH on Windows, we need it to be translucent.
+   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+#endif
   }
 #endif
 
