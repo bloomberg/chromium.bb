@@ -155,7 +155,6 @@ class RendererAccessibility;
 class RendererDateTimePicker;
 class RendererWebColorChooserImpl;
 class SpeechRecognitionDispatcher;
-class StatsCollectionController;
 class WebPluginDelegateProxy;
 struct CustomContextMenuContext;
 struct DropData;
@@ -1510,10 +1509,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Allows JS to access DOM automation. The JS object is only exposed when the
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
-
-  // Allows JS to read out a variety of internal various metrics. The JS object
-  // is only exposed when the stats collection bindings are enabled.
-  scoped_ptr<StatsCollectionController> stats_collection_controller_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

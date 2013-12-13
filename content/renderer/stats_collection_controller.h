@@ -5,8 +5,12 @@
 #ifndef CONTENT_RENDERER_STATS_COLLECTION_CONTROLLER_H_
 #define CONTENT_RENDERER_STATS_COLLECTION_CONTROLLER_H_
 
-#include "ipc/ipc_sender.h"
-#include "webkit/renderer/cpp_bound_class.h"
+#include "base/basictypes.h"
+#include "gin/wrappable.h"
+
+namespace blink {
+class WebFrame;
+}
 
 namespace content {
 
@@ -14,28 +18,28 @@ namespace content {
 // functionality to read out statistics from the browser.
 // Its use must be enabled specifically via the
 // --enable-stats-collection-bindings command line flag.
-class StatsCollectionController : public webkit_glue::CppBoundClass {
+class StatsCollectionController
+    : public gin::Wrappable<StatsCollectionController> {
  public:
-  StatsCollectionController();
+  static gin::WrapperInfo kWrapperInfo;
 
-  void set_message_sender(IPC::Sender* sender) {
-    sender_ = sender;
-  }
+  static void Install(blink::WebFrame* frame);
+
+ private:
+  StatsCollectionController();
+  virtual ~StatsCollectionController();
 
   // Retrieves a histogram and returns a JSON representation of it.
-  void GetHistogram(const webkit_glue::CppArgumentList& args,
-                    webkit_glue::CppVariant* result);
+  std::string GetHistogram(const std::string& histogram_name);
 
   // Retrieves a histogram from the browser process and returns a JSON
   // representation of it.
-  void GetBrowserHistogram(const webkit_glue::CppArgumentList& args,
-                           webkit_glue::CppVariant* result);
+  std::string GetBrowserHistogram(const std::string& histogram_name);
 
   // Returns JSON representation of tab timing information for the current tab.
-  void GetTabLoadTiming(const webkit_glue::CppArgumentList& args,
-                        webkit_glue::CppVariant* result);
- private:
-  IPC::Sender* sender_;
+  std::string GetTabLoadTiming();
+
+  DISALLOW_COPY_AND_ASSIGN(StatsCollectionController);
 };
 
 }  // namespace content

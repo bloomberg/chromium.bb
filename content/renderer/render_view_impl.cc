@@ -3771,14 +3771,8 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
                                                  "domAutomationController");
   }
 
-   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION) {
-     if (!stats_collection_controller_.get())
-       stats_collection_controller_.reset(new StatsCollectionController());
-     stats_collection_controller_->set_message_sender(
-         static_cast<RenderView*>(this));
-     stats_collection_controller_->BindToJavascript(frame,
-                                                  "statsCollectionController");
-   }
+   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
+     StatsCollectionController::Install(frame);
 }
 
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {

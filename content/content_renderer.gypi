@@ -4,6 +4,7 @@
 
 {
   'dependencies': [
+    '../gin/gin.gyp:gin',
     '../jingle/jingle.gyp:jingle_glue',
     '../media/media.gyp:media',
     '../net/net.gyp:net',

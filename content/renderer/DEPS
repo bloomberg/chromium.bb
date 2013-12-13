@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/renderer",
   "+content/child",
+  "+gin",
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.
   "+third_party/hyphen/hyphen.h",
@@ -16,9 +17,5 @@ specific_include_rules = {
   '.*_[a-z]*browsertest.*': [
     "+content/public/browser",
     "+content/shell",
-  ],
-  # gin usage in blink is currently experimental. Don't use outside of tests.
-  'gin_browsertest.cc': [
-    "+gin",
   ],
 }
