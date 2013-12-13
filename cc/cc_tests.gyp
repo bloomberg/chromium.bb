@@ -280,6 +280,7 @@
         'cc_test_support',
       ],
       'sources': [
+        'layers/layer_perftest.cc',
         'resources/picture_layer_tiling_perftest.cc',
         'resources/raster_worker_pool_perftest.cc',
         'resources/tile_manager_perftest.cc',
