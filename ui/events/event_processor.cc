@@ -14,11 +14,15 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   CHECK(root);
   EventTargeter* targeter = root->GetEventTargeter();
   CHECK(targeter);
+  PrepareEventForDispatch(event);
   EventTarget* target = targeter->FindTargetForEvent(root, event);
   if (!target)
     return EventDispatchDetails();
 
   return DispatchEvent(target, event);
+}
+
+void EventProcessor::PrepareEventForDispatch(Event* event) {
 }
 
 }  // namespace ui

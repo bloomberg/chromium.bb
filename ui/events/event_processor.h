@@ -23,6 +23,14 @@ class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate {
   // EventTargets (whose root is returned by GetRootTarget()).
   virtual EventDispatchDetails OnEventFromSource(Event* event)
       WARN_UNUSED_RESULT;
+
+ protected:
+  // Prepares the event so that it can be dispatched. This is invoked before
+  // an EventTargeter is used to find the target of the event. So this can be
+  // used to update the event so that the targeter can operate correctly (e.g.
+  // it can be used to updated the location of the event when disptaching from
+  // an EventSource in high-DPI).
+  virtual void PrepareEventForDispatch(Event* event);
 };
 
 }  // namespace ui

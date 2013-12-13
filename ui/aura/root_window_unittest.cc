@@ -631,9 +631,8 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
   filter->events().clear();
 
-  // However if another message comes in before the dispatch,
-  // the Check that on ReleasePointerMoves, held events are not dispatched
-  // immediately, but posted instead.
+  // However if another message comes in before the dispatch of the posted
+  // event, check that the posted event is dispatched before this new event.
   dispatcher()->HoldPointerMoves();
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);

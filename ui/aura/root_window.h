@@ -273,6 +273,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   // Overridden from ui::EventProcessor:
   virtual ui::EventTarget* GetRootTarget() OVERRIDE;
+  virtual void PrepareEventForDispatch(ui::Event* event) OVERRIDE;
 
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
@@ -335,7 +336,6 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // current mouse location.
   ui::EventDispatchDetails SynthesizeMouseMoveEvent() WARN_UNUSED_RESULT;
 
-  void DispatchHeldEventsAsync();
   void SynthesizeMouseMoveEventAsync();
 
   // Posts a task to send synthesized mouse move event if there
@@ -343,6 +343,8 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   void PostMouseMoveEventAfterWindowChange();
 
   gfx::Transform GetInverseRootTransform() const;
+
+  void PreDispatchLocatedEvent(Window* target, ui::LocatedEvent* event);
 
   // TODO(beng): evaluate the ideal ownership model.
   scoped_ptr<Window> window_;
@@ -377,6 +379,9 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   // Allowing for reposting of events. Used when exiting context menus.
   scoped_ptr<ui::LocatedEvent>  held_repostable_event_;
+
+  // Set when dispatching a held event.
+  bool dispatching_held_event_;
 
   scoped_ptr<ui::ViewProp> prop_;
 

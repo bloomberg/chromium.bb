@@ -4,8 +4,10 @@
 
 #include "ui/aura/window_targeter.h"
 
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/events/event_target.h"
@@ -54,6 +56,40 @@ bool WindowTargeter::SubtreeShouldBeExploredForEvent(
     return false;
   }
   return window->bounds().Contains(event.location());
+}
+
+ui::EventTarget* WindowTargeter::FindTargetForLocatedEvent(
+    ui::EventTarget* root,
+    ui::LocatedEvent* event) {
+  Window* window = static_cast<Window*>(root);
+  if (!window->parent()) {
+    Window* target = FindTargetInRootWindow(window, *event);
+    if (target) {
+      window->ConvertEventToTarget(target, event);
+      return target;
+    }
+  }
+  return EventTargeter::FindTargetForLocatedEvent(root, event);
+}
+
+Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
+                                               const ui::LocatedEvent& event) {
+  DCHECK_EQ(root_window, root_window->GetRootWindow());
+
+  // Mouse events should be dispatched to the window that processed the
+  // mouse-press events (if any).
+  if (event.IsScrollEvent() || event.IsMouseEvent()) {
+    WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+    if (dispatcher->mouse_pressed_handler())
+      return dispatcher->mouse_pressed_handler();
+  }
+
+  // All events should be directed towards the capture window (if any).
+  Window* capture_window = client::GetCaptureWindow(root_window);
+  if (capture_window)
+    return capture_window;
+
+  return NULL;
 }
 
 }  // namespace aura

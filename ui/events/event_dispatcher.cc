@@ -46,8 +46,12 @@ Event* EventDispatcherDelegate::current_event() {
 EventDispatchDetails EventDispatcherDelegate::DispatchEvent(EventTarget* target,
                                                             Event* event) {
   CHECK(target);
+  Event::DispatcherApi dispatch_helper(event);
+  dispatch_helper.set_phase(EP_PREDISPATCH);
+  dispatch_helper.set_result(ER_UNHANDLED);
+
   EventDispatchDetails details = PreDispatchEvent(target, event);
-  if (!details.dispatcher_destroyed)
+  if (!event->handled() && !details.dispatcher_destroyed)
     details = DispatchEventToTarget(target, event);
   if (!details.dispatcher_destroyed)
     details = PostDispatchEvent(target, *event);
