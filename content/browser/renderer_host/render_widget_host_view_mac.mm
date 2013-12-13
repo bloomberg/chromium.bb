@@ -412,6 +412,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
+      software_frame_needs_to_send_ack_(false),
       allow_overlapping_views_(false),
       use_core_animation_(false),
       is_loading_(false),
@@ -845,6 +846,7 @@ bool RenderWidgetHostViewMac::HasFocus() const {
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
   return !!render_widget_host_->GetBackingStore(false) ||
+      software_frame_manager_->HasCurrentFrame() ||
       (compositing_iosurface_ && compositing_iosurface_->HasIOSurface());
 }
 
@@ -1144,19 +1146,51 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-  if (!compositing_iosurface_ ||
-      !compositing_iosurface_->HasIOSurface())
-    return;
-
   float scale = ScaleFactor(cocoa_view_);
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(dst_size, scale));
+  if (compositing_iosurface_ && compositing_iosurface_->HasIOSurface()) {
+    ignore_result(scoped_callback_runner.Release());
+    compositing_iosurface_->CopyTo(GetScaledOpenGLPixelRect(src_subrect),
+                                   dst_pixel_size,
+                                   callback);
+  } else if (software_frame_manager_->HasCurrentFrame()) {
+    gfx::Rect src_pixel_rect = gfx::ToEnclosingRect(gfx::ScaleRect(
+        src_subrect,
+        software_frame_manager_->GetCurrentFrameDeviceScaleFactor()));
+    SkBitmap source_bitmap;
+    source_bitmap.setConfig(
+        SkBitmap::kARGB_8888_Config,
+        software_frame_manager_->GetCurrentFrameSizeInPixels().width(),
+        software_frame_manager_->GetCurrentFrameSizeInPixels().height(),
+        0,
+        kOpaque_SkAlphaType);
+    source_bitmap.setPixels(software_frame_manager_->GetCurrentFramePixels());
 
-  ignore_result(scoped_callback_runner.Release());
+    SkBitmap target_bitmap;
+    target_bitmap.setConfig(
+        SkBitmap::kARGB_8888_Config,
+        dst_pixel_size.width(),
+        dst_pixel_size.height(),
+        0,
+        kOpaque_SkAlphaType);
+    if (!target_bitmap.allocPixels())
+      return;
 
-  compositing_iosurface_->CopyTo(GetScaledOpenGLPixelRect(src_subrect),
-                                 dst_pixel_size,
-                                 callback);
+    SkCanvas target_canvas(target_bitmap);
+    SkRect src_pixel_skrect = SkRect::MakeXYWH(
+        src_pixel_rect.x(), src_pixel_rect.y(),
+        src_pixel_rect.width(), src_pixel_rect.height());
+    target_canvas.drawBitmapRectToRect(
+        source_bitmap,
+        &src_pixel_skrect,
+        SkRect::MakeXYWH(0, 0, dst_pixel_size.width(), dst_pixel_size.height()),
+        NULL,
+        SkCanvas::kNone_DrawBitmapRectFlag);
+
+    ignore_result(scoped_callback_runner.Release());
+    callback.Run(true, target_bitmap);
+  }
 }
 
 void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
@@ -1192,13 +1226,14 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
 
 bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
   return (!render_widget_host_->GetBackingStore(false) &&
+          !software_frame_manager_->HasCurrentFrame() &&
           render_widget_host_->is_accelerated_compositing_active() &&
           compositing_iosurface_ &&
           compositing_iosurface_->HasIOSurface());
 }
 
 bool RenderWidgetHostViewMac::CanSubscribeFrame() const {
-  return true;
+  return !software_frame_manager_->HasCurrentFrame();
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(
@@ -1729,7 +1764,10 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     return;
   }
 
-  GotSoftwareFrame();
+  // Ack any swaps that didn't make it to the display.
+  if (software_frame_needs_to_send_ack_)
+    FrameSwapped();
+
   if (!software_frame_manager_->SwapToNewFrame(
           output_surface_id,
           frame->software_frame_data.get(),
@@ -1738,15 +1776,10 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     render_widget_host_->GetProcess()->ReceivedBadMessage();
     return;
   }
-  software_frame_manager_->SwapToNewFrameComplete(
-      !render_widget_host_->is_hidden());
 
-  cc::CompositorFrameAck ack;
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      render_widget_host_->GetRoutingID(),
-      output_surface_id,
-      render_widget_host_->GetProcess()->GetID(),
-      ack);
+  GotSoftwareFrame();
+  software_latency_info_.MergeWith(frame->metadata.latency_info);
+  software_frame_needs_to_send_ack_ = true;
 
   [cocoa_view_ setNeedsDisplay:YES];
 }
@@ -1837,6 +1870,8 @@ bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
 
 void RenderWidgetHostViewMac::SoftwareFrameWasFreed(
     uint32 output_surface_id, unsigned frame_id) {
+  if (!render_widget_host_)
+    return;
   cc::CompositorFrameAck ack;
   ack.last_software_frame_id = frame_id;
   RenderWidgetHostImpl::SendReclaimCompositorResources(
@@ -2002,6 +2037,20 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
 }
 
 void RenderWidgetHostViewMac::FrameSwapped() {
+  if (software_frame_needs_to_send_ack_ &&
+      software_frame_manager_->HasCurrentFrame()) {
+    software_frame_manager_->SwapToNewFrameComplete(
+        !render_widget_host_->is_hidden());
+
+    cc::CompositorFrameAck ack;
+    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        render_widget_host_->GetRoutingID(),
+        software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
+        render_widget_host_->GetProcess()->GetID(),
+        ack);
+    software_frame_needs_to_send_ack_ = false;
+  }
+
   software_latency_info_.AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   render_widget_host_->FrameSwapped(software_latency_info_);

@@ -648,6 +648,20 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       return;
 
     RenderWidgetHostViewPort* rwhvp = GetRenderWidgetHostViewPort();
+    if (video_frame && !rwhvp->CanCopyToVideoFrame()) {
+      // This should only happen on Mac when using the software compositor.
+      // Otherwise, raise an error. This can be removed when Mac is moved to a
+      // browser compositor.
+      // http://crbug.com/314190
+#if defined(OS_MACOSX)
+      if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
+        LOG(WARNING) << ("Blindly passing this test because copying to "
+                         "video frames is not supported on this platform.");
+        return;
+      }
+#endif
+      NOTREACHED();
+    }
 
     // The page is loaded in the renderer, wait for a new frame to arrive.
     uint32 frame = rwhvp->RendererFrameNumber();

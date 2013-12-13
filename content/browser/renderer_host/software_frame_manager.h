@@ -52,10 +52,12 @@ class CONTENT_EXPORT SoftwareFrameManager : public RendererFrameManagerClient {
   void SetVisibility(bool visible);
   bool HasCurrentFrame() const;
   void DiscardCurrentFrame();
+  uint32 GetCurrentFrameOutputSurfaceId() const;
   void GetCurrentFrameMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* callback);
-  const void* GetCurrentFramePixels() const;
+  void* GetCurrentFramePixels() const;
+  float GetCurrentFrameDeviceScaleFactor() const;
   gfx::Size GetCurrentFrameSizeInPixels() const;
   gfx::Size GetCurrentFrameSizeInDIP() const;
 
