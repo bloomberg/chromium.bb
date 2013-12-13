@@ -6,6 +6,8 @@ package org.chromium.content.browser;
 
 import android.net.Uri;
 
+import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -20,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ContentDetectionTestBase extends ContentShellTestBase {
 
-    private static final int WAIT_TIMEOUT_SECONDS = 10;
+    private static final long WAIT_TIMEOUT_SECONDS = ScaleTimeout(10);
 
     private TestCallbackHelperContainer mCallbackHelper;
 

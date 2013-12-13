@@ -8,6 +8,8 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
 
+import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
@@ -32,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class AwTestBase
         extends ActivityInstrumentationTestCase2<AwTestRunnerActivity> {
-    protected static final int WAIT_TIMEOUT_SECONDS = 15;
+    protected static final long WAIT_TIMEOUT_MS = ScaleTimeout(15000);
     protected static final int CHECK_INTERVAL = 100;
 
     public AwTestBase() {
@@ -103,8 +105,8 @@ public class AwTestBase
                                final String url) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         loadUrlAsync(awContents, url);
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     protected void loadUrlSyncAndExpectError(final AwContents awContents,
@@ -114,10 +116,10 @@ public class AwTestBase
         int onErrorCallCount = onReceivedErrorHelper.getCallCount();
         int onFinishedCallCount = onPageFinishedHelper.getCallCount();
         loadUrlAsync(awContents, url);
-        onReceivedErrorHelper.waitForCallback(onErrorCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
-        onPageFinishedHelper.waitForCallback(onFinishedCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onReceivedErrorHelper.waitForCallback(onErrorCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
+        onPageFinishedHelper.waitForCallback(onFinishedCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -141,8 +143,8 @@ public class AwTestBase
             byte[] postData) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         postUrlAsync(awContents, url, postData);
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -173,8 +175,8 @@ public class AwTestBase
                                 final boolean isBase64Encoded) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         loadDataAsync(awContents, data, mimeType, isBase64Encoded);
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     protected void loadDataSyncWithCharset(final AwContents awContents,
@@ -190,8 +192,8 @@ public class AwTestBase
                         data, mimeType, isBase64Encoded, charset));
             }
         });
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -221,8 +223,8 @@ public class AwTestBase
                 awContents.getContentViewCore().reload(true);
             }
         });
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     /**

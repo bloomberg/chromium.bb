@@ -51,8 +51,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
                 mContentsClient.getOnPageFinishedHelper();
         int currentCallCount = onPageFinishedHelper.getCallCount();
         loadDataWithBaseUrlAsync(data, mimeType, isBase64Encoded, baseUrl, historyUrl);
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
     protected void loadDataWithBaseUrlAsync(

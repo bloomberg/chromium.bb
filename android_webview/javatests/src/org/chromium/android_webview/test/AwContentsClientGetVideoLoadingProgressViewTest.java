@@ -40,7 +40,8 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
     }
 
     private void waitForViewAttached() throws InterruptedException, TimeoutException {
-        mViewAttachedCallbackHelper.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
+        mViewAttachedCallbackHelper.waitForCallback(0, 1, WAIT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
     }
 
 

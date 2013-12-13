@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
+import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
@@ -29,9 +31,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContentShellTestBase extends ActivityInstrumentationTestCase2<ContentShellActivity> {
 
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
-    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = 10000;
+    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = ScaleTimeout(10000);
 
-    protected static final int WAIT_PAGE_LOADING_TIMEOUT_SECONDS = 15;
+    protected static final long WAIT_PAGE_LOADING_TIMEOUT_SECONDS = ScaleTimeout(15);
 
     public ContentShellTestBase() {
         super(ContentShellActivity.class);

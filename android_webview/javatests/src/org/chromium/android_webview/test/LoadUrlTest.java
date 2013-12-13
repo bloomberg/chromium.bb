@@ -95,8 +95,8 @@ public class LoadUrlTest extends AwTestBase {
                 awContents.loadUrl(params);
             }
         });
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
+                                             TimeUnit.MILLISECONDS);
     }
 
     private static List<Pair<String, String>> createHeadersList(String[] namesAndValues) {
@@ -316,7 +316,7 @@ public class LoadUrlTest extends AwTestBase {
                                        contentsClient.getOnEvaluateJavaScriptResultHelper(),
                                        "next");
             contentsClient.getOnPageFinishedHelper().waitForCallback(
-                    currentCallCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                    currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             // No extra headers for the page navigated via clicking.
             validateNoRequestHeaders(extraHeaders, webServer.getLastRequest(nextPath));
 

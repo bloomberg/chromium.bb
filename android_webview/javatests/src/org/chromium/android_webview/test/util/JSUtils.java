@@ -8,6 +8,8 @@ import android.test.InstrumentationTestCase;
 
 import junit.framework.Assert;
 
+import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -19,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Collection of functions for JavaScript-based interactions with a page.
  */
 public class JSUtils {
-    private static final int WAIT_TIMEOUT_SECONDS = 2;
+    private static final long WAIT_TIMEOUT_MS = ScaleTimeout(2000);
     private static final int CHECK_INTERVAL = 100;
 
     public static void clickOnLinkUsingJs(
@@ -42,7 +44,7 @@ public class JSUtils {
                     return false;
                 }
             }
-        }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
 
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override

@@ -43,8 +43,8 @@ public class ClientOnReceivedErrorTest extends AwTestBase {
 
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount,
                                               1 /* numberOfCallsToWaitFor */,
-                                              WAIT_TIMEOUT_SECONDS,
-                                              TimeUnit.SECONDS);
+                                              WAIT_TIMEOUT_MS,
+                                              TimeUnit.MILLISECONDS);
         assertEquals(ErrorCodeConversionHelper.ERROR_HOST_LOOKUP,
                 onReceivedErrorHelper.getErrorCode());
         assertEquals(url, onReceivedErrorHelper.getFailingUrl());

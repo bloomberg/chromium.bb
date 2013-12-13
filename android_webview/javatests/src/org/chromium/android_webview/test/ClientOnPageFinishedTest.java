@@ -61,12 +61,12 @@ public class ClientOnPageFinishedTest extends AwTestBase {
 
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount,
                                               1 /* numberOfCallsToWaitFor */,
-                                              WAIT_TIMEOUT_SECONDS,
-                                              TimeUnit.SECONDS);
+                                              WAIT_TIMEOUT_MS,
+                                              TimeUnit.MILLISECONDS);
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount,
-                                              1 /* numberOfCallsToWaitFor */,
-                                              WAIT_TIMEOUT_SECONDS,
-                                              TimeUnit.SECONDS);
+                                             1 /* numberOfCallsToWaitFor */,
+                                             WAIT_TIMEOUT_MS,
+                                             TimeUnit.MILLISECONDS);
         assertEquals(1, onReceivedErrorHelper.getCallCount());
     }
 

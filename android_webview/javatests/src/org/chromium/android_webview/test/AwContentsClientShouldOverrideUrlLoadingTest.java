@@ -32,9 +32,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
 
-    private static final long TEST_TIMEOUT = 20000L;
-    private static final long CHECK_INTERVAL = 100;
-
     private static class TestAwContentsClient
             extends org.chromium.android_webview.test.TestAwContentsClient {
 
@@ -623,7 +620,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             public boolean isSatisfied() {
                 return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
             }
-        }, WAIT_TIMEOUT_SECONDS * 1000L, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
 
         // Since the targetURL was loaded from the test server it means all processing related
         // to dispatching a shouldOverrideUrlLoading callback had finished and checking the call
@@ -663,7 +660,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             public boolean isSatisfied() {
                 return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
             }
-        }, WAIT_TIMEOUT_SECONDS * 1000L, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
 
         assertEquals(redirectTargetUrl,
                 shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
@@ -698,7 +695,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             public boolean isSatisfied() {
                 return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
             }
-        }, WAIT_TIMEOUT_SECONDS * 1000L, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
 
         assertEquals(shouldOverrideUrlLoadingCallCount,
                 shouldOverrideUrlLoadingHelper.getCallCount());
@@ -861,7 +858,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             }
         });
         contentsClient.getOnPageFinishedHelper().waitForCallback(currentCallCount, 1,
-                WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }

@@ -48,9 +48,6 @@ import java.util.regex.Pattern;
  * application
  */
 public class AwSettingsTest extends AwTestBase {
-    private static final long TEST_TIMEOUT = 20000L;
-    private static final int CHECK_INTERVAL = 100;
-
     private static final boolean ENABLED = true;
     private static final boolean DISABLED = false;
 
@@ -942,7 +939,7 @@ public class AwSettingsTest extends AwTestBase {
                                 return false;
                             }
                         }
-                    }, TEST_TIMEOUT, CHECK_INTERVAL));
+                    }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
                 mNeedToWaitForFontSizeChange = false;
             }
             return Float.parseFloat(getTitleOnUiThread());
@@ -1163,7 +1160,7 @@ public class AwSettingsTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, TEST_TIMEOUT, CHECK_INTERVAL));
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
             assertEquals(value ? POPUP_ENABLED : POPUP_BLOCKED, getTitleOnUiThread());
         }
 
@@ -1458,7 +1455,7 @@ public class AwSettingsTest extends AwTestBase {
                     return false;
                 }
             }
-        }, TEST_TIMEOUT, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
         assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(awContents));
     }
 
@@ -1840,7 +1837,7 @@ public class AwSettingsTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, TEST_TIMEOUT, CHECK_INTERVAL));
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
         } finally {
             if (webServer != null) webServer.shutdown();
         }
@@ -2256,7 +2253,7 @@ public class AwSettingsTest extends AwTestBase {
                 public boolean isSatisfied() {
                     return mWebServer.getRequestCount(path) > initialRequestCount;
                 }
-            }, TEST_TIMEOUT, CHECK_INTERVAL));
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
             return mWebServer.getRequestCount(path);
         }
     }

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.autofill;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
@@ -56,9 +58,10 @@ public class AutofillTest extends ChromiumTestShellTestBase {
 
     }
 
+    private static final long CALLBACK_TIMEOUT_MS = ScaleTimeout(4000);
+    private static final int CHECK_INTERVAL_MS = 100;
+
     private class MockAutofillCallback implements AutofillPopupDelegate{
-        private static final int CALLBACK_TIMEOUT_MS = 4000;
-        private static final int CHECK_INTERVAL_MS = 100;
         private final AtomicBoolean mGotPopupSelection = new AtomicBoolean(false);
         public int mListIndex = -1;
 

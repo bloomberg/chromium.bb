@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Integration tests for synchronous scrolling.
  */
 public class AndroidScrollIntegrationTest extends AwTestBase {
-    private static final int SCROLL_OFFSET_PROPAGATION_TIMEOUT_MS = 6 * 1000;
-
     private static class OverScrollByCallbackHelper extends CallbackHelper {
         int mDeltaX;
         int mDeltaY;
@@ -211,7 +209,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
     }
 
     private void assertScrolledToBottomInJs(final AwContents awContents,
@@ -231,7 +229,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
     }
 
     private void loadTestPageAndWaitForFirstFrame(final ScrollTestContainerView testContainerView,
@@ -257,7 +255,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         // tree activations to stop clobbering the root scroll layer's scroll offset. This wait
         // doesn't strictly guarantee that but there isn't a good alternative and this seems to
         // work fine.
-        firstFrameObserver.waitForEvent(WAIT_TIMEOUT_SECONDS * 1000);
+        firstFrameObserver.waitForEvent(WAIT_TIMEOUT_MS);
     }
 
     @SmallTest
@@ -288,7 +286,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
         scrollToOnMainSync(testContainerView, targetScrollXPix, targetScrollYPix);
 
-        onscrollObserver.waitForEvent(SCROLL_OFFSET_PROPAGATION_TIMEOUT_MS);
+        onscrollObserver.waitForEvent(WAIT_TIMEOUT_MS);
         assertScrollInJs(testContainerView.getAwContents(), contentsClient,
                 targetScrollXCss, targetScrollYCss);
     }

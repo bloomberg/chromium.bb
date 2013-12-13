@@ -7,6 +7,8 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.ValueCallback;
 
+import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -19,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ArchiveTest extends AwTestBase {
 
-    private static final long TEST_TIMEOUT = 20000L;
+    private static final long TEST_TIMEOUT = ScaleTimeout(20000L);
 
     private static final String TEST_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><head></head><body>test</body></html>");

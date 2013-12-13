@@ -213,7 +213,7 @@ public class AwContentsTest extends AwTestBase {
               awContents.documentHasImages(msg);
             }
         });
-        assertTrue(s.tryAcquire(WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS));
+        assertTrue(s.tryAcquire(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         int result = val.get();
         return result;
     }
@@ -310,9 +310,6 @@ public class AwContentsTest extends AwTestBase {
             }
         });
     }
-
-    private static final long TEST_TIMEOUT = 20000L;
-    private static final int CHECK_INTERVAL = 100;
 
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -447,6 +444,6 @@ public class AwContentsTest extends AwTestBase {
                         "javascript:window.bridge.run();");
             }
         });
-        callback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
+        callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 }

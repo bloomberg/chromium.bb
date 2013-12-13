@@ -305,9 +305,6 @@ public class AwViewportTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
     }
-
-    private static final long TEST_TIMEOUT_MS = 20000L;
-    private static final int CHECK_INTERVAL_MS = 100;
 }

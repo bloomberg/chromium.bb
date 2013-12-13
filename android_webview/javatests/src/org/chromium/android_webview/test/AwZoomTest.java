@@ -23,9 +23,6 @@ import java.util.concurrent.Callable;
  * A test suite for zooming-related methods and settings.
  */
 public class AwZoomTest extends AwTestBase {
-    private static final long TEST_TIMEOUT_MS = 20000L;
-    private static final int CHECK_INTERVAL_MS = 100;
-
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
@@ -128,7 +125,7 @@ public class AwZoomTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
     }
 
     private boolean waitUntilCanZoomIn() throws Throwable {
@@ -143,7 +140,7 @@ public class AwZoomTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
     }
 
     private boolean waitUntilCanNotZoom() throws Throwable {
@@ -159,7 +156,7 @@ public class AwZoomTest extends AwTestBase {
                         return false;
                     }
                 }
-            }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
+            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
     }
 
     private void runMagnificationTest() throws Throwable {
