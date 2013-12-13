@@ -79,7 +79,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   void DoSetMuteOnAudioThread(bool muted);
 
   // Allow the AudioAndroidTest to access private methods.
-  FRIEND_TEST_ALL_PREFIXES(AudioAndroidOutputTest, IsAudioLowLatencySupported);
+  FRIEND_TEST_ALL_PREFIXES(AudioAndroidTest, IsAudioLowLatencySupported);
 
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;

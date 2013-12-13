@@ -96,14 +96,12 @@ class WebRtcAudioCapturerTest : public testing::Test {
 #endif
     capturer_ = WebRtcAudioCapturer::CreateCapturer();
     capturer_->Initialize(-1, params_.channel_layout(), params_.sample_rate(),
-                          params_.frames_per_buffer(), 0, std::string(), 0, 0,
-                          params_.effects());
+                          params_.frames_per_buffer(), 0, std::string(), 0, 0);
     capturer_source_ = new MockCapturerSource();
     EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), 0));
     capturer_->SetCapturerSource(capturer_source_,
                                  params_.channel_layout(),
-                                 params_.sample_rate(),
-                                 params_.effects());
+                                 params_.sample_rate());
 
     EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
     EXPECT_CALL(*capturer_source_.get(), Start());

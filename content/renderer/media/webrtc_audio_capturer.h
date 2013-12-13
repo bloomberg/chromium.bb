@@ -56,8 +56,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
                   int session_id,
                   const std::string& device_id,
                   int paired_output_sample_rate,
-                  int paired_output_frames_per_buffer,
-                  int effects);
+                  int paired_output_frames_per_buffer);
 
   // Add a audio track to the sinks of the capturer.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
@@ -80,8 +79,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   void SetCapturerSource(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::ChannelLayout channel_layout,
-      float sample_rate,
-      int effects);
+      float sample_rate);
 
   // Called when a stream is connecting to a peer connection. This will set
   // up the native buffer size for the stream in order to optimize the
@@ -144,8 +142,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // Reconfigures the capturer with a new capture parameters.
   // Must be called without holding the lock.
-  void Reconfigure(int sample_rate, media::ChannelLayout channel_layout,
-                   int effects);
+  void Reconfigure(int sample_rate, media::ChannelLayout channel_layout);
 
   // Starts recording audio.
   // Triggered by AddSink() on the main render thread or a Libjingle working

@@ -70,7 +70,7 @@ AudioParameters FakeAudioManager::GetPreferredOutputStreamParameters(
 
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
-      sample_rate, bits_per_sample, buffer_size, AudioParameters::NO_EFFECTS);
+      sample_rate, bits_per_sample, buffer_size);
 }
 
 AudioParameters FakeAudioManager::GetInputStreamParameters(

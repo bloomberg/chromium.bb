@@ -16,8 +16,7 @@ AudioParameters::AudioParameters()
       bits_per_sample_(0),
       frames_per_buffer_(0),
       channels_(0),
-      input_channels_(0),
-      effects_(NO_EFFECTS) {
+      input_channels_(0) {
 }
 
 AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
@@ -29,38 +28,20 @@ AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
       bits_per_sample_(bits_per_sample),
       frames_per_buffer_(frames_per_buffer),
       channels_(ChannelLayoutToChannelCount(channel_layout)),
-      input_channels_(0),
-      effects_(NO_EFFECTS) {
+      input_channels_(0) {
 }
 
 AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
                                  int input_channels,
                                  int sample_rate, int bits_per_sample,
-                                 int frames_per_buffer, int effects)
+                                 int frames_per_buffer)
     : format_(format),
       channel_layout_(channel_layout),
       sample_rate_(sample_rate),
       bits_per_sample_(bits_per_sample),
       frames_per_buffer_(frames_per_buffer),
       channels_(ChannelLayoutToChannelCount(channel_layout)),
-      input_channels_(input_channels),
-      effects_(effects) {
-}
-
-AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
-                                 int channels, int input_channels,
-                                 int sample_rate, int bits_per_sample,
-                                 int frames_per_buffer, int effects)
-    : format_(format),
-      channel_layout_(channel_layout),
-      sample_rate_(sample_rate),
-      bits_per_sample_(bits_per_sample),
-      frames_per_buffer_(frames_per_buffer),
-      channels_(channels),
-      input_channels_(input_channels),
-      effects_(effects) {
-  if (channel_layout != CHANNEL_LAYOUT_DISCRETE)
-    DCHECK_EQ(channels, ChannelLayoutToChannelCount(channel_layout));
+      input_channels_(input_channels) {
 }
 
 void AudioParameters::Reset(Format format, ChannelLayout channel_layout,
@@ -112,6 +93,11 @@ base::TimeDelta AudioParameters::GetBufferDuration() const {
   return base::TimeDelta::FromMicroseconds(
       frames_per_buffer_ * base::Time::kMicrosecondsPerSecond /
       static_cast<float>(sample_rate_));
+}
+
+void AudioParameters::SetDiscreteChannels(int channels) {
+  channel_layout_ = CHANNEL_LAYOUT_DISCRETE;
+  channels_ = channels;
 }
 
 }  // namespace media

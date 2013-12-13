@@ -120,8 +120,7 @@ bool CreateAndInitializeCapturer(WebRtcAudioDeviceImpl* webrtc_audio_device) {
   media::ChannelLayout channel_layout =
       hardware_config->GetInputChannelLayout();
   if (!capturer->Initialize(kRenderViewId, channel_layout, sample_rate, 0, 1,
-                            media::AudioManagerBase::kDefaultDeviceId, 0, 0,
-                            media::AudioParameters::NO_EFFECTS)) {
+                            media::AudioManagerBase::kDefaultDeviceId, 0 ,0)) {
     return false;
   }
 

@@ -17,7 +17,6 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
-import android.media.audiofx.AcousticEchoCanceler;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -311,7 +310,7 @@ class AudioManagerAndroid {
 
     @CalledByNative
     private int getNativeOutputSampleRate() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
             String sampleRateString = mAudioManager.getProperty(
                     AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
             return (sampleRateString == null ?
@@ -373,17 +372,6 @@ class AudioManagerAndroid {
                 mAudioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
         return (framesPerBuffer == null ?
                 DEFAULT_FRAME_PER_BUFFER : Integer.parseInt(framesPerBuffer));
-    }
-
-    @CalledByNative
-    public static boolean shouldUseAcousticEchoCanceler() {
-        // AcousticEchoCanceler was added in API level 16 (Jelly Bean).
-        // Next is a list of device models which have been vetted for good
-        // quality platform echo cancellation.
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
-               AcousticEchoCanceler.isAvailable() &&
-               (Build.MODEL.equals("Nexus 5") ||
-                Build.MODEL.equals("Nexus 7"));
     }
 
     /** Sets the speaker phone mode. */
@@ -610,12 +598,12 @@ class AudioManagerAndroid {
     }
 
     /** Trivial helper method for debug logging */
-    private static void logd(String msg) {
+    private void logd(String msg) {
         Log.d(TAG, msg);
     }
 
     /** Trivial helper method for error logging */
-    private static void loge(String msg) {
+    private void loge(String msg) {
         Log.e(TAG, msg);
     }
 

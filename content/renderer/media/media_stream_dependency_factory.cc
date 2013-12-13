@@ -78,15 +78,6 @@ struct {
     webrtc::MediaConstraintsInterface::kValueTrue },
 };
 
-// Map of corresponding media constraints and platform effects.
-struct {
-  const char* constraint;
-  const media::AudioParameters::PlatformEffectsMask effect;
-} const kConstraintEffectMap[] = {
-  { webrtc::MediaConstraintsInterface::kEchoCancellation,
-    media::AudioParameters::ECHO_CANCELLER},
-};
-
 // Merge |constraints| with |kDefaultAudioConstraints|. For any key which exists
 // in both, the value from |constraints| is maintained, including its
 // mandatory/optional status. New values from |kDefaultAudioConstraints| will
@@ -332,36 +323,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 
     // TODO(xians): Create a new capturer for difference microphones when we
     // support multiple microphones. See issue crbug/262117 .
-    StreamDeviceInfo device_info = source_data->device_info();
-    RTCMediaConstraints constraints = native_audio_constraints;
-
-    // If any platform effects are available, check them against the
-    // constraints. Disable effects to match false constraints, but if a
-    // constraint is true, set the constraint to false to later disable the
-    // software effect.
-    int effects = device_info.device.input.effects;
-    if (effects != media::AudioParameters::NO_EFFECTS) {
-      for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConstraintEffectMap); ++i) {
-        bool value;
-        if (!webrtc::FindConstraint(&constraints,
-                kConstraintEffectMap[i].constraint, &value, NULL) || !value) {
-          // If the constraint is false, or does not exist, disable the platform
-          // effect.
-          effects &= ~kConstraintEffectMap[i].effect;
-          DVLOG(1) << "Disabling constraint: "
-                   << kConstraintEffectMap[i].constraint;
-        } else if (effects & kConstraintEffectMap[i].effect) {
-          // If the constraint is true, leave the platform effect enabled, and
-          // set the constraint to false to later disable the software effect.
-          constraints.AddMandatory(kConstraintEffectMap[i].constraint,
-              webrtc::MediaConstraintsInterface::kValueFalse, true);
-          DVLOG(1) << "Disabling platform effect: "
-                   << kConstraintEffectMap[i].constraint;
-        }
-      }
-      device_info.device.input.effects = effects;
-    }
-
+    const StreamDeviceInfo device_info = source_data->device_info();
     scoped_refptr<WebRtcAudioCapturer> capturer(
         MaybeCreateAudioCapturer(render_view_id, device_info));
     if (!capturer.get()) {
@@ -379,7 +341,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     // Creates a LocalAudioSource object which holds audio options.
     // TODO(xians): The option should apply to the track instead of the source.
     source_data->SetLocalAudioSource(
-        CreateLocalAudioSource(&constraints).get());
+        CreateLocalAudioSource(&native_audio_constraints).get());
     source_observer->AddSource(source_data->local_audio_source());
   }
 
@@ -948,8 +910,7 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
           device_info.session_id,
           device_info.device.id,
           device_info.device.matched_output.sample_rate,
-          device_info.device.matched_output.frames_per_buffer,
-          device_info.device.input.effects)) {
+          device_info.device.matched_output.frames_per_buffer)) {
     return NULL;
   }
 

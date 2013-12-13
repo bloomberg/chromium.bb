@@ -106,15 +106,14 @@ struct CONTENT_EXPORT MediaStreamDevice {
   // in media::AudioParameters.
   struct AudioDeviceParameters {
     AudioDeviceParameters()
-        : sample_rate(), channel_layout(), frames_per_buffer(), effects() {
+        : sample_rate(), channel_layout(), frames_per_buffer() {
     }
 
     AudioDeviceParameters(int sample_rate, int channel_layout,
-        int frames_per_buffer)
+                          int frames_per_buffer)
         : sample_rate(sample_rate),
           channel_layout(channel_layout),
-          frames_per_buffer(frames_per_buffer),
-          effects() {
+          frames_per_buffer(frames_per_buffer) {
     }
 
     // Preferred sample rate in samples per second for the device.
@@ -130,9 +129,6 @@ struct CONTENT_EXPORT MediaStreamDevice {
     // expected browser side settings and avoid unnecessary buffering.
     // See media::AudioParameters for more.
     int frames_per_buffer;
-
-    // See media::AudioParameters::PlatformEffectsMask.
-    int effects;
   };
 
   // These below two member variables are valid only when the type of device is

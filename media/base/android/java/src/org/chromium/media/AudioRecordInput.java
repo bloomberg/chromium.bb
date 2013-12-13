@@ -7,9 +7,6 @@ package org.chromium.media;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AudioEffect;
-import android.media.audiofx.AudioEffect.Descriptor;
 import android.os.Process;
 import android.util.Log;
 
@@ -23,8 +20,6 @@ import java.nio.ByteBuffer;
 @JNINamespace("media")
 class AudioRecordInput {
     private static final String TAG = "AudioRecordInput";
-    // Set to true to enable debug logs. Always check in as false.
-    private static final boolean DEBUG = false;
     // We are unable to obtain a precise measurement of the hardware delay on
     // Android. This is a conservative lower-bound based on measurments. It
     // could surely be tightened with further testing.
@@ -35,11 +30,9 @@ class AudioRecordInput {
     private final int mChannels;
     private final int mBitsPerSample;
     private final int mHardwareDelayBytes;
-    private final boolean mUsePlatformAEC;
     private ByteBuffer mBuffer;
     private AudioRecord mAudioRecord;
     private AudioRecordThread mAudioRecordThread;
-    private AcousticEchoCanceler mAEC;
 
     private class AudioRecordThread extends Thread {
         // The "volatile" synchronization technique is discussed here:
@@ -50,7 +43,13 @@ class AudioRecordInput {
 
         @Override
         public void run() {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
+            try {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
+            } catch (IllegalArgumentException e) {
+                Log.wtf(TAG, "setThreadPriority failed", e);
+            } catch (SecurityException e) {
+                Log.wtf(TAG, "setThreadPriority failed", e);
+            }
             try {
                 mAudioRecord.startRecording();
             } catch (IllegalStateException e) {
@@ -65,11 +64,6 @@ class AudioRecordInput {
                                  mHardwareDelayBytes);
                 } else {
                     Log.e(TAG, "read failed: " + bytesRead);
-                    if (bytesRead == AudioRecord.ERROR_INVALID_OPERATION) {
-                        // This can happen if there is already an active
-                        // AudioRecord (e.g. in another tab).
-                        mKeepAlive = false;
-                    }
                 }
             }
 
@@ -94,26 +88,28 @@ class AudioRecordInput {
 
     @CalledByNative
     private static AudioRecordInput createAudioRecordInput(long nativeAudioRecordInputStream,
-            int sampleRate, int channels, int bitsPerSample, int bytesPerBuffer,
-            boolean usePlatformAEC) {
+            int sampleRate, int channels, int bitsPerSample, int bytesPerBuffer) {
         return new AudioRecordInput(nativeAudioRecordInputStream, sampleRate, channels,
-                                    bitsPerSample, bytesPerBuffer, usePlatformAEC);
+                                    bitsPerSample, bytesPerBuffer);
     }
 
     private AudioRecordInput(long nativeAudioRecordInputStream, int sampleRate, int channels,
-                             int bitsPerSample, int bytesPerBuffer, boolean usePlatformAEC) {
+                             int bitsPerSample, int bytesPerBuffer) {
         mNativeAudioRecordInputStream = nativeAudioRecordInputStream;
         mSampleRate = sampleRate;
         mChannels = channels;
         mBitsPerSample = bitsPerSample;
         mHardwareDelayBytes = HARDWARE_DELAY_MS * sampleRate / 1000 * bitsPerSample / 8;
-        mUsePlatformAEC = usePlatformAEC;
 
         // We use a direct buffer so that the native class can have access to
         // the underlying memory address. This avoids the need to copy from a
         // jbyteArray to native memory. More discussion of this here:
         // http://developer.android.com/training/articles/perf-jni.html
-        mBuffer = ByteBuffer.allocateDirect(bytesPerBuffer);
+        try {
+            mBuffer = ByteBuffer.allocateDirect(bytesPerBuffer);
+        } catch (IllegalArgumentException e) {
+            Log.wtf(TAG, "allocateDirect failure", e);
+        }
         // Rather than passing the ByteBuffer with every OnData call (requiring
         // the potentially expensive GetDirectBufferAddress) we simply have the
         // the native class cache the address to the memory once.
@@ -174,26 +170,6 @@ class AudioRecordInput {
             return false;
         }
 
-        if (AcousticEchoCanceler.isAvailable()) {
-            mAEC = AcousticEchoCanceler.create(mAudioRecord.getAudioSessionId());
-            if (mAEC == null) {
-                Log.e(TAG, "AcousticEchoCanceler.create failed");
-                return false;
-            }
-            int ret = mAEC.setEnabled(mUsePlatformAEC);
-            if (ret != AudioEffect.SUCCESS) {
-                Log.e(TAG, "setEnabled error: " + ret);
-                return false;
-            }
-
-            if (DEBUG) {
-                Descriptor descriptor = mAEC.getDescriptor();
-                Log.d(TAG, "AcousticEchoCanceler " +
-                        "name: " + descriptor.name + ", " +
-                        "implementor: " + descriptor.implementor + ", " +
-                        "uuid: " + descriptor.uuid);
-            }
-        }
         return true;
     }
 
@@ -230,11 +206,6 @@ class AudioRecordInput {
         if (mAudioRecord == null) {
             // open() was not called.
             return;
-        }
-
-        if (mAEC != null) {
-            mAEC.release();
-            mAEC = null;
         }
         mAudioRecord.release();
         mAudioRecord = null;
