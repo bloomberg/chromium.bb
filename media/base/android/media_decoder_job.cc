@@ -28,6 +28,7 @@ MediaDecoderJob::MediaDecoderJob(
       media_codec_bridge_(media_codec_bridge),
       needs_flush_(false),
       input_eos_encountered_(false),
+      output_eos_encountered_(false),
       skip_eos_enqueue_(true),
       prerolling_(true),
       weak_this_(this),
@@ -275,12 +276,18 @@ void MediaDecoderJob::DecodeInternal(
   if (needs_flush) {
     DVLOG(1) << "DecodeInternal needs flush.";
     input_eos_encountered_ = false;
+    output_eos_encountered_ = false;
     MediaCodecStatus reset_status = media_codec_bridge_->Reset();
     if (MEDIA_CODEC_OK != reset_status) {
       callback.Run(reset_status, kNoTimestamp(), 0);
       return;
     }
   }
+
+  // Once output EOS has occurred, we should not be asked to decode again.
+  // MediaCodec has undefined behavior if similarly asked to decode after output
+  // EOS.
+  DCHECK(!output_eos_encountered_);
 
   // For aborted access unit, just skip it and inform the player.
   if (unit.status == DemuxerStream::kAborted) {
@@ -292,13 +299,13 @@ void MediaDecoderJob::DecodeInternal(
   if (skip_eos_enqueue_) {
     if (unit.end_of_stream || unit.data.empty()) {
       input_eos_encountered_ = true;
+      output_eos_encountered_ = true;
       callback.Run(MEDIA_CODEC_OUTPUT_END_OF_STREAM, kNoTimestamp(), 0);
       return;
     }
 
     skip_eos_enqueue_ = false;
   }
-
 
   MediaCodecStatus input_status = MEDIA_CODEC_INPUT_END_OF_STREAM;
   if (!input_eos_encountered_) {
@@ -315,7 +322,6 @@ void MediaDecoderJob::DecodeInternal(
   size_t offset = 0;
   size_t size = 0;
   base::TimeDelta presentation_timestamp;
-  bool output_eos_encountered = false;
 
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
       kMediaCodecTimeoutInMilliseconds);
@@ -326,7 +332,7 @@ void MediaDecoderJob::DecodeInternal(
                                                &offset,
                                                &size,
                                                &presentation_timestamp,
-                                               &output_eos_encountered,
+                                               &output_eos_encountered_,
                                                NULL);
 
   if (status != MEDIA_CODEC_OK) {
@@ -339,7 +345,7 @@ void MediaDecoderJob::DecodeInternal(
   }
 
   // TODO(xhwang/qinmin): This logic is correct but strange. Clean it up.
-  if (output_eos_encountered)
+  if (output_eos_encountered_)
     status = MEDIA_CODEC_OUTPUT_END_OF_STREAM;
   else if (input_status == MEDIA_CODEC_INPUT_END_OF_STREAM)
     status = MEDIA_CODEC_INPUT_END_OF_STREAM;

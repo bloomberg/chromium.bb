@@ -147,6 +147,9 @@ class MediaDecoderJob {
   // TODO(wolenetz/qinmin): Protect with a lock. See http://crbug.com/320043.
   bool input_eos_encountered_;
 
+  // Whether output EOS is encountered.
+  bool output_eos_encountered_;
+
   // Tracks whether DecodeInternal() should skip decoding if the first access
   // unit is EOS or empty, and report |MEDIA_CODEC_OUTPUT_END_OF_STREAM|. This
   // is to work around some decoders that could crash otherwise. See

@@ -35,6 +35,9 @@ static const char kVideoMp4[] = "video/mp4";
 static const char kAudioWebM[] = "audio/webm";
 static const char kVideoWebM[] = "video/webm";
 
+// TODO(wolenetz/qinmin): Simplify tests with more effective mock usage, and
+// fix flaky pointer-based MDJ inequality testing. See http://crbug.com/327839.
+
 // Mock of MediaPlayerManager for testing purpose
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
@@ -252,11 +255,6 @@ class MediaSourcePlayerTest : public testing::Test {
     return configs;
   }
 
-  // Starts an audio decoder job.
-  void StartAudioDecoderJob() {
-    Start(CreateAudioDemuxerConfigs(kCodecVorbis));
-  }
-
   DemuxerConfigs CreateVideoDemuxerConfigs() {
     DemuxerConfigs configs;
     configs.video_codec = kCodecVP8;
@@ -274,15 +272,52 @@ class MediaSourcePlayerTest : public testing::Test {
     return configs;
   }
 
-  void StartVideoDecoderJob() {
-    Start(CreateVideoDemuxerConfigs());
+  DemuxerConfigs CreateDemuxerConfigs(bool have_audio, bool have_video) {
+    DCHECK(have_audio || have_video);
+
+    if (have_audio && !have_video)
+      return CreateAudioDemuxerConfigs(kCodecVorbis);
+
+    if (have_video && !have_audio)
+      return CreateVideoDemuxerConfigs();
+
+    return CreateAudioVideoDemuxerConfigs();
   }
 
-  // Starts decoding the data.
-  void Start(const DemuxerConfigs& configs) {
+  // Starts an audio decoder job. Verifies player behavior relative to
+  // |expect_player_requests_data|.
+  void StartAudioDecoderJob(bool expect_player_requests_data) {
+    Start(CreateAudioDemuxerConfigs(kCodecVorbis), expect_player_requests_data);
+  }
+
+  // Starts a video decoder job. Verifies player behavior relative to
+  // |expect_player_requests_data|.
+  void StartVideoDecoderJob(bool expect_player_requests_data) {
+    Start(CreateVideoDemuxerConfigs(), expect_player_requests_data);
+  }
+
+  // Starts decoding the data. Verifies player behavior relative to
+  // |expect_player_requests_data|.
+  void Start(const DemuxerConfigs& configs, bool expect_player_requests_data) {
+    bool has_audio = configs.audio_codec != kUnknownAudioCodec;
+    bool has_video = configs.video_codec != kUnknownVideoCodec;
+    int original_num_data_requests = demuxer_->num_data_requests();
+    int expected_request_delta = expect_player_requests_data ?
+        ((has_audio ? 1 : 0) + (has_video ? 1 : 0)) : 0;
+
     player_.OnDemuxerConfigsAvailable(configs);
     player_.Start();
+
     EXPECT_TRUE(player_.IsPlaying());
+    EXPECT_EQ(original_num_data_requests + expected_request_delta,
+              demuxer_->num_data_requests());
+
+    // Verify player has decoder job iff the config included the media type for
+    // the job and the player is expected to request data due to Start(), above.
+    EXPECT_EQ(expect_player_requests_data && has_audio,
+              GetMediaDecoderJob(true) != NULL);
+    EXPECT_EQ(expect_player_requests_data && has_video,
+              GetMediaDecoderJob(false) != NULL);
   }
 
   AccessUnit CreateAccessUnitWithData(bool is_audio, int audio_packet_id) {
@@ -351,23 +386,21 @@ class MediaSourcePlayerTest : public testing::Test {
     EXPECT_EQ(0, demuxer_->num_data_requests());
     EXPECT_EQ(0.0, GetPrerollTimestamp().InMillisecondsF());
     EXPECT_EQ(player_.GetCurrentTime(), GetPrerollTimestamp());
-    StartAudioDecoderJob();
-    EXPECT_TRUE(GetMediaDecoderJob(true));
+    StartAudioDecoderJob(true);
     EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
     player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
     EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
     player_.SeekTo(seek_time);
     EXPECT_EQ(0.0, GetPrerollTimestamp().InMillisecondsF());
-    EXPECT_EQ(1, demuxer_->num_data_requests());
     EXPECT_EQ(0, demuxer_->num_seek_requests());
   }
 
-  // Seek, including simulated receipt of |kAborted| read between SeekTo()
-  // and OnDemuxerSeekDone(). Use this helper method only when the player
-  // already has created the decoder job.
-  void SeekPlayer(bool is_audio, const base::TimeDelta& seek_time) {
-    EXPECT_TRUE(GetMediaDecoderJob(is_audio));
-
+  // Seek, including simulated receipt of |kAborted| read between SeekTo() and
+  // OnDemuxerSeekDone(). Use this helper method only when the player already
+  // has created the decoder job. Exactly one request for more data is expected
+  // following the seek, so use this helper for players with only audio or only
+  // video.
+  void SeekPlayerWithAbort(bool is_audio, const base::TimeDelta& seek_time) {
     int original_num_seeks = demuxer_->num_seek_requests();
     int original_num_data_requests = demuxer_->num_data_requests();
 
@@ -379,12 +412,11 @@ class MediaSourcePlayerTest : public testing::Test {
     // request is satisfied.
     EXPECT_EQ(original_num_seeks, demuxer_->num_seek_requests());
 
-    // Simulate seeking causes the demuxer to abort the outstanding read caused
-    // by the seek.
+    // Simulate seeking causes the demuxer to abort the outstanding read
+    // caused by the seek.
     player_.OnDemuxerDataAvailable(CreateAbortedAck(is_audio));
 
-    // Verify that the seek is requested now that the outstanding read is
-    // completed by aborted access unit.
+    // Verify that the seek is requested.
     EXPECT_EQ(original_num_seeks + 1, demuxer_->num_seek_requests());
 
     // Send back the seek done notification. This should trigger the player to
@@ -418,17 +450,14 @@ class MediaSourcePlayerTest : public testing::Test {
   // browser seek results once decode completes and surface change processing
   // begins.
   void BrowserSeekPlayer(bool trigger_with_release_start) {
-    int expected_num_data_requests = demuxer_->num_data_requests();
+    int expected_num_data_requests = demuxer_->num_data_requests() + 1;
     int expected_num_seek_requests = demuxer_->num_seek_requests();
     int expected_num_browser_seek_requests =
         demuxer_->num_browser_seek_requests();
 
     EXPECT_FALSE(GetMediaDecoderJob(false));
     CreateNextTextureAndSetVideoSurface();
-    StartVideoDecoderJob();
-    EXPECT_TRUE(GetMediaDecoderJob(false));
-    expected_num_data_requests++;
-    EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
+    StartVideoDecoderJob(true);
 
     if (trigger_with_release_start) {
       ReleasePlayer();
@@ -438,10 +467,9 @@ class MediaSourcePlayerTest : public testing::Test {
       EXPECT_FALSE(GetMediaDecoderJob(false));
       EXPECT_FALSE(player_.IsPlaying());
       EXPECT_EQ(expected_num_seek_requests, demuxer_->num_seek_requests());
-      EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
 
       CreateNextTextureAndSetVideoSurface();
-      player_.Start();
+      StartVideoDecoderJob(false);
     } else {
       // Simulate demuxer's response to the video data request.
       player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
@@ -456,19 +484,12 @@ class MediaSourcePlayerTest : public testing::Test {
       // Browser seek should not begin until decoding has completed.
       EXPECT_TRUE(GetMediaDecoderJob(false));
       EXPECT_EQ(expected_num_seek_requests, demuxer_->num_seek_requests());
-      EXPECT_EQ(expected_num_browser_seek_requests,
-                demuxer_->num_browser_seek_requests());
 
       // Wait for the decoder job to finish decoding and be reset pending the
       // browser seek.
-      while (GetMediaDecoderJob(false) &&
-          GetMediaDecoderJob(false)->is_decoding()) {
+      while (GetMediaDecoderJob(false))
         message_loop_.RunUntilIdle();
-      }
     }
-
-    EXPECT_FALSE(GetMediaDecoderJob(false));
-    EXPECT_TRUE(player_.IsPlaying());
 
     // Only one browser seek should have been initiated, and no further data
     // should have been requested.
@@ -477,7 +498,7 @@ class MediaSourcePlayerTest : public testing::Test {
     EXPECT_EQ(expected_num_seek_requests, demuxer_->num_seek_requests());
     EXPECT_EQ(expected_num_browser_seek_requests,
               demuxer_->num_browser_seek_requests());
-    EXPECT_EQ(expected_num_data_requests, demuxer_->num_seek_requests());
+    EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
   }
 
   // Creates a new decoder job and feeds it data ending with a |kConfigChanged|
@@ -489,20 +510,17 @@ class MediaSourcePlayerTest : public testing::Test {
   void StartConfigChange(bool is_audio,
                          bool config_unit_in_prefetch,
                          int config_unit_index) {
-    int expected_num_data_requests = demuxer_->num_data_requests();
     int expected_num_config_requests = demuxer_->num_config_requests();
 
     EXPECT_FALSE(GetMediaDecoderJob(is_audio));
     if (is_audio) {
-      StartAudioDecoderJob();
+      StartAudioDecoderJob(true);
     } else {
       CreateNextTextureAndSetVideoSurface();
-      StartVideoDecoderJob();
+      StartVideoDecoderJob(true);
     }
-    EXPECT_TRUE(GetMediaDecoderJob(is_audio));
-    expected_num_data_requests++;
-    EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
-    EXPECT_EQ(expected_num_config_requests, demuxer_->num_config_requests());
+
+    int expected_num_data_requests = demuxer_->num_data_requests();
 
     // Feed and decode a standalone access unit so the player exits prefetch.
     if (!config_unit_in_prefetch) {
@@ -514,11 +532,11 @@ class MediaSourcePlayerTest : public testing::Test {
       message_loop_.Run();
 
       // We should have completed the prefetch phase at this point.
-      EXPECT_TRUE(GetMediaDecoderJob(is_audio));
       expected_num_data_requests++;
       EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
-      EXPECT_EQ(expected_num_config_requests, demuxer_->num_config_requests());
     }
+
+    EXPECT_EQ(expected_num_config_requests, demuxer_->num_config_requests());
 
     // Feed and decode access units with data for any units prior to
     // |config_unit_index|, and a |kConfigChanged| unit at that index.
@@ -526,12 +544,9 @@ class MediaSourcePlayerTest : public testing::Test {
     // new demuxer configs.
     player_.OnDemuxerDataAvailable(
         CreateReadFromDemuxerAckWithConfigChanged(is_audio, config_unit_index));
-    while (GetMediaDecoderJob(is_audio)->is_decoding())
-      message_loop_.RunUntilIdle();
+    WaitForDecodeDone(is_audio, !is_audio);
 
     expected_num_config_requests++;
-    EXPECT_TRUE(player_.IsPlaying());
-    EXPECT_TRUE(GetMediaDecoderJob(is_audio));
     EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
     EXPECT_EQ(expected_num_config_requests, demuxer_->num_config_requests());
   }
@@ -549,6 +564,110 @@ class MediaSourcePlayerTest : public testing::Test {
     surface_texture_a_is_next_ = !surface_texture_a_is_next_;
     gfx::ScopedJavaSurface surface = gfx::ScopedJavaSurface(surface_texture);
     player_.SetVideoSurface(surface.Pass());
+  }
+
+  // Wait for one or both of the jobs to complete decoding. Decoder jobs are
+  // assumed to exist for any stream whose decode completion is awaited.
+  void WaitForDecodeDone(bool wait_for_audio, bool wait_for_video) {
+    DCHECK(wait_for_audio || wait_for_video);
+
+    while ((wait_for_audio && GetMediaDecoderJob(true)->is_decoding()) ||
+           (wait_for_video && GetMediaDecoderJob(false)->is_decoding())) {
+      message_loop_.RunUntilIdle();
+    }
+  }
+
+  void WaitForAudioDecodeDone() {
+    WaitForDecodeDone(true, false);
+  }
+
+  void WaitForVideoDecodeDone() {
+    WaitForDecodeDone(false, true);
+  }
+
+  void WaitForAudioVideoDecodeDone() {
+    WaitForDecodeDone(true, true);
+  }
+
+  // If |send_eos| is true, generates EOS for the stream corresponding to
+  // |eos_for_audio|. Verifies that playback completes and no further data
+  // is requested.
+  // If |send_eos| is false, then it is assumed that caller previously arranged
+  // for player to receive EOS for each stream, but the player has not yet
+  // decoded all of them. In this case, |eos_for_audio| is ignored.
+  void VerifyPlaybackCompletesOnEOSDecode(bool send_eos, bool eos_for_audio) {
+    int original_num_data_requests = demuxer_->num_data_requests();
+    if (send_eos)
+      player_.OnDemuxerDataAvailable(CreateEOSAck(eos_for_audio));
+    EXPECT_FALSE(manager_.playback_completed());
+    message_loop_.Run();
+    EXPECT_TRUE(manager_.playback_completed());
+    EXPECT_EQ(original_num_data_requests, demuxer_->num_data_requests());
+  }
+
+  void VerifyCompletedPlaybackResumesOnSeekPlusStart(bool have_audio,
+                                                     bool have_video) {
+    DCHECK(have_audio || have_video);
+
+    EXPECT_TRUE(manager_.playback_completed());
+
+    player_.SeekTo(base::TimeDelta());
+    player_.OnDemuxerSeekDone(kNoTimestamp());
+    Start(CreateDemuxerConfigs(have_audio, have_video), true);
+  }
+
+  // Starts the appropriate decoder jobs according to |have_audio| and
+  // |have_video|. Then starts seek during decode of EOS or non-EOS according to
+  // |eos_audio| and |eos_video|. Simulates seek completion and verifies that
+  // playback never completed. |eos_{audio,video}| is ignored if the
+  // corresponding |have_{audio,video}| is false.
+  void VerifySeekDuringEOSDecodePreventsPlaybackCompletion(bool have_audio,
+                                                           bool have_video,
+                                                           bool eos_audio,
+                                                           bool eos_video) {
+    DCHECK(have_audio || have_video);
+
+    if (have_video)
+      CreateNextTextureAndSetVideoSurface();
+
+    Start(CreateDemuxerConfigs(have_audio, have_video), true);
+
+    if (have_audio)
+      player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+
+    if (have_video)
+      player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+
+    // Run until more data is requested a number of times equal to the number of
+    // media types configured. Since prefetching may be in progress, we cannot
+    // reliably expect Run() to complete until we have sent demuxer data for all
+    // configured media types, above.
+    for (int i = 0; i < (have_audio ? 1 : 0) + (have_video ? 1 : 0); i++)
+      message_loop_.Run();
+
+    // Simulate seek while decoding EOS or non-EOS for the appropriate
+    // stream(s).
+    if (have_audio) {
+      if (eos_audio)
+        player_.OnDemuxerDataAvailable(CreateEOSAck(true));
+      else
+        player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(1));
+    }
+
+    if (have_video) {
+      if (eos_video)
+        player_.OnDemuxerDataAvailable(CreateEOSAck(false));
+      else
+        player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+    }
+
+    player_.SeekTo(base::TimeDelta());
+    EXPECT_EQ(0, demuxer_->num_seek_requests());
+    WaitForDecodeDone(have_audio, have_video);
+    EXPECT_EQ(1, demuxer_->num_seek_requests());
+
+    player_.OnDemuxerSeekDone(kNoTimestamp());
+    EXPECT_FALSE(manager_.playback_completed());
   }
 
   base::TimeTicks StartTimeTicks() {
@@ -590,9 +709,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithValidConfig) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test audio decoder job will be created when codec is successfully started.
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
   EXPECT_EQ(0, demuxer_->num_seek_requests());
 }
 
@@ -606,9 +723,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
   uint8 invalid_codec_data[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
   configs.audio_extra_data.insert(configs.audio_extra_data.begin(),
                                  invalid_codec_data, invalid_codec_data + 4);
-  Start(configs);
-  EXPECT_FALSE(GetMediaDecoderJob(true));
-  EXPECT_EQ(0, demuxer_->num_data_requests());
+  Start(configs, false);
   EXPECT_EQ(0, demuxer_->num_seek_requests());
 }
 
@@ -616,10 +731,8 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test video decoder job will be created when surface is valid.
-  StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
-  EXPECT_FALSE(GetMediaDecoderJob(false));
-  EXPECT_EQ(0, demuxer_->num_data_requests());
+  StartVideoDecoderJob(false);
 
   // Set both an initial and a later video surface without receiving any
   // demuxed data yet.
@@ -644,14 +757,11 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
 TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
-  // Test video decoder job will be created when surface is valid.
+  // Test video decoder job will not be created when surface is invalid.
   scoped_refptr<gfx::SurfaceTexture> surface_texture(
       new gfx::SurfaceTexture(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
-  StartVideoDecoderJob();
-  // Video decoder job will not be created until surface is available.
-  EXPECT_FALSE(GetMediaDecoderJob(false));
-  EXPECT_EQ(0, demuxer_->num_data_requests());
+  StartVideoDecoderJob(false);
 
   // Release the surface texture.
   surface_texture = NULL;
@@ -668,11 +778,8 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test decoder job will resend a ReadFromDemuxer request after seek.
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
-  SeekPlayer(true, base::TimeDelta());
-  EXPECT_EQ(2, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
+  SeekPlayerWithAbort(true, base::TimeDelta());
 }
 
 TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
@@ -680,9 +787,8 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 
   // Test SetVideoSurface() will not cause an extra seek while the player is
   // waiting for demuxer to indicate seek is done.
-  StartVideoDecoderJob();
   // Player is still waiting for SetVideoSurface(), so no request is sent.
-  EXPECT_EQ(0, demuxer_->num_data_requests());
+  StartVideoDecoderJob(false);  // Verifies no data requested.
 
   // Initiate a seek. Skip requesting element seek of renderer.
   // Instead behave as if the renderer has asked us to seek.
@@ -713,10 +819,8 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
 
   // Test MediaSourcePlayer can switch multiple surfaces during decoding.
   CreateNextTextureAndSetVideoSurface();
-  StartVideoDecoderJob();
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartVideoDecoderJob(true);
   EXPECT_EQ(0, demuxer_->num_seek_requests());
-  EXPECT_TRUE(GetMediaDecoderJob(false));
 
   // Send the first input chunk.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
@@ -730,9 +834,8 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
 
   // Wait for the decoder job to finish decoding and be reset pending a browser
   // seek.
-  while (GetMediaDecoderJob(false) && GetMediaDecoderJob(false)->is_decoding())
+  while (GetMediaDecoderJob(false))
     message_loop_.RunUntilIdle();
-  EXPECT_FALSE(GetMediaDecoderJob(false));
 
   // Only one browser seek should have been initiated. No further data request
   // should have been processed on |message_loop_| before surface change event
@@ -755,7 +858,6 @@ TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {
   DemuxerConfigs configs = CreateAudioDemuxerConfigs(kCodecVorbis);
   player_.OnDemuxerConfigsAvailable(configs);
   EXPECT_FALSE(GetMediaDecoderJob(true));
-  EXPECT_EQ(0, demuxer_->num_data_requests());
 
   // Initiate a seek. Skip requesting element seek of renderer.
   // Instead behave as if the renderer has asked us to seek.
@@ -807,11 +909,9 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
 
   // Test that if the decoding job is not fully stopped after Pause(),
   // calling Start() will be a noop.
-  StartAudioDecoderJob();
+  StartAudioDecoderJob(true);
 
   MediaDecoderJob* decoder_job = GetMediaDecoderJob(true);
-  EXPECT_TRUE(decoder_job);
-  EXPECT_EQ(1, demuxer_->num_data_requests());
   EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
 
   // Sending data to player.
@@ -840,22 +940,15 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
 
   // Test that when Start() is called, video decoder jobs will wait for audio
   // decoder job before start decoding the data.
-  DemuxerConfigs configs = CreateAudioVideoDemuxerConfigs();
-  Start(configs);
-  EXPECT_EQ(0, demuxer_->num_data_requests());
-
   CreateNextTextureAndSetVideoSurface();
-
-  // Player should not seek the demuxer on setting initial surface.
-  EXPECT_EQ(0, demuxer_->num_seek_requests());
-
+  Start(CreateAudioVideoDemuxerConfigs(), true);
   MediaDecoderJob* audio_decoder_job = GetMediaDecoderJob(true);
   MediaDecoderJob* video_decoder_job = GetMediaDecoderJob(false);
-  EXPECT_EQ(2, demuxer_->num_data_requests());
+
   EXPECT_FALSE(audio_decoder_job->is_decoding());
   EXPECT_FALSE(video_decoder_job->is_decoding());
 
-  // Sending video data to player, audio decoder should not start.
+  // Sending video data to player, video decoder should not start.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_FALSE(video_decoder_job->is_decoding());
 
@@ -864,7 +957,7 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   EXPECT_TRUE(audio_decoder_job->is_decoding());
   EXPECT_TRUE(video_decoder_job->is_decoding());
 
-  // Reconfirm no seek occurred.
+  // No seeks should have occurred.
   EXPECT_EQ(0, demuxer_->num_seek_requests());
 }
 
@@ -872,9 +965,8 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test start time ticks will reset after decoder job underruns.
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
+
   // For the first couple chunks, the decoder job may return
   // DECODE_FORMAT_CHANGED status instead of DECODE_SUCCEEDED status. Decode
   // more frames to guarantee that DECODE_SUCCEEDED will be returned.
@@ -899,8 +991,7 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
   // Send new data to the decoder so it can finish the currently
   // pending decode.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(3));
-  while (GetMediaDecoderJob(true)->is_decoding())
-    message_loop_.RunUntilIdle();
+  WaitForAudioDecodeDone();
 
   // Verify the start time ticks is cleared at this point because the
   // player is prefetching.
@@ -915,102 +1006,227 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
   EXPECT_LE(100.0, (current - previous).InMillisecondsF());
 }
 
-TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
+TEST_F(MediaSourcePlayerTest, V_SecondAccessUnitIsEOSAndResumePlayAfterSeek) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
-  // Test MediaSourcePlayer will not request for new data after input EOS is
-  // reached.
+  // Test MediaSourcePlayer can replay video after input EOS is reached.
   CreateNextTextureAndSetVideoSurface();
-  StartVideoDecoderJob();
-  // Player should not seek the demuxer on setting initial surface.
-  EXPECT_EQ(0, demuxer_->num_seek_requests());
+  StartVideoDecoderJob(true);
 
-  EXPECT_EQ(1, demuxer_->num_data_requests());
   // Send the first input chunk.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   message_loop_.Run();
-  EXPECT_EQ(2, demuxer_->num_data_requests());
 
-  // Send EOS.
-  player_.OnDemuxerDataAvailable(CreateEOSAck(false));
-  message_loop_.Run();
-  // No more request for data should be made.
-  EXPECT_EQ(2, demuxer_->num_data_requests());
-
-  // Reconfirm no seek request has occurred.
-  EXPECT_EQ(0, demuxer_->num_seek_requests());
+  VerifyPlaybackCompletesOnEOSDecode(true, false);
+  VerifyCompletedPlaybackResumesOnSeekPlusStart(false, true);
 }
 
-TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
+TEST_F(MediaSourcePlayerTest, A_FirstAccessUnitIsEOSAndResumePlayAfterSeek) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
-  // Test MediaSourcePlayer can replay after input EOS is
-  // reached.
+  // Test decode of audio EOS buffer without any prior decode. See also
+  // http://b/11696552.
+  // Also tests that seeking+Start() after completing audio playback resumes
+  // playback.
+  Start(CreateAudioDemuxerConfigs(kCodecAAC), true);
+  VerifyPlaybackCompletesOnEOSDecode(true, true);
+  VerifyCompletedPlaybackResumesOnSeekPlusStart(true, false);
+}
+
+TEST_F(MediaSourcePlayerTest, V_FirstAccessUnitAfterSeekIsEOS) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test decode of video EOS buffer, just after seeking, without any prior
+  // decode (other than the simulated |kAborted| resulting from the seek
+  // process.)
   CreateNextTextureAndSetVideoSurface();
-  StartVideoDecoderJob();
+  StartVideoDecoderJob(true);
+  SeekPlayerWithAbort(false, base::TimeDelta());
+  VerifyPlaybackCompletesOnEOSDecode(true, false);
+}
 
-  // Player should not seek the demuxer on setting initial surface.
-  EXPECT_EQ(0, demuxer_->num_seek_requests());
+TEST_F(MediaSourcePlayerTest, A_FirstAccessUnitAfterSeekIsEOS) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
-  EXPECT_EQ(1, demuxer_->num_data_requests());
-  // Send the first input chunk.
-  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
-  message_loop_.Run();
+  // Test decode of audio EOS buffer, just after seeking, without any prior
+  // decode (other than the simulated |kAborted| resulting from the seek
+  // process.) See also http://b/11696552.
+  Start(CreateAudioDemuxerConfigs(kCodecAAC), true);
+  SeekPlayerWithAbort(true, base::TimeDelta());
+  VerifyPlaybackCompletesOnEOSDecode(true, true);
+}
+
+TEST_F(MediaSourcePlayerTest, AV_PlaybackCompletionAcrossConfigChange) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that if one stream (audio) has completed decode of EOS and the other
+  // stream (video) processes config change, that subsequent video EOS completes
+  // A/V playback.
+  // Also tests that seeking+Start() after completing playback resumes playback.
+  CreateNextTextureAndSetVideoSurface();
+  Start(CreateAudioVideoDemuxerConfigs(), true);
+
+  player_.OnDemuxerDataAvailable(CreateEOSAck(true));  // Audio EOS
+  EXPECT_EQ(0, demuxer_->num_config_requests());
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckWithConfigChanged(
+      false, 0));  // Video |kConfigChanged| as first unit.
+
+  WaitForAudioVideoDecodeDone();
+
+  EXPECT_EQ(1, demuxer_->num_config_requests());
   EXPECT_EQ(2, demuxer_->num_data_requests());
-
-  // Send EOS.
-  player_.OnDemuxerDataAvailable(CreateEOSAck(false));
-  message_loop_.Run();
-  // No more request for data should be made.
-  EXPECT_EQ(2, demuxer_->num_data_requests());
-
-  // Initiate a seek. Skip requesting element seek of renderer.
-  // Instead behave as if the renderer has asked us to seek.
-  player_.SeekTo(base::TimeDelta());
-  StartVideoDecoderJob();
-  EXPECT_EQ(1, demuxer_->num_seek_requests());
-  player_.OnDemuxerSeekDone(kNoTimestamp());
-  // Seek/Play after EOS should request more data.
+  player_.OnDemuxerConfigsAvailable(CreateAudioVideoDemuxerConfigs());
   EXPECT_EQ(3, demuxer_->num_data_requests());
 
-  // Reconfirm only 1 seek request has occurred.
-  EXPECT_EQ(1, demuxer_->num_seek_requests());
+  // At no time after completing audio EOS decode, above, should the
+  // audio decoder job resume decoding. Send and decode video EOS.
+  VerifyPlaybackCompletesOnEOSDecode(true, false);
+  VerifyCompletedPlaybackResumesOnSeekPlusStart(true, true);
 }
 
-TEST_F(MediaSourcePlayerTest, FirstDataIsEOS) {
+TEST_F(MediaSourcePlayerTest, VA_PlaybackCompletionAcrossConfigChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
-  // Test decode of EOS buffer without any prior decode. See also
-  // http://b/11696552.
-  Start(CreateAudioDemuxerConfigs(kCodecAAC));
-  EXPECT_TRUE(GetMediaDecoderJob(true));
+  // Test that if one stream (video) has completed decode of EOS and the other
+  // stream (audio) processes config change, that subsequent audio EOS completes
+  // A/V playback.
+  // Also tests that seeking+Start() after completing playback resumes playback.
+  CreateNextTextureAndSetVideoSurface();
+  Start(CreateAudioVideoDemuxerConfigs(), true);
 
-  EXPECT_EQ(1, demuxer_->num_data_requests());
-  player_.OnDemuxerDataAvailable(CreateEOSAck(true));
-  EXPECT_FALSE(manager_.playback_completed());
+  player_.OnDemuxerDataAvailable(CreateEOSAck(false));  // Video EOS
+  EXPECT_EQ(0, demuxer_->num_config_requests());
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckWithConfigChanged(
+      true, 0));  // Audio |kConfigChanged| as first unit.
 
-  message_loop_.Run();
-  EXPECT_TRUE(manager_.playback_completed());
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  WaitForAudioVideoDecodeDone();
+
+  // TODO(wolenetz/qinmin): Prevent redundant demuxer config request and change
+  // expectation to 1 here. See http://crbug.com/325528.
+  EXPECT_EQ(2, demuxer_->num_config_requests());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+  player_.OnDemuxerConfigsAvailable(CreateAudioVideoDemuxerConfigs());
+  EXPECT_EQ(3, demuxer_->num_data_requests());
+
+  // At no time after completing video EOS decode, above, should the
+  // video decoder job resume decoding. Send and decode audio EOS.
+  VerifyPlaybackCompletesOnEOSDecode(true, true);
+  VerifyCompletedPlaybackResumesOnSeekPlusStart(true, true);
 }
 
-TEST_F(MediaSourcePlayerTest, FirstDataAfterSeekIsEOS) {
+TEST_F(MediaSourcePlayerTest, AV_NoPrefetchForFinishedVideoOnAudioStarvation) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
-  // Test decode of EOS buffer, just after seeking, without any prior decode
-  // (other than the simulated |kAborted| resulting from the seek process.)
-  // See also http://b/11696552.
-  Start(CreateAudioDemuxerConfigs(kCodecAAC));
-  EXPECT_TRUE(GetMediaDecoderJob(true));
+  // Test that if one stream (video) has completed decode of EOS, prefetch
+  // resulting from player starvation occurs only for the other stream (audio),
+  // and responding to that prefetch with EOS completes A/V playback, even if
+  // another starvation occurs during the latter EOS's decode.
+  CreateNextTextureAndSetVideoSurface();
+  Start(CreateAudioVideoDemuxerConfigs(), true);
 
-  SeekPlayer(true, base::TimeDelta());
-  EXPECT_EQ(2, demuxer_->num_data_requests());
-  player_.OnDemuxerDataAvailable(CreateEOSAck(true));
-  EXPECT_FALSE(manager_.playback_completed());
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+  player_.OnDemuxerDataAvailable(CreateEOSAck(false));  // Video EOS
 
+  // Wait until video EOS is processed and more data (assumed to be audio) is
+  // requested.
+  while (demuxer_->num_data_requests() < 3)
+    message_loop_.RunUntilIdle();
+  WaitForVideoDecodeDone();
+  EXPECT_EQ(3, demuxer_->num_data_requests());
+
+  // Simulate decoder underrun to trigger prefetch while still decoding audio.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(1));
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding() &&
+              !GetMediaDecoderJob(false)->is_decoding());
+  TriggerPlayerStarvation();
+
+  // Complete the audio decode that was in progress when simulated player
+  // starvation was triggered.
+  WaitForAudioDecodeDone();
+  EXPECT_EQ(4, demuxer_->num_data_requests());
+
+  player_.OnDemuxerDataAvailable(CreateEOSAck(true));  // Audio EOS
+  EXPECT_FALSE(GetMediaDecoderJob(false)->is_decoding());
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+
+  // Simulate another decoder underrun to trigger prefetch while decoding EOS.
+  TriggerPlayerStarvation();
+  VerifyPlaybackCompletesOnEOSDecode(false, true /* ignored */);
+}
+
+TEST_F(MediaSourcePlayerTest, V_StarvationDuringEOSDecode) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that video-only playback completes without further data requested when
+  // starvation occurs during EOS decode.
+  CreateNextTextureAndSetVideoSurface();
+  StartVideoDecoderJob(true);
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   message_loop_.Run();
-  EXPECT_TRUE(manager_.playback_completed());
-  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // Simulate decoder underrun to trigger prefetch while decoding EOS.
+  player_.OnDemuxerDataAvailable(CreateEOSAck(false));  // Video EOS
+  EXPECT_TRUE(GetMediaDecoderJob(false)->is_decoding());
+  TriggerPlayerStarvation();
+  VerifyPlaybackCompletesOnEOSDecode(false, false /* ignored */);
+}
+
+TEST_F(MediaSourcePlayerTest, A_StarvationDuringEOSDecode) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that audio-only playback completes without further data requested when
+  // starvation occurs during EOS decode.
+  StartAudioDecoderJob(true);
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+  message_loop_.Run();
+
+  // Simulate decoder underrun to trigger prefetch while decoding EOS.
+  player_.OnDemuxerDataAvailable(CreateEOSAck(true));  // Audio EOS
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+  TriggerPlayerStarvation();
+  VerifyPlaybackCompletesOnEOSDecode(false, true /* ignored */);
+}
+
+TEST_F(MediaSourcePlayerTest, AV_SeekDuringEOSDecodePreventsCompletion) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that seek supercedes audio+video playback completion on simultaneous
+  // audio and video EOS decode, if SeekTo() occurs during these EOS decodes.
+  VerifySeekDuringEOSDecodePreventsPlaybackCompletion(true, true, true, true);
+}
+
+TEST_F(MediaSourcePlayerTest, AV_SeekDuringAudioEOSDecodePreventsCompletion) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that seek supercedes audio+video playback completion on simultaneous
+  // audio EOS and video non-EOS decode, if SeekTo() occurs during these
+  // decodes.
+  VerifySeekDuringEOSDecodePreventsPlaybackCompletion(true, true, true, false);
+}
+
+TEST_F(MediaSourcePlayerTest, AV_SeekDuringVideoEOSDecodePreventsCompletion) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that seek supercedes audio+video playback completion on simultaneous
+  // audio non-EOS and video EOS decode, if SeekTo() occurs during these
+  // decodes.
+  VerifySeekDuringEOSDecodePreventsPlaybackCompletion(true, true, false, true);
+}
+
+TEST_F(MediaSourcePlayerTest, V_SeekDuringEOSDecodePreventsCompletion) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that seek supercedes video-only playback completion on EOS decode, if
+  // SeekTo() occurs during EOS decode.
+  VerifySeekDuringEOSDecodePreventsPlaybackCompletion(false, true, false, true);
+}
+
+TEST_F(MediaSourcePlayerTest, A_SeekDuringEOSDecodePreventsCompletion) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that seek supercedes audio-only playback completion on EOS decode, if
+  // SeekTo() occurs during EOS decode.
+  VerifySeekDuringEOSDecodePreventsPlaybackCompletion(true, false, true, false);
 }
 
 TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
@@ -1018,16 +1234,12 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
 
   // Test that the decoder will not request new data after receiving an aborted
   // access unit.
-  StartAudioDecoderJob();
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
 
   // Send an aborted access unit.
   player_.OnDemuxerDataAvailable(CreateAbortedAck(true));
-
   EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
-  // Wait for the decoder job to finish decoding.
-  while (GetMediaDecoderJob(true)->is_decoding())
-    message_loop_.RunUntilIdle();
+  WaitForAudioDecodeDone();
 
   // No request will be sent for new data.
   EXPECT_EQ(1, demuxer_->num_data_requests());
@@ -1041,15 +1253,15 @@ TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
 
   // Test that the decoder should not crash if demuxer data arrives after
   // Release().
-  StartAudioDecoderJob();
-  EXPECT_EQ(1, demuxer_->num_data_requests());
-  EXPECT_TRUE(GetMediaDecoderJob(true));
+  StartAudioDecoderJob(true);
 
   ReleasePlayer();
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
 
   // The decoder job should have been released.
   EXPECT_FALSE(player_.IsPlaying());
+
+  // No further data should have been requested.
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
   // No seek requests should have occurred.
@@ -1062,7 +1274,6 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_RegularSeekPendsBrowserSeekDone) {
   // Test that a browser seek, once started, delays a newly arrived regular
   // SeekTo() request's demuxer seek until the browser seek is done.
   BrowserSeekPlayer(false);
-  EXPECT_EQ(1, demuxer_->num_data_requests());
 
   // Simulate renderer requesting a regular seek while browser seek in progress.
   player_.SeekTo(base::TimeDelta());
@@ -1093,10 +1304,7 @@ TEST_F(MediaSourcePlayerTest, NoSeekForInitialReleaseAndStart) {
   // Test that no seek is requested if player Release() + Start() occurs prior
   // to receiving any data.
   CreateNextTextureAndSetVideoSurface();
-  StartVideoDecoderJob();
-  EXPECT_EQ(1, demuxer_->num_data_requests());
-  EXPECT_TRUE(GetMediaDecoderJob(false));
-
+  StartVideoDecoderJob(true);
   ReleasePlayer();
 
   // Pass a new non-empty surface.
@@ -1107,9 +1315,9 @@ TEST_F(MediaSourcePlayerTest, NoSeekForInitialReleaseAndStart) {
   // TODO(wolenetz/qinmin): Multiple in-flight data requests for same stream
   // should be prevented. See http://crbug.com/306314.
   EXPECT_EQ(2, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(false));
 
   EXPECT_EQ(0, demuxer_->num_seek_requests());
-  EXPECT_TRUE(GetMediaDecoderJob(false));
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_MidStreamReleaseAndStart) {
@@ -1131,11 +1339,9 @@ TEST_F(MediaSourcePlayerTest, PrerollAudioAfterSeek) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test decoder job will preroll the media to the seek position.
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
 
-  SeekPlayer(true, base::TimeDelta::FromMilliseconds(100));
+  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
 
@@ -1162,11 +1368,9 @@ TEST_F(MediaSourcePlayerTest, PrerollVideoAfterSeek) {
 
   // Test decoder job will preroll the media to the seek position.
   CreateNextTextureAndSetVideoSurface();
-  StartVideoDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(false));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartVideoDecoderJob(true);
 
-  SeekPlayer(false, base::TimeDelta::FromMilliseconds(100));
+  SeekPlayerWithAbort(false, base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsPrerolling(false));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
 
@@ -1192,6 +1396,7 @@ TEST_F(MediaSourcePlayerTest, PrerollVideoAfterSeek) {
   // streams depends on decoder output, which may be initially inaccurate, and
   // encoded video test data may also need updating. Verify at least that AU
   // timestamp-based preroll logic has determined video preroll has completed.
+  // See http://crbug.com/310823 and http://b/11356652.
   EXPECT_FALSE(IsPrerolling(false));
 }
 
@@ -1200,10 +1405,8 @@ TEST_F(MediaSourcePlayerTest, SeekingAfterCompletingPrerollRestartsPreroll) {
 
   // Test decoder job will begin prerolling upon seek, when it was not
   // prerolling prior to the seek.
-  StartAudioDecoderJob();
+  StartAudioDecoderJob(true);
   MediaDecoderJob* decoder_job = GetMediaDecoderJob(true);
-  EXPECT_TRUE(decoder_job);
-  EXPECT_EQ(1, demuxer_->num_data_requests());
   EXPECT_TRUE(IsPrerolling(true));
 
   // Complete the initial preroll by feeding data to the decoder.
@@ -1215,7 +1418,7 @@ TEST_F(MediaSourcePlayerTest, SeekingAfterCompletingPrerollRestartsPreroll) {
   EXPECT_LT(0.0, player_.GetCurrentTime().InMillisecondsF());
   EXPECT_FALSE(IsPrerolling(true));
 
-  SeekPlayer(true, base::TimeDelta::FromMilliseconds(500));
+  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(500));
 
   // Prerolling should have begun again.
   EXPECT_TRUE(IsPrerolling(true));
@@ -1244,11 +1447,9 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossReleaseAndStart) {
 
   // Test decoder job will resume media prerolling if interrupted by Release()
   // and Start().
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
 
-  SeekPlayer(true, base::TimeDelta::FromMilliseconds(100));
+  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
 
@@ -1275,8 +1476,7 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossReleaseAndStart) {
       player_.OnDemuxerDataAvailable(data);
       message_loop_.RunUntilIdle();
       EXPECT_FALSE(GetMediaDecoderJob(true));
-      StartAudioDecoderJob();
-      EXPECT_TRUE(GetMediaDecoderJob(true));
+      StartAudioDecoderJob(true);
     } else {
       player_.OnDemuxerDataAvailable(data);
       EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
@@ -1301,11 +1501,9 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
 
   // Test decoder job will resume media prerolling if interrupted by
   // |kConfigChanged| and OnDemuxerConfigsAvailable().
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
-  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(true);
 
-  SeekPlayer(true, base::TimeDelta::FromMilliseconds(100));
+  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
 
@@ -1344,11 +1542,10 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
   // Test that the player allows simultaneous audio and video config change,
   // such as might occur during OnPrefetchDone() if next access unit for both
   // audio and video jobs is |kConfigChanged|.
-  Start(CreateAudioVideoDemuxerConfigs());
   CreateNextTextureAndSetVideoSurface();
+  Start(CreateAudioVideoDemuxerConfigs(), true);
   MediaDecoderJob* first_audio_job = GetMediaDecoderJob(true);
   MediaDecoderJob* first_video_job = GetMediaDecoderJob(false);
-  EXPECT_TRUE(first_audio_job && first_video_job);
 
   // Simulate audio |kConfigChanged| prefetched as standalone access unit.
   player_.OnDemuxerDataAvailable(
@@ -1359,7 +1556,7 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
   player_.OnDemuxerDataAvailable(
       CreateReadFromDemuxerAckWithConfigChanged(false, 0));
   EXPECT_EQ(1, demuxer_->num_config_requests());  // OnPrefetchDone() occurred.
-  EXPECT_EQ(2, demuxer_->num_data_requests());
+  EXPECT_EQ(2, demuxer_->num_data_requests());  // No more data requested yet.
 
   // No job re-creation should occur until the requested configs arrive.
   EXPECT_EQ(first_audio_job, GetMediaDecoderJob(true));
@@ -1558,7 +1755,7 @@ TEST_F(MediaSourcePlayerTest, ReleaseWithOnPrefetchDoneAlreadyPosted) {
   // is posted to run |prefetch_cb| if the job already HasData().
   // TODO(wolenetz): Remove MSP::set_decode_callback_for_testing() if this test
   // becomes obsolete. See http://crbug.com/304234.
-  StartAudioDecoderJob();
+  StartAudioDecoderJob(true);
 
   // Escape the original prefetch by decoding a single access unit.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
@@ -1569,8 +1766,7 @@ TEST_F(MediaSourcePlayerTest, ReleaseWithOnPrefetchDoneAlreadyPosted) {
   // post task to run OnPrefetchDone().
   player_.OnDemuxerDataAvailable(
       CreateReadFromDemuxerAckWithConfigChanged(true, 4));
-  EXPECT_TRUE(GetMediaDecoderJob(true) &&
-      GetMediaDecoderJob(true)->is_decoding());
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
 
   // Simulate decoder underrun, so trivial prefetch starts while still decoding.
   // The prefetch and posting of OnPrefetchDone() will not occur until next
@@ -1588,8 +1784,7 @@ TEST_F(MediaSourcePlayerTest, ReleaseWithOnPrefetchDoneAlreadyPosted) {
   EXPECT_EQ(2, demuxer_->num_data_requests());
 
   // Player should have no decoder job until after Start().
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
+  StartAudioDecoderJob(true);
 }
 
 TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekAndDone) {
@@ -1611,11 +1806,9 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekAndDone) {
 
   // Player should begin prefetch and resume preroll upon Start().
   EXPECT_EQ(1, demuxer_->num_data_requests());
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
+  StartAudioDecoderJob(true);
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
-  EXPECT_EQ(2, demuxer_->num_data_requests());
 
   // No further seek should have been requested since Release(), above.
   EXPECT_EQ(1, demuxer_->num_seek_requests());
@@ -1636,9 +1829,8 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekThenStart) {
 
   // Player should not prefetch upon Start() nor create the decoder job, due to
   // awaiting DemuxerSeekDone.
-  StartAudioDecoderJob();
-  EXPECT_FALSE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(false);
 
   player_.OnDemuxerSeekDone(kNoTimestamp());
   EXPECT_TRUE(GetMediaDecoderJob(true));
@@ -1658,8 +1850,7 @@ TEST_F(MediaSourcePlayerTest, SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
   // player will resume correct post-seek preroll upon Start().
   StartAudioDecoderJobAndSeekToWhileDecoding(
       base::TimeDelta::FromMilliseconds(100));
-  while (GetMediaDecoderJob(true)->is_decoding())
-    message_loop_.RunUntilIdle();
+  WaitForAudioDecodeDone();
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 
   ReleasePlayer();
@@ -1670,11 +1861,9 @@ TEST_F(MediaSourcePlayerTest, SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
 
   // Player should begin prefetch and resume preroll upon Start().
   EXPECT_EQ(1, demuxer_->num_data_requests());
-  StartAudioDecoderJob();
-  EXPECT_TRUE(GetMediaDecoderJob(true));
+  StartAudioDecoderJob(true);
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
-  EXPECT_EQ(2, demuxer_->num_data_requests());
 
   // No further seek should have been requested since before Release(), above.
   EXPECT_EQ(1, demuxer_->num_seek_requests());
@@ -1684,19 +1873,17 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeeK IPC
-  // request OnDemuxerSeekDone() does not occur until after the next Start(),
-  // then the player remains pending seek done until (and resumes correct
-  // post-seek preroll after) OnDemuxerSeekDone().
+  // request and OnDemuxerSeekDone() does not occur until after the next
+  // Start(), then the player remains pending seek done until (and resumes
+  // correct post-seek preroll after) OnDemuxerSeekDone().
   StartAudioDecoderJobAndSeekToWhileDecoding(
       base::TimeDelta::FromMilliseconds(100));
-  while (GetMediaDecoderJob(true)->is_decoding())
-    message_loop_.RunUntilIdle();
+  WaitForAudioDecodeDone();
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 
   ReleasePlayer();
-  StartAudioDecoderJob();
-  EXPECT_FALSE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob(false);
 
   player_.OnDemuxerSeekDone(kNoTimestamp());
   EXPECT_TRUE(GetMediaDecoderJob(true));
@@ -1773,13 +1960,11 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenDemuxerSeekDone) {
 
   // Player should begin prefetch and resume preroll upon Start().
   EXPECT_EQ(1, demuxer_->num_data_requests());
-  StartVideoDecoderJob();
   CreateNextTextureAndSetVideoSurface();
-  EXPECT_TRUE(GetMediaDecoderJob(false));
+  StartVideoDecoderJob(true);
   EXPECT_TRUE(IsPrerolling(false));
   EXPECT_EQ(expected_preroll_timestamp, GetPrerollTimestamp());
   EXPECT_EQ(expected_preroll_timestamp, player_.GetCurrentTime());
-  EXPECT_EQ(2, demuxer_->num_data_requests());
 
   // No further seek should have been requested since BrowserSeekPlayer().
   EXPECT_EQ(1, demuxer_->num_seek_requests());
@@ -1797,10 +1982,9 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenStart) {
   base::TimeDelta expected_preroll_timestamp = player_.GetCurrentTime();
   ReleasePlayer();
 
-  StartVideoDecoderJob();
-  CreateNextTextureAndSetVideoSurface();
-  EXPECT_FALSE(GetMediaDecoderJob(false));
   EXPECT_EQ(1, demuxer_->num_data_requests());
+  CreateNextTextureAndSetVideoSurface();
+  StartVideoDecoderJob(false);
 
   player_.OnDemuxerSeekDone(expected_preroll_timestamp);
   EXPECT_TRUE(GetMediaDecoderJob(false));
