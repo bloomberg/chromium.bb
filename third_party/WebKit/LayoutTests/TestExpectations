@@ -289,8 +289,6 @@ crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
 crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
-crbug.com/325496 fast/speech/input-appearance-searchandspeech.html [ NeedsRebaseline ]
-crbug.com/325496 fast/speech/input-appearance-speechbutton.html [ NeedsRebaseline ]
 
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
