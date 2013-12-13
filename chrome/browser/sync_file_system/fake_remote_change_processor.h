@@ -58,8 +58,14 @@ class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
   void UpdateLocalFileMetadata(
     const fileapi::FileSystemURL& url,
     const FileChange& change);
+  void ClearLocalChanges(const fileapi::FileSystemURL& url);
 
   const URLToFileChangesMap& GetAppliedRemoteChanges() const;
+
+  // Compare |applied_changes_| with |expected_changes|.
+  // This internally calls EXPECT_FOO, ASSERT_FOO methods in the
+  // verification.
+  void VerifyConsistency(const URLToFileChangesMap& expected_changes);
 
  private:
   // History of file changes given by ApplyRemoteChange(). Changes are arranged

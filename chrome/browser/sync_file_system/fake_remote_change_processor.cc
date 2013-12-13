@@ -11,6 +11,7 @@
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -120,9 +121,47 @@ void FakeRemoteChangeProcessor::UpdateLocalFileMetadata(
   local_changes_[url].Update(change);
 }
 
+void FakeRemoteChangeProcessor::ClearLocalChanges(
+    const fileapi::FileSystemURL& url) {
+  local_changes_.erase(url);
+}
+
 const FakeRemoteChangeProcessor::URLToFileChangesMap&
 FakeRemoteChangeProcessor::GetAppliedRemoteChanges() const {
   return applied_changes_;
+}
+
+void FakeRemoteChangeProcessor::VerifyConsistency(
+    const URLToFileChangesMap& expected_changes) {
+  EXPECT_EQ(expected_changes.size(), applied_changes_.size());
+  for (URLToFileChangesMap::const_iterator itr = applied_changes_.begin();
+       itr != applied_changes_.end(); ++itr) {
+    const fileapi::FileSystemURL& url = itr->first;
+    URLToFileChangesMap::const_iterator found = expected_changes.find(url);
+    if (found == expected_changes.end()) {
+      EXPECT_TRUE(found != expected_changes.end())
+          << "Change not expected for " << url.DebugString();
+      continue;
+    }
+
+    const std::vector<FileChange>& applied = itr->second;
+    const std::vector<FileChange>& expected = found->second;
+
+    if (applied.empty() || expected.empty()) {
+      EXPECT_TRUE(!applied.empty());
+      EXPECT_TRUE(!expected.empty());
+      continue;
+    }
+
+    EXPECT_EQ(expected.size(), applied.size());
+
+    for (size_t i = 0; i < applied.size() && i < expected.size(); ++i) {
+      EXPECT_EQ(expected[i], applied[i])
+          << url.DebugString()
+          << " expected:" << expected[i].DebugString()
+          << " applied:" << applied[i].DebugString();
+    }
+  }
 }
 
 }  // namespace sync_file_system

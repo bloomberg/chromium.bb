@@ -193,30 +193,7 @@ class RemoteToLocalSyncerTest : public testing::Test,
   }
 
   void VerifyConsistency() {
-    URLToFileChangesMap applied_changes =
-        fake_remote_change_processor_->GetAppliedRemoteChanges();
-    EXPECT_EQ(expected_changes_.size(), applied_changes.size());
-
-    for (URLToFileChangesMap::const_iterator itr = applied_changes.begin();
-         itr != applied_changes.end(); ++itr) {
-      const fileapi::FileSystemURL& url = itr->first;
-      URLToFileChangesMap::const_iterator found = expected_changes_.find(url);
-      if (found == expected_changes_.end()) {
-        EXPECT_TRUE(found != expected_changes_.end());
-        continue;
-      }
-
-      if (itr->second.empty() || found->second.empty()) {
-        EXPECT_TRUE(!itr->second.empty());
-        EXPECT_TRUE(!found->second.empty());
-        continue;
-      }
-
-      EXPECT_EQ(found->second.back().change(),
-                itr->second.back().change()) << url.DebugString();
-      EXPECT_EQ(found->second.back().file_type(),
-                itr->second.back().file_type()) << url.DebugString();
-    }
+    fake_remote_change_processor_->VerifyConsistency(expected_changes_);
   }
 
  private:
@@ -478,10 +455,6 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateNestedFolderOnFile) {
   VerifyConsistency();
 
   const std::string folder = CreateRemoteFolder(app_root, "folder");
-
-  AppendExpectedChange(URL(kOrigin, "/folder"),
-                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       SYNC_FILE_TYPE_DIRECTORY);
 
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
