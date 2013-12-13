@@ -34,7 +34,7 @@ class TabAutofillManagerDelegate
   virtual ~TabAutofillManagerDelegate();
 
   // Called when the tab corresponding to |this| instance is activated.
-  void TabActivated(int reason);
+  void TabActivated();
 
   // AutofillManagerDelegate implementation.
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
@@ -78,6 +78,10 @@ class TabAutofillManagerDelegate
   // Exposed for testing.
   AutofillDialogController* GetDialogControllerForTesting() {
     return dialog_controller_.get();
+  }
+  void SetDialogControllerForTesting(
+      const base::WeakPtr<AutofillDialogController>& dialog_controller) {
+    dialog_controller_ = dialog_controller;
   }
 
  private:

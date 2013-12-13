@@ -46,10 +46,7 @@ TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
   DCHECK(!popup_controller_);
 }
 
-void TabAutofillManagerDelegate::TabActivated(int reason) {
-  if (reason != TabStripModelObserver::CHANGE_REASON_USER_GESTURE)
-    return;
-
+void TabAutofillManagerDelegate::TabActivated() {
   if (dialog_controller_.get())
     dialog_controller_->TabActivated();
 }

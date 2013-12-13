@@ -179,6 +179,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::AccountChooserModelForTesting;
+  using AutofillDialogControllerImpl::
+      ClearLastWalletItemsFetchTimestampForTesting;
 
   void set_use_validation(bool use_validation) {
     use_validation_ = use_validation;
@@ -1249,6 +1251,32 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   int num_tabs = browser()->tab_strip_model()->count();
   sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
   EXPECT_EQ(num_tabs + 1, browser()->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RefreshOnManageTabClose) {
+  ASSERT_TRUE(browser()->is_type_tabbed());
+
+  // GetWalletItems() is called when controller() is created in SetUp().
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
+
+  content::WebContents* dialog_invoker = controller()->GetWebContents();
+  TabAutofillManagerDelegate::FromWebContents(dialog_invoker)->
+      SetDialogControllerForTesting(controller()->AsWeakPtr());
+
+  // Open a new tab by selecting "Manage my shipping details..." in Wallet mode.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_NE(dialog_invoker, GetActiveWebContents());
+
+  // Closing the tab opened by "Manage my shipping details..." should refresh
+  // the dialog.
+  controller()->ClearLastWalletItemsFetchTimestampForTesting();
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  GetActiveWebContents()->Close();
 }
 
 }  // namespace autofill

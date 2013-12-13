@@ -1118,7 +1118,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     instant_controller_->ActiveTabChanged();
 
   autofill::TabAutofillManagerDelegate::FromWebContents(new_contents)->
-      TabActivated(reason);
+      TabActivated();
   SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
 }
 
