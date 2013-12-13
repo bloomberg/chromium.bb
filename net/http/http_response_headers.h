@@ -251,12 +251,25 @@ class NET_EXPORT HttpResponseHeaders
   bool IsChunkEncoded() const;
 
 #if defined (SPDY_PROXY_AUTH_ORIGIN)
+  // Contains instructions contained in the Chrome-Proxy header.
+  struct ChromeProxyInfo {
+    ChromeProxyInfo() : bypass_all(false) {}
+
+    // True if Chrome should bypass all available Chrome proxies. False if only
+    // the currently connected Chrome proxy should be bypassed.
+    bool bypass_all;
+
+    // Amount of time to bypass the Chrome proxy or proxies.
+    base::TimeDelta bypass_duration;
+  };
+
   // Returns true if the Chrome-Proxy header is present and contains a bypass
-  // delay. Sets |bypass_duration| to the specified delay if greater than 0, and
-  // to 0 otherwise to indicate that the default proxy delay (as specified in
-  // |ProxyList::UpdateRetryInfoOnFallback|) should be used. |bypass_duration|
-  // must be non-NULL.
-  bool GetChromeProxyInfo(base::TimeDelta* bypass_duration) const;
+  // delay. Sets |proxy_info->bypass_duration| to the specified delay if greater
+  // than 0, and to 0 otherwise to indicate that the default proxy delay
+  // (as specified in |ProxyList::UpdateRetryInfoOnFallback|) should be used.
+  // If all available Chrome proxies should by bypassed, |bypass_all| is set to
+  // true. |proxy_info| must be non-NULL.
+  bool GetChromeProxyInfo(ChromeProxyInfo* proxy_info) const;
 #endif
 
   // Creates a Value for use with the NetLog containing the response headers.
@@ -356,6 +369,13 @@ class NET_EXPORT HttpResponseHeaders
 
   // Adds the set of transport security state headers.
   static void AddSecurityStateHeaders(HeaderSet* header_names);
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  // Searches for the specified Chrome-Proxy action, and if present interprets
+  // its value as a duration in seconds.
+  bool GetChromeProxyBypassDuration(const std::string& action_prefix,
+                                    base::TimeDelta* duration) const;
+#endif
 
   // We keep a list of ParsedHeader objects.  These tell us where to locate the
   // header-value pairs within raw_headers_.

@@ -1884,79 +1884,76 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
      const char* headers;
      bool expected_result;
      int64 expected_retry_delay;
+     bool expected_bypass_all;
   } tests[] = {
     { "HTTP/1.1 200 OK\n"
       "Content-Length: 999\n",
       false,
       0,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Content-Length: 999\n",
       false,
       0,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "connection: proxy-bypass\n"
-      "Content-Length: 999\n",
-      true,
-      0,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "connection: proxy-bypass\n"
-      "Chrome-Proxy: bypass=86400\n"
-      "Content-Length: 999\n",
-      true,
-      86400
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=86400\n"
       "Content-Length: 999\n",
       true,
-      86400
+      86400,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=0\n"
       "Content-Length: 999\n",
       true,
-      0
+      0,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=-1\n"
       "Content-Length: 999\n",
       false,
-      0
+      0,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=xyz\n"
       "Content-Length: 999\n",
       false,
-      0
+      0,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass\n"
       "Content-Length: 999\n",
       false,
-      0
+      0,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: foo=abc, bypass=86400\n"
       "Content-Length: 999\n",
       true,
-      86400
+      86400,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=86400, bar=abc\n"
       "Content-Length: 999\n",
       true,
-      86400
+      86400,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -1964,21 +1961,24 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
       "Chrome-Proxy: bypass=86400\n"
       "Content-Length: 999\n",
       true,
-      3600
+      3600,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=3600, bypass=86400\n"
       "Content-Length: 999\n",
       true,
-      3600
+      3600,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
       "Chrome-Proxy: bypass=, bypass=86400\n"
       "Content-Length: 999\n",
       true,
-      86400
+      86400,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -1986,7 +1986,32 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
       "Chrome-Proxy: bypass=86400\n"
       "Content-Length: 999\n",
       true,
-      86400
+      86400,
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block=, block=3600\n"
+      "Content-Length: 999\n",
+      true,
+      3600,
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: bypass=86400, block=3600\n"
+      "Content-Length: 999\n",
+      true,
+      3600,
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: proxy-bypass\n"
+      "Chrome-Proxy: block=, bypass=86400\n"
+      "Content-Length: 999\n",
+      true,
+      86400,
+      false,
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
@@ -1995,10 +2020,13 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
     scoped_refptr<net::HttpResponseHeaders> parsed(
         new net::HttpResponseHeaders(headers));
 
-    base::TimeDelta duration;
+    net::HttpResponseHeaders::ChromeProxyInfo chrome_proxy_info;
     EXPECT_EQ(tests[i].expected_result,
-              parsed->GetChromeProxyInfo(&duration));
-    EXPECT_EQ(tests[i].expected_retry_delay, duration.InSeconds());
+              parsed->GetChromeProxyInfo(&chrome_proxy_info));
+    EXPECT_EQ(tests[i].expected_retry_delay,
+              chrome_proxy_info.bypass_duration.InSeconds());
+    EXPECT_EQ(tests[i].expected_bypass_all,
+              chrome_proxy_info.bypass_all);
   }
 }
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)

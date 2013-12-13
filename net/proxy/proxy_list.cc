@@ -185,16 +185,39 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
     NOTREACHED();
     return false;
   }
-  UpdateRetryInfoOnFallback(proxy_retry_info, base::TimeDelta(), net_log);
+  UpdateRetryInfoOnFallback(proxy_retry_info, base::TimeDelta(), ProxyServer(),
+                            net_log);
 
   // Remove this proxy from our list.
   proxies_.erase(proxies_.begin());
   return !proxies_.empty();
 }
 
-void ProxyList::UpdateRetryInfoOnFallback(ProxyRetryInfoMap* proxy_retry_info,
-                                          base::TimeDelta retry_delay,
-                                          const BoundNetLog& net_log) const {
+void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
+                                    base::TimeDelta retry_delay,
+                                    const std::string& proxy_key,
+                                    const BoundNetLog& net_log) const {
+  // Mark this proxy as bad.
+  ProxyRetryInfoMap::iterator iter = proxy_retry_info->find(proxy_key);
+  if (iter != proxy_retry_info->end()) {
+    // TODO(nsylvain): This is not the first time we get this. We should
+    // double the retry time. Bug 997660.
+    iter->second.bad_until = TimeTicks::Now() + iter->second.current_delay;
+  } else {
+    ProxyRetryInfo retry_info;
+    retry_info.current_delay = retry_delay;
+    retry_info.bad_until = TimeTicks().Now() + retry_info.current_delay;
+    (*proxy_retry_info)[proxy_key] = retry_info;
+  }
+  net_log.AddEvent(NetLog::TYPE_PROXY_LIST_FALLBACK,
+                   NetLog::StringCallback("bad_proxy", &proxy_key));
+}
+
+void ProxyList::UpdateRetryInfoOnFallback(
+    ProxyRetryInfoMap* proxy_retry_info,
+    base::TimeDelta retry_delay,
+    const ProxyServer& another_proxy_to_bypass,
+    const BoundNetLog& net_log) const {
   // Time to wait before retrying a bad proxy server.
   if (retry_delay == base::TimeDelta()) {
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
@@ -214,20 +237,21 @@ void ProxyList::UpdateRetryInfoOnFallback(ProxyRetryInfoMap* proxy_retry_info,
 
   if (!proxies_[0].is_direct()) {
     std::string key = proxies_[0].ToURI();
-    // Mark this proxy as bad.
-    ProxyRetryInfoMap::iterator iter = proxy_retry_info->find(key);
-    if (iter != proxy_retry_info->end()) {
-      // TODO(nsylvain): This is not the first time we get this. We should
-      // double the retry time. Bug 997660.
-      iter->second.bad_until = TimeTicks::Now() + iter->second.current_delay;
-    } else {
-      ProxyRetryInfo retry_info;
-      retry_info.current_delay = retry_delay;
-      retry_info.bad_until = TimeTicks().Now() + retry_info.current_delay;
-      (*proxy_retry_info)[key] = retry_info;
+    AddProxyToRetryList(proxy_retry_info, retry_delay, key, net_log);
+
+    // If additional proxies to bypass are specified, add these to the retry
+    // map as well.
+    if (another_proxy_to_bypass.is_valid()) {
+      // Start at index 1 because index 0 is already handled above.
+      for (size_t j = 1; j < proxies_.size(); ++j) {
+        if (proxies_[j].is_direct())
+          break;
+        if (another_proxy_to_bypass == proxies_[j]) {
+          key = proxies_[j].ToURI();
+          AddProxyToRetryList(proxy_retry_info, retry_delay, key, net_log);
+        }
+      }
     }
-    net_log.AddEvent(NetLog::TYPE_PROXY_LIST_FALLBACK,
-                     NetLog::StringCallback("bad_proxy", &key));
   }
 }
 

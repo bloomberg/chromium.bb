@@ -61,7 +61,13 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "url/gurl.h"
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "net/proxy/proxy_server.h"
+#endif
+
+
 using base::Time;
+using base::TimeDelta;
 
 namespace net {
 
@@ -951,7 +957,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   if (response_.was_fetched_via_proxy && response_.headers.get() != NULL) {
     ProxyService::DataReductionProxyBypassEventType proxy_bypass_event =
         ProxyService::BYPASS_EVENT_TYPE_MAX;
-    base::TimeDelta bypass_duration;
+    net::HttpResponseHeaders::ChromeProxyInfo chrome_proxy_info;
     bool chrome_proxy_used =
         proxy_info_.proxy_server().isDataReductionProxy();
     bool chrome_fallback_proxy_used = false;
@@ -963,11 +969,11 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 #endif
 
     if (chrome_proxy_used || chrome_fallback_proxy_used) {
-      if (response_.headers->GetChromeProxyInfo(&bypass_duration)) {
-        proxy_bypass_event =
-            (bypass_duration < base::TimeDelta::FromMinutes(30) ?
-                ProxyService::SHORT_BYPASS :
-                ProxyService::LONG_BYPASS);
+      if (response_.headers->GetChromeProxyInfo(&chrome_proxy_info)) {
+        if (chrome_proxy_info.bypass_duration < TimeDelta::FromMinutes(30))
+          proxy_bypass_event = ProxyService::SHORT_BYPASS;
+        else
+          proxy_bypass_event = ProxyService::LONG_BYPASS;
       } else {
         // Additionally, fallback if a 500 or 502 is returned via the data
         // reduction proxy. This is conservative, as the 500 or 502 might have
@@ -985,8 +991,23 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
         proxy_service->RecordDataReductionProxyBypassInfo(
             chrome_proxy_used, proxy_info_.proxy_server(), proxy_bypass_event);
 
-        if (proxy_service->MarkProxyAsBad(proxy_info_, bypass_duration,
-                                          net_log_)) {
+        ProxyServer proxy_server;
+#if defined(DATA_REDUCTION_FALLBACK_HOST)
+        if (chrome_proxy_used && chrome_proxy_info.bypass_all) {
+          // TODO(bengr): Rename as DATA_REDUCTION_FALLBACK_ORIGIN.
+          GURL proxy_url(DATA_REDUCTION_FALLBACK_HOST);
+          if (proxy_url.SchemeIsHTTPOrHTTPS()) {
+            proxy_server = ProxyServer(proxy_url.SchemeIs("http") ?
+                                           ProxyServer::SCHEME_HTTP :
+                                           ProxyServer::SCHEME_HTTPS,
+                                       HostPortPair::FromURL(proxy_url));
+            }
+        }
+#endif
+        if (proxy_service->MarkProxiesAsBad(proxy_info_,
+                                            chrome_proxy_info.bypass_duration,
+                                            proxy_server,
+                                            net_log_)) {
           // Only retry in the case of GETs. We don't want to resubmit a POST
           // if the proxy took some action.
           if (request_->method == "GET") {
@@ -997,7 +1018,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
       }
     }
   }
-#endif
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   // Like Net.HttpResponseCode, but only for MAIN_FRAME loads.
   if (request_->load_flags & LOAD_MAIN_FRAME) {

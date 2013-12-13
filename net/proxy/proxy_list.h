@@ -92,12 +92,26 @@ class NET_EXPORT_PRIVATE ProxyList {
   // is bad. This is distinct from Fallback(), above, to allow updating proxy
   // retry information without modifying a given transction's proxy list. Will
   // retry after |retry_delay| if positive, and will use the default proxy retry
-  // duration otherwise.
-  void UpdateRetryInfoOnFallback(ProxyRetryInfoMap* proxy_retry_info,
-                                 base::TimeDelta retry_delay,
-                                 const BoundNetLog& net_log) const;
+  // duration otherwise. Additionally updates |proxy_retry_info| with
+  // |another_proxy_to_bypass| if non-empty.
+  void UpdateRetryInfoOnFallback(
+      ProxyRetryInfoMap* proxy_retry_info,
+      base::TimeDelta retry_delay,
+      const ProxyServer& another_proxy_to_bypass,
+      const BoundNetLog& net_log) const;
 
  private:
+  // Updates |proxy_retry_info| to indicate that the proxy in |proxies_| with
+  // the URI of |proxy_key| is bad. The |proxy_key| must start with the scheme
+  // (only if https) followed by the host and  then an explicit port. For
+  // example, if the proxy origin is https://proxy.chromium.org:443/ the key is
+  // https://proxy.chrome.org:443 whereas if the origin is
+  // http://proxy.chrome.org/, the key is proxy.chrome.org:80.
+  void AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
+                           base::TimeDelta retry_delay,
+                           const std::string& proxy_key,
+                           const BoundNetLog& net_log) const;
+
   // List of proxies.
   std::vector<ProxyServer> proxies_;
 };
