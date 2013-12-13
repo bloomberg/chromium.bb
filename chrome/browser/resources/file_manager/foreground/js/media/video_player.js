@@ -125,7 +125,7 @@ var video;
 var controls;
 var metadataCache;
 var volumeManager;
-var selectedItemFilesystemPath;
+var selectedEntry;
 
 /**
  * Initialize the video player window.
@@ -170,9 +170,10 @@ function loadVideoPlayer() {
  * @param {Event} event The unmount event.
  */
 function onExternallyUnmounted(event) {
-  if (!selectedItemFilesystemPath)
+  if (!selectedEntry)
     return;
-  if (selectedItemFilesystemPath.indexOf(event.mountPath) == 0)
+
+  if (volumeManager.getVolumeInfo(selectedEntry) === event.volumeInfo)
     window.close();
 }
 
@@ -200,81 +201,88 @@ function reload() {
   controls.inactivityWatcher.disabled = false;
   decodeErrorOccured = false;
 
-  var src;
+  var url;
   if (window.appState) {
     util.saveAppState();
-    src = window.appState.url;
+    url = window.appState.url;
   } else {
-    src = document.location.search.substr(1);
-  }
-  if (!src) {
-    showErrorMessage('GALLERY_VIDEO_ERROR');
-    return;
+    url = document.location.search.substr(1);
   }
 
-  document.title = decodeURIComponent(src.split('/').pop());
+  document.title = decodeURIComponent(url.split('/').pop());
+  var queue = new AsyncUtil.Queue();
 
-  metadataCache.get(src, 'streaming', function(streaming) {
-    if (streaming && !navigator.onLine) {
-      showErrorMessage('GALLERY_VIDEO_OFFLINE');
+  queue.run(function(callback) {
+    webkitResolveLocalFileSystemURL(url,
+      function(entry) {
+        selectedEntry = entry;
+        callback();
+      }, function() {
+        console.warn('Failed to resolve entry for: ' + url);
+        callback();
+      });
+  });
+
+
+  queue.run(function(callback) {
+    if (!selectedEntry) {
+      showErrorMessage('GALLERY_VIDEO_ERROR');
       return;
     }
+    metadataCache.get(selectedEntry, 'streaming', function(streaming) {
+      if (streaming && !navigator.onLine) {
+        showErrorMessage('GALLERY_VIDEO_OFFLINE');
+        return;
+      }
 
-    // Detach the previous video element, if exists.
-    if (video)
-      video.parentNode.removeChild(video);
+      // Detach the previous video element, if exists.
+      if (video)
+        video.parentNode.removeChild(video);
 
-    video = document.createElement('video');
-    document.querySelector('#video-container').appendChild(video);
-    controls.attachMedia(video);
+      video = document.createElement('video');
+      document.querySelector('#video-container').appendChild(video);
+      controls.attachMedia(video);
 
-    video.src = src;
-    video.load();
-    video.addEventListener('loadedmetadata', function() {
-      // TODO: chrome.app.window soon will be able to resize the content area.
-      // Until then use approximate title bar height.
-      var TITLE_HEIGHT = 28;
+      video.src = selectedEntry.toURL();
+      video.load();
+      video.addEventListener('loadedmetadata', function() {
+        // TODO: chrome.app.window soon will be able to resize the content area.
+        // Until then use approximate title bar height.
+        var TITLE_HEIGHT = 28;
 
-      var aspect = video.videoWidth / video.videoHeight;
-      var newWidth = video.videoWidth;
-      var newHeight = video.videoHeight + TITLE_HEIGHT;
+        var aspect = video.videoWidth / video.videoHeight;
+        var newWidth = video.videoWidth;
+        var newHeight = video.videoHeight + TITLE_HEIGHT;
 
-      var shrinkX = newWidth / window.screen.availWidth;
-      var shrinkY = newHeight / window.screen.availHeight;
-      if (shrinkX > 1 || shrinkY > 1) {
-        if (shrinkY > shrinkX) {
-          newHeight = newHeight / shrinkY;
-          newWidth = (newHeight - TITLE_HEIGHT) * aspect;
-        } else {
-          newWidth = newWidth / shrinkX;
-          newHeight = newWidth / aspect + TITLE_HEIGHT;
+        var shrinkX = newWidth / window.screen.availWidth;
+        var shrinkY = newHeight / window.screen.availHeight;
+        if (shrinkX > 1 || shrinkY > 1) {
+          if (shrinkY > shrinkX) {
+            newHeight = newHeight / shrinkY;
+            newWidth = (newHeight - TITLE_HEIGHT) * aspect;
+          } else {
+            newWidth = newWidth / shrinkX;
+            newHeight = newWidth / aspect + TITLE_HEIGHT;
+          }
         }
-      }
 
-      var oldLeft = window.screenX;
-      var oldTop = window.screenY;
-      var oldWidth = window.outerWidth;
-      var oldHeight = window.outerHeight;
+        var oldLeft = window.screenX;
+        var oldTop = window.screenY;
+        var oldWidth = window.outerWidth;
+        var oldHeight = window.outerHeight;
 
-      if (!oldWidth && !oldHeight) {
-        oldLeft = window.screen.availWidth / 2;
-        oldTop = window.screen.availHeight / 2;
-      }
+        if (!oldWidth && !oldHeight) {
+          oldLeft = window.screen.availWidth / 2;
+          oldTop = window.screen.availHeight / 2;
+        }
 
-      var appWindow = chrome.app.window.current();
-      appWindow.resizeTo(newWidth, newHeight);
-      appWindow.moveTo(oldLeft - (newWidth - oldWidth) / 2,
-                       oldTop - (newHeight - oldHeight) / 2);
-      appWindow.show();
-    });
-
-    // Resolve real filesystem path of the current video.
-    selectedItemFilesystemPath = null;
-    webkitResolveLocalFileSystemURL(src,
-      function(entry) {
-        if (video && video.src != src) return;
-        selectedItemFilesystemPath = entry.fullPath;
+        var appWindow = chrome.app.window.current();
+        appWindow.resizeTo(newWidth, newHeight);
+        appWindow.moveTo(oldLeft - (newWidth - oldWidth) / 2,
+                         oldTop - (newHeight - oldHeight) / 2);
+        appWindow.show();
       });
+    });
   });
 }
 
