@@ -94,8 +94,11 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
       SkBitmapDevice device(bitmap);
       SkCanvas canvas(&device);
+      PicturePileImpl::Analysis analysis;
 
       base::TimeTicks start = Now();
+      picture_pile->AnalyzeInRect(
+          content_rect, contents_scale, &analysis, NULL);
       picture_pile->RasterToBitmap(&canvas, content_rect, contents_scale, NULL);
       base::TimeTicks end = Now();
       base::TimeDelta duration = end - start;

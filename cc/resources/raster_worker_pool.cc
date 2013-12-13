@@ -87,7 +87,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     DCHECK(picture_clone);
 
-    picture_clone->AnalyzeInRect(content_rect_, contents_scale_, &analysis_);
+    picture_clone->AnalyzeInRect(
+        content_rect_, contents_scale_, &analysis_, rendering_stats_);
 
     // Record the solid color prediction.
     UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",

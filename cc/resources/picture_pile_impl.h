@@ -57,8 +57,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   void RasterForAnalysis(
       skia::AnalysisCanvas* canvas,
       gfx::Rect canvas_rect,
-      float contents_scale);
-
+      float contents_scale,
+      RenderingStatsInstrumentation* stats_instrumentation);
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
@@ -74,6 +74,11 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   void AnalyzeInRect(gfx::Rect content_rect,
                      float contents_scale,
                      Analysis* analysis);
+
+  void AnalyzeInRect(gfx::Rect content_rect,
+                     float contents_scale,
+                     Analysis* analysis,
+                     RenderingStatsInstrumentation* stats_instrumentation);
 
   class CC_EXPORT PixelRefIterator {
    public:
@@ -134,7 +139,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       SkDrawPictureCallback* callback,
       gfx::Rect canvas_rect,
       float contents_scale,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      bool is_analysis);
 
   // Once instantiated, |clones_for_drawing_| can't be modified.  This
   // guarantees thread-safe access during the life time of a PicturePileImpl

@@ -99,4 +99,13 @@ void RenderingStatsInstrumentation::AddRaster(base::TimeDelta duration,
   impl_stats_.rasterized_pixel_count += pixels;
 }
 
+void RenderingStatsInstrumentation::AddAnalysis(base::TimeDelta duration,
+                                                int64 pixels) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  impl_stats_.analysis_time += duration;
+}
+
 }  // namespace cc
