@@ -180,6 +180,15 @@ class PlatformVerificationFlow
                          bool consent_required,
                          ConsentResponse consent_response);
 
+  // Initiates the flow to get a platform key certificate.  The arguments to
+  // ChallengePlatformKey are in |context|.  |user_id| identifies the user for
+  // which to get a certificate.  If |force_new_key| is true then any existing
+  // key for the same user and service will be ignored and a new key will be
+  // generated and certified.
+  void GetCertificate(const ChallengeContext& context,
+                      const std::string& user_id,
+                      bool force_new_key);
+
   // A callback called when an attestation certificate request operation
   // completes.  The arguments to ChallengePlatformKey are in |context|.
   // |user_id| identifies the user for which the certificate was requested.
@@ -251,6 +260,9 @@ class PlatformVerificationFlow
   void RecordDomainConsent(HostContentSettingsMap* content_settings,
                            const GURL& url,
                            bool allow_domain);
+
+  // Returns true iff |certificate| is an expired X.509 certificate.
+  bool IsExpired(const std::string& certificate);
 
   void set_testing_prefs(PrefService* testing_prefs) {
     testing_prefs_ = testing_prefs;

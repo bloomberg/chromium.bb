@@ -599,6 +599,8 @@
         'browser/chromeos/accessibility/magnification_manager_unittest.cc',
         'browser/chromeos/attestation/attestation_ca_client_unittest.cc',
         'browser/chromeos/attestation/attestation_policy_observer_unittest.cc',
+        'browser/chromeos/attestation/fake_certificate.cc',
+        'browser/chromeos/attestation/fake_certificate.h',
         'browser/chromeos/attestation/platform_verification_flow_unittest.cc',
         'browser/chromeos/contacts/contact_database_unittest.cc',
         'browser/chromeos/contacts/contact_manager_stub.cc',

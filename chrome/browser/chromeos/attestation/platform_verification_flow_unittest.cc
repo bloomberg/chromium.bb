@@ -10,6 +10,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
+#include "chrome/browser/chromeos/attestation/fake_certificate.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -123,6 +124,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
       : message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         certificate_success_(true),
+        fake_certificate_index_(0),
         sign_challenge_success_(true),
         result_(PlatformVerificationFlow::INTERNAL_ERROR) {}
 
@@ -265,10 +267,14 @@ class PlatformVerificationFlowTest : public ::testing::Test {
 
   void FakeGetCertificate(
       const AttestationFlow::CertificateCallback& callback) {
+    std::string certificate =
+        (fake_certificate_index_ < fake_certificate_list_.size()) ?
+            fake_certificate_list_[fake_certificate_index_] : kTestCertificate;
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback,
                                                       certificate_success_,
-                                                      kTestCertificate));
+                                                      certificate));
+    ++fake_certificate_index_;
   }
 
   void FakeSignChallenge(
@@ -317,6 +323,8 @@ class PlatformVerificationFlowTest : public ::testing::Test {
 
   // Controls result of FakeGetCertificate.
   bool certificate_success_;
+  std::vector<std::string> fake_certificate_list_;
+  size_t fake_certificate_index_;
 
   // Controls result of FakeSignChallenge.
   bool sign_challenge_success_;
@@ -457,6 +465,19 @@ TEST_F(PlatformVerificationFlowTest, Timeout) {
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::TIMEOUT, result_);
+}
+
+TEST_F(PlatformVerificationFlowTest, ExpiredCert) {
+  ExpectAttestationFlow();
+  fake_certificate_list_.resize(2);
+  ASSERT_TRUE(GetFakeCertificate(base::TimeDelta::FromDays(-1),
+                                 &fake_certificate_list_[0]));
+  ASSERT_TRUE(GetFakeCertificate(base::TimeDelta::FromDays(1),
+                                 &fake_certificate_list_[1]));
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
+  EXPECT_EQ(certificate_, fake_certificate_list_[1]);
 }
 
 }  // namespace attestation

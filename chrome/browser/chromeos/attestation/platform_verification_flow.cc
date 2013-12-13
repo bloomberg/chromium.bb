@@ -31,6 +31,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "net/cert/x509_certificate.h"
 
 namespace {
 
@@ -143,7 +144,6 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     return;
   }
   if (!IsAttestationEnabled(web_contents)) {
-    LOG(INFO) << "PlatformVerificationFlow: Feature disabled.";
     ReportError(callback, POLICY_REJECTED);
     return;
   }
@@ -208,7 +208,6 @@ void PlatformVerificationFlow::OnConsentResponse(
       return;
     }
     if (consent_response == CONSENT_RESPONSE_DENY) {
-      LOG(INFO) << "PlatformVerificationFlow: User rejected request.";
       content::RecordAction(
           content::UserMetricsAction("PlatformVerificationRejected"));
       ReportError(context.callback, USER_REJECTED);
@@ -228,6 +227,12 @@ void PlatformVerificationFlow::OnConsentResponse(
     return;
   }
 
+  GetCertificate(context, user->email(), false /* Don't force a new key */);
+}
+
+void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
+                                              const std::string& user_id,
+                                              bool force_new_key) {
   scoped_ptr<base::Timer> timer(new base::Timer(false,    // Don't retain.
                                                 false));  // Don't repeat.
   base::Closure timeout_callback = base::Bind(
@@ -240,13 +245,13 @@ void PlatformVerificationFlow::OnConsentResponse(
       &PlatformVerificationFlow::OnCertificateReady,
       this,
       context,
-      user->email(),
+      user_id,
       base::Passed(&timer));
   attestation_flow_->GetCertificate(
       PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-      user->email(),
+      user_id,
       context.service_id,
-      false,  // Don't force a new key.
+      force_new_key,
       certificate_callback);
 }
 
@@ -269,6 +274,10 @@ void PlatformVerificationFlow::OnCertificateReady(
   timer->Stop();
   if (!operation_success) {
     ReportError(context.callback, PLATFORM_NOT_VERIFIED);
+    return;
+  }
+  if (IsExpired(certificate)) {
+    GetCertificate(context, user_id, true /* Force a new key */);
     return;
   }
   cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback = base::Bind(
@@ -311,7 +320,6 @@ void PlatformVerificationFlow::OnChallengeReady(
                        signed_data_pb.data(),
                        signed_data_pb.signature(),
                        certificate);
-  LOG(INFO) << "PlatformVerificationFlow: Platform successfully verified.";
 }
 
 PrefService* PlatformVerificationFlow::GetPrefs(
@@ -440,6 +448,17 @@ void PlatformVerificationFlow::RecordDomainConsent(
   } else {
     LOG(WARNING) << "Not recording action: invalid URL pattern";
   }
+}
+
+bool PlatformVerificationFlow::IsExpired(const std::string& certificate) {
+  scoped_refptr<net::X509Certificate> x509(
+      net::X509Certificate::CreateFromBytes(certificate.data(),
+                                            certificate.length()));
+  if (!x509.get() || x509->valid_expiry().is_null()) {
+    LOG(WARNING) << "Failed to parse certificate, cannot check expiry.";
+    return false;
+  }
+  return (base::Time::Now() > x509->valid_expiry());
 }
 
 }  // namespace attestation
