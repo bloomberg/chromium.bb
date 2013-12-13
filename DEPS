@@ -17,6 +17,8 @@ vars = {
   # If you do not know, use the full path while defining your new deps entry.
   "googlecode_url": "http://%s.googlecode.com/svn",
   "sourceforge_url": "http://svn.code.sf.net/p/%(repo)s/code",
+  "llvm_url": "http://llvm.org/svn/llvm-project",
+  "libcxx_revision": "196895",
   "webkit_trunk": "http://src.chromium.org/blink/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "163831",
@@ -112,6 +114,18 @@ deps = {
   "src/third_party/leveldatabase/src":
     (Var("googlecode_url") % "leveldb") + "/trunk@78",
 
+  "src/third_party/libc++/include":
+    Var("llvm_url") + "/libcxx/trunk/include@" + Var("libcxx_revision"),
+  
+  "src/third_party/libc++/src":
+    Var("llvm_url") + "/libcxx/trunk/src@" + Var("libcxx_revision"),
+
+  "src/third_party/libc++abi/include":
+    Var("llvm_url") + "/libcxxabi/trunk/include@" + Var("libcxx_revision"),
+  
+  "src/third_party/libc++abi/src":
+    Var("llvm_url") + "/libcxxabi/trunk/src@" + Var("libcxx_revision"),
+  
   "src/third_party/snappy/src":
     (Var("googlecode_url") % "snappy") + "/trunk@80",
 
