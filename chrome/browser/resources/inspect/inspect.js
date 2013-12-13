@@ -136,6 +136,8 @@ function populateRemoteTargets(devices) {
       deviceList.querySelectorAll('.device'),
       removeObsolete.bind(null, newDeviceIds));
 
+  $('devices-help').hidden = !!devices.length;
+
   for (var d = 0; d < devices.length; d++) {
     var device = devices[d];
 

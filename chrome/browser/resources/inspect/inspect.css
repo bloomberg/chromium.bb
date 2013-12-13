@@ -74,6 +74,10 @@ img {
   padding-bottom: 10px;
 }
 
+#devices-help {
+  margin-top: 10px;
+}
+
 .device-header {
   -webkit-box-align: baseline;
   -webkit-box-orient: horizontal;
