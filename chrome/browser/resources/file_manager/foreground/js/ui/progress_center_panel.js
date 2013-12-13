@@ -11,9 +11,34 @@
  * @constructor
  */
 var ProgressCenterPanel = function(element) {
+  /**
+   * Root element of the progress center.
+   * @type {!HTMLElement}
+   * @private
+   */
   this.element_ = element;
+
+  /**
+   * Open view containing multiple progress items.
+   * @type {!HTMLElement}
+   * @private
+   */
   this.openView_ = this.element_.querySelector('#progress-center-open-view');
+
+  /**
+   * Close view that is a summarized progress item.
+   * @type {!HTMLElement}
+   * @private
+   */
   this.closeView_ = this.element_.querySelector('#progress-center-close-view');
+
+  /**
+   * Toggle animation rule of the progress center.
+   * @type {!CSSKeyFrameRule}
+   * @private
+   */
+  this.toggleAnimation_ = ProgressCenterPanel.getToggleAnimation_(
+      element.ownerDocument);
 
   /**
    * Reset is requested but it is pending until the transition of progress bar
@@ -22,13 +47,6 @@ var ProgressCenterPanel = function(element) {
    * @private
    */
   this.resetRequested_ = false;
-
-  /**
-   * Only progress item in the close view.
-   * @type {!HTMLElement}
-   * @private
-   */
-  this.closeViewItem_ = this.closeView_.querySelector('li');
 
   /**
    * Callback to becalled with the ID of the progress item when the cancel
@@ -40,6 +58,8 @@ var ProgressCenterPanel = function(element) {
 
   // Register event handlers.
   element.addEventListener('click', this.onClick_.bind(this));
+  element.addEventListener(
+      'webkitAnimationEnd', this.onToggleAnimationEnd_.bind(this));
   element.addEventListener(
       'webkitTransitionEnd', this.onItemTransitionEnd_.bind(this));
 };
@@ -55,11 +75,8 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
   element.setAttribute('data-progress-id', item.id);
   element.setAttribute('data-progress-max', item.progressMax);
   element.setAttribute('data-progress-value', item.progressValue);
-  element.className = '';
-  if (item.state === ProgressItemState.ERROR)
-    element.classList.add('error');
-  if (item.cancelable)
-    element.classList.add('cancelable');
+  element.classList.toggle('error', item.state === ProgressItemState.ERROR);
+  element.classList.toggle('cancelable', item.cancelable);
 
   // Only when the previousWidthRate is not NaN (when style width is already
   // set) and the progress rate increases, we use transition animation.
@@ -86,6 +103,26 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
 };
 
 /**
+ * Obtains the toggle animation keyframes rule from the document.
+ * @param {HTMLDocument} document Document containing the rule.
+ * @return {CSSKeyFrameRules} Animation rule.
+ * @private
+ */
+ProgressCenterPanel.getToggleAnimation_ = function(document) {
+  for (var i = 0; i < document.styleSheets.length; i++) {
+    var styleSheet = document.styleSheets[i];
+    for (var j = 0; j < styleSheet.cssRules.length; j++) {
+      var rule = styleSheet.cssRules[j];
+      if (rule.type === CSSRule.WEBKIT_KEYFRAMES_RULE &&
+          rule.name === 'progress-center-toggle') {
+        return rule;
+      }
+    }
+  }
+  throw new Error('The progress-center-toggle rules is not found.');
+};
+
+/**
  * Updates an item to the progress center panel.
  * @param {!ProgressCenterItem} item Item including new contents.
  */
@@ -94,9 +131,7 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
   if (this.resetRequested_)
     this.reset(true);
 
-  // Update the item.
   var itemElement = this.getItemElement_(item.id);
-  var removed = false;
 
   // Check whether the item should be displayed or not by referring its state.
   switch (item.state) {
@@ -143,7 +178,7 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
  */
 ProgressCenterPanel.prototype.updateCloseView = function(summarizedItem) {
   this.closeView_.classList.toggle('single', !summarizedItem.summarized);
-  ProgressCenterPanel.updateItemElement_(this.closeViewItem_, summarizedItem);
+  ProgressCenterPanel.updateItemElement_(this.closeView_, summarizedItem);
 };
 
 /**
@@ -164,11 +199,11 @@ ProgressCenterPanel.prototype.reset = function(opt_force) {
   this.openView_.innerHTML = '';
 
   // Clear track width of close view.
-  this.closeViewItem_.querySelector('.progress-track').style.width = '';
+  this.closeView_.querySelector('.progress-track').style.width = '';
 
   // Hide the progress center.
   this.element_.hidden = true;
-  this.closeViewItem_.querySelector('.progress-track').hidden = true;
+  this.closeView_.querySelector('.progress-track').hidden = true;
   this.element_.classList.remove('opened');
 };
 
@@ -216,6 +251,20 @@ ProgressCenterPanel.prototype.createNewItemElement_ = function() {
 };
 
 /**
+ * Handles the animation end event of the progress center.
+ * @param {Event} event Animation end event.
+ * @private
+ */
+ProgressCenterPanel.prototype.onToggleAnimationEnd_ = function(event) {
+  // Transition end of the root element's height.
+  if (event.target === this.element_ &&
+      event.animationName === 'progress-center-toggle') {
+    this.element_.classList.remove('animated');
+    return;
+  }
+};
+
+/**
  * Handles the transition end event of items.
  * @param {Event} event Transition end event.
  * @private
@@ -225,10 +274,10 @@ ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
   if (!itemElement.hasAttribute('pre-complete') ||
       event.propertyName !== 'width')
     return;
-  if (itemElement !== this.closeViewItem_)
+  if (itemElement !== this.closeView_)
     this.openView_.removeChild(itemElement);
-  else
-    itemElement.removeAttribute('pre-complete');
+  itemElement.removeAttribute('pre-complete');
+
   if (this.resetRequested_)
     this.reset();
 };
@@ -243,12 +292,35 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
   if (event.target.classList.contains('toggle') &&
       (!this.closeView_.classList.contains('single') ||
        this.element_.classList.contains('opened'))) {
+
+    // If the progress center has already animated, just return.
+    if (this.element_.classList.contains('animated'))
+      return;
+
+    // Obtains current and target height.
+    var currentHeight;
+    var targetHeight;
+    if (this.element_.classList.contains('opened')) {
+      currentHeight = this.openView_.getBoundingClientRect().height;
+      targetHeight = this.closeView_.getBoundingClientRect().height;
+    } else {
+      currentHeight = this.closeView_.getBoundingClientRect().height;
+      targetHeight = this.openView_.getBoundingClientRect().height;
+    }
+
+    // Set styles for animation.
+    this.toggleAnimation_.cssRules[0].style.height = currentHeight + 'px';
+    this.toggleAnimation_.cssRules[1].style.height = targetHeight + 'px';
+    this.element_.classList.add('animated');
     this.element_.classList.toggle('opened');
     return;
   }
 
   // Cancel button.
-  if (this.cancelCallback)
-    this.cancelCallback(
-        event.target.parentNode.parentNode.getAttribute('data-progress-id'));
+  if (this.cancelCallback) {
+    var id = event.target.classList.contains('toggle') ?
+        this.closeView_.getAttribute('data-progress-id') :
+        event.target.parentNode.parentNode.getAttribute('data-progress-id');
+    this.cancelCallback(id);
+  }
 };
