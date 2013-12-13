@@ -47,8 +47,8 @@ std::set<std::string> GetUniqueMimeTypes(
     const std::vector<std::string>& mime_type_list) {
   std::set<std::string> mime_types;
   for (size_t i = 0; i < mime_type_list.size(); ++i) {
-    std::string mime_type;
-    // We'll skip empty MIME types.
+    const std::string mime_type = mime_type_list[i];
+    // We'll skip empty MIME types and existing MIME types.
     if (!mime_type.empty())
       mime_types.insert(mime_type);
   }

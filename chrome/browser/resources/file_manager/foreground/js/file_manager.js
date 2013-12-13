@@ -1751,8 +1751,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     } else {
       var extensions = [];
 
-      for (var i = 0; i < selection.urls.length; i++) {
-        var match = /\.(\w+)$/g.exec(selection.urls[i]);
+      for (var i = 0; i < selection.entries.length; i++) {
+        var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
         if (match) {
           var ext = match[1].toUpperCase();
           if (extensions.indexOf(ext) == -1) {
@@ -1775,7 +1775,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
-
   /**
    * Sets the given task as default, when this task is applicable.
    *
@@ -1785,8 +1784,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
     // TODO(dgozman): move this method closer to tasks.
     var selection = this.getSelection();
-    chrome.fileBrowserPrivate.setDefaultTask(task.taskId,
-      selection.urls, selection.mimeTypes);
+    chrome.fileBrowserPrivate.setDefaultTask(
+        task.taskId,
+        util.entriesToURLs(selection.entries),
+        selection.mimeTypes);
     selection.tasks = new FileTasks(this);
     selection.tasks.init(selection.entries, selection.mimeTypes);
     selection.tasks.display(this.taskItems_);
