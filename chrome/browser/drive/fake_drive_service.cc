@@ -126,6 +126,22 @@ void EntryActionCallbackAdapter(
   callback.Run(error);
 }
 
+void ClearPropatiesForPermanentDelete(DictionaryValue* entry) {
+  scoped_ptr<DictionaryValue> new_entry(new DictionaryValue);
+  const char* kPreservedProperties[] = {
+    "docs$removed", "docs$changestamp", "gd$resourceId", "id", "updated"
+  };
+
+  for (size_t i = 0; i < arraysize(kPreservedProperties); ++i) {
+    const char* key = kPreservedProperties[i];
+    scoped_ptr<Value> value;
+    if (entry->Remove(key, &value))
+      new_entry->Set(key, value.release());
+  }
+
+  entry->Swap(new_entry.get());
+}
+
 }  // namespace
 
 struct FakeDriveService::UploadSession {
@@ -559,9 +575,49 @@ CancelCallback FakeDriveService::DeleteResource(
     const std::string& resource_id,
     const std::string& etag,
     const EntryActionCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (offline_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION));
+    return CancelCallback();
+  }
+
+  base::ListValue* entries = NULL;
+  if (resource_list_value_->GetList("entry", &entries)) {
+    for (size_t i = 0; i < entries->GetSize(); ++i) {
+      base::DictionaryValue* entry = NULL;
+      std::string current_resource_id;
+      if (entries->GetDictionary(i, &entry) &&
+          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
+          resource_id == current_resource_id) {
+        if (entry->HasKey("docs$removed")) {
+          base::MessageLoop::current()->PostTask(
+              FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+          return CancelCallback();
+        }
+
+        std::string entry_etag;
+        entry->GetString("gd$etag", &entry_etag);
+        if (!etag.empty() && entry_etag != etag) {
+          base::MessageLoop::current()->PostTask(
+              FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
+          return CancelCallback();
+        }
+
+        entry->Set("docs$removed", new DictionaryValue);
+        AddNewChangestamp(entry);
+        ClearPropatiesForPermanentDelete(entry);
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+        return CancelCallback();
+      }
+    }
+  }
+
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, GDATA_OTHER_ERROR));
+      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
   return CancelCallback();
 }
 
@@ -588,7 +644,7 @@ CancelCallback FakeDriveService::TrashResource(
           entry->GetString("gd$resourceId.$t", &current_resource_id) &&
           resource_id == current_resource_id) {
         GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-        if (entry->HasKey("gd$deleted")) {
+        if (entry->HasKey("gd$deleted") || entry->HasKey("docs$removed")) {
           error = HTTP_NOT_FOUND;
         } else {
           entry->Set("gd$deleted", new DictionaryValue);
