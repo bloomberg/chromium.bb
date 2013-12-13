@@ -147,9 +147,9 @@ class LocalToRemoteSyncerTest : public testing::Test,
     return file_id;
   }
 
-  void RemoveResource(const std::string& file_id) {
-    EXPECT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_helper_->RemoveResource(file_id));
+  void DeleteResource(const std::string& file_id) {
+    EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+              fake_drive_helper_->DeleteResource(file_id));
   }
 
   SyncStatusCode RunLocalToRemoteSyncer(FileChange file_change,
@@ -409,7 +409,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
                 status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
   } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
 
-  RemoveResource(file_id);
+  DeleteResource(file_id);
 
   EXPECT_EQ(SYNC_STATUS_RETRY, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -445,7 +445,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateDeleteOnFile) {
                 status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
   } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
 
-  RemoveResource(file_id);
+  DeleteResource(file_id);
 
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
 
@@ -500,7 +500,7 @@ TEST_F(LocalToRemoteSyncerTest, AppRootDeletion) {
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  RemoveResource(app_root);
+  DeleteResource(app_root);
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   SyncStatusCode status;
   do {

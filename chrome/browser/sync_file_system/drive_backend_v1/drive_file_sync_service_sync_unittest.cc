@@ -500,7 +500,7 @@ void DriveFileSyncServiceSyncTest::TestRemoteFileDeletion() {
   VerifyConsistencyForOrigin(kOrigin);
 
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
-            fake_drive_helper_->RemoveResource(remote_file_id));
+            fake_drive_helper_->TrashResource(remote_file_id));
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();

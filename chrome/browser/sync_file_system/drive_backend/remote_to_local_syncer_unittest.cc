@@ -148,8 +148,8 @@ class RemoteToLocalSyncerTest : public testing::Test,
   }
 
   void DeleteRemoteFile(const std::string& file_id) {
-    EXPECT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_helper_->RemoveResource(file_id));
+    EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+              fake_drive_helper_->DeleteResource(file_id));
   }
 
   void CreateLocalFolder(const fileapi::FileSystemURL& url) {

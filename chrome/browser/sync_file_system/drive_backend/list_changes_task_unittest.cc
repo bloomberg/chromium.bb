@@ -121,13 +121,13 @@ class ListChangesTaskTest : public testing::Test,
                   modified_file_id, "modified file content"));
 
 
-    std::string trashed_file_id;
+    std::string deleted_file_id;
     ASSERT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper()->AddFile(
                   folder_id, "trashed file", "file content",
-                  &trashed_file_id));
+                  &deleted_file_id));
     ASSERT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_service_helper()->RemoveResource(trashed_file_id));
+              fake_drive_service_helper()->DeleteResource(deleted_file_id));
   }
 
   std::string root_resource_id() {
