@@ -156,11 +156,26 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     self.tab.StartVideoCapture(min_bitrate_mbps=4)
 
   def Stop(self):
-    self._time_completeness_list = []
-    for timestamp, bitmap in self.tab.StopVideoCapture():
-      print timestamp, bitmap
-      # TODO(tonyg/szym): Implement this.
-      raise NotImplementedError('SpeedIndex video calculation not implemented.')
+    histograms = [(time, bitmap.ColorHistogram())
+                  for time, bitmap in self.tab.StopVideoCapture()]
+
+    start_histogram = histograms[0][1]
+    final_histogram = histograms[-1][1]
+
+    def Difference(hist1, hist2):
+      return (abs(a - b) for a, b in zip(hist1, hist2))
+
+    full_difference = list(Difference(start_histogram, final_histogram))
+    total = float(sum(full_difference))
+
+    def FrameProgress(histogram):
+      difference = Difference(start_histogram, histogram)
+      # Each color bucket is capped at the full difference, so that progress
+      # does not exceed 100%.
+      return sum(min(a, b) for a, b in zip(difference, full_difference))
+
+    self._time_completeness_list = [(time, FrameProgress(hist) / total)
+                                    for time, hist in histograms]
 
   def GetTimeCompletenessList(self):
     assert self._time_completeness_list, 'Must call Stop() first.'

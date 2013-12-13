@@ -31,21 +31,43 @@ class FakeTimelineModel(object):
     return self._events
 
 
+class FakeBitmap(object):
+
+  def __init__(self, histogram):
+    self._histogram = histogram
+
+  def ColorHistogram(self):
+    return self._histogram
+
+
 class FakeTab(object):
 
-  def __init__(self):
+  def __init__(self, video_capture_result=None):
     self._timeline_model = FakeTimelineModel()
     self._javascript_result = None
+    self._video_capture_result = video_capture_result
 
   @property
   def timeline_model(self):
     return self._timeline_model
+
+  @property
+  def video_capture_supported(self):
+    return self._video_capture_result is not None
 
   def SetEvaluateJavaScriptResult(self, result):
     self._javascript_result = result
 
   def EvaluateJavaScript(self, _):
     return self._javascript_result
+
+  def StartVideoCapture(self, min_bitrate_mbps=1):
+    assert self.video_capture_supported
+    assert min_bitrate_mbps > 0
+
+  def StopVideoCapture(self):
+    assert self.video_capture_supported
+    return self._video_capture_result
 
 
 class IncludedPaintEventsTest(unittest.TestCase):
@@ -57,7 +79,7 @@ class IncludedPaintEventsTest(unittest.TestCase):
     self.assertEquals(len(events), 5)
 
 
-class TimeAreaDictTest(unittest.TestCase):
+class SpeedIndexImplTest(unittest.TestCase):
   def testAdjustedAreaDict(self):
     impl = speedindex.PaintRectSpeedIndexImpl(None)
     paint_events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
@@ -69,6 +91,23 @@ class TimeAreaDictTest(unittest.TestCase):
     self.assertEquals(time_area_dict[300], 100000)
     self.assertEquals(time_area_dict[400], 200000)
     self.assertEquals(time_area_dict[800], 200000)
+
+  def testVideoCompleteness(self):
+    frames = [
+      (0.0, FakeBitmap([100, 0, 0])),
+      (0.1, FakeBitmap([50, 25, 25])),
+      (0.2, FakeBitmap([60, 0, 40])),
+      (0.3, FakeBitmap([0, 10, 90]))
+    ]
+    impl = speedindex.VideoSpeedIndexImpl(FakeTab(frames))
+    impl.Start()
+    impl.Stop()
+    time_completeness = impl.GetTimeCompletenessList()
+    self.assertEquals(len(time_completeness), 4)
+    self.assertEquals(time_completeness[0], (0.0, 0.0))
+    self.assertEquals(time_completeness[1], (0.1, 0.425))
+    self.assertEquals(time_completeness[2], (0.2, 0.4))
+    self.assertEquals(time_completeness[3], (0.3, 1.0))
 
 
 class SpeedIndexTest(unittest.TestCase):
