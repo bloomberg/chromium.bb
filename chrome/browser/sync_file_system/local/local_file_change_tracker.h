@@ -86,6 +86,12 @@ class LocalFileChangeTracker
   // commits the updated change status to database.
   void ResetToMirrorAndCommitChangesForURL(const fileapi::FileSystemURL& url);
 
+  // Re-insert changes for the file with newer (bigger) sequence numbers,
+  // so that they won't be fetched by GetChangesForURL() soon. This could be
+  // useful for changes that have been failed to apply but would need to be
+  // retried again later.
+  void DemoteChangesForURL(const fileapi::FileSystemURL& url);
+
   // Called by FileSyncService at the startup time to restore last dirty changes
   // left after the last shutdown (if any).
   SyncStatusCode Initialize(fileapi::FileSystemContext* file_system_context);

@@ -179,6 +179,19 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   EXPECT_EQ(URL(kPath5), urls_to_process[3]);
   EXPECT_EQ(URL(kPath4), urls_to_process[4]);
 
+  // Demote changes for kPath1.
+  change_tracker()->DemoteChangesForURL(URL(kPath1));
+
+  // Now the order must be changed again.
+  urls_to_process.clear();
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+  ASSERT_EQ(5U, urls_to_process.size());
+  EXPECT_EQ(URL(kPath2), urls_to_process[0]);
+  EXPECT_EQ(URL(kPath3), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath5), urls_to_process[2]);
+  EXPECT_EQ(URL(kPath4), urls_to_process[3]);
+  EXPECT_EQ(URL(kPath1), urls_to_process[4]);
+
   VerifyAndClearChange(URL(kPath1),
                FileChange(FileChange::FILE_CHANGE_DELETE,
                           sync_file_system::SYNC_FILE_TYPE_DIRECTORY));

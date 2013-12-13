@@ -195,6 +195,24 @@ void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
   RemoveMirrorAndCommitChangesForURL(url);
 }
 
+void LocalFileChangeTracker::DemoteChangesForURL(
+    const fileapi::FileSystemURL& url) {
+  FileChangeMap::iterator found = changes_.find(url);
+  if (found == changes_.end())
+    return;
+  FileChangeList changes = found->second.change_list;
+
+  mirror_changes_.erase(url);
+  change_seqs_.erase(found->second.change_seq);
+  changes_.erase(found);
+
+  FileChangeList::List change_list = changes.list();
+  while (!change_list.empty()) {
+    RecordChange(url, change_list.front());
+    change_list.pop_front();
+  }
+}
+
 SyncStatusCode LocalFileChangeTracker::Initialize(
     FileSystemContext* file_system_context) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
