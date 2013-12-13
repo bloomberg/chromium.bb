@@ -227,8 +227,10 @@ def MakeCommand(host, extra_args=[]):
     # that will prevent the configure scripts from finding MinGW's libiconv
     # and using it.  We have to force this variable into the environment
     # of the sub-configure runs, which are run via make.
-    return MAKE_PARALLEL_CMD + ['HAVE_LIBICONV=no']
-  return MAKE_PARALLEL_CMD
+    make_command = MAKE_PARALLEL_CMD + ['HAVE_LIBICONV=no']
+  else:
+    make_command = MAKE_PARALLEL_CMD
+  return make_command + extra_args
 
 
 # Return the 'make check' command to run.
