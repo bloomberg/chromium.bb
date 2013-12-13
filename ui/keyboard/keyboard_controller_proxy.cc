@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_constants.h"
 
@@ -124,7 +125,12 @@ const GURL& KeyboardControllerProxy::GetValidUrl() {
 void KeyboardControllerProxy::SetOverrideContentUrl(const GURL& url) {
   if (override_url_ == url)
     return;
+
   override_url_ = url;
+  // Restores the keyboard window size to default.
+  aura::Window* container = GetKeyboardWindow()->parent();
+  CHECK(container);
+  container->layout_manager()->OnWindowResized();
 
   ReloadContents();
 }
