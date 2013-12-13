@@ -18,11 +18,6 @@ per-file pepper*=bauerb@chromium.org
 per-file plugin*=ananta@chromium.org
 per-file plugin*=bauerb@chromium.org
 
-# Linux sandbox seccomp-bpf policies:
-per-file sandbox_seccomp_bpf_linux.*=jln@chromium.org
-per-file sandbox_seccomp_bpf_linux.*=cevans@chromium.org
-per-file sandbox_seccomp_bpf_linux.*=jorgelo@chromium.org
-
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
 per-file *_messages*.h=set noparent

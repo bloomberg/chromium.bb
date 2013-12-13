@@ -6,7 +6,7 @@
 
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "content/common/sandbox_linux.h"
+#include "content/common/sandbox_linux/sandbox_linux.h"
 
 namespace content {
 

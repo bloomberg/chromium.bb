@@ -13,7 +13,7 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/safe_numerics.h"
 #include "base/sys_byteorder.h"
-#include "content/common/sandbox_linux.h"
+#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/public/platform/linux/WebFontRenderStyle.h"
 
