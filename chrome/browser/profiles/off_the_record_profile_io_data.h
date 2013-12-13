@@ -99,9 +99,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
  private:
   friend class base::RefCountedThreadSafe<OffTheRecordProfileIOData>;
 
-  typedef base::hash_map<std::string, net::HttpTransactionFactory* >
-      HttpTransactionFactoryMap;
-
   OffTheRecordProfileIOData();
   virtual ~OffTheRecordProfileIOData();
 

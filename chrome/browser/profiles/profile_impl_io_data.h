@@ -141,9 +141,6 @@ class ProfileImplIOData : public ProfileIOData {
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   };
 
-  typedef base::hash_map<std::string, net::HttpTransactionFactory* >
-      HttpTransactionFactoryMap;
-
   ProfileImplIOData();
   virtual ~ProfileImplIOData();
 
