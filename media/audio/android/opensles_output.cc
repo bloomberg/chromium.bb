@@ -129,6 +129,7 @@ void OpenSLESOutputStream::Stop() {
   DCHECK_EQ(0u, buffer_queue_state.index);
 #endif
 
+  callback_ = NULL;
   started_ = false;
 }
 
