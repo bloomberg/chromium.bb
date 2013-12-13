@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/test/test_simple_task_runner.h"
-#include "chrome/browser/policy/cloud/policy_header_service.h"
-#include "components/policy/core/browser/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#include "components/policy/core/common/cloud/policy_header_service.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

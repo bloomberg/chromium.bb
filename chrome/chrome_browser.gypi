@@ -1465,8 +1465,6 @@
         'browser/policy/browser_policy_connector.h',
         'browser/policy/cloud/cloud_policy_invalidator.cc',
         'browser/policy/cloud/cloud_policy_invalidator.h',
-        'browser/policy/cloud/policy_header_service.h',
-        'browser/policy/cloud/policy_header_service.cc',
         'browser/policy/cloud/policy_header_service_factory.h',
         'browser/policy/cloud/policy_header_service_factory.cc',
         'browser/policy/cloud/user_cloud_policy_invalidator_factory.cc',

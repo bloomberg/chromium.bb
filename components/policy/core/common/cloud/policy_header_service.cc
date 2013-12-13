@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/policy_header_service.h"
+#include "components/policy/core/common/cloud/policy_header_service.h"
 
-#include "components/policy/core/browser/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 
 namespace policy {
 

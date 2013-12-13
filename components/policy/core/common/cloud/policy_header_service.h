@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_POLICY_HEADER_SERVICE_H_
-#define CHROME_BROWSER_POLICY_CLOUD_POLICY_HEADER_SERVICE_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_POLICY_HEADER_SERVICE_H_
+#define COMPONENTS_POLICY_CORE_COMMON_CLOUD_POLICY_HEADER_SERVICE_H_
 
 #include <string>
 #include <vector>
@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/policy_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -23,7 +24,7 @@ class PolicyHeaderIOHelper;
 // Per-profile service used to generate PolicyHeaderIOHelper objects, and
 // keep them up-to-date as policy changes.
 // TODO(atwilson): Move to components/policy once CloudPolicyStore is moved.
-class PolicyHeaderService : public CloudPolicyStore::Observer {
+class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
  public:
   // |device_policy_store| can be null on platforms that do not support
   // device policy. Both |user_policy_store| and |device_policy_store| must
@@ -66,4 +67,4 @@ class PolicyHeaderService : public CloudPolicyStore::Observer {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_POLICY_HEADER_SERVICE_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_POLICY_HEADER_SERVICE_H_

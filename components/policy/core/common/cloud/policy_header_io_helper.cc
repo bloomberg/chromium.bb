@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/policy_header_io_helper.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 
 #include "base/bind.h"
 #include "base/location.h"

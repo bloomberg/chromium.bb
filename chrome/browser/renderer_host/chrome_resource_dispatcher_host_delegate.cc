@@ -59,7 +59,7 @@
 #include "net/url_request/url_request.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/policy_header_io_helper.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)

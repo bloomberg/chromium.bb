@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/test_simple_task_runner.h"
-#include "components/policy/core/browser/policy_header_io_helper.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +14,6 @@ namespace {
 const char kDMServerURL[] = "http://server_url";
 const char kPolicyHeaderName[] = "Chrome-Policy-Posture";
 const char kInitialPolicyHeader[] = "initial_header";
-}  // namespace
 
 class PolicyHeaderIOHelperTest : public testing::Test {
  public:
@@ -46,6 +45,8 @@ class PolicyHeaderIOHelperTest : public testing::Test {
   net::TestURLRequestContext context_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 };
+
+}  // namespace
 
 TEST_F(PolicyHeaderIOHelperTest, InitialHeader) {
   net::TestURLRequest request(

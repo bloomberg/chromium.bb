@@ -197,7 +197,6 @@
                 'components.gyp:policy_component_test_support',
               ],
               'sources': [
-                'policy/core/browser/policy_header_io_helper_unittest.cc',
                 'policy/core/common/async_policy_provider_unittest.cc',
                 'policy/core/common/cloud/cloud_policy_client_unittest.cc',
                 'policy/core/common/cloud/cloud_policy_core_unittest.cc',
@@ -211,6 +210,8 @@
                 'policy/core/common/cloud/device_management_service_unittest.cc',
                 'policy/core/common/cloud/external_policy_data_fetcher_unittest.cc',
                 'policy/core/common/cloud/external_policy_data_updater_unittest.cc',
+                'policy/core/common/cloud/policy_header_io_helper_unittest.cc',
+                'policy/core/common/cloud/policy_header_service_unittest.cc',
                 'policy/core/common/cloud/rate_limiter_unittest.cc',
                 'policy/core/common/cloud/resource_cache_unittest.cc',
                 'policy/core/common/cloud/user_cloud_policy_manager_unittest.cc',
