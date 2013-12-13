@@ -1142,13 +1142,18 @@ TraceLog::TraceLog()
   // NaCl also shouldn't access the command line.
   if (CommandLine::InitializedForCurrentProcess() &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceToConsole)) {
-    CategoryFilter filter(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kTraceToConsole));
-    filter.Merge(CategoryFilter(kEchoToConsoleCategoryFilter));
+    std::string filter = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kTraceToConsole);
+    if (filter.empty()) {
+      filter = kEchoToConsoleCategoryFilter;
+    } else {
+      filter.append(",");
+      filter.append(kEchoToConsoleCategoryFilter);
+    }
+
     LOG(ERROR) << "Start " << switches::kTraceToConsole
-               << " with CategoryFilter '" << filter.ToString() << "'.";
-    SetEnabled(filter, ECHO_TO_CONSOLE);
+               << " with CategoryFilter '" << filter << "'.";
+    SetEnabled(CategoryFilter(filter), ECHO_TO_CONSOLE);
   }
 #endif
 
