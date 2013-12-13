@@ -87,7 +87,8 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
       last_page_(kNameOfIntroScreen),
       image_decoder_(NULL),
       apply_photo_after_decoding_(false),
-      selected_image_(0) {
+      selected_image_(0),
+      was_camera_present_(false) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -441,9 +442,13 @@ void LocallyManagedUserCreationScreen::CheckCameraPresence() {
 }
 
 void LocallyManagedUserCreationScreen::OnCameraPresenceCheckDone() {
+  bool is_camera_present = CameraDetector::camera_presence() ==
+                           CameraDetector::kCameraPresent;
   if (actor_) {
-    actor_->SetCameraPresent(
-        CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
+    if (is_camera_present != was_camera_present_) {
+      actor_->SetCameraPresent(is_camera_present);
+      was_camera_present_ = is_camera_present;
+    }
   }
 }
 

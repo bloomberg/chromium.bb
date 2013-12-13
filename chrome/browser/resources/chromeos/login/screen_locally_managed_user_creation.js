@@ -524,6 +524,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
+      imageGrid.flipPhotoElement = this.getScreenElement('flip-photo');
 
       imageGrid.addEventListener('activate',
                                  this.handleActivate_.bind(this));
@@ -1413,6 +1414,11 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       $('managed-user-creation-flip-photo').tabIndex =
           (imageGrid.selectionType == 'camera') ? 0 : -1;
+      if (imageGrid.cameraLive || imageGrid.selectionType != 'camera')
+        imageGrid.previewElement.classList.remove('phototaken');
+      else
+        imageGrid.previewElement.classList.add('phototaken');
+
       if (!imageGrid.cameraLive || imageGrid.selectionType != 'camera') {
         this.context_.selectedImageUrl = imageGrid.selectedItemUrl;
         chrome.send('supervisedUserSelectImage',
@@ -1427,9 +1433,13 @@ login.createScreen('LocallyManagedUserCreationScreen',
           imageGrid.startCamera(
               function() {
                 // Start capture if camera is still the selected item.
+                $('managed-user-creation-image-preview-img').classList.toggle(
+                    'animated-transform', true);
                 return imageGrid.selectedItem == imageGrid.cameraImage;
               });
         } else {
+          $('managed-user-creation-image-preview-img').classList.toggle(
+              'animated-transform', false);
           imageGrid.stopCamera();
         }
       }

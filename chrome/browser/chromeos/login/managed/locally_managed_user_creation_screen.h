@@ -128,6 +128,9 @@ class LocallyManagedUserCreationScreen
   bool apply_photo_after_decoding_;
   int selected_image_;
 
+  // True if camera was available last time.
+  bool was_camera_present_;
+
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
 };
 

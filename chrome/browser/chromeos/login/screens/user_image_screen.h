@@ -142,6 +142,9 @@ class UserImageScreen: public WizardScreen,
   // True if user has explicitly selected some image.
   bool user_has_selected_image_;
 
+  // True if camera was available last time.
+  bool was_camera_present_;
+
   DISALLOW_COPY_AND_ASSIGN(UserImageScreen);
 };
 

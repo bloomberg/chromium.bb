@@ -500,7 +500,9 @@ cr.define('options', function() {
       if (this.flipPhoto_ == value)
         return;
       this.flipPhoto_ = value;
-      this.previewElement.classList.toggle('flip-x');
+      this.previewElement.classList.toggle('flip-x', value);
+      /* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
+      this.flipPhotoElement.classList.toggle('flip-trick', value);
       if (!this.cameraLive) {
         // Flip current still photo.
         var e = new Event('photoupdated');

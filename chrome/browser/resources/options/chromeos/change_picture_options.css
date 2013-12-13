@@ -148,6 +148,11 @@
   width: 32px;
 }
 
+/* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
+.flip-trick {
+  -webkit-transform: translateZ(1px);
+}
+
 html[dir=rtl] #flip-photo {
   left: 8px;
   right: auto;

@@ -69,7 +69,8 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
       profile_picture_data_url_(content::kAboutBlankURL),
       profile_picture_absent_(false),
       is_screen_ready_(false),
-      user_has_selected_image_(false) {
+      user_has_selected_image_(false),
+      was_camera_present_(false) {
   actor_->SetDelegate(this);
   SetProfilePictureEnabled(true);
   notification_registrar_.Add(this,
@@ -109,9 +110,13 @@ void UserImageScreen::CheckCameraPresence() {
 }
 
 void UserImageScreen::OnCameraPresenceCheckDone() {
+  bool is_camera_present = CameraDetector::camera_presence() ==
+                           CameraDetector::kCameraPresent;
   if (actor_) {
-    actor_->SetCameraPresent(
-        CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
+    if (is_camera_present != was_camera_present_) {
+      actor_->SetCameraPresent(is_camera_present);
+      was_camera_present_ = is_camera_present;
+    }
   }
 }
 

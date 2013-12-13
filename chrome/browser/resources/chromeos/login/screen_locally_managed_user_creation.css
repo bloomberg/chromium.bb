@@ -382,10 +382,13 @@ html[dir=rtl] #managed-user-creation-image-preview {
 }
 
 #managed-user-creation-image-preview-img {
-  -webkit-transition: -webkit-transform 200ms linear;
   display: block;
   max-height: 220px;
   max-width: 220px;
+}
+
+#managed-user-creation-image-preview-img.animated-transform {
+  -webkit-transition: -webkit-transform 200ms linear;
 }
 
 .camera.live #managed-user-creation-image-preview-img {
@@ -461,13 +464,19 @@ html[dir=rtl] #managed-user-creation-image-preview {
   width: 32px;
 }
 
+/* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
+.flip-trick {
+  -webkit-transform: translateZ(1px);
+}
+
 html[dir=rtl] #managed-user-creation-flip-photo {
   left: 8px;
   right: auto;
 }
 
 /* "Flip photo" button is hidden during flip animation. */
-.camera.online:not(.animation) #managed-user-creation-flip-photo {
+.camera.online:not(.animation) #managed-user-creation-flip-photo,
+.camera.phototaken:not(.animation) #managed-user-creation-flip-photo {
   opacity: 0.75;
 }
 

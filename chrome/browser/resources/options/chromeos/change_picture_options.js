@@ -55,6 +55,7 @@ cr.define('options', function() {
 
       imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
+      imageGrid.flipPhotoElement = $('flip-photo');
 
       imageGrid.addEventListener('select',
                                  this.handleImageSelected_.bind(this));

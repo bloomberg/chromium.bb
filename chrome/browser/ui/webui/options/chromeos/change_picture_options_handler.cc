@@ -74,7 +74,8 @@ const char kProfileDownloadReason[] = "Preferences";
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_url_(content::kAboutBlankURL),
       previous_image_index_(User::kInvalidImageIndex),
-      weak_factory_(this) {
+      weak_factory_(this),
+      was_camera_present_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
@@ -305,17 +306,10 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   bool waiting_for_camera_photo = false;
 
   if (image_type == "old") {
-    // Previous image re-selected.
-    if (previous_image_index_ == User::kExternalImageIndex) {
-      DCHECK(!previous_image_.isNull());
-      user_image_manager->SaveUserImage(
-          user->email(), UserImage::CreateAndEncode(previous_image_));
-    } else {
-      DCHECK(previous_image_index_ >= 0 &&
-             previous_image_index_ < kFirstDefaultImageIndex);
-      user_image_manager->SaveUserDefaultImageIndex(
-          user->email(), previous_image_index_);
-    }
+    // Previous image (from camera or manually uploaded) re-selected.
+    DCHECK(!previous_image_.isNull());
+    user_image_manager->SaveUserImage(
+        user->email(), UserImage::CreateAndEncode(previous_image_));
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               kHistogramImageOld,
@@ -398,8 +392,12 @@ void ChangePictureOptionsHandler::SetCameraPresent(bool present) {
 }
 
 void ChangePictureOptionsHandler::OnCameraPresenceCheckDone() {
-  SetCameraPresent(CameraDetector::camera_presence() ==
-                   CameraDetector::kCameraPresent);
+  bool is_camera_present = CameraDetector::camera_presence() ==
+                           CameraDetector::kCameraPresent;
+  if (is_camera_present != was_camera_present_) {
+    SetCameraPresent(is_camera_present);
+    was_camera_present_ = is_camera_present;
+  }
 }
 
 void ChangePictureOptionsHandler::Observe(

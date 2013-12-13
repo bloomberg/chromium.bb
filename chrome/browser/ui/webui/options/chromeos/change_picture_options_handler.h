@@ -135,6 +135,10 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   // HandlePhotoTaken.
   scoped_refptr<ImageDecoder> image_decoder_;
 
+ private:
+  // Last known state of the camera.
+  bool was_camera_present_;
+
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };
 

@@ -81,6 +81,7 @@ cr.define('login', function() {
 
       imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
+      imageGrid.flipPhotoElement = $('flip-photo');
 
       imageGrid.addEventListener('select',
                                  this.handleSelect_.bind(this));
@@ -199,11 +200,15 @@ cr.define('login', function() {
       if (imageGrid.selectionType == 'camera') {
         $('flip-photo').tabIndex = 0;
         // No current image selected.
-        if (imageGrid.cameraLive)
+        if (imageGrid.cameraLive) {
+          imageGrid.previewElement.classList.remove('phototaken');
           $('ok-button').disabled = true;
-        else
+        } else {
+          imageGrid.previewElement.classList.add('phototaken');
           this.notifyImageSelected_();
+        }
       } else {
+        imageGrid.previewElement.classList.remove('phototaken');
         $('flip-photo').tabIndex = -1;
         this.notifyImageSelected_();
       }
@@ -216,9 +221,13 @@ cr.define('login', function() {
           imageGrid.startCamera(
               function() {
                 // Start capture if camera is still the selected item.
+                $('user-image-preview-img').classList.toggle(
+                    'animated-transform', true);
                 return imageGrid.selectedItem == imageGrid.cameraImage;
               });
         } else {
+          $('user-image-preview-img').classList.toggle('animated-transform',
+                                                       false);
           imageGrid.stopCamera();
         }
       }
