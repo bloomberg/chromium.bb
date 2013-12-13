@@ -2,23 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <asm/unistd.h>
-#include <dlfcn.h>
+#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
+
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/net.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/stat.h>
 #include <sys/types.h>
-#include <ucontext.h>
-#include <unistd.h>
-
-#include <vector>
+#include <sys/types.h>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -36,9 +28,10 @@
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
+#include "content/common/sandbox_linux/bpf_ppapi_policy_linux.h"
+#include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
-#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
@@ -48,10 +41,7 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::BaselinePolicy;
-using sandbox::ErrorCode;
-using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
-using sandbox::arch_seccomp_data;
 
 namespace content {
 
@@ -73,129 +63,6 @@ inline bool IsArchitectureArm() {
 #else
   return false;
 #endif
-}
-
-inline bool IsUsingToolKitGtk() {
-#if defined(TOOLKIT_GTK)
-  return true;
-#else
-  return false;
-#endif
-}
-
-// Policy for renderer and worker processes.
-// TODO(jln): move to renderer/
-
-class RendererOrWorkerProcessPolicy : public SandboxBPFBasePolicy {
- public:
-  RendererOrWorkerProcessPolicy() {}
-  virtual ~RendererOrWorkerProcessPolicy() {}
-
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RendererOrWorkerProcessPolicy);
-};
-
-ErrorCode RendererOrWorkerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                         int sysno) const {
-  switch (sysno) {
-    case __NR_clone:
-      return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
-    case __NR_ioctl:
-      return sandbox::RestrictIoctl(sandbox);
-    case __NR_prctl:
-      return sandbox::RestrictPrctl(sandbox);
-    // Allow the system calls below.
-    case __NR_fdatasync:
-    case __NR_fsync:
-    case __NR_getpriority:
-#if defined(__i386__) || defined(__x86_64__)
-    case __NR_getrlimit:
-#endif
-#if defined(__i386__) || defined(__arm__)
-    case __NR_ugetrlimit:
-#endif
-    case __NR_mremap:   // See crbug.com/149834.
-    case __NR_pread64:
-    case __NR_pwrite64:
-    case __NR_sched_getaffinity:
-    case __NR_sched_get_priority_max:
-    case __NR_sched_get_priority_min:
-    case __NR_sched_getparam:
-    case __NR_sched_getscheduler:
-    case __NR_sched_setscheduler:
-    case __NR_setpriority:
-    case __NR_sysinfo:
-    case __NR_times:
-    case __NR_uname:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-    case __NR_prlimit64:
-      return ErrorCode(EPERM);  // See crbug.com/160157.
-    default:
-      if (IsUsingToolKitGtk()) {
-#if defined(__x86_64__) || defined(__arm__)
-        if (SyscallSets::IsSystemVSharedMemory(sysno))
-          return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
-#if defined(__i386__)
-        if (SyscallSets::IsSystemVIpc(sysno))
-          return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
-      }
-
-      // Default on the content baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
-  }
-}
-
-// Policy for PPAPI plugins.
-// TODO(jln): move to ppapi_plugin/.
-class FlashProcessPolicy : public SandboxBPFBasePolicy {
- public:
-  FlashProcessPolicy() {}
-  virtual ~FlashProcessPolicy() {}
-
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FlashProcessPolicy);
-};
-
-ErrorCode FlashProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                              int sysno) const {
-  switch (sysno) {
-    case __NR_clone:
-      return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
-    case __NR_pread64:
-    case __NR_pwrite64:
-    case __NR_sched_get_priority_max:
-    case __NR_sched_get_priority_min:
-    case __NR_sched_getaffinity:
-    case __NR_sched_getparam:
-    case __NR_sched_getscheduler:
-    case __NR_sched_setscheduler:
-    case __NR_times:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-    case __NR_ioctl:
-      return ErrorCode(ENOTTY);  // Flash Access.
-    default:
-      if (IsUsingToolKitGtk()) {
-#if defined(__x86_64__) || defined(__arm__)
-        if (SyscallSets::IsSystemVSharedMemory(sysno))
-          return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
-#if defined(__i386__)
-        if (SyscallSets::IsSystemVIpc(sysno))
-          return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
-      }
-
-      // Default on the baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
-  }
 }
 
 class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
@@ -317,9 +184,9 @@ bool StartBPFSandbox(const CommandLine& command_line,
     policy.reset(GetGpuProcessSandbox().release());
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kWorkerProcess) {
-    policy.reset(new RendererOrWorkerProcessPolicy);
+    policy.reset(new RendererProcessPolicy);
   } else if (process_type == switches::kPpapiPluginProcess) {
-    policy.reset(new FlashProcessPolicy);
+    policy.reset(new PpapiProcessPolicy);
   } else if (process_type == switches::kUtilityProcess) {
     policy.reset(new BlacklistDebugAndNumaPolicy);
   } else {
