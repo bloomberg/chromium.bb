@@ -75,12 +75,6 @@ bool AutofillDataTypeController::StartModels() {
   }
 }
 
-void AutofillDataTypeController::StopModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
-  DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
-}
-
 void AutofillDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

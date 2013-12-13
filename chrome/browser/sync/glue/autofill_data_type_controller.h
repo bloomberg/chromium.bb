@@ -43,7 +43,6 @@ class AutofillDataTypeController
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
   virtual bool StartModels() OVERRIDE;
-  virtual void StopModels() OVERRIDE;
 
  private:
   friend class AutofillDataTypeControllerTest;

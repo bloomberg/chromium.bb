@@ -81,7 +81,7 @@ bool NonUIDataTypeController::StartModels() {
 }
 
 void NonUIDataTypeController::StopModels() {
-  // Do nothing by default.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void NonUIDataTypeController::StartAssociating(
@@ -137,10 +137,11 @@ void NonUIDataTypeController::Stop() {
                     syncer::SyncMergeResult(type()));
       // We continue on to deactivate the datatype and stop the local service.
       break;
+    case MODEL_LOADED:
     case DISABLED:
-      // If we're disabled we never succeded associating and never activated the
-      // datatype. We would have already stopped the local service in
-      // StartDoneImpl(..).
+      // If DTC is loaded or disabled, we never attempted or succeeded
+      // associating and never activated the datatype. We would have already
+      // stopped the local service in StartDoneImpl(..).
       state_ = NOT_RUNNING;
       StopModels();
       return;

@@ -110,8 +110,6 @@ bool AutofillProfileDataTypeController::StartModels() {
 
 void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state() == STOPPING || state() == NOT_RUNNING);
-
   personal_data_->RemoveObserver(this);
 }
 
