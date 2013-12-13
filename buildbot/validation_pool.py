@@ -48,9 +48,9 @@ except ImportError:
 PRE_CQ = 'pre-cq'
 CQ = 'cq'
 
-# The gerrit-on-borg team tells us that delays up to 5 minutes can be
-# normal.  Setting timeout to 7 minutes to be safe-ish.
-SUBMITTED_WAIT_TIMEOUT = 7 * 60 # Time in seconds.
+# The gerrit-on-borg team tells us that delays up to 2 minutes can be
+# normal.  Setting timeout to 4 minutes to be safe-ish.
+SUBMITTED_WAIT_TIMEOUT = 4 * 60 # Time in seconds.
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -220,7 +220,7 @@ def GetStagesToIgnoreForChange(build_root, change):
 
   Args:
     build_root: The root of the checkout.
-    changes: Changes to examine.
+    change: Change to examine.
 
   Returns:
     A list of stages to ignore for the given |change|.
@@ -272,8 +272,8 @@ class HelperPool(object):
     """Classmethod helper for creating a HelperPool from boolean options.
 
     Args:
-      internal: If True, allow access to a GerritHelper for internal.
-      external: If True, allow access to a GerritHelper for external.
+      cros_internal: If True, allow access to a GerritHelper for internal.
+      cros: If True, allow access to a GerritHelper for external.
 
     Returns:
       An appropriately configured HelperPool instance.
@@ -1222,13 +1222,14 @@ class ValidationPool(object):
 
     Args:
       overlays:  One of constants.VALID_OVERLAYS.
+      build_root: Build root directory.
       build_number:  Build number for this validation attempt.
       builder_name:  Builder name on buildbot dashboard.
       is_master: True if this is the master builder for the Commit Queue.
       dryrun: If set to True, do not submit anything to Gerrit.
     Optional Args:
       changes: List of changes for this validation pool.
-      non_manifest_changes: List of changes that are part of this validation
+      non_os_changes: List of changes that are part of this validation
         pool but aren't part of the cros checkout.
       conflicting_changes: Changes that failed to apply but we're keeping around
         because they conflict with other changes in flight.
@@ -1983,7 +1984,7 @@ class ValidationPool(object):
     """Handles changes that were not able to be applied cleanly.
 
     Args:
-      changes: GerritPatch's to handle.
+      failures: GerritPatch changes to handle.
     """
     for failure in failures:
       logging.info('Change %s did not apply cleanly.', failure.patch)
@@ -1997,7 +1998,7 @@ class ValidationPool(object):
     to re-upload a rebased change.
 
     Args:
-      change: GerritPatch instance to operate upon.
+      failure: GerritPatch instance to operate upon.
     """
     msg = ('%(queue)s failed to apply your change in %(build_log)s .'
            ' %(failure)s')
