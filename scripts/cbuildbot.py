@@ -722,6 +722,7 @@ def _BackupPreviousLog(log_file, backup_limit=25):
 
   Args:
     log_file: The absolute path to the previous log.
+    backup_limit: Maximum number of old logs to keep.
   """
   if os.path.exists(log_file):
     old_logs = sorted(glob.glob(log_file + '.*'),
@@ -804,6 +805,7 @@ def _CheckLocalPatches(sourceroot, local_patches):
 
   Args:
     sourceroot: The checkout where patches are coming from.
+    local_patches: List of patches to check in project:branch format.
 
   Returns:
     A list of patches that have been verified, in project:branch format.
@@ -879,6 +881,7 @@ def FindCacheDir(_parser, _options):
 
 
 class CustomGroup(optparse.OptionGroup):
+  """Custom option group which supports arguments passed-through to trybot."""
   def add_remote_option(self, *args, **kwargs):
     """For arguments that are passed-through to remote trybot."""
     return optparse.OptionGroup.add_option(self, *args,
@@ -917,7 +920,7 @@ class CustomOption(commandline.FilteringOption):
 
 
 class CustomParser(commandline.FilteringParser):
-
+  """Custom option parser which supports arguments passed-trhough to trybot"""
   DEFAULT_OPTION_CLASS = CustomOption
 
   def add_remote_option(self, *args, **kwargs):
@@ -1325,7 +1328,9 @@ def _PostParseCheck(parser, options, args):
   """Perform some usage validation after we've parsed the arguments
 
   Args:
-    options/args: The options/args object returned by optparse
+    parser: Option parser that was used to parse arguments.
+    options: The options returned by optparse.
+    args: The args returned by optparse.
   """
   if not options.branch:
     options.branch = git.GetChromiteTrackingBranch()
