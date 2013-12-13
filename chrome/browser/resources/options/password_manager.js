@@ -159,7 +159,8 @@ cr.define('options', function() {
         var query = this.lastQuery_;
         var filter = function(entry, index, list) {
           // Search both URL and username.
-          if (entry[0].indexOf(query) >= 0 || entry[1].indexOf(query) >= 0) {
+          if (entry[0].toLowerCase().indexOf(query.toLowerCase()) >= 0 ||
+              entry[1].toLowerCase().indexOf(query.toLowerCase()) >= 0) {
             // Keep the original index so we can delete correctly. See also
             // deleteItemAtIndex() in password_manager_list.js that uses this.
             entry[3] = index;
