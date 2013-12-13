@@ -1319,7 +1319,7 @@ internal_paladin.add_config('x86-mario-paladin',
 
 # Sanity check builder, part of the CQ but builds without the patches
 # under test.
-paladin.add_config('link-tot-paladin',
+internal_paladin.add_config('link-tot-paladin',
   boards=['link'],
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
