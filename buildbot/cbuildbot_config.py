@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 
 
+"""Configuration options for various cbuildbot builders."""
+
 # Disable relative import warning from pylint.
 # pylint: disable=W0403
 import constants
@@ -544,7 +546,8 @@ class HWTestConfig(object):
   @classmethod
   def DefaultList(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a canary build, with
-    overrides for optional args."""
+    overrides for optional args.
+    """
     # Set the number of machines for the au and qav suites. If we are
     # constrained in the number of duts in the lab, only give 1 dut to each.
     if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
@@ -569,7 +572,8 @@ class HWTestConfig(object):
   @classmethod
   def PGOList(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a PGO build, with overrides
-    for optional args."""
+    for optional args.
+    """
     pgo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
                     timeout=90 * 60, num=1, async=True)
     pgo_dict.update(kwargs)
@@ -579,7 +583,8 @@ class HWTestConfig(object):
   @classmethod
   def DefaultListCQ(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a CQ build,
-    with overrides for optional args."""
+    with overrides for optional args.
+    """
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     # Allows kwargs overrides to default_dict for cq.
@@ -589,7 +594,8 @@ class HWTestConfig(object):
   @classmethod
   def DefaultListPFQ(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a PFQ build,
-    with overrides for optional args."""
+    with overrides for optional args.
+    """
     default_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
                         file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
     # Allows kwargs overrides to default_dict for pfq.
