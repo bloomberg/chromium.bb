@@ -37,7 +37,7 @@ namespace WebCore {
 
 class PLATFORM_EXPORT FloatRoundedRect {
 public:
-    class Radii {
+    class PLATFORM_EXPORT Radii {
     public:
         Radii() { }
         Radii(const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight)
