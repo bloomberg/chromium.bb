@@ -51,18 +51,90 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
   DCHECK(conversion_success);
 
   aura::RootWindowHostDelegate* root_window_host_delegate =
-      root_window->GetDispatcher()->AsRootWindowHostDelegate();
+      GetRootWindowHostDelegate();
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
     root_window_host_delegate->OnHostTouchEvent(*iter);
   }
 }
 
+void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
+      const blink::WebMouseWheelEvent& web_wheel,
+      const ui::LatencyInfo&) {
+  gfx::Point location(web_wheel.x, web_wheel.y);
+  ui::MouseEvent mouse_event(
+      ui::ET_MOUSEWHEEL, location, location, ui::EF_NONE);
+  ui::MouseWheelEvent wheel_event(
+      mouse_event, web_wheel.deltaX, web_wheel.deltaY);
+
+  GetRootWindowHostDelegate()->OnHostMouseEvent(&wheel_event);
+}
+
+namespace {
+
+ui::EventType
+WebMouseEventTypeToEventType(blink::WebInputEvent::Type web_type) {
+  switch (web_type) {
+    case blink::WebInputEvent::MouseDown:
+      return ui::ET_MOUSE_PRESSED;
+
+    case blink::WebInputEvent::MouseUp:
+      return ui::ET_MOUSE_RELEASED;
+
+    case blink::WebInputEvent::MouseMove:
+      return ui::ET_MOUSE_MOVED;
+
+    case blink::WebInputEvent::MouseEnter:
+      return ui::ET_MOUSE_ENTERED;
+
+    case blink::WebInputEvent::MouseLeave:
+      return ui::ET_MOUSE_EXITED;
+
+    case blink::WebInputEvent::ContextMenu:
+      NOTREACHED() << "WebInputEvent::ContextMenu not supported by"
+          "SyntheticGestureTargetAura";
+
+    default:
+      NOTREACHED();
+  }
+
+  return ui::ET_UNKNOWN;
+}
+
+int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
+  switch (button) {
+    case blink::WebMouseEvent::ButtonLeft:
+      return ui::EF_LEFT_MOUSE_BUTTON;
+
+    case blink::WebMouseEvent::ButtonMiddle:
+      return ui::EF_MIDDLE_MOUSE_BUTTON;
+
+    case blink::WebMouseEvent::ButtonRight:
+      return ui::EF_RIGHT_MOUSE_BUTTON;
+
+    default:
+      NOTREACHED();
+  }
+
+  return 0;
+}
+
+}  // namespace
+
+void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
+      const blink::WebMouseEvent& web_mouse,
+      const ui::LatencyInfo& latency_info) {
+  gfx::Point location(web_mouse.x, web_mouse.y);
+  ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
+  int flags = WebMouseEventButtonToFlags(web_mouse.button);
+  ui::MouseEvent mouse_event(event_type, location, location, flags);
+
+  GetRootWindowHostDelegate()->OnHostMouseEvent(&mouse_event);
+}
+
 SyntheticGestureParams::GestureSourceType
 SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
-  // TODO(297960): Change this to MOUSE_INPUT when a native impl of
-  // DispatchWebMouseWheelEventToPlatform is ready.
-  return SyntheticGestureParams::TOUCH_INPUT;
+  return SyntheticGestureParams::MOUSE_INPUT;
 }
 
 bool SyntheticGestureTargetAura::SupportsSyntheticGestureSourceType(
@@ -76,5 +148,16 @@ int SyntheticGestureTargetAura::GetTouchSlopInDips() const {
   // 'max_touch_move_in_pixels_for_click' pixels.
   return ui::GestureConfiguration::max_touch_move_in_pixels_for_click() - 1;
 }
+
+aura::RootWindowHostDelegate*
+SyntheticGestureTargetAura::GetRootWindowHostDelegate() const {
+  aura::Window* window = render_widget_host()->GetView()->GetNativeView();
+  aura::Window* root_window = window->GetRootWindow();
+  aura::RootWindowHostDelegate* root_window_host_delegate =
+      root_window->GetDispatcher()->AsRootWindowHostDelegate();
+  DCHECK(root_window_host_delegate);
+  return root_window_host_delegate;
+}
+
 
 }  // namespace content

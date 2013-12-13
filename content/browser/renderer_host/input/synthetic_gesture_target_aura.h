@@ -9,6 +9,10 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/common/input/synthetic_gesture_params.h"
 
+namespace aura {
+class RootWindowHostDelegate;
+}
+
 namespace content {
 
 class InputEvent;
@@ -22,6 +26,12 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   virtual void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
       const ui::LatencyInfo& latency_info) OVERRIDE;
+  virtual void DispatchWebMouseWheelEventToPlatform(
+      const blink::WebMouseWheelEvent& web_wheel,
+      const ui::LatencyInfo& latency_info) OVERRIDE;
+  virtual void DispatchWebMouseEventToPlatform(
+      const blink::WebMouseEvent& web_mouse,
+      const ui::LatencyInfo& latency_info) OVERRIDE;
 
   // SyntheticGestureTarget:
   virtual SyntheticGestureParams::GestureSourceType
@@ -33,6 +43,8 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   virtual int GetTouchSlopInDips() const OVERRIDE;
 
  private:
+  aura::RootWindowHostDelegate* GetRootWindowHostDelegate() const;
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);
 };
 
