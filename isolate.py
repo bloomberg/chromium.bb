@@ -796,8 +796,11 @@ class ConfigSettings(object):
     self.read_only = values.get('read_only')
 
   def union(self, rhs):
+    """Merges two config settings together.
+
+    self has priority over rhs for 'command' variable.
+    """
     assert not (self.config and rhs.config) or (self.config == rhs.config)
-    assert not (self.command and rhs.command) or (self.command == rhs.command)
     var = {
       KEY_TOUCHED: sorted(self.touched + rhs.touched),
       KEY_TRACKED: sorted(self.tracked + rhs.tracked),
@@ -914,7 +917,10 @@ def convert_old_to_new_format(value):
     return value  # Nothing to change
 
   def parse_condition(cond):
-    return re.match(r'OS=="(\w+)"\Z', cond[0]).group(1)
+    m = re.match(r'OS=="(\w+)"\Z', cond[0])
+    if not m:
+      raise isolateserver.ConfigError('Invalid condition: %s' % cond[0])
+    return m.group(1)
 
   oses = set(map(parse_condition, conditions))
   default_oses = set(['linux', 'mac', 'win'])
@@ -989,8 +995,8 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     configs = match_configs(expr, config_variables, all_configs)
     isolate.merge_dependencies(then['variables'], config_variables, configs)
 
-  # Load the includes.
-  for include in value.get('includes', []):
+  # Load the includes. Process them in reverse so the last one take precedence.
+  for include in reversed(value.get('includes', [])):
     if os.path.isabs(include):
       raise ExecutionError(
           'Failed to load configuration; absolute include path \'%s\'' %

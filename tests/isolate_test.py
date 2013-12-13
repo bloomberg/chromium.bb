@@ -775,6 +775,90 @@ class IsolateTest(IsolateBase):
     }
     self.assertEqual(expected, actual.flatten())
 
+  def test_load_with_includes_with_commands(self):
+    # This one is messy.
+    isolate1 = {
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'command': [
+              'foo', 'bar',
+            ],
+            'isolate_dependency_tracked': [
+              'file_linux',
+            ],
+          },
+        }, {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_non_linux',
+            ],
+          },
+        }],
+        ['OS=="win"', {
+          'variables': {
+            'command': [
+              'foo', 'bar',
+            ],
+          },
+        }],
+      ],
+    }
+    tools.write_json(os.path.join(self.cwd, 'isolate1.isolate'), isolate1, True)
+    isolate2 = {
+      'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'variables': {
+            'command': [
+              'zoo',
+            ],
+            'isolate_dependency_tracked': [
+              'other/file',
+            ],
+          },
+        }],
+      ],
+    }
+    tools.write_json(os.path.join(self.cwd, 'isolate2.isolate'), isolate2, True)
+    isolate3 = {
+      'includes': ['isolate1.isolate', 'isolate2.isolate'],
+      'conditions': [
+        ['OS=="mac"', {
+          'variables': {
+            'command': [
+              'yo', 'dawg',
+            ],
+            'isolate_dependency_tracked': [
+              'file_mac',
+            ],
+          },
+        }],
+      ],
+    }
+
+    actual = isolate.load_isolate_as_config(self.cwd, isolate3, None)
+    expected = {
+      ('linux',): {
+        # Last included takes precedence.
+        'command': ['zoo'],
+        'isolate_dependency_tracked': ['file_linux', 'other/file'],
+      },
+      ('mac',): {
+        # Command in isolate3 takes precedence.
+        'command': ['yo', 'dawg'],
+        'isolate_dependency_tracked': [
+          'file_mac',
+          'file_non_linux',
+          'other/file',
+        ],
+      },
+      ('win',): {
+        'command': ['foo', 'bar'],
+        'isolate_dependency_tracked': ['file_non_linux'],
+      },
+    }
+    self.assertEqual(expected, actual.flatten())
+
   def test_extract_comment(self):
     self.assertEqual(
         '# Foo\n# Bar\n', isolate.extract_comment('# Foo\n# Bar\n{}'))
