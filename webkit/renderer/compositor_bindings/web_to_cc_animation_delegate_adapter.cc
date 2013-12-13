@@ -16,28 +16,20 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
     double wall_clock_time,
     base::TimeTicks monotonic_time,
     cc::Animation::TargetProperty target_property) {
-#if WEB_ANIMATION_DELEGATE_TAKES_MONOTONIC_TIME
   delegate_->notifyAnimationStarted(
       wall_clock_time,
       (monotonic_time - base::TimeTicks()).InSecondsF(),
       static_cast<blink::WebAnimation::TargetProperty>(target_property));
-#else
-  delegate_->notifyAnimationStarted(wall_clock_time);
-#endif
 }
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
     double wall_clock_time,
     base::TimeTicks monotonic_time,
     cc::Animation::TargetProperty target_property) {
-#if WEB_ANIMATION_DELEGATE_TAKES_MONOTONIC_TIME
   delegate_->notifyAnimationFinished(
       wall_clock_time,
       (monotonic_time - base::TimeTicks()).InSecondsF(),
       static_cast<blink::WebAnimation::TargetProperty>(target_property));
-#else
-  delegate_->notifyAnimationFinished(wall_clock_time);
-#endif
 }
 
 }  // namespace webkit
