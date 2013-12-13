@@ -236,8 +236,10 @@ error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
 
 error::Error GLES2DecoderImpl::HandleClear(
     uint32 immediate_data_size, const gles2::cmds::Clear& c) {
-  if (ShouldDeferDraws())
-    return error::kDeferCommandUntilLater;
+  error::Error error;
+  error = WillAccessBoundFramebufferForDraw();
+  if (error != error::kNoError)
+    return error;
   GLbitfield mask = static_cast<GLbitfield>(c.mask);
   DoClear(mask);
   return error::kNoError;
@@ -357,8 +359,10 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
 
 error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     uint32 immediate_data_size, const gles2::cmds::CopyTexImage2D& c) {
-  if (ShouldDeferReads())
-    return error::kDeferCommandUntilLater;
+  error::Error error;
+  error = WillAccessBoundFramebufferForRead();
+  if (error != error::kNoError)
+    return error;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLenum internalformat = static_cast<GLenum>(c.internalformat);
@@ -395,8 +399,10 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleCopyTexSubImage2D(
     uint32 immediate_data_size, const gles2::cmds::CopyTexSubImage2D& c) {
-  if (ShouldDeferReads())
-    return error::kDeferCommandUntilLater;
+  error::Error error;
+  error = WillAccessBoundFramebufferForRead();
+  if (error != error::kNoError)
+    return error;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLint xoffset = static_cast<GLint>(c.xoffset);
@@ -669,8 +675,10 @@ error::Error GLES2DecoderImpl::HandleEnableVertexAttribArray(
 
 error::Error GLES2DecoderImpl::HandleFinish(
     uint32 immediate_data_size, const gles2::cmds::Finish& c) {
-  if (ShouldDeferReads())
-    return error::kDeferCommandUntilLater;
+  error::Error error;
+  error = WillAccessBoundFramebufferForRead();
+  if (error != error::kNoError)
+    return error;
   DoFinish();
   return error::kNoError;
 }
@@ -2631,8 +2639,13 @@ error::Error GLES2DecoderImpl::HandleViewport(
 error::Error GLES2DecoderImpl::HandleBlitFramebufferCHROMIUM(
     uint32 immediate_data_size,
     const gles2::cmds::BlitFramebufferCHROMIUM& c) {
-  if (ShouldDeferDraws() || ShouldDeferReads())
-    return error::kDeferCommandUntilLater;
+  error::Error error;
+  error = WillAccessBoundFramebufferForDraw();
+  if (error != error::kNoError)
+    return error;
+  error = WillAccessBoundFramebufferForRead();
+  if (error != error::kNoError)
+    return error;
   GLint srcX0 = static_cast<GLint>(c.srcX0);
   GLint srcY0 = static_cast<GLint>(c.srcY0);
   GLint srcX1 = static_cast<GLint>(c.srcX1);

@@ -1539,6 +1539,26 @@ class GLES2DecoderImpl : public GLES2Decoder,
            surface_->DeferDraws();
   }
 
+  error::Error WillAccessBoundFramebufferForDraw() {
+    if (ShouldDeferDraws())
+      return error::kDeferCommandUntilLater;
+    if (!offscreen_target_frame_buffer_.get() &&
+        !framebuffer_state_.bound_draw_framebuffer.get() &&
+        !surface_->SetBackbufferAllocation(true))
+      return error::kLostContext;
+    return error::kNoError;
+  }
+
+  error::Error WillAccessBoundFramebufferForRead() {
+    if (ShouldDeferReads())
+      return error::kDeferCommandUntilLater;
+    if (!offscreen_target_frame_buffer_.get() &&
+        !framebuffer_state_.bound_read_framebuffer.get() &&
+        !surface_->SetBackbufferAllocation(true))
+      return error::kLostContext;
+    return error::kNoError;
+  }
+
   void ProcessPendingReadPixels();
   void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
 
@@ -6342,8 +6362,9 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     GLint first,
     GLsizei count,
     GLsizei primcount) {
-  if (ShouldDeferDraws())
-    return error::kDeferCommandUntilLater;
+  error::Error error = WillAccessBoundFramebufferForDraw();
+  if (error != error::kNoError)
+    return error;
   if (!validators_->draw_mode.IsValid(mode)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, mode, "mode");
     return error::kNoError;
@@ -6442,8 +6463,9 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     GLenum type,
     int32 offset,
     GLsizei primcount) {
-  if (ShouldDeferDraws())
-    return error::kDeferCommandUntilLater;
+  error::Error error = WillAccessBoundFramebufferForDraw();
+  if (error != error::kNoError)
+    return error;
   if (!state_.vertex_attrib_manager->element_array_buffer()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, function_name, "No element array buffer bound");
@@ -7223,8 +7245,9 @@ void GLES2DecoderImpl::FinishReadPixels(
 
 error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const cmds::ReadPixels& c) {
-  if (ShouldDeferReads())
-    return error::kDeferCommandUntilLater;
+  error::Error fbo_error = WillAccessBoundFramebufferForRead();
+  if (fbo_error != error::kNoError)
+    return fbo_error;
   GLint x = c.x;
   GLint y = c.y;
   GLsizei width = c.width;

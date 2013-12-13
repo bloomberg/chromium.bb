@@ -345,8 +345,6 @@ void OutputSurface::ResetContext3d() {
 }
 
 void OutputSurface::EnsureBackbuffer() {
-  if (context_provider_)
-    context_provider_->Context3d()->ensureBackbufferCHROMIUM();
   if (software_device_)
     software_device_->EnsureBackbuffer();
 }

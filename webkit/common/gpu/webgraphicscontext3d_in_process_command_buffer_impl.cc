@@ -398,10 +398,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::discardFramebufferEXT(
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::
-    ensureBackbufferCHROMIUM() {
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::
     copyTextureToParentTextureCHROMIUM(WebGLId texture, WebGLId parentTexture) {
   NOTIMPLEMENTED();
 }

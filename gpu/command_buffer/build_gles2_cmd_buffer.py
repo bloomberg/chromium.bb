@@ -2876,17 +2876,18 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteHandlerDeferReadWrite(self, func, file):
     """Writes the code to handle deferring reads or writes."""
-    defer_reads = func.GetInfo('defer_reads')
     defer_draws = func.GetInfo('defer_draws')
-    conditions = []
+    defer_reads = func.GetInfo('defer_reads')
+    if defer_draws or defer_reads:
+      file.Write("  error::Error error;\n")
     if defer_draws:
-      conditions.append('ShouldDeferDraws()');
+      file.Write("  error = WillAccessBoundFramebufferForDraw();\n")
+      file.Write("  if (error != error::kNoError)\n")
+      file.Write("    return error;\n")
     if defer_reads:
-      conditions.append('ShouldDeferReads()');
-    if not conditions:
-      return
-    file.Write("  if (%s)\n" % ' || '.join(conditions))
-    file.Write("    return error::kDeferCommandUntilLater;\n")
+      file.Write("  error = WillAccessBoundFramebufferForRead();\n")
+      file.Write("  if (error != error::kNoError)\n")
+      file.Write("    return error;\n")
 
   def WriteValidUnitTest(self, func, file, test, extra = {}):
     """Writes a valid unit test."""
