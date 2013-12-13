@@ -1822,7 +1822,7 @@ const Experiment kExperiments[] = {
     "enable-streamlined-hosted-apps",
     IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME,
     IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION,
-    kOsWin | kOsCrOS,
+    kOsWin | kOsCrOS | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableStreamlinedHostedApps)
   },
   {
