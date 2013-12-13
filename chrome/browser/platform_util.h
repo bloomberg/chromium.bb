@@ -20,12 +20,14 @@ class FilePath;
 namespace platform_util {
 
 // Show the given file in a file manager. If possible, select the file.
+// The |profile| is used to determine the running profile of file manager app
+// in Chrome OS only. Not used in other platforms.
 // Must be called from the UI thread.
-void ShowItemInFolder(const base::FilePath& full_path);
+void ShowItemInFolder(Profile* profile, const base::FilePath& full_path);
 
 // Open the given file in the desktop's default manner.
 // Must be called from the UI thread.
-void OpenItem(const base::FilePath& full_path);
+void OpenItem(Profile* profile, const base::FilePath& full_path);
 
 // Open the given external protocol URL in the desktop's default manner.
 // (For example, mailto: URLs in the default mail user agent.)

@@ -166,7 +166,7 @@ void OpenExternalOnFileThread(const GURL& url) {
 
 namespace platform_util {
 
-void ShowItemInFolder(const base::FilePath& full_path) {
+void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
@@ -176,7 +176,7 @@ void ShowItemInFolder(const base::FilePath& full_path) {
       base::Bind(&ShowItemInFolderOnFileThread, full_path));
 }
 
-void OpenItem(const base::FilePath& full_path) {
+void OpenItem(Profile* profile, const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)

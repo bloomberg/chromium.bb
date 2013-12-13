@@ -1351,8 +1351,9 @@ bool DownloadsShowDefaultFolderFunction::RunImpl() {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
-  platform_util::OpenItem(DownloadPrefs::FromDownloadManager(
-      manager)->DownloadPath());
+  platform_util::OpenItem(
+      GetProfile(),
+      DownloadPrefs::FromDownloadManager(manager)->DownloadPath());
   RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW_DEFAULT_FOLDER);
   return true;
 }

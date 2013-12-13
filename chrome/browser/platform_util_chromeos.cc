@@ -20,14 +20,14 @@ const char kGmailComposeUrl[] =
 
 namespace platform_util {
 
-void ShowItemInFolder(const base::FilePath& full_path) {
+void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_manager::util::ShowItemInFolder(full_path);
+  file_manager::util::ShowItemInFolder(profile, full_path);
 }
 
-void OpenItem(const base::FilePath& full_path) {
+void OpenItem(Profile* profile, const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_manager::util::OpenItem(full_path);
+  file_manager::util::OpenItem(profile, full_path);
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {

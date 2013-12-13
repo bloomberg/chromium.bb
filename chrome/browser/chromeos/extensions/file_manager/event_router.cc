@@ -634,8 +634,8 @@ void EventRouter::ShowRemovableDeviceInFileManager(
       dcim_path,
       IsGooglePhotosInstalled(profile_) ?
       base::Bind(&base::DoNothing) :
-      base::Bind(&util::OpenRemovableDrive, mount_path),
-      base::Bind(&util::OpenRemovableDrive, mount_path));
+      base::Bind(&util::OpenRemovableDrive, profile_, mount_path),
+      base::Bind(&util::OpenRemovableDrive, profile_, mount_path));
 }
 
 void EventRouter::OnDiskAdded(

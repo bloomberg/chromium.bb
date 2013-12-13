@@ -468,9 +468,11 @@ void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(
     const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
-  if (main_notifier_.GetManager()) {
-    platform_util::OpenItem(DownloadPrefs::FromDownloadManager(
-        main_notifier_.GetManager())->DownloadPath());
+  content::DownloadManager* manager = main_notifier_.GetManager();
+  if (manager) {
+    platform_util::OpenItem(
+        Profile::FromBrowserContext(manager->GetBrowserContext()),
+        DownloadPrefs::FromDownloadManager(manager)->DownloadPath());
   }
 }
 

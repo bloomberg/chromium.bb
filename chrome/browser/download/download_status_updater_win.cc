@@ -76,6 +76,7 @@ void MetroDownloadNotificationClickedHandler(const wchar_t* download_path) {
   // UI thread.
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::Bind(platform_util::ShowItemInFolder,
+                                              static_cast<Profile*>(NULL),
                                               base::FilePath(download_path)));
 }
 

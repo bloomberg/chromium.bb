@@ -427,7 +427,7 @@ void ChromeDownloadManagerDelegate::OpenDownloadUsingPlatformHandler(
   base::FilePath platform_path(
       GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH));
   DCHECK(!platform_path.empty());
-  platform_util::OpenItem(platform_path);
+  platform_util::OpenItem(profile_, platform_path);
 }
 
 void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
@@ -474,7 +474,7 @@ void ChromeDownloadManagerDelegate::ShowDownloadInShell(
   base::FilePath platform_path(
       GetPlatformDownloadPath(profile_, download, PLATFORM_CURRENT_PATH));
   DCHECK(!platform_path.empty());
-  platform_util::ShowItemInFolder(platform_path);
+  platform_util::ShowItemInFolder(profile_, platform_path);
 }
 
 void ChromeDownloadManagerDelegate::CheckForFileExistence(

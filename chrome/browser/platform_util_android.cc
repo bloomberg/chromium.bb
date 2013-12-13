@@ -10,11 +10,11 @@ namespace platform_util {
 
 // TODO: crbug/115682 to track implementation of the following methods.
 
-void ShowItemInFolder(const base::FilePath& full_path) {
+void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   NOTIMPLEMENTED();
 }
 
-void OpenItem(const base::FilePath& full_path) {
+void OpenItem(Profile* profile, const base::FilePath& full_path) {
   NOTIMPLEMENTED();
 }
 
