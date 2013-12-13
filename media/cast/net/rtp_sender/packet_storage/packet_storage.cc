@@ -136,7 +136,7 @@ PacketList PacketStorage::GetPackets(
     bool success = false;
 
     if (packets_set.empty()) {
-      VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
+      VLOG(3) << "Missing all packets in frame " << static_cast<int>(frame_id);
 
       uint16 packet_id = 0;
       do {
@@ -165,7 +165,7 @@ bool PacketStorage::GetPacket(uint8 frame_id,
     return false;
   }
   it->second->GetCopy(packets);
-  VLOG(1) << "Resend " << static_cast<int>(frame_id)
+  VLOG(3) << "Resend " << static_cast<int>(frame_id)
           << ":" << packet_id;
   return true;
 }

@@ -130,7 +130,7 @@ AudioSenderConfig GetAudioSenderConfig() {
 
   audio_config.rtcp_c_name = "audio_sender@a.b.c.d";
 
-  VLOG(0) << "Using OPUS 48Khz stereo at 64kbit/s";
+  VLOG(1) << "Using OPUS 48Khz stereo at 64kbit/s";
   audio_config.use_external_encoder = false;
   audio_config.frequency = kAudioSamplingFrequency;
   audio_config.channels = kAudioChannels;
@@ -181,7 +181,7 @@ VideoSenderConfig GetVideoSenderConfig() {
 
   video_config.use_external_encoder = false;
 
-  VLOG(0) << "Using VP8 at 30 fps";
+  VLOG(1) << "Using VP8 at 30 fps";
   video_config.min_qp = 4;
   video_config.max_qp = 40;
   video_config.max_frame_rate = 30;
@@ -212,7 +212,7 @@ class SendProcess {
       std::string video_file_name = GetVideoFile();
       video_file_ = fopen(video_file_name.c_str(), "r");
       if (video_file_ == NULL) {
-        VLOG(1) << "Failed to open file";
+        LOG(ERROR) << "Failed to open file";
         exit(-1);
       }
     } else {
@@ -260,7 +260,7 @@ class SendProcess {
         base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     base::TimeDelta elapsed_time = now - send_time_;
     if (elapsed_time < video_frame_time) {
-      VLOG(1) << "Wait" <<
+      VLOG(2) << "Wait" <<
           (video_frame_time - elapsed_time).InMilliseconds();
      test_app_thread_proxy_->PostDelayedTask(FROM_HERE,
         base::Bind(&SendProcess::SendVideoFrameOnTime, base::Unretained(this),

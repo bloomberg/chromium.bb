@@ -124,7 +124,7 @@ class LocalPacketSender : public PacketSender,
     if (loss_limit_ > 0) {
       int r = base::RandInt(0, 100);
       if (r < loss_limit_) {
-        VLOG(1) << "Drop packet f:" << static_cast<int>(data[12 + 1])
+        VLOG(3) << "Drop packet f:" << static_cast<int>(data[12 + 1])
                 << " p:" << static_cast<int>(data[12 + 3])
                 << " m:" << static_cast<int>(data[12 + 5]);
         return;

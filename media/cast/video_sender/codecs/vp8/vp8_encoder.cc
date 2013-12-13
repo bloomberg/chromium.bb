@@ -192,7 +192,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   encoded_image->last_referenced_frame_id = latest_frame_id_to_reference;
   encoded_image->frame_id = ++last_encoded_frame_id_;
 
-  VLOG(1) << "VP8 encoded frame:" << static_cast<int>(encoded_image->frame_id)
+  VLOG(2) << "VP8 encoded frame:" << static_cast<int>(encoded_image->frame_id)
           << " sized:" << total_size;
 
   if (encoded_image->key_frame) {
@@ -279,15 +279,15 @@ Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
     switch (last_used_vp8_buffer_) {
       case kAltRefBuffer:
         buffer_to_update = kLastBuffer;
-        VLOG(1) << "VP8 update last buffer";
+        VLOG(2) << "VP8 update last buffer";
         break;
       case kLastBuffer:
         buffer_to_update = kGoldenBuffer;
-        VLOG(1) << "VP8 update golden buffer";
+        VLOG(2) << "VP8 update golden buffer";
         break;
       case kGoldenBuffer:
         buffer_to_update = kAltRefBuffer;
-        VLOG(1) << "VP8 update alt-ref buffer";
+        VLOG(2) << "VP8 update alt-ref buffer";
         break;
       case kNoBuffer:
         DCHECK(false) << "Invalid state";
@@ -339,7 +339,7 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
 void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
   if (!use_multiple_video_buffers_) return;
 
-  VLOG(1) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
+  VLOG(2) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
     if (frame_id == used_buffers_frame_id_[i]) {
       acked_frame_buffers_[i] = true;

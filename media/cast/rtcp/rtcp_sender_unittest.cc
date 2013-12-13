@@ -408,7 +408,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   // Test empty Log message.
   RtcpReceiverLogMessage receiver_log;
 
-  VLOG(0) << " Test empty Log  " ;
+  VLOG(1) << " Test empty Log  " ;
   rtcp_sender_->SendRtcpFromRtpReceiver(
       RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
       RtcpSender::kRtcpReceiverLog,
@@ -444,7 +444,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
 
   receiver_log.push_back(frame_log);
 
-  VLOG(0) << " Test  Log  " ;
+  VLOG(1) << " Test  Log  " ;
   rtcp_sender_->SendRtcpFromRtpReceiver(
       RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
       RtcpSender::kRtcpReceiverLog,

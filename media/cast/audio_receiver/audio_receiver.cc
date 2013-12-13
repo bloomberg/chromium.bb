@@ -176,7 +176,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
       }
       if (!decryptor_->Decrypt(base::StringPiece(reinterpret_cast<const char*>(
           payload_data), payload_size), &plaintext)) {
-        VLOG(0) << "Decryption error";
+        LOG(ERROR) << "Decryption error";
         return;
       }
     }
@@ -287,7 +287,7 @@ void AudioReceiver::PlayoutTimeout() {
     // Since the application can post multiple AudioFrameEncodedCallback and
     // we only check the next frame to play out we might have multiple timeout
     // events firing after each other; however this should be a rare event.
-    VLOG(1) << "Failed to retrieved a complete frame at this point in time";
+    VLOG(2) << "Failed to retrieved a complete frame at this point in time";
     return;
   }
 
@@ -315,7 +315,7 @@ void AudioReceiver::GetEncodedAudioFrame(
   if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
-    VLOG(1) << "Wait for more audio packets in frame";
+    VLOG(2) << "Wait for more audio packets in frame";
     queued_encoded_callbacks_.push_back(callback);
     return;
   }
@@ -351,7 +351,7 @@ bool AudioReceiver::PostEncodedAudioFrame(
     cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
-    VLOG(1) << "Wait until time to playout:"
+    VLOG(2) << "Wait until time to playout:"
             << time_until_release.InMilliseconds();
     return false;
   }
@@ -430,7 +430,7 @@ bool AudioReceiver::DecryptAudioFrame(
   }
   std::string decrypted_audio_data;
   if (!decryptor_->Decrypt((*audio_frame)->data, &decrypted_audio_data)) {
-    VLOG(0) << "Decryption error";
+    LOG(ERROR) << "Decryption error";
     // Give up on this frame, release it from jitter buffer.
     audio_buffer_->ReleaseFrame((*audio_frame)->frame_id);
     return false;

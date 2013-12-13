@@ -195,7 +195,7 @@ bool VideoReceiver::DecryptVideoFrame(
   }
   std::string decrypted_video_data;
   if (!decryptor_->Decrypt((*video_frame)->data, &decrypted_video_data)) {
-    VLOG(1) << "Decryption error";
+    LOG(ERROR) << "Decryption error";
     // Give up on this frame, release it from jitter buffer.
     framer_->ReleaseFrame((*video_frame)->frame_id);
     return false;
@@ -267,7 +267,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
-    VLOG(1) << "Wait before releasing frame "
+    VLOG(2) << "Wait before releasing frame "
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time " << time_until_release.InMilliseconds();
     return false;
@@ -281,7 +281,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   } else {
-    VLOG(1) << "Show frame "
+    VLOG(2) << "Show frame "
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   }
@@ -305,10 +305,10 @@ void VideoReceiver::PlayoutTimeout() {
     // Since the application can post multiple VideoFrameEncodedCallback and
     // we only check the next frame to play out we might have multiple timeout
     // events firing after each other; however this should be a rare event.
-    VLOG(1) << "Failed to retrieved a complete frame at this point in time";
+    VLOG(2) << "Failed to retrieved a complete frame at this point in time";
     return;
   }
-  VLOG(1) << "PlayoutTimeout retrieved frame "
+  VLOG(2) << "PlayoutTimeout retrieved frame "
           << static_cast<int>(encoded_frame->frame_id);
 
   if (decryptor_ && !DecryptVideoFrame(&encoded_frame)) {
