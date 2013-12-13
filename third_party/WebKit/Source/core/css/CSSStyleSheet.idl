@@ -29,11 +29,10 @@
     [RaisesException] void deleteRule(unsigned long index);
 
     // IE Extensions
-    readonly attribute CSSRuleList      rules;
+    [MeasureAs=CSSStyleSheetRules] readonly attribute CSSRuleList rules;
 
-    [RaisesException] long addRule([Default=Undefined] optional DOMString selector,
-                 [Default=Undefined] optional DOMString style,
-                 optional unsigned long index);
-    [RaisesException] void removeRule([Default=Undefined] optional unsigned long index);
+    [RaisesException, MeasureAs=CSSStyleSheetAddRule] long addRule([Default=Undefined] optional DOMString selector,
+                                                                   [Default=Undefined] optional DOMString style,
+                                                                   optional unsigned long index);
+    [RaisesException, MeasureAs=CSSStyleSheetRemoveRule] void removeRule([Default=Undefined] optional unsigned long index);
 };
-
