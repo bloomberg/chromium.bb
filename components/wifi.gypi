@@ -9,7 +9,8 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../components/components.gyp:onc_component', 
+        '../components/components.gyp:onc_component',
+        '../third_party/libxml/libxml.gyp:libxml',
       ],
       'include_dirs': [
         '..',

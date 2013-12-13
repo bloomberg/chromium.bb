@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "components/onc/onc_constants.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace {
 const char kWiFiServiceError[] = "Error.WiFiService";
@@ -46,6 +47,7 @@ const char kWlanQueryInterface[] = "WlanQueryInterface";
 const char kWlanRegisterNotification[] = "WlanRegisterNotification";
 const char kWlanSaveTemporaryProfile[] = "WlanSaveTemporaryProfile";
 const char kWlanScan[] = "WlanScan";
+const char kWlanSetProfile[] = "WlanSetProfile";
 
 // WlanApi function definitions
 typedef DWORD (WINAPI* WlanConnectFunction)(
@@ -135,6 +137,28 @@ typedef DWORD (WINAPI* WlanScanFunction)(
     CONST PDOT11_SSID pDot11Ssid,
     CONST PWLAN_RAW_DATA pIeData,
     PVOID pReserved);
+
+typedef DWORD (WINAPI* WlanSetProfileFunction)(
+    HANDLE hClientHandle,
+    const GUID *pInterfaceGuid,
+    DWORD dwFlags,
+    LPCWSTR strProfileXml,
+    LPCWSTR strAllUserProfileSecurity,
+    BOOL bOverwrite,
+    PVOID pReserved,
+    DWORD* pdwReasonCode);
+
+// Values for WLANProfile XML.
+const char kAuthenticationOpen[] = "open";
+const char kAuthenticationWepPsk[] = "WEP";
+const char kAuthenticationWpaPsk[] = "WPAPSK";
+const char kAuthenticationWpa2Psk[] = "WPA2PSK";
+const char kEncryptionAES[] = "AES";
+const char kEncryptionNone[] = "none";
+const char kEncryptionTKIP[] = "TKIP";
+const char kEncryptionWEP[] = "WEP";
+const char kKeyTypeNetwork[] = "networkKey";
+const char kKeyTypePassphrase[] = "passPhrase";
 
 }  // namespace
 
@@ -281,6 +305,12 @@ class WiFiServiceImpl : public WiFiService, base::NonThreadSafe {
   // Deduce |onc::wifi| security from |alg|.
   std::string SecurityFromDot11AuthAlg(DOT11_AUTH_ALGORITHM alg) const;
 
+  // Deduce WLANProfile |authEncryption| values from |onc::wifi| security.
+  bool AuthEncryptionFromSecurity(const std::string& security,
+                                  std::string* authentication,
+                                  std::string* encryption,
+                                  std::string* key_type) const;
+
   // Populate |properties| based on |wlan| and its corresponding bss info from
   // |wlan_bss_list|.
   void NetworkPropertiesFromAvailableNetwork(const WLAN_AVAILABLE_NETWORK& wlan,
@@ -321,6 +351,10 @@ class WiFiServiceImpl : public WiFiService, base::NonThreadSafe {
   // Normalizes |frequency_in_mhz| into one of |Frequency| values.
   Frequency GetNormalizedFrequency(int frequency_in_mhz) const;
 
+  // Create |profile_xml| based on |network_properties|.
+  bool CreateProfile(const NetworkProperties& network_properties,
+                     std::string* profile_xml);
+
   // Save temporary wireless profile for |network_guid|.
   DWORD SaveTempProfile(const std::string& network_guid);
 
@@ -356,6 +390,7 @@ class WiFiServiceImpl : public WiFiService, base::NonThreadSafe {
   WlanQueryInterfaceFunction WlanQueryInterface_function_;
   WlanRegisterNotificationFunction WlanRegisterNotification_function_;
   WlanScanFunction WlanScan_function_;
+  WlanSetProfileFunction WlanSetProfile_function_;
   // WlanSaveTemporaryProfile function may not be avaiable on Windows XP.
   WlanSaveTemporaryProfileFunction WlanSaveTemporaryProfile_function_;
 
@@ -402,6 +437,7 @@ WiFiServiceImpl::WiFiServiceImpl()
       WlanRegisterNotification_function_(NULL),
       WlanSaveTemporaryProfile_function_(NULL),
       WlanScan_function_(NULL),
+      WlanSetProfile_function_(NULL),
       client_(NULL),
       enable_notify_network_changed_(true) {}
 
@@ -476,7 +512,41 @@ void WiFiServiceImpl::CreateNetwork(
     scoped_ptr<base::DictionaryValue> properties,
     std::string* network_guid,
     std::string* error) {
-  CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
+  DWORD error_code = EnsureInitialized();
+  if (CheckError(error_code, kWiFiServiceError, error))
+    return;
+
+  WiFiService::NetworkProperties network_properties;
+  if (!network_properties.UpdateFromValue(*properties)) {
+    CheckError(ERROR_INVALID_DATA, kWiFiServiceError, error);
+    return;
+  }
+
+  network_properties.guid = network_properties.ssid;
+  std::string profile_xml;
+  if (!CreateProfile(network_properties, &profile_xml)) {
+    CheckError(ERROR_INVALID_DATA, kWiFiServiceError, error);
+    return;
+  }
+
+  string16 profile_xml16(UTF8ToUTF16(profile_xml));
+  DWORD reason_code = 0u;
+
+  error_code = WlanSetProfile_function_(client_,
+                                        &interface_guid_,
+                                        shared ? 0 : WLAN_PROFILE_USER,
+                                        profile_xml16.c_str(),
+                                        NULL,
+                                        FALSE,
+                                        NULL,
+                                        &reason_code);
+  if (CheckError(error_code, kWiFiServiceError, error)) {
+    DVLOG(0) << profile_xml;
+    DVLOG(0) << "SetProfile Reason Code:" << reason_code;
+    return;
+  }
+
+  *network_guid = network_properties.guid;
 }
 
 void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
@@ -751,6 +821,9 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
   WlanScan_function_ =
       reinterpret_cast<WlanScanFunction>(
           ::GetProcAddress(wlan_api_library_, kWlanScan));
+  WlanSetProfile_function_ =
+      reinterpret_cast<WlanSetProfileFunction>(
+          ::GetProcAddress(wlan_api_library_, kWlanSetProfile));
 
   if (!WlanConnect_function_ ||
       !WlanCloseHandle_function_ ||
@@ -762,7 +835,8 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
       !WlanOpenHandle_function_ ||
       !WlanQueryInterface_function_ ||
       !WlanRegisterNotification_function_ ||
-      !WlanScan_function_) {
+      !WlanScan_function_ ||
+      !WlanSetProfile_function_) {
     DLOG(ERROR) << "Unable to find required WlanApi function.";
     FreeLibrary(wlan_api_library_);
     wlan_api_library_ = NULL;
@@ -942,6 +1016,7 @@ DWORD WiFiServiceImpl::CloseClientHandle() {
     WlanRegisterNotification_function_ = NULL;
     WlanSaveTemporaryProfile_function_ = NULL;
     WlanScan_function_ = NULL;
+    WlanSetProfile_function_ = NULL;
     ::FreeLibrary(wlan_api_library_);
     wlan_api_library_ = NULL;
   }
@@ -1399,6 +1474,88 @@ bool WiFiServiceImpl::HaveProfile(const std::string& network_guid) {
   DWORD error = ERROR_SUCCESS;
   std::string profile_xml;
   return GetProfile(network_guid, &profile_xml) == ERROR_SUCCESS;
+}
+
+bool WiFiServiceImpl::AuthEncryptionFromSecurity(
+    const std::string& security,
+    std::string* authentication,
+    std::string* encryption,
+    std::string* key_type) const {
+  if (security == onc::wifi::kNone) {
+    *authentication = kAuthenticationOpen;
+    *encryption = kEncryptionNone;
+  } else if (security == onc::wifi::kWEP_PSK) {
+    *authentication = kAuthenticationOpen;
+    *encryption = kEncryptionWEP;
+    *key_type = kKeyTypeNetwork;
+  } else if (security == onc::wifi::kWPA_PSK) {
+    *authentication = kAuthenticationWpaPsk;
+    // TODO(mef): WAP |encryption| could be either |AES| or |TKIP|. It has to be
+    // determined and adjusted properly during |Connect|.
+    *encryption = kEncryptionAES;
+    *key_type = kKeyTypePassphrase;
+  } else if (security == onc::wifi::kWPA2_PSK) {
+    *authentication = kAuthenticationWpa2Psk;
+    // TODO(mef): WAP |encryption| could be either |AES| or |TKIP|. It has to be
+    // determined and adjusted properly during |Connect|.
+    *encryption = kEncryptionAES;
+    *key_type = kKeyTypePassphrase;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+bool WiFiServiceImpl::CreateProfile(
+    const NetworkProperties& network_properties,
+    std::string* profile_xml) {
+  // Get authentication and encryption values from security.
+  std::string authentication;
+  std::string encryption;
+  std::string key_type;
+  bool valid = AuthEncryptionFromSecurity(network_properties.security,
+                                          &authentication,
+                                          &encryption,
+                                          &key_type);
+  if (!valid)
+    return valid;
+
+  // Generate profile XML.
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StartElement("WLANProfile");
+  xml_writer.AddAttribute(
+      "xmlns",
+      "http://www.microsoft.com/networking/WLAN/profile/v1");
+  xml_writer.WriteElement("name", network_properties.guid);
+  xml_writer.StartElement("SSIDConfig");
+  xml_writer.StartElement("SSID");
+  xml_writer.WriteElement("name", network_properties.ssid);
+  xml_writer.EndElement();  // Ends "SSID" element.
+  xml_writer.EndElement();  // Ends "SSIDConfig" element.
+  xml_writer.WriteElement("connectionType", "ESS");
+  xml_writer.WriteElement("connectionMode", "manual");
+  xml_writer.StartElement("MSM");
+  xml_writer.StartElement("security");
+  xml_writer.StartElement("authEncryption");
+  xml_writer.WriteElement("authentication", authentication);
+  xml_writer.WriteElement("encryption", encryption);
+  xml_writer.WriteElement("useOneX", "false");
+  xml_writer.EndElement();  // Ends "authEncryption" element.
+  if (!key_type.empty()) {
+    xml_writer.StartElement("sharedKey");
+    xml_writer.WriteElement("keyType", key_type);
+    xml_writer.WriteElement("protected", "false");
+    xml_writer.WriteElement("keyMaterial", network_properties.password);
+    xml_writer.EndElement();  // Ends "sharedKey" element.
+  }
+  xml_writer.EndElement();  // Ends "security" element.
+  xml_writer.EndElement();  // Ends "MSM" element.
+  xml_writer.EndElement();  // Ends "WLANProfile" element.
+  xml_writer.StopWriting();
+  *profile_xml = xml_writer.GetWrittenString();
+
+  return true;
 }
 
 void WiFiServiceImpl::NotifyNetworkListChanged(const NetworkList& networks) {

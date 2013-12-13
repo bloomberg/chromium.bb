@@ -162,6 +162,7 @@ ONC_EXPORT extern const char kSignalStrength[];
 ONC_EXPORT extern const char kWEP_PSK[];
 ONC_EXPORT extern const char kWEP_8021X[];
 ONC_EXPORT extern const char kWPA_PSK[];
+ONC_EXPORT extern const char kWPA2_PSK[];
 ONC_EXPORT extern const char kWPA_EAP[];
 }  // namespace wifi
 

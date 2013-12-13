@@ -140,6 +140,7 @@ const char kWEP_8021X[] = "WEP-8021X";
 const char kWEP_PSK[] = "WEP-PSK";
 const char kWPA_EAP[] = "WPA-EAP";
 const char kWPA_PSK[] = "WPA-PSK";
+const char kWPA2_PSK[] = "WPA2-PSK";
 }  // namespace wifi
 
 namespace certificate {

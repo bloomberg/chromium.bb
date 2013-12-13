@@ -72,12 +72,10 @@ bool WiFiService::NetworkProperties::UpdateFromValue(
     type = network_type;
   }
   if (value.GetDictionary(onc::network_type::kWiFi, &wifi)) {
-    std::string wifi_security;
-    if (wifi->GetString(onc::wifi::kSecurity, &wifi_security))
-      security = wifi_security;
-    std::string wifi_ssid;
-    if (wifi->GetString(onc::wifi::kSSID, &wifi_ssid))
-      ssid = wifi_ssid;
+    wifi->GetString(onc::wifi::kSecurity, &security);
+    wifi->GetString(onc::wifi::kSSID, &ssid);
+    wifi->GetString(onc::wifi::kPassphrase, &password);
+    wifi->GetBoolean(onc::wifi::kAutoConnect, &auto_connect);
     return true;
   }
   return false;

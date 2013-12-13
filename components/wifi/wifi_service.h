@@ -130,6 +130,10 @@ class WIFI_EXPORT WiFiService {
     std::string bssid;
     std::string type;
     std::string security;
+    // |password| field is used to pass wifi password for network creation via
+    // |CreateNetwork| or connection via |StartConnect|. It does not persist
+    // once operation is completed.
+    std::string password;
     // WiFi Signal Strength. 0..100
     uint32 signal_strength;
     bool auto_connect;
@@ -139,6 +143,7 @@ class WIFI_EXPORT WiFiService {
     std::string json_extra;  // Extra JSON properties for unit tests
 
     scoped_ptr<base::DictionaryValue> ToValue(bool network_list) const;
+    // Updates only properties set in |value|.
     bool UpdateFromValue(const base::DictionaryValue& value);
     static std::string MacAddressAsString(const uint8 mac_as_int[6]);
     static bool OrderByType(const NetworkProperties& l,
