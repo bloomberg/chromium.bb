@@ -173,6 +173,10 @@ cr.define('cr.ui', function() {
         return;
       }
 
+      // Focus event handlers for descendant elements might dispatch another
+      // focus event.
+      event.stopPropagation();
+
       // The target of the focus event is not in the topmost visible page and
       // should not be focused.
       event.target.blur();
