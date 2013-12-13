@@ -907,8 +907,12 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
 // Test situation of html entities in attribute value when serializing
 // HTML DOM.
 // This test started to fail at WebKit r65388. See http://crbug.com/52279.
+//
+// TODO(tiger@opera.com): Disabled in preparation of page serializer merge --
+// Some attributes are handled differently in the merged serializer.
+// Bug: http://crbug.com/328354
 IN_PROC_BROWSER_TEST_F(DomSerializerTests,
-                       SerializeHTMLDOMWithEntitiesInAttributeValue) {
+                       DISABLE_SerializeHTMLDOMWithEntitiesInAttributeValue) {
   // Need to spin up the renderer and also navigate to a file url so that the
   // renderer code doesn't attempt a fork when it sees a load to file scheme
   // from non-file scheme.
@@ -942,7 +946,12 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
 // When serializing, we should comment the BASE tag, append a new BASE tag.
 // rewrite all the savable URLs to relative local path, and change other URLs
 // to absolute URLs.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
+//
+// TODO(tiger@opera.com): Disabled in preparation of page serializer merge --
+// Base tags are handled a bit different in merged version.
+// Bug: http://crbug.com/328354
+IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+                       DISABLE_SerializeHTMLDOMWithBaseTag) {
   base::FilePath page_file_path = GetTestFilePath(
       "dom_serializer", "html_doc_has_base_tag.htm");
 
