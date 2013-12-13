@@ -61,10 +61,10 @@ class GIN_EXPORT Arguments {
     info_->GetReturnValue().Set(ConvertToV8(isolate_, val));
   }
 
-  v8::Handle<v8::Value> PeekNext();
+  v8::Handle<v8::Value> PeekNext() const;
 
-  void ThrowError();
-  void ThrowTypeError(const std::string& message);
+  void ThrowError() const;
+  void ThrowTypeError(const std::string& message) const;
 
   v8::Isolate* isolate() const { return isolate_; }
 

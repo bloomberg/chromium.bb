@@ -11,6 +11,7 @@
 #include "gin/modules/module_registry.h"
 #include "gin/try_catch.h"
 #include "mojo/apps/js/bindings/core.h"
+#include "mojo/apps/js/bindings/gl/module.h"
 #include "mojo/apps/js/bindings/support.h"
 #include "mojo/apps/js/bindings/threading.h"
 
@@ -44,10 +45,11 @@ void StartCallback(base::WeakPtr<gin::Runner> runner,
 
 MojoRunnerDelegate::MojoRunnerDelegate()
     : ModuleRunnerDelegate(GetModuleSearchPaths()) {
-  AddBuiltinModule(Threading::kModuleName, Threading::GetTemplate);
   AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetTemplate);
   AddBuiltinModule(js::Core::kModuleName, js::Core::GetTemplate);
   AddBuiltinModule(js::Support::kModuleName, js::Support::GetTemplate);
+  AddBuiltinModule(mojo::js::gl::kModuleName, mojo::js::gl::GetModuleTemplate);
+  AddBuiltinModule(Threading::kModuleName, Threading::GetTemplate);
 }
 
 MojoRunnerDelegate::~MojoRunnerDelegate() {

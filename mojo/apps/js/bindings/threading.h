@@ -5,7 +5,7 @@
 #ifndef MOJO_APPS_JS_BINDINGS_THREADING_H_
 #define MOJO_APPS_JS_BINDINGS_THREADING_H_
 
-#include "mojo/public/system/core.h"
+#include "gin/public/wrapper_info.h"
 #include "v8/include/v8.h"
 
 namespace mojo {
@@ -15,6 +15,8 @@ class Threading {
  public:
   static const char kModuleName[];
   static v8::Local<v8::ObjectTemplate> GetTemplate(v8::Isolate* isolate);
+ private:
+  Threading();
 };
 
 }  // namespace apps

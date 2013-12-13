@@ -4,9 +4,7 @@
 
 #include "mojo/apps/js/bindings/threading.h"
 
-#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "gin/function_template.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "mojo/apps/js/bindings/handle.h"
@@ -40,6 +38,9 @@ v8::Local<v8::ObjectTemplate> Threading::GetTemplate(v8::Isolate* isolate) {
   }
 
   return templ;
+}
+
+Threading::Threading() {
 }
 
 }  // namespace apps

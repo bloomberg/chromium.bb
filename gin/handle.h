@@ -31,7 +31,7 @@ class Handle {
   }
 
   T* operator->() const { return object_; }
-  v8::Handle<v8::Value> ToV8() { return wrapper_; }
+  v8::Handle<v8::Value> ToV8() const { return wrapper_; }
   T* get() const { return object_; }
 
  private:
@@ -48,8 +48,11 @@ struct Converter<gin::Handle<T> > {
   static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      gin::Handle<T>* out) {
     T* object = NULL;
-    Converter<T*>::FromV8(isolate, val, &object);
-    return gin::Handle<T>(val, object);
+    if (!Converter<T*>::FromV8(isolate, val, &object)) {
+      return false;
+    }
+    *out = gin::Handle<T>(val, object);
+    return true;
   }
 };
 

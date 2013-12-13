@@ -26,13 +26,13 @@ Arguments::Arguments(const v8::FunctionCallbackInfo<v8::Value>& info)
 Arguments::~Arguments() {
 }
 
-v8::Handle<v8::Value> Arguments::PeekNext() {
+v8::Handle<v8::Value> Arguments::PeekNext() const {
   if (next_ >= info_->Length())
     return v8::Handle<v8::Value>();
   return (*info_)[next_];
 }
 
-void Arguments::ThrowError() {
+void Arguments::ThrowError() const {
   if (insufficient_arguments_)
     return ThrowTypeError("Insufficient number of arguments.");
 
@@ -40,7 +40,7 @@ void Arguments::ThrowError() {
       "Error processing argument %d.", next_ - 1));
 }
 
-void Arguments::ThrowTypeError(const std::string& message) {
+void Arguments::ThrowTypeError(const std::string& message) const {
   isolate_->ThrowException(v8::Exception::TypeError(
       StringToV8(isolate_, message)));
 }
