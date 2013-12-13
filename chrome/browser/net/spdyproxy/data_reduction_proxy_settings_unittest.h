@@ -22,12 +22,14 @@ class MockDataReductionProxySettings : public C {
   MOCK_METHOD0(GetURLFetcher, net::URLFetcher*());
   MOCK_METHOD0(GetOriginalProfilePrefs, PrefService*());
   MOCK_METHOD0(GetLocalStatePrefs, PrefService*());
-  MOCK_METHOD2(LogProxyState, void(bool enabled, bool at_startup));
+  MOCK_METHOD3(LogProxyState, void(
+      bool enabled, bool restricted, bool at_startup));
 
   // SetProxyConfigs should always call LogProxyState exactly once.
-  virtual void SetProxyConfigs(bool enabled, bool at_startup) OVERRIDE {
-    EXPECT_CALL(*this, LogProxyState(enabled, at_startup)).Times(1);
-    C::SetProxyConfigs(enabled, at_startup);
+  virtual void SetProxyConfigs(
+      bool enabled, bool restricted, bool at_startup) OVERRIDE {
+    EXPECT_CALL(*this, LogProxyState(enabled, restricted, at_startup)).Times(1);
+    C::SetProxyConfigs(enabled, restricted, at_startup);
   }
 };
 
@@ -55,21 +57,18 @@ class DataReductionProxySettingsTestBase : public testing::Test {
 
   void CheckProxyPref(const std::string& expected_servers,
                       const std::string& expected_mode);
-  void CheckProxyConfigs(bool expected_enabled);
+  void CheckProxyConfigs(bool expected_enabled, bool expected_restricted);
   void CheckProbe(bool initially_enabled,
                   const std::string& probe_url,
                   const std::string& response,
                   bool request_success,
-                  bool expected_enabled);
+                  bool expected_enabled,
+                  bool expected_restricted);
   void CheckProbeOnIPChange(const std::string& probe_url,
                             const std::string& response,
                             bool request_success,
                             bool expected_enabled);
-  void CheckOnPrefChange(bool enabled,
-                         const std::string& probe_url,
-                         const std::string& response,
-                         bool request_success,
-                         bool expected_enabled);
+  void CheckOnPrefChange(bool enabled, bool expected_enabled);
   void CheckInitDataReductionProxy(bool enabled_at_startup);
 
   TestingPrefServiceSimple pref_service_;

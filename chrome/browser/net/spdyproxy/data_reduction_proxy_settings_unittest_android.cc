@@ -85,18 +85,35 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestBypassPACRules) {
 TEST_F(DataReductionProxySettingsAndroidTest, TestSetProxyPac) {
   AddProxyToCommandLine();
   Settings()->AddDefaultProxyBypassRules();
-  std::string raw_pac = Settings()->GetProxyPacScript();
+
+  // First check without restriction.
+  std::string raw_pac = Settings()->GetProxyPacScript(false);
   EXPECT_NE(raw_pac.find(kDataReductionProxyOriginPAC), std::string::npos);
   EXPECT_NE(raw_pac.find(kDataReductionProxyFallbackPAC), std::string::npos);
   std::string pac;
   base::Base64Encode(raw_pac, &pac);
   std::string expected_pac_url =
       "data:application/x-ns-proxy-autoconfig;base64," + pac;
-  Settings()->SetProxyConfigs(true, false);
+  Settings()->SetProxyConfigs(true, false, false);
   CheckProxyPacPref(expected_pac_url,
                     ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
 
-  Settings()->SetProxyConfigs(false, false);
+  // Now check with restriction.
+  raw_pac = Settings()->GetProxyPacScript(true);
+  // Primary proxy origin should not appear.
+  EXPECT_EQ(raw_pac.find(kDataReductionProxyOriginPAC), std::string::npos);
+  EXPECT_NE(raw_pac.find(kDataReductionProxyFallbackPAC), std::string::npos);
+  base::Base64Encode(raw_pac, &pac);
+  expected_pac_url = "data:application/x-ns-proxy-autoconfig;base64," + pac;
+  Settings()->SetProxyConfigs(true, true, false);
+  CheckProxyPacPref(expected_pac_url,
+                    ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
+
+  Settings()->SetProxyConfigs(false, false, false);
+  CheckProxyPacPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
+
+  // Restriction is irrelevant when the proxy is disabled.
+  Settings()->SetProxyConfigs(false, false, false);
   CheckProxyPacPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
 }
 

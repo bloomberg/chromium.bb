@@ -83,7 +83,8 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
 
   // Configures the proxy settings by generating a data URL containing a PAC
   // file.
-  virtual void SetProxyConfigs(bool enabled, bool at_startup) OVERRIDE;
+  virtual void SetProxyConfigs(
+      bool enabled, bool restricted, bool at_startup) OVERRIDE;
 
  private:
   friend class DataReductionProxySettingsAndroidTest;
@@ -97,7 +98,7 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
 
   ScopedJavaLocalRef<jlongArray> GetDailyContentLengths(JNIEnv* env,
                                                         const char* pref_name);
-  std::string GetProxyPacScript();
+  std::string GetProxyPacScript(bool restricted);
 
   std::vector<std::string> pac_bypass_rules_;
 

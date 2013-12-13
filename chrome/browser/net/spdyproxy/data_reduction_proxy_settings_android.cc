@@ -217,14 +217,20 @@ void DataReductionProxySettingsAndroid::AddDefaultProxyBypassRules() {
 }
 
 void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
+                                                        bool restricted,
                                                         bool at_startup) {
+  // Sanity check: If there's no fallback proxy, we can't do a restricted mode.
+  std::string fallback = GetDataReductionProxyFallback();
+  if (fallback.empty() && enabled && restricted)
+      enabled = false;
+
   // Keys duplicated from proxy_config_dictionary.cc
   // TODO(bengr): Move these to proxy_config_dictionary.h and reuse them here.
   const char kProxyMode[] = "mode";
   const char kProxyPacURL[] = "pac_url";
   const char kProxyBypassList[] = "bypass_list";
 
-  LogProxyState(enabled, at_startup);
+  LogProxyState(enabled, restricted, at_startup);
 
   PrefService* prefs = GetOriginalProfilePrefs();
   DCHECK(prefs);
@@ -233,7 +239,7 @@ void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
   if (enabled) {
     // Convert to a data URI and update the PAC settings.
     std::string base64_pac;
-    base::Base64Encode(GetProxyPacScript(), &base64_pac);
+    base::Base64Encode(GetProxyPacScript(restricted), &base64_pac);
 
     dict->SetString(kProxyPacURL,
                     "data:application/x-ns-proxy-autoconfig;base64," +
@@ -267,7 +273,8 @@ DataReductionProxySettingsAndroid::GetDailyContentLengths(
 }
 
 // TODO(bengr): Replace with our own ProxyResolver.
-std::string DataReductionProxySettingsAndroid::GetProxyPacScript() {
+std::string DataReductionProxySettingsAndroid::GetProxyPacScript(
+    bool restricted) {
   // Compose the PAC-only bypass code; these will be URL patterns that
   // are matched by regular expression. Host bypasses are handled outside
   // of the PAC file using the regular proxy bypass list configs.
@@ -281,12 +288,13 @@ std::string DataReductionProxySettingsAndroid::GetProxyPacScript() {
       DataReductionProxySettings::GetDataReductionProxyOrigin());
   std::string fallback_host = ProtocolAndHostForPACString(
       DataReductionProxySettings::GetDataReductionProxyFallback());
+  std::string hosts = restricted ? fallback_host : proxy_host + fallback_host;
   std::string pac = "function FindProxyForURL(url, host) {"
       "  if (" + bypass_clause + ") {"
       "    return 'DIRECT';"
       "  } "
       "  if (url.substring(0, 5) == 'http:') {"
-      "    return '" + proxy_host + fallback_host + "DIRECT';"
+      "    return '" + hosts + "DIRECT';"
       "  }"
       "  return 'DIRECT';"
       "}";
