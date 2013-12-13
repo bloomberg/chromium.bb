@@ -2677,4 +2677,45 @@ TEST_F(AutofillDialogControllerTest, PassiveAuthFailure) {
   EXPECT_FALSE(controller()->ShouldShowSpinner());
 }
 
+TEST_F(AutofillDialogControllerTest, WalletShippingSameAsBilling) {
+  // Assert initial state.
+  ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogWalletShippingSameAsBilling));
+
+  // Verify that false pref defaults to wallet defaults.
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogWalletShippingSameAsBilling));
+  EXPECT_EQ(2, GetMenuModelForSection(SECTION_SHIPPING)->checked_item());
+
+  // Set "Same as Billing" for the shipping address and verify it sets the pref
+  // and selects the appropriate menu item.
+  UseBillingForShipping();
+  ASSERT_EQ(0, GetMenuModelForSection(SECTION_SHIPPING)->checked_item());
+  controller()->ForceFinishSubmit();
+  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogWalletShippingSameAsBilling));
+
+  // Getting new wallet info shouldn't disrupt the preference and menu should be
+  // set accordingly.
+  Reset();
+  wallet_items = wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogWalletShippingSameAsBilling));
+  EXPECT_EQ(0, GetMenuModelForSection(SECTION_SHIPPING)->checked_item());
+
+  // Choose a different address and ensure pref gets set to false.
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+  controller()->ForceFinishSubmit();
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogWalletShippingSameAsBilling));
+}
+
 }  // namespace autofill

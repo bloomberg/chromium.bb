@@ -548,6 +548,10 @@ void AutofillDialogController::RegisterProfilePrefs(
       ::prefs::kAutofillDialogSaveData,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      ::prefs::kAutofillDialogWalletShippingSameAsBilling,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // static
@@ -2681,6 +2685,13 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   if (IsPayingWithWallet()) {
     const std::vector<wallet::Address*>& addresses =
         wallet_items_->addresses();
+
+    bool shipping_same_as_billing = profile_->GetPrefs()->GetBoolean(
+        ::prefs::kAutofillDialogWalletShippingSameAsBilling);
+
+    if (shipping_same_as_billing)
+      suggested_shipping_.SetCheckedItem(kSameAsBillingKey);
+
     for (size_t i = 0; i < addresses.size(); ++i) {
       std::string key = base::IntToString(i);
       suggested_shipping_.AddKeyedItemWithMinorText(
@@ -2688,12 +2699,17 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
 
+      // TODO(scr): Move this assignment outside the loop or comment why it
+      // can't be there.
       const std::string default_shipping_address_id =
           GetIdToSelect(wallet_items_->default_address_id(),
                         previous_default_shipping_address_id_,
                         previously_selected_shipping_address_id_);
-      if (addresses[i]->object_id() == default_shipping_address_id)
+
+      if (!shipping_same_as_billing &&
+          addresses[i]->object_id() == default_shipping_address_id) {
         suggested_shipping_.SetCheckedItem(key);
+      }
     }
 
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
@@ -3320,7 +3336,13 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
     FillOutputForSection(SECTION_SHIPPING);
   }
 
-  if (!IsPayingWithWallet()) {
+  if (IsPayingWithWallet()) {
+    if (SectionIsActive(SECTION_SHIPPING)) {
+      profile_->GetPrefs()->SetBoolean(
+          ::prefs::kAutofillDialogWalletShippingSameAsBilling,
+          suggested_shipping_.GetItemKeyForCheckedItem() == kSameAsBillingKey);
+    }
+  } else {
     for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
       DialogSection section = static_cast<DialogSection>(i);
       if (!SectionIsActive(section))

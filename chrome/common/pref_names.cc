@@ -1094,6 +1094,11 @@ const char kAutofillDialogWalletLocationAcceptance[] =
 // Whether a user wants to save data locally in Autofill.
 const char kAutofillDialogSaveData[] = "autofill.save_data";
 
+// Whether the user has selected "Same as billing" for the shipping address when
+// using Google Wallet.
+const char kAutofillDialogWalletShippingSameAsBilling[] =
+    "autofill.wallet_shipping_same_as_billing";
+
 // The number of times the generated credit card bubble has been shown.
 const char kAutofillGeneratedCardBubbleTimesShown[] =
     "autofill.generated_card_bubble_times_shown";
