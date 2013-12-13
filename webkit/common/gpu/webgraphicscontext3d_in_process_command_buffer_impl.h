@@ -444,7 +444,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void discardFramebufferEXT(WGC3Denum target,
                                      WGC3Dsizei numAttachments,
                                      const WGC3Denum* attachments);
-  virtual void discardBackbufferCHROMIUM();
   virtual void ensureBackbufferCHROMIUM();
 
   virtual void copyTextureToParentTextureCHROMIUM(

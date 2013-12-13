@@ -244,6 +244,7 @@
   OP(WaitSyncPointCHROMIUM)                                    /* 487 */ \
   OP(DrawBuffersEXT)                                           /* 488 */ \
   OP(DrawBuffersEXTImmediate)                                  /* 489 */ \
+  OP(DiscardBackbufferCHROMIUM)                                /* 490 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

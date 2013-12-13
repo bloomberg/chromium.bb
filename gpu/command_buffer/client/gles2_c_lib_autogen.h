@@ -764,6 +764,9 @@ void GLES2WaitSyncPointCHROMIUM(GLuint sync_point) {
 void GLES2DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
   gles2::GetGLContext()->DrawBuffersEXT(count, bufs);
 }
+void GLES2DiscardBackbufferCHROMIUM() {
+  gles2::GetGLContext()->DiscardBackbufferCHROMIUM();
+}
 
 namespace gles2 {
 
@@ -1121,6 +1124,8 @@ extern const NameToFunc g_gles2_function_table[] = {
       glWaitSyncPointCHROMIUM), },
   { "glDrawBuffersEXT", reinterpret_cast<GLES2FunctionPointer>(
       glDrawBuffersEXT), },
+  { "glDiscardBackbufferCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glDiscardBackbufferCHROMIUM), },
   { NULL, NULL, },
 };
 

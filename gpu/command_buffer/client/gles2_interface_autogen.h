@@ -322,5 +322,6 @@ virtual void LoseContextCHROMIUM(GLenum current, GLenum other) = 0;
 virtual GLuint InsertSyncPointCHROMIUM() = 0;
 virtual void WaitSyncPointCHROMIUM(GLuint sync_point) = 0;
 virtual void DrawBuffersEXT(GLsizei count, const GLenum* bufs) = 0;
+virtual void DiscardBackbufferCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_
 

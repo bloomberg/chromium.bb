@@ -398,10 +398,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::discardFramebufferEXT(
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::
-    discardBackbufferCHROMIUM() {
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::
     ensureBackbufferCHROMIUM() {
 }
 

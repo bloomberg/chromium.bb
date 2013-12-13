@@ -175,7 +175,6 @@ class GpuCommandBufferStub
 
   void OnSetSurfaceVisible(bool visible);
 
-  void OnDiscardBackbuffer();
   void OnEnsureBackbuffer();
 
   void OnRetireSyncPoint(uint32 sync_point);

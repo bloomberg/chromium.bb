@@ -126,7 +126,6 @@ class CommandBufferProxyImpl
   void AddDeletionObserver(DeletionObserver* observer);
   void RemoveDeletionObserver(DeletionObserver* observer);
 
-  bool DiscardBackbuffer();
   bool EnsureBackbuffer();
 
   void SetOnConsoleMessageCallback(

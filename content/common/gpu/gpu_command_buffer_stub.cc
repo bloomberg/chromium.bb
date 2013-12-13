@@ -213,8 +213,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
                         OnSetSurfaceVisible)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DiscardBackbuffer,
-                        OnDiscardBackbuffer)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EnsureBackbuffer,
                         OnEnsureBackbuffer)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RetireSyncPoint,
@@ -758,19 +756,6 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
   if (memory_manager_client_state_)
     memory_manager_client_state_->SetVisible(visible);
-}
-
-void GpuCommandBufferStub::OnDiscardBackbuffer() {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDiscardBackbuffer");
-  if (!surface_.get())
-    return;
-  if (surface_->DeferDraws()) {
-    DCHECK(!IsScheduled());
-    channel_->RequeueMessage();
-  } else {
-    if (!surface_->SetBackbufferAllocation(false))
-      channel_->DestroySoon();
-  }
 }
 
 void GpuCommandBufferStub::OnEnsureBackbuffer() {

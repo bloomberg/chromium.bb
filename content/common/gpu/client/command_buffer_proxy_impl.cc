@@ -448,13 +448,6 @@ void CommandBufferProxyImpl::Echo(const base::Closure& callback) {
   echo_tasks_.push(callback);
 }
 
-bool CommandBufferProxyImpl::DiscardBackbuffer() {
-  if (last_state_.error != gpu::error::kNoError)
-    return false;
-
-  return Send(new GpuCommandBufferMsg_DiscardBackbuffer(route_id_));
-}
-
 bool CommandBufferProxyImpl::EnsureBackbuffer() {
   if (last_state_.error != gpu::error::kNoError)
     return false;

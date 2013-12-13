@@ -1862,5 +1862,16 @@ TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
   gl_->DrawBuffersEXT(1, &data[0][0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, DiscardBackbufferCHROMIUM) {
+  struct Cmds {
+    cmds::DiscardBackbufferCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->DiscardBackbufferCHROMIUM();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 

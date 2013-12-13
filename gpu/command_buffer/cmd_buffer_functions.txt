@@ -219,5 +219,6 @@ GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenum current, GLenu
 GL_APICALL GLuint       GL_APIENTRY glInsertSyncPointCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glWaitSyncPointCHROMIUM (GLuint sync_point);
 GL_APICALL void         GL_APIENTRY glDrawBuffersEXT (GLsizei count, const GLenum* bufs);
+GL_APICALL void         GL_APIENTRY glDiscardBackbufferCHROMIUM (void);
 
 

@@ -2481,6 +2481,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'DiscardBackbufferCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': True,
+    'extension': True,
+    'chromium': True,
+  },
 }
 
 

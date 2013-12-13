@@ -665,5 +665,7 @@ void GLES2InterfaceStub::WaitSyncPointCHROMIUM(GLuint /* sync_point */) {
 void GLES2InterfaceStub::DrawBuffersEXT(
     GLsizei /* count */, const GLenum* /* bufs */) {
 }
+void GLES2InterfaceStub::DiscardBackbufferCHROMIUM() {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

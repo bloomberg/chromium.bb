@@ -760,9 +760,6 @@ class VisibilityChangeIsLastCallTrackingContext
   virtual void deleteRenderbuffer(WebGLId) {
     last_call_was_set_visibility_ = false;
   }
-  virtual void discardBackbufferCHROMIUM() {
-    last_call_was_set_visibility_ = false;
-  }
   virtual void ensureBackbufferCHROMIUM() {
     last_call_was_set_visibility_ = false;
   }
@@ -1714,7 +1711,6 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
   // framebuffer-related GL calls directly. Instead these are supposed to go
   // through the OutputSurface abstraction.
   MOCK_METHOD0(ensureBackbufferCHROMIUM, void());
-  MOCK_METHOD0(discardBackbufferCHROMIUM, void());
   MOCK_METHOD2(bindFramebuffer, void(WGC3Denum target, WebGLId framebuffer));
   MOCK_METHOD3(reshapeWithScaleFactor,
                void(int width, int height, float scale_factor));

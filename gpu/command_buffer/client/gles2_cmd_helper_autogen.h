@@ -2014,5 +2014,13 @@
     }
   }
 
+  void DiscardBackbufferCHROMIUM() {
+    gles2::cmds::DiscardBackbufferCHROMIUM* c =
+        GetCmdSpace<gles2::cmds::DiscardBackbufferCHROMIUM>();
+    if (c) {
+      c->Init();
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

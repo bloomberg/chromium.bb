@@ -10596,6 +10596,36 @@ COMPILE_ASSERT(offsetof(DrawBuffersEXTImmediate, header) == 0,
 COMPILE_ASSERT(offsetof(DrawBuffersEXTImmediate, count) == 4,
                OffsetOf_DrawBuffersEXTImmediate_count_not_4);
 
+struct DiscardBackbufferCHROMIUM {
+  typedef DiscardBackbufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kDiscardBackbufferCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(DiscardBackbufferCHROMIUM) == 4,
+               Sizeof_DiscardBackbufferCHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(DiscardBackbufferCHROMIUM, header) == 0,
+               OffsetOf_DiscardBackbufferCHROMIUM_header_not_0);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

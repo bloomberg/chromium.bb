@@ -555,5 +555,7 @@ virtual void WaitSyncPointCHROMIUM(GLuint sync_point) OVERRIDE;
 
 virtual void DrawBuffersEXT(GLsizei count, const GLenum* bufs) OVERRIDE;
 
+virtual void DiscardBackbufferCHROMIUM() OVERRIDE;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

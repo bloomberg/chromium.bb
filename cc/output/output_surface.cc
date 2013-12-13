@@ -23,6 +23,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -352,7 +353,7 @@ void OutputSurface::EnsureBackbuffer() {
 
 void OutputSurface::DiscardBackbuffer() {
   if (context_provider_)
-    context_provider_->Context3d()->discardBackbufferCHROMIUM();
+    context_provider_->ContextGL()->DiscardBackbufferCHROMIUM();
   if (software_device_)
     software_device_->DiscardBackbuffer();
 }
