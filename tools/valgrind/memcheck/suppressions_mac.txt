@@ -99,7 +99,44 @@
    fun:-[NSBitmapImageRep(NSBitmapImageFileTypeExtensions) representationUsingType:properties:]
    fun:_ZN3gfx8internal24Get1xPNGBytesFromNSImageEP7NSImage
 }
-
+# Intentional leaks in AppKit, for an OS-level cache. Only appear on the first
+# run of each reboot.
+{
+   bug_257276
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:ripr_Path
+   fun:ripc_DrawPath
+   fun:CGContextDrawPath
+   fun:CGContextStrokePath
+   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:inContext:from:to:at:thickness:lineOrigin:breakForDescenders:flipped:]
+   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:type:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
+   fun:-[NSLayoutManager(NSTextViewSupport) drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
+   fun:-[NSLayoutManager(NSTextViewSupport) _lineGlyphRange:type:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
+   fun:-[NSLayoutManager(NSTextViewSupport) underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
+   fun:-[NSLayoutManager(NSPrivate) _drawGlyphsForGlyphRange:atPoint:parameters:]
+   fun:-[NSLayoutManager(NSTextViewSupport) drawGlyphsForGlyphRange:atPoint:]
+   fun:-[NSStringDrawingTextStorage drawTextContainer:withRect:graphicsContext:baselineMode:scrollable:padding:]
+   fun:_NSStringDrawingCore
+   fun:-[NSString(NSExtendedStringDrawing) drawWithRect:options:attributes:]
+   fun:-[HyperlinkButtonCell drawTitle:withFrame:inView:]
+}
+{
+   bug_257276_b
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFNumberCreate
+   fun:get_colorspace
+   fun:initImagePng
+   fun:_CGImagePluginInitPNG
+   fun:makeImagePlus
+   fun:CGImageSourceCreateImageAtIndex
+   fun:CGImageCreateWithPNGDataProvider
+   fun:setCursorFromBundle
+   fun:CoreCursorSet
+   fun:-[NSCursor set]
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -2260,26 +2297,6 @@
    fun:_Z20Type1GetGlyphMetricsmPK18TStrikeDescriptionPK21TRenderingDescriptionmPKtPvm
    fun:_ZNK19TConcreteFontScaler19GetGlyphIdealBoundsEt
    fun:FPFontGetGlyphIdealBounds
-}
-{
-   bug_257276
-   Memcheck:Leak
-   fun:malloc_zone_calloc
-   fun:ripr_Path
-   fun:ripc_DrawPath
-   fun:CGContextDrawPath
-   fun:CGContextStrokePath
-   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:inContext:from:to:at:thickness:lineOrigin:breakForDescenders:flipped:]
-   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:type:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
-   fun:-[NSLayoutManager(NSTextViewSupport) drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
-   fun:-[NSLayoutManager(NSTextViewSupport) _lineGlyphRange:type:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
-   fun:-[NSLayoutManager(NSTextViewSupport) underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
-   fun:-[NSLayoutManager(NSPrivate) _drawGlyphsForGlyphRange:atPoint:parameters:]
-   fun:-[NSLayoutManager(NSTextViewSupport) drawGlyphsForGlyphRange:atPoint:]
-   fun:-[NSStringDrawingTextStorage drawTextContainer:withRect:graphicsContext:baselineMode:scrollable:padding:]
-   fun:_NSStringDrawingCore
-   fun:-[NSString(NSExtendedStringDrawing) drawWithRect:options:attributes:]
-   fun:-[HyperlinkButtonCell drawTitle:withFrame:inView:]
 }
 {
    bug_257501
