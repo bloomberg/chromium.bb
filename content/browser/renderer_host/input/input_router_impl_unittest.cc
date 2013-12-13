@@ -718,11 +718,13 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
                         INPUT_EVENT_ACK_STATE_CONSUMED);
       ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
       ASSERT_EQ(1U, ack_handler_->GetAndResetAckCount());
+      ASSERT_EQ(0, client_->in_flight_event_count());
     }
 
     SimulateTouchEvent(type);
     EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
     EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+    EXPECT_EQ(0, client_->in_flight_event_count());
     SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
     EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
@@ -740,6 +742,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
     SimulateGestureEvent(type, WebGestureEvent::Touchscreen);
     EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
     EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+    EXPECT_EQ(0, client_->in_flight_event_count());
     SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
     EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
@@ -756,11 +759,13 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
                        WebGestureEvent::Touchscreen);
   ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   SimulateGestureEvent(WebInputEvent::GestureTapDown,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
                        WebGestureEvent::Touchscreen);
@@ -784,39 +789,46 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
 
   // Now ack each event. Ack-ignoring events should not be dispatched until all
   // prior events which observe ack disposition have been fired, at which
-  // point they should be sent immediately.
+  // point they should be sent immediately.  They should also have no effect
+  // on the in-flight event count.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   // For events which ignore ack disposition, non-synthetic acks are ignored.
   SendInputEventACK(WebInputEvent::GestureTapDown,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   // For events which ignore ack disposition, non-synthetic acks are ignored.
   SendInputEventACK(WebInputEvent::GestureShowPress,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0, client_->in_flight_event_count());
 
   // For events which ignore ack disposition, non-synthetic acks are ignored.
   SendInputEventACK(WebInputEvent::GestureTapCancel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0, client_->in_flight_event_count());
 }
 
 // Test that GestureShowPress events don't get out of order due to

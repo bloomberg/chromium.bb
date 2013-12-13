@@ -1141,11 +1141,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     }
   }
 
-  IPC::Message* response =
-      new InputHostMsg_HandleInputEvent_ACK(routing_id_,
-                                            input_event->type,
-                                            ack_result,
-                                            latency_info);
   bool event_type_can_be_rate_limited =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||
@@ -1168,24 +1163,31 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
           kInputHandlingTimeThrottlingThresholdMicroseconds;
   }
 
-  if (rate_limiting_wanted && event_type_can_be_rate_limited &&
-      frame_pending && !is_hidden_) {
-    // We want to rate limit the input events in this case, so we'll wait for
-    // painting to finish before ACKing this message.
-    TRACE_EVENT_INSTANT0("renderer",
-      "RenderWidget::OnHandleInputEvent ack throttled",
-      TRACE_EVENT_SCOPE_THREAD);
-    if (pending_input_event_ack_) {
-      // As two different kinds of events could cause us to postpone an ack
-      // we send it now, if we have one pending. The Browser should never
-      // send us the same kind of event we are delaying the ack for.
-      Send(pending_input_event_ack_.release());
+  if (!WebInputEventTraits::IgnoresAckDisposition(input_event->type)) {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_HandleInputEvent_ACK(routing_id_,
+                                              input_event->type,
+                                              ack_result,
+                                              latency_info));
+    if (rate_limiting_wanted && event_type_can_be_rate_limited &&
+        frame_pending && !is_hidden_) {
+      // We want to rate limit the input events in this case, so we'll wait for
+      // painting to finish before ACKing this message.
+      TRACE_EVENT_INSTANT0("renderer",
+        "RenderWidget::OnHandleInputEvent ack throttled",
+        TRACE_EVENT_SCOPE_THREAD);
+      if (pending_input_event_ack_) {
+        // As two different kinds of events could cause us to postpone an ack
+        // we send it now, if we have one pending. The Browser should never
+        // send us the same kind of event we are delaying the ack for.
+        Send(pending_input_event_ack_.release());
+      }
+      pending_input_event_ack_ = response.Pass();
+      if (compositor_)
+        compositor_->NotifyInputThrottledUntilCommit();
+    } else {
+      Send(response.release());
     }
-    pending_input_event_ack_.reset(response);
-    if (compositor_)
-      compositor_->NotifyInputThrottledUntilCommit();
-  } else {
-    Send(response);
   }
 
 #if defined(OS_ANDROID)

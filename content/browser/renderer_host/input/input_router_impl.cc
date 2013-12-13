@@ -441,12 +441,14 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 }
 
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
-                                           const ui::LatencyInfo& latency_info,
-                                           bool is_keyboard_shortcut) {
+                                      const ui::LatencyInfo& latency_info,
+                                      bool is_keyboard_shortcut) {
   input_event_start_time_ = TimeTicks::Now();
   if (Send(new InputMsg_HandleInputEvent(
           routing_id(), &input_event, latency_info, is_keyboard_shortcut))) {
-    client_->IncrementInFlightEventCount();
+    // Only increment the event count if we require an ACK for |input_event|.
+    if (!WebInputEventTraits::IgnoresAckDisposition(input_event.type))
+      client_->IncrementInFlightEventCount();
     return true;
   }
   return false;
@@ -459,11 +461,12 @@ void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
   UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
 
-  client_->DecrementInFlightEventCount();
-
-  // A synthetic ack will already have been sent for this event.
+  // A synthetic ack will already have been sent for this event, and it will
+  // not have affected the in-flight event count.
   if (WebInputEventTraits::IgnoresAckDisposition(event_type))
     return;
+
+  client_->DecrementInFlightEventCount();
 
   ProcessInputEventAck(event_type, ack_result, latency_info, RENDERER);
   // WARNING: |this| may be deleted at this point.
