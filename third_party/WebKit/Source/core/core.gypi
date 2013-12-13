@@ -3256,6 +3256,7 @@
             'platform/animation/TimingFunctionTestHelperTest.cpp',
             'platform/text/UnicodeUtilitiesTest.cpp',
             'rendering/RenderOverflowTest.cpp',
+            'rendering/shapes/BoxShapeTest.cpp',
             'testing/UnitTestHelpers.h',
             'testing/UnitTestHelpers.cpp',
         ],

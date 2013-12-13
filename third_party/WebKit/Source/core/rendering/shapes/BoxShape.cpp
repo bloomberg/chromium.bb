@@ -73,15 +73,12 @@ FloatRoundedRect BoxShape::shapePaddingBounds() const
 void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
 {
     const FloatRoundedRect& marginBounds = shapeMarginBounds();
-    if (marginBounds.isEmpty())
+    if (marginBounds.isEmpty() || !lineOverlapsShapeMarginBounds(logicalTop, logicalHeight))
         return;
 
     float y1 = logicalTop;
     float y2 = logicalTop + logicalHeight;
     const FloatRect& rect = marginBounds.rect();
-
-    if (y2 <= rect.y() || y1 >= rect.maxY())
-        return;
 
     if (!marginBounds.isRounded()) {
         result.append(LineSegment(marginBounds.rect().x(), marginBounds.rect().maxX()));
