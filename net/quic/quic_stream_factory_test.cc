@@ -208,6 +208,21 @@ TEST_F(QuicStreamFactoryTest, Create) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
+TEST_F(QuicStreamFactoryTest, FailedCreate) {
+  MockConnect connect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
+  DeterministicSocketData socket_data(NULL, 0, NULL, 0);
+  socket_data.set_connect_data(connect);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(ERR_ADDRESS_IN_USE, callback_.WaitForResult());
+}
+
 TEST_F(QuicStreamFactoryTest, Goaway) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF

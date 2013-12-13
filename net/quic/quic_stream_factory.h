@@ -167,12 +167,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void OnJobComplete(Job* job, int rv);
   bool HasActiveSession(const HostPortProxyPair& host_port_proxy_pair);
   bool HasActiveJob(const HostPortProxyPair& host_port_proxy_pair);
-  QuicClientSession* CreateSession(
-      const HostPortProxyPair& host_port_proxy_pair,
-      bool is_https,
-      CertVerifier* cert_verifier,
-      const AddressList& address_list,
-      const BoundNetLog& net_log);
+  int CreateSession(const HostPortProxyPair& host_port_proxy_pair,
+                    bool is_https,
+                    CertVerifier* cert_verifier,
+                    const AddressList& address_list,
+                    const BoundNetLog& net_log,
+                    QuicClientSession** session);
   void ActivateSession(const HostPortProxyPair& host_port_proxy_pair,
                        QuicClientSession* session);
 

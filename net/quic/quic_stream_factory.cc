@@ -101,7 +101,8 @@ QuicStreamFactory::Job::Job(
       host_port_proxy_pair_(host_port_proxy_pair),
       is_https_(is_https),
       cert_verifier_(cert_verifier),
-      net_log_(net_log) {
+      net_log_(net_log),
+      session_(NULL) {
 }
 
 QuicStreamFactory::Job::~Job() {
@@ -220,10 +221,16 @@ scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
 int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  session_ = factory_->CreateSession(host_port_proxy_pair_, is_https_,
-                                     cert_verifier_, address_list_, net_log_);
+  int rv = factory_->CreateSession(host_port_proxy_pair_, is_https_,
+      cert_verifier_, address_list_, net_log_, &session_);
+  if (rv != OK) {
+    DCHECK(rv != ERR_IO_PENDING);
+    DCHECK(!session_);
+    return rv;
+  }
+
   session_->StartReading();
-  int rv = session_->CryptoConnect(
+  rv = session_->CryptoConnect(
       factory_->require_confirmation() || is_https_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  base::Unretained(this)));
@@ -440,19 +447,22 @@ bool QuicStreamFactory::HasActiveSession(
   return ContainsKey(active_sessions_, host_port_proxy_pair);
 }
 
-QuicClientSession* QuicStreamFactory::CreateSession(
+int QuicStreamFactory::CreateSession(
     const HostPortProxyPair& host_port_proxy_pair,
     bool is_https,
     CertVerifier* cert_verifier,
     const AddressList& address_list,
-    const BoundNetLog& net_log) {
+    const BoundNetLog& net_log,
+    QuicClientSession** session) {
   QuicGuid guid = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
   scoped_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
-          DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
+          DatagramSocket::RANDOM_BIND, base::Bind(&base::RandInt),
           net_log.net_log(), net_log.source()));
-  socket->Connect(addr);
+  int rv = socket->Connect(addr);
+  if (rv != OK)
+    return rv;
 
   // We should adaptively set this buffer size, but for now, we'll use a size
   // that is more than large enough for a full receive window, and yet
@@ -484,17 +494,16 @@ QuicClientSession* QuicStreamFactory::CreateSession(
       GetOrCreateCryptoConfig(host_port_proxy_pair);
   DCHECK(crypto_config);
 
-  QuicClientSession* session =
-      new QuicClientSession(connection, socket.Pass(), writer.Pass(), this,
-                            quic_crypto_client_stream_factory_,
-                            host_port_proxy_pair.first.host(), config_,
-                            crypto_config, net_log.net_log());
-  all_sessions_.insert(session);  // owning pointer
+  *session = new QuicClientSession(
+      connection, socket.Pass(), writer.Pass(), this,
+      quic_crypto_client_stream_factory_, host_port_proxy_pair.first.host(),
+      config_, crypto_config, net_log.net_log());
+  all_sessions_.insert(*session);  // owning pointer
   if (is_https) {
     crypto_config->SetProofVerifier(
         new ProofVerifierChromium(cert_verifier, net_log));
   }
-  return session;
+  return OK;
 }
 
 bool QuicStreamFactory::HasActiveJob(

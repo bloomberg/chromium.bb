@@ -9965,6 +9965,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.UdpSocketBindErrorFromPosix" units="PosixError">
+  <summary>Posix error code from call to bind() UDP socket.</summary>
+</histogram>
+
+<histogram name="Net.UdpSocketBindErrorFromWinOS" units="WinError">
+  <summary>Windows error code from call to bind() UDP socket.</summary>
+</histogram>
+
+<histogram name="Net.UdpSocketRandomBindErrorCode" enum="NetErrorCodes">
+  <summary>Chromium error code from call to RandomBind() UDP socket.</summary>
+</histogram>
+
 <histogram name="Net.UDPSocketWinClose" units="milliseconds">
   <summary>The time spent in closesocket call in UDPSocketWin::Close.</summary>
 </histogram>

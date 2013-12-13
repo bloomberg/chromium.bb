@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
@@ -270,6 +271,7 @@ int UDPSocketLibevent::InternalConnect(const IPEndPoint& address) {
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
   if (rv < 0) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketRandomBindErrorCode", rv);
     Close();
     return rv;
   }
@@ -606,6 +608,8 @@ int UDPSocketLibevent::DoBind(const IPEndPoint& address) {
   if (!address.ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
   int rv = bind(socket_, storage.addr, storage.addr_len);
+  if (rv < 0)
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromPosix", rv);
   return rv < 0 ? MapSystemError(errno) : rv;
 }
 
