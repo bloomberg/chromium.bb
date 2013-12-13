@@ -68,7 +68,7 @@ public:
 private:
     CustomFilterCompiledProgram(PassRefPtr<GraphicsContext3D>, const String& validatedVertexShader, const String& validatedFragmentShader, CustomFilterProgramType);
 
-    Platform3DObject compileShader(GLenum shaderType, const String& shaderString);
+    Platform3DObject compileShader(GC3Denum shaderType, const String& shaderString);
     Platform3DObject linkProgram(Platform3DObject vertexShader, Platform3DObject fragmentShader);
     void initializeParameterLocations(CustomFilterProgramType);
 

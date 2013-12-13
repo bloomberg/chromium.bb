@@ -58,7 +58,7 @@ static const int s_maxScaleAttempts = 3;
 
 class ScopedTextureUnit0BindingRestorer {
 public:
-    ScopedTextureUnit0BindingRestorer(GraphicsContext3D* context, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
+    ScopedTextureUnit0BindingRestorer(GraphicsContext3D* context, GC3Denum activeTextureUnit, Platform3DObject textureUnitZeroId)
         : m_context(context)
         , m_oldActiveTextureUnit(activeTextureUnit)
         , m_oldTextureUnitZeroId(textureUnitZeroId)
@@ -73,7 +73,7 @@ public:
 
 private:
     GraphicsContext3D* m_context;
-    GLenum m_oldActiveTextureUnit;
+    GC3Denum m_oldActiveTextureUnit;
     Platform3DObject m_oldTextureUnitZeroId;
 };
 
@@ -298,7 +298,7 @@ unsigned DrawingBuffer::frontColorBuffer() const
     return m_frontColorBuffer;
 }
 
-bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GC3Denum internalFormat, GC3Denum destType, GC3Dint level, bool premultiplyAlpha, bool flipY)
 {
     if (!m_context || !m_context->makeContextCurrent())
         return false;
@@ -388,7 +388,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
     // FIXME: The WebGLRenderingContext tracks the current framebuffer binding, it would be slightly more efficient to use this value
     // rather than querying it off of the context.
-    GLint previousFramebuffer = 0;
+    GC3Dint previousFramebuffer = 0;
     m_context->getIntegerv(GL_FRAMEBUFFER_BINDING, &previousFramebuffer);
 
     Platform3DObject framebuffer = m_context->createFramebuffer();
@@ -580,7 +580,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
 
 
 
-void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
+void DrawingBuffer::clearFramebuffers(GC3Dbitfield clearMask)
 {
     if (!m_context)
         return;
@@ -693,7 +693,7 @@ void DrawingBuffer::reset(const IntSize& newSize)
     m_context->clearColor(0, 0, 0, 0);
     m_context->colorMask(true, true, true, true);
 
-    GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
+    GC3Dbitfield clearMask = GL_COLOR_BUFFER_BIT;
     if (m_attributes.depth) {
         m_context->clearDepth(1.0f);
         clearMask |= GL_DEPTH_BUFFER_BIT;

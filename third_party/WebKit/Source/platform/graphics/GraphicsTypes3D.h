@@ -29,14 +29,33 @@
 #include "wtf/Forward.h"
 #include <stdint.h>
 
-typedef unsigned Platform3DObject;
+// GC3D types and enums match the corresponding GL types and enums as defined
+// in OpenGL ES 2.0 header file gl2.h from khronos.org.
+typedef unsigned GC3Denum;
+typedef unsigned char GC3Dboolean;
+typedef unsigned GC3Dbitfield;
+typedef signed char GC3Dbyte;
+typedef unsigned char GC3Dubyte;
+typedef short GC3Dshort;
+typedef unsigned short GC3Dushort;
+typedef int GC3Dint;
+typedef int GC3Dsizei;
+typedef unsigned GC3Duint;
+typedef float GC3Dfloat;
+typedef unsigned short GC3Dhalffloat;
+typedef float GC3Dclampf;
+typedef intptr_t GC3Dintptr;
+typedef intptr_t GC3Dsizeiptr;
+typedef char GC3Dchar;
+
+typedef GC3Duint Platform3DObject;
 
 // WebGL-specific enums
-const unsigned GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL = 0x821A;
-const unsigned GC3D_UNPACK_FLIP_Y_WEBGL = 0x9240;
-const unsigned GC3D_UNPACK_PREMULTIPLY_ALPHA_WEBGL = 0x9241;
-const unsigned GC3D_CONTEXT_LOST_WEBGL = 0x9242;
-const unsigned GC3D_UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
-const unsigned GC3D_BROWSER_DEFAULT_WEBGL = 0x9244;
+const GC3Denum GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL = 0x821A;
+const GC3Denum GC3D_UNPACK_FLIP_Y_WEBGL = 0x9240;
+const GC3Denum GC3D_UNPACK_PREMULTIPLY_ALPHA_WEBGL = 0x9241;
+const GC3Denum GC3D_CONTEXT_LOST_WEBGL = 0x9242;
+const GC3Denum GC3D_UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
+const GC3Denum GC3D_BROWSER_DEFAULT_WEBGL = 0x9244;
 
 #endif

@@ -30,12 +30,12 @@
 
 namespace WebCore {
 
-PassRefPtr<WebGLUniformLocation> WebGLUniformLocation::create(WebGLProgram* program, GLint location)
+PassRefPtr<WebGLUniformLocation> WebGLUniformLocation::create(WebGLProgram* program, GC3Dint location)
 {
     return adoptRef(new WebGLUniformLocation(program, location));
 }
 
-WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program, GLint location)
+WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program, GC3Dint location)
     : m_program(program)
     , m_location(location)
 {
@@ -53,7 +53,7 @@ WebGLProgram* WebGLUniformLocation::program() const
     return m_program.get();
 }
 
-GLint WebGLUniformLocation::location() const
+GC3Dint WebGLUniformLocation::location() const
 {
     // If the program has been linked again, then this UniformLocation is no
     // longer valid.

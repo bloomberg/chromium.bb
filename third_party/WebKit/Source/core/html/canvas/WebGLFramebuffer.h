@@ -43,22 +43,22 @@ public:
     public:
         virtual ~WebGLAttachment();
 
-        virtual GLsizei width() const = 0;
-        virtual GLsizei height() const = 0;
-        virtual GLenum format() const = 0;
+        virtual GC3Dsizei width() const = 0;
+        virtual GC3Dsizei height() const = 0;
+        virtual GC3Denum format() const = 0;
         // For texture attachment, type() returns the type of the attached texture.
         // For renderbuffer attachment, the type of the renderbuffer may vary with GL implementation.
         // To avoid confusion, it would be better to not implement type() for renderbuffer attachment and
         // we should always use the internalformat of the renderbuffer and avoid using type() API.
-        virtual GLenum type() const = 0;
+        virtual GC3Denum type() const = 0;
         virtual WebGLSharedObject* object() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;
         virtual bool initialized() const = 0;
         virtual void setInitialized() = 0;
         virtual void onDetached(GraphicsContext3D*) = 0;
-        virtual void attach(GraphicsContext3D*, GLenum attachment) = 0;
-        virtual void unattach(GraphicsContext3D*, GLenum attachment) = 0;
+        virtual void attach(GraphicsContext3D*, GC3Denum attachment) = 0;
+        virtual void unattach(GraphicsContext3D*, GC3Denum attachment) = 0;
 
     protected:
         WebGLAttachment();
@@ -68,17 +68,17 @@ public:
 
     static PassRefPtr<WebGLFramebuffer> create(WebGLRenderingContext*);
 
-    void setAttachmentForBoundFramebuffer(GLenum attachment, GLenum texTarget, WebGLTexture*, GLint level);
-    void setAttachmentForBoundFramebuffer(GLenum attachment, WebGLRenderbuffer*);
+    void setAttachmentForBoundFramebuffer(GC3Denum attachment, GC3Denum texTarget, WebGLTexture*, GC3Dint level);
+    void setAttachmentForBoundFramebuffer(GC3Denum attachment, WebGLRenderbuffer*);
     // If an object is attached to the currently bound framebuffer, remove it.
     void removeAttachmentFromBoundFramebuffer(WebGLSharedObject*);
     // If a given attachment point for the currently bound framebuffer is not null, remove the attached object.
-    void removeAttachmentFromBoundFramebuffer(GLenum);
-    WebGLSharedObject* getAttachmentObject(GLenum) const;
+    void removeAttachmentFromBoundFramebuffer(GC3Denum);
+    WebGLSharedObject* getAttachmentObject(GC3Denum) const;
 
-    GLenum colorBufferFormat() const;
-    GLsizei colorBufferWidth() const;
-    GLsizei colorBufferHeight() const;
+    GC3Denum colorBufferFormat() const;
+    GC3Dsizei colorBufferWidth() const;
+    GC3Dsizei colorBufferHeight() const;
 
     // This should always be called before drawArray, drawElements, clear,
     // readPixels, copyTexImage2D, copyTexSubImage2D if this framebuffer is
@@ -92,7 +92,7 @@ public:
     // FRAMEBUFFER_COMPLETE is returned, it is still possible for
     // glCheckFramebufferStatus() to return FRAMEBUFFER_UNSUPPORTED,
     // depending on hardware implementation.
-    GLenum checkStatus(const char** reason) const;
+    GC3Denum checkStatus(const char** reason) const;
 
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
 
@@ -101,9 +101,9 @@ public:
     bool hasStencilBuffer() const;
 
     // Wrapper for drawBuffersEXT/drawBuffersARB to work around a driver bug.
-    void drawBuffers(const Vector<GLenum>& bufs);
+    void drawBuffers(const Vector<GC3Denum>& bufs);
 
-    GLenum getDrawBuffer(GLenum);
+    GC3Denum getDrawBuffer(GC3Denum);
 
 protected:
     WebGLFramebuffer(WebGLRenderingContext*);
@@ -113,26 +113,26 @@ protected:
 private:
     virtual bool isFramebuffer() const { return true; }
 
-    WebGLAttachment* getAttachment(GLenum) const;
-    bool isAttachmentComplete(WebGLAttachment* attachedObject, GLenum attachment, const char** reason) const;
+    WebGLAttachment* getAttachment(GC3Denum) const;
+    bool isAttachmentComplete(WebGLAttachment* attachedObject, GC3Denum attachment, const char** reason) const;
 
     // Check if the framebuffer is currently bound.
     bool isBound() const;
 
     // attach 'attachment' at 'attachmentPoint'.
-    void attach(GLenum attachment, GLenum attachmentPoint);
+    void attach(GC3Denum attachment, GC3Denum attachmentPoint);
 
     // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
     void drawBuffersIfNecessary(bool force);
 
-    typedef WTF::HashMap<GLenum, RefPtr<WebGLAttachment> > AttachmentMap;
+    typedef WTF::HashMap<GC3Denum, RefPtr<WebGLAttachment> > AttachmentMap;
 
     AttachmentMap m_attachments;
 
     bool m_hasEverBeenBound;
 
-    Vector<GLenum> m_drawBuffers;
-    Vector<GLenum> m_filteredDrawBuffers;
+    Vector<GC3Denum> m_drawBuffers;
+    Vector<GC3Denum> m_filteredDrawBuffers;
 };
 
 } // namespace WebCore

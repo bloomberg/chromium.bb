@@ -103,7 +103,7 @@ void Extensions3D::deleteVertexArrayOES(Platform3DObject array)
     m_context->webContext()->deleteVertexArrayOES(array);
 }
 
-GLboolean Extensions3D::isVertexArrayOES(Platform3DObject array)
+GC3Dboolean Extensions3D::isVertexArrayOES(Platform3DObject array)
 {
     return m_context->webContext()->isVertexArrayOES(array);
 }
@@ -148,32 +148,32 @@ void Extensions3D::deleteQueryEXT(Platform3DObject query)
     m_context->webContext()->deleteQueryEXT(query);
 }
 
-GLboolean Extensions3D::isQueryEXT(Platform3DObject query)
+GC3Dboolean Extensions3D::isQueryEXT(Platform3DObject query)
 {
     return m_context->webContext()->isQueryEXT(query);
 }
 
-void Extensions3D::beginQueryEXT(GLenum target, Platform3DObject query)
+void Extensions3D::beginQueryEXT(GC3Denum target, Platform3DObject query)
 {
     m_context->webContext()->beginQueryEXT(target, query);
 }
 
-void Extensions3D::endQueryEXT(GLenum target)
+void Extensions3D::endQueryEXT(GC3Denum target)
 {
     m_context->webContext()->endQueryEXT(target);
 }
 
-void Extensions3D::getQueryivEXT(GLenum target, GLenum pname, GLint* params)
+void Extensions3D::getQueryivEXT(GC3Denum target, GC3Denum pname, GC3Dint* params)
 {
     m_context->webContext()->getQueryivEXT(target, pname, params);
 }
 
-void Extensions3D::getQueryObjectuivEXT(Platform3DObject query, GLenum pname, GLuint* params)
+void Extensions3D::getQueryObjectuivEXT(Platform3DObject query, GC3Denum pname, GC3Duint* params)
 {
     m_context->webContext()->getQueryObjectuivEXT(query, pname, params);
 }
 
-bool Extensions3D::canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level)
+bool Extensions3D::canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destType, GC3Dint level)
 {
     // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
     // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
@@ -184,7 +184,7 @@ bool Extensions3D::canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType,
     return false;
 }
 
-void Extensions3D::copyTextureCHROMIUM(GLenum target, Platform3DObject sourceId, Platform3DObject destId, GLint level, GLenum internalFormat, GLenum destType)
+void Extensions3D::copyTextureCHROMIUM(GC3Denum target, Platform3DObject sourceId, Platform3DObject destId, GC3Dint level, GC3Denum internalFormat, GC3Denum destType)
 {
     m_context->webContext()->copyTextureCHROMIUM(target, sourceId, destId, level, internalFormat, destType);
 }
@@ -209,27 +209,27 @@ void Extensions3D::popGroupMarkerEXT(void)
     m_context->webContext()->popGroupMarkerEXT();
 }
 
-void Extensions3D::drawBuffersEXT(GLsizei n, const GLenum* bufs)
+void Extensions3D::drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs)
 {
     m_context->webContext()->drawBuffersEXT(n, bufs);
 }
 
-void Extensions3D::drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
+void Extensions3D::drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount)
 {
     m_context->webContext()->drawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
-void Extensions3D::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount)
+void Extensions3D::drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount)
 {
     m_context->webContext()->drawElementsInstancedANGLE(mode, count, type, offset, primcount);
 }
 
-void Extensions3D::vertexAttribDivisorANGLE(GLuint index, GLuint divisor)
+void Extensions3D::vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor)
 {
     m_context->webContext()->vertexAttribDivisorANGLE(index, divisor);
 }
 
-void Extensions3D::loseContextCHROMIUM(GLenum current, GLenum other)
+void Extensions3D::loseContextCHROMIUM(GC3Denum current, GC3Denum other)
 {
     m_context->webContext()->loseContextCHROMIUM(current, other);
 }

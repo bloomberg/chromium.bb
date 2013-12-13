@@ -38,20 +38,20 @@ public:
 
     static PassRefPtr<WebGLRenderbuffer> create(WebGLRenderingContext*);
 
-    void setInternalFormat(GLenum internalformat)
+    void setInternalFormat(GC3Denum internalformat)
     {
         m_internalFormat = internalformat;
         m_initialized = false;
     }
-    GLenum internalFormat() const { return m_internalFormat; }
+    GC3Denum internalFormat() const { return m_internalFormat; }
 
-    void setSize(GLsizei width, GLsizei height)
+    void setSize(GC3Dsizei width, GC3Dsizei height)
     {
         m_width = width;
         m_height = height;
     }
-    GLsizei width() const { return m_width; }
-    GLsizei height() const { return m_height; }
+    GC3Dsizei width() const { return m_width; }
+    GC3Dsizei height() const { return m_height; }
 
     bool initialized() const { return m_initialized; }
     void setInitialized() { m_initialized = true; }
@@ -72,9 +72,9 @@ protected:
 private:
     virtual bool isRenderbuffer() const { return true; }
 
-    GLenum m_internalFormat;
+    GC3Denum m_internalFormat;
     bool m_initialized;
-    GLsizei m_width, m_height;
+    GC3Dsizei m_width, m_height;
 
     bool m_hasEverBeenBound;
 

@@ -54,7 +54,7 @@ void WebGLBuffer::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObjec
       context3d->deleteBuffer(object);
 }
 
-void WebGLBuffer::setTarget(GLenum target)
+void WebGLBuffer::setTarget(GC3Denum target)
 {
     // In WebGL, a buffer is bound to one target in its lifetime
     if (m_target)

@@ -36,16 +36,16 @@ namespace WebCore {
 
 class WebGLActiveInfo : public RefCounted<WebGLActiveInfo>, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLActiveInfo> create(const String& name, GLenum type, GLint size)
+    static PassRefPtr<WebGLActiveInfo> create(const String& name, GC3Denum type, GC3Dint size)
     {
         return adoptRef(new WebGLActiveInfo(name, type, size));
     }
     String name() const { return m_name; }
-    GLenum type() const { return m_type; }
-    GLint size() const { return m_size; }
+    GC3Denum type() const { return m_type; }
+    GC3Dint size() const { return m_size; }
 
 private:
-    WebGLActiveInfo(const String& name, GLenum type, GLint size)
+    WebGLActiveInfo(const String& name, GC3Denum type, GC3Dint size)
         : m_name(name)
         , m_type(type)
         , m_size(size)
@@ -56,8 +56,8 @@ private:
         ScriptWrappable::init(this);
     }
     String m_name;
-    GLenum m_type;
-    GLint m_size;
+    GC3Denum m_type;
+    GC3Dint m_size;
 };
 
 }

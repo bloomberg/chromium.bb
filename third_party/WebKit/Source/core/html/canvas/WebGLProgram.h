@@ -41,7 +41,7 @@ public:
     static PassRefPtr<WebGLProgram> create(WebGLRenderingContext*);
 
     unsigned numActiveAttribLocations();
-    GLint getActiveAttribLocation(GLuint index);
+    GC3Dint getActiveAttribLocation(GC3Duint index);
 
     bool isUsingVertexAttrib0();
 
@@ -56,7 +56,7 @@ public:
     // Also, we invalidate the cached program info.
     void increaseLinkCount();
 
-    WebGLShader* getAttachedShader(GLenum);
+    WebGLShader* getAttachedShader(GC3Denum);
     bool attachShader(WebGLShader*);
     bool detachShader(WebGLShader*);
 
@@ -71,9 +71,9 @@ private:
     void cacheActiveAttribLocations(GraphicsContext3D*);
     void cacheInfoIfNeeded();
 
-    Vector<GLint> m_activeAttribLocations;
+    Vector<GC3Dint> m_activeAttribLocations;
 
-    GLint m_linkStatus;
+    GC3Dint m_linkStatus;
 
     // This is used to track whether a WebGLUniformLocation belongs to this
     // program or not.

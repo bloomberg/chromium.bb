@@ -61,14 +61,14 @@ public:
 
         bool enabled;
         RefPtr<WebGLBuffer> bufferBinding;
-        GLsizei bytesPerElement;
-        GLint size;
-        GLenum type;
+        GC3Dsizei bytesPerElement;
+        GC3Dint size;
+        GC3Denum type;
         bool normalized;
-        GLsizei stride;
-        GLsizei originalStride;
-        GLintptr offset;
-        GLuint divisor;
+        GC3Dsizei stride;
+        GC3Dsizei originalStride;
+        GC3Dintptr offset;
+        GC3Duint divisor;
     };
 
     bool isDefaultObject() const { return m_type == VaoTypeDefault; }
@@ -80,9 +80,9 @@ public:
     void setElementArrayBuffer(PassRefPtr<WebGLBuffer>);
 
     VertexAttribState& getVertexAttribState(int index) { return m_vertexAttribState[index]; }
-    void setVertexAttribState(GLuint, GLsizei, GLint, GLenum, GLboolean, GLsizei, GLintptr, PassRefPtr<WebGLBuffer>);
+    void setVertexAttribState(GC3Duint, GC3Dsizei, GC3Dint, GC3Denum, GC3Dboolean, GC3Dsizei, GC3Dintptr, PassRefPtr<WebGLBuffer>);
     void unbindBuffer(PassRefPtr<WebGLBuffer>);
-    void setVertexAttribDivisor(GLuint index, GLuint divisor);
+    void setVertexAttribDivisor(GC3Duint index, GC3Duint divisor);
 
 private:
     WebGLVertexArrayObjectOES(WebGLRenderingContext*, VaoType);

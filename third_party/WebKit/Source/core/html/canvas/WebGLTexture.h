@@ -44,28 +44,28 @@ public:
 
     static PassRefPtr<WebGLTexture> create(WebGLRenderingContext*);
 
-    void setTarget(GLenum target, GLint maxLevel);
-    void setParameteri(GLenum pname, GLint param);
-    void setParameterf(GLenum pname, GLfloat param);
+    void setTarget(GC3Denum target, GC3Dint maxLevel);
+    void setParameteri(GC3Denum pname, GC3Dint param);
+    void setParameterf(GC3Denum pname, GC3Dfloat param);
 
-    GLenum getTarget() const { return m_target; }
+    GC3Denum getTarget() const { return m_target; }
 
     int getMinFilter() const { return m_minFilter; }
 
-    void setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLenum type);
+    void setLevelInfo(GC3Denum target, GC3Dint level, GC3Denum internalFormat, GC3Dsizei width, GC3Dsizei height, GC3Denum type);
 
     bool canGenerateMipmaps();
     // Generate all level information.
     void generateMipmapLevelInfo();
 
-    GLenum getInternalFormat(GLenum target, GLint level) const;
-    GLenum getType(GLenum target, GLint level) const;
-    GLsizei getWidth(GLenum target, GLint level) const;
-    GLsizei getHeight(GLenum target, GLint level) const;
-    bool isValid(GLenum target, GLint level) const;
+    GC3Denum getInternalFormat(GC3Denum target, GC3Dint level) const;
+    GC3Denum getType(GC3Denum target, GC3Dint level) const;
+    GC3Dsizei getWidth(GC3Denum target, GC3Dint level) const;
+    GC3Dsizei getHeight(GC3Denum target, GC3Dint level) const;
+    bool isValid(GC3Denum target, GC3Dint level) const;
 
     // Whether width/height is NotPowerOfTwo.
-    static bool isNPOT(GLsizei, GLsizei);
+    static bool isNPOT(GC3Dsizei, GC3Dsizei);
 
     bool isNPOT() const;
     // Determine if texture sampling should always return [0, 0, 0, 1] (OpenGL ES 2.0 Sec 3.8.2).
@@ -73,7 +73,7 @@ public:
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
-    static GLint computeLevelCount(GLsizei width, GLsizei height);
+    static GC3Dint computeLevelCount(GC3Dsizei width, GC3Dsizei height);
 
 protected:
     WebGLTexture(WebGLRenderingContext*);
@@ -92,7 +92,7 @@ private:
         {
         }
 
-        void setInfo(GLenum internalFmt, GLsizei w, GLsizei h, GLenum tp)
+        void setInfo(GC3Denum internalFmt, GC3Dsizei w, GC3Dsizei h, GC3Denum tp)
         {
             valid = true;
             internalFormat = internalFmt;
@@ -102,26 +102,26 @@ private:
         }
 
         bool valid;
-        GLenum internalFormat;
-        GLsizei width;
-        GLsizei height;
-        GLenum type;
+        GC3Denum internalFormat;
+        GC3Dsizei width;
+        GC3Dsizei height;
+        GC3Denum type;
     };
 
     virtual bool isTexture() const { return true; }
 
     void update();
 
-    int mapTargetToIndex(GLenum) const;
+    int mapTargetToIndex(GC3Denum) const;
 
-    const LevelInfo* getLevelInfo(GLenum target, GLint level) const;
+    const LevelInfo* getLevelInfo(GC3Denum target, GC3Dint level) const;
 
-    GLenum m_target;
+    GC3Denum m_target;
 
-    GLenum m_minFilter;
-    GLenum m_magFilter;
-    GLenum m_wrapS;
-    GLenum m_wrapT;
+    GC3Denum m_minFilter;
+    GC3Denum m_magFilter;
+    GC3Denum m_wrapS;
+    GC3Denum m_wrapT;
 
     Vector<Vector<LevelInfo> > m_info;
 

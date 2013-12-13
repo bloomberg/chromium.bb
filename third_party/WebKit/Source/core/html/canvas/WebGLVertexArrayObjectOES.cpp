@@ -93,9 +93,9 @@ void WebGLVertexArrayObjectOES::setElementArrayBuffer(PassRefPtr<WebGLBuffer> bu
 }
 
 void WebGLVertexArrayObjectOES::setVertexAttribState(
-    GLuint index, GLsizei bytesPerElement, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLintptr offset, PassRefPtr<WebGLBuffer> buffer)
+    GC3Duint index, GC3Dsizei bytesPerElement, GC3Dint size, GC3Denum type, GC3Dboolean normalized, GC3Dsizei stride, GC3Dintptr offset, PassRefPtr<WebGLBuffer> buffer)
 {
-    GLsizei validatedStride = stride ? stride : bytesPerElement;
+    GC3Dsizei validatedStride = stride ? stride : bytesPerElement;
 
     VertexAttribState& state = m_vertexAttribState[index];
 
@@ -130,7 +130,7 @@ void WebGLVertexArrayObjectOES::unbindBuffer(PassRefPtr<WebGLBuffer> buffer)
     }
 }
 
-void WebGLVertexArrayObjectOES::setVertexAttribDivisor(GLuint index, GLuint divisor)
+void WebGLVertexArrayObjectOES::setVertexAttribDivisor(GC3Duint index, GC3Duint divisor)
 {
     VertexAttribState& state = m_vertexAttribState[index];
     state.divisor = divisor;

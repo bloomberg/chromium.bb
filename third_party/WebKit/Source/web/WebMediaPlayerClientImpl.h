@@ -35,7 +35,6 @@
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #if OS(ANDROID)
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -120,7 +119,7 @@ public:
     virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const OVERRIDE;
     virtual bool didLoadingProgress() const OVERRIDE;
     virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
-    virtual bool copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
+    virtual bool copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
     virtual bool hasSingleSecurityOrigin() const OVERRIDE;
     virtual bool didPassCORSAccessCheck() const OVERRIDE;

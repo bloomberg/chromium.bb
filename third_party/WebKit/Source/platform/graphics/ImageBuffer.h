@@ -100,7 +100,7 @@ public:
     // FIXME: current implementations of this method have the restriction that they only work
     // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
     // Extensions3D::canUseCopyTextureCHROMIUM().
-    bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
+    bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject, GC3Denum, GC3Denum, GC3Dint, bool, bool);
 
     Platform3DObject getBackingTexture();
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*);

@@ -35,7 +35,7 @@ namespace WebCore {
 
 namespace {
 
-GraphicsContext3D::DataFormat getDataFormat(GLenum destinationFormat, GLenum destinationType)
+GraphicsContext3D::DataFormat getDataFormat(GC3Denum destinationFormat, GC3Denum destinationType)
 {
     GraphicsContext3D::DataFormat dstFormat = GraphicsContext3D::DataFormatRGBA8;
     switch (destinationType) {
@@ -1462,8 +1462,8 @@ void FormatConverter::convert()
 bool GraphicsContext3D::packImageData(
     Image* image,
     const void* pixels,
-    GLenum format,
-    GLenum type,
+    GC3Denum format,
+    GC3Denum type,
     bool flipY,
     AlphaOp alphaOp,
     DataFormat sourceFormat,
@@ -1491,8 +1491,8 @@ bool GraphicsContext3D::packImageData(
 bool GraphicsContext3D::extractImageData(
     const uint8_t* imageData,
     const IntSize& imageDataSize,
-    GLenum format,
-    GLenum type,
+    GC3Denum format,
+    GC3Denum type,
     bool flipY,
     bool premultiplyAlpha,
     Vector<uint8_t>& data)
@@ -1517,7 +1517,7 @@ bool GraphicsContext3D::extractImageData(
 bool GraphicsContext3D::extractTextureData(
     unsigned width,
     unsigned height,
-    GLenum format, GLenum type,
+    GC3Denum format, GC3Denum type,
     unsigned unpackAlignment,
     bool flipY, bool premultiplyAlpha,
     const void* pixels,

@@ -41,7 +41,7 @@ public:
     virtual ~WebGLDrawBuffers();
     virtual ExtensionName name() const;
 
-    void drawBuffersWEBGL(const Vector<GLenum>& buffers);
+    void drawBuffersWEBGL(const Vector<GC3Denum>& buffers);
 
 private:
     WebGLDrawBuffers(WebGLRenderingContext*);
