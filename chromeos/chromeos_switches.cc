@@ -189,6 +189,9 @@ const char kEnableSamlSignin[]              = "enable-saml-signin";
 // Disables new first-run overlay UI.
 const char kDisableFirstRunUI[] = "disable-first-run-ui";
 
+// Enables animated transitions during first-run tutorial.
+const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
+
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
 

@@ -37,6 +37,9 @@ class Step {
   // background.
   virtual void OnBeforeHide();
 
+  // Called after step has been hidden.
+  virtual void OnAfterHide();
+
   // Returns size of overlay window.
   gfx::Size GetOverlaySize() const;
 

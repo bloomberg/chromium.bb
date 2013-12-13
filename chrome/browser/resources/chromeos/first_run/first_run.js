@@ -8,8 +8,53 @@
 
 <include src="step.js">
 
+// Transitions durations.
+/** @const  */ var DEFAULT_TRANSITION_DURATION_MS = 400;
+/** @const  */ var BG_TRANSITION_DURATION_MS = 800;
+
+/**
+ * Changes visibility of element with animated transition.
+ * @param {Element} element Element which visibility should be changed.
+ * @param {boolean} visible Whether element should be visible after transition.
+ * @param {number=} opt_transitionDuration Time length of transition in
+ *     milliseconds. Default value is DEFAULT_TRANSITION_DURATION_MS.
+ * @param {function()=} opt_onFinished Called after transition has finished.
+ */
+function changeVisibility(
+    element, visible, opt_transitionDuration, opt_onFinished) {
+  var classes = element.classList;
+  // If target visibility is the same as current element visibility.
+  if (classes.contains('transparent') === !visible) {
+    if (opt_onFinished)
+      opt_onFinished();
+    return;
+  }
+  var transitionDuration = (opt_transitionDuration === undefined) ?
+    cr.FirstRun.getDefaultTransitionDuration() : opt_transitionDuration;
+  var style = element.style;
+  var oldDurationValue = style.getPropertyValue('transition-duration');
+  style.setProperty('transition-duration', transitionDuration + 'ms');
+  var transition = visible ? 'show-animated' : 'hide-animated';
+  classes.add(transition);
+  classes.toggle('transparent');
+  element.addEventListener('webkitTransitionEnd', function f() {
+    element.removeEventListener('webkitTransitionEnd', f);
+    classes.remove(transition);
+    if (oldDurationValue)
+      style.setProperty('transition-duration', oldDurationValue);
+    else
+      style.removeProperty('transition-duration');
+    if (opt_onFinished)
+      opt_onFinished();
+  });
+  ensureTransitionEndEvent(element, transitionDuration);
+}
+
 cr.define('cr.FirstRun', function() {
   return {
+    // Whether animated transitions are enabled.
+    transitionsEnabled_: false,
+
     // SVG element representing UI background.
     background_: null,
 
@@ -36,6 +81,7 @@ cr.define('cr.FirstRun', function() {
      */
     initialize: function() {
       disableTextSelectAndDrag();
+      this.transitionsEnabled_ = loadTimeData.getBoolean('transitionsEnabled');
       this.background_ = $('background');
       this.backgroundContainer_ = $('background-container');
       this.mask_ = $('mask');
@@ -49,7 +95,32 @@ cr.define('cr.FirstRun', function() {
         cr.FirstRun.DecorateStep(step);
         this.steps_[step.getName()] = step;
       }
-      chrome.send('initialized');
+      this.setBackgroundVisible(true, function() {
+        chrome.send('initialized');
+      });
+    },
+
+    /**
+     * Hides all elements and background.
+     */
+    finalize: function() {
+      // At first we hide holes (job 1) and current step (job 2) simultaneously,
+      // then background.
+      var jobsLeft = 2;
+      var onJobDone = function() {
+        --jobsLeft;
+        if (jobsLeft)
+          return;
+        this.setBackgroundVisible(false, function() {
+          chrome.send('finalized');
+        });
+      }.bind(this);
+      this.doHideCurrentStep_(function(name) {
+        if (name)
+          chrome.send('stepHidden', [name]);
+        onJobDone();
+      });
+      this.removeHoles(onJobDone);
     },
 
     /**
@@ -66,6 +137,9 @@ cr.define('cr.FirstRun', function() {
       hole.setAttribute('width', width);
       hole.setAttribute('height', height);
       this.mask_.appendChild(hole);
+      setTimeout(function() {
+        changeVisibility(hole, true);
+      }, 0);
     },
 
     /**
@@ -80,17 +154,65 @@ cr.define('cr.FirstRun', function() {
       hole.setAttribute('cy', y);
       hole.setAttribute('r', radius);
       this.mask_.appendChild(hole);
+      setTimeout(function() {
+        changeVisibility(hole, true);
+      }, 0);
     },
 
     /**
      * Removes all holes previously added by |addHole|.
+     * @param {function=} opt_onHolesRemoved Called after all holes have been
+     *     hidden.
      */
-    removeHoles: function() {
-      var holes = this.mask_.getElementsByClassName('hole');
-      // Removing nodes modifies |holes|, that's why we run reverse cycle.
-      for (var i = holes.length - 1; i >= 0; --i) {
-        this.mask_.removeChild(holes[i]);
+    removeHoles: function(opt_onHolesRemoved) {
+      var mask = this.mask_;
+      var holes = Array.prototype.slice.call(
+          mask.getElementsByClassName('hole'));
+      var holesLeft = holes.length;
+      if (!holesLeft) {
+        if (opt_onHolesRemoved)
+          opt_onHolesRemoved();
+        return;
       }
+      holes.forEach(function(hole) {
+        changeVisibility(hole, false, this.getDefaultTransitionDuration(),
+            function() {
+              mask.removeChild(hole);
+              --holesLeft;
+              if (!holesLeft && opt_onHolesRemoved)
+                opt_onHolesRemoved();
+            });
+      }.bind(this));
+    },
+
+    /**
+     * Hides currently active step and notifies chrome after step has been
+     * hidden.
+     */
+    hideCurrentStep: function() {
+      assert(this.currentStep_);
+      this.doHideCurrentStep_(function(name) {
+        chrome.send('stepHidden', [name]);
+      });
+    },
+
+    /**
+     * Hides currently active step.
+     * @param {function(string)=} opt_onStepHidden Called after step has been
+     *     hidden.
+     */
+    doHideCurrentStep_: function(opt_onStepHidden) {
+      if (!this.currentStep_) {
+        if (opt_onStepHidden)
+          opt_onStepHidden();
+        return;
+      }
+      var name = this.currentStep_.getName();
+      this.currentStep_.hide(true, function() {
+        this.currentStep_ = null;
+        if (opt_onStepHidden)
+          opt_onStepHidden(name);
+      }.bind(this));
     },
 
     /**
@@ -103,25 +225,41 @@ cr.define('cr.FirstRun', function() {
      *     points, offset - distance between arrow and point.
      */
     showStep: function(name, position, pointWithOffset) {
+      assert(!this.currentStep_);
       if (!this.steps_.hasOwnProperty(name))
         throw Error('Step "' + name + '" not found.');
-      if (this.currentStep_)
-        this.currentStep_.hide();
       var step = this.steps_[name];
       if (position)
         step.setPosition(position);
       if (pointWithOffset)
         step.setPointsTo(pointWithOffset.slice(0, 2), pointWithOffset[2]);
-      step.show();
+      step.show(true);
       this.currentStep_ = step;
     },
 
     /**
      * Sets visibility of the background.
      * @param {boolean} visibility Whether background should be visible.
+     * @param {function()=} opt_onCompletion Called after visibility has
+     *     changed.
      */
-    setBackgroundVisible: function(visible) {
-      this.backgroundContainer_.hidden = !visible;
+    setBackgroundVisible: function(visible, opt_onCompletion) {
+      changeVisibility(this.backgroundContainer_, visible,
+          this.getBackgroundTransitionDuration(), opt_onCompletion);
+    },
+
+    /**
+     * Returns default duration of animated transitions, in ms.
+     */
+    getDefaultTransitionDuration: function() {
+      return this.transitionsEnabled_ ? DEFAULT_TRANSITION_DURATION_MS : 0;
+    },
+
+    /**
+     * Returns duration of transitions of background shield, in ms.
+     */
+    getBackgroundTransitionDuration: function() {
+      return this.transitionsEnabled_ ? BG_TRANSITION_DURATION_MS : 0;
     }
   };
 });
@@ -132,4 +270,3 @@ cr.define('cr.FirstRun', function() {
 window.onload = function() {
   cr.FirstRun.initialize();
 };
-

@@ -11,7 +11,8 @@
 namespace chromeos {
 
 FirstRunHandler::FirstRunHandler()
-    : is_initialized_(false) {
+    : is_initialized_(false),
+      is_finalizing_(false) {
 }
 
 bool FirstRunHandler::IsInitialized() {
@@ -64,6 +65,19 @@ void FirstRunHandler::ShowStepPointingTo(const std::string& name,
                                    point_with_offset);
 }
 
+void FirstRunHandler::HideCurrentStep() {
+  web_ui()->CallJavascriptFunction("cr.FirstRun.hideCurrentStep");
+}
+
+void FirstRunHandler::Finalize() {
+  is_finalizing_ = true;
+  web_ui()->CallJavascriptFunction("cr.FirstRun.finalize");
+}
+
+bool FirstRunHandler::IsFinalizing() {
+  return is_finalizing_;
+}
+
 void FirstRunHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("initialized",
       base::Bind(&FirstRunHandler::HandleInitialized, base::Unretained(this)));
@@ -73,8 +87,11 @@ void FirstRunHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("helpButtonClicked",
       base::Bind(&FirstRunHandler::HandleHelpButtonClicked,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("closeButtonClicked",
-      base::Bind(&FirstRunHandler::HandleCloseButtonClicked,
+  web_ui()->RegisterMessageCallback("stepHidden",
+      base::Bind(&FirstRunHandler::HandleStepHidden,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("finalized",
+      base::Bind(&FirstRunHandler::HandleFinalized,
                  base::Unretained(this)));
 }
 
@@ -96,10 +113,17 @@ void FirstRunHandler::HandleHelpButtonClicked(const base::ListValue* args) {
     delegate()->OnHelpButtonClicked();
 }
 
-void FirstRunHandler::HandleCloseButtonClicked(const base::ListValue* args) {
+void FirstRunHandler::HandleStepHidden(const base::ListValue* args) {
+  std::string step_name;
+  CHECK(args->GetString(0, &step_name));
   if (delegate())
-    delegate()->OnCloseButtonClicked();
+    delegate()->OnStepHidden(step_name);
+}
+
+void FirstRunHandler::HandleFinalized(const base::ListValue* args) {
+  is_finalizing_ = false;
+  if (delegate())
+    delegate()->OnActorFinalized();
 }
 
 }  // namespace chromeos
-

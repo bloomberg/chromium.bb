@@ -30,8 +30,11 @@ class FirstRunActor {
     // Called when user clicked "Keep exploring" button.
     virtual void OnHelpButtonClicked() = 0;
 
-    // Called when user clicked "X" button.
-    virtual void OnCloseButtonClicked() = 0;
+    // Called after setp with |step_name| has been hidden.
+    virtual void OnStepHidden(const std::string& step_name) = 0;
+
+    // Called in answer to Finalize() call.
+    virtual void OnActorFinalized() = 0;
 
     // Notifies about about actor destruction.
     virtual void OnActorDestroyed() = 0;
@@ -86,6 +89,15 @@ class FirstRunActor {
                                   int x,
                                   int y,
                                   int offset) = 0;
+
+  // Hides currently shown step.
+  virtual void HideCurrentStep() = 0;
+
+  // Hides all the UI.
+  virtual void Finalize() = 0;
+
+  // Whether actor is finalizing now.
+  virtual bool IsFinalizing() = 0;
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() const { return delegate_; }

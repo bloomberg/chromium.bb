@@ -26,6 +26,9 @@ void Step::OnBeforeHide() {
   actor()->RemoveBackgroundHoles();
 }
 
+void Step::OnAfterHide() {
+}
+
 gfx::Size Step::GetOverlaySize() const {
   return shell_helper()->GetOverlayWidget()->GetWindowBoundsInScreen().size();
 }

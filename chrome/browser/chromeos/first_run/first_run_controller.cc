@@ -68,6 +68,7 @@ void FirstRunController::Init() {
   shell_helper_->GetOverlayWidget()->SetContentsView(view);
   actor_ = view->GetActor();
   actor_->set_delegate(this);
+  shell_helper_->GetOverlayWidget()->Show();
   if (actor_->IsInitialized())
     OnActorInitialized();
 }
@@ -85,25 +86,33 @@ void FirstRunController::Finalize() {
 
 void FirstRunController::OnActorInitialized() {
   RegisterSteps();
-  shell_helper_->GetOverlayWidget()->Show();
-  actor_->SetBackgroundVisible(true);
   ShowNextStep();
 }
 
 void FirstRunController::OnNextButtonClicked(const std::string& step_name) {
   DCHECK(GetCurrentStep() && GetCurrentStep()->name() == step_name);
-  ShowNextStep();
+  GetCurrentStep()->OnBeforeHide();
+  actor_->HideCurrentStep();
 }
 
 void FirstRunController::OnHelpButtonClicked() {
-  Stop();
-  chrome::ShowHelpForProfile(
-      user_profile_,
-      chrome::HOST_DESKTOP_TYPE_ASH,
-      chrome::HELP_SOURCE_MENU);
+  on_actor_finalized_ = base::Bind(chrome::ShowHelpForProfile,
+                                   user_profile_,
+                                   chrome::HOST_DESKTOP_TYPE_ASH,
+                                   chrome::HELP_SOURCE_MENU);
+  actor_->Finalize();
 }
 
-void FirstRunController::OnCloseButtonClicked() {
+void FirstRunController::OnStepHidden(const std::string& step_name) {
+  DCHECK(GetCurrentStep() && GetCurrentStep()->name() == step_name);
+  GetCurrentStep()->OnAfterHide();
+  if (!actor_->IsFinalizing())
+    ShowNextStep();
+}
+
+void FirstRunController::OnActorFinalized() {
+  if (!on_actor_finalized_.is_null())
+    on_actor_finalized_.Run();
   Stop();
 }
 
@@ -128,13 +137,11 @@ void FirstRunController::RegisterSteps() {
 }
 
 void FirstRunController::ShowNextStep() {
-  if (GetCurrentStep())
-    GetCurrentStep()->OnBeforeHide();
   AdvanceStep();
   if (GetCurrentStep())
     GetCurrentStep()->Show();
   else
-    Stop();
+    actor_->Finalize();
 }
 
 void FirstRunController::AdvanceStep() {

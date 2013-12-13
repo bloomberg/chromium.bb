@@ -31,6 +31,9 @@ class FirstRunHandler : public FirstRunActor,
                                   int x,
                                   int y,
                                   int offset) OVERRIDE;
+  virtual void HideCurrentStep() OVERRIDE;
+  virtual void Finalize() OVERRIDE;
+  virtual bool IsFinalizing() OVERRIDE;
 
  private:
   // Overriden from content::WebUIMessageHandler.
@@ -40,9 +43,11 @@ class FirstRunHandler : public FirstRunActor,
   void HandleInitialized(const base::ListValue* args);
   void HandleNextButtonClicked(const base::ListValue* args);
   void HandleHelpButtonClicked(const base::ListValue* args);
-  void HandleCloseButtonClicked(const base::ListValue* args);
+  void HandleStepHidden(const base::ListValue* args);
+  void HandleFinalized(const base::ListValue* args);
 
   bool is_initialized_;
+  bool is_finalizing_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHandler);
 };

@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -17,6 +21,23 @@ body {
   overflow: hidden;
   position: fixed;
   width: 100%;
+}
+
+.transparent {
+  opacity: 0;
+}
+
+.show-animated,
+.hide-animated {
+  transition-property: opacity;
+}
+
+.show-animated {
+  transition-function: ease-in;
+}
+
+.hide-animated {
+  transition-function: ease-out;
 }
 
 #background-container {

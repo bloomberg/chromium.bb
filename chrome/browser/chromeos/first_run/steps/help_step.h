@@ -17,7 +17,7 @@ class HelpStep : public Step {
 
   // Overriden from Step.
   virtual void Show() OVERRIDE;
-  virtual void OnBeforeHide() OVERRIDE;
+  virtual void OnAfterHide() OVERRIDE;
 };
 
 }  // namespace first_run

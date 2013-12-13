@@ -31,7 +31,7 @@ void HelpStep::Show() {
   actor()->ShowStepPointingTo(name(), center.x(), center.y(), kCircleRadius);
 }
 
-void HelpStep::OnBeforeHide() {
+void HelpStep::OnAfterHide() {
   shell_helper()->CloseTrayBubble();
 }
 
