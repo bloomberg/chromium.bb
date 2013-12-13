@@ -486,8 +486,6 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 	if (pixman_renderer_output_create(&output->base) < 0)
 		goto out_shadow_surface;
 
-	weston_output_move(&output->base, 0, 0);
-
 	loop = wl_display_get_event_loop(c->base.wl_display);
 	output->finish_frame_timer = wl_event_loop_add_timer(loop, finish_frame_handler, output);
 

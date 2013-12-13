@@ -114,8 +114,6 @@ headless_compositor_create_output(struct headless_compositor *c,
 	output->base.make = "weston";
 	output->base.model = "headless";
 
-	weston_output_move(&output->base, 0, 0);
-
 	loop = wl_display_get_event_loop(c->base.wl_display);
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
