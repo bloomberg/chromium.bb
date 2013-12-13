@@ -37,7 +37,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "net/cookies/cookie_monster.h"
@@ -310,8 +309,7 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
           CookieFilePath(),
           false,
           NULL,
-          NULL,
-          scoped_ptr<content::CookieCryptoDelegate>()));
+          NULL));
 
   url_request_context_.reset(new net::URLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.
