@@ -535,6 +535,20 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
     self.assertFalse(test_config['test2'] in p)
     self.assertFalse(test_config['test4'] in p)
 
+  def testIsFailureFatal(self):
+    """Tests the correctness of the _IsFailureFatal method"""
+    stage = self.ConstructStage()
+
+    # Test behavior when there are no sanity check builders
+    self.assertFalse(stage._IsFailureFatal(set(), set()))
+    self.assertTrue(stage._IsFailureFatal(set(['test3']), set()))
+    self.assertTrue(stage._IsFailureFatal(set(), set(['test5'])))
+
+    # Test behavior where there is a sanity check builder
+    stage._run.config.sanity_check_slaves = ['sanity']
+    self.assertTrue(stage._IsFailureFatal(set(['test5']), set(['sanity'])))
+    self.assertFalse(stage._IsFailureFatal(set(), set(['sanity'])))
+
 
 # pylint: disable=W0223
 class AbstractBuildTest(AbstractStageTest,

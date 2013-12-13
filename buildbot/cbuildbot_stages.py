@@ -1291,11 +1291,30 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     inflight = set(builder for builder, status in statuses.iteritems()
                    if status.Inflight())
 
-    if failing or inflight:
+    # If all the failing or inflight builders were sanity checkers
+    # then ignore the failure.
+    fatal = self._IsFailureFatal(failing, inflight)
+
+    if fatal:
       self.HandleFailure(failing, inflight)
       raise ImportantBuilderFailedException()
     else:
       self.HandleSuccess()
+
+  def _IsFailureFatal(self, failing, inflight):
+    """Returns a boolean indicating whether the build should fail.
+
+    Args:
+      failing: Set of builder names of slave builders that failed.
+      inflight: Set of builder names of slave builders that are inflight
+
+    Returns:
+      True if any of the failing or inflight builders are not sanity check
+      builders for this master.
+    """
+    sanity_builders = self._run.config.sanity_check_slaves or []
+    sanity_builders = set(sanity_builders)
+    return not sanity_builders.issuperset(failing | inflight)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.

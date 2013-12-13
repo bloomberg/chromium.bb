@@ -266,11 +266,13 @@ _settings = dict(
 #                            current commit queue run.
   do_not_apply_cq_patches=False,
 
-# sanity_check_slaves -- Applies only to the commit queue master builder. A list
-#                        of the names of builders to be treated as sanity
-#                        checker. If any of the sanity check builders fail, then
-#                        failure of the cq run will not result in tested patches
-#                        being set as un-ready.
+# sanity_check_slaves -- Applies only to master builders. List of the names of
+#                        slave builders to be treated as sanity checkers. If
+#                        only sanity check builders fail, then the master will
+#                        ignore the failures. In a CQ run, if any of the sanity
+#                        check builders fail and other builders fail as well,
+#                        the master will treat the build as failed, but will
+#                        not reset the ready bit of the tested patches.
   sanity_check_slaves=None,
 
 # useflags -- emerge use flags to use while setting up the board, building
