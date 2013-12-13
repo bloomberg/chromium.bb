@@ -5,6 +5,7 @@
 """Module for build host support."""
 
 import os
+import pipes
 import subprocess
 
 import cr
@@ -101,7 +102,8 @@ class Host(cr.Plugin, cr.Plugin.Type):
 
   @cr.Plugin.activemethod
   def Shell(self, context, *command):
-    return self._Execute(context, [' '.join(command)], shell=True)
+    command = ' '.join([pipes.quote(arg) for arg in command])
+    return self._Execute(context, [command], shell=True)
 
   @cr.Plugin.activemethod
   def Execute(self, context, *command):
