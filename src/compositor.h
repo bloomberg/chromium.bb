@@ -198,6 +198,7 @@ struct weston_output {
 	int move_x, move_y;
 	uint32_t frame_time;
 	int disable_planes;
+	int destroying;
 
 	char *make, *model, *serial_number;
 	uint32_t subpixel;

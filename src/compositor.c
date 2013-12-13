@@ -1759,6 +1759,9 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	pixman_region32_t output_damage;
 	int r;
 
+	if (output->destroying)
+		return 0;
+
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_view_list(ec);
 
@@ -3105,6 +3108,8 @@ weston_compositor_remove_output(struct weston_compositor *compositor,
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
+	output->destroying = 1;
+
 	weston_compositor_remove_output(output->compositor, output);
 	wl_list_remove(&output->link);
 
