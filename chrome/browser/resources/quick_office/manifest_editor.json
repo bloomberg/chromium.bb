@@ -2,8 +2,10 @@
   "background": {
     "persistent": false,
     "scripts": [
-      "scripts/background/register.js",
-      "scripts/configs/experimentalFeatures.js"
+      "scripts/configs/requirejsConfig.js",
+      "scripts/third_party/requireJs/require.js",
+      "scripts/configs/experimentalFeatures.js",
+      "scripts/background/backgroundMain.js"
     ]
   },
   "content_security_policy": "default-src 'self'; connect-src https://www.google-analytics.com/ blob: chrome-extension:; style-src 'self' 'unsafe-inline' chrome-extension:; img-src 'self' blob: data:; frame-src chrome-extension:; script-src 'self'",
@@ -83,7 +85,7 @@
       "sub_package_path": "_platform_specific/arm/"
     }
   ],
-  "version": "32.93.1611.7",
+  "version": "33.96.1843.2",
   "web_accessible_resources": [
     "views/qowt.html"
   ]
