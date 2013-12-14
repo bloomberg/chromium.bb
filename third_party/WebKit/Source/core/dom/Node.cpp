@@ -28,6 +28,7 @@
 #include "HTMLNames.h"
 #include "XMLNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
@@ -699,6 +700,79 @@ void Node::markAncestorsWithChildNeedsDistributionRecalc()
         document().scheduleStyleRecalc();
 }
 
+namespace {
+
+unsigned styledSubtreeSize(const Node*);
+
+unsigned styledSubtreeSizeIgnoringSelfAndShadowRoots(const Node* rootNode)
+{
+    unsigned nodeCount = 0;
+    for (Node* child = rootNode->firstChild(); child; child = child->nextSibling())
+        nodeCount += styledSubtreeSize(child);
+    return nodeCount;
+}
+
+unsigned styledSubtreeSize(const Node* rootNode)
+{
+    if (rootNode->isTextNode())
+        return 1;
+    if (!rootNode->isElementNode())
+        return 0;
+
+    // FIXME: We should use a shadow-tree aware node-iterator when such exists.
+    unsigned nodeCount = 1 + styledSubtreeSizeIgnoringSelfAndShadowRoots(rootNode);
+
+    // ShadowRoots don't have style (so don't count them), but their children might.
+    for (ShadowRoot* shadowRoot = rootNode->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+        nodeCount += styledSubtreeSizeIgnoringSelfAndShadowRoots(shadowRoot);
+
+    return nodeCount;
+}
+
+PassRefPtr<JSONArray> jsStackAsJSONArray()
+{
+    RefPtr<JSONArray> jsonArray = JSONArray::create();
+    RefPtr<ScriptCallStack> stack = createScriptCallStack(10);
+    if (!stack)
+        return jsonArray.release();
+    for (size_t i = 0; i < stack->size(); i++)
+        jsonArray->pushString(stack->at(i).functionName());
+    return jsonArray.release();
+}
+
+PassRefPtr<JSONObject> jsonObjectForStyleInvalidation(unsigned nodeCount, const Node* rootNode)
+{
+    RefPtr<JSONObject> jsonObject = JSONObject::create();
+    jsonObject->setNumber("node_count", nodeCount);
+    jsonObject->setString("root_node", rootNode->debugName());
+    jsonObject->setArray("js_stack", jsStackAsJSONArray());
+    return jsonObject.release();
+}
+
+} // anonymous namespace'd functions supporting traceStyleChange
+
+void Node::traceStyleChange(StyleChangeType changeType)
+{
+    static const unsigned kMinLoggedSize = 100;
+    unsigned nodeCount = styledSubtreeSize(this);
+    if (nodeCount < kMinLoggedSize)
+        return;
+
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("style.debug"),
+        "Node::setNeedsStyleRecalc",
+        "data", jsonObjectForStyleInvalidation(nodeCount, this)->toJSONString().ascii()
+    );
+}
+
+void Node::traceStyleChangeIfNeeded(StyleChangeType changeType)
+{
+    // TRACE_EVENT_CATEGORY_GROUP_ENABLED macro loads a global static bool into our local bool.
+    bool styleTracingEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("style.debug"), &styleTracingEnabled);
+    if (UNLIKELY(styleTracingEnabled))
+        traceStyleChange(changeType);
+}
+
 inline void Node::setStyleChange(StyleChangeType changeType)
 {
     m_nodeFlags = (m_nodeFlags & ~StyleChangeMask) | changeType;
@@ -723,8 +797,11 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource sou
         setFlag(NotifyRendererWithIdenticalStyles);
 
     StyleChangeType existingChangeType = styleChangeType();
-    if (changeType > existingChangeType)
+    if (changeType > existingChangeType) {
         setStyleChange(changeType);
+        if (changeType >= SubtreeStyleChange)
+            traceStyleChangeIfNeeded(changeType);
+    }
 
     if (existingChangeType == NoStyleChange)
         markAncestorsWithChildNeedsStyleRecalc();
