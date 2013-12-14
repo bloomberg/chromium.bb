@@ -184,6 +184,9 @@ void FrameLoaderClientImpl::didChangeScrollOffset()
 
 bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowScript(m_webFrame, enabledPerSettings);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowScript(m_webFrame, enabledPerSettings);
@@ -193,6 +196,9 @@ bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
 
 bool FrameLoaderClientImpl::allowScriptFromSource(bool enabledPerSettings, const KURL& scriptURL)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowScriptFromSource(m_webFrame, enabledPerSettings, scriptURL);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowScriptFromSource(m_webFrame, enabledPerSettings, scriptURL);
@@ -202,6 +208,9 @@ bool FrameLoaderClientImpl::allowScriptFromSource(bool enabledPerSettings, const
 
 bool FrameLoaderClientImpl::allowPlugins(bool enabledPerSettings)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowPlugins(m_webFrame, enabledPerSettings);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowPlugins(m_webFrame, enabledPerSettings);
@@ -211,6 +220,9 @@ bool FrameLoaderClientImpl::allowPlugins(bool enabledPerSettings)
 
 bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imageURL)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowImage(m_webFrame, enabledPerSettings, imageURL);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowImage(m_webFrame, enabledPerSettings, imageURL);
@@ -220,6 +232,9 @@ bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imag
 
 bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettings, SecurityOrigin* context, const KURL& url)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowDisplayingInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowDisplayingInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
@@ -229,6 +244,9 @@ bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettin
 
 bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin* context, const KURL& url)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowRunningInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowRunningInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
@@ -238,6 +256,9 @@ bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings,
 
 void FrameLoaderClientImpl::didNotAllowScript()
 {
+    if (m_webFrame->permissionClient())
+        m_webFrame->permissionClient()->didNotAllowScript(m_webFrame);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         webview->permissionClient()->didNotAllowScript(m_webFrame);
@@ -245,6 +266,9 @@ void FrameLoaderClientImpl::didNotAllowScript()
 
 void FrameLoaderClientImpl::didNotAllowPlugins()
 {
+    if (m_webFrame->permissionClient())
+        m_webFrame->permissionClient()->didNotAllowPlugins(m_webFrame);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         webview->permissionClient()->didNotAllowPlugins(m_webFrame);
@@ -766,6 +790,9 @@ void FrameLoaderClientImpl::didLoseWebGLContext(int arbRobustnessContextLostReas
 
 bool FrameLoaderClientImpl::allowWebGLDebugRendererInfo()
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowWebGLDebugRendererInfo(m_webFrame);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowWebGLDebugRendererInfo(m_webFrame);
