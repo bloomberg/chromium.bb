@@ -18,15 +18,23 @@ cr.define('cr.FirstRun', function() {
     // Button leading to next tutorial step.
     nextButton_: null,
 
+    // Default control for this step.
+    defaultControl_: null,
+
     decorate: function() {
       this.name_ = this.getAttribute('id');
-      this.nextButton_ = this.getElementsByClassName('next-button')[0];
+      var controlsContainer = this.getElementsByClassName('controls')[0];
+      if (!controlsContainer)
+          throw Error('Controls not found.');
+      this.nextButton_ =
+          controlsContainer.getElementsByClassName('next-button')[0];
       if (!this.nextButton_)
         throw Error('Next button not found.');
       this.nextButton_.addEventListener('click', (function(e) {
         chrome.send('nextButtonClicked', [this.getName()]);
         e.stopPropagation();
       }).bind(this));
+      this.defaultControl_ = controlsContainer.children[0];
     },
 
     /**
@@ -57,7 +65,7 @@ cr.define('cr.FirstRun', function() {
     /**
      * Shows the step.
      * @param {boolean} animated Whether transition should be animated.
-     * @param {function()=} opt_onShown Called after step has been shown.
+     * @param {function(Step)=} opt_onShown Called after step has been shown.
      */
     show: function(animated, opt_onShown) {
       var transitionDuration =
@@ -68,7 +76,7 @@ cr.define('cr.FirstRun', function() {
                        transitionDuration,
                        function() {
                          if (opt_onShown)
-                           opt_onShown();
+                           opt_onShown(this);
                        }.bind(this));
     },
 
@@ -83,7 +91,15 @@ cr.define('cr.FirstRun', function() {
         if (position.hasOwnProperty(property))
           style.setProperty(property, position[property] + 'px');
       });
-    }
+    },
+
+    /**
+     * Makes default control focused. Default control is a first control in
+     * current implementation.
+     */
+    focusDefaultControl: function() {
+      this.defaultControl_.focus();
+    },
   };
 
   var Bubble = cr.ui.define('div');
@@ -203,7 +219,7 @@ cr.define('cr.FirstRun', function() {
           }
         });
       Step.prototype.setPosition.call(this, position);
-    }
+    },
   };
 
   var HelpStep = cr.ui.define('div');

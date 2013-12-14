@@ -18,7 +18,9 @@
       <div class="window-header">
         <div class="topbutton-bar">
           <div class="topbutton-wrapper">
-            <button class="custom-appearance close-button"></button>
+            <button class="custom-appearance close-button"
+                 i18n-values="aria-label:closeButton" tabindex="1">
+            </button>
           </div>
         </div>
       </div>
@@ -30,7 +32,8 @@
       <div class="controls">
         <div class="margin-top"></div>
         <button i18n-content="greetingButton"
-            class="next-button custom-appearance blue-button"></button>
+            class="next-button custom-appearance blue-button" tabindex="0">
+        </button>
         <div class="margin-bottom"></div>
       </div>
       <include src="greeting_image_[GREETING_IMAGE].html">

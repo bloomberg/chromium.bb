@@ -37,16 +37,12 @@ void OverlayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   if (delegate_ && delegate_->IsCancelingKeyEvent(event))
     Cancel();
 
-  // Handle key events only when they are sent to a child of the delegate's
+  // Pass key events only when they are sent to a child of the delegate's
   // window.
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (delegate_ && delegate_->GetWindow() &&
-      delegate_->GetWindow()->Contains(target))
-    target->delegate()->OnKeyEvent(event);
-
-  // Always handled: other windows shouldn't receive input while we're
-  // displaying an overlay.
-  event->StopPropagation();
+  if (!delegate_ || !delegate_->GetWindow() ||
+      !delegate_->GetWindow()->Contains(target))
+    event->StopPropagation();
 }
 
 void OverlayEventFilter::OnLoginStateChanged(

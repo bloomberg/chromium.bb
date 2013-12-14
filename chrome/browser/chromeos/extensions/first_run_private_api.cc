@@ -35,6 +35,9 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
   localized_strings->SetString(
       "greetingButton",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_BUTTON));
+  localized_strings->SetString(
+      "closeButton",
+      l10n_util::GetStringUTF16(IDS_CLOSE));
   webui::SetFontAndTextDirection(localized_strings);
   SetResult(localized_strings);
   return true;

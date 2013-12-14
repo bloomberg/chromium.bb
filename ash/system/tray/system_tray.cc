@@ -259,10 +259,12 @@ void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
 }
 
 void SystemTray::ShowPersistentDefaultView() {
-  ShowDefaultViewWithOffset(
-      BUBBLE_CREATE_NEW,
-      TrayBubbleView::InitParams::kArrowDefaultOffset,
-      true);
+  ShowItems(items_.get(),
+            false,
+            false,
+            BUBBLE_CREATE_NEW,
+            TrayBubbleView::InitParams::kArrowDefaultOffset,
+            true);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,

@@ -233,7 +233,9 @@ cr.define('cr.FirstRun', function() {
         step.setPosition(position);
       if (pointWithOffset)
         step.setPointsTo(pointWithOffset.slice(0, 2), pointWithOffset[2]);
-      step.show(true);
+      step.show(true, function(step) {
+        step.focusDefaultControl();
+      });
       this.currentStep_ = step;
     },
 

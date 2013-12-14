@@ -69,6 +69,8 @@ void FirstRunController::Init() {
   actor_ = view->GetActor();
   actor_->set_delegate(this);
   shell_helper_->GetOverlayWidget()->Show();
+  view->RequestFocus();
+
   if (actor_->IsInitialized())
     OnActorInitialized();
 }
