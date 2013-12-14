@@ -489,10 +489,14 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
-  NTPUserDataLogger* data =
-      NTPUserDataLogger::GetOrCreateFromWebContents(web_contents());
-  if (data)
-    data->LogEvent(event);
+  NTPUserDataLogger::GetOrCreateFromWebContents(
+      web_contents())->LogEvent(event);
+}
+
+void SearchTabHelper::OnLogImpression(int position,
+                                      const base::string16& provider) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(
+      web_contents())->LogImpression(position, provider);
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {

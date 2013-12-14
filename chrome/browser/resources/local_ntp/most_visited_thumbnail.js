@@ -14,6 +14,9 @@ window.addEventListener('DOMContentLoaded', function() {
     function logEvent(eventName) {
       chrome.embeddedSearch.newTabPage.logEvent(eventName);
     }
+    function logImpression(tileIndex, provider) {
+      chrome.embeddedSearch.newTabPage.logImpression(tileIndex, provider);
+    }
     function showDomainElement() {
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ERROR);
       var link = createMostVisitedLink(
@@ -50,6 +53,11 @@ window.addEventListener('DOMContentLoaded', function() {
       }
       return image;
     }
+    // Log an impression if we know the position of the tile.
+    if (isFinite(params.pos) && data.provider) {
+      logImpression(parseInt(params.pos, 10), data.provider);
+    }
+
     if (data.thumbnailUrl) {
       var image = createAndAppendThumbnail(true);
       // If a backup thumbnail URL was provided, preload it in case the first

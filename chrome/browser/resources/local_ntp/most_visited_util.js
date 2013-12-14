@@ -37,6 +37,20 @@ var NTP_LOGGING_EVENT_TYPE = {
 };
 
 /**
+ * Type of the impression provider for a generic client-provided suggestion.
+ * @type {string}
+ * @const
+ */
+var CLIENT_PROVIDER_NAME = 'client';
+
+/**
+ * Type of the impression provider for a generic server-provided suggestion.
+ * @type {string}
+ * @const
+ */
+var SERVER_PROVIDER_NAME = 'server';
+
+/**
  * Parses query parameters from Location.
  * @param {string} location The URL to generate the CSS url for.
  * @return {Object} Dictionary containing name value pairs for URL.
@@ -162,6 +176,8 @@ function fillMostVisited(location, fill) {
     data.direction = params.di || '';
     data.domain = params.dom || '';
     data.ping = params.ping || '';
+    data.provider = params.pr || SERVER_PROVIDER_NAME;
+
     // Log the fact that suggestion was obtained from the server.
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION);
@@ -170,11 +186,13 @@ function fillMostVisited(location, fill) {
     data = apiHandle.getMostVisitedItemData(params.rid);
     if (!data)
       return;
+    data.provider = CLIENT_PROVIDER_NAME;
     delete data.ping;
   }
   if (/^javascript:/i.test(data.url) ||
       /^javascript:/i.test(data.thumbnailUrl) ||
-      /^javascript:/i.test(data.thumbnailUrl2))
+      /^javascript:/i.test(data.thumbnailUrl2) ||
+      (data.provider && !/^[a-z0-9]{0,8}$/i.test(data.provider)))
     return;
   if (data.direction)
     document.body.dir = data.direction;

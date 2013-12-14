@@ -162,6 +162,12 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
       render_view()->GetRoutingID(), render_view()->GetPageId(), event));
 }
 
+void SearchBox::LogImpression(int position, const base::string16& provider) {
+  render_view()->Send(new ChromeViewHostMsg_LogImpression(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), position,
+      provider));
+}
+
 void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {
   render_view()->Send(new ChromeViewHostMsg_ChromeIdentityCheck(
       render_view()->GetRoutingID(), render_view()->GetPageId(), identity));

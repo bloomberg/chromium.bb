@@ -37,6 +37,9 @@ class NTPUserDataLogger
   // incremented.
   void LogEvent(NTPLoggingEventType event);
 
+  // Logs an impression on one of the Most Visited tiles by a given provider.
+  void LogImpression(int position, const base::string16& provider);
+
   // content::WebContentsObserver override
   virtual void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) OVERRIDE;

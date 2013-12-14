@@ -404,6 +404,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Logs information from the iframes/titles on the NTP.
   static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Logs an impression on one of the Most Visited tile on the NTP.
+  static void LogImpression(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
   static void NavigateContentWindow(
@@ -560,6 +563,8 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, IsKeyCaptureEnabled);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "LogEvent")))
     return v8::FunctionTemplate::New(isolate, LogEvent);
+  if (name->Equals(v8::String::NewFromUtf8(isolate, "LogImpression")))
+    return v8::FunctionTemplate::New(isolate, LogImpression);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "NavigateContentWindow")))
     return v8::FunctionTemplate::New(isolate, NavigateContentWindow);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "Paste")))
@@ -931,6 +936,22 @@ void SearchBoxExtensionWrapper::LogEvent(
         static_cast<NTPLoggingEventType>(args[0]->Uint32Value());
     SearchBox::Get(render_view)->LogEvent(event);
   }
+}
+
+// static
+void SearchBoxExtensionWrapper::LogImpression(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+      GURL(chrome::kChromeSearchMostVisitedUrl));
+  if (!render_view) return;
+
+  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined())
+    return;
+
+  DVLOG(1) << render_view << " LogImpression";
+
+  SearchBox::Get(render_view)->LogImpression(args[0]->IntegerValue(),
+                                             V8ValueToUTF16(args[1]));
 }
 
 // static

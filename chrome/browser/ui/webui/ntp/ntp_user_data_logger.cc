@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/search_urls.h"
 #include "chrome/common/url_constants.h"
@@ -20,6 +23,11 @@ enum SuggestionsType {
   SERVER_SIDE = 1,
   SUGGESTIONS_TYPE_COUNT = 2
 };
+
+// Format string to generate the name for the histogram keeping track of
+// suggestion impressions.
+const char kImpressionHistogramWithProvider[] =
+    "NewTabPage.SuggestionsImpression.%s";
 
 }  // namespace
 
@@ -113,6 +121,19 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event) {
     default:
       NOTREACHED();
   }
+}
+
+void NTPUserDataLogger::LogImpression(int position,
+                                      const base::string16& provider) {
+  // Cannot rely on UMA histograms macro because the name of the histogram is
+  // generated dynamically.
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      base::StringPrintf(kImpressionHistogramWithProvider,
+                         UTF16ToUTF8(provider).c_str()),
+      1, MostVisitedIframeSource::kNumMostVisited,
+      MostVisitedIframeSource::kNumMostVisited + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(position);
 }
 
 // content::WebContentsObserver override
