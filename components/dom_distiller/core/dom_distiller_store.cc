@@ -93,6 +93,36 @@ bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
   return true;
 }
 
+bool DomDistillerStore::UpdateEntry(const ArticleEntry& entry) {
+  if (!database_loaded_) {
+    return false;
+  }
+
+  if (!model_.GetEntryById(entry.entry_id(), NULL)) {
+    DVLOG(1) << "No entry with id " << entry.entry_id() << " found.";
+    return false;
+  }
+
+  SyncChangeList changes_to_apply;
+  changes_to_apply.push_back(
+      SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE, CreateLocalData(entry)));
+
+  SyncChangeList changes_applied;
+  SyncChangeList changes_missing;
+
+  ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
+
+  if (changes_applied.size() != 1) {
+    DVLOG(1) << "Failed to update entry with id " << entry.entry_id() << ".";
+    return false;
+  }
+
+  ApplyChangesToSync(FROM_HERE, changes_applied);
+  ApplyChangesToDatabase(changes_applied);
+
+  return true;
+}
+
 bool DomDistillerStore::RemoveEntry(const ArticleEntry& entry) {
   if (!database_loaded_) {
     return false;

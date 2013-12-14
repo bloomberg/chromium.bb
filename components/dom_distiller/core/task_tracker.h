@@ -79,8 +79,8 @@ class TaskTracker {
   // The ViewerHandle should be destroyed before the ViewRequestDelegate.
   scoped_ptr<ViewerHandle> AddViewer(ViewRequestDelegate* delegate);
 
-  bool HasEntryId(const std::string& entry_id);
-  bool HasUrl(const GURL& url);
+  bool HasEntryId(const std::string& entry_id) const;
+  bool HasUrl(const GURL& url) const;
 
  private:
   void OnDistilledDataReady(scoped_ptr<DistilledPageProto> distilled_page);

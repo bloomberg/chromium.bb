@@ -77,11 +77,11 @@ scoped_ptr<ViewerHandle> TaskTracker::AddViewer(ViewRequestDelegate* delegate) {
       &TaskTracker::RemoveViewer, weak_ptr_factory_.GetWeakPtr(), delegate)));
 }
 
-bool TaskTracker::HasEntryId(const std::string& entry_id) {
+bool TaskTracker::HasEntryId(const std::string& entry_id) const {
   return entry_.entry_id() == entry_id;
 }
 
-bool TaskTracker::HasUrl(const GURL& url) {
+bool TaskTracker::HasUrl(const GURL& url) const {
   for (int i = 0; i < entry_.pages_size(); ++i) {
     if (entry_.pages(i).url() == url.spec()) {
       return true;

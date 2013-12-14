@@ -103,6 +103,7 @@ TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) {
 
   ArticleEntry skeleton_entry = CreateSkeletonEntryForUrl(url);
   TaskTracker* task_tracker = CreateTaskTracker(skeleton_entry);
+  store_->AddEntry(skeleton_entry);
   return task_tracker;
 }
 
@@ -141,7 +142,7 @@ void DomDistillerService::AddDistilledPageToList(const ArticleEntry& entry,
   DCHECK(IsEntryValid(entry));
   DCHECK(proto);
 
-  store_->AddEntry(entry);
+  store_->UpdateEntry(entry);
 }
 
 void DomDistillerService::AddObserver(DomDistillerObserver* observer) {

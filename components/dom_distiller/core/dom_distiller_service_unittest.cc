@@ -11,6 +11,8 @@
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
+#include "components/dom_distiller/core/dom_distiller_test_util.h"
+#include "components/dom_distiller/core/fake_db.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,83 +27,16 @@ namespace test {
 
 namespace {
 
-class FakeDomDistillerStore : public DomDistillerStoreInterface {
- public:
-  virtual ~FakeDomDistillerStore() {}
-
-  virtual bool AddEntry(const ArticleEntry& entry) OVERRIDE {
-    if (!IsEntryValid(entry)) {
-      return false;
-    }
-
-    if (model_.GetEntryById(entry.entry_id(), NULL)) {
-      return false;
-    }
-
-    syncer::SyncChangeList changes_to_apply;
-    syncer::SyncChangeList changes_applied;
-    syncer::SyncChangeList changes_missing;
-
-    changes_to_apply.push_back(syncer::SyncChange(
-        FROM_HERE, syncer::SyncChange::ACTION_ADD, CreateLocalData(entry)));
-
-    model_.ApplyChangesToModel(
-        changes_to_apply, &changes_applied, &changes_missing);
-
-    return true;
-  }
-
-  virtual bool RemoveEntry(const ArticleEntry& entry) OVERRIDE {
-    if (!IsEntryValid(entry)) {
-      return false;
-    }
-
-    if (!model_.GetEntryById(entry.entry_id(), NULL)) {
-      return false;
-    }
-
-    syncer::SyncChangeList changes_to_apply;
-    syncer::SyncChangeList changes_applied;
-    syncer::SyncChangeList changes_missing;
-
-    changes_to_apply.push_back(syncer::SyncChange(
-        FROM_HERE, syncer::SyncChange::ACTION_DELETE, CreateLocalData(entry)));
-
-    model_.ApplyChangesToModel(
-        changes_to_apply, &changes_applied, &changes_missing);
-
-    return true;
-  }
-
-  virtual bool GetEntryById(const std::string& entry_id,
-                            ArticleEntry* entry) OVERRIDE {
-    return model_.GetEntryById(entry_id, entry);
-  }
-
-  virtual bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) OVERRIDE {
-    return model_.GetEntryByUrl(url, entry);
-  }
-
-  // Gets a copy of all the current entries.
-  virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE {
-    return model_.GetEntries();
-  }
-
-  virtual syncer::SyncableService* GetSyncableService() OVERRIDE {
-    return NULL;
-  }
-
-  virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE {}
-  virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE {}
-
- private:
-  DomDistillerModel model_;
-};
-
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
   virtual ~FakeViewRequestDelegate() {}
   MOCK_METHOD1(OnArticleReady, void(DistilledPageProto* proto));
+};
+
+class MockDistillerObserver : public DomDistillerObserver {
+ public:
+  MOCK_METHOD1(ArticleEntriesUpdated, void(const std::vector<ArticleUpdate>&));
+  virtual ~MockDistillerObserver() {}
 };
 
 }  // namespace
@@ -110,11 +45,15 @@ class DomDistillerServiceTest : public testing::Test {
  public:
   virtual void SetUp() {
     main_loop_.reset(new base::MessageLoop());
-    store_ = new FakeDomDistillerStore();
+    FakeDB* fake_db = new FakeDB(&db_model_);
+    FakeDB::EntryMap store_model;
+    store_ = test::util::CreateStoreWithFakeDB(fake_db, &store_model);
     distiller_factory_ = new MockDistillerFactory();
     service_.reset(new DomDistillerService(
         scoped_ptr<DomDistillerStoreInterface>(store_),
         scoped_ptr<DistillerFactory>(distiller_factory_)));
+    fake_db->InitCallback(true);
+    fake_db->LoadCallback(true);
   }
 
   virtual void TearDown() {
@@ -125,10 +64,12 @@ class DomDistillerServiceTest : public testing::Test {
   }
 
  protected:
-  FakeDomDistillerStore* store_;
+  // store is owned by service_.
+  DomDistillerStoreInterface* store_;
   MockDistillerFactory* distiller_factory_;
   scoped_ptr<DomDistillerService> service_;
   scoped_ptr<base::MessageLoop> main_loop_;
+  FakeDB::EntryMap db_model_;
 };
 
 TEST_F(DomDistillerServiceTest, TestViewEntry) {
@@ -244,17 +185,42 @@ TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
   ASSERT_FALSE(distiller->GetCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
-  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
-  distiller->RunDistillerCallback(proto.Pass());
-
   ArticleEntry entry;
   EXPECT_TRUE(store_->GetEntryByUrl(url, &entry));
   EXPECT_EQ(1u, store_->GetEntries().size());
   store_->RemoveEntry(entry);
   EXPECT_EQ(0u, store_->GetEntries().size());
-
 }
 
+TEST_F(DomDistillerServiceTest, TestObserverIntegration) {
+  FakeDistiller* distiller = new FakeDistiller();
+
+  MockDistillerObserver observer;
+  service_->AddObserver(&observer);
+
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+  EXPECT_CALL(observer, ArticleEntriesUpdated(_));
+
+  GURL url("http://www.example.com/p1");
+
+  service_->AddToList(url);
+
+  ArticleEntry entry;
+  EXPECT_TRUE(store_->GetEntryByUrl(url, &entry));
+  std::vector<DomDistillerObserver::ArticleUpdate> expected_updates;
+  DomDistillerObserver::ArticleUpdate update;
+  update.entry_id = entry.entry_id();
+  update.update_type = DomDistillerObserver::ArticleUpdate::UPDATE;
+  expected_updates.push_back(update);
+
+  EXPECT_CALL(
+      observer,
+      ArticleEntriesUpdated(test::util::HasExpectedUpdates(expected_updates)));
+
+  scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
+  distiller->RunDistillerCallback(proto.Pass());
+}
 
 }  // namespace test
 }  // namespace dom_distiller

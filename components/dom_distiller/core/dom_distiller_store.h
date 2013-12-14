@@ -38,6 +38,9 @@ class DomDistillerStoreInterface {
 
   virtual bool AddEntry(const ArticleEntry& entry) = 0;
 
+  // Returns false if |entry| is not present or |entry| was not updated.
+  virtual bool UpdateEntry(const ArticleEntry& entry) = 0;
+
   virtual bool RemoveEntry(const ArticleEntry& entry) = 0;
 
   // Lookup an ArticleEntry by ID or URL. Returns whether a corresponding entry
@@ -89,6 +92,7 @@ class DomDistillerStore : public syncer::SyncableService,
   // DomDistillerStoreInterface implementation.
   virtual syncer::SyncableService* GetSyncableService() OVERRIDE;
   virtual bool AddEntry(const ArticleEntry& entry) OVERRIDE;
+  virtual bool UpdateEntry(const ArticleEntry& entry) OVERRIDE;
   virtual bool RemoveEntry(const ArticleEntry& entry) OVERRIDE;
   virtual bool GetEntryById(const std::string& entry_id,
                             ArticleEntry* entry) OVERRIDE;
