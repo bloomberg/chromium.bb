@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "cc/output/context_provider.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -33,7 +34,6 @@
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 #if defined(USE_X11)
@@ -142,35 +142,31 @@ class BenchCompositorObserver : public ui::CompositorObserver {
 
 class WebGLTexture : public ui::Texture {
  public:
-  WebGLTexture(WebGraphicsContext3D* context, const gfx::Size& size)
+  WebGLTexture(gpu::gles2::GLES2Interface* gl, const gfx::Size& size)
       : ui::Texture(false, size, 1.0f),
-        context_(context),
-        texture_id_(context_->createTexture()) {
-    context_->bindTexture(GL_TEXTURE_2D, texture_id_);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                         size.width(), size.height(), 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        gl_(gl),
+        texture_id_(0u) {
+    gl->GenTextures(1, &texture_id_);
+    gl->BindTexture(GL_TEXTURE_2D, texture_id_);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(),
+                   0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
 
   virtual unsigned int PrepareTexture() OVERRIDE {
     return texture_id_;
   }
 
-  virtual WebGraphicsContext3D* HostContext3D() OVERRIDE {
-    return context_;
-  }
-
  private:
   virtual ~WebGLTexture() {
-    context_->deleteTexture(texture_id_);
+    gl_->DeleteTextures(1, &texture_id_);
   }
 
-  WebGraphicsContext3D* context_;
-  unsigned texture_id_;
+  gpu::gles2::GLES2Interface* gl_;
+  GLuint texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLTexture);
 };
@@ -210,24 +206,22 @@ class WebGLBench : public BenchCompositorObserver {
 
     context_provider_ =
         ui::ContextFactory::GetInstance()->SharedMainThreadContextProvider();
-    blink::WebGraphicsContext3D* context = context_provider_->Context3d();
-    context->makeContextCurrent();
-    texture_ = new WebGLTexture(context, bounds.size());
-    fbo_ = context->createFramebuffer();
+    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+    texture_ = new WebGLTexture(gl, bounds.size());
+    gl->GenFramebuffers(1, &fbo_);
     compositor->AddObserver(this);
     webgl_.SetExternalTexture(texture_.get());
-    context->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    context->framebufferTexture2D(
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->FramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D, texture_->PrepareTexture(), 0);
-    context->clearColor(0.f, 1.f, 0.f, 1.f);
-    context->clear(GL_COLOR_BUFFER_BIT);
-    context->flush();
+    gl->ClearColor(0.f, 1.f, 0.f, 1.f);
+    gl->Clear(GL_COLOR_BUFFER_BIT);
+    gl->Flush();
   }
 
   virtual ~WebGLBench() {
-    context_provider_->Context3d()->makeContextCurrent();
-    context_provider_->Context3d()->deleteFramebuffer(fbo_);
+    context_provider_->ContextGL()->DeleteFramebuffers(1, &fbo_);
     webgl_.SetShowPaintedContent();
     texture_ = NULL;
     compositor_->RemoveObserver(this);
@@ -235,11 +229,10 @@ class WebGLBench : public BenchCompositorObserver {
 
   virtual void Draw() OVERRIDE {
     if (do_draw_) {
-      blink::WebGraphicsContext3D* context = context_provider_->Context3d();
-      context->makeContextCurrent();
-      context->clearColor((frames() % kFrames)*1.0/kFrames, 1.f, 0.f, 1.f);
-      context->clear(GL_COLOR_BUFFER_BIT);
-      context->flush();
+      gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+      gl->ClearColor((frames() % kFrames)*1.0/kFrames, 1.f, 0.f, 1.f);
+      gl->Clear(GL_COLOR_BUFFER_BIT);
+      gl->Flush();
     }
     webgl_.SetExternalTexture(texture_.get());
     webgl_.SchedulePaint(gfx::Rect(webgl_.bounds().size()));

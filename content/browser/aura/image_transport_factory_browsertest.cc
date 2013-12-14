@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "cc/output/context_provider.h"
 #include "content/browser/aura/image_transport_factory.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/test/content_browser_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {
@@ -47,12 +48,18 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest, TestLostContext) {
   EXPECT_CALL(observer, OnLostResources())
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  blink::WebGraphicsContext3D* context = texture->HostContext3D();
-  context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                               GL_INNOCENT_CONTEXT_RESET_ARB);
+  ui::ContextFactory* context_factory = ui::ContextFactory::GetInstance();
+
+  gpu::gles2::GLES2Interface* gl =
+      context_factory->SharedMainThreadContextProvider()->ContextGL();
+  gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                          GL_INNOCENT_CONTEXT_RESET_ARB);
+
+  // We have to flush to make sure that the client side gets a chance to notice
+  // the context is gone.
+  gl->Flush();
 
   run_loop.Run();
-  EXPECT_FALSE(texture->HostContext3D());
   EXPECT_EQ(0u, texture->PrepareTexture());
 
   factory->RemoveObserver(&observer);

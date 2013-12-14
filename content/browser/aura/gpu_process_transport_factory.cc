@@ -28,6 +28,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
@@ -43,6 +44,9 @@
 #include "content/browser/aura/software_output_device_x11.h"
 #endif
 
+using cc::ContextProvider;
+using gpu::gles2::GLES2Interface;
+
 namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
@@ -55,31 +59,30 @@ struct GpuProcessTransportFactory::PerCompositorData {
 
 class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
  public:
-  OwnedTexture(blink::WebGraphicsContext3D* host_context,
+  OwnedTexture(const scoped_refptr<ContextProvider>& provider,
                const gfx::Size& size,
                float device_scale_factor,
-               unsigned int texture_id)
+               GLuint texture_id)
       : ui::Texture(true, size, device_scale_factor),
-        host_context_(host_context),
+        provider_(provider),
         texture_id_(texture_id) {
     ImageTransportFactory::GetInstance()->AddObserver(this);
   }
 
   // ui::Texture overrides:
   virtual unsigned int PrepareTexture() OVERRIDE {
-    if (!host_context_ || host_context_->isContextLost())
-      return 0u;
+    // It's possible that we may have lost the context owning our
+    // texture but not yet fired the OnLostResources callback, so poll to see if
+    // it's still valid.
+    if (provider_ && provider_->IsContextLost())
+      texture_id_ = 0u;
     return texture_id_;
-  }
-
-  virtual blink::WebGraphicsContext3D* HostContext3D() OVERRIDE {
-    return host_context_;
   }
 
   // ImageTransportFactory overrides:
   virtual void OnLostResources() OVERRIDE {
     DeleteTexture();
-    host_context_ = NULL;
+    provider_ = NULL;
   }
 
  protected:
@@ -91,29 +94,27 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
  protected:
   void DeleteTexture() {
     if (texture_id_) {
-      host_context_->deleteTexture(texture_id_);
+      provider_->ContextGL()->DeleteTextures(1, &texture_id_);
       texture_id_ = 0;
     }
   }
 
-  // The OnLostResources() callback will happen before this context
-  // pointer is destroyed.
-  blink::WebGraphicsContext3D* host_context_;
-  unsigned texture_id_;
+  scoped_refptr<cc::ContextProvider> provider_;
+  GLuint texture_id_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(OwnedTexture);
 };
 
 class ImageTransportClientTexture : public OwnedTexture {
  public:
-  ImageTransportClientTexture(
-      blink::WebGraphicsContext3D* host_context,
-      float device_scale_factor)
-      : OwnedTexture(host_context,
+  ImageTransportClientTexture(const scoped_refptr<ContextProvider>& provider,
+                              float device_scale_factor,
+                              GLuint texture_id)
+      : OwnedTexture(provider,
                      gfx::Size(0, 0),
                      device_scale_factor,
-                     host_context->createTexture()) {
-  }
+                     texture_id) {}
 
   virtual void Consume(const std::string& mailbox_name,
                        const gfx::Size& new_size) OVERRIDE {
@@ -122,18 +123,16 @@ class ImageTransportClientTexture : public OwnedTexture {
     if (mailbox_name.empty())
       return;
 
-    DCHECK(host_context_ && texture_id_);
-    host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
-    host_context_->consumeTextureCHROMIUM(
-        GL_TEXTURE_2D,
-        reinterpret_cast<const signed char*>(mailbox_name.c_str()));
+    DCHECK(provider_ && texture_id_);
+    GLES2Interface* gl = provider_->ContextGL();
+    gl->BindTexture(GL_TEXTURE_2D, texture_id_);
+    gl->ConsumeTextureCHROMIUM(
+        GL_TEXTURE_2D, reinterpret_cast<const GLbyte*>(mailbox_name.c_str()));
     size_ = new_size;
-    host_context_->shallowFlushCHROMIUM();
+    gl->ShallowFlushCHROMIUM();
   }
 
-  virtual std::string Produce() OVERRIDE {
-    return mailbox_name_;
-  }
+  virtual std::string Produce() OVERRIDE { return mailbox_name_; }
 
  protected:
   virtual ~ImageTransportClientTexture() {}
@@ -308,9 +307,11 @@ scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateTransportClient(
       SharedMainThreadContextProvider();
   if (!provider.get())
     return NULL;
+  GLuint texture_id = 0;
+  provider->ContextGL()->GenTextures(1, &texture_id);
   scoped_refptr<ImageTransportClientTexture> image(
       new ImageTransportClientTexture(
-          provider->Context3d(), device_scale_factor));
+          provider, device_scale_factor, texture_id));
   return image;
 }
 
@@ -323,7 +324,7 @@ scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateOwnedTexture(
   if (!provider.get())
     return NULL;
   scoped_refptr<OwnedTexture> image(new OwnedTexture(
-      provider->Context3d(), size, device_scale_factor, texture_id));
+      provider, size, device_scale_factor, texture_id));
   return image;
 }
 

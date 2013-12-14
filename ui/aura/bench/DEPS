@@ -1,5 +1,5 @@
 include_rules = [
   "+cc",
+  "+gpu/command_buffer/client/gles2_interface.h",
   "+third_party/khronos",
-  "+third_party/WebKit/public/platform",
 ]

@@ -872,7 +872,8 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\\/]renderer[\\\/]extensions[\\\/]"
                      r"logging_native_handler\.cc$",
                  r"^remoting[\\\/]base[\\\/]logging\.h$",
-                 r"^sandbox[\\\/]linux[\\\/].*",))
+                 r"^sandbox[\\\/]linux[\\\/].*",
+                 r"^ui[\\\/]aura[\\\/]bench[\\\/]bench_main\.cc$",))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=(file_inclusion_pattern,), black_list=black_list)
 

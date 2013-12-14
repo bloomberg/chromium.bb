@@ -22,9 +22,6 @@ class FakeTexture : public ui::Texture {
         texture_(context_provider_->Context3d()->createTexture()) {}
 
   virtual unsigned int PrepareTexture() OVERRIDE { return texture_; }
-  virtual blink::WebGraphicsContext3D* HostContext3D() OVERRIDE {
-    return context_provider_->Context3d();
-  }
 
   virtual void Consume(const std::string& mailbox_name,
                        const gfx::Size& new_size) OVERRIDE {

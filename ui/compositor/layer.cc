@@ -20,7 +20,6 @@
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/resources/transferable_resource.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer_animator.h"

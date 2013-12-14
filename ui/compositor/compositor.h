@@ -113,7 +113,6 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   float device_scale_factor() const { return device_scale_factor_; }
 
   virtual unsigned int PrepareTexture() = 0;
-  virtual blink::WebGraphicsContext3D* HostContext3D() = 0;
 
   // Replaces the texture with the texture from the specified mailbox.
   virtual void Consume(const std::string& mailbox_name,

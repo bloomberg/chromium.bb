@@ -1,0 +1,4 @@
+include_rules = [
+  "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
+  "+webkit/common/gpu",
+]
