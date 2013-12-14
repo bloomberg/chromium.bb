@@ -55,13 +55,6 @@ static inline int clampColorValue(int v)
     return v;
 }
 
-ColorDistance ColorDistance::scaledDistance(float scaleFactor) const
-{
-    return ColorDistance(static_cast<int>(scaleFactor * m_redDiff),
-                         static_cast<int>(scaleFactor * m_greenDiff),
-                         static_cast<int>(scaleFactor * m_blueDiff));
-}
-
 Color ColorDistance::clampColor(int red, int green, int blue, int alpha)
 {
     return Color(clampColorValue(red), clampColorValue(green), clampColorValue(blue), clampColorValue(alpha));
@@ -70,16 +63,6 @@ Color ColorDistance::clampColor(int red, int green, int blue, int alpha)
 Color ColorDistance::addColors(const Color& first, const Color& second)
 {
     return Color(first.red() + second.red(), first.green() + second.green(), first.blue() + second.blue());
-}
-
-Color ColorDistance::addToColor(const Color& color) const
-{
-    return Color(color.red() + m_redDiff, color.green() + m_greenDiff, color.blue() + m_blueDiff);
-}
-
-bool ColorDistance::isZero() const
-{
-    return !m_redDiff && !m_blueDiff && !m_greenDiff;
 }
 
 float ColorDistance::distance() const

@@ -42,7 +42,6 @@ public:
     virtual void setNeedsTransformUpdate() { m_needsTransformUpdate = true; }
 
     RenderImageResource* imageResource() { return m_imageResource.get(); }
-    const RenderImageResource* imageResource() const { return m_imageResource.get(); }
 
     // Note: Assumes the PaintInfo context has had all local transforms applied.
     void paintForeground(PaintInfo&);
@@ -69,7 +68,6 @@ private:
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
 
     virtual AffineTransform localTransform() const { return m_localTransform; }
-    void calculateImageViewport();
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsTransformUpdate : 1;

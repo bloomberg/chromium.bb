@@ -262,12 +262,6 @@ FloatRect SVGRenderingContext::clampedAbsoluteTargetRect(const FloatRect& absolu
     return FloatRect(absoluteTargetRect.location(), absoluteTargetRect.size().shrunkTo(maxImageBufferSize));
 }
 
-IntSize SVGRenderingContext::clampedAbsoluteSize(const IntSize& absoluteSize)
-{
-    const IntSize maxImageBufferSize(kMaxImageBufferSize, kMaxImageBufferSize);
-    return absoluteSize.shrunkTo(maxImageBufferSize);
-}
-
 void SVGRenderingContext::clear2DRotation(AffineTransform& transform)
 {
     AffineTransform::DecomposedType decomposition;

@@ -39,8 +39,6 @@ public:
     virtual float virtualLogicalHeight() const { return m_logicalHeight; }
     void setLogicalHeight(float height) { m_logicalHeight = height; }
 
-    virtual int selectionTop() { return top(); }
-    virtual int selectionHeight() { return static_cast<int>(ceilf(m_logicalHeight)); }
     virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const;
     virtual float positionForOffset(int offset) const;
 

@@ -85,9 +85,6 @@ private:
 
     virtual const AffineTransform& localToParentTransform() const;
 
-    bool fillContains(const FloatPoint&) const;
-    bool strokeContains(const FloatPoint&) const;
-
     virtual FloatRect objectBoundingBox() const { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const { return m_strokeBoundingBox; }
     virtual FloatRect repaintRectInLocalCoordinates() const { return m_repaintBoundingBox; }

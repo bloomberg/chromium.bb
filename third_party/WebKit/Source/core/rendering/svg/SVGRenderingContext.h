@@ -80,7 +80,6 @@ public:
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);
     static void calculateTransformationToOutermostCoordinateSystem(const RenderObject*, AffineTransform& absoluteTransform);
-    static IntSize clampedAbsoluteSize(const IntSize&);
     static FloatRect clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect);
     static void clear2DRotation(AffineTransform&);
 

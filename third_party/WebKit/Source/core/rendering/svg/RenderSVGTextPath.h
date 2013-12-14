@@ -31,8 +31,6 @@ public:
 
     Path layoutPath() const;
     float startOffset() const;
-    bool exactAlignment() const;
-    bool stretchMethod() const;
 
     virtual bool isSVGTextPath() const { return true; }
 

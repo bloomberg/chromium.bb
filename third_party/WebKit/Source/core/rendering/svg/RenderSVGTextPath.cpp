@@ -59,14 +59,4 @@ float RenderSVGTextPath::startOffset() const
     return toSVGTextPathElement(node())->startOffsetCurrentValue().valueAsPercentage();
 }
 
-bool RenderSVGTextPath::exactAlignment() const
-{
-    return toSVGTextPathElement(node())->spacingCurrentValue() == SVGTextPathSpacingExact;
-}
-
-bool RenderSVGTextPath::stretchMethod() const
-{
-    return toSVGTextPathElement(node())->methodCurrentValue() == SVGTextPathMethodStretch;
-}
-
 }
