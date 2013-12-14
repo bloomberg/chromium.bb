@@ -25,6 +25,7 @@
 #include "grit.h"
 #include "messages.h"
 #include "util/json.h"
+#include "util/string_split.h"
 
 namespace i18n {
 namespace addressinput {
@@ -35,7 +36,14 @@ typedef std::map<std::string, int> NameMessageIdMap;
 
 const char kAdminAreaNameTypeKey[] = "state_name_type";
 const char kFormatKey[] = "fmt";
+const char kLanguageKey[] = "lang";
+const char kLanguagesKey[] = "languages";
 const char kPostalCodeNameTypeKey[] = "zip_name_type";
+const char kSubKeysKey[] = "sub_keys";
+
+// Used as a separator in a list of items. For example, the list of supported
+// languages can be "de~fr~it".
+const char kSeparator = '~';
 
 NameMessageIdMap InitAdminAreaMessageIds() {
   NameMessageIdMap message_ids;
@@ -94,6 +102,9 @@ int GetMessageIdFromName(const std::string& name,
 
 Rule::Rule()
     : format_(),
+      sub_keys_(),
+      languages_(),
+      language_(),
       admin_area_name_message_id_(INVALID_MESSAGE_ID),
       postal_code_name_message_id_(INVALID_MESSAGE_ID) {}
 
@@ -101,6 +112,9 @@ Rule::~Rule() {}
 
 void Rule::CopyFrom(const Rule& rule) {
   format_ = rule.format_;
+  sub_keys_ = rule.sub_keys_;
+  languages_ = rule.languages_;
+  language_ = rule.language_;
   admin_area_name_message_id_ = rule.admin_area_name_message_id_;
   postal_code_name_message_id_ = rule.postal_code_name_message_id_;
 }
@@ -113,6 +127,20 @@ bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
 
   if (json->HasStringValueForKey(kFormatKey)) {
     ParseAddressFieldsFormat(json->GetStringValueForKey(kFormatKey), &format_);
+  }
+
+  if (json->HasStringValueForKey(kSubKeysKey)) {
+    SplitString(
+        json->GetStringValueForKey(kSubKeysKey), kSeparator, &sub_keys_);
+  }
+
+  if (json->HasStringValueForKey(kLanguagesKey)) {
+    SplitString(
+        json->GetStringValueForKey(kLanguagesKey), kSeparator, &languages_);
+  }
+
+  if (json->HasStringValueForKey(kLanguageKey)) {
+    language_ = json->GetStringValueForKey(kLanguageKey);
   }
 
   if (json->HasStringValueForKey(kAdminAreaNameTypeKey)) {

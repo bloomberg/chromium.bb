@@ -44,11 +44,17 @@ TEST(RuleTest, CopyOverwritesRule) {
   ASSERT_TRUE(rule.ParseSerializedRule("{"
                                        "\"fmt\":\"%S%Z\","
                                        "\"state_name_type\":\"area\","
-                                       "\"zip_name_type\":\"postal\""
+                                       "\"zip_name_type\":\"postal\","
+                                       "\"sub_keys\":\"CA~NY~TX\","
+                                       "\"lang\":\"en\","
+                                       "\"languages\":\"en~fr\""
                                        "}"));
 
   Rule copy;
   EXPECT_NE(rule.GetFormat(), copy.GetFormat());
+  EXPECT_NE(rule.GetSubKeys(), copy.GetSubKeys());
+  EXPECT_NE(rule.GetLanguages(), copy.GetLanguages());
+  EXPECT_NE(rule.GetLanguage(), copy.GetLanguage());
   EXPECT_NE(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
   EXPECT_NE(rule.GetPostalCodeNameMessageId(),
@@ -56,6 +62,9 @@ TEST(RuleTest, CopyOverwritesRule) {
 
   copy.CopyFrom(rule);
   EXPECT_EQ(rule.GetFormat(), copy.GetFormat());
+  EXPECT_EQ(rule.GetSubKeys(), copy.GetSubKeys());
+  EXPECT_EQ(rule.GetLanguages(), copy.GetLanguages());
+  EXPECT_EQ(rule.GetLanguage(), copy.GetLanguage());
   EXPECT_EQ(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
   EXPECT_EQ(rule.GetPostalCodeNameMessageId(),
@@ -67,9 +76,15 @@ TEST(RuleTest, ParseOverwritesRule) {
   ASSERT_TRUE(rule.ParseSerializedRule("{"
                                        "\"fmt\":\"%S%Z\","
                                        "\"state_name_type\":\"area\","
-                                       "\"zip_name_type\":\"postal\""
+                                       "\"zip_name_type\":\"postal\","
+                                       "\"sub_keys\":\"CA~NY~TX\","
+                                       "\"lang\":\"en\","
+                                       "\"languages\":\"en~fr\""
                                        "}"));
   EXPECT_FALSE(rule.GetFormat().empty());
+  EXPECT_FALSE(rule.GetSubKeys().empty());
+  EXPECT_FALSE(rule.GetLanguages().empty());
+  EXPECT_FALSE(rule.GetLanguage().empty());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_AREA,
             rule.GetAdminAreaNameMessageId());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL,
@@ -78,9 +93,15 @@ TEST(RuleTest, ParseOverwritesRule) {
   ASSERT_TRUE(rule.ParseSerializedRule("{"
                                        "\"fmt\":\"\","
                                        "\"state_name_type\":\"do_si\","
-                                       "\"zip_name_type\":\"zip\""
+                                       "\"zip_name_type\":\"zip\","
+                                       "\"sub_keys\":\"\","
+                                       "\"lang\":\"\","
+                                       "\"languages\":\"\""
                                        "}"));
   EXPECT_TRUE(rule.GetFormat().empty());
+  EXPECT_TRUE(rule.GetSubKeys().empty());
+  EXPECT_TRUE(rule.GetLanguages().empty());
+  EXPECT_TRUE(rule.GetLanguage().empty());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_DO_SI,
             rule.GetAdminAreaNameMessageId());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL,
@@ -92,6 +113,32 @@ TEST(RuleTest, ParsesFormatCorrectly) {
   ASSERT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%S\"}"));
   ASSERT_EQ(1, rule.GetFormat().size());
   EXPECT_EQ(ADMIN_AREA, rule.GetFormat()[0]);
+}
+
+TEST(RuleTest, ParsesSubKeysCorrectly) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"sub_keys\":\"CA~NY~TX\"}"));
+  std::vector<std::string> expected;
+  expected.push_back("CA");
+  expected.push_back("NY");
+  expected.push_back("TX");
+  EXPECT_EQ(expected, rule.GetSubKeys());
+}
+
+TEST(RuleTest, ParsesLanguageCorrectly) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"lang\":\"en\"}"));
+  EXPECT_EQ("en", rule.GetLanguage());
+}
+
+TEST(RuleTest, ParsesLanguagesCorrectly) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"languages\":\"de~fr~it\"}"));
+  std::vector<std::string> expected;
+  expected.push_back("de");
+  expected.push_back("fr");
+  expected.push_back("it");
+  EXPECT_EQ(expected, rule.GetLanguages());
 }
 
 TEST(RuleTest, EmptyStringIsNotValid) {

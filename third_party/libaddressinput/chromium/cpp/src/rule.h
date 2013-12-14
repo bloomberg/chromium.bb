@@ -47,6 +47,19 @@ class Rule {
   // NEWLINE extension for AddressField enum.
   const std::vector<AddressField>& GetFormat() const { return format_; }
 
+  // Returns the sub-keys for this rule, which are the administrative areas of a
+  // country, the localities of an administrative area, or the dependent
+  // localities of a locality. For example, the rules for "US" have sub-keys of
+  // "CA", "NY", "TX", etc.
+  const std::vector<std::string>& GetSubKeys() const { return sub_keys_; }
+
+  // Returns all of the language codes for which this rule has custom rules, for
+  // example ["de", "fr", "it"].
+  const std::vector<std::string>& GetLanguages() const { return languages_; }
+
+  // Returns the language code of this rule, for example "de".
+  const std::string& GetLanguage() const { return language_; }
+
   // The message string identifier for admin area name. If not set, then
   // INVALID_MESSAGE_ID.
   int GetAdminAreaNameMessageId() const { return admin_area_name_message_id_; }
@@ -59,6 +72,9 @@ class Rule {
 
  private:
   std::vector<AddressField> format_;
+  std::vector<std::string> sub_keys_;
+  std::vector<std::string> languages_;
+  std::string language_;
   int admin_area_name_message_id_;
   int postal_code_name_message_id_;
 
