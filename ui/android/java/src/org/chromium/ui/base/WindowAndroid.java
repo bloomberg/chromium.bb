@@ -53,8 +53,28 @@ public class WindowAndroid {
      * @return Whether the intent was shown.
      */
     public boolean showIntent(Intent intent, IntentCallback callback, int errorId) {
+        return showCancelableIntent(intent, callback, errorId) >= 0;
+    }
+
+    /**
+     * Shows an intent that could be canceled and returns the results to the callback object.
+     * @param intent The intent that needs to be showed.
+     * @param callback The object that will receive the results for the intent.
+     * @param errorId The ID of error string to be show if activity is paused before intent
+     *        results.
+     * @return A non-negative request code that could be used for finishActivity, or -1 if failed.
+     */
+    public int showCancelableIntent(Intent intent, IntentCallback callback, int errorId) {
         Log.d(TAG, "Can't show intent as context is not an Activity: " + intent);
-        return false;
+        return -1;
+    }
+
+    /**
+     * Force finish another activity that you had previously started with showCancelableIntent.
+     * @param requestCode The request code returned from showCancelableIntent.
+     */
+    public void cancelIntent(int requestCode) {
+        Log.d(TAG, "Can't cancel intent as context is not an Activity: " + requestCode);
     }
 
     /**

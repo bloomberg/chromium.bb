@@ -37,20 +37,25 @@ public class ActivityWindowAndroid extends WindowAndroid {
     }
 
     @Override
-    public boolean showIntent(Intent intent, IntentCallback callback, int errorId) {
+    public int showCancelableIntent(Intent intent, IntentCallback callback, int errorId) {
         int requestCode = REQUEST_CODE_PREFIX + mNextRequestCode;
         mNextRequestCode = (mNextRequestCode + 1) % REQUEST_CODE_RANGE_SIZE;
 
         try {
             mActivity.startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException e) {
-            return false;
+            return -1;
         }
 
         mOutstandingIntents.put(requestCode, callback);
         mIntentErrors.put(requestCode, mApplicationContext.getString(errorId));
 
-        return true;
+        return requestCode;
+    }
+
+    @Override
+    public void cancelIntent(int requestCode) {
+        mActivity.finishActivity(requestCode);
     }
 
     @Override
