@@ -36,6 +36,7 @@ class MediaAndroid(test.Test):
 class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
   test = media.Media
+  enabled = not sys.platform.startswith('linux')
   page_set = 'page_sets/mse_cases.json'
 
   def CustomizeBrowserOptions(self, options):
