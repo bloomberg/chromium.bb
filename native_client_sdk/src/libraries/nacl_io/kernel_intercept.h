@@ -33,9 +33,9 @@ void ki_init(void* kernel_proxy);
 void ki_init_ppapi(void* kernel_proxy,
                    PP_Instance instance,
                    PPB_GetInterface get_browser_interface);
-int ki_register_fs_type(const char* fs_type,
+int ki_register_mount_type(const char* mount_type,
                            struct fuse_operations* fuse_ops);
-int ki_unregister_fs_type(const char* fs_type);
+int ki_unregister_mount_type(const char* mount_type);
 int ki_is_initialized();
 void ki_uninit();
 

@@ -7,10 +7,10 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include "nacl_io/filesystem.h"
-#include "nacl_io/node.h"
+#include "nacl_io/mount.h"
+#include "nacl_io/mount_node.h"
+#include "nacl_io/mount_node_socket.h"
 #include "nacl_io/osunistd.h"
-#include "nacl_io/socket/socket_node.h"
 
 #include "sdk_util/auto_lock.h"
 
@@ -18,21 +18,21 @@ namespace nacl_io {
 
 // It is only legal to construct a handle while the kernel lock is held.
 KernelHandle::KernelHandle()
-    : filesystem_(NULL), node_(NULL) {}
+    : mount_(NULL), node_(NULL) {}
 
-KernelHandle::KernelHandle(const ScopedFilesystem& fs, const ScopedNode& node)
-    : filesystem_(fs), node_(node) {}
+KernelHandle::KernelHandle(const ScopedMount& mnt, const ScopedMountNode& node)
+    : mount_(mnt), node_(node) {}
 
 KernelHandle::~KernelHandle() {
-  // Force release order for cases where filesystem_ is not ref'd by mounting.
+  // Force release order for cases where mount_ is not ref'd by mounting.
   node_.reset(NULL);
-  filesystem_.reset(NULL);
+  mount_.reset(NULL);
 }
 
-// Returns the SocketNode* if this node is a socket.
-SocketNode* KernelHandle::socket_node() {
+// Returns the MountNodeSocket* if this node is a socket.
+MountNodeSocket* KernelHandle::socket_node() {
   if (node_.get() && node_->IsaSock())
-    return reinterpret_cast<SocketNode*>(node_.get());
+    return reinterpret_cast<MountNodeSocket*>(node_.get());
   return NULL;
 }
 
@@ -156,7 +156,7 @@ Error KernelHandle::VFcntl(int request, int* result, va_list args) {
 
 Error KernelHandle::Accept(PP_Resource* new_sock, struct sockaddr* addr,
                            socklen_t* len) {
-  SocketNode* sock = socket_node();
+  MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
 
@@ -165,7 +165,7 @@ Error KernelHandle::Accept(PP_Resource* new_sock, struct sockaddr* addr,
 }
 
 Error KernelHandle::Connect(const struct sockaddr* addr, socklen_t len) {
-  SocketNode* sock = socket_node();
+  MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
 
@@ -174,7 +174,7 @@ Error KernelHandle::Connect(const struct sockaddr* addr, socklen_t len) {
 }
 
 Error KernelHandle::Recv(void* buf, size_t len, int flags, int* out_len) {
-  SocketNode* sock = socket_node();
+  MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
   if (OpenMode() == O_WRONLY)
@@ -190,7 +190,7 @@ Error KernelHandle::RecvFrom(void* buf,
                              struct sockaddr* src_addr,
                              socklen_t* addrlen,
                              int* out_len) {
-  SocketNode* sock = socket_node();
+  MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
   if (OpenMode() == O_WRONLY)
@@ -205,7 +205,7 @@ Error KernelHandle::Send(const void* buf,
                          size_t len,
                          int flags,
                          int* out_len) {
-  SocketNode* sock = socket_node();
+  MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
   if (OpenMode() == O_RDONLY)
@@ -221,7 +221,7 @@ Error KernelHandle::SendTo(const void* buf,
                            const struct sockaddr* dest_addr,
                            socklen_t addrlen,
                            int* out_len) {
-  SocketNode* sock = socket_node();
+  MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
   if (OpenMode() == O_RDONLY)

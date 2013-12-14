@@ -50,13 +50,13 @@ void ki_init_ppapi(void* kp,
   s_kp->Init(ppapi);
 }
 
-int ki_register_fs_type(const char* fs_type,
+int ki_register_mount_type(const char* mount_type,
                            struct fuse_operations* fuse_ops) {
-  return s_kp->RegisterFsType(fs_type, fuse_ops);
+  return s_kp->RegisterMountType(mount_type, fuse_ops);
 }
 
-int ki_unregister_fs_type(const char* fs_type) {
-  return s_kp->UnregisterFsType(fs_type);
+int ki_unregister_mount_type(const char* mount_type) {
+  return s_kp->UnregisterMountType(mount_type);
 }
 
 int ki_is_initialized() {

@@ -12,27 +12,27 @@
 
 #include "gtest/gtest.h"
 
-#include "nacl_io/filesystem.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_object.h"
+#include "nacl_io/mount.h"
 #include "nacl_io/path.h"
 
 using namespace nacl_io;
 
 namespace {
 
-class NodeForTesting : public Node {
+class MountNodeRefMock : public MountNode {
  public:
-  explicit NodeForTesting(Filesystem* fs) : Node(fs) {}
+  MountNodeRefMock(Mount* mnt) : MountNode(mnt) {}
 };
 
-class FilesystemForTesting : public Filesystem {
+class MountRefMock : public Mount {
  public:
-  FilesystemForTesting() {}
+  MountRefMock() {}
 
  public:
   Error Access(const Path& path, int a_mode) { return ENOSYS; }
-  Error Open(const Path& path, int mode, ScopedNode* out_node) {
+  Error Open(const Path& path, int mode, ScopedMountNode* out_node) {
     out_node->reset(NULL);
     return ENOSYS;
   }
@@ -43,67 +43,70 @@ class FilesystemForTesting : public Filesystem {
   Error Rename(const Path& path, const Path& newpath) { return 0; }
 };
 
-class KernelHandleForTesting : public KernelHandle {
+class KernelHandleRefMock : public KernelHandle {
  public:
-  KernelHandleForTesting(const ScopedFilesystem& fs, const ScopedNode& node)
-      : KernelHandle(fs, node) {}
+  KernelHandleRefMock(const ScopedMount& mnt, const ScopedMountNode& node)
+      : KernelHandle(mnt, node) {}
 };
 
 class KernelObjectTest : public ::testing::Test {
  public:
   void SetUp() {
-    fs.reset(new FilesystemForTesting());
-    node.reset(new NodeForTesting(fs.get()));
+    mnt.reset(new MountRefMock());
+    node.reset(new MountNodeRefMock(mnt.get()));
   }
 
   void TearDown() {
-    // fs is ref-counted, it doesn't need to be explicitly deleted.
+    // mnt is ref-counted, it doesn't need to be explicitly deleted.
     node.reset(NULL);
-    fs.reset(NULL);
+    mnt.reset(NULL);
   }
 
   KernelObject proxy;
-  ScopedFilesystem fs;
-  ScopedNode node;
+  ScopedMount mnt;
+  ScopedMountNode node;
 };
 
 }  // namespace
 
+#include <nacl_io/mount_mem.h>
+#include <nacl_io/mount_http.h>
+
 TEST_F(KernelObjectTest, Referencing) {
-  // The filesystem and node should have 1 ref count at this point
-  EXPECT_EQ(1, fs->RefCount());
+  // The mount and node should have 1 ref count at this point
+  EXPECT_EQ(1, mnt->RefCount());
   EXPECT_EQ(1, node->RefCount());
 
-  // Pass the filesystem and node into a KernelHandle
-  KernelHandle* raw_handle = new KernelHandleForTesting(fs, node);
+  // Pass the mount and node into a KernelHandle
+  KernelHandle* raw_handle = new KernelHandleRefMock(mnt, node);
   ScopedKernelHandle handle_a(raw_handle);
 
-  // The filesystem and node should have 1 ref count at this point
+  // The mount and node should have 1 ref count at this point
   EXPECT_EQ(1, handle_a->RefCount());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   ScopedKernelHandle handle_b = handle_a;
 
-  // There should be two references to the KernelHandle, the filesystem and node
+  // There should be two references to the KernelHandle, the mount and node
   // should be unchanged.
   EXPECT_EQ(2, handle_a->RefCount());
   EXPECT_EQ(2, handle_b->RefCount());
   EXPECT_EQ(handle_a.get(), handle_b.get());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // Allocating an FD should cause the KernelProxy to ref the handle and
-  // the node and filesystem should be unchanged.
+  // the node and mount should be unchanged.
   int fd1 = proxy.AllocateFD(handle_a);
   EXPECT_EQ(3, handle_a->RefCount());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // If we "dup" the handle, we should bump the ref count on the handle
   int fd2 = proxy.AllocateFD(handle_b);
   EXPECT_EQ(4, handle_a->RefCount());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // Handles are expected to come out in order
@@ -113,7 +116,7 @@ TEST_F(KernelObjectTest, Referencing) {
   // Now we "free" the handles, since the proxy should hold them.
   handle_a.reset(NULL);
   handle_b.reset(NULL);
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // We should find the handle by either fd
@@ -123,7 +126,7 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(raw_handle, handle_b.get());
 
   EXPECT_EQ(4, handle_a->RefCount());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // A non existent fd should fail, and handleA should decrement as handleB
@@ -141,37 +144,37 @@ TEST_F(KernelObjectTest, Referencing) {
   handle_b.reset();
 
   EXPECT_EQ(2, raw_handle->RefCount());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   proxy.FreeFD(fd2);
   EXPECT_EQ(1, raw_handle->RefCount());
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   proxy.FreeFD(fd1);
-  EXPECT_EQ(1, fs->RefCount());
+  EXPECT_EQ(1, mnt->RefCount());
   EXPECT_EQ(1, node->RefCount());
 }
 
 TEST_F(KernelObjectTest, FreeAndReassignFD) {
-  // The filesystem and node should have 1 ref count at this point
-  EXPECT_EQ(1, fs->RefCount());
+  // The mount and node should have 1 ref count at this point
+  EXPECT_EQ(1, mnt->RefCount());
   EXPECT_EQ(1, node->RefCount());
 
-  KernelHandle* raw_handle = new KernelHandleForTesting(fs, node);
+  KernelHandle* raw_handle = new KernelHandleRefMock(mnt, node);
   ScopedKernelHandle handle(raw_handle);
 
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(1, raw_handle->RefCount());
 
   proxy.AllocateFD(handle);
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(2, raw_handle->RefCount());
 
   proxy.FreeAndReassignFD(5, handle);
-  EXPECT_EQ(2, fs->RefCount());
+  EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(3, raw_handle->RefCount());
 

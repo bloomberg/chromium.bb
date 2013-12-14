@@ -56,17 +56,16 @@ typedef int (*fuse_fill_dir_t)(void* buf,
                                const struct stat* stbuf,
                                off_t off);
 
-// This structure defines the interface to create a user filesystem. Pass this
-// to
-// nacl_io_register_fs_type(). (see nacl_io.h)
+// This structure defines the interface to create a user mount. Pass this to
+// nacl_io_register_mount_type(). (see nacl_io.h)
 //
 // Example:
 //
 //     struct fuse_operations g_my_fuse_operations = { ... };
 //     ...
-//     nacl_io_register_fs_type("myfusefs", &g_my_fuse_operations);
+//     nacl_io_register_mount_type("myfusefs", &g_my_fuse_operations);
 //     ...
-//     mount("", "/fs/fuse", "myfusefs", 0, NULL);
+//     mount("", "/mnt/fuse", "myfusefs", 0, NULL);
 //
 // It is not necessary to implement every function -- nacl_io will first check
 // if the function pointer is NULL before calling it. If it is NULL and
@@ -87,9 +86,9 @@ struct fuse_operations {
   unsigned int flag_nopath : 1;
   unsigned int flag_reserved : 31;
 
-  // Called when a filesystem of this type is initialized.
+  // Called when a mount of this type is initialized.
   void* (*init)(struct fuse_conn_info* conn);
-  // Called when a filesystem of this type is unmounted.
+  // Called when a mount of this type is unmounted.
   void (*destroy)(void*);
   // Called by access()
   int (*access)(const char* path, int mode);

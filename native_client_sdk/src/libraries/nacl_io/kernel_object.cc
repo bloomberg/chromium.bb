@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
-#include "nacl_io/filesystem.h"
 #include "nacl_io/kernel_handle.h"
-#include "nacl_io/node.h"
+#include "nacl_io/mount.h"
+#include "nacl_io/mount_node.h"
 
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"
@@ -24,59 +24,61 @@
 
 namespace nacl_io {
 
-KernelObject::KernelObject() { cwd_ = "/"; }
+KernelObject::KernelObject() {
+  cwd_ = "/";
+}
 
 KernelObject::~KernelObject() {};
 
-Error KernelObject::AttachFsAtPath(const ScopedFilesystem& fs,
-                                   const std::string& path) {
+Error KernelObject::AttachMountAtPath(const ScopedMount& mnt,
+                                const std::string& path) {
   std::string abs_path = GetAbsParts(path).Join();
 
-  AUTO_LOCK(fs_lock_);
-  if (filesystems_.find(abs_path) != filesystems_.end())
+  AUTO_LOCK(mount_lock_);
+  if (mounts_.find(abs_path) != mounts_.end())
     return EBUSY;
 
-  filesystems_[abs_path] = fs;
+  mounts_[abs_path] = mnt;
   return 0;
 }
 
-Error KernelObject::DetachFsAtPath(const std::string& path) {
+Error KernelObject::DetachMountAtPath(const std::string& path) {
   std::string abs_path = GetAbsParts(path).Join();
 
-  AUTO_LOCK(fs_lock_);
-  FsMap_t::iterator it = filesystems_.find(abs_path);
-  if (filesystems_.end() == it)
+  AUTO_LOCK(mount_lock_);
+  MountMap_t::iterator it = mounts_.find(abs_path);
+  if (mounts_.end() == it)
     return EINVAL;
 
   // It is only legal to unmount if there are no open references
   if (it->second->RefCount() != 1)
     return EBUSY;
 
-  filesystems_.erase(it);
+  mounts_.erase(it);
   return 0;
 }
 
-// Uses longest prefix to find the filesystem for the give path, then
-// acquires the filesystem and returns it with a relative path.
-Error KernelObject::AcquireFsAndRelPath(const std::string& path,
-                                        ScopedFilesystem* out_fs,
-                                        Path* rel_parts) {
+// Uses longest prefix to find the mount for the give path, then
+// acquires the mount and returns it with a relative path.
+Error KernelObject::AcquireMountAndRelPath(const std::string& path,
+                                           ScopedMount* out_mount,
+                                           Path* rel_parts) {
   Path abs_parts = GetAbsParts(path);
 
-  out_fs->reset(NULL);
+  out_mount->reset(NULL);
   *rel_parts = Path();
 
-  AUTO_LOCK(fs_lock_);
+  AUTO_LOCK(mount_lock_);
 
   // Find longest prefix
   size_t max = abs_parts.Size();
   for (size_t len = 0; len < abs_parts.Size(); len++) {
-    FsMap_t::iterator it = filesystems_.find(abs_parts.Range(0, max - len));
-    if (it != filesystems_.end()) {
+    MountMap_t::iterator it = mounts_.find(abs_parts.Range(0, max - len));
+    if (it != mounts_.end()) {
       rel_parts->Set("/");
       rel_parts->Append(abs_parts.Range(max - len, max));
 
-      *out_fs = it->second;
+      *out_mount = it->second;
       return 0;
     }
   }
@@ -84,20 +86,20 @@ Error KernelObject::AcquireFsAndRelPath(const std::string& path,
   return ENOTDIR;
 }
 
-// Given a path, acquire the associated filesystem and node, creating the
+// Given a path, acquire the associated mount and node, creating the
 // node if needed based on the provided flags.
-Error KernelObject::AcquireFsAndNode(const std::string& path,
-                                     int oflags,
-                                     ScopedFilesystem* out_fs,
-                                     ScopedNode* out_node) {
+Error KernelObject::AcquireMountAndNode(const std::string& path,
+                                        int oflags,
+                                        ScopedMount* out_mount,
+                                        ScopedMountNode* out_node) {
   Path rel_parts;
-  out_fs->reset(NULL);
+  out_mount->reset(NULL);
   out_node->reset(NULL);
-  Error error = AcquireFsAndRelPath(path, out_fs, &rel_parts);
+  Error error = AcquireMountAndRelPath(path, out_mount, &rel_parts);
   if (error)
     return error;
 
-  error = (*out_fs)->Open(rel_parts, oflags, out_node);
+  error = (*out_mount)->Open(rel_parts, oflags, out_node);
   if (error)
     return error;
 
@@ -128,10 +130,10 @@ std::string KernelObject::GetCWD() {
 Error KernelObject::SetCWD(const std::string& path) {
   std::string abs_path = GetAbsParts(path).Join();
 
-  ScopedFilesystem fs;
-  ScopedNode node;
+  ScopedMount mnt;
+  ScopedMountNode node;
 
-  Error error = AcquireFsAndNode(abs_path, O_RDONLY, &fs, &node);
+  Error error = AcquireMountAndNode(abs_path, O_RDONLY, &mnt, &node);
   if (error)
     return error;
 
@@ -173,8 +175,7 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
     return EBADF;
 
   *out_handle = handle_map_[fd].handle;
-  if (out_handle)
-    return 0;
+  if (out_handle) return 0;
 
   return EBADF;
 }

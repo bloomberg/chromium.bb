@@ -20,13 +20,15 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
-#include "nacl_io/pipe/pipe_node.h"
-#include "nacl_io/stream/stream_fs.h"
+#include "nacl_io/mount_node_pipe.h"
+#include "nacl_io/mount_stream.h"
 
 #include "ppapi_simple/ps.h"
 
+
 using namespace nacl_io;
 using namespace sdk_util;
+
 
 class EventListenerTester : public EventListener {
  public:
@@ -36,12 +38,17 @@ class EventListenerTester : public EventListener {
     events_ |= events;
   }
 
-  uint32_t Events() { return events_; }
+  uint32_t Events() {
+    return events_;
+  }
 
-  void Clear() { events_ = 0; }
+  void Clear() {
+    events_ = 0;
+  }
 
   uint32_t events_;
 };
+
 
 TEST(EmitterBasic, SingleThread) {
   EventListenerTester listener_a;
@@ -78,14 +85,16 @@ class EmitterTest : public ::testing::Test {
     signaled_ = 0;
   }
 
-  void TearDown() { pthread_cond_destroy(&multi_cond_); }
+  void TearDown() {
+    pthread_cond_destroy(&multi_cond_);
+  }
 
   void CreateThread() {
     pthread_t id;
     EXPECT_EQ(0, pthread_create(&id, NULL, ThreadThunk, this));
   }
 
-  static void* ThreadThunk(void* ptr) {
+  static void* ThreadThunk(void *ptr) {
     return static_cast<EmitterTest*>(ptr)->ThreadEntry();
   }
 
@@ -108,16 +117,17 @@ class EmitterTest : public ::testing::Test {
   uint32_t signaled_;
 };
 
+
 const int NUM_THREADS = 10;
 TEST_F(EmitterTest, MultiThread) {
-  for (int a = 0; a < NUM_THREADS; a++)
+  for (int a=0; a <NUM_THREADS; a++)
     CreateThread();
 
   {
     AUTO_LOCK(emitter_.GetLock());
 
     // Wait for all threads to wait
-    while (waiting_ < NUM_THREADS)
+    while(waiting_ < NUM_THREADS)
       pthread_cond_wait(&multi_cond_, emitter_.GetLock().mutex());
 
     ASSERT_EQ(0, signaled_);
@@ -126,7 +136,7 @@ TEST_F(EmitterTest, MultiThread) {
   }
 
   // sleep for 50 milliseconds
-  struct timespec sleeptime = {0, 50 * 1000 * 1000};
+  struct timespec sleeptime = { 0,  50 * 1000 * 1000 };
   nanosleep(&sleeptime, NULL);
 
   EXPECT_EQ(1, signaled_);
@@ -152,9 +162,13 @@ TEST(EventListenerPollTest, WaitForAny) {
   ScopedEventEmitter emitter3(new EventEmitter());
   EventListenerPoll listener;
   EventRequest requests[3] = {
-      {emitter1, 0, 0}, {emitter2, 0, 0}, {emitter3, 0, 0}, };
-  Error error =
-      listener.WaitOnAny(requests, sizeof(requests) / sizeof(requests[0]), 1);
+    { emitter1, 0, 0 },
+    { emitter2, 0, 0 },
+    { emitter3, 0, 0 },
+  };
+  Error error = listener.WaitOnAny(requests,
+                                   sizeof(requests)/sizeof(requests[0]),
+                                   1);
   ASSERT_EQ(ETIMEDOUT, error);
 }
 
@@ -162,7 +176,7 @@ TEST(PipeTest, Listener) {
   const char hello[] = "Hello World.";
   char tmp[64] = "Goodbye";
 
-  PipeEventEmitter pipe(32);
+  EventEmitterPipe pipe(32);
 
   // Expect to time out on input.
   {
@@ -188,16 +202,17 @@ TEST(PipeTest, Listener) {
   EXPECT_EQ(0, strcmp(hello, tmp));
 }
 
-class StreamFsForTesting : public StreamFs {
+
+class TestMountStream : public MountStream {
  public:
-  StreamFsForTesting() {}
+  TestMountStream() {}
 };
 
 TEST(PipeNodeTest, Basic) {
-  ScopedFilesystem fs(new StreamFsForTesting());
+  ScopedMount mnt(new TestMountStream());
 
-  PipeNode* pipe_node = new PipeNode(fs.get());
-  ScopedRef<PipeNode> pipe(pipe_node);
+  MountNodePipe* pipe_node = new MountNodePipe(mnt.get());
+  ScopedRef<MountNodePipe> pipe(pipe_node);
 
   EXPECT_EQ(POLLOUT, pipe_node->GetEventStatus());
 }
@@ -214,7 +229,9 @@ class SelectPollTest : public ::testing::Test {
     memset(&tv, 0, sizeof(tv));
   }
 
-  void TearDown() { delete kp; }
+  void TearDown() {
+    delete kp;
+  }
 
   void SetFDs(int* fds, int cnt) {
     FD_ZERO(&rd_set);
@@ -311,4 +328,5 @@ TEST_F(SelectPollTest, SelectMemPipe) {
   EXPECT_EQ(0, FD_ISSET(fds[0], &ex_set));
   EXPECT_EQ(0, FD_ISSET(fds[1], &ex_set));
 }
+
 
