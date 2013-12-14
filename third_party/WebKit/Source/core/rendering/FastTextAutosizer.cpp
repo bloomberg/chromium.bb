@@ -82,6 +82,15 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
     cluster->m_multiplier = 0;
 }
 
+static void applyMultiplier(RenderObject* renderer, float multiplier)
+{
+    // We need to clone the render style to avoid breaking style sharing.
+    RefPtr<RenderStyle> style = RenderStyle::clone(renderer->style());
+    style->setTextAutosizingMultiplier(multiplier);
+    style->setUnique();
+    renderer->setStyleInternal(style.release());
+}
+
 void FastTextAutosizer::inflate(RenderBlock* block)
 {
     Cluster* cluster = 0;
@@ -96,15 +105,13 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     if (cluster->m_multiplier == 1)
         return;
 
+    applyMultiplier(block, cluster->m_multiplier);
     for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
         RenderObject* inlineObj = walker.current();
         if (inlineObj->isRenderBlock() && m_clusterForBlock.contains(toRenderBlock(inlineObj)))
             continue;
 
-        RefPtr<RenderStyle> style = RenderStyle::clone(inlineObj->style());
-        style->setTextAutosizingMultiplier(cluster->m_multiplier);
-        style->setUnique();
-        inlineObj->setStyleInternal(style.release());
+        applyMultiplier(inlineObj, cluster->m_multiplier);
     }
 }
 
