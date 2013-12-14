@@ -143,6 +143,19 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
     WebFrameImpl* frame = WebFrameImpl::fromFrame(document->frame());
     if (!frame)
         return defaultValue;
+
+    if (frame->permissionClient()) {
+        switch (type) {
+        case ContextFeatures::StyleScoped:
+            return frame->permissionClient()->allowWebComponents(frame, defaultValue);
+        case ContextFeatures::MutationEvents:
+            return frame->permissionClient()->allowMutationEvents(frame, defaultValue);
+        case ContextFeatures::PushState:
+            return frame->permissionClient()->allowPushState(frame);
+        default:
+            return defaultValue;
+        }
+    }
 #endif
 
     switch (type) {

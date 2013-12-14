@@ -61,6 +61,9 @@ bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         if (!webFrame)
             return false;
+        if (webFrame->permissionClient())
+            return webFrame->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
+
         WebViewImpl* webView = webFrame->viewImpl();
         if (!webView)
             return false;

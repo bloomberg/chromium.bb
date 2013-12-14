@@ -569,6 +569,11 @@ void WebFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
     frame()->ownerElement()->setNeedsStyleRecalc(WebCore::SubtreeStyleChange, WebCore::StyleChangeFromRenderer);
 }
 
+void WebFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)
+{
+    m_permissionClient = permissionClient;
+}
+
 WebSize WebFrameImpl::scrollOffset() const
 {
     FrameView* view = frameView();
@@ -2095,6 +2100,7 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     : FrameDestructionObserver(0)
     , m_frameInit(WebFrameInit::create(this, embedderIdentifier))
     , m_client(client)
+    , m_permissionClient(0)
     , m_currentActiveMatchFrame(0)
     , m_activeMatchIndexInCurrentFrame(-1)
     , m_locatingActiveRect(false)

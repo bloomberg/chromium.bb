@@ -64,6 +64,7 @@ class WebHistoryItem;
 class WebInputElement;
 class WebLayer;
 class WebPerformance;
+class WebPermissionClient;
 class WebRange;
 class WebSecurityOrigin;
 class WebString;
@@ -160,6 +161,9 @@ public:
     // sets a layer for use by the in-process compositor. WebLayer should be
     // null if the content is being rendered in the current process.
     virtual void setRemoteWebLayer(blink::WebLayer*) = 0;
+
+    // Initializes the various client interfaces.
+    virtual void setPermissionClient(WebPermissionClient*) = 0;
 
 
     // Geometry -----------------------------------------------------------

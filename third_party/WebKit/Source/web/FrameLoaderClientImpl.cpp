@@ -166,6 +166,9 @@ bool FrameLoaderClientImpl::allowScriptExtension(const String& extensionName,
                                                  int extensionGroup,
                                                  int worldId)
 {
+    if (m_webFrame->permissionClient())
+        return m_webFrame->permissionClient()->allowScriptExtension(m_webFrame, extensionName, extensionGroup, worldId);
+
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->permissionClient())
         return webview->permissionClient()->allowScriptExtension(m_webFrame, extensionName, extensionGroup, worldId);

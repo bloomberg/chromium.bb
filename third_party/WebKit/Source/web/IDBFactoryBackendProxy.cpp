@@ -57,6 +57,8 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
         WebSecurityOrigin origin(context->securityOrigin());
         Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        if (webFrame->permissionClient())
+            return webFrame->permissionClient()->allowIndexedDB(webFrame, name, origin);
         WebViewImpl* webView = webFrame->viewImpl();
         // FIXME: webView->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
         return !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(webFrame, name, origin);

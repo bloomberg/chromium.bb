@@ -83,6 +83,7 @@ public:
     virtual long long embedderIdentifier() const;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const;
     virtual void setRemoteWebLayer(WebLayer*);
+    virtual void setPermissionClient(WebPermissionClient*);
     virtual WebSize scrollOffset() const;
     virtual void setScrollOffset(const WebSize&);
     virtual WebSize minimumScrollOffset() const;
@@ -301,6 +302,8 @@ public:
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
+    WebPermissionClient* permissionClient() { return m_permissionClient; }
+
     void setInputEventsTransformForEmulation(const WebCore::IntSize&, float);
 
     static void selectWordAroundPosition(WebCore::Frame*, WebCore::VisiblePosition);
@@ -433,6 +436,7 @@ private:
     RefPtr<WebFrameInit> m_frameInit;
 
     WebFrameClient* m_client;
+    WebPermissionClient* m_permissionClient;
 
     // A way for the main frame to keep track of which frame has an active
     // match. Should be 0 for all other frames.
