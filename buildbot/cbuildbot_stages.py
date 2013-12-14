@@ -1411,9 +1411,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                     for x in sanity_check_slaves])
 
   def PerformStage(self):
-    if not self.success and self._run.config.important:
-      # This message is sent along with the failed status to the master to
-      # indicate a failure.
+    # - If the build failed, and the builder was important, fetch a message
+    # listing the patches which failed to be validated. This message is sent
+    # along with the failed status to the master to indicate a failure.
+    # - This is skipped when sync_stage did not apply a validation pool. For
+    # instance on builders with do_not_apply_cq_patches=True, sync_stage will
+    # be a MasterSlaveSyncStage and not have a |pool| attribute.
+    if (not self.success and self._run.config.important
+        and hasattr(self.sync_stage, 'pool')):
       self.message = self.sync_stage.pool.GetValidationFailedMessage()
 
     super(CommitQueueCompletionStage, self).PerformStage()
