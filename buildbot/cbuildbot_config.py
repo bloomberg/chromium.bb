@@ -1311,8 +1311,7 @@ internal_paladin.add_config('x86-mario-paladin',
   paladin_builder_name='x86-mario paladin',
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
   health_threshold=3,
-  health_alert_recipients=['chromeos-build-alerts@google.com'],
-  sanity_check_slaves=['link-tot-paladin']
+  health_alert_recipients=['chromeos-build-alerts@google.com']
 )
 
 ### Other paladins (CQ builders).
@@ -1331,6 +1330,7 @@ internal_paladin.add_config('link-tot-paladin',
   boards=['link'],
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
+  important=False,
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
   prebuilts=False,
 )
