@@ -16,6 +16,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_positioner.h"
 #include "base/command_line.h"
@@ -284,6 +285,11 @@ void AshTestBase::RunAllPendingInMessageLoop() {
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
   return ash_test_helper_->test_screenshot_delegate();
+}
+
+TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
+  return static_cast<TestSystemTrayDelegate*>(
+      Shell::GetInstance()->system_tray_delegate());
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {

@@ -22,7 +22,8 @@ user::LoginStatus g_initial_status = user::LOGGED_IN_USER;
 
 TestSystemTrayDelegate::TestSystemTrayDelegate()
     : should_show_display_notification_(false),
-      login_status_(g_initial_status) {
+      login_status_(g_initial_status),
+      session_length_limit_set_(false) {
 }
 
 TestSystemTrayDelegate::~TestSystemTrayDelegate() {
@@ -37,6 +38,16 @@ void TestSystemTrayDelegate::SetInitialLoginStatus(
 void TestSystemTrayDelegate::SetLoginStatus(user::LoginStatus login_status) {
   login_status_ = login_status;
   Shell::GetInstance()->UpdateAfterLoginStatusChange(login_status);
+}
+
+void TestSystemTrayDelegate::SetSessionLengthLimitForTest(
+    const base::TimeDelta& new_limit) {
+  session_length_limit_ = new_limit;
+  session_length_limit_set_ = true;
+}
+
+void TestSystemTrayDelegate::ClearSessionLengthLimit() {
+  session_length_limit_set_ = false;
 }
 
 user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
@@ -60,6 +71,22 @@ user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
 bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {
   return should_show_display_notification_;
+}
+
+bool TestSystemTrayDelegate::GetSessionStartTime(
+    base::TimeTicks* session_start_time) {
+  // Just returns TimeTicks::Now(), so the remaining time is always the
+  // specified limit. This is useful for testing.
+  if (session_length_limit_set_)
+    *session_start_time = base::TimeTicks::Now();
+  return session_length_limit_set_;
+}
+
+bool TestSystemTrayDelegate::GetSessionLengthLimit(
+    base::TimeDelta* session_length_limit) {
+  if (session_length_limit_set_)
+    *session_length_limit = session_length_limit_;
+  return session_length_limit_set_;
 }
 
 void TestSystemTrayDelegate::ShutDown() {

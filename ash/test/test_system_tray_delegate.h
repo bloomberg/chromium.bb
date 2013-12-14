@@ -6,6 +6,7 @@
 #define ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 
 #include "ash/system/tray/default_system_tray_delegate.h"
+#include "base/time/time.h"
 
 namespace ash {
 namespace test {
@@ -33,15 +34,28 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
     should_show_display_notification_ = should_show;
   }
 
+  // Updates the session length limit so that the limit will come from now in
+  // |new_limit|.
+  void SetSessionLengthLimitForTest(const base::TimeDelta& new_limit);
+
+  // Clears the session length limit.
+  void ClearSessionLengthLimit();
+
   // Overridden from SystemTrayDelegate:
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
   virtual bool ShouldShowDisplayNotification() OVERRIDE;
+  virtual bool GetSessionStartTime(
+      base::TimeTicks* session_start_time) OVERRIDE;
+  virtual bool GetSessionLengthLimit(
+      base::TimeDelta* session_length_limit) OVERRIDE;
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;
 
  private:
   bool should_show_display_notification_;
   user::LoginStatus login_status_;
+  base::TimeDelta session_length_limit_;
+  bool session_length_limit_set_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
 };

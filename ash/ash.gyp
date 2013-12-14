@@ -823,6 +823,7 @@
         'system/chromeos/screen_security/screen_tray_item_unittest.cc',
         'system/chromeos/tray_display_unittest.cc',
         'system/date/date_view_unittest.cc',
+        'system/session_length_limit/tray_session_length_limit_unittest.cc',
         'system/tray/system_tray_unittest.cc',
         'system/tray/tray_details_view_unittest.cc',
         'system/user/tray_user_unittest.cc',

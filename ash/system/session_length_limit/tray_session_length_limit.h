@@ -14,6 +14,11 @@
 #include "base/timer/timer.h"
 
 namespace ash {
+
+namespace test {
+class TraySessionLengthLimitTest;
+}
+
 namespace internal {
 
 namespace tray {
@@ -21,8 +26,8 @@ class RemainingSessionTimeTrayView;
 }
 
 // Adds a countdown timer to the system tray if the session length is limited.
-class TraySessionLengthLimit : public SystemTrayItem,
-                               public SessionLengthLimitObserver {
+class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
+                                          public SessionLengthLimitObserver {
  public:
   enum LimitState {
     LIMIT_NONE,
@@ -47,7 +52,13 @@ class TraySessionLengthLimit : public SystemTrayItem,
   base::TimeDelta GetRemainingSessionTime() const;
 
  private:
+  friend class test::TraySessionLengthLimitTest;
+
+  static const char kNotificationId[];
+
   void Update();
+
+  bool IsTrayViewVisibleForTest();
 
   tray::RemainingSessionTimeTrayView* tray_view_;
 

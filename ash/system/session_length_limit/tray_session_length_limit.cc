@@ -50,8 +50,6 @@ const SkColor kRemainingTimeColor = SK_ColorWHITE;
 // Color in which the remaining session time is shown when it is expiring soon.
 const SkColor kRemainingTimeExpiringSoonColor = SK_ColorRED;
 
-const char kSessionLengthTimeoutNotificationId[] = "chrome://session/timeout";
-
 views::Label* CreateAndSetupLabel() {
   views::Label* label = new views::Label;
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -79,17 +77,16 @@ base::string16 FormatRemainingSessionTimeNotification(
 // Creates, or updates the notification for session length timeout with
 // |remaining_time|.  |state_changed| is true when its internal state has been
 // changed from another.
-void CreateOrUpdateNotification(const base::TimeDelta& remaining_time,
+void CreateOrUpdateNotification(const std::string& notification_id,
+                                const base::TimeDelta& remaining_time,
                                 bool state_changed) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
   // Do not create a new notification if no state has changed. It may happen
   // when the notification is already closed by the user, see crbug.com/285941.
-  if (!state_changed &&
-      !message_center->HasNotification(kSessionLengthTimeoutNotificationId)) {
+  if (!state_changed && !message_center->HasNotification(notification_id))
     return;
-  }
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData data;
@@ -97,7 +94,7 @@ void CreateOrUpdateNotification(const base::TimeDelta& remaining_time,
   data.should_make_spoken_feedback_for_popup_updates = state_changed;
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      kSessionLengthTimeoutNotificationId,
+      notification_id,
       FormatRemainingSessionTimeNotification(remaining_time),
       base::string16() /* message */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SESSION_LENGTH_LIMIT_TIMER),
@@ -278,6 +275,10 @@ void RemainingSessionTimeTrayView::SetBorder(ShelfAlignment shelf_alignment) {
 
 }  // namespace tray
 
+// static
+const char TraySessionLengthLimit::kNotificationId[] =
+    "chrome://session/timeout";
+
 TraySessionLengthLimit::TraySessionLengthLimit(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
@@ -354,15 +355,17 @@ void TraySessionLengthLimit::Update() {
   switch (limit_state_) {
     case LIMIT_NONE:
       message_center::MessageCenter::Get()->RemoveNotification(
-          kSessionLengthTimeoutNotificationId, false /* by_user */);
+          kNotificationId, false /* by_user */);
       break;
     case LIMIT_SET:
       CreateOrUpdateNotification(
+          kNotificationId,
           remaining_session_time_,
           previous_limit_state == LIMIT_NONE);
       break;
     case LIMIT_EXPIRING_SOON:
       CreateOrUpdateNotification(
+          kNotificationId,
           remaining_session_time_,
           previous_limit_state == LIMIT_NONE ||
           previous_limit_state == LIMIT_SET);
@@ -373,6 +376,10 @@ void TraySessionLengthLimit::Update() {
   // view is currently visible or not.
   if (tray_view_)
     tray_view_->Update();
+}
+
+bool TraySessionLengthLimit::IsTrayViewVisibleForTest() {
+  return tray_view_ && tray_view_->visible();
 }
 
 }  // namespace internal

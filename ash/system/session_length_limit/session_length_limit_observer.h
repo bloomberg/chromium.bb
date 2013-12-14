@@ -5,10 +5,12 @@
 #ifndef ASH_SYSTEM_SESSION_LENGTH_LIMIT_SESSION_LENGTH_LIMIT_OBSERVER_H_
 #define ASH_SYSTEM_SESSION_LENGTH_LIMIT_SESSION_LENGTH_LIMIT_OBSERVER_H_
 
+#include "ash/ash_export.h"
+
 namespace ash {
 
 // Observer for the session length limit.
-class SessionLengthLimitObserver {
+class ASH_EXPORT SessionLengthLimitObserver {
  public:
   virtual ~SessionLengthLimitObserver() {}
 

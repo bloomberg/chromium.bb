@@ -39,6 +39,7 @@ namespace test {
 
 class AshTestHelper;
 class TestScreenshotDelegate;
+class TestSystemTrayDelegate;
 #if defined(OS_WIN)
 class TestMetroViewerProcessHost;
 #endif
@@ -116,6 +117,7 @@ class AshTestBase : public testing::Test {
   void RunAllPendingInMessageLoop();
 
   TestScreenshotDelegate* GetScreenshotDelegate();
+  TestSystemTrayDelegate* GetSystemTrayDelegate();
 
   // Utility methods to emulate user logged in or not, session started or not
   // and user able to lock screen or not cases.
