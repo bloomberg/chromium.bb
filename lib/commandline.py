@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Purpose of this module is to hold common script/commandline functionality.
+"""Purpose of this module is to hold common script/commandline functionality.
 
 This ranges from optparse, to a basic script wrapper setup (much like
-what is used for chromite.bin.* ).
+what is used for chromite.bin.*).
 """
 
 import argparse
@@ -118,9 +117,8 @@ VALID_TYPES = {
 
 
 class Option(optparse.Option):
-  """
-  Subclass Option class to implement path evaluation, and other useful types.
-  """
+  """Subclass to implement path evaluation & other useful types."""
+
   _EXTRA_TYPES = ("path", "gs_path")
   TYPES = optparse.Option.TYPES + _EXTRA_TYPES
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
@@ -130,6 +128,7 @@ class Option(optparse.Option):
 
 class FilteringOption(Option):
   """Subclass that supports Option filtering for FilteringOptionParser"""
+
   def take_action(self, action, dest, opt, value, values, parser):
     if action in FilteringOption.ACTIONS:
       Option.take_action(self, action, dest, opt, value, values, parser)
@@ -144,6 +143,7 @@ class FilteringOption(Option):
 
 class BaseParser(object):
   """Base parser class that includes the logic to add logging controls."""
+
   DEFAULT_LOG_LEVELS = ('fatal', 'critical', 'error', 'warning', 'info',
                         'debug')
 
@@ -329,6 +329,7 @@ PassedOption = collections.namedtuple(
 
 
 class FilteringParser(OptionParser):
+  """Custom option parser for filtering options."""
 
   DEFAULT_OPTION_CLASS = FilteringOption
 
@@ -360,9 +361,9 @@ class FilteringParser(OptionParser):
       filter_fn: A function with signature f(PassedOption), and returns True if
         the argument is to be passed through.  False if not.
 
-     Returns:
-       A tuple containing two lists - one of accepted arguments and one of
-       removed arguments.
+    Returns:
+      A tuple containing two lists - one of accepted arguments and one of
+      removed arguments.
     """
     removed = []
     accepted = []
@@ -414,6 +415,7 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
 
 
 class _ShutDownException(SystemExit):
+  """Exception raised when user hits CTRL+C."""
 
   def __init__(self, sig_num, message):
     self.signal = sig_num
