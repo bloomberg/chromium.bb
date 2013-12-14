@@ -20,11 +20,11 @@ class TestNode(object):
 
   Args = collections.namedtuple('Args', ('args', 'vararg', 'kwarg'))
 
-  def __init__(self, doc='', tolineno=0, path='foo.py', args=(), vararg='',
+  def __init__(self, doc='', fromlineno=0, path='foo.py', args=(), vararg='',
                kwarg=''):
     self.doc = doc
     self.lines = doc.split('\n')
-    self.tolineno = tolineno
+    self.fromlineno = fromlineno
     self.file = path
     self.args = self.Args(args=args, vararg=vararg, kwarg=kwarg)
 

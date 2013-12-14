@@ -95,7 +95,7 @@ class DocStringChecker(BaseChecker):
     if node.doc:
       self._check_common(node)
     else:
-      self.add_message('C9002', node=node, line=node.tolineno)
+      self.add_message('C9002', node=node, line=node.fromlineno)
 
   def _check_common(self, node, lines=None):
     """Common checks we enforce on all docstrings"""
@@ -113,7 +113,7 @@ class DocStringChecker(BaseChecker):
   def _check_first_line(self, node, lines):
     """Make sure first line is a short summary by itself"""
     if lines[0] == '':
-      self.add_message('C9009', node=node, line=node.tolineno)
+      self.add_message('C9009', node=node, line=node.fromlineno)
 
   def _check_whitespace(self, node, lines):
     """Verify whitespace is sane"""
@@ -122,7 +122,7 @@ class DocStringChecker(BaseChecker):
     for l, i in zip(lines[:-1], xrange(len(lines))):
       if l.rstrip() != l:
         margs = {'offset': i, 'line': l}
-        self.add_message('C9003', node=node, line=node.tolineno, args=margs)
+        self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 
     # Now specially handle the last line.  Note: if there's just one line,
     # then we can check leading & trailing whitespace.
@@ -130,7 +130,7 @@ class DocStringChecker(BaseChecker):
     if ((len(lines) == 1 and l.strip() != l) or
         (l.strip() != '' and l.rstrip() != l)):
       margs = {'offset': len(lines), 'line': l}
-      self.add_message('C9003', node=node, line=node.tolineno, args=margs)
+      self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 
     # Should we scan for more than one new line in a row ?
 
@@ -138,13 +138,13 @@ class DocStringChecker(BaseChecker):
     """Make sure last line is all by itself"""
     if len(lines) > 1:
       if lines[-1].strip() != '':
-        self.add_message('C9005', node=node, line=node.tolineno)
+        self.add_message('C9005', node=node, line=node.fromlineno)
 
   def _check_last_line_function(self, node, lines):
     """Make sure last line is indented"""
     if len(lines) > 1:
       if lines[-1] == '':
-        self.add_message('C9005', node=node, line=node.tolineno)
+        self.add_message('C9005', node=node, line=node.fromlineno)
 
   def _check_section_lines(self, node, lines):
     """Verify each section (Args/Returns/Raises) is sane"""
@@ -170,22 +170,22 @@ class DocStringChecker(BaseChecker):
 
         # Make sure it has some number of leading whitespace.
         if not line.startswith(' '):
-          self.add_message('C9004', node=node, line=node.tolineno, args=margs)
+          self.add_message('C9004', node=node, line=node.fromlineno, args=margs)
 
         # Make sure it has a single trailing colon.
         if l != '%s:' % section:
-          self.add_message('C9007', node=node, line=node.tolineno, args=margs)
+          self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
 
         # Make sure it's valid.
         if section.lower() in invalid_sections:
-          self.add_message('C9007', node=node, line=node.tolineno, args=margs)
+          self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
         else:
           # Gather the order of the sections.
           lineno_sections[valid_sections.index(section)] = i
 
         # Verify blank line before it.
         if last != '':
-          self.add_message('C9006', node=node, line=node.tolineno, args=margs)
+          self.add_message('C9006', node=node, line=node.fromlineno, args=margs)
 
       last = l
 
@@ -193,7 +193,7 @@ class DocStringChecker(BaseChecker):
     valid_lineno = lambda x: x >= 0
     lineno_sections = filter(valid_lineno, lineno_sections)
     if lineno_sections != sorted(lineno_sections):
-      self.add_message('C9008', node=node, line=node.tolineno)
+      self.add_message('C9008', node=node, line=node.fromlineno)
 
   def _check_all_args_in_doc(self, node, lines):
     """All function arguments are mentioned in doc"""
@@ -233,19 +233,19 @@ class DocStringChecker(BaseChecker):
         break
     else:
       return
-    self.add_message('C9010', node=node, line=node.tolineno, args=margs)
+    self.add_message('C9010', node=node, line=node.fromlineno, args=margs)
 
   def _check_func_signature(self, node):
     """Require *args to be named args, and **kwargs kwargs"""
     vararg = node.args.vararg
     if vararg and vararg != 'args' and vararg != '_args':
       margs = {'arg': vararg}
-      self.add_message('C9011', node=node, line=node.tolineno, args=margs)
+      self.add_message('C9011', node=node, line=node.fromlineno, args=margs)
 
     kwarg = node.args.kwarg
     if kwarg and kwarg != 'kwargs' and kwarg != '_kwargs':
       margs = {'arg': kwarg}
-      self.add_message('C9011', node=node, line=node.tolineno, args=margs)
+      self.add_message('C9011', node=node, line=node.fromlineno, args=margs)
 
 
 def register(linter):
