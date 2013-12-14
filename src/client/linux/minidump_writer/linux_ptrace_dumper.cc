@@ -195,6 +195,9 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
   }
 
 #if defined(__i386)
+#if !defined(bit_FXSAVE)  // e.g. Clang
+#define bit_FXSAVE bit_FXSR
+#endif
   // Detect if the CPU supports the FXSAVE/FXRSTOR instructions
   int eax, ebx, ecx, edx;
   __cpuid(1, eax, ebx, ecx, edx);
@@ -205,7 +208,7 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
   } else {
     memset(&info->fpxregs, 0, sizeof(info->fpxregs));
   }
-#endif
+#endif  // defined(__i386)
 
 #if defined(__i386) || defined(__x86_64)
   for (unsigned i = 0; i < ThreadInfo::kNumDebugRegisters; ++i) {
