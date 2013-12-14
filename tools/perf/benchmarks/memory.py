@@ -6,6 +6,11 @@ from telemetry import test
 from measurements import memory
 
 
+class MemoryMobile(test.Test):
+  test = memory.Memory
+  page_set = 'page_sets/mobile_memory.json'
+
+
 class MemoryTop25(test.Test):
   test = memory.Memory
   page_set = 'page_sets/top_25.json'
