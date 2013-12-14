@@ -73,6 +73,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [Reflect=customContentIntegralAttr] attribute long reflectedCustomIntegralAttr;
     [Reflect=customContentBooleanAttr] attribute boolean reflectedCustomBooleanAttr;
     [Reflect=customContentURLAttr, TreatNullAs=NullString, URL] attribute DOMString reflectedCustomURLAttr;
+    [Reflect] attribute SVGAnimatedString animatedReflectedAttribute;
 
     // TypedArray attribute
     attribute Float32Array typedArrayAttr;

@@ -39,6 +39,7 @@
 #include "V8Document.h"
 #include "V8MessagePort.h"
 #include "V8Node.h"
+#include "V8SVGAnimatedString.h"
 #include "V8SVGDocument.h"
 #include "V8SVGPoint.h"
 #include "V8TestCallbackInterface.h"
@@ -840,6 +841,35 @@ static void reflectedCustomURLAttrAttributeSetterCallback(v8::Local<v8::String>,
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedCustomURLAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void animatedReflectedAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->getAttribute(HTMLNames::animatedreflectedattributeAttr), imp);
+}
+
+static void animatedReflectedAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::animatedReflectedAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void animatedReflectedAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(SVGAnimatedString*, cppValue, V8SVGAnimatedString::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGAnimatedString::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::animatedreflectedattributeAttr, WTF::getPtr(cppValue));
+}
+
+static void animatedReflectedAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::animatedReflectedAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5104,6 +5134,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"reflectedCustomIntegralAttr", TestObjV8Internal::reflectedCustomIntegralAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomIntegralAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomBooleanAttr", TestObjV8Internal::reflectedCustomBooleanAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomBooleanAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomURLAttr", TestObjV8Internal::reflectedCustomURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"animatedReflectedAttribute", TestObjV8Internal::animatedReflectedAttributeAttributeGetterCallback, TestObjV8Internal::animatedReflectedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"typedArrayAttr", TestObjV8Internal::typedArrayAttrAttributeGetterCallback, TestObjV8Internal::typedArrayAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"attrWithGetterException", TestObjV8Internal::attrWithGetterExceptionAttributeGetterCallback, TestObjV8Internal::attrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"attrWithSetterException", TestObjV8Internal::attrWithSetterExceptionAttributeGetterCallback, TestObjV8Internal::attrWithSetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
