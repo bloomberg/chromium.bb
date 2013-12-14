@@ -523,7 +523,7 @@ void PictureLayerTiling::UpdateTilePriorities(
         current_frame_time_in_seconds - last_impl_frame_time_in_seconds_;
   }
 
-  gfx::Rect view_rect(device_viewport);
+  gfx::RectF view_rect(device_viewport);
   float current_scale = current_layer_contents_scale / contents_scale_;
   float last_scale = last_layer_contents_scale / contents_scale_;
 
