@@ -18,6 +18,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -810,7 +811,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DoNotCrashOnInvalidNavigation) {
   EXPECT_TRUE(delegate->load_aborted_url().is_valid());
 }
 
-
 // Tests involving the threaded compositor.
 class BrowserPluginThreadedCompositorTest : public BrowserPluginHostTest {
  public:
@@ -922,6 +922,117 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorTest,
         base::Bind(&CompareSkBitmapAndRun, loop.QuitClosure(), expected_bitmap,
                    &result));
     loop.Run();
+  }
+}
+
+// Tests input method.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
+  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
+  const char kGuestHTML[] = "data:text/html,"
+      "<html><body><input id=\"input1\">"
+      "<input id=\"input2\"></body>"
+      "<script>"
+      "var i = document.getElementById(\"input1\");"
+      "i.oninput = function() {"
+      "  document.title = i.value;"
+      "}"
+      "</script>"
+      "</html>";
+  StartBrowserPluginTest(kEmbedderURL, kGuestHTML, true,
+                         "document.getElementById(\"plugin\").focus();");
+
+  RenderViewHostImpl* embedder_rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+      test_guest()->web_contents()->GetRenderViewHost());
+
+  std::vector<blink::WebCompositionUnderline> underlines;
+
+  // An input field in browser plugin guest gets focus and given some user
+  // input via IME.
+  {
+    ExecuteSyncJSFunction(guest_rvh,
+                          "document.getElementById('input1').focus();");
+    string16 expected_title = UTF8ToUTF16("InputTest123");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        expected_title);
+    embedder_rvh->Send(
+        new ViewMsg_ImeSetComposition(
+            test_embedder()->web_contents()->GetRoutingID(),
+            expected_title,
+            underlines,
+            12, 12));
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  // A composition is committed via IME.
+  {
+    string16 expected_title = UTF8ToUTF16("InputTest456");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        expected_title);
+    embedder_rvh->Send(
+        new ViewMsg_ImeConfirmComposition(
+            test_embedder()->web_contents()->GetRoutingID(),
+            expected_title,
+            gfx::Range(),
+            true));
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  // IME composition starts, but focus moves out, then the composition will
+  // be committed and get cancel msg.
+  {
+    ExecuteSyncJSFunction(guest_rvh,
+                          "document.getElementById('input1').value = '';");
+    string16 composition = UTF8ToUTF16("InputTest789");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        composition);
+    embedder_rvh->Send(
+        new ViewMsg_ImeSetComposition(
+            test_embedder()->web_contents()->GetRoutingID(),
+            composition,
+            underlines,
+            12, 12));
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(composition, actual_title);
+    // Moving focus causes IME cancel, and the composition will be committed
+    // in input1, not in input2.
+    ExecuteSyncJSFunction(guest_rvh,
+                          "document.getElementById('input2').focus();");
+    test_guest()->WaitForImeCancel();
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(
+            guest_rvh, "document.getElementById('input1').value");
+    std::string result;
+    ASSERT_TRUE(value->GetAsString(&result));
+    EXPECT_EQ(UTF16ToUTF8(composition), result);
+  }
+  // Tests ExtendSelectionAndDelete message works in browser_plugin.
+  {
+    // Set 'InputTestABC' in input1 and put caret at 6 (after 'T').
+    ExecuteSyncJSFunction(guest_rvh,
+                          "var i = document.getElementById('input1');"
+                          "i.focus();"
+                          "i.value = 'InputTestABC';"
+                          "i.selectionStart=6;"
+                          "i.selectionEnd=6;");
+    string16 expected_value = UTF8ToUTF16("InputABC");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        expected_value);
+    // Delete 'Test' in 'InputTestABC', as the caret is after 'T':
+    // delete before 1 character ('T') and after 3 characters ('est').
+    embedder_rvh->Send(
+        new ViewMsg_ExtendSelectionAndDelete(
+            test_embedder()->web_contents()->GetRoutingID(),
+            1, 3));
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_value, actual_title);
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(
+            guest_rvh, "document.getElementById('input1').value");
+    std::string actual_value;
+    ASSERT_TRUE(value->GetAsString(&actual_value));
+    EXPECT_EQ(UTF16ToUTF8(expected_value), actual_value);
   }
 }
 

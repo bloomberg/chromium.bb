@@ -22,6 +22,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
 #include "ui/gfx/point.h"
@@ -154,6 +155,30 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ExecuteEditCommand,
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                     int /* instance_id */,
                     std::vector<content::EditCommand> /* edit_commands */)
+
+// This message is sent from BrowserPlugin to BrowserPluginGuest whenever IME
+// composition state is updated.
+IPC_MESSAGE_ROUTED5(
+    BrowserPluginHostMsg_ImeSetComposition,
+    int /* instance_id */,
+    std::string /* text */,
+    std::vector<blink::WebCompositionUnderline> /* underlines */,
+    int /* selectiont_start */,
+    int /* selection_end */)
+
+// This message is sent from BrowserPlugin to BrowserPluginGuest to notify that
+// confirming the current composition is requested.
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_ImeConfirmComposition,
+                    int /* instance_id */,
+                    std::string /* text */,
+                    bool /* keep selection */)
+
+// Deletes the current selection plus the specified number of characters before
+// and after the selection or caret.
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_ExtendSelectionAndDelete,
+                    int /* instance_id */,
+                    int /* before */,
+                    int /* after */)
 
 // This message is sent to the browser process to enable or disable autosize
 // mode.
@@ -382,4 +407,3 @@ IPC_MESSAGE_CONTROL5(BrowserPluginMsg_CompositorFrameSwapped,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
                      int /* instance_id */,
                      bool /* enable */)
-

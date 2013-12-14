@@ -984,6 +984,10 @@ bool BrowserPlugin::supportsEditCommands() const {
   return true;
 }
 
+bool BrowserPlugin::supportsInputMethod() const {
+  return true;
+}
+
 bool BrowserPlugin::canProcessDrag() const {
   return true;
 }
@@ -1335,6 +1339,54 @@ bool BrowserPlugin::executeEditCommand(const blink::WebString& name,
   edit_commands_.push_back(EditCommand(name.utf8(), value.utf8()));
   // BrowserPlugin swallows edit commands.
   return true;
+}
+
+bool BrowserPlugin::setComposition(
+    const blink::WebString& text,
+    const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+    int selectionStart,
+    int selectionEnd) {
+  if (!HasGuestInstanceID())
+    return false;
+  std::vector<blink::WebCompositionUnderline> std_underlines;
+  for (size_t i = 0; i < underlines.size(); ++i) {
+    std_underlines.push_back(underlines[i]);
+  }
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_ImeSetComposition(
+      render_view_routing_id_,
+      guest_instance_id_,
+      text.utf8(),
+      std_underlines,
+      selectionStart,
+      selectionEnd));
+  // TODO(kochi): This assumes the IPC handling always succeeds.
+  return true;
+}
+
+bool BrowserPlugin::confirmComposition(
+    const blink::WebString& text,
+    blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) {
+  if (!HasGuestInstanceID())
+    return false;
+  bool keep_selection = (selectionBehavior == blink::WebWidget::KeepSelection);
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_ImeConfirmComposition(
+      render_view_routing_id_,
+      guest_instance_id_,
+      text.utf8(),
+      keep_selection));
+  // TODO(kochi): This assumes the IPC handling always succeeds.
+  return true;
+}
+
+void BrowserPlugin::extendSelectionAndDelete(int before, int after) {
+  if (!HasGuestInstanceID())
+    return;
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_ExtendSelectionAndDelete(
+          render_view_routing_id_,
+          guest_instance_id_,
+          before,
+          after));
 }
 
 void BrowserPlugin::OnLockMouseACK(bool succeeded) {

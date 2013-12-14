@@ -18,7 +18,9 @@
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
@@ -151,6 +153,7 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual struct _NPP* pluginNPP() OVERRIDE;
   virtual bool supportsKeyboardFocus() const OVERRIDE;
   virtual bool supportsEditCommands() const OVERRIDE;
+  virtual bool supportsInputMethod() const OVERRIDE;
   virtual bool canProcessDrag() const OVERRIDE;
   virtual void paint(
       blink::WebCanvas* canvas,
@@ -186,6 +189,15 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual bool executeEditCommand(const blink::WebString& name) OVERRIDE;
   virtual bool executeEditCommand(const blink::WebString& name,
                                   const blink::WebString& value) OVERRIDE;
+  virtual bool setComposition(
+      const blink::WebString& text,
+      const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+      int selectionStart,
+      int selectionEnd) OVERRIDE;
+  virtual bool confirmComposition(
+      const blink::WebString& text,
+      blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) OVERRIDE;
+  virtual void extendSelectionAndDelete(int before, int after) OVERRIDE;
 
   // MouseLockDispatcher::LockTarget implementation.
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE;

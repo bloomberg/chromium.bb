@@ -33,9 +33,12 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_plugin_permission_type.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/ime/text_input_mode.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 
@@ -55,6 +58,10 @@ class CompositorFrameAck;
 
 namespace blink {
 class WebInputEvent;
+}
+
+namespace gfx {
+class Range;
 }
 
 namespace content {
@@ -463,6 +470,27 @@ class CONTENT_EXPORT BrowserPluginGuest
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 
+  void OnTextInputTypeChanged(ui::TextInputType type,
+                              ui::TextInputMode input_mode,
+                              bool can_compose_inline);
+  void OnImeSetComposition(
+      int instance_id,
+      const std::string& text,
+      const std::vector<blink::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end);
+  void OnImeConfirmComposition(
+      int instance_id,
+      const std::string& text,
+      bool keep_selection);
+  void OnExtendSelectionAndDelete(int instance_id, int before, int after);
+  // Overridden in tests.
+  virtual void OnImeCancelComposition();
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+  void OnImeCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds);
+#endif
 
   // Message handlers for messages from guest.
 

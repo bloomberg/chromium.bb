@@ -27,6 +27,7 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       set_damage_buffer_observed_(false),
       input_observed_(false),
       load_stop_observed_(false),
+      ime_cancel_observed_(false),
       waiting_for_damage_buffer_with_size_(false),
       last_damage_buffer_size_(gfx::Size()) {
 }
@@ -181,6 +182,17 @@ void TestBrowserPluginGuest::WaitForViewSize(const gfx::Size& view_size) {
   last_view_size_observed_ = gfx::Size();
 }
 
+void TestBrowserPluginGuest::WaitForImeCancel() {
+  if (ime_cancel_observed_) {
+    ime_cancel_observed_ = false;
+    return;
+  }
+
+  ime_cancel_message_loop_runner_ = new MessageLoopRunner();
+  ime_cancel_message_loop_runner_->Run();
+  ime_cancel_observed_ = false;
+}
+
 void TestBrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
   if (focused) {
     focus_observed_ = true;
@@ -222,6 +234,15 @@ void TestBrowserPluginGuest::DidStopLoading(
   load_stop_observed_ = true;
   if (load_stop_message_loop_runner_.get())
     load_stop_message_loop_runner_->Quit();
+}
+
+void TestBrowserPluginGuest::OnImeCancelComposition() {
+  if (!ime_cancel_observed_) {
+    ime_cancel_observed_ = true;
+    if (ime_cancel_message_loop_runner_.get())
+      ime_cancel_message_loop_runner_->Quit();
+  }
+  BrowserPluginGuest::OnImeCancelComposition();
 }
 
 void TestBrowserPluginGuest::WasHidden() {

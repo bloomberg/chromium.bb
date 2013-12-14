@@ -301,19 +301,38 @@ void RenderWidgetHostViewGuest::TextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
     bool can_compose_inline) {
-  RenderWidgetHostViewPort::FromRWHV(
-      guest_->GetEmbedderRenderWidgetHostView())->
-          TextInputTypeChanged(type, input_mode, can_compose_inline);
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView());
+  if (!rwhv)
+    return;
+  // Forward the information to embedding RWHV.
+  rwhv->TextInputTypeChanged(type, input_mode, can_compose_inline);
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
-  platform_view_->ImeCancelComposition();
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView());
+  if (!rwhv)
+    return;
+  // Forward the information to embedding RWHV.
+  rwhv->ImeCancelComposition();
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView());
+  if (!rwhv)
+    return;
+  std::vector<gfx::Rect> guest_character_bounds;
+  for (size_t i = 0; i < character_bounds.size(); ++i) {
+    gfx::Rect guest_rect = guest_->ToGuestRect(character_bounds[i]);
+    guest_character_bounds.push_back(guest_rect);
+  }
+  // Forward the information to embedding RWHV.
+  rwhv->ImeCompositionRangeChanged(range, guest_character_bounds);
 }
 #endif
 
@@ -328,12 +347,24 @@ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
 void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
                                                  size_t offset,
                                                  const gfx::Range& range) {
-  platform_view_->SelectionChanged(text, offset, range);
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView());
+  if (!rwhv)
+    return;
+  // Forward the information to embedding RWHV.
+  rwhv->SelectionChanged(text, offset, range);
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
-  platform_view_->SelectionBoundsChanged(params);
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView());
+  if (!rwhv)
+    return;
+  ViewHostMsg_SelectionBounds_Params guest_params(params);
+  guest_params.anchor_rect = guest_->ToGuestRect(params.anchor_rect);
+  guest_params.focus_rect = guest_->ToGuestRect(params.focus_rect);
+  rwhv->SelectionBoundsChanged(guest_params);
 }
 
 void RenderWidgetHostViewGuest::ScrollOffsetChanged() {
