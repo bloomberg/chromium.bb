@@ -486,18 +486,15 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
   EXPECT_EQ(custom_image->height(), saved_image->height());
 }
 
-// SaveUserImageFromProfileImage crashed on Linux ChromiumOS Tests debug
-// bot. http://crbug.com/327775
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
-                       DISABLED_PRE_SaveUserImageFromProfileImage) {
+                       PRE_SaveUserImageFromProfileImage) {
   RegisterUser(kTestUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 // Verifies that SaveUserImageFromProfileImage() correctly downloads, sets and
 // persists the chosen user image.
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
-                       DISABLED_SaveUserImageFromProfileImage) {
+IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   const User* user = UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
@@ -533,10 +530,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
   EXPECT_EQ(profile_image.height(), saved_image->height());
 }
 
-// ProfileImageDownloadDoesNotClobber crashed on Linux ChromiumOS Tests debug
-// bot. http://crbug.com/327775
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
-                       DISABLED_PRE_ProfileImageDownloadDoesNotClobber) {
+                       PRE_ProfileImageDownloadDoesNotClobber) {
   RegisterUser(kTestUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
@@ -546,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 // when the download completes, the profile image is ignored and does not
 // clobber the default image chosen in the meantime.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
-                       DISABLED_ProfileImageDownloadDoesNotClobber) {
+                       ProfileImageDownloadDoesNotClobber) {
   const User* user = UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
