@@ -28,6 +28,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/Text.h"
 #include "core/events/OverflowEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -4872,8 +4873,6 @@ void RenderBlock::updateFirstLetter()
     if (style()->styleType() == FIRST_LETTER)
         return;
 
-    // FIXME: We need to destroy the first-letter object if it is no longer the first child. Need to find
-    // an efficient way to check for that situation though before implementing anything.
     RenderObject* firstLetterBlock = findFirstLetterBlock(this);
     if (!firstLetterBlock)
         return;
@@ -4910,9 +4909,29 @@ void RenderBlock::updateFirstLetter()
     if (!currChild)
         return;
 
-    // If the child already has style, then it has already been created, so we just want
-    // to update it.
     if (currChild->parent()->style()->styleType() == FIRST_LETTER) {
+        // Check if the text fragment(currChild) for the first-letter is not related to the remainingText.
+        RenderObject* remainingText = currChild->parent()->nextSibling();
+        if (remainingText && remainingText->node() && currChild->node() != remainingText->node()) {
+            if (!remainingText->isText() || remainingText->isBR())
+                return;
+
+            if (RenderBoxModelObject* oldFirstLetter = currChild->parent()->isBoxModelObject() ? toRenderBoxModelObject(currChild->parent()) : 0) {
+                if (RenderTextFragment* oldRemainingText = oldFirstLetter->firstLetterRemainingText()) {
+                    LayoutStateDisabler layoutStateDisabler(view());
+                    // Destroy the text fragment for the old first-letter and update oldRemainingText with its DOM text.
+                    oldRemainingText->setText(toText(oldRemainingText->node())->data().impl());
+
+                    if (unsigned newLength = firstLetterLength(toRenderText(remainingText)->originalText()))
+                        createFirstLetterRenderer(firstLetterBlock, remainingText, newLength);
+                }
+            }
+
+            return;
+        }
+
+        // If the child already has style, then it has already been created, so we just want
+        // to update it.
         updateFirstLetterStyle(firstLetterBlock, currChild);
         return;
     }
