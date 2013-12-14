@@ -3145,6 +3145,9 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged");
 
+    if (m_readyState > HAVE_NOTHING)
+        scheduleEvent(EventTypeNames::resize);
+
     if (renderer())
         renderer()->updateFromElement();
 }

@@ -11,14 +11,29 @@
                 testRunner.waitUntilDone();
             }
 
-            function load() {
+            function load()
+            {
                 var video = document.getElementsByTagName("video")[1];
                 var video_fixed_size = document.getElementsByTagName("video")[0];
                 video.src = "resources/frame_size_change.webm";
                 video_fixed_size.src = "resources/frame_size_change.webm";
 
+                // Expect no resize event because the tag's size (the frames'
+                // "natural size") doesn't change, only the internal resolution
+                // does.  Fail if this expectation is violated.
+                video.addEventListener('resize', onresize);
+                video_fixed_size.addEventListener('resize', onresize);
+                function onresize()
+                {
+                    document.body.appendChild(document.createTextNode('FAIL: unexpected resize'));
+                    if (window.testRunner) {
+                        testRunner.notifyDone();
+                    }
+                }
+
                 var canplayCount = 0;
-                function oncanplay() {
+                function oncanplay()
+                {
                     if (++canplayCount < 2) {
                         return;
                     }
@@ -37,7 +52,8 @@
                 video_fixed_size.addEventListener('canplay', oncanplay);
 
                 var playingCount = 0;
-                function onplaying() {
+                function onplaying()
+                {
                     if (++playingCount < 2) {
                         return;
                     }
@@ -46,7 +62,8 @@
                     video_fixed_size.removeEventListener('playing', onplaying);
 
                     // Make sure both videos play for a bit.
-                    function ontimeupdate(e) {
+                    function ontimeupdate(e)
+                    {
                         if (e.target.currentTime > 1.0) {
                             e.target.pause();
                         }
@@ -58,13 +75,15 @@
                 video_fixed_size.addEventListener('playing', onplaying);
 
                 var pauseCount = 0;
-                function onpause() {
+                function onpause()
+                {
                     if (++pauseCount < 2) {
                         return;
                     }
 
                     var seekedCount = 0;
-                    function onseeked() {
+                    function onseeked()
+                    {
                         if (++seekedCount < 2) {
                             return;
                         }
