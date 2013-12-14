@@ -216,6 +216,9 @@ def main(argv):
   parser.add_option('-d', '--dest',
       help='Select which build destinations (project types) are valid.',
       action='append')
+  parser.add_option('-p', '--project',
+      help='Select which projects are valid.',
+      action='append')
   parser.add_option('-v', '--verbose', action='store_true')
 
   # To setup bash completion for this command first install optcomplete
@@ -228,6 +231,9 @@ def main(argv):
     pass
 
   options, args = parser.parse_args(argv[1:])
+  if options.project:
+    parser.error('The -p/--project option is deprecated.\n'
+                 'Just use positional paramaters instead.')
 
   if 'NACL_SDK_ROOT' in os.environ:
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
