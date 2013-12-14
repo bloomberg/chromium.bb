@@ -64,6 +64,15 @@ public:
         }
     }
 
+    // SVGMatrixTearOff can be a child tear-off of a SVGTransform tear-off,
+    // which means that |m_value| may be pointing inside |m_value| of the other tear-off.
+    // This method is called from the parent SVGTransform tear-off when |m_parent->m_value| is updated,
+    // so that |this->m_value| would point to valid location.
+    virtual void setValueForMatrixIfNeeded(SVGTransform* transform)
+    {
+        setValue(transform->svgMatrix());
+    }
+
     SVGPropertyTearOff<SVGTransform>* parent() { return m_parent; }
 
 private:
