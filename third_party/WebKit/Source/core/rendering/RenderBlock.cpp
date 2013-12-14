@@ -3598,13 +3598,6 @@ LayoutUnit RenderBlock::desiredColumnWidth() const
     return gColumnInfoMap->get(this)->desiredColumnWidth();
 }
 
-unsigned RenderBlock::desiredColumnCount() const
-{
-    if (!hasColumns())
-        return 1;
-    return gColumnInfoMap->get(this)->desiredColumnCount();
-}
-
 ColumnInfo* RenderBlock::columnInfo() const
 {
     if (!hasColumns())

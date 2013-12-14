@@ -431,19 +431,6 @@ RenderObject* RenderObject::childAt(unsigned index) const
     return child;
 }
 
-RenderObject* RenderObject::firstLeafChild() const
-{
-    RenderObject* r = firstChild();
-    while (r) {
-        RenderObject* n = 0;
-        n = r->firstChild();
-        if (!n)
-            break;
-        r = n;
-    }
-    return r;
-}
-
 RenderObject* RenderObject::lastLeafChild() const
 {
     RenderObject* r = lastChild();
