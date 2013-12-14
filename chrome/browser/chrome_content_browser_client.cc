@@ -383,15 +383,6 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   }
 #endif
 
-  // Special case the new tab page. In older versions of Chrome, the new tab
-  // page was hosted at chrome-internal:<blah>. This might be in people's saved
-  // sessions or bookmarks, so we say any URL with that scheme triggers the new
-  // tab page.
-  if (url->SchemeIs(chrome::kChromeInternalScheme)) {
-    // Rewrite it with the proper new tab URL.
-    *url = GURL(chrome::kChromeUINewTabURL);
-  }
-
   return true;
 }
 

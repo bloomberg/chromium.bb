@@ -19,7 +19,6 @@ bool HasWebUIScheme(const GURL& url) {
   return
 #if !defined(OS_IOS)
          url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(chrome::kChromeInternalScheme) ||
 #endif
          url.SchemeIs(chrome::kChromeUIScheme);
 }

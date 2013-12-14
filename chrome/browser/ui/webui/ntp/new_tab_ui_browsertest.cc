@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "url/gurl.h"
 
@@ -25,20 +24,6 @@ class NewTabUIBrowserTest : public InProcessBrowserTest {
  public:
   NewTabUIBrowserTest() {}
 };
-
-// Ensure that chrome-internal: still loads the NTP.
-// See http://crbug.com/6564.
-IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
-  // Go to the "new tab page" using its old url, rather than chrome://newtab.
-  // Ensure that we get there by checking for non-empty page content.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome-internal:"));
-  bool empty_inner_html = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetWebContentsAt(0),
-      "window.domAutomationController.send(document.body.innerHTML == '')",
-      &empty_inner_html));
-  ASSERT_FALSE(empty_inner_html);
-}
 
 // TODO(samarth): delete along with rest of NTP4 code.
 // #if defined(OS_WIN)

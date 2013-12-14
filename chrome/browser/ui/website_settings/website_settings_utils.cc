@@ -10,7 +10,6 @@
 
 // Returns true if the passed |url| refers to an internal chrome page.
 bool InternalChromePage(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeInternalScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme) ||
+  return url.SchemeIs(chrome::kChromeUIScheme) ||
          url.SchemeIs(extensions::kExtensionScheme);
 }

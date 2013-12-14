@@ -289,10 +289,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (command_line->HasSwitch(switches::kNewProfileManagement))
     thread->RegisterExtension(extensions_v8::PrincipalsExtension::Get());
 
-  // chrome:, chrome-search:, chrome-devtools:, and chrome-internal: pages
-  // should not be accessible by normal content, and should also be unable to
-  // script anything but themselves (to help limit the damage that a corrupt
-  // page could cause).
+  // chrome:, chrome-search:, and chrome-devtools: pages should not be
+  // accessible by normal content, and should also be unable to script anything
+  // but themselves (to help limit the damage that a corrupt page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
 
@@ -304,9 +303,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   WebString dev_tools_scheme(ASCIIToUTF16(chrome::kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);
-
-  WebString internal_scheme(ASCIIToUTF16(chrome::kChromeInternalScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(internal_scheme);
 
 #if defined(OS_CHROMEOS)
   WebString drive_scheme(ASCIIToUTF16(chrome::kDriveScheme));

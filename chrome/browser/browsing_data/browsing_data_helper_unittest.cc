@@ -72,7 +72,6 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
   EXPECT_FALSE(IsWebScheme(extensions::kExtensionScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kAboutScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kChromeDevToolsScheme));
-  EXPECT_FALSE(IsWebScheme(chrome::kChromeInternalScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kChromeUIScheme));
   EXPECT_FALSE(IsWebScheme(content::kJavaScriptScheme));
   EXPECT_FALSE(IsWebScheme(content::kMailToScheme));
@@ -97,7 +96,6 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
 
   EXPECT_FALSE(IsExtensionScheme(chrome::kAboutScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kChromeDevToolsScheme));
-  EXPECT_FALSE(IsExtensionScheme(chrome::kChromeInternalScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kChromeUIScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kJavaScriptScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kMailToScheme));

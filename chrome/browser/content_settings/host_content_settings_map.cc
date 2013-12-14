@@ -553,7 +553,6 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     }
   }
   return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         primary_url.SchemeIs(chrome::kChromeInternalScheme) ||
          primary_url.SchemeIs(chrome::kChromeUIScheme);
 }
 

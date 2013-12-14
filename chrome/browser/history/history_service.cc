@@ -1023,8 +1023,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
       url.SchemeIs(chrome::kChromeNativeScheme) ||
       url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(chrome::kChromeSearchScheme) ||
-      url.SchemeIs(content::kViewSourceScheme) ||
-      url.SchemeIs(chrome::kChromeInternalScheme))
+      url.SchemeIs(content::kViewSourceScheme))
     return false;
 
   // Allow all about: and chrome: URLs except about:blank, since the user may

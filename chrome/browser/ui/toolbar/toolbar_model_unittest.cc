@@ -76,15 +76,6 @@ struct TestItem {
     true
   },
   {
-    GURL("chrome-internal://newtab/"),
-    base::string16(),
-    base::string16(),
-    base::string16(),
-    base::string16(),
-    false,
-    false
-  },
-  {
     GURL(content::kAboutBlankURL),
     ASCIIToUTF16(content::kAboutBlankURL),
     ASCIIToUTF16(content::kAboutBlankURL),

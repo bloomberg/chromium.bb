@@ -226,18 +226,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-      !url.SchemeIs(chrome::kChromeInternalScheme) &&
       !url.SchemeIs(chrome::kChromeUIScheme)) {
     return NULL;
-  }
-
-  // Special case the new tab page. In older versions of Chrome, the new tab
-  // page was hosted at chrome-internal:<blah>. This might be in people's saved
-  // sessions or bookmarks, so we say any URL with that scheme triggers the new
-  // tab page.
-  if (url.host() == chrome::kChromeUINewTabHost ||
-      url.SchemeIs(chrome::kChromeInternalScheme)) {
-    return &NewWebUI<NewTabUI>;
   }
 
   /****************************************************************************
@@ -284,6 +274,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
+  if (url.host() == chrome::kChromeUINewTabHost)
+    return &NewWebUI<NewTabUI>;
   if (url.host() == chrome::kChromeUIOmniboxHost)
     return &NewWebUI<OmniboxUI>;
   if (url.host() == chrome::kChromeUIPredictorsHost)

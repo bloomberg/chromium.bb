@@ -36,12 +36,6 @@ TEST_F(ContentSettingsObserverTest, WhitelistedSchemes) {
       WebSecurityOrigin::create(extension_url),
       GURL()));
 
-  GURL chrome_internal_url =
-      GURL(std::string(chrome::kChromeInternalScheme).append(end_url));
-  EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(
-      WebSecurityOrigin::create(chrome_internal_url),
-      GURL()));
-
   GURL file_url("file:///dir/");
   EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(
       WebSecurityOrigin::create(file_url),

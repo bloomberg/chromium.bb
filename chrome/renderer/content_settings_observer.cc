@@ -682,9 +682,6 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return true;
 
-  if (EqualsASCII(origin.protocol(), chrome::kChromeInternalScheme))
-    return true;
-
   // TODO(creis, fsamuel): Remove this once the concept of swapped out
   // RenderViews goes away.
   if (document_url == GURL(content::kSwappedOutURL))
