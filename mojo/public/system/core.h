@@ -225,27 +225,43 @@ struct MojoCreateDataPipeOptions {
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
 // and |MojoBeginWriteData()|.
 //   |MOJO_WRITE_DATA_FLAG_NONE| - No flags; default mode.
-// TODO(vtl)
+//   |MOJO_WRITE_DATA_FLAG_ALL_OR_NOTHING| - Write either all the elements
+//       requested or none of them.
 
 typedef uint32_t MojoWriteDataFlags;
 
 #ifdef __cplusplus
 const MojoWriteDataFlags MOJO_WRITE_DATA_FLAG_NONE = 0;
+const MojoWriteDataFlags MOJO_WRITE_DATA_FLAG_ALL_OR_NONE = 1 << 0;
 #else
 #define MOJO_WRITE_DATA_FLAG_NONE ((MojoWriteDataFlags) 0)
+#define MOJO_WRITE_DATA_FLAG_ALL_OR_NONE ((MojoWriteDataFlags) 1 << 0)
 #endif
 
 // |MojoReadDataFlags|: Used to specify different modes to |MojoReadData()| and
 // |MojoBeginReadData()|.
 //   |MOJO_READ_DATA_FLAG_NONE| - No flags; default mode.
-// TODO(vtl)
+//   |MOJO_READ_DATA_FLAG_ALL_OR_NONE| - Read (or discard) either the requested
+//        number of elements or none.
+//   |MOJO_READ_DATA_FLAG_DISCARD| - Discard (up to) the requested number of
+//        elements.
+//   |MOJO_READ_DATA_FLAG_QUERY| - Query the number of elements available to
+//       read. For use with |MojoReadData()| only. Mutually exclusive with
+//       |MOJO_READ_DATA_FLAG_DISCARD| and |MOJO_READ_DATA_FLAG_ALL_OR_NONE| is
+//       ignored if this flag is set.
 
 typedef uint32_t MojoReadDataFlags;
 
 #ifdef __cplusplus
 const MojoReadDataFlags MOJO_READ_DATA_FLAG_NONE = 0;
+const MojoReadDataFlags MOJO_READ_DATA_FLAG_ALL_OR_NONE = 1 << 0;
+const MojoReadDataFlags MOJO_READ_DATA_FLAG_DISCARD = 1 << 1;
+const MojoReadDataFlags MOJO_READ_DATA_FLAG_QUERY = 1 << 2;
 #else
 #define MOJO_READ_DATA_FLAG_NONE ((MojoReadDataFlags) 0)
+#define MOJO_READ_DATA_FLAG_ALL_OR_NONE ((MojoReadDataFlags) 1 << 0)
+#define MOJO_READ_DATA_FLAG_DISCARD ((MojoReadDataFlags) 1 << 1)
+#define MOJO_READ_DATA_FLAG_QUERY ((MojoReadDataFlags) 1 << 2)
 #endif
 
 // Functions -------------------------------------------------------------------
@@ -430,6 +446,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoEndWriteData(
     MojoHandle data_pipe_producer_handle,
     uint32_t num_elements_written);
 
+// TODO(vtl): Note to self: If |MOJO_READ_DATA_FLAG_QUERY| is set, then
+// |elements| must be null (and nothing will be read).
 MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
     MojoHandle data_pipe_consumer_handle,
     void* elements,

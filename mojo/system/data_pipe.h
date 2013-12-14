@@ -31,11 +31,11 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // corresponding names.
   void ProducerCancelAllWaiters();
   void ProducerClose();
-  // This does not validate |elements| or |num_elements| (or |*num_elements|).
+  // This does not validate its arguments.
   MojoResult ProducerWriteData(const void* elements,
                                uint32_t* num_elements,
                                MojoWriteDataFlags flags);
-  // This does not validate |buffer| or |buffer_num_elements|.
+  // This does not validate its arguments.
   MojoResult ProducerBeginWriteData(void** buffer,
                                     uint32_t* buffer_num_elements,
                                     MojoWriteDataFlags flags);
@@ -45,15 +45,23 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                MojoResult wake_result);
   void ProducerRemoveWaiter(Waiter* waiter);
 
-/* TODO(vtl)
+  // These are called by the consumer dispatcher to implement its methods of
+  // corresponding names.
   void ConsumerCancelAllWaiters();
   void ConsumerClose();
-...
+  // This does not validate its arguments.
+  MojoResult ConsumerReadData(void* elements,
+                              uint32_t* num_elements,
+                              MojoReadDataFlags flags);
+  // This does not validate its arguments.
+  MojoResult ConsumerBeginReadData(const void** buffer,
+                                   uint32_t* buffer_num_elements,
+                                   MojoReadDataFlags flags);
+  MojoResult ConsumerEndReadData(uint32_t num_elements_read);
   MojoResult ConsumerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
                                MojoResult wake_result);
   void ConsumerRemoveWaiter(Waiter* waiter);
-*/
 
   // Thread-safe and fast (doesn't take the lock).
   size_t element_size() const { return element_size_; }
@@ -72,6 +80,19 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
       uint32_t num_elements_written) = 0;
   virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() = 0;
   virtual MojoWaitFlags ProducerSatisfiableFlagsNoLock() = 0;
+
+  virtual void ConsumerCloseImplNoLock() = 0;
+  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_elements,
+                                               bool all_or_none) = 0;
+  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_elements) = 0;
+  virtual MojoResult ConsumerBeginReadDataImplNoLock(
+      const void** buffer,
+      uint32_t* buffer_num_elements,
+      MojoReadDataFlags flags) = 0;
+  virtual MojoResult ConsumerEndReadDataImplNoLock(
+      uint32_t num_elements_read) = 0;
+  virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() = 0;
+  virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;
 
  private:
   friend class base::RefCountedThreadSafe<DataPipe>;

@@ -80,6 +80,8 @@
         'system/core_impl.h',
         'system/data_pipe.cc',
         'system/data_pipe.h',
+        'system/data_pipe_consumer_dispatcher.cc',
+        'system/data_pipe_consumer_dispatcher.h',
         'system/data_pipe_producer_dispatcher.cc',
         'system/data_pipe_producer_dispatcher.h',
         'system/dispatcher.cc',
