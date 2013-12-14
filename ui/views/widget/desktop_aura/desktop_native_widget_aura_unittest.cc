@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
@@ -65,6 +66,97 @@ TEST_F(DesktopNativeWidgetAuraTest, NativeViewInitiallyHidden) {
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
   widget.Init(init_params);
   EXPECT_FALSE(widget.GetNativeView()->IsVisible());
+}
+
+// Verify that the cursor state is shared between two native widgets.
+TEST_F(DesktopNativeWidgetAuraTest, GlobalCursorState) {
+  // Create two native widgets, each owning different root windows.
+  Widget widget_a;
+  Widget::InitParams init_params_a =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params_a.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  DesktopNativeWidgetAura* desktop_native_widget_aura_a =
+      new DesktopNativeWidgetAura(&widget_a);
+  init_params_a.native_widget = desktop_native_widget_aura_a;
+  widget_a.Init(init_params_a);
+
+  Widget widget_b;
+  Widget::InitParams init_params_b =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params_b.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  DesktopNativeWidgetAura* desktop_native_widget_aura_b =
+      new DesktopNativeWidgetAura(&widget_b);
+  init_params_b.native_widget = desktop_native_widget_aura_b;
+  widget_b.Init(init_params_b);
+
+  aura::client::CursorClient* cursor_client_a = aura::client::GetCursorClient(
+      desktop_native_widget_aura_a->root_window()->window());
+  aura::client::CursorClient* cursor_client_b = aura::client::GetCursorClient(
+      desktop_native_widget_aura_b->root_window()->window());
+
+  // Verify the cursor can be locked using one client and unlocked using
+  // another.
+  EXPECT_FALSE(cursor_client_a->IsCursorLocked());
+  EXPECT_FALSE(cursor_client_b->IsCursorLocked());
+
+  cursor_client_a->LockCursor();
+  EXPECT_TRUE(cursor_client_a->IsCursorLocked());
+  EXPECT_TRUE(cursor_client_b->IsCursorLocked());
+
+  cursor_client_b->UnlockCursor();
+  EXPECT_FALSE(cursor_client_a->IsCursorLocked());
+  EXPECT_FALSE(cursor_client_b->IsCursorLocked());
+
+  // Verify that mouse events can be disabled using one client and then
+  // re-enabled using another. Note that disabling mouse events should also
+  // have the side effect of making the cursor invisible.
+  EXPECT_TRUE(cursor_client_a->IsCursorVisible());
+  EXPECT_TRUE(cursor_client_b->IsCursorVisible());
+  EXPECT_TRUE(cursor_client_a->IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client_b->IsMouseEventsEnabled());
+
+  cursor_client_b->DisableMouseEvents();
+  EXPECT_FALSE(cursor_client_a->IsCursorVisible());
+  EXPECT_FALSE(cursor_client_b->IsCursorVisible());
+  EXPECT_FALSE(cursor_client_a->IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client_b->IsMouseEventsEnabled());
+
+  cursor_client_a->EnableMouseEvents();
+  EXPECT_TRUE(cursor_client_a->IsCursorVisible());
+  EXPECT_TRUE(cursor_client_b->IsCursorVisible());
+  EXPECT_TRUE(cursor_client_a->IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client_b->IsMouseEventsEnabled());
+
+  // Verify that setting the cursor using one cursor client
+  // will set it for all root windows.
+  EXPECT_EQ(ui::kCursorNone, cursor_client_a->GetCursor().native_type());
+  EXPECT_EQ(ui::kCursorNone, cursor_client_b->GetCursor().native_type());
+
+  cursor_client_b->SetCursor(ui::kCursorPointer);
+  EXPECT_EQ(ui::kCursorPointer, cursor_client_a->GetCursor().native_type());
+  EXPECT_EQ(ui::kCursorPointer, cursor_client_b->GetCursor().native_type());
+
+  // Verify that hiding the cursor using one cursor client will
+  // hide it for all root windows. Note that hiding the cursor
+  // should not disable mouse events.
+  cursor_client_a->HideCursor();
+  EXPECT_FALSE(cursor_client_a->IsCursorVisible());
+  EXPECT_FALSE(cursor_client_b->IsCursorVisible());
+  EXPECT_TRUE(cursor_client_a->IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client_b->IsMouseEventsEnabled());
+
+  // Verify that the visibility state cannot be changed using one
+  // cursor client when the cursor was locked using another.
+  cursor_client_b->LockCursor();
+  cursor_client_a->ShowCursor();
+  EXPECT_FALSE(cursor_client_a->IsCursorVisible());
+  EXPECT_FALSE(cursor_client_b->IsCursorVisible());
+
+  // Verify the cursor becomes visible on unlock (since a request
+  // to make it visible was queued up while the cursor was locked).
+  cursor_client_b->UnlockCursor();
+  EXPECT_TRUE(cursor_client_a->IsCursorVisible());
+  EXPECT_TRUE(cursor_client_b->IsCursorVisible());
 }
 
 }  // namespace views

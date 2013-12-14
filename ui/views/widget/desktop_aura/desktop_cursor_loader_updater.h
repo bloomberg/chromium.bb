@@ -33,7 +33,7 @@ class VIEWS_EXPORT DesktopCursorLoaderUpdater {
   static scoped_ptr<DesktopCursorLoaderUpdater> Create();
 
   // Called when a CursorLoader is created.
-  virtual void OnCreate(aura::RootWindow* window,
+  virtual void OnCreate(float device_scale_factor,
                         ui::CursorLoader* loader) = 0;
 
   // Called when the display has changed (as we may need to reload the cursor

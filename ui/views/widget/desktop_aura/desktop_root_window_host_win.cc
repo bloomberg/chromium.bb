@@ -151,6 +151,12 @@ void DesktopRootWindowHostWin::OnRootWindowCreated(
     const Widget::InitParams& params) {
   root_window_ = root;
 
+  // The cursor is not necessarily visible when the root window is created.
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window_->window());
+  if (cursor_client)
+    is_cursor_visible_ = cursor_client->IsCursorVisible();
+
   root_window_->window()->SetProperty(kContentWindowForRootWindow,
                                       content_window_);
   root_window_->window()->SetProperty(kDesktopRootWindowHostKey, this);

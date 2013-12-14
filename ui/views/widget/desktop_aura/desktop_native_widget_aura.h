@@ -41,6 +41,7 @@ class WindowModalityController;
 class DesktopCaptureClient;
 class DesktopDispatcherClient;
 class DesktopEventClient;
+class DesktopNativeCursorManager;
 class DesktopRootWindowHost;
 class DropHelper;
 class FocusManagerEventHandler;
@@ -76,6 +77,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   }
   corewm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_;
+  }
+  aura::RootWindow* root_window() {
+    return root_window_.get();
   }
 
   // Overridden from NativeWidget:
@@ -265,7 +269,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
-  scoped_ptr<views::corewm::CursorManager> cursor_client_;
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
   scoped_ptr<aura::client::DragDropClient> drag_drop_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
@@ -292,6 +295,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool restore_focus_on_activate_;
 
   gfx::NativeCursor cursor_;
+  static views::corewm::CursorManager* cursor_manager_;
+  static views::DesktopNativeCursorManager* native_cursor_manager_;
 
   scoped_ptr<corewm::ShadowController> shadow_controller_;
 

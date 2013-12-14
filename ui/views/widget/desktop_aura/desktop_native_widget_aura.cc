@@ -200,6 +200,10 @@ class FocusManagerEventHandler : public ui::EventHandler {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, public:
 
+DesktopNativeCursorManager* DesktopNativeWidgetAura::native_cursor_manager_ =
+    NULL;
+views::corewm::CursorManager* DesktopNativeWidgetAura::cursor_manager_ = NULL;
+
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
     : ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
@@ -285,7 +289,7 @@ void DesktopNativeWidgetAura::OnDesktopRootWindowHostDestroyed(
   dispatcher_client_.reset();
 
   aura::client::SetCursorClient(root->window(), NULL);
-  cursor_client_.reset();
+  native_cursor_manager_->RemoveRootWindow(root);
 
   aura::client::SetScreenPositionClient(root->window(), NULL);
   position_client_.reset();
@@ -381,6 +385,19 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   // Pass ownership of the filter to the root_window.
   root_window_->window()->SetEventFilter(root_window_event_filter_);
 
+  // |root_window_| must be added to |native_cursor_manager_| before
+  // OnRootWindowCreated() is called.
+  if (!native_cursor_manager_) {
+    native_cursor_manager_ = new DesktopNativeCursorManager(
+        DesktopCursorLoaderUpdater::Create());
+  }
+  if (!cursor_manager_) {
+    cursor_manager_ = new views::corewm::CursorManager(
+        scoped_ptr<corewm::NativeCursorManager>(native_cursor_manager_));
+  }
+  native_cursor_manager_->AddRootWindow(root_window_.get());
+  aura::client::SetCursorClient(root_window_->window(), cursor_manager_);
+
   desktop_root_window_host_->OnRootWindowCreated(root_window_.get(), params);
 
   UpdateWindowTransparency();
@@ -398,16 +415,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   aura::client::SetDispatcherClient(root_window_->window(),
                                     dispatcher_client_.get());
 
-  DesktopNativeCursorManager* desktop_native_cursor_manager =
-      new views::DesktopNativeCursorManager(
-          root_window_.get(),
-          DesktopCursorLoaderUpdater::Create());
-  cursor_client_.reset(
-      new views::corewm::CursorManager(
-          scoped_ptr<corewm::NativeCursorManager>(
-              desktop_native_cursor_manager)));
-  aura::client::SetCursorClient(root_window_->window(), cursor_client_.get());
-
   position_client_.reset(new DesktopScreenPositionClient());
   aura::client::SetScreenPositionClient(root_window_->window(),
                                         position_client_.get());
@@ -415,7 +422,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   InstallInputMethodEventFilter();
 
   drag_drop_client_ = desktop_root_window_host_->CreateDragDropClient(
-      desktop_native_cursor_manager);
+      native_cursor_manager_);
   aura::client::SetDragDropClient(root_window_->window(),
                                   drag_drop_client_.get());
 

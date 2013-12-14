@@ -53,9 +53,9 @@ DesktopCursorLoaderUpdaterAuraLinux::DesktopCursorLoaderUpdaterAuraLinux() {}
 DesktopCursorLoaderUpdaterAuraLinux::~DesktopCursorLoaderUpdaterAuraLinux() {}
 
 void DesktopCursorLoaderUpdaterAuraLinux::OnCreate(
-    aura::RootWindow* window,
+    float device_scale_factor,
     ui::CursorLoader* loader) {
-  LoadImageCursors(window->compositor()->device_scale_factor(), loader);
+  LoadImageCursors(device_scale_factor, loader);
 }
 
 void DesktopCursorLoaderUpdaterAuraLinux::OnDisplayUpdated(
