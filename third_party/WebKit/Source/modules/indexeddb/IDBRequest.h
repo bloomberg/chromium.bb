@@ -40,6 +40,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/WebIDBCursor.h"
 
@@ -47,7 +48,6 @@ namespace WebCore {
 
 class ExceptionState;
 struct IDBDatabaseMetadata;
-class IDBTransaction;
 class SharedBuffer;
 
 // Base class to simplify usage of event target refcounting.

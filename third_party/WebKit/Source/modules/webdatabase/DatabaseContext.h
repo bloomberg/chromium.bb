@@ -29,8 +29,6 @@
 #define DatabaseContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "modules/webdatabase/DatabaseDetails.h"
-#include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 

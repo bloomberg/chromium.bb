@@ -40,6 +40,7 @@
 #include "modules/webdatabase/DatabaseThread.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

@@ -27,12 +27,12 @@
 #define DatabaseManager_h
 
 #include "modules/webdatabase/DatabaseBasicTypes.h"
-#include "modules/webdatabase/DatabaseDetails.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

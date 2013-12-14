@@ -31,11 +31,9 @@
 #include "config.h"
 #include "modules/donottrack/NavigatorDoNotTrack.h"
 
-#include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Navigator.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

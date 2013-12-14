@@ -30,7 +30,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/WebIDBCursor.h"
 #include "wtf/PassRefPtr.h"
@@ -42,6 +41,7 @@ namespace WebCore {
 class DOMRequestState;
 class ExceptionState;
 class IDBAny;
+class IDBTransaction;
 class ExecutionContext;
 class SharedBuffer;
 

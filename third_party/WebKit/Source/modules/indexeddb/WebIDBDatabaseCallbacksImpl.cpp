@@ -27,7 +27,6 @@
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 
 #include "core/dom/DOMError.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 
 namespace WebCore {
 
