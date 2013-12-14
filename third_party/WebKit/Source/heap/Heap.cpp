@@ -42,14 +42,24 @@
 
 namespace WebCore {
 
-#if !OS(POSIX)
+#if OS(WIN)
 static bool IsPowerOf2(size_t power)
 {
     return !((power - 1) & power);
 }
 #endif
 
-static size_t osPageSize()
+static Address roundToBlinkPageBoundary(void* base)
+{
+    return reinterpret_cast<Address>((reinterpret_cast<uintptr_t>(base) + blinkPageOffsetMask) & blinkPageBaseMask);
+}
+
+static size_t roundToOsPageSize(size_t size)
+{
+    return (size + osPageSize() - 1) & ~(osPageSize() - 1);
+}
+
+size_t osPageSize()
 {
 #if OS(POSIX)
     static const size_t pageSize = getpagesize();
@@ -63,16 +73,6 @@ static size_t osPageSize()
     }
 #endif
     return pageSize;
-}
-
-static Address roundToBlinkPageBoundary(void* base)
-{
-    return reinterpret_cast<Address>((reinterpret_cast<uintptr_t>(base) + blinkPageOffsetMask) & blinkPageBaseMask);
-}
-
-static size_t roundToOsPageSize(size_t size)
-{
-    return (size + osPageSize() - 1) & ~(osPageSize() - 1);
 }
 
 class MemoryRegion {

@@ -40,27 +40,6 @@
 
 namespace WebCore {
 
-const size_t blinkPageSizeLog2 = 17;
-const size_t blinkPageSize = 1 << blinkPageSizeLog2;
-const size_t blinkPageOffsetMask = blinkPageSize - 1;
-const size_t blinkPageBaseMask = ~blinkPageOffsetMask;
-// Double precision floats are more efficient when 8 byte aligned, so we 8 byte
-// align all allocations even on 32 bit.
-const size_t allocationGranularity = 8;
-const size_t allocationMask = allocationGranularity - 1;
-const size_t objectStartBitMapSize = (blinkPageSize + ((8 * allocationGranularity) - 1)) / (8 * allocationGranularity);
-const size_t reservedForObjectBitMap = ((objectStartBitMapSize + allocationMask) & ~allocationMask);
-const size_t maxHeapObjectSize = 1 << 27;
-
-const size_t markBitMask = 1;
-const size_t freeListMask = 2;
-const size_t debugBitMask = 4;
-const size_t sizeMask = ~7;
-const uint8_t freelistZapValue = 42;
-const uint8_t finalizedZapValue = 24;
-
-typedef uint8_t* Address;
-
 // ASAN integration defintions
 #if COMPILER(CLANG)
 #define USE_ASAN (__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__))
@@ -105,6 +84,147 @@ extern "C" {
     ((void)(addr), (void)(size))
 #define NO_SANITIZE_ADDRESS
 #endif
+
+const size_t blinkPageSizeLog2 = 17;
+const size_t blinkPageSize = 1 << blinkPageSizeLog2;
+const size_t blinkPageOffsetMask = blinkPageSize - 1;
+const size_t blinkPageBaseMask = ~blinkPageOffsetMask;
+// Double precision floats are more efficient when 8 byte aligned, so we 8 byte
+// align all allocations even on 32 bit.
+const size_t allocationGranularity = 8;
+const size_t allocationMask = allocationGranularity - 1;
+const size_t objectStartBitMapSize = (blinkPageSize + ((8 * allocationGranularity) - 1)) / (8 * allocationGranularity);
+const size_t reservedForObjectBitMap = ((objectStartBitMapSize + allocationMask) & ~allocationMask);
+const size_t maxHeapObjectSize = 1 << 27;
+
+const size_t markBitMask = 1;
+const size_t freeListMask = 2;
+const size_t debugBitMask = 4;
+const size_t sizeMask = ~7;
+const uint8_t freelistZapValue = 42;
+const uint8_t finalizedZapValue = 24;
+
+typedef uint8_t* Address;
+
+class PageMemory;
+
+size_t osPageSize();
+
+#ifndef NDEBUG
+// Sanity check for a page header address: the address of the page
+// header should be OS page size away from being Blink page size
+// aligned.
+inline bool isPageHeaderAddress(Address address)
+{
+    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - osPageSize());
+}
+#endif
+
+// Common header for heap pages.
+class BaseHeapPage {
+public:
+    BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo)
+        : m_storage(storage)
+        , m_gcInfo(gcInfo)
+    {
+        ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
+    }
+
+    // Check if the given address could point to an object in this
+    // heap page. If so, find the start of that object and mark it
+    // using the given Visitor.
+    //
+    // Returns true if the object was found and marked, returns false
+    // otherwise.
+    //
+    // This is used during conservative stack scanning to
+    // conservatively mark all objects that could be referenced from
+    // the stack.
+    virtual bool checkAndMarkPointer(Visitor*, Address) = 0;
+
+    Address address() { return reinterpret_cast<Address>(this); }
+    PageMemory* storage() const { return m_storage; }
+    const GCInfo* gcInfo() { return m_gcInfo; }
+
+private:
+    PageMemory* m_storage;
+    // The BaseHeapPage contains three pointers (vtable, m_storage,
+    // and m_gcInfo) and therefore not 8 byte aligned on 32 bit
+    // architectures. Force 8 byte alignment with a union.
+    union {
+        const GCInfo* m_gcInfo;
+        uint64_t m_ensureAligned;
+    };
+};
+
+COMPILE_ASSERT(!(sizeof(BaseHeapPage) % allocationGranularity), BaseHeapPage_should_be_8_byte_aligned);
+
+// Large allocations are allocated as separate objects and linked in a
+// list.
+//
+// In order to use the same memory allocation routines for everything
+// allocated in the heap, large objects are considered heap pages
+// containing only one object.
+//
+// The layout of a large heap object is as follows:
+//
+// | BaseHeapPage | next pointer | FinalizedHeapObjectHeader or HeapObjectHeader | payload |
+template<typename Header>
+class LargeHeapObject : public BaseHeapPage {
+public:
+    LargeHeapObject(PageMemory* storage, const GCInfo* gcInfo) : BaseHeapPage(storage, gcInfo) { }
+
+    virtual bool checkAndMarkPointer(Visitor*, Address);
+
+    void link(LargeHeapObject<Header>** previousNext)
+    {
+        m_next = *previousNext;
+        *previousNext = this;
+    }
+
+    void unlink(LargeHeapObject<Header>** previousNext)
+    {
+        *previousNext = m_next;
+    }
+
+    bool contains(Address object)
+    {
+        return (address() <= object) && (object <= (address() + size()));
+    }
+
+    LargeHeapObject<Header>* next()
+    {
+        return m_next;
+    }
+
+    size_t size()
+    {
+        return heapObjectHeader()->size() + sizeof(LargeHeapObject<Header>);
+    }
+
+    Address payload() { return heapObjectHeader()->payload(); }
+    size_t payloadSize() { return heapObjectHeader()->payloadSize(); }
+
+    Header* heapObjectHeader()
+    {
+        Address headerAddress = address() + sizeof(LargeHeapObject<Header>);
+        return reinterpret_cast<Header*>(headerAddress);
+    }
+
+    bool isMarked();
+    void unmark();
+    // FIXME: Add back when HeapStats have been added.
+    // void getStats(HeapStats&);
+    void mark(Visitor*);
+    void finalize();
+
+private:
+    friend class Heap;
+    // FIXME: Add back when ThreadHeap has been added.
+    // friend class ThreadHeap<Header>;
+
+    LargeHeapObject<Header>* m_next;
+};
 
 // The BasicObjectHeader is the minimal object header. It is used when
 // encountering heap space of size allocationGranularity to mark it as
