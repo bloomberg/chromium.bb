@@ -33,9 +33,9 @@
 #include "platform/Task.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "web/tests/MockImageDecoder.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>

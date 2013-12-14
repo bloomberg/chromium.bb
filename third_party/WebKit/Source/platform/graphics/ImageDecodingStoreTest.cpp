@@ -30,7 +30,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/test/MockDiscardablePixelRef.h"
-#include "web/tests/MockImageDecoder.h"
+#include "platform/graphics/test/MockImageDecoder.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;

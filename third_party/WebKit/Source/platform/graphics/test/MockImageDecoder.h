@@ -25,7 +25,6 @@
 
 #ifndef MockImageDecoder_h
 
-#include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/PassOwnPtr.h"
 

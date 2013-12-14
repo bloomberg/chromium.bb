@@ -32,6 +32,7 @@
 #include "platform/graphics/BitmapImage.h"
 
 #include "platform/SharedBuffer.h"
+#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -102,6 +103,7 @@ public:
 protected:
     virtual void SetUp() OVERRIDE
     {
+        DeferredImageDecoder::setEnabled(false);
         m_image = BitmapImage::create(&m_imageObserver);
     }
 
