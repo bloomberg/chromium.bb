@@ -37,7 +37,6 @@
       'ENABLE_SVG_FONTS=1',
       'ENABLE_GDI_FONTS_ON_WINDOWS=0',
       'ENABLE_HARFBUZZ_ON_WINDOWS=1',
-      'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.
@@ -60,9 +59,9 @@
           'ENABLE_LEGACY_NOTIFICATIONS=0',
           'ENABLE_MEDIA_CAPTURE=1',
           'ENABLE_ORIENTATION_EVENTS=1',
+          'ENABLE_TOUCH_ICON_LOADING=1',
           'ENABLE_NAVIGATOR_CONTENT_UTILS=0',
         ],
-        'enable_touch_icon_loading': 1,
       }, { # OS!="android"
         'feature_defines': [
           'ENABLE_INPUT_SPEECH=1',
