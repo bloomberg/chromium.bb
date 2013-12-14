@@ -1,7 +1,6 @@
 # Extension and apps team owners. Use file history to guide reviewer selection
 # as this list is randomized. If editing, see chrome/browser/extensions/OWNERS
 finnur@chromium.org
-mpcomplete@chromium.org
 benwells@chromium.org
 miket@chromium.org
 asargent@chromium.org
