@@ -55,6 +55,9 @@ const CGFloat kAnchorlessTopPadding = 10;
 // Helper function to create an uneditable text field.
 - (base::scoped_nsobject<NSTextField>)makeTextField;
 
+// Helper function to set the appropriately styled details string.
+- (void)setDetailsStringForField:(NSTextField*)details;
+
 // Create and lay out all control elements inside the bubble.
 - (void)performLayout;
 
@@ -109,6 +112,22 @@ const CGFloat kAnchorlessTopPadding = 10;
   return textField;
 }
 
+- (void)setDetailsStringForField:(NSTextField*)details {
+  // Set linespacing for |details| to match line spacing used in the dialog.
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setLineSpacing:0.5 * [[details font] pointSize]];
+
+  NSString* description =
+      base::SysUTF16ToNSString(controller_->CardDescription().description);
+  base::scoped_nsobject<NSAttributedString> detailsString(
+      [[NSAttributedString alloc]
+           initWithString:description
+               attributes:@{ NSParagraphStyleAttributeName : paragraphStyle }]);
+
+  [details setAttributedStringValue:detailsString];
+}
+
 - (void)performLayout {
   base::scoped_nsobject<NSTextField> title([self makeTextField]);
   base::scoped_nsobject<NSImageView> icon([[NSImageView alloc]
@@ -132,7 +151,7 @@ const CGFloat kAnchorlessTopPadding = 10;
   [title setStringValue:base::SysUTF16ToNSString(controller_->TitleText())];
   [icon setImage:card_desc.icon.AsNSImage()];
   [name setStringValue:base::SysUTF16ToNSString(card_desc.name)];
-  [details setStringValue:base::SysUTF16ToNSString(card_desc.description)];
+  [self setDetailsStringForField:details];
 
   // Size fields.
   CGFloat bubbleWidth = autofill::NewCreditCardBubbleView::kContentsWidth;
