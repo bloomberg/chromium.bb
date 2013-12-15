@@ -797,6 +797,8 @@ crbug.com/328112 http/tests/inspector/resource-tree/resource-tree-reload.html [ 
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure ]
 
+crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
+
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
 crbug.com/320743 compositing/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ NeedsRebaseline ]

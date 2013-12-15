@@ -592,25 +592,27 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
 
     // Make sure these left/top/right/bottom checks stay below all layout checks and above
     // all visible checks.
-    if (position() != StaticPosition) {
-        if (surround->offset != other->surround->offset) {
-             // Optimize for the case where a positioned layer is moving but not changing size.
-            if (position() == AbsolutePosition && positionedObjectMoved(surround->offset, other->surround->offset, m_box->width()))
+    if (position() != StaticPosition && surround->offset != other->surround->offset) {
+        // Optimize for the case where a positioned layer is moving but not changing size.
+        if (position() == AbsolutePosition && positionedObjectMoved(surround->offset, other->surround->offset, m_box->width()) && repaintOnlyDiff(other, changedContextSensitiveProperties) == StyleDifferenceEqual)
+            return StyleDifferenceLayoutPositionedMovementOnly;
 
-                return StyleDifferenceLayoutPositionedMovementOnly;
-
-            // FIXME: We would like to use SimplifiedLayout for relative positioning, but we can't quite do that yet.
-            // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
-            // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
-            return StyleDifferenceLayout;
-        } else if (m_box->zIndex() != other->m_box->zIndex() || m_box->hasAutoZIndex() != other->m_box->hasAutoZIndex()
-                 || visual->clip != other->visual->clip || visual->hasClip != other->visual->hasClip)
-            return StyleDifferenceRepaintLayer;
+        // FIXME: We would like to use SimplifiedLayout for relative positioning, but we can't quite do that yet.
+        // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
+        // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
+        return StyleDifferenceLayout;
     }
+    return repaintOnlyDiff(other, changedContextSensitiveProperties);
+}
 
-    if (RuntimeEnabledFeatures::cssCompositingEnabled())
-        if (rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode)
-            return StyleDifferenceRepaintLayer;
+StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle* other, unsigned& changedContextSensitiveProperties) const
+{
+    if (position() != StaticPosition && (m_box->zIndex() != other->m_box->zIndex() || m_box->hasAutoZIndex() != other->m_box->hasAutoZIndex()
+        || visual->clip != other->visual->clip || visual->hasClip != other->visual->hasClip))
+        return StyleDifferenceRepaintLayer;
+
+    if (RuntimeEnabledFeatures::cssCompositingEnabled() && rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode)
+        return StyleDifferenceRepaintLayer;
 
     if (rareNonInheritedData->opacity != other->rareNonInheritedData->opacity) {
         // Don't return early here; instead take note of the type of change,

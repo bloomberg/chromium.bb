@@ -1774,6 +1774,7 @@ private:
     Color lightingColor() const { return svgStyle()->lightingColor(); }
 
     void appendContent(PassOwnPtr<ContentData>);
+    StyleDifference repaintOnlyDiff(const RenderStyle* other, unsigned& changedContextSensitiveProperties) const;
 };
 
 inline int adjustForAbsoluteZoom(int value, float zoomFactor)
