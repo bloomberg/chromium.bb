@@ -50,9 +50,6 @@ public:
     static PassRefPtr<DataTransferItem> create(PassRefPtr<Clipboard>, PassRefPtr<ChromiumDataObjectItem>);
     ~DataTransferItem();
 
-    static const char kindString[];
-    static const char kindFile[];
-
     String kind() const;
     String type() const;
 

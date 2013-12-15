@@ -46,6 +46,11 @@ class StringCallback;
 
 class ChromiumDataObjectItem : public RefCounted<ChromiumDataObjectItem> {
 public:
+    enum Kind {
+        StringKind,
+        FileKind
+    };
+
     static PassRefPtr<ChromiumDataObjectItem> createFromString(const String& type, const String& data);
     static PassRefPtr<ChromiumDataObjectItem> createFromFile(PassRefPtr<File>);
     static PassRefPtr<ChromiumDataObjectItem> createFromURL(const String& url, const String& title);
@@ -53,7 +58,7 @@ public:
     static PassRefPtr<ChromiumDataObjectItem> createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
     static PassRefPtr<ChromiumDataObjectItem> createFromPasteboard(const String& type, uint64_t sequenceNumber);
 
-    String kind() const { return m_kind; }
+    Kind kind() const { return m_kind; }
     String type() const { return m_type; }
     void getAsString(PassOwnPtr<StringCallback>, ExecutionContext*) const;
     PassRefPtr<Blob> getAsFile() const;
@@ -71,11 +76,11 @@ private:
         InternalSource,
     };
 
-    ChromiumDataObjectItem(const String& kind, const String& type);
-    ChromiumDataObjectItem(const String& kind, const String& type, uint64_t sequenceNumber);
+    ChromiumDataObjectItem(Kind, const String& type);
+    ChromiumDataObjectItem(Kind, const String& type, uint64_t sequenceNumber);
 
     DataSource m_source;
-    String m_kind;
+    Kind m_kind;
     String m_type;
 
     String m_data;
