@@ -801,21 +801,23 @@ void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWor
 
 void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
 {
-    if (frame->page()->mainFrame() != frame)
+    if (!frame->isMainFrame())
         return;
-
     m_frontend->domContentEventFired(currentTime());
 }
 
 void InspectorPageAgent::loadEventFired(Frame* frame)
 {
-    if (frame->page()->mainFrame() != frame)
+    if (!frame->isMainFrame())
         return;
     m_frontend->loadEventFired(currentTime());
 }
 
 void InspectorPageAgent::didCommitLoad(Frame*, DocumentLoader* loader)
 {
+    // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
+    // then all we need to check here is loader->frame()->isMainFrame()
+    // and we don't need "frame" at all.
     if (loader->frame() == m_page->mainFrame()) {
         m_scriptToEvaluateOnLoadOnce = m_pendingScriptToEvaluateOnLoadOnce;
         m_scriptPreprocessorSource = m_pendingScriptPreprocessor;

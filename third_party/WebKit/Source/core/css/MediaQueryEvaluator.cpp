@@ -189,7 +189,7 @@ static bool numberValue(CSSValue* value, float& result)
 
 static bool colorMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
-    int bitsPerComponent = screenDepthPerComponent(frame->page()->mainFrame()->view());
+    int bitsPerComponent = screenDepthPerComponent(frame->view());
     float number;
     if (value)
         return numberValue(value, number) && compareValue(bitsPerComponent, static_cast<int>(number), op);
@@ -211,7 +211,7 @@ static bool colorIndexMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, Me
 
 static bool monochromeMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix op)
 {
-    if (!screenIsMonochrome(frame->page()->mainFrame()->view())) {
+    if (!screenIsMonochrome(frame->view())) {
         if (value) {
             float number;
             return numberValue(value, number) && compareValue(0, static_cast<int>(number), op);
@@ -258,7 +258,7 @@ static bool aspectRatioMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fr
 static bool deviceAspectRatioMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
     if (value) {
-        FloatRect sg = screenRect(frame->page()->mainFrame()->view());
+        FloatRect sg = screenRect(frame->view());
         return compareAspectRatioValue(value, static_cast<int>(sg.width()), static_cast<int>(sg.height()), op);
     }
 
@@ -363,7 +363,7 @@ static bool deviceHeightMediaFeatureEval(CSSValue* value, RenderStyle* style, Fr
         int length;
         if (!computeLength(value, !frame->document()->inQuirksMode(), style, length))
             return false;
-        int height = static_cast<int>(screenRect(frame->page()->mainFrame()->view()).height());
+        int height = static_cast<int>(screenRect(frame->view()).height());
         if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
             height = lroundf(height * frame->page()->deviceScaleFactor());
         return compareValue(height, length, op);
@@ -379,7 +379,7 @@ static bool deviceWidthMediaFeatureEval(CSSValue* value, RenderStyle* style, Fra
         int length;
         if (!computeLength(value, !frame->document()->inQuirksMode(), style, length))
             return false;
-        int width = static_cast<int>(screenRect(frame->page()->mainFrame()->view()).width());
+        int width = static_cast<int>(screenRect(frame->view()).width());
         if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
             width = lroundf(width * frame->page()->deviceScaleFactor());
         return compareValue(width, length, op);

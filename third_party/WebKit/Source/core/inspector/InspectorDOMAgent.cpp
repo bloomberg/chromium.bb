@@ -1698,7 +1698,7 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
 
 void InspectorDOMAgent::domContentLoadedEventFired(Frame* frame)
 {
-    if (frame->page()->mainFrame() != frame)
+    if (!frame->isMainFrame())
         return;
 
     // Re-push document once it is loaded.
@@ -1730,6 +1730,9 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(Frame* frame)
 
 void InspectorDOMAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
+    // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
+    // then all we need to check here is loader->frame()->isMainFrame()
+    // and we don't need "frame" at all.
     Frame* mainFrame = frame->page()->mainFrame();
     if (loader->frame() != mainFrame) {
         invalidateFrameOwnerElement(loader->frame());
