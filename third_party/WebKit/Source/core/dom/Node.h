@@ -455,8 +455,6 @@ public:
     virtual bool shouldUseInputMethod();
     virtual LayoutRect boundingBox() const;
     IntRect pixelSnappedBoundingBox() const { return pixelSnappedIntRect(boundingBox()); }
-    LayoutRect renderRect(bool* isReplaced);
-    IntRect pixelSnappedRenderRect(bool* isReplaced) { return pixelSnappedIntRect(renderRect(isReplaced)); }
 
     // Returns true if the node has a non-empty bounding box in layout.
     // This does not 100% guarantee the user can see it, but is pretty close.
@@ -693,8 +691,6 @@ public:
     virtual void registerScopedHTMLStyleChild();
     virtual void unregisterScopedHTMLStyleChild();
     size_t numberOfScopedHTMLStyleChildren() const;
-
-    void textRects(Vector<IntRect>&) const;
 
     unsigned connectedSubframeCount() const;
     void incrementConnectedSubframeCount(unsigned amount = 1);

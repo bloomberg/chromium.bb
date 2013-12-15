@@ -82,13 +82,6 @@ public:
         }
     }
 
-    bool hasOneRef() const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
-        ASSERT(!m_inRemovedLastRefFunction);
-        return m_refCount == 1;
-    }
-
     int refCount() const
     {
         return m_refCount;

@@ -620,21 +620,6 @@ LayoutRect Node::boundingBox() const
     return LayoutRect();
 }
 
-LayoutRect Node::renderRect(bool* isReplaced)
-{
-    RenderObject* hitRenderer = this->renderer();
-    ASSERT(hitRenderer);
-    RenderObject* renderer = hitRenderer;
-    while (renderer && !renderer->isBody() && !renderer->isRoot()) {
-        if (renderer->isRenderBlock() || renderer->isInlineBlockOrInlineTable() || renderer->isReplaced()) {
-            *isReplaced = renderer->isReplaced();
-            return renderer->absoluteBoundingBoxRect();
-        }
-        renderer = renderer->parent();
-    }
-    return LayoutRect();
-}
-
 bool Node::hasNonEmptyBoundingBox() const
 {
     // Before calling absoluteRects, check for the common case where the renderer
@@ -2588,13 +2573,6 @@ void Node::removedLastRef()
     m_deletionHasBegun = true;
 #endif
     delete this;
-}
-
-void Node::textRects(Vector<IntRect>& rects) const
-{
-    RefPtr<Range> range = Range::create(document());
-    range->selectNodeContents(const_cast<Node*>(this), IGNORE_EXCEPTION);
-    range->textRects(rects);
 }
 
 unsigned Node::connectedSubframeCount() const
