@@ -4,6 +4,7 @@
 
 package org.chromium.media;
 
+import android.annotation.SuppressLint;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
@@ -124,6 +125,7 @@ class AudioRecordInput {
         nativeCacheDirectBufferAddress(mNativeAudioRecordInputStream, mBuffer);
     }
 
+    @SuppressLint("NewApi")
     @CalledByNative
     private boolean open() {
         if (mAudioRecord != null) {
@@ -221,6 +223,7 @@ class AudioRecordInput {
         mAudioRecordThread = null;
     }
 
+    @SuppressLint("NewApi")
     @CalledByNative
     private void close() {
         if (mAudioRecordThread != null) {
