@@ -26,6 +26,7 @@
 #include "config.h"
 #include "BitVector.h"
 
+#include "wtf/LeakAnnotations.h"
 #include "wtf/PartitionAlloc.h"
 #include "wtf/PrintStream.h"
 #include "wtf/WTF.h"
@@ -74,6 +75,9 @@ void BitVector::clearAll()
 
 BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits)
 {
+    // Because of the way BitVector stores the pointer, memory tools
+    // will erroneously report a leak here.
+    WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
     numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - 1);
     size_t size = sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
     void* allocation = partitionAllocGeneric(Partitions::getBufferPartition(), size);
