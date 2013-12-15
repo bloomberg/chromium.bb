@@ -38,6 +38,9 @@ class Frame;
 class ResourceResponse;
 struct ProgressItem;
 
+// FIXME: This is only used on Android. Android is the only Chrome
+// browser which shows a progress bar during loading.
+// We should find a better way for Android to get this data and remove this!
 class ProgressTracker {
     WTF_MAKE_NONCOPYABLE(ProgressTracker); WTF_MAKE_FAST_ALLOCATED;
 public:

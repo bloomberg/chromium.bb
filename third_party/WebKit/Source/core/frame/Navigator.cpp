@@ -29,7 +29,6 @@
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/plugins/DOMMimeTypeArray.h"
 #include "core/plugins/DOMPluginArray.h"
@@ -108,12 +107,8 @@ String Navigator::vendorSub() const
 
 String Navigator::userAgent() const
 {
-    if (!m_frame)
-        return String();
-
-    // If the frame is already detached, FrameLoader::userAgent may malfunction, because it calls a client method
-    // that uses frame's WebView (at least, in Mac WebKit).
-    if (!m_frame->page())
+    // If the frame is already detached it no longer has a meaningful useragent.
+    if (!m_frame || !m_frame->page())
         return String();
 
     return m_frame->loader().userAgent(m_frame->document()->url());
@@ -138,7 +133,8 @@ bool Navigator::cookieEnabled() const
     if (!m_frame)
         return false;
 
-    if (m_frame->page() && !m_frame->page()->settings().cookieEnabled())
+    Settings* settings = m_frame->settings();
+    if (!settings || !settings->cookieEnabled())
         return false;
 
     return cookiesEnabled(m_frame->document());

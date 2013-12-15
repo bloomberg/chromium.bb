@@ -318,7 +318,7 @@ RenderWidget* HTMLPlugInElement::renderWidgetForJSBindings() const
 
 bool HTMLPlugInElement::isKeyboardFocusable() const
 {
-    if (!document().page())
+    if (!document().isActive())
         return false;
     return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
 }

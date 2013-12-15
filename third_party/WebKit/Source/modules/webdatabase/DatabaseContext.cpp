@@ -30,10 +30,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
@@ -195,10 +191,8 @@ bool DatabaseContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
 
 bool DatabaseContext::allowDatabaseAccess() const
 {
-    if (executionContext()->isDocument()) {
-        Document* document = toDocument(executionContext());
-        return document->page();
-    }
+    if (executionContext()->isDocument())
+        return toDocument(executionContext())->isActive();
     ASSERT(executionContext()->isWorkerGlobalScope());
     // allowDatabaseAccess is not yet implemented for workers.
     return true;

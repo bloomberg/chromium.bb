@@ -41,6 +41,10 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/Frame.h"
+#include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLTrackElement.h"
@@ -55,10 +59,6 @@
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/loader/FrameLoader.h"
-#include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
-#include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
@@ -2684,8 +2684,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 
     WTF_LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%d)", group.kind);
 
-    Page* page = document().page();
-    Settings* settings = page ? &page->settings() : 0;
+    Settings* settings = document().settings();
 
     // First, find the track in the group that should be enabled (if any).
     Vector<RefPtr<TextTrack> > currentlyEnabledTracks;

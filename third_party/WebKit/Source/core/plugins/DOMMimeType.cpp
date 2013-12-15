@@ -64,6 +64,9 @@ const String &DOMMimeType::description() const
 
 PassRefPtr<DOMPlugin> DOMMimeType::enabledPlugin() const
 {
+    // FIXME: allowPlugins is just a client call. We should not need
+    // to bounce through the page or mainframe or loader to get there.
+    // Something like: m_frame->host()->client()->allowPlugins().
     if (!m_frame || !m_frame->page() || !m_frame->page()->mainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return 0;
 

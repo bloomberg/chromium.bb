@@ -43,7 +43,6 @@
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderMediaControlElements.h"
 #include "core/rendering/RenderSlider.h"
@@ -750,7 +749,7 @@ void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
     if (!mediaElement)
         return;
 
-    if (!document().page())
+    if (!document().isActive())
         return;
 
     IntRect videoBox;

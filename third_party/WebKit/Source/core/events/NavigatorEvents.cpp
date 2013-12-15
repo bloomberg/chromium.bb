@@ -33,7 +33,6 @@
 
 #include "core/frame/Frame.h"
 #include "core/frame/Navigator.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
 
 namespace WebCore {
@@ -41,16 +40,11 @@ namespace WebCore {
 long NavigatorEvents::maxTouchPoints(Navigator* navigator)
 {
     Frame* frame = navigator->frame();
-
     if (!frame)
         return 0;
-
-    Page* page = frame->page();
-
-    if (!page)
-        return 0;
-
-    return page->settings().maxTouchPoints();
+    if (Settings* settings = frame->settings())
+        return settings->maxTouchPoints();
+    return 0;
 }
 
 } // namespace WebCore

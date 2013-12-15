@@ -172,6 +172,9 @@ public:
 
     void unmarkAllTextMatches();
 
+    // DefersLoading is used to delay loads during modal dialogs.
+    // Modal dialogs are supposed to freeze all background processes
+    // in the page, including prevent additional loads from staring/continuing.
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
 

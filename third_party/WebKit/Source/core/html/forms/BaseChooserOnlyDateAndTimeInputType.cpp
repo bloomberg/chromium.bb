@@ -49,7 +49,7 @@ void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
 
     if (m_dateTimeChooser)
         return;
-    if (!element().document().page())
+    if (!element().document().isActive())
         return;
     DateTimeChooserParameters parameters;
     if (!element().setupDateTimeChooserParameters(parameters))
