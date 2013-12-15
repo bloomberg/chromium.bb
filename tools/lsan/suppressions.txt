@@ -55,8 +55,23 @@ leak:GrGpuGL::flushGraphicsState
 # xrandr leak. http://crbug.com/119677
 leak:XRRFindDisplay
 
-# Test tears down V8 incorrectly and should be fixed. http://crbug.com/323149
-leak:V8UnitTest::SetUp
+# V8 may leak this by design in unit tests. http://crbug.com/323149
+leak:v8::internal::Genesis::Genesis
+
+# Suppressions for objects which can be owned by the V8 heap. This is a
+# temporary workaround until LeakSanitizer supports the V8 heap.
+# http://crbug.com/328552
+leak:extensions::ObjectBackedNativeHandler::RouteFunction
+leak:toString<WTF::AtomicString>
+leak:WebCore::StringCache::createStringAndInsertIntoCache
+leak:WebCore::V8WindowShell::initializeIfNeeded
+leak:WebCore::V8MouseEvent::constructorCallback
+leak:WebCore::*::*GetterCallback
+leak:WebCore::*::*SetterCallback
+leak:WebCore::*::errorMethodCallback
+leak:WebCore::v8StringToWebCoreString
+leak:WTF::StringImpl::createUninitialized
+leak:ResourceBundleSourceMap::GetSource
 
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
@@ -87,10 +102,6 @@ leak:TranslateInfoBarBase::CreateLanguageCombobox
 leak:GtkNativeViewManager
 leak:_gdk_x11_window_get_toplevel
 leak:gtk_util::*AppModal
-
-# Small shutdown-only leak in browser tests (24 bytes). http://crbug.com/317116
-# TODO(earthdok): Either annotate or narrow down the suppression.
-leak:content::RenderViewTest::TearDown
 
 # http://crbug.com/318221
 leak:base::EnsureProcessTerminated
