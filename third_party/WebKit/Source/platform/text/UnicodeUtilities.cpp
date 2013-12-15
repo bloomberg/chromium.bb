@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/UnicodeUtilities.h"
+#include "platform/text/UnicodeUtilities.h"
 
 #include "wtf/text/StringBuffer.h"
 #include "wtf/unicode/CharacterNames.h"

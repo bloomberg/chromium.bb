@@ -26,20 +26,21 @@
 #ifndef UnicodeUtilities_h
 #define UnicodeUtilities_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
-bool isSeparator(UChar32);
-bool isKanaLetter(UChar character);
-bool containsKanaLetters(const String&);
-void normalizeCharactersIntoNFCForm(const UChar* characters, unsigned length, Vector<UChar>& buffer);
-void foldQuoteMarksAndSoftHyphens(UChar* data, size_t length);
-void foldQuoteMarksAndSoftHyphens(String&);
-bool checkOnlyKanaLettersInStrings(const UChar* firstData, unsigned firstLength, const UChar* secondData, unsigned secondLength);
-bool checkKanaStringsEqual(const UChar* firstData, unsigned firstLength, const UChar* secondData, unsigned secondLength);
+PLATFORM_EXPORT bool isSeparator(UChar32);
+PLATFORM_EXPORT bool isKanaLetter(UChar character);
+PLATFORM_EXPORT bool containsKanaLetters(const String&);
+PLATFORM_EXPORT void normalizeCharactersIntoNFCForm(const UChar* characters, unsigned length, Vector<UChar>& buffer);
+PLATFORM_EXPORT void foldQuoteMarksAndSoftHyphens(UChar* data, size_t length);
+PLATFORM_EXPORT void foldQuoteMarksAndSoftHyphens(String&);
+PLATFORM_EXPORT bool checkOnlyKanaLettersInStrings(const UChar* firstData, unsigned firstLength, const UChar* secondData, unsigned secondLength);
+PLATFORM_EXPORT bool checkKanaStringsEqual(const UChar* firstData, unsigned firstLength, const UChar* secondData, unsigned secondLength);
 
 } // namespace WebCore
 
