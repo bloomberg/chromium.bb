@@ -42,6 +42,7 @@ public:
     virtual void SetUp()
     {
         ImageDecodingStore::initializeOnce();
+        ImageDecodingStore::instance()->setImageCachingEnabled(true);
         m_data = SharedBuffer::create();
         m_generator = ImageFrameGenerator::create(SkISize::Make(100, 100), m_data, true);
         m_decodersDestroyed = 0;
@@ -469,7 +470,6 @@ TEST_F(ImageDecodingStoreTest, disableImageCaching)
     EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
     unlockCache(cachedImage);
     EXPECT_EQ(0, ImageDecodingStore::instance()->cacheEntries());
-    ImageDecodingStore::instance()->setImageCachingEnabled(true);
 }
 
 } // namespace

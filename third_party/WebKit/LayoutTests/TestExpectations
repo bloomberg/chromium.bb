@@ -571,6 +571,9 @@ crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-p
 
 crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
 crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
+# Test results depends on image caching behavior in Blink/Skia. This is being
+# worked on actively. Rebaseline after impl-side painting becomes stable.
+crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Failure Pass ]
 
 crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 

@@ -49,6 +49,7 @@ public:
     virtual void SetUp() OVERRIDE
     {
         ImageDecodingStore::initializeOnce();
+        ImageDecodingStore::instance()->setImageCachingEnabled(true);
         m_data = SharedBuffer::create();
         m_generator = ImageFrameGenerator::create(fullSize(), m_data, true);
         useMockImageDecoderFactory();

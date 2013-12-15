@@ -378,7 +378,7 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
         context->drawBitmapRect(bitmap(), &srcRect, destRect, &paint);
     }
     if (isLazyDecoded)
-        PlatformInstrumentation::didDrawLazyPixelRef(reinterpret_cast<unsigned long long>(bitmap().pixelRef()));
+        PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
     context->didDrawRect(destRect, paint, &bitmap());
 }
 
@@ -502,7 +502,7 @@ void NativeImageSkia::drawPattern(
     if (useBicubicFilter)
         paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
     if (isLazyDecoded)
-        PlatformInstrumentation::didDrawLazyPixelRef(reinterpret_cast<unsigned long long>(bitmap().pixelRef()));
+        PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
 
     context->drawRect(destRect, paint);
 }
