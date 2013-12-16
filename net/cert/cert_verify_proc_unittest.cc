@@ -554,7 +554,13 @@ TEST_F(CertVerifyProcTest, NameConstraintsOk) {
   EXPECT_EQ(0U, verify_result.cert_status);
 }
 
-TEST_F(CertVerifyProcTest, NameConstraintsFailure) {
+#if defined(OS_ANDROID)
+// Disabled because Android isn't filling in SPKI hashes: crbug.com/116838.
+#define MAYBE_NameConstraintsFailure DISABLED_NameConstraintsFailure
+#else
+#define MAYBE_NameConstraintsFailure NameConstraintsFailure
+#endif
+TEST_F(CertVerifyProcTest, MAYBE_NameConstraintsFailure) {
   CertificateList ca_cert_list =
       CreateCertificateListFromFile(GetTestCertsDirectory(),
                                     "root_ca_cert.pem",
