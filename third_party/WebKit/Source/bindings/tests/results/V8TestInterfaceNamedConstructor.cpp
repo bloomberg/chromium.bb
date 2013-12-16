@@ -63,7 +63,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceNamedCon
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor::domTemplate, V8TestInterfaceNamedConstructor::derefObject, 0, 0, 0, V8TestInterfaceNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor::domTemplate, V8TestInterfaceNamedConstructor::derefObject, V8TestInterfaceNamedConstructor::toActiveDOMObject, 0, 0, V8TestInterfaceNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceNamedConstructorV8Internal {
 
@@ -71,7 +71,7 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestInterfaceNamedConstructorV8Internal
 
-const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructorConstructor::domTemplate, V8TestInterfaceNamedConstructor::derefObject, 0, 0, 0, V8TestInterfaceNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructorConstructor::domTemplate, V8TestInterfaceNamedConstructor::derefObject, V8TestInterfaceNamedConstructor::toActiveDOMObject, 0, 0, V8TestInterfaceNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -166,6 +166,11 @@ bool V8TestInterfaceNamedConstructor::hasInstanceInAnyWorld(v8::Handle<v8::Value
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
+ActiveDOMObject* V8TestInterfaceNamedConstructor::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
+{
+    return toNative(wrapper);
+}
+
 v8::Handle<v8::Object> V8TestInterfaceNamedConstructor::createWrapper(PassRefPtr<TestInterfaceNamedConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
@@ -182,7 +187,7 @@ v8::Handle<v8::Object> V8TestInterfaceNamedConstructor::createWrapper(PassRefPtr
         return wrapper;
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 

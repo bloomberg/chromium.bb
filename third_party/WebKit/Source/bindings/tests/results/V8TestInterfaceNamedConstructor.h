@@ -57,6 +57,7 @@ public:
     }
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestInterfaceNamedConstructor* impl)
     {
