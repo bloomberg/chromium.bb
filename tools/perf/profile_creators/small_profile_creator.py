@@ -8,6 +8,7 @@ from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import profile_creator
 
+
 class SmallProfileCreator(profile_creator.ProfileCreator):
   """
   Runs a browser through a series of operations to fill in a small test profile.
