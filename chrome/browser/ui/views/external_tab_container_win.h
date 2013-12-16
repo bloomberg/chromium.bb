@@ -153,18 +153,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual void EnumerateDirectory(content::WebContents* tab,
                                   int request_id,
                                   const base::FilePath& path) OVERRIDE;
-  virtual void JSOutOfMemory(content::WebContents* tab);
-  virtual void RegisterProtocolHandler(content::WebContents* tab,
-                                       const std::string& protocol,
-                                       const GURL& url,
-                                       const base::string16& title,
-                                       bool user_gesture) OVERRIDE;
-  virtual void FindReply(content::WebContents* tab,
-                         int request_id,
-                         int number_of_matches,
-                         const gfx::Rect& selection_rect,
-                         int active_match_ordinal,
-                         bool final_update) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,

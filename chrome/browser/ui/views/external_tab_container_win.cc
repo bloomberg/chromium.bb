@@ -569,28 +569,6 @@ bool ExternalTabContainerWin::ExecuteContextMenuCommand(int command) {
 }
 
 void ExternalTabContainerWin::RunUnloadHandlers(IPC::Message* reply_message) {
-  if (!automation_) {
-    delete reply_message;
-    return;
-  }
-
-  // If we have a pending unload message, then just respond back to this
-  // request and continue processing the previous unload message.
-  if (unload_reply_message_) {
-     AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
-     automation_->Send(reply_message);
-     return;
-  }
-
-  unload_reply_message_ = reply_message;
-  bool wait_for_unload_handlers =
-      web_contents_.get() &&
-      Browser::RunUnloadEventsHelper(web_contents_.get());
-  if (!wait_for_unload_handlers) {
-    AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
-    automation_->Send(reply_message);
-    unload_reply_message_ = NULL;
-  }
 }
 
 void ExternalTabContainerWin::ProcessUnhandledAccelerator(const MSG& msg) {
@@ -1012,30 +990,6 @@ void ExternalTabContainerWin::EnumerateDirectory(WebContents* tab,
                                                  int request_id,
                                                  const base::FilePath& path) {
   FileSelectHelper::EnumerateDirectory(tab, request_id, path);
-}
-
-void ExternalTabContainerWin::JSOutOfMemory(WebContents* tab) {
-  Browser::JSOutOfMemoryHelper(tab);
-}
-
-void ExternalTabContainerWin::RegisterProtocolHandler(
-    WebContents* tab,
-    const std::string& protocol,
-    const GURL& url,
-    const base::string16& title,
-    bool user_gesture) {
-  Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title,
-                                         user_gesture, NULL);
-}
-
-void ExternalTabContainerWin::FindReply(WebContents* tab,
-                                        int request_id,
-                                        int number_of_matches,
-                                        const gfx::Rect& selection_rect,
-                                        int active_match_ordinal,
-                                        bool final_update) {
-  Browser::FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
-                           active_match_ordinal, final_update);
 }
 
 void ExternalTabContainerWin::RequestMediaAccessPermission(

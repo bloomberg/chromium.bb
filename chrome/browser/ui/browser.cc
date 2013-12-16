@@ -849,90 +849,6 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// static
-bool Browser::ShouldRunUnloadEventsHelper(content::WebContents* contents) {
-  if (IsFastTabUnloadEnabled())
-    return chrome::FastUnloadController::ShouldRunUnloadEventsHelper(contents);
-  return chrome::UnloadController::ShouldRunUnloadEventsHelper(contents);
-}
-
-// static
-bool Browser::RunUnloadEventsHelper(WebContents* contents) {
-  if (IsFastTabUnloadEnabled())
-    return chrome::FastUnloadController::RunUnloadEventsHelper(contents);
-  return chrome::UnloadController::RunUnloadEventsHelper(contents);
-}
-
-// static
-void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service)
-    return;
-  SimpleAlertInfoBarDelegate::Create(
-      infobar_service, InfoBarDelegate::kNoIconID,
-      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true);
-}
-
-// static
-void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
-                                            const std::string& protocol,
-                                            const GURL& url,
-                                            const base::string16& title,
-                                            bool user_gesture,
-                                            BrowserWindow* window) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord())
-    return;
-
-  ProtocolHandler handler =
-      ProtocolHandler::CreateProtocolHandler(protocol, url, title);
-
-  ProtocolHandlerRegistry* registry =
-      ProtocolHandlerRegistryFactory::GetForProfile(profile);
-  if (registry->SilentlyHandleRegisterHandlerRequest(handler))
-    return;
-
-  TabSpecificContentSettings* tab_content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!user_gesture && window) {
-    tab_content_settings->set_pending_protocol_handler(handler);
-    tab_content_settings->set_previous_protocol_handler(
-        registry->GetHandlerFor(handler.protocol()));
-    window->GetLocationBar()->UpdateContentSettingsIcons();
-    return;
-  }
-
-  // Make sure content-setting icon is turned off in case the page does
-  // ungestured and gestured RPH calls.
-  if (window) {
-    tab_content_settings->ClearPendingProtocolHandler();
-    window->GetLocationBar()->UpdateContentSettingsIcons();
-  }
-
-  RegisterProtocolHandlerInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), registry, handler);
-}
-
-// static
-void Browser::FindReplyHelper(WebContents* web_contents,
-                              int request_id,
-                              int number_of_matches,
-                              const gfx::Rect& selection_rect,
-                              int active_match_ordinal,
-                              bool final_update) {
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
-  if (!find_tab_helper)
-    return;
-
-  find_tab_helper->HandleFindReply(request_id,
-                                   number_of_matches,
-                                   selection_rect,
-                                   active_match_ordinal,
-                                   final_update);
-}
-
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
                                          content::PageTransition transition,
                                          bool user_initiated) {
@@ -1666,7 +1582,13 @@ bool Browser::IsFullscreenForTabOrPending(
 }
 
 void Browser::JSOutOfMemory(WebContents* web_contents) {
-  JSOutOfMemoryHelper(web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service)
+    return;
+  SimpleAlertInfoBarDelegate::Create(
+      infobar_service, InfoBarDelegate::kNoIconID,
+      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true);
 }
 
 void Browser::RegisterProtocolHandler(WebContents* web_contents,
@@ -1674,8 +1596,38 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       const GURL& url,
                                       const base::string16& title,
                                       bool user_gesture) {
-  RegisterProtocolHandlerHelper(
-      web_contents, protocol, url, title, user_gesture, window());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord())
+    return;
+
+  ProtocolHandler handler =
+      ProtocolHandler::CreateProtocolHandler(protocol, url, title);
+
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForProfile(profile);
+  if (registry->SilentlyHandleRegisterHandlerRequest(handler))
+    return;
+
+  TabSpecificContentSettings* tab_content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!user_gesture && window_) {
+    tab_content_settings->set_pending_protocol_handler(handler);
+    tab_content_settings->set_previous_protocol_handler(
+        registry->GetHandlerFor(handler.protocol()));
+    window_->GetLocationBar()->UpdateContentSettingsIcons();
+    return;
+  }
+
+  // Make sure content-setting icon is turned off in case the page does
+  // ungestured and gestured RPH calls.
+  if (window_) {
+    tab_content_settings->ClearPendingProtocolHandler();
+    window_->GetLocationBar()->UpdateContentSettingsIcons();
+  }
+
+  RegisterProtocolHandlerInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), registry, handler);
 }
 
 void Browser::UpdatePreferredSize(WebContents* source,
@@ -1694,8 +1646,15 @@ void Browser::FindReply(WebContents* web_contents,
                         const gfx::Rect& selection_rect,
                         int active_match_ordinal,
                         bool final_update) {
-  FindReplyHelper(web_contents, request_id, number_of_matches, selection_rect,
-                  active_match_ordinal, final_update);
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  if (!find_tab_helper)
+    return;
+
+  find_tab_helper->HandleFindReply(request_id,
+                                   number_of_matches,
+                                   selection_rect,
+                                   active_match_ordinal,
+                                   final_update);
 }
 
 void Browser::RequestToLockMouse(WebContents* web_contents,

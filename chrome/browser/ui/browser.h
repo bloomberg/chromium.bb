@@ -395,31 +395,6 @@ class Browser : public TabStripModelObserver,
 
   /////////////////////////////////////////////////////////////////////////////
 
-  // Returns true if we need to run unload events for the |contents|.
-  static bool ShouldRunUnloadEventsHelper(content::WebContents* contents);
-
-  // Helper function to run unload listeners on a WebContents.
-  static bool RunUnloadEventsHelper(content::WebContents* contents);
-
-  // Helper function to handle JS out of memory notifications
-  static void JSOutOfMemoryHelper(content::WebContents* web_contents);
-
-  // Helper function to register a protocol handler.
-  static void RegisterProtocolHandlerHelper(content::WebContents* web_contents,
-                                            const std::string& protocol,
-                                            const GURL& url,
-                                            const base::string16& title,
-                                            bool user_gesture,
-                                            BrowserWindow* window);
-
-  // Helper function to handle find results.
-  static void FindReplyHelper(content::WebContents* web_contents,
-                              int request_id,
-                              int number_of_matches,
-                              const gfx::Rect& selection_rect,
-                              int active_match_ordinal,
-                              bool final_update);
-
   // Called by chrome::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(content::WebContents* contents,
