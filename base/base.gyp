@@ -843,11 +843,6 @@
             'third_party/nspr/nspr.gyp:nspr',
           ],
         }],
-        ['<(native_discardable_memory)==1', {
-          'sources!': [
-            'memory/discardable_memory_provider_unittest.cc',
-          ],
-        }],
       ],  # conditions
       'target_conditions': [
         ['OS == "ios" and _toolset != "host"', {

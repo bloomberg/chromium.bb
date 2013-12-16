@@ -2,84 +2,64 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/discardable_memory.h"
+#include "base/memory/discardable_memory_emulated.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/discardable_memory_provider.h"
 
-using base::internal::DiscardableMemoryProvider;
-
 namespace base {
+
 namespace {
 
-class DiscardableMemoryEmulated : public DiscardableMemory {
- public:
-  explicit DiscardableMemoryEmulated(size_t size) : is_locked_(false) {
-    DiscardableMemoryProvider::GetInstance()->Register(this, size);
-  }
-
-  virtual ~DiscardableMemoryEmulated() {
-    if (is_locked_)
-      Unlock();
-    DiscardableMemoryProvider::GetInstance()->Unregister(this);
-  }
-
-  // DiscardableMemory:
-  virtual LockDiscardableMemoryStatus Lock() OVERRIDE {
-    DCHECK(!is_locked_);
-
-    bool purged = false;
-    memory_ = DiscardableMemoryProvider::GetInstance()->Acquire(this, &purged);
-    if (!memory_)
-      return DISCARDABLE_MEMORY_FAILED;
-
-    is_locked_ = true;
-    return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
-  }
-
-  virtual void Unlock() OVERRIDE {
-    DCHECK(is_locked_);
-    DiscardableMemoryProvider::GetInstance()->Release(this, memory_.Pass());
-    is_locked_ = false;
-  }
-
-  virtual void* Memory() const OVERRIDE {
-    DCHECK(memory_);
-    return memory_.get();
-  }
-
- private:
-  scoped_ptr<uint8, FreeDeleter> memory_;
-  bool is_locked_;
-
-  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryEmulated);
-};
+base::LazyInstance<internal::DiscardableMemoryProvider>::Leaky g_provider =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-// static
-bool DiscardableMemory::SupportedNatively() {
-  return false;
+namespace internal {
+
+DiscardableMemoryEmulated::DiscardableMemoryEmulated(size_t size)
+    : is_locked_(false) {
+  g_provider.Pointer()->Register(this, size);
+}
+
+DiscardableMemoryEmulated::~DiscardableMemoryEmulated() {
+  if (is_locked_)
+    Unlock();
+  g_provider.Pointer()->Unregister(this);
+}
+
+bool DiscardableMemoryEmulated::Initialize() {
+  return Lock() == DISCARDABLE_MEMORY_PURGED;
+}
+
+LockDiscardableMemoryStatus DiscardableMemoryEmulated::Lock() {
+  DCHECK(!is_locked_);
+
+  bool purged = false;
+  memory_ = g_provider.Pointer()->Acquire(this, &purged);
+  if (!memory_)
+    return DISCARDABLE_MEMORY_FAILED;
+
+  is_locked_ = true;
+  return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
+}
+
+void DiscardableMemoryEmulated::Unlock() {
+  DCHECK(is_locked_);
+  g_provider.Pointer()->Release(this, memory_.Pass());
+  is_locked_ = false;
+}
+
+void* DiscardableMemoryEmulated::Memory() const {
+  DCHECK(memory_);
+  return memory_.get();
 }
 
 // static
-scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemory(
-    size_t size) {
-  scoped_ptr<DiscardableMemory> memory(new DiscardableMemoryEmulated(size));
-  if (!memory)
-    return scoped_ptr<DiscardableMemory>();
-  if (memory->Lock() != DISCARDABLE_MEMORY_PURGED)
-    return scoped_ptr<DiscardableMemory>();
-  return memory.Pass();
+void DiscardableMemoryEmulated::PurgeForTesting() {
+  g_provider.Pointer()->PurgeAll();
 }
 
-// static
-bool DiscardableMemory::PurgeForTestingSupported() {
-  return true;
-}
-
-// static
-void DiscardableMemory::PurgeForTesting() {
-  DiscardableMemoryProvider::GetInstance()->PurgeAll();
-}
-
+}  // namespace internal
 }  // namespace base

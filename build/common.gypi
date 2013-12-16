@@ -638,7 +638,7 @@
           'proprietary_codecs%': 0,
         }],
 
-        ['OS=="mac"', {
+        ['OS=="mac" or OS=="ios"', {
           'native_discardable_memory%': 1,
           'native_memory_pressure_signals%': 1,
         }],

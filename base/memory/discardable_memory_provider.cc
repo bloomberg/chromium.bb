@@ -8,8 +8,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/debug/trace_event.h"
-#include "base/lazy_instance.h"
-#include "base/memory/discardable_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 
@@ -17,13 +15,6 @@ namespace base {
 namespace internal {
 
 namespace {
-
-static base::LazyInstance<DiscardableMemoryProvider>::Leaky g_provider =
-    LAZY_INSTANCE_INITIALIZER;
-
-// If this is given a valid value via SetInstanceForTest, this pointer will be
-// returned by GetInstance rather than |g_provider|.
-static DiscardableMemoryProvider* g_provider_for_test = NULL;
 
 // This is admittedly pretty magical. It's approximately enough memory for two
 // 2560x1600 images.
@@ -40,7 +31,8 @@ DiscardableMemoryProvider::DiscardableMemoryProvider()
       bytes_to_reclaim_under_moderate_pressure_(
           kDefaultBytesToReclaimUnderModeratePressure),
       memory_pressure_listener_(
-          base::Bind(&DiscardableMemoryProvider::NotifyMemoryPressure)) {
+          base::Bind(&DiscardableMemoryProvider::NotifyMemoryPressure,
+                     Unretained(this))) {
 }
 
 DiscardableMemoryProvider::~DiscardableMemoryProvider() {
@@ -48,28 +40,14 @@ DiscardableMemoryProvider::~DiscardableMemoryProvider() {
   DCHECK_EQ(0u, bytes_allocated_);
 }
 
-// static
-DiscardableMemoryProvider* DiscardableMemoryProvider::GetInstance() {
-  if (g_provider_for_test)
-    return g_provider_for_test;
-  return g_provider.Pointer();
-}
-
-// static
-void DiscardableMemoryProvider::SetInstanceForTest(
-    DiscardableMemoryProvider* provider) {
-  g_provider_for_test = provider;
-}
-
-// static
 void DiscardableMemoryProvider::NotifyMemoryPressure(
     MemoryPressureListener::MemoryPressureLevel pressure_level) {
   switch (pressure_level) {
     case MemoryPressureListener::MEMORY_PRESSURE_MODERATE:
-      DiscardableMemoryProvider::GetInstance()->Purge();
+      Purge();
       return;
     case MemoryPressureListener::MEMORY_PRESSURE_CRITICAL:
-      DiscardableMemoryProvider::GetInstance()->PurgeAll();
+      PurgeAll();
       return;
   }
 

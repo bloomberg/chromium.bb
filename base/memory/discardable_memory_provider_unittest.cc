@@ -11,42 +11,71 @@
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::internal::DiscardableMemoryProvider;
-
 namespace base {
 
 class DiscardableMemoryProviderTestBase {
  public:
+  class TestDiscardableMemory : public DiscardableMemory {
+   public:
+    TestDiscardableMemory(
+        internal::DiscardableMemoryProvider* provider, size_t size)
+        : provider_(provider),
+          is_locked_(false) {
+      provider_->Register(this, size);
+    }
+
+    virtual ~TestDiscardableMemory() {
+      if (is_locked_)
+        Unlock();
+      provider_->Unregister(this);
+    }
+
+    // Overridden from DiscardableMemory:
+    virtual LockDiscardableMemoryStatus Lock() OVERRIDE {
+      DCHECK(!is_locked_);
+
+      bool purged = false;
+      memory_ = provider_->Acquire(this, &purged);
+      if (!memory_)
+        return DISCARDABLE_MEMORY_FAILED;
+
+      is_locked_ = true;
+      return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
+    }
+    virtual void Unlock() OVERRIDE {
+      DCHECK(is_locked_);
+      provider_->Release(this, memory_.Pass());
+      is_locked_ = false;
+    }
+    virtual void* Memory() const OVERRIDE {
+      DCHECK(memory_);
+      return memory_.get();
+    }
+
+   private:
+    internal::DiscardableMemoryProvider* provider_;
+    scoped_ptr<uint8, FreeDeleter> memory_;
+    bool is_locked_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestDiscardableMemory);
+  };
+
   DiscardableMemoryProviderTestBase()
       : message_loop_(MessageLoop::TYPE_IO),
-        provider_(new DiscardableMemoryProvider) {
-    // We set a provider here for two reasons:
-    //   1. It ensures that one test cannot affect the next, and
-    //   2. Since the provider listens for pressure notifications on the thread
-    //      it was created on, if we create it on the test thread, we can run
-    //      the test thread's message loop until idle when we want to process
-    //      one of these notifications.
-    DiscardableMemoryProvider::SetInstanceForTest(provider_.get());
-  }
-
-  virtual ~DiscardableMemoryProviderTestBase() {
-    DiscardableMemoryProvider::SetInstanceForTest(NULL);
+        provider_(new internal::DiscardableMemoryProvider) {
   }
 
  protected:
   bool IsRegistered(const DiscardableMemory* discardable) {
-    return DiscardableMemoryProvider::GetInstance()->IsRegisteredForTest(
-        discardable);
+    return provider_->IsRegisteredForTest(discardable);
   }
 
   bool CanBePurged(const DiscardableMemory* discardable) {
-    return DiscardableMemoryProvider::GetInstance()->CanBePurgedForTest(
-        discardable);
+    return provider_->CanBePurgedForTest(discardable);
   }
 
   size_t BytesAllocated() const {
-    return DiscardableMemoryProvider::GetInstance()->
-        GetBytesAllocatedForTest();
+    return provider_->GetBytesAllocatedForTest();
   }
 
   void* Memory(const DiscardableMemory* discardable) const {
@@ -54,18 +83,24 @@ class DiscardableMemoryProviderTestBase {
   }
 
   void SetDiscardableMemoryLimit(size_t bytes) {
-    DiscardableMemoryProvider::GetInstance()->
-        SetDiscardableMemoryLimit(bytes);
+    provider_->SetDiscardableMemoryLimit(bytes);
   }
 
   void SetBytesToReclaimUnderModeratePressure(size_t bytes) {
-    DiscardableMemoryProvider::GetInstance()->
-        SetBytesToReclaimUnderModeratePressure(bytes);
+    provider_->SetBytesToReclaimUnderModeratePressure(bytes);
+  }
+
+  scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size) {
+    scoped_ptr<TestDiscardableMemory> memory(
+        new TestDiscardableMemory(provider_.get(), size));
+    if (memory->Lock() != DISCARDABLE_MEMORY_PURGED)
+      return scoped_ptr<DiscardableMemory>();
+    return memory.PassAs<DiscardableMemory>();
   }
 
  private:
   MessageLoop message_loop_;
-  scoped_ptr<DiscardableMemoryProvider> provider_;
+  scoped_ptr<internal::DiscardableMemoryProvider> provider_;
 };
 
 class DiscardableMemoryProviderTest
@@ -77,8 +112,7 @@ class DiscardableMemoryProviderTest
 
 TEST_F(DiscardableMemoryProviderTest, CreateLockedMemory) {
   size_t size = 1024;
-  const scoped_ptr<DiscardableMemory> discardable(
-      DiscardableMemory::CreateLockedMemory(size));
+  const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
   EXPECT_EQ(1024u, BytesAllocated());
@@ -87,8 +121,7 @@ TEST_F(DiscardableMemoryProviderTest, CreateLockedMemory) {
 
 TEST_F(DiscardableMemoryProviderTest, CreateLockedMemoryZeroSize) {
   size_t size = 0;
-  const scoped_ptr<DiscardableMemory> discardable(
-      DiscardableMemory::CreateLockedMemory(size));
+  const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_FALSE(discardable);
   EXPECT_FALSE(IsRegistered(discardable.get()));
   EXPECT_EQ(0u, BytesAllocated());
@@ -96,8 +129,7 @@ TEST_F(DiscardableMemoryProviderTest, CreateLockedMemoryZeroSize) {
 
 TEST_F(DiscardableMemoryProviderTest, LockAfterUnlock) {
   size_t size = 1024;
-  const scoped_ptr<DiscardableMemory> discardable(
-      DiscardableMemory::CreateLockedMemory(size));
+  const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
   EXPECT_EQ(1024u, BytesAllocated());
@@ -113,8 +145,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterUnlock) {
 
 TEST_F(DiscardableMemoryProviderTest, LockAfterPurge) {
   size_t size = 1024;
-  const scoped_ptr<DiscardableMemory> discardable(
-      DiscardableMemory::CreateLockedMemory(size));
+  const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
   EXPECT_EQ(1024u, BytesAllocated());
@@ -137,8 +168,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurge) {
 
 TEST_F(DiscardableMemoryProviderTest, LockAfterPurgeAndCannotReallocate) {
   size_t size = 1024;
-  const scoped_ptr<DiscardableMemory> discardable(
-      DiscardableMemory::CreateLockedMemory(size));
+  const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
   EXPECT_EQ(1024u, BytesAllocated());
@@ -159,15 +189,14 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurgeAndCannotReallocate) {
 TEST_F(DiscardableMemoryProviderTest, Overflow) {
   {
     size_t size = 1024;
-    const scoped_ptr<DiscardableMemory> discardable(
-        DiscardableMemory::CreateLockedMemory(size));
+    const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
     EXPECT_TRUE(IsRegistered(discardable.get()));
     EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
     EXPECT_EQ(1024u, BytesAllocated());
 
     size_t massive_size = std::numeric_limits<size_t>::max();
     const scoped_ptr<DiscardableMemory> massive_discardable(
-        DiscardableMemory::CreateLockedMemory(massive_size));
+        CreateLockedMemory(massive_size));
     EXPECT_FALSE(massive_discardable);
     EXPECT_EQ(1024u, BytesAllocated());
   }
@@ -198,7 +227,7 @@ class DiscardableMemoryProviderPermutationTest
   // Use discardable memory in order specified by ordering parameter.
   void CreateAndUseDiscardableMemory() {
     for (int i = 0; i < 3; ++i) {
-      discardables_[i] = DiscardableMemory::CreateLockedMemory(1024);
+      discardables_[i] = CreateLockedMemory(1024);
       EXPECT_TRUE(discardables_[i]);
       EXPECT_NE(static_cast<void*>(NULL), Memory(discardables_[i].get()));
       discardables_[i]->Unlock();
@@ -294,8 +323,7 @@ INSTANTIATE_TEST_CASE_P(DiscardableMemoryProviderPermutationTests,
 TEST_F(DiscardableMemoryProviderTest, NormalDestruction) {
   {
     size_t size = 1024;
-    const scoped_ptr<DiscardableMemory> discardable(
-        DiscardableMemory::CreateLockedMemory(size));
+    const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
     EXPECT_TRUE(IsRegistered(discardable.get()));
     EXPECT_EQ(1024u, BytesAllocated());
   }
@@ -305,8 +333,7 @@ TEST_F(DiscardableMemoryProviderTest, NormalDestruction) {
 TEST_F(DiscardableMemoryProviderTest, DestructionWhileLocked) {
   {
     size_t size = 1024;
-    const scoped_ptr<DiscardableMemory> discardable(
-        DiscardableMemory::CreateLockedMemory(size));
+    const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
     EXPECT_TRUE(IsRegistered(discardable.get()));
     EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
     EXPECT_EQ(1024u, BytesAllocated());
@@ -320,8 +347,7 @@ TEST_F(DiscardableMemoryProviderTest, DestructionWhileLocked) {
 // Death tests are not supported with Android APKs.
 TEST_F(DiscardableMemoryProviderTest, UnlockedMemoryAccessCrashesInDebugMode) {
   size_t size = 1024;
-  const scoped_ptr<DiscardableMemory> discardable(
-      DiscardableMemory::CreateLockedMemory(size));
+  const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
   EXPECT_TRUE(IsRegistered(discardable.get()));
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
   EXPECT_EQ(1024u, BytesAllocated());
@@ -351,8 +377,7 @@ class ThreadedDiscardableMemoryProviderTest
 
   void UseMemoryHelper() {
     size_t size = 1024;
-    const scoped_ptr<DiscardableMemory> discardable(
-        DiscardableMemory::CreateLockedMemory(size));
+    const scoped_ptr<DiscardableMemory> discardable(CreateLockedMemory(size));
     EXPECT_TRUE(IsRegistered(discardable.get()));
     EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
     discardable->Unlock();
