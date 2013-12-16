@@ -4,17 +4,14 @@
 
 #include "chrome/browser/chromeos/file_manager/mime_util.h"
 
-#include <utility>
 #include "base/files/file_path.h"
-#include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 
 namespace file_manager {
 namespace util {
 
 std::string GetMimeTypeForPath(const base::FilePath& file_path) {
-  const base::FilePath::StringType file_extension =
-      StringToLowerASCII(file_path.Extension());
+  const base::FilePath::StringType file_extension = file_path.Extension();
 
   // TODO(thorogood): Rearchitect this call so it can run on the File thread;
   // GetMimeTypeFromFile requires this on Linux. Right now, we use

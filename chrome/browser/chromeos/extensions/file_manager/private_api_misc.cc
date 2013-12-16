@@ -6,9 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
@@ -23,7 +22,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/page_zoom.h"
 #include "google_apis/drive/auth_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -164,7 +162,6 @@ bool FileBrowserPrivateZoomFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  content::RenderViewHost* const view_host = render_view_host();
   content::PageZoom zoom_type;
   switch (params->operation) {
     case api::file_browser_private::ZOOM_OPERATION_TYPE_IN:
@@ -180,7 +177,7 @@ bool FileBrowserPrivateZoomFunction::RunImpl() {
       NOTREACHED();
       return false;
   }
-  view_host->Zoom(zoom_type);
+  render_view_host()->Zoom(zoom_type);
   return true;
 }
 

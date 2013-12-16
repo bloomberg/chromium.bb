@@ -13,7 +13,7 @@
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 namespace file_manager {
 
@@ -25,9 +25,9 @@ class AppInstaller
   typedef extensions::WebstoreStandaloneInstaller::Callback Callback;
 
   AppInstaller(content::WebContents* web_contents,
-                       const std::string& webstore_item_id,
-                       Profile* profile,
-                       const Callback& callback);
+               const std::string& webstore_item_id,
+               Profile* profile,
+               const Callback& callback);
 
  protected:
   friend class base::RefCountedThreadSafe<AppInstaller>;
