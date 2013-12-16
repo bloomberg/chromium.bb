@@ -444,18 +444,17 @@ evdev_configure_device(struct evdev_device *device)
 	unsigned long abs_bits[NBITS(ABS_MAX)];
 	unsigned long rel_bits[NBITS(REL_MAX)];
 	unsigned long key_bits[NBITS(KEY_MAX)];
-	int has_key, has_abs, has_rel;
+	int has_key, has_abs, has_rel, has_mt;
 	unsigned int i;
 
 	has_key = 0;
 	has_rel = 0;
 	has_abs = 0;
+	has_mt = 0;
 	device->caps = 0;
 
 	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
 	if (TEST_BIT(ev_bits, EV_ABS)) {
-		has_abs = 1;
-
 		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)),
 		      abs_bits);
 
@@ -473,12 +472,14 @@ evdev_configure_device(struct evdev_device *device)
 			device->abs.min_x = absinfo.minimum;
 			device->abs.max_x = absinfo.maximum;
 			device->caps |= EVDEV_MOTION_ABS;
+			has_abs = 1;
 		}
 		if (TEST_BIT(abs_bits, ABS_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
 			device->abs.min_y = absinfo.minimum;
 			device->abs.max_y = absinfo.maximum;
 			device->caps |= EVDEV_MOTION_ABS;
+			has_abs = 1;
 		}
                 /* We only handle the slotted Protocol B in weston.
                    Devices with ABS_MT_POSITION_* but not ABS_MT_SLOT
@@ -495,6 +496,7 @@ evdev_configure_device(struct evdev_device *device)
 			device->abs.max_y = absinfo.maximum;
 			device->is_mt = 1;
 			device->caps |= EVDEV_TOUCH;
+			has_mt = 1;
 
 			if (!TEST_BIT(abs_bits, ABS_MT_SLOT)) {
 				device->mtdev = mtdev_new_open(device->fd);
@@ -524,7 +526,7 @@ evdev_configure_device(struct evdev_device *device)
 		      key_bits);
 		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) &&
 		    !TEST_BIT(key_bits, BTN_TOOL_PEN) &&
-		    has_abs) {
+		    (has_abs || has_mt)) {
 			device->dispatch = evdev_touchpad_create(device);
 			weston_log("input device %s, %s is a touchpad\n",
 				   device->devname, device->devnode);
