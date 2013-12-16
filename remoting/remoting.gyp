@@ -2767,6 +2767,8 @@
         'protocol/ssl_hmac_channel_authenticator.h',
         'protocol/transport.cc',
         'protocol/transport.h',
+        'protocol/transport_config.cc',
+        'protocol/transport_config.h',
         'protocol/util.cc',
         'protocol/util.h',
         'protocol/third_party_authenticator_base.cc',

@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/libjingle_transport_factory.h"
 
-#include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -14,9 +13,9 @@
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/transport_config.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
@@ -41,20 +40,12 @@ const int kTcpSendBufferSize = kTcpReceiveBufferSize + 30 * 1024;
 const int kMaxReconnectAttempts = 2;
 const int kReconnectDelaySeconds = 15;
 
-// Get fresh STUN/Relay configuration every hour.
-const int kJingleInfoUpdatePeriodSeconds = 3600;
-
-class LibjingleStreamTransport
-    : public StreamTransport,
-      public base::SupportsWeakPtr<LibjingleStreamTransport>,
-      public sigslot::has_slots<> {
+class LibjingleStreamTransport : public StreamTransport,
+                                 public sigslot::has_slots<> {
  public:
   LibjingleStreamTransport(cricket::PortAllocator* port_allocator,
-                           const NetworkSettings& network_settings);
+                           bool incoming_only);
   virtual ~LibjingleStreamTransport();
-
-  // Called by JingleTransportFactory when it has fresh Jingle info.
-  void OnCanStart();
 
   // StreamTransport interface.
   virtual void Initialize(
@@ -68,8 +59,6 @@ class LibjingleStreamTransport
   virtual bool is_connected() const OVERRIDE;
 
  private:
-  void DoStart();
-
   // Signal handlers for cricket::TransportChannel.
   void OnRequestSignaling(cricket::TransportChannelImpl* channel);
   void OnCandidateReady(cricket::TransportChannelImpl* channel,
@@ -97,7 +86,7 @@ class LibjingleStreamTransport
   void NotifyConnectFailed();
 
   cricket::PortAllocator* port_allocator_;
-  NetworkSettings network_settings_;
+  bool incoming_only_;
 
   std::string name_;
   EventHandler* event_handler_;
@@ -106,9 +95,6 @@ class LibjingleStreamTransport
   std::string ice_username_fragment_;
   std::string ice_password_;
 
-  bool can_start_;
-
-  std::list<cricket::Candidate> pending_candidates_;
   scoped_ptr<cricket::P2PTransportChannel> channel_;
   bool channel_was_writable_;
   int connect_attempts_left_;
@@ -122,14 +108,13 @@ class LibjingleStreamTransport
 
 LibjingleStreamTransport::LibjingleStreamTransport(
     cricket::PortAllocator* port_allocator,
-    const NetworkSettings& network_settings)
+    bool incoming_only)
     : port_allocator_(port_allocator),
-      network_settings_(network_settings),
+      incoming_only_(incoming_only),
       event_handler_(NULL),
       ice_username_fragment_(
           talk_base::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
       ice_password_(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH)),
-      can_start_(false),
       channel_was_writable_(false),
       connect_attempts_left_(kMaxReconnectAttempts) {
 }
@@ -143,22 +128,6 @@ LibjingleStreamTransport::~LibjingleStreamTransport() {
   if (channel_.get()) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
         FROM_HERE, channel_.release());
-  }
-}
-
-void LibjingleStreamTransport::OnCanStart() {
-  DCHECK(CalledOnValidThread());
-
-  DCHECK(!can_start_);
-  can_start_ = true;
-
-  // If Connect() has been called then start connection.
-  if (!callback_.is_null())
-    DoStart();
-
-  while (!pending_candidates_.empty()) {
-    channel_->OnCandidate(pending_candidates_.front());
-    pending_candidates_.pop_front();
   }
 }
 
@@ -182,13 +151,9 @@ void LibjingleStreamTransport::Initialize(
 void LibjingleStreamTransport::Connect(
     const StreamTransport::ConnectedCallback& callback) {
   DCHECK(CalledOnValidThread());
+
   callback_ = callback;
 
-  if (can_start_)
-    DoStart();
-}
-
-void LibjingleStreamTransport::DoStart() {
   DCHECK(!channel_.get());
 
   // Create P2PTransportChannel, attach signal handlers and connect it.
@@ -204,10 +169,7 @@ void LibjingleStreamTransport::DoStart() {
       this, &LibjingleStreamTransport::OnRouteChange);
   channel_->SignalWritableState.connect(
       this, &LibjingleStreamTransport::OnWritableState);
-  if (network_settings_.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_DISABLED) {
-    channel_->set_incoming_only(true);
-  }
+  channel_->set_incoming_only(incoming_only_);
 
   channel_->Connect();
 
@@ -249,11 +211,7 @@ void LibjingleStreamTransport::DoStart() {
 void LibjingleStreamTransport::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
-  if (channel_) {
-    channel_->OnCandidate(candidate);
-  } else {
-    pending_candidates_.push_back(candidate);
-  }
+  channel_->OnCandidate(candidate);
 }
 
 const std::string& LibjingleStreamTransport::name() const {
@@ -404,12 +362,10 @@ void LibjingleStreamTransport::NotifyConnectFailed() {
 }  // namespace
 
 LibjingleTransportFactory::LibjingleTransportFactory(
-    SignalStrategy* signal_strategy,
     scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
-    const NetworkSettings& network_settings)
-    : signal_strategy_(signal_strategy),
-      port_allocator_(port_allocator.Pass()),
-      network_settings_(network_settings) {
+    bool incoming_only)
+    : port_allocator_(port_allocator.Pass()),
+      incoming_only_(incoming_only) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
 
@@ -421,70 +377,33 @@ LibjingleTransportFactory::~LibjingleTransportFactory() {
   task_runner->DeleteSoon(FROM_HERE, port_allocator_.release());
 }
 
-void LibjingleTransportFactory::PrepareTokens() {
-  EnsureFreshJingleInfo();
+void LibjingleTransportFactory::SetTransportConfig(
+    const TransportConfig& config) {
+  std::vector<talk_base::SocketAddress> stun_hosts;
+  talk_base::SocketAddress stun_address;
+  if (stun_address.FromString(config.stun_server)) {
+    stun_hosts.push_back(stun_address);
+    port_allocator_->SetStunHosts(stun_hosts);
+  } else {
+    LOG(ERROR) << "Failed to parse stun server address: "
+               << config.stun_server;
+  }
+
+  std::vector<std::string> relay_hosts;
+  relay_hosts.push_back(config.relay_server);
+  port_allocator_->SetRelayHosts(relay_hosts);
+  port_allocator_->SetRelayToken(config.relay_token);
 }
 
 scoped_ptr<StreamTransport> LibjingleTransportFactory::CreateStreamTransport() {
-  scoped_ptr<LibjingleStreamTransport> result(
-      new LibjingleStreamTransport(port_allocator_.get(), network_settings_));
-
-  EnsureFreshJingleInfo();
-
-  // If there is a pending |jingle_info_request_| delay starting the new
-  // transport until the request is finished.
-  if (jingle_info_request_) {
-    on_jingle_info_callbacks_.push_back(
-        base::Bind(&LibjingleStreamTransport::OnCanStart,
-                   result->AsWeakPtr()));
-  } else {
-    result->OnCanStart();
-  }
-
-  return result.PassAs<StreamTransport>();
+  return scoped_ptr<StreamTransport>(
+      new LibjingleStreamTransport(port_allocator_.get(), incoming_only_));
 }
 
 scoped_ptr<DatagramTransport>
 LibjingleTransportFactory::CreateDatagramTransport() {
   NOTIMPLEMENTED();
   return scoped_ptr<DatagramTransport>();
-}
-
-void LibjingleTransportFactory::EnsureFreshJingleInfo() {
-  if (network_settings_.nat_traversal_mode !=
-          NetworkSettings::NAT_TRAVERSAL_ENABLED ||
-      jingle_info_request_) {
-    return;
-  }
-
-  if (base::TimeTicks::Now() - last_jingle_info_update_time_ >
-      base::TimeDelta::FromSeconds(kJingleInfoUpdatePeriodSeconds)) {
-    jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
-    jingle_info_request_->Send(base::Bind(
-        &LibjingleTransportFactory::OnJingleInfo, base::Unretained(this)));
-  }
-}
-
-void LibjingleTransportFactory::OnJingleInfo(
-    const std::string& relay_token,
-    const std::vector<std::string>& relay_hosts,
-    const std::vector<talk_base::SocketAddress>& stun_hosts) {
-  if (!relay_token.empty() && !relay_hosts.empty()) {
-    port_allocator_->SetRelayHosts(relay_hosts);
-    port_allocator_->SetRelayToken(relay_token);
-  }
-  if (!stun_hosts.empty()) {
-    port_allocator_->SetStunHosts(stun_hosts);
-  }
-
-  jingle_info_request_.reset();
-  if ((!relay_token.empty() && !relay_hosts.empty()) || !stun_hosts.empty())
-    last_jingle_info_update_time_ = base::TimeTicks::Now();
-
-  while (!on_jingle_info_callbacks_.empty()) {
-    on_jingle_info_callbacks_.begin()->Run();
-    on_jingle_info_callbacks_.pop_front();
-  }
 }
 
 }  // namespace protocol

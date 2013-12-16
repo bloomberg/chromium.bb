@@ -43,6 +43,7 @@ namespace remoting {
 namespace protocol {
 
 class ChannelAuthenticator;
+struct TransportConfig;
 
 struct TransportRoute {
   enum RouteType {
@@ -150,11 +151,8 @@ class TransportFactory {
   TransportFactory() { }
   virtual ~TransportFactory() { }
 
-  // Called to notify transport factory that a new transport might be created
-  // soon, e.g. when a new session is being created. Implementation may use it
-  // to start asynchronous preparation, e.g. fetch a new relay token if
-  // necessary while the session is being authenticated.
-  virtual void PrepareTokens() = 0;
+  // Sets configuration for the transports created by this factory.
+  virtual void SetTransportConfig(const TransportConfig& config) = 0;
 
   virtual scoped_ptr<StreamTransport> CreateStreamTransport() = 0;
   virtual scoped_ptr<DatagramTransport> CreateDatagramTransport() = 0;

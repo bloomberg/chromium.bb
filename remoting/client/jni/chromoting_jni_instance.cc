@@ -309,8 +309,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          network_settings));
+          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(), false));
 
   client_->Start(signaling_.get(), transport_factory.Pass());
 }

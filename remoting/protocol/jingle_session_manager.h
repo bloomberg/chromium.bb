@@ -30,6 +30,7 @@ class SocketAddress;
 namespace remoting {
 
 class IqSender;
+class JingleInfoRequest;
 
 namespace protocol {
 
@@ -43,7 +44,15 @@ class TransportFactory;
 class JingleSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
-  explicit JingleSessionManager(scoped_ptr<TransportFactory> transport_factory);
+  // When |fetch_stun_relay_config| is set to true then
+  // JingleSessionManager will also try to query configuration of STUN
+  // and Relay servers from the signaling server.
+  //
+  // TODO(sergeyu): Move NAT-traversal config fetching to a separate
+  // class.
+  explicit JingleSessionManager(
+      scoped_ptr<TransportFactory> transport_factory,
+      bool fetch_stun_relay_config);
   virtual ~JingleSessionManager();
 
   // SessionManager interface.
@@ -89,6 +98,8 @@ class JingleSessionManager : public SessionManager,
   SessionManager::Listener* listener_;
 
   bool ready_;
+
+  scoped_ptr<JingleInfoRequest> jingle_info_request_;
 
   SessionsMap sessions_;
 
