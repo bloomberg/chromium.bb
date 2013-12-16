@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ENTRY_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ENTRY_H_
 
+#include <string>
+
 #include "sync/api/sync_data.h"
 #include "sync/protocol/article_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -32,4 +34,4 @@ syncer::SyncData CreateLocalData(const ArticleEntry& entry);
 
 }  // namespace dom_distiller
 
-#endif
+#endif  // COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ENTRY_H_

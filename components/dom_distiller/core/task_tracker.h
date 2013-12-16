@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_TASK_TRACKER_H_
-#define COMPONENTS_DOM_DISTILLER_CORE_DOM_TASK_TRACKER_H_
+#ifndef COMPONENTS_DOM_DISTILLER_CORE_TASK_TRACKER_H_
+#define COMPONENTS_DOM_DISTILLER_CORE_TASK_TRACKER_H_
+
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"

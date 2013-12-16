@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/webui/dom_distiller_handler.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"

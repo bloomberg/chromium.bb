@@ -54,7 +54,7 @@ class FakeSyncErrorFactory : public syncer::SyncErrorFactory {
 
 class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
-  FakeSyncChangeProcessor(EntryMap* model) : model_(model) {}
+  explicit FakeSyncChangeProcessor(EntryMap* model) : model_(model) {}
 
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
       OVERRIDE {

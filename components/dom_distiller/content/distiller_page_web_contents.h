@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_DISTILLER_PAGE_WEB_CONTENTS_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_DISTILLER_PAGE_WEB_CONTENTS_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "content/public/browser/web_contents.h"
@@ -23,8 +25,9 @@ class DistillerContext;
 
 class DistillerPageWebContentsFactory : public DistillerPageFactory {
  public:
-  DistillerPageWebContentsFactory(content::BrowserContext* browser_context)
-    :  DistillerPageFactory(), browser_context_(browser_context) {}
+  explicit DistillerPageWebContentsFactory(
+      content::BrowserContext* browser_context)
+      : DistillerPageFactory(), browser_context_(browser_context) {}
   virtual ~DistillerPageWebContentsFactory() {}
 
   virtual scoped_ptr<DistillerPage> CreateDistillerPage(

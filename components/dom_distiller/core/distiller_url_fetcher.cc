@@ -63,7 +63,7 @@ void DistillerURLFetcher::OnURLFetchComplete(
     // an empty string into the proto otherwise.
     source->GetResponseAsString(&response);
   }
- callback_.Run(response);
+  callback_.Run(response);
 }
 
 }  // namespace dom_distiller

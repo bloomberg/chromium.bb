@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_UI_H_
 #define COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_UI_H_
 
+#include <string>
+
 #include "content/public/browser/web_ui_controller.h"
 
 namespace dom_distiller {

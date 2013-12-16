@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_STORE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_STORE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -157,4 +158,4 @@ class DomDistillerStore : public syncer::SyncableService,
 
 }  // namespace dom_distiller
 
-#endif
+#endif  // COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_STORE_H_

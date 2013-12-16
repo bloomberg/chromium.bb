@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_OBSERVER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_OBSERVER_H_
 
+#include <string>
 #include <vector>
+
 #include "components/dom_distiller/core/article_entry.h"
 
 namespace dom_distiller {
@@ -31,6 +33,7 @@ class DomDistillerObserver {
   DomDistillerObserver() {}
   virtual ~DomDistillerObserver() {}
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DomDistillerObserver);
 };
 

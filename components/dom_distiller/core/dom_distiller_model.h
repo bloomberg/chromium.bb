@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_MODEL_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_MODEL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/id_map.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "sync/api/sync_change.h"
-#include "sync/api/sync_change_processor.h" // syncer::SyncChangeList
+#include "sync/api/sync_change_processor.h"  // syncer::SyncChangeList
 #include "sync/api/sync_data.h"
 #include "url/gurl.h"
 
@@ -86,4 +87,4 @@ class DomDistillerModel {
 
 }  // namespace dom_distiller
 
-#endif
+#endif  // COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_MODEL_H_

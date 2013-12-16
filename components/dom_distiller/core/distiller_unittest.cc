@@ -38,13 +38,12 @@ namespace {
   const char kImageURL1[] = "http://a.com/img2.jpg";
   const char kImageData0[] = { 'a', 'b', 'c', 'd', 'e', 0 };
   const char kImageData1[] = { '1', '2', '3', '4', '5', 0 };
-}
+}  // namespace
 
 namespace dom_distiller {
 
 class TestDistillerURLFetcher : public DistillerURLFetcher {
  public:
-
   TestDistillerURLFetcher() : DistillerURLFetcher(NULL) {
     responses_[kImageURL0] = std::string(kImageData0);
     responses_[kImageURL1] = std::string(kImageData1);
@@ -83,9 +82,8 @@ class MockDistillerPage : public DistillerPage {
   MOCK_METHOD1(LoadURLImpl, void(const GURL& gurl));
   MOCK_METHOD1(ExecuteJavaScriptImpl, void(const std::string& script));
 
-  MockDistillerPage(DistillerPage::Delegate* delegate)
-    : DistillerPage(delegate) {
-  }
+  explicit MockDistillerPage(DistillerPage::Delegate* delegate)
+      : DistillerPage(delegate) {}
 };
 
 

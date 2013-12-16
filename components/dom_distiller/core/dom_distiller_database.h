@@ -90,7 +90,8 @@ class DomDistillerDatabase
     scoped_ptr<leveldb::DB> db_;
   };
 
-  DomDistillerDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  explicit DomDistillerDatabase(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   virtual ~DomDistillerDatabase();
 

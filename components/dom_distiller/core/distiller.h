@@ -6,6 +6,7 @@
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"

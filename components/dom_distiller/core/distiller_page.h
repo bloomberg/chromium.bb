@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_PAGE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_PAGE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "url/gurl.h"
@@ -23,7 +25,7 @@ class DistillerPage {
     virtual void OnExecuteJavaScriptDone(const base::Value* value) {}
   };
 
-  DistillerPage(Delegate* delegate);
+  explicit DistillerPage(Delegate* delegate);
 
   virtual ~DistillerPage();
 

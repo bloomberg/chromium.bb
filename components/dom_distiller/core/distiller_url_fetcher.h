@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_URL_FETCHER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_URL_FETCHER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -17,7 +19,8 @@ class DistillerURLFetcher;
 // Class for creating a DistillerURLFetcher.
 class DistillerURLFetcherFactory {
  public:
-  DistillerURLFetcherFactory(net::URLRequestContextGetter* context_getter);
+  explicit DistillerURLFetcherFactory(
+      net::URLRequestContextGetter* context_getter);
   virtual ~DistillerURLFetcherFactory() {}
   virtual DistillerURLFetcher* CreateDistillerURLFetcher() const;
 
@@ -29,7 +32,7 @@ class DistillerURLFetcherFactory {
 // completes or fails. If the request fails, an empty string will be returned.
 class DistillerURLFetcher : public net::URLFetcherDelegate {
  public:
-  DistillerURLFetcher(net::URLRequestContextGetter* context_getter);
+  explicit DistillerURLFetcher(net::URLRequestContextGetter* context_getter);
   virtual ~DistillerURLFetcher();
 
   // Indicates when a fetch is done.
@@ -54,6 +57,6 @@ class DistillerURLFetcher : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(DistillerURLFetcher);
 };
 
-} // namespace dom_distiller
+}  //  namespace dom_distiller
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_URL_FETCHER_H_

@@ -21,7 +21,7 @@ const char kTestPageBResponse[] = { 'a', 'b', 'c' };
 
 
 class DistillerURLFetcherTest : public testing::Test {
-public:
+ public:
   void FetcherCallback(const std::string& response) {
      response_ = response;
   }

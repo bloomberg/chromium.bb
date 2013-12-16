@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SERVICE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SERVICE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

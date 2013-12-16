@@ -30,7 +30,7 @@ namespace {
       "   result[2] = \"http://t.com/t.jpg\";"
       "   return result;"
       " }())";
-}
+}  // namespace
 
 namespace dom_distiller {
 

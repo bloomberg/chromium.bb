@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/dom_distiller_model.h"
 
+#include <utility>
+
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using syncer::SyncData;
