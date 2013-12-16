@@ -25,7 +25,7 @@
         { "action": "scroll" },
         { "action": "wait", "seconds": 3 },
         { "action": "scroll" },
-        { "action": "wait", "javascript": "document.body.scrollHeight > 6000" }
+        { "action": "wait", "javascript": "document.getElementById('rg_s').childElementCount > 300" }
       ]
     }
   ]
