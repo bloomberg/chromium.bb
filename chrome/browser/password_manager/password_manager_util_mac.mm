@@ -36,4 +36,9 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   return authorization.get() != NULL;
 }
 
+// TODO(dubroy): Implement on Mac.
+OsPasswordStatus GetOsPasswordStatus() {
+  return PASSWORD_STATUS_UNSUPPORTED;
+}
+
 }  // namespace password_manager_util

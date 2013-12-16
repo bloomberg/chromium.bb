@@ -1381,6 +1381,7 @@
         'browser/password_manager/password_manager_metrics_util.cc',
         'browser/password_manager/password_manager_metrics_util.h',
         'browser/password_manager/password_manager_util.h',
+        'browser/password_manager/password_manager_util_android.cc',
         'browser/password_manager/password_manager_util_mac.mm',
         'browser/password_manager/password_manager_util_linux.cc',
         'browser/password_manager/password_manager_util_win.cc',

@@ -12279,6 +12279,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.OsPasswordStatus"
+    enum="PasswordManagerOsPasswordStatus">
+  <summary>
+    Indicates whether the user's OS password is blank or not at browser startup.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.OtherPossibleUsernamesUsage"
     enum="OtherPossibleUsernamesUsage">
   <summary>
@@ -28256,6 +28263,15 @@ other types of suffix sets.
   <int value="47"
       label="manager did nothing (autocomplete off) / user typed in something
              / form submit succeeded"/>
+</enum>
+
+<enum name="PasswordManagerOsPasswordStatus" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Unsupported platform"/>
+  <int value="2" label="Password is blank"/>
+  <int value="3" label="Password is non blank"/>
+  <int value="4"
+      label="Password status not checked as user is on a Windows Domain"/>
 </enum>
 
 <enum name="PasswordManagerPslDomainMatchTriggering" type="int">

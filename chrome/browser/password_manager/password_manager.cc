@@ -14,6 +14,7 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
+#include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -29,6 +31,7 @@
 
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
+using content::BrowserThread;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -39,6 +42,15 @@ namespace {
 const char kSpdyProxyRealm[] = "/SpdyProxy";
 const char kOtherPossibleUsernamesExperiment[] =
     "PasswordManagerOtherPossibleUsernames";
+
+void ReportOsPassword() {
+  password_manager_util::OsPasswordStatus status =
+      password_manager_util::GetOsPasswordStatus();
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
+                            status,
+                            password_manager_util::MAX_PASSWORD_STATUS);
+}
 
 // This routine is called when PasswordManagers are constructed.
 //
@@ -55,6 +67,13 @@ void ReportMetrics(bool password_manager_enabled) {
   if (ran_once)
     return;
   ran_once = true;
+
+  // Avoid checking OS password until later on in browser startup
+  // since it calls a few Windows APIs.
+  BrowserThread::PostDelayedTask(BrowserThread::UI,
+                                 FROM_HERE,
+                                 base::Bind(&ReportOsPassword),
+                                 base::TimeDelta::FromSeconds(10));
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }
