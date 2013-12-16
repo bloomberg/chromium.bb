@@ -26,6 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AwCookieManager_jni.h"
@@ -190,7 +191,8 @@ void CookieManager::CreateCookieMonster(
     NULL,
     NULL,
     client_task_runner,
-    background_task_runner);
+    background_task_runner,
+    scoped_ptr<content::CookieCryptoDelegate>());
   cookie_monster_ = cookie_store->GetCookieMonster();
   cookie_monster_->SetPersistSessionCookies(true);
   SetAcceptFileSchemeCookiesLocked(kDefaultFileSchemeAllowed);
