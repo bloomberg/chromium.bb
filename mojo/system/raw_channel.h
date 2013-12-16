@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "mojo/system/limits.h"
+#include "mojo/system/constants.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {

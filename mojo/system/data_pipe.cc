@@ -10,7 +10,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "mojo/system/limits.h"
+#include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/waiter_list.h"
 

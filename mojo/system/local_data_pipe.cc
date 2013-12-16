@@ -13,7 +13,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "mojo/system/limits.h"
+#include "mojo/system/constants.h"
 
 namespace mojo {
 namespace system {

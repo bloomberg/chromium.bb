@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "mojo/system/limits.h"
+#include "mojo/system/constants.h"
 
 namespace mojo {
 namespace system {

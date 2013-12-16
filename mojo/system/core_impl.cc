@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/system/constants.h"
 #include "mojo/system/data_pipe_consumer_dispatcher.h"
 #include "mojo/system/data_pipe_producer_dispatcher.h"
 #include "mojo/system/dispatcher.h"
-#include "mojo/system/limits.h"
 #include "mojo/system/local_data_pipe.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"

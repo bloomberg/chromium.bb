@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(vtl): Rename this file to constants.h.
-
-#ifndef MOJO_SYSTEM_LIMITS_H_
-#define MOJO_SYSTEM_LIMITS_H_
+#ifndef MOJO_SYSTEM_CONSTANTS_H_
+#define MOJO_SYSTEM_CONSTANTS_H_
 
 #include <stddef.h>
 
@@ -39,4 +37,4 @@ const size_t kDataPipeBufferAlignmentBytes = 16;
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_LIMITS_H_
+#endif  // MOJO_SYSTEM_CONSTANTS_H_

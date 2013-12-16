@@ -5,7 +5,7 @@
 #include "mojo/system/message_pipe_dispatcher.h"
 
 #include "base/logging.h"
-#include "mojo/system/limits.h"
+#include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"
 

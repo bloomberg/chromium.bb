@@ -9,9 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/system/constants.h"
 #include "mojo/system/core_impl.h"
 #include "mojo/system/dispatcher.h"
-#include "mojo/system/limits.h"
 #include "mojo/system/memory.h"
 
 namespace mojo {
