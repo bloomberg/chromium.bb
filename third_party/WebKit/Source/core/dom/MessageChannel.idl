@@ -25,8 +25,8 @@
  */
 
 [
+    CustomConstructor,
     GlobalContext=Window&WorkerGlobalScope,
-    CustomConstructor
 ] interface MessageChannel {
     readonly attribute MessagePort port1;
     readonly attribute MessagePort port2;
