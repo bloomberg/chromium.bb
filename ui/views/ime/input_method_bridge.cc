@@ -92,8 +92,10 @@ void InputMethodBridge::OnFocus() {
 
   // TODO(yusukes): We don't need to call OnTextInputTypeChanged() once we move
   // text input type tracker code to ui::InputMethodBase.
-  if (GetFocusedView())
+  if (GetFocusedView()) {
     OnTextInputTypeChanged(GetFocusedView());
+    OnCaretBoundsChanged(GetFocusedView());
+  }
 }
 
 void InputMethodBridge::OnBlur() {
