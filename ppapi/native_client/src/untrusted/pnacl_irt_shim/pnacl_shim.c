@@ -2370,10 +2370,6 @@ static struct PP_Var Pnacl_M13_PPP_Selection_Dev_GetSelectedText(PP_Instance ins
 
 /* Not generating wrapper methods for PPP_VideoCapture_Dev_0_1 */
 
-/* Not generating wrapper methods for PPP_VideoDecoder_Dev_0_9 */
-
-/* Not generating wrapper methods for PPP_VideoDecoder_Dev_0_10 */
-
 /* Not generating wrapper methods for PPP_VideoDecoder_Dev_0_11 */
 
 /* Not generating wrapper methods for PPP_Widget_Dev_0_2 */
@@ -4702,10 +4698,6 @@ struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 = {
 /* Not generating wrapper interface for PPP_TextInput_Dev_0_1 */
 
 /* Not generating wrapper interface for PPP_VideoCapture_Dev_0_1 */
-
-/* Not generating wrapper interface for PPP_VideoDecoder_Dev_0_9 */
-
-/* Not generating wrapper interface for PPP_VideoDecoder_Dev_0_10 */
 
 /* Not generating wrapper interface for PPP_VideoDecoder_Dev_0_11 */
 

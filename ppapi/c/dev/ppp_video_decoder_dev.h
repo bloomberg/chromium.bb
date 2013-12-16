@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_video_decoder_dev.idl modified Tue May 29 10:59:23 2012. */
+/* From dev/ppp_video_decoder_dev.idl modified Fri Dec 13 15:21:30 2013. */
 
 #ifndef PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
@@ -15,8 +15,6 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPP_VIDEODECODER_DEV_INTERFACE_0_9 "PPP_VideoDecoder(Dev);0.9"
-#define PPP_VIDEODECODER_DEV_INTERFACE_0_10 "PPP_VideoDecoder(Dev);0.10"
 #define PPP_VIDEODECODER_DEV_INTERFACE_0_11 "PPP_VideoDecoder(Dev);0.11"
 #define PPP_VIDEODECODER_DEV_INTERFACE PPP_VIDEODECODER_DEV_INTERFACE_0_11
 
@@ -51,7 +49,8 @@ struct PPP_VideoDecoder_Dev_0_11 {
    *  |decoder| the PPB_VideoDecoder_Dev resource.
    *  |req_num_of_bufs| tells how many buffers are needed by the decoder.
    *  |dimensions| tells the dimensions of the buffer to allocate.
-   *  |texture_target| the type of texture used.
+   *  |texture_target| the type of texture used. Sample targets in use are
+   *      TEXTURE_2D (most platforms) and TEXTURE_EXTERNAL_OES (on ARM).
    */
   void (*ProvidePictureBuffers)(PP_Instance instance,
                                 PP_Resource decoder,
@@ -98,39 +97,6 @@ struct PPP_VideoDecoder_Dev_0_11 {
 };
 
 typedef struct PPP_VideoDecoder_Dev_0_11 PPP_VideoDecoder_Dev;
-
-struct PPP_VideoDecoder_Dev_0_9 {
-  void (*ProvidePictureBuffers)(PP_Instance instance,
-                                PP_Resource decoder,
-                                uint32_t req_num_of_bufs,
-                                const struct PP_Size* dimensions);
-  void (*DismissPictureBuffer)(PP_Instance instance,
-                               PP_Resource decoder,
-                               int32_t picture_buffer_id);
-  void (*PictureReady)(PP_Instance instance,
-                       PP_Resource decoder,
-                       const struct PP_Picture_Dev* picture);
-  void (*EndOfStream)(PP_Instance instance, PP_Resource decoder);
-  void (*NotifyError)(PP_Instance instance,
-                      PP_Resource decoder,
-                      PP_VideoDecodeError_Dev error);
-};
-
-struct PPP_VideoDecoder_Dev_0_10 {
-  void (*ProvidePictureBuffers)(PP_Instance instance,
-                                PP_Resource decoder,
-                                uint32_t req_num_of_bufs,
-                                const struct PP_Size* dimensions);
-  void (*DismissPictureBuffer)(PP_Instance instance,
-                               PP_Resource decoder,
-                               int32_t picture_buffer_id);
-  void (*PictureReady)(PP_Instance instance,
-                       PP_Resource decoder,
-                       const struct PP_Picture_Dev* picture);
-  void (*NotifyError)(PP_Instance instance,
-                      PP_Resource decoder,
-                      PP_VideoDecodeError_Dev error);
-};
 /**
  * @}
  */
