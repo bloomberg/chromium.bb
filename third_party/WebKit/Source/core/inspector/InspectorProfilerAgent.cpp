@@ -63,6 +63,26 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(const Scri
     return profile.release();
 }
 
+static PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
+{
+    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(1));
+    const ScriptCallFrame& lastCaller = callStack->at(0);
+    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
+        .setScriptId(lastCaller.scriptId())
+        .setLineNumber(lastCaller.lineNumber());
+    location->setColumnNumber(lastCaller.columnNumber());
+    return location.release();
+}
+
+class InspectorProfilerAgent::ProfileDescriptor {
+public:
+    ProfileDescriptor(const String& id, const String& title)
+        : m_id(id)
+        , m_title(title) { }
+    String m_id;
+    String m_title;
+};
+
 PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
     return adoptPtr(new InspectorProfilerAgent(instrumentingAgents, consoleAgent, inspectorState, injectedScriptManager, overlay));
@@ -74,8 +94,7 @@ InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentin
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
     , m_recordingCPUProfile(false)
-    , m_currentUserInitiatedProfileNumber(-1)
-    , m_nextUserInitiatedProfileNumber(1)
+    , m_nextProfileId(1)
     , m_profileNameIdleTimeMap(ScriptProfiler::currentProfileNameIdleTimeMap())
     , m_idleStartTime(0.0)
     , m_overlay(overlay)
@@ -89,37 +108,43 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 void InspectorProfilerAgent::consoleProfile(const String& title, ScriptState* state)
 {
     ASSERT(m_frontend && enabled());
-    String resolvedTitle = title;
-    if (title.isNull()) // no title so give it the next user initiated profile title.
-        resolvedTitle = getCurrentUserInitiatedProfileName(true);
-
-    ScriptProfiler::start(resolvedTitle);
-    m_consoleAgent->addMessageToConsole(ConsoleAPIMessageSource, ProfileMessageType, DebugMessageLevel, resolvedTitle, String(), 0, 0, state);
+    String id = String::number(m_nextProfileId++);
+    m_startedProfiles.append(ProfileDescriptor(id, title));
+    ScriptProfiler::start(id);
+    m_frontend->consoleProfile(id, currentDebugLocation(), title.isNull() ? 0 : &title);
 }
 
 void InspectorProfilerAgent::consoleProfileEnd(const String& title)
 {
     ASSERT(m_frontend && enabled());
-    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(title);
+    String id;
+    String resolvedTitle;
+    // Take last started profile if no title was passed.
+    if (title.isNull()) {
+        if (m_startedProfiles.isEmpty())
+            return;
+        id = m_startedProfiles.last().m_id;
+        resolvedTitle = m_startedProfiles.last().m_title;
+        m_startedProfiles.removeLast();
+    } else {
+        for (size_t i = 0; i < m_startedProfiles.size(); i++) {
+            if (m_startedProfiles[i].m_title == title) {
+                resolvedTitle = title;
+                id = m_startedProfiles[i].m_id;
+                m_startedProfiles.remove(i);
+                break;
+            }
+        }
+        if (id.isEmpty())
+            return;
+    }
+    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(id);
     if (!profile)
         return;
-
-    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(1));
-
+    RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation();
     if (!m_keepAliveProfile)
         m_keepAliveProfile = profile;
-    m_frontend->addProfileHeader(createCPUProfile(*profile), profile->title());
-    const ScriptCallFrame& lastCaller = callStack->at(0);
-    addProfileFinishedMessageToConsole(profile, lastCaller.lineNumber(), lastCaller.sourceURL());
-}
-
-void InspectorProfilerAgent::addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL)
-{
-    if (!m_frontend)
-        return;
-    RefPtr<ScriptProfile> profile = prpProfile;
-    String message = profile->title() + "#" + String::number(profile->uid());
-    m_consoleAgent->addMessageToConsole(ConsoleAPIMessageSource, ProfileEndMessageType, DebugMessageLevel, message, sourceURL, lineNumber);
+    m_frontend->addProfileHeader(id, location, createCPUProfile(*profile), resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 
 void InspectorProfilerAgent::enable(ErrorString*)
@@ -155,14 +180,6 @@ void InspectorProfilerAgent::setSamplingInterval(ErrorString* error, int interva
     ScriptProfiler::setSamplingInterval(interval);
 }
 
-String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool incrementProfileNumber)
-{
-    if (incrementProfileNumber)
-        m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;
-
-    return "Profile " + String::number(m_currentUserInitiatedProfileNumber);
-}
-
 void InspectorProfilerAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend->profiler();
@@ -172,8 +189,6 @@ void InspectorProfilerAgent::clearFrontend()
 {
     m_frontend = 0;
     stop(0, 0);
-    m_currentUserInitiatedProfileNumber = 1;
-    m_nextUserInitiatedProfileNumber = 1;
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
     ErrorString error;
     disable(&error);
@@ -191,7 +206,7 @@ void InspectorProfilerAgent::restore()
         start();
 }
 
-void InspectorProfilerAgent::start(ErrorString*)
+void InspectorProfilerAgent::start(ErrorString* error)
 {
     if (m_recordingCPUProfile)
         return;
@@ -202,8 +217,8 @@ void InspectorProfilerAgent::start(ErrorString*)
     m_recordingCPUProfile = true;
     if (m_overlay)
         m_overlay->startedRecordingProfile();
-    String title = getCurrentUserInitiatedProfileName(true);
-    ScriptProfiler::start(title);
+    m_frontendInitiatedProfileId = String::number(m_nextProfileId++);
+    ScriptProfiler::start(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
 
@@ -222,8 +237,8 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
     m_recordingCPUProfile = false;
     if (m_overlay)
         m_overlay->finishedRecordingProfile();
-    String title = getCurrentUserInitiatedProfileName(false);
-    RefPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(title);
+    RefPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(m_frontendInitiatedProfileId);
+    m_frontendInitiatedProfileId = String();
     if (scriptProfile && profile) {
         *profile = createCPUProfile(*scriptProfile);
         if (!m_keepAliveProfile)

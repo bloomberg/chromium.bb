@@ -33,9 +33,8 @@ function test()
 
     function didStopFrontendProfile(messageObject)
     {
-        if (!InspectorTest.expectedError("failToStopFrontendProfile", messageObject))
+        if (!InspectorTest.expectedSuccess("stoppedFrontendProfile", messageObject))
             return;
-        InspectorTest.log("Error message was: " + JSON.stringify(messageObject.error));
         InspectorTest.sendCommand("Profiler.start", {}, didStartFrontendProfile2);
     }
 

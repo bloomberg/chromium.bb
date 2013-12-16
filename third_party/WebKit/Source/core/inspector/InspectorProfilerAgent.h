@@ -80,8 +80,6 @@ private:
     bool enabled();
     void doEnable();
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
-    String getCurrentUserInitiatedProfileName(bool incrementProfileNumber);
-    void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
 
     InspectorConsoleAgent* m_consoleAgent;
     InjectedScriptManager* m_injectedScriptManager;
@@ -90,8 +88,10 @@ private:
     // last finished profile is deleted (we keep at least one finished profile alive).
     RefPtr<ScriptProfile> m_keepAliveProfile;
     bool m_recordingCPUProfile;
-    int m_currentUserInitiatedProfileNumber;
-    unsigned m_nextUserInitiatedProfileNumber;
+    int m_nextProfileId;
+    class ProfileDescriptor;
+    Vector<ProfileDescriptor> m_startedProfiles;
+    String m_frontendInitiatedProfileId;
 
     typedef HashMap<String, double> ProfileNameIdleTimeMap;
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;

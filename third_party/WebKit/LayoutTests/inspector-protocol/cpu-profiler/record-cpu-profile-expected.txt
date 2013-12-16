@@ -3,8 +3,7 @@ Test that profiler is able to record a profile. Also it tests that profiler retu
 PASS: startFrontendProfile
 PASS: startConsoleProfile
 PASS: stopConsoleProfile
-PASS: failToStopFrontendProfile
-Error message was: {"code":-32000,"message":"Profile wasn't found"}
+PASS: stoppedFrontendProfile
 PASS: startFrontendProfileSecondTime
 PASS: stopFrontendProfileSecondTime
 
