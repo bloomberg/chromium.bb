@@ -41,10 +41,6 @@ enum evdev_event_type {
 	EVDEV_RELATIVE_MOTION,
 };
 
-enum evdev_device_capability {
-	EVDEV_TOUCH = (1 << 0),
-};
-
 enum evdev_device_seat_capability {
 	EVDEV_SEAT_POINTER = (1 << 0),
 	EVDEV_SEAT_KEYBOARD = (1 << 1),
@@ -81,7 +77,6 @@ struct evdev_device {
 	} rel;
 
 	enum evdev_event_type pending_event;
-	enum evdev_device_capability caps;
 	enum evdev_device_seat_capability seat_caps;
 
 	int is_mt;
