@@ -218,6 +218,13 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSProper
     Color fallbackColor = style.color();
     Color fallbackVisitedLinkColor = style.visitedLinkColor();
     Color resolvedColor;
+
+    if (property == CSSPropertyBackgroundColor) {
+        // For background-color, invalid color means transparent and not currentColor.
+        fallbackColor = Color::transparent;
+        fallbackVisitedLinkColor = Color::transparent;
+    }
+
     if (color.isValid())
         resolvedColor = color;
     else

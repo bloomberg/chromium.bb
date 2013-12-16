@@ -28,5 +28,17 @@ assertInterpolation({
   {at: 1, is: 'orange'},
   {at: 1.5, is: 'rgb(255, 120, 0)'},
 ]);
+assertInterpolation({
+  property: 'background-color',
+  from: 'initial',
+  to: 'transparent'
+}, [
+  {at: -0.3, is: 'transparent'},
+  {at: 0, is: 'transparent'},
+  {at: 0.3, is: 'transparent'},
+  {at: 0.6, is: 'transparent'},
+  {at: 1, is: 'transparent'},
+  {at: 1.5, is: 'transparent'},
+]);
 </script>
 </body>
