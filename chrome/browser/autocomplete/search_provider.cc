@@ -488,13 +488,22 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 }
 
 void SearchProvider::DeleteMatch(const AutocompleteMatch& match) {
-  // TODO(mariakhomenko): Add support for deleting search history suggestions.
   DCHECK(match.deletable);
 
   deletion_handlers_.push_back(new SuggestionDeletionHandler(
       match.GetAdditionalInfo(SearchProvider::kDeletionUrlKey),
       profile_,
       base::Bind(&SearchProvider::OnDeletionComplete, base::Unretained(this))));
+
+  HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
+  // This may be NULL if the template corresponding to the keyword has been
+  // deleted or there is no keyword set.
+  if (template_url != NULL) {
+    history_service->DeleteMatchingURLsForKeyword(template_url->id(),
+                                                  match.contents);
+  }
 
   // Immediately update the list of matches to show the match was deleted,
   // regardless of whether the server request actually succeeds.

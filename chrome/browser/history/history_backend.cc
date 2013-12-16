@@ -1190,6 +1190,24 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
   ScheduleCommit();
 }
 
+void HistoryBackend::DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
+                                                  const base::string16& term) {
+  if (!db_)
+    return;
+
+  std::vector<KeywordSearchTermRow> rows;
+  if (db_->GetKeywordSearchTermRows(term, &rows)) {
+    std::vector<GURL> items_to_delete;
+    URLRow row;
+    for (std::vector<KeywordSearchTermRow>::iterator it = rows.begin();
+         it != rows.end(); ++it) {
+      if (it->keyword_id == keyword_id && db_->GetURLRow(it->url_id, &row))
+        items_to_delete.push_back(row.url());
+    }
+    DeleteURLs(items_to_delete);
+  }
+}
+
 // Downloads -------------------------------------------------------------------
 
 void HistoryBackend::GetNextDownloadId(uint32* next_id) {

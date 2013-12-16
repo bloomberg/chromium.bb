@@ -2743,6 +2743,63 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
   ASSERT_EQ(0U, visits.size());
 }
 
+TEST_F(HistoryBackendTest, DeleteMatchingUrlsForKeyword) {
+  // Set up urls and keyword_search_terms
+  GURL url1("https://www.bing.com/?q=bar");
+  URLRow url_info1(url1);
+  url_info1.set_visit_count(0);
+  url_info1.set_typed_count(0);
+  url_info1.set_last_visit(Time());
+  url_info1.set_hidden(false);
+  const URLID url1_id = backend_->db()->AddURL(url_info1);
+  EXPECT_NE(0, url1_id);
+
+  TemplateURLID keyword_id = 1;
+  base::string16 keyword = UTF8ToUTF16("bar");
+  ASSERT_TRUE(backend_->db()->SetKeywordSearchTermsForURL(
+      url1_id, keyword_id, keyword));
+
+  GURL url2("https://www.google.com/?q=bar");
+  URLRow url_info2(url2);
+  url_info2.set_visit_count(0);
+  url_info2.set_typed_count(0);
+  url_info2.set_last_visit(Time());
+  url_info2.set_hidden(false);
+  const URLID url2_id = backend_->db()->AddURL(url_info2);
+  EXPECT_NE(0, url2_id);
+
+  TemplateURLID keyword_id2 = 2;
+  ASSERT_TRUE(backend_->db()->SetKeywordSearchTermsForURL(
+      url2_id, keyword_id2, keyword));
+
+  // Add another visit to the same URL
+  URLRow url_info3(url2);
+  url_info3.set_visit_count(0);
+  url_info3.set_typed_count(0);
+  url_info3.set_last_visit(Time());
+  url_info3.set_hidden(false);
+  const URLID url3_id = backend_->db()->AddURL(url_info3);
+  EXPECT_NE(0, url3_id);
+  ASSERT_TRUE(backend_->db()->SetKeywordSearchTermsForURL(
+      url3_id, keyword_id2, keyword));
+
+  // Test that deletion works correctly
+  backend_->DeleteMatchingURLsForKeyword(keyword_id2, keyword);
+
+  // Test that rows 2 and 3 are deleted, while 1 is intact
+  URLRow row;
+  EXPECT_TRUE(backend_->db()->GetURLRow(url1_id, &row));
+  EXPECT_EQ(url1.spec(), row.url().spec());
+  EXPECT_FALSE(backend_->db()->GetURLRow(url2_id, &row));
+  EXPECT_FALSE(backend_->db()->GetURLRow(url3_id, &row));
+
+  // Test that corresponding keyword search terms are deleted for rows 2 & 3,
+  // but not for row 1
+  EXPECT_TRUE(backend_->db()->GetKeywordSearchTermRow(url1_id, NULL));
+  EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url2_id, NULL));
+  EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url3_id, NULL));
+}
+
 class HistoryBackendSegmentDurationTest : public HistoryBackendTest {
  public:
   HistoryBackendSegmentDurationTest() {}

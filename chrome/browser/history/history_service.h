@@ -510,6 +510,11 @@ class HistoryService : public CancelableRequestProvider,
   // Deletes any search term corresponding to |url|.
   void DeleteKeywordSearchTermForURL(const GURL& url);
 
+  // Deletes all URL and search term entries matching the given |term| and
+  // |keyword_id|.
+  void DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
+                                    const base::string16& term);
+
   // Bookmarks -----------------------------------------------------------------
 
   // Notification that a URL is no longer bookmarked.

@@ -320,6 +320,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void DeleteKeywordSearchTermForURL(const GURL& url);
 
+  void DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
+                                    const base::string16& term);
+
 #if defined(OS_ANDROID)
   // Android Provider ---------------------------------------------------------
 
