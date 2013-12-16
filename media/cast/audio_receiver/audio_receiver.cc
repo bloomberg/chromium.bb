@@ -187,11 +187,11 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
       DecodedAudioCallbackData decoded_data = queued_decoded_callbacks_.front();
       queued_decoded_callbacks_.pop_front();
       cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
-          base::Bind(&AudioReceiver::DecodeAudioFrameThread,
-                     base::Unretained(this),
-                     decoded_data.number_of_10ms_blocks,
-                     decoded_data.desired_frequency,
-                     decoded_data.callback));
+        base::Bind(&AudioReceiver::DecodeAudioFrameThread,
+                   base::Unretained(this),
+                   decoded_data.number_of_10ms_blocks,
+                   decoded_data.desired_frequency,
+                   decoded_data.callback));
     }
     return;
   }
@@ -203,7 +203,6 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                               rtp_header);
   if (!complete) return;  // Audio frame not complete; wait for more packets.
   if (queued_encoded_callbacks_.empty()) return;
-
   AudioFrameEncodedCallback callback = queued_encoded_callbacks_.front();
   queued_encoded_callbacks_.pop_front();
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
@@ -382,7 +381,6 @@ void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
 
 base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
                                               uint32 rtp_timestamp) {
-  base::TimeTicks playout_time;
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // Senders time in ms when this frame was recorded.
   // Note: the senders clock and our local clock might not be synced.
@@ -402,21 +400,15 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
           base::TimeDelta::FromMilliseconds(rtp_timestamp_diff / frequency_khz);
       base::TimeDelta time_diff_delta = now - time_first_incoming_packet_;
 
-      playout_time =  now + std::max(rtp_time_diff_delta - time_diff_delta,
-                                     base::TimeDelta());
+      return now + std::max(rtp_time_diff_delta - time_diff_delta,
+                            base::TimeDelta());
     }
   }
-  if (!playout_time.is_null()) {
-    // This can fail if we have not received any RTCP packets in a long time.
-    playout_time = rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
-                                                   &rtp_timestamp_in_ticks) ?
-        rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_ : now;
-  }
-  // Don't allow the playout time to go backwards.
-  if (last_playout_time_ > playout_time)
-    playout_time = last_playout_time_;
-  last_playout_time_ = playout_time;
-  return playout_time;
+  // This can fail if we have not received any RTCP packets in a long time.
+  return rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
+                                         &rtp_timestamp_in_ticks) ?
+    rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_ :
+    now;
 }
 
 bool AudioReceiver::DecryptAudioFrame(
