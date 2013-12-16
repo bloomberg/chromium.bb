@@ -17,8 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
-#include "third_party/skia/include/core/SkPoint.h"
 #import "third_party/GTM/AppKit/GTMCarbonEvent.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 // Esc Key Code is 53.
 // http://boredzo.org/blog/wp-content/uploads/2007/05/IMTx-virtual-keycodes.pdf
@@ -35,7 +35,7 @@ class LocalInputMonitorMac : public base::NonThreadSafe,
    public:
     virtual ~EventHandler() {}
 
-    virtual void OnLocalMouseMoved(const SkIPoint& position) = 0;
+    virtual void OnLocalMouseMoved(const webrtc::DesktopVector& position) = 0;
     virtual void OnDisconnectShortcut() = 0;
   };
 
@@ -70,7 +70,7 @@ class LocalInputMonitorMac : public base::NonThreadSafe,
 - (void)hotKeyHit:(GTMCarbonHotKey*)hotKey;
 
 // Called when the local mouse moves
-- (void)localMouseMoved:(const SkIPoint&)mousePos;
+- (void)localMouseMoved:(const webrtc::DesktopVector&)mousePos;
 
 // Must be called when the LocalInputMonitorManager is no longer to be used.
 // Similar to NSTimer in that more than a simple release is required.
@@ -83,7 +83,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
   int64_t pid = CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID);
   if (pid == 0) {
     CGPoint cgMousePos = CGEventGetLocation(event);
-    SkIPoint mousePos = SkIPoint::Make(cgMousePos.x, cgMousePos.y);
+    webrtc::DesktopVector mousePos(cgMousePos.x, cgMousePos.y);
     [static_cast<LocalInputMonitorManager*>(context) localMouseMoved:mousePos];
   }
   return NULL;
@@ -129,7 +129,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
   monitor_->OnDisconnectShortcut();
 }
 
-- (void)localMouseMoved:(const SkIPoint&)mousePos {
+- (void)localMouseMoved:(const webrtc::DesktopVector&)mousePos {
   monitor_->OnLocalMouseMoved(mousePos);
 }
 
@@ -174,7 +174,8 @@ class LocalInputMonitorMac::Core
   void StopOnUiThread();
 
   // EventHandler interface.
-  virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
+  virtual void OnLocalMouseMoved(
+      const webrtc::DesktopVector& position) OVERRIDE;
   virtual void OnDisconnectShortcut() OVERRIDE;
 
   // Task runner on which public methods of this class must be called.
@@ -248,7 +249,8 @@ void LocalInputMonitorMac::Core::StopOnUiThread() {
   manager_ = nil;
 }
 
-void LocalInputMonitorMac::Core::OnLocalMouseMoved(const SkIPoint& position) {
+void LocalInputMonitorMac::Core::OnLocalMouseMoved(
+    const webrtc::DesktopVector& position) {
   caller_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
                             client_session_control_,

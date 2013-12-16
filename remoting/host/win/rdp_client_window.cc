@@ -114,7 +114,6 @@ RdpClientWindow::RdpClientWindow(const net::IPEndPoint& server_endpoint,
                                  const std::string& terminal_id,
                                  EventHandler* event_handler)
     : event_handler_(event_handler),
-      screen_size_(SkISize::Make(0, 0)),
       server_endpoint_(server_endpoint),
       terminal_id_(terminal_id) {
 }
@@ -127,7 +126,7 @@ RdpClientWindow::~RdpClientWindow() {
   DCHECK(!client_settings_);
 }
 
-bool RdpClientWindow::Connect(const SkISize& screen_size) {
+bool RdpClientWindow::Connect(const webrtc::DesktopSize& screen_size) {
   DCHECK(!m_hWnd);
 
   screen_size_ = screen_size;

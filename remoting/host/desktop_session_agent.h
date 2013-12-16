@@ -106,7 +106,8 @@ class DesktopSessionAgent
   // ClientSessionControl interface.
   virtual const std::string& client_jid() const OVERRIDE;
   virtual void DisconnectSession() OVERRIDE;
-  virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
+  virtual void OnLocalMouseMoved(
+    const webrtc::DesktopVector& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
 
   // Handles StartSessionAgent request from the client.

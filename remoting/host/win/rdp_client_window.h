@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/win/scoped_comptr.h"
 #include "net/base/ip_endpoint.h"
-#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 #import "PROGID:MsTscAx.MsTscAx" \
     exclude("wireHWND", "_RemotableHandle", "__MIDL_IWinTypes_0009"), \
@@ -72,7 +72,7 @@ class RdpClientWindow
   // Creates the window along with the ActiveX control and initiates the
   // connection. |screen_size| specifies resolution of the screen. Returns false
   // if an error occurs.
-  bool Connect(const SkISize& screen_size);
+  bool Connect(const webrtc::DesktopSize& screen_size);
 
   // Initiates shutdown of the connection. The caller must not delete |this|
   // until it receives OnDisconnected() notification.
@@ -133,7 +133,7 @@ class RdpClientWindow
   EventHandler* event_handler_;
 
   // Contains the requested dimensions of the screen.
-  SkISize screen_size_;
+  webrtc::DesktopSize screen_size_;
 
   // The endpoint to connect to.
   net::IPEndPoint server_endpoint_;

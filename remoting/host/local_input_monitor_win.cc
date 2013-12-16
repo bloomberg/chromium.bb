@@ -13,7 +13,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/win/message_window.h"
 #include "remoting/host/client_session_control.h"
-#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -198,7 +198,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
     caller_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
                               client_session_control_,
-                              SkIPoint::Make(position.x, position.y)));
+                              webrtc::DesktopVector(position.x, position.y)));
   }
 
   return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));

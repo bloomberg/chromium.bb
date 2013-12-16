@@ -397,7 +397,7 @@ void ClientSession::DisconnectSession() {
   connection_->Disconnect();
 }
 
-void ClientSession::OnLocalMouseMoved(const SkIPoint& position) {
+void ClientSession::OnLocalMouseMoved(const webrtc::DesktopVector& position) {
   DCHECK(CalledOnValidThread());
   remote_input_filter_.LocalMouseMoved(position);
 }

@@ -6,7 +6,10 @@
 #define REMOTING_HOST_CLIENT_SESSION_CONTROL_H_
 
 #include "base/basictypes.h"
-#include "third_party/skia/include/core/SkPoint.h"
+
+namespace webrtc {
+class DesktopVector;
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -25,7 +28,7 @@ class ClientSessionControl {
   virtual void DisconnectSession() = 0;
 
   // Called when local mouse movement is detected.
-  virtual void OnLocalMouseMoved(const SkIPoint& position) = 0;
+  virtual void OnLocalMouseMoved(const webrtc::DesktopVector& position) = 0;
 
   // Disables or enables the remote input in the client session.
   virtual void SetDisableInputs(bool disable_inputs) = 0;

@@ -14,9 +14,6 @@
 #include "remoting/base/util.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/event.pb.h"
-// SkSize.h assumes that stdint.h-style types are already defined.
-#include "third_party/skia/include/core/SkSize.h"
-#include "third_party/skia/include/core/SkTypes.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace remoting {
@@ -224,13 +221,13 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
     input.mi.dy = event.delta_y();
     input.mi.dwFlags |= MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK;
   } else if (event.has_x() && event.has_y()) {
-    SkISize screen_size(SkISize::Make(GetSystemMetrics(SM_CXVIRTUALSCREEN),
-                                      GetSystemMetrics(SM_CYVIRTUALSCREEN)));
-    if ((screen_size.width() > 1) && (screen_size.height() > 1)) {
-      int x = std::max(0, std::min(screen_size.width(), event.x()));
-      int y = std::max(0, std::min(screen_size.height(), event.y()));
-      input.mi.dx = static_cast<int>((x * 65535) / (screen_size.width() - 1));
-      input.mi.dy = static_cast<int>((y * 65535) / (screen_size.height() - 1));
+    int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    if (width > 1 && height > 1) {
+      int x = std::max(0, std::min(width, event.x()));
+      int y = std::max(0, std::min(height, event.y()));
+      input.mi.dx = static_cast<int>((x * 65535) / (width - 1));
+      input.mi.dy = static_cast<int>((y * 65535) / (height - 1));
       input.mi.dwFlags |=
           MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
     }

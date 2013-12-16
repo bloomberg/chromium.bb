@@ -22,7 +22,6 @@
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/session_manager.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
 class SingleThreadTaskRunner;

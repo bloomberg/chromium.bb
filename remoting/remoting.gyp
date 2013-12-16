@@ -2109,7 +2109,6 @@
         'remoting_jingle_glue',
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
-        '../skia/skia.gyp:skia',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/events/events.gyp:dom4_keycode_converter',
       ],
@@ -2499,7 +2498,6 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
         '../net/net.gyp:net',
-        '../skia/skia.gyp:skia',
         '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/opus/opus.gyp:opus',
@@ -2514,7 +2512,6 @@
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
-        '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],

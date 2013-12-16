@@ -25,8 +25,7 @@
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/pairing_registry.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -131,7 +130,8 @@ class ClientSession
   // ClientSessionControl interface.
   virtual const std::string& client_jid() const OVERRIDE;
   virtual void DisconnectSession() OVERRIDE;
-  virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
+  virtual void OnLocalMouseMoved(
+      const webrtc::DesktopVector& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
 
   protocol::ConnectionToClient* connection() const {

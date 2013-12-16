@@ -49,7 +49,7 @@ class MockClientSessionControl : public ClientSessionControl {
 
   MOCK_CONST_METHOD0(client_jid, const std::string&());
   MOCK_METHOD0(DisconnectSession, void());
-  MOCK_METHOD1(OnLocalMouseMoved, void(const SkIPoint&));
+  MOCK_METHOD1(OnLocalMouseMoved, void(const webrtc::DesktopVector&));
   MOCK_METHOD1(SetDisableInputs, void(bool));
 
  private:

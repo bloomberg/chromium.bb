@@ -4,8 +4,6 @@
 
 #include "remoting/host/remote_input_filter.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "remoting/proto/event.pb.h"
 
@@ -33,14 +31,18 @@ RemoteInputFilter::RemoteInputFilter(protocol::InputEventTracker* event_tracker)
 RemoteInputFilter::~RemoteInputFilter() {
 }
 
-void RemoteInputFilter::LocalMouseMoved(const SkIPoint& mouse_pos) {
+void RemoteInputFilter::LocalMouseMoved(
+    const webrtc::DesktopVector& mouse_pos) {
   // If this is a genuine local input event (rather than an echo of a remote
   // input event that we've just injected), then ignore remote inputs for a
   // short time.
   if (expect_local_echo_) {
-    std::list<SkIPoint>::iterator found_position =
-        std::find(injected_mouse_positions_.begin(),
-                  injected_mouse_positions_.end(), mouse_pos);
+    std::list<webrtc::DesktopVector>::iterator found_position =
+        injected_mouse_positions_.begin();
+    while (found_position != injected_mouse_positions_.end() &&
+           !mouse_pos.equals(*found_position)) {
+      ++found_position;
+    }
     if (found_position != injected_mouse_positions_.end()) {
       // Remove it from the list, and any positions that were added before it,
       // if any.  This is because the local input monitor is assumed to receive
@@ -77,7 +79,8 @@ void RemoteInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
   if (ShouldIgnoreInput())
     return;
   if (expect_local_echo_ && event.has_x() && event.has_y()) {
-    injected_mouse_positions_.push_back(SkIPoint::Make(event.x(), event.y()));
+    injected_mouse_positions_.push_back(
+        webrtc::DesktopVector(event.x(), event.y()));
     if (injected_mouse_positions_.size() > kNumRemoteMousePositions) {
       VLOG(1) << "Injected mouse positions queue full.";
       injected_mouse_positions_.pop_front();

@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_stub.h"
-#include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
 
@@ -28,7 +27,7 @@ class RemoteInputFilter : public protocol::InputStub {
   // Informs the filter that local mouse activity has been detected.  If the
   // activity does not match events we injected then we assume that it is local,
   // and block remote input for a short while.
-  void LocalMouseMoved(const SkIPoint& mouse_pos);
+  void LocalMouseMoved(const webrtc::DesktopVector& mouse_pos);
 
   // Informs the filter that injecting input causes an echo.
   void SetExpectLocalEcho(bool expect_local_echo);
@@ -44,7 +43,7 @@ class RemoteInputFilter : public protocol::InputStub {
 
   // Queue of recently-injected mouse positions used to distinguish echoes of
   // injected events from movements from a local input device.
-  std::list<SkIPoint> injected_mouse_positions_;
+  std::list<webrtc::DesktopVector> injected_mouse_positions_;
 
   // Time at which local input events were most recently observed.
   base::TimeTicks latest_local_input_time_;

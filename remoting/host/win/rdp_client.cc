@@ -14,6 +14,7 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/win/rdp_client_window.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -45,7 +46,8 @@ class RdpClient::Core
       RdpClient::EventHandler* event_handler);
 
   // Initiates a loopback RDP connection.
-  void Connect(const SkISize& screen_size, const std::string& terminal_id);
+  void Connect(const webrtc::DesktopSize& screen_size,
+               const std::string& terminal_id);
 
   // Initiates a graceful shutdown of the RDP connection.
   void Disconnect();
@@ -88,7 +90,7 @@ class RdpClient::Core
 RdpClient::RdpClient(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const SkISize& screen_size,
+    const webrtc::DesktopSize& screen_size,
     const std::string& terminal_id,
     EventHandler* event_handler) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
@@ -118,7 +120,7 @@ RdpClient::Core::Core(
       event_handler_(event_handler) {
 }
 
-void RdpClient::Core::Connect(const SkISize& screen_size,
+void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
                               const std::string& terminal_id) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(

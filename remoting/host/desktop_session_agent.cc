@@ -25,6 +25,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 
@@ -225,7 +226,8 @@ void DesktopSessionAgent::DisconnectSession() {
   SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession());
 }
 
-void DesktopSessionAgent::OnLocalMouseMoved(const SkIPoint& new_pos) {
+void DesktopSessionAgent::OnLocalMouseMoved(
+    const webrtc::DesktopVector& new_pos) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   remote_input_filter_->LocalMouseMoved(new_pos);

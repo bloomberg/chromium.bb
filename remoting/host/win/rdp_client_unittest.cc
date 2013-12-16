@@ -20,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 using testing::_;
 using testing::AtMost;
@@ -161,9 +162,10 @@ TEST_F(RdpClientTest, Basic) {
       .Times(AtMost(1))
       .WillOnce(InvokeWithoutArgs(this, &RdpClientTest::CloseRdpClient));
 
-  rdp_client_.reset(new RdpClient(task_runner_, task_runner_,
-                                  SkISize::Make(kDefaultWidth, kDefaultHeight),
-                                  terminal_id_, &event_handler_));
+  rdp_client_.reset(new RdpClient(
+      task_runner_, task_runner_,
+      webrtc::DesktopSize(kDefaultWidth, kDefaultHeight),
+      terminal_id_, &event_handler_));
   task_runner_ = NULL;
 
   run_loop_.Run();

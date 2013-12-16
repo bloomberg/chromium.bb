@@ -12,6 +12,7 @@
 #include "remoting/host/screen_capturer_fake.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
 
@@ -50,7 +51,8 @@ ACTION_P2(InjectMouseEvent, connection, event) {
 }
 
 ACTION_P2(LocalMouseMoved, client_session, event) {
-  client_session->OnLocalMouseMoved(SkIPoint::Make(event.x(), event.y()));
+  client_session->OnLocalMouseMoved(
+      webrtc::DesktopVector(event.x(), event.y()));
 }
 
 }  // namespace

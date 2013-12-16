@@ -3,11 +3,9 @@ include_rules = [
   "+remoting/codec",
   "+remoting/jingle_glue",
   "+remoting/protocol",
-  "+skia/ext",
   "+third_party/jsoncpp",
   "+third_party/modp_b64",
   "+third_party/npapi",
-  "+third_party/skia/include/core",
   "+third_party/webrtc",
   "+ui",
 ]

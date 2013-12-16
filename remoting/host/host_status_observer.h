@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "third_party/skia/include/core/SkRect.h"
-
 namespace net {
 class IPEndPoint;
 }  // namespace net

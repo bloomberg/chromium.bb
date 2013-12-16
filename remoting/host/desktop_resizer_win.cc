@@ -5,6 +5,7 @@
 #include "remoting/host/desktop_resizer.h"
 
 #include <map>
+#include <windows.h>
 
 #include "base/logging.h"
 

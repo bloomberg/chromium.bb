@@ -11,11 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-}  // namespace
+}  // namespace base
+
+namespace webrtc {
+class DesktopSize;
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -37,7 +40,7 @@ class RdpClient : public base::NonThreadSafe {
   RdpClient(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      const SkISize& screen_size,
+      const webrtc::DesktopSize& screen_size,
       const std::string& terminal_id,
       EventHandler* event_handler);
   virtual ~RdpClient();

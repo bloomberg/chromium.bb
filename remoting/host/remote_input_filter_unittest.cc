@@ -67,7 +67,7 @@ TEST(RemoteInputFilterTest, MismatchedLocalActivity) {
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
     if (i == 4)
-      input_filter.LocalMouseMoved(SkIPoint::Make(1, 1));
+      input_filter.LocalMouseMoved(webrtc::DesktopVector(1, 1));
   }
 }
 
@@ -82,7 +82,7 @@ TEST(RemoteInputFilterTest, LocalEchoesOfRemoteActivity) {
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
-    input_filter.LocalMouseMoved(SkIPoint::Make(0, 0));
+    input_filter.LocalMouseMoved(webrtc::DesktopVector(0, 0));
   }
 }
 
@@ -97,9 +97,9 @@ TEST(RemoteInputFilterTest, LocalEchosAndLocalActivity) {
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
-    input_filter.LocalMouseMoved(SkIPoint::Make(0, 0));
+    input_filter.LocalMouseMoved(webrtc::DesktopVector(0, 0));
     if (i == 4)
-      input_filter.LocalMouseMoved(SkIPoint::Make(1, 1));
+      input_filter.LocalMouseMoved(webrtc::DesktopVector(1, 1));
   }
 }
 
@@ -120,9 +120,9 @@ TEST(RemoteInputFilterTest, LocalActivityReleasesAll) {
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
-    input_filter.LocalMouseMoved(SkIPoint::Make(0, 0));
+    input_filter.LocalMouseMoved(webrtc::DesktopVector(0, 0));
     if (i == 4)
-      input_filter.LocalMouseMoved(SkIPoint::Make(1, 1));
+      input_filter.LocalMouseMoved(webrtc::DesktopVector(1, 1));
   }
 }
 

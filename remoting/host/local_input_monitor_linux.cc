@@ -20,7 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
-#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 // These includes need to be later than dictated by the style guide due to
 // Xlib header pollution, specifically the min, max, and Status macros.
@@ -283,8 +283,8 @@ void LocalInputMonitorLinux::Core::ProcessXEvent(xEvent* event) {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   if (event->u.u.type == MotionNotify) {
-    SkIPoint position(SkIPoint::Make(event->u.keyButtonPointer.rootX,
-                                     event->u.keyButtonPointer.rootY));
+    webrtc::DesktopVector position(event->u.keyButtonPointer.rootX,
+                                   event->u.keyButtonPointer.rootY);
     caller_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
                               client_session_control_,

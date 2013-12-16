@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -38,7 +39,8 @@ class HostWindowProxy::Core
   // ClientSessionControl interface.
   virtual const std::string& client_jid() const OVERRIDE;
   virtual void DisconnectSession() OVERRIDE;
-  virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
+  virtual void OnLocalMouseMoved(
+      const webrtc::DesktopVector& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
 
   // Task runner on which public methods of this class must be called.
@@ -152,7 +154,8 @@ void HostWindowProxy::Core::DisconnectSession() {
     client_session_control_->DisconnectSession();
 }
 
-void HostWindowProxy::Core::OnLocalMouseMoved(const SkIPoint& position) {
+void HostWindowProxy::Core::OnLocalMouseMoved(
+    const webrtc::DesktopVector& position) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::OnLocalMouseMoved, this, position));

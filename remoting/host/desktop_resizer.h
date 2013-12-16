@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/screen_resolution.h"
-#include "third_party/skia/include/core/SkRect.h"
 
 namespace remoting {
 
