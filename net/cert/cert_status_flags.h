@@ -34,6 +34,7 @@ static const CertStatus CERT_STATUS_NON_UNIQUE_NAME            = 1 << 10;
 static const CertStatus CERT_STATUS_WEAK_KEY                   = 1 << 11;
 static const CertStatus CERT_STATUS_WEAK_DH_KEY                = 1 << 12;
 static const CertStatus CERT_STATUS_PINNED_KEY_MISSING         = 1 << 13;
+static const CertStatus CERT_STATUS_NAME_CONSTRAINT_VIOLATION  = 1 << 14;
 
 // Bits 16 to 31 are for non-error statuses.
 static const CertStatus CERT_STATUS_IS_EV                      = 1 << 16;

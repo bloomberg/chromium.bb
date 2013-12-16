@@ -524,6 +524,67 @@ TEST_F(CertVerifyProcTest, DigiNotarCerts) {
   }
 }
 
+TEST_F(CertVerifyProcTest, NameConstraintsOk) {
+  CertificateList ca_cert_list =
+      CreateCertificateListFromFile(GetTestCertsDirectory(),
+                                    "root_ca_cert.pem",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_cert_list.size());
+  ScopedTestRoot test_root(ca_cert_list[0]);
+
+  CertificateList cert_list = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "name_constraint_ok.crt",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, cert_list.size());
+
+  X509Certificate::OSCertHandles intermediates;
+  scoped_refptr<X509Certificate> leaf =
+      X509Certificate::CreateFromHandle(cert_list[0]->os_cert_handle(),
+                                        intermediates);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = Verify(leaf.get(),
+                     "test.example.com",
+                     flags,
+                     NULL,
+                     empty_cert_list_,
+                     &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result.cert_status);
+}
+
+TEST_F(CertVerifyProcTest, NameConstraintsFailure) {
+  CertificateList ca_cert_list =
+      CreateCertificateListFromFile(GetTestCertsDirectory(),
+                                    "root_ca_cert.pem",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_cert_list.size());
+  ScopedTestRoot test_root(ca_cert_list[0]);
+
+  CertificateList cert_list = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "name_constraint_bad.crt",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, cert_list.size());
+
+  X509Certificate::OSCertHandles intermediates;
+  scoped_refptr<X509Certificate> leaf =
+      X509Certificate::CreateFromHandle(cert_list[0]->os_cert_handle(),
+                                        intermediates);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = Verify(leaf.get(),
+                     "test.example.com",
+                     flags,
+                     NULL,
+                     empty_cert_list_,
+                     &verify_result);
+  EXPECT_EQ(ERR_CERT_NAME_CONSTRAINT_VIOLATION, error);
+  EXPECT_EQ(CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
+            verify_result.cert_status & CERT_STATUS_NAME_CONSTRAINT_VIOLATION);
+}
+
 // The certse.pem certificate has been revoked. crbug.com/259723.
 TEST_F(CertVerifyProcTest, TestKnownRoot) {
   base::FilePath certs_dir = GetTestCertsDirectory();

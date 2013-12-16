@@ -404,13 +404,16 @@ NET_ERROR(CERT_NON_UNIQUE_NAME, -210)
 // a too-small RSA key).
 NET_ERROR(CERT_WEAK_KEY, -211)
 
+// The certificate claimed DNS names that are in violation of name constraints.
+NET_ERROR(CERT_NAME_CONSTRAINT_VIOLATION, -212)
+
 // Add new certificate error codes here.
 //
 // Update the value of CERT_END whenever you add a new certificate error
 // code.
 
 // The value immediately past the last certificate error code.
-NET_ERROR(CERT_END, -212)
+NET_ERROR(CERT_END, -213)
 
 // Certificate Transparency: All Signed Certificate Timestamps failed to verify.
 // XXX(eranm): Move this error to a more appropriate category.

@@ -90,6 +90,15 @@ class NET_EXPORT CertVerifyProc
   // are hashes of SubjectPublicKeyInfo structures) is explicitly blocked.
   static bool IsPublicKeyBlacklisted(const HashValueVector& public_key_hashes);
 
+  // HasNameConstraintsViolation returns true iff one of |public_key_hashes|
+  // (which are hashes of SubjectPublicKeyInfo structures) has name constraints
+  // imposed on it and the names in |dns_names| are not permitted.
+  static bool HasNameConstraintsViolation(
+      const HashValueVector& public_key_hashes,
+      const std::string& common_name,
+      const std::vector<std::string>& dns_names,
+      const std::vector<std::string>& ip_addrs);
+
   DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };
 

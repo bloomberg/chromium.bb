@@ -40,6 +40,7 @@ SecurityFilterPeer*
     case net::ERR_CERT_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
+    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_INSECURE_RESPONSE:
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
       if (ResourceType::IsFrame(resource_type))

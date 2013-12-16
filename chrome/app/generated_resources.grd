@@ -2514,6 +2514,16 @@ Even if you have downloaded files from this website before, the website might ha
         The server certificate contains a weak cryptographic key.
       </message>
 
+      <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_TITLE" desc="Title of the error page for a certificate that contains a name outside of its scope">
+        The server certificate contains a domain name that shouldn't be there.
+      </message>
+      <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DETAILS" desc="Details of the error page for a certificate that contains a name outside of its scope">
+        You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented an invalid certificate. The authority who created the certificate is not allowed to speak on behalf of some websites. One of those websites is mentioned in the certificate, even though it shouldn't be.
+      </message>
+      <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION" desc="Description of the error page for a certificate that contains a name outside of its scope">
+        Server's certificate violates name constraints.
+      </message>
+
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE" desc="Title of the error page for an unknown ssl error">
         Unknown server certificate error
       </message>
