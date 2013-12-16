@@ -666,8 +666,12 @@ base::string16 OmniboxViewViews::GetGrayTextAutocompletion() const {
 #endif
 }
 
-int OmniboxViewViews::TextWidth() const {
+int OmniboxViewViews::GetTextWidth() const {
   return native_wrapper_->GetWidthNeededForText();
+}
+
+int OmniboxViewViews::GetWidth() const {
+  return location_bar_view_->width();
 }
 
 bool OmniboxViewViews::IsImeComposing() const {

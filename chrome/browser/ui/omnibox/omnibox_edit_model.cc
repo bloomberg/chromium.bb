@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -106,10 +107,15 @@ const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 // between focusing and opening an omnibox match.
 const char kFocusToOpenTimeHistogram[] = "Omnibox.FocusToOpenTime";
 
+// Split the percentage match histograms into buckets based on the width of the
+// omnibox.
+const int kPercentageMatchHistogramWidthBuckets[] = { 400, 700, 1200 };
+
 void RecordPercentageMatchHistogram(const base::string16& old_text,
                                     const base::string16& new_text,
                                     bool url_replacement_active,
-                                    content::PageTransition transition) {
+                                    content::PageTransition transition,
+                                    int omnibox_width) {
   size_t avg_length = (old_text.length() + new_text.length()) / 2;
 
   int percent = 0;
@@ -122,23 +128,40 @@ void RecordPercentageMatchHistogram(const base::string16& old_text,
     percent = static_cast<float>(matching_characters) / avg_length * 100;
   }
 
+  std::string histogram_name;
   if (url_replacement_active) {
     if (transition == content::PAGE_TRANSITION_TYPED) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchV2_QuerytoURL", percent);
+      histogram_name = "InstantExtended.PercentageMatchV2_QuerytoURL";
+      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchV2_QuerytoQuery", percent);
+      histogram_name = "InstantExtended.PercentageMatchV2_QuerytoQuery";
+      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     }
   } else {
     if (transition == content::PAGE_TRANSITION_TYPED) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchV2_URLtoURL", percent);
+      histogram_name = "InstantExtended.PercentageMatchV2_URLtoURL";
+      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "InstantExtended.PercentageMatchV2_URLtoQuery", percent);
+      histogram_name = "InstantExtended.PercentageMatchV2_URLtoQuery";
+      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
     }
   }
+
+  std::string suffix = "large";
+  for (size_t i = 0; i < arraysize(kPercentageMatchHistogramWidthBuckets);
+       ++i) {
+    if (omnibox_width < kPercentageMatchHistogramWidthBuckets[i]) {
+      suffix = base::IntToString(kPercentageMatchHistogramWidthBuckets[i]);
+      break;
+    }
+  }
+
+  // Cannot rely on UMA histograms macro because the name of the histogram is
+  // generated dynamically.
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      histogram_name + "_" + suffix, 1, 101, 102,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(percent);
 }
 
 }  // namespace
@@ -785,7 +808,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     RecordPercentageMatchHistogram(
         permanent_text_, current_text,
         controller_->GetToolbarModel()->WouldReplaceURL(),
-        match.transition);
+        match.transition, view_->GetWidth());
 
     // Track whether the destination URL sends us to a search results page
     // using the default search provider.

@@ -212,7 +212,10 @@ class OmniboxView {
 
   // Returns the width in pixels needed to display the current text. The
   // returned value includes margins.
-  virtual int TextWidth() const = 0;
+  virtual int GetTextWidth() const = 0;
+
+  // Returns the omnibox's width in pixels.
+  virtual int GetWidth() const = 0;
 
   // Returns true if the user is composing something in an IME.
   virtual bool IsImeComposing() const = 0;

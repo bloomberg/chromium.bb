@@ -101,7 +101,8 @@ class OmniboxViewGtk : public OmniboxView,
   virtual void SetGrayTextAutocompletion(
       const base::string16& suggestion) OVERRIDE;
   virtual base::string16 GetGrayTextAutocompletion() const OVERRIDE;
-  virtual int TextWidth() const OVERRIDE;
+  virtual int GetTextWidth() const OVERRIDE;
+  virtual int GetWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
 
   // Overridden from content::NotificationObserver:

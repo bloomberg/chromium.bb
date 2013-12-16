@@ -614,10 +614,14 @@ base::string16 OmniboxViewMac::GetGrayTextAutocompletion() const {
   return suggest_text_;
 }
 
-int OmniboxViewMac::TextWidth() const {
+int OmniboxViewMac::GetTextWidth() const {
   // Not used on mac.
   NOTREACHED();
   return 0;
+}
+
+int OmniboxViewMac::GetWidth() const {
+  return ceil([field_ bounds].size.width);
 }
 
 bool OmniboxViewMac::IsImeComposing() const {

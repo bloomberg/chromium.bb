@@ -720,7 +720,7 @@ base::string16 OmniboxViewGtk::GetGrayTextAutocompletion() const {
   return suggestion ? UTF8ToUTF16(suggestion) : base::string16();
 }
 
-int OmniboxViewGtk::TextWidth() const {
+int OmniboxViewGtk::GetTextWidth() const {
   // TextWidth may be called after gtk widget tree is destroyed but
   // before OmniboxViewGtk gets deleted.  This is a safe guard
   // to avoid accessing |text_view_| that has already been destroyed.
@@ -763,6 +763,12 @@ int OmniboxViewGtk::TextWidth() const {
       last_char_end - first_char_start : first_char_end - last_char_start;
 
   return text_width + horizontal_border_size;
+}
+
+int OmniboxViewGtk::GetWidth() const {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(text_view_, &allocation);
+  return allocation.width;
 }
 
 bool OmniboxViewGtk::IsImeComposing() const {

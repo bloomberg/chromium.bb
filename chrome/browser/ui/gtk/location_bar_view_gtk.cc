@@ -1450,7 +1450,7 @@ void LocationBarViewGtk::ShowZoomBubble() {
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {
-  int text_width = omnibox_view_->TextWidth();
+  int text_width = omnibox_view_->GetTextWidth();
   int available_width = entry_box_width_ - text_width - InnerPadding();
 
   // Only one of |tab_to_search_alignment_| and |tab_to_search_hint_| can be
