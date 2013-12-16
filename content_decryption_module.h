@@ -302,7 +302,83 @@ enum OutputLinkTypes {
   kLinkTypeNetwork = 1 << 6
 };
 
-//
+// FileIO interface provides a way for the CDM to store data in a file in
+// persistent storage. This interface aims only at providing basic read/write
+// capabilities and should not be used as a full fledged file IO API.
+// Each domain (e.g. "example.com") and each CDM has it's own persistent
+// storage. All instances of a given CDM associated with a given domain share
+// the same persistent storage.
+class FileIO {
+ public:
+  // Opens the file with |file_name| for read and write.
+  // FileIOClient::OnOpenComplete() will be called after the opening
+  // operation finishes.
+  // - When the file is opened by a CDM instance, it will be classified as "in
+  //   use". In this case other CDM instances in the same domain may receive
+  //   kInUse status when trying to open it.
+  // - |file_name| should not include path separators.
+  virtual void Open(const char* file_name, uint32_t file_name_size) = 0;
+
+  // Reads the contents of the file. FileIOClient::OnReadComplete() will be
+  // called with the read status. Read() should not be called if a previous
+  // Read() or Write() call is still pending; otherwise OnReadComplete() will
+  // be called with kInUse.
+  virtual void Read() = 0;
+
+  // Writes |data_size| bytes of |data| into the file.
+  // FileIOClient::OnWriteComplete() will be called with the write status.
+  // All existing contents in the file will be overwritten. Calling Write() with
+  // NULL |data| will clear all contents in the file. Write() should not be
+  // called if a previous Write() or Read() call is still pending; otherwise
+  // OnWriteComplete() will be called with kInUse.
+  virtual void Write(const uint8_t* data, uint32_t data_size) = 0;
+
+  // Closes the file if opened, destroys this FileIO object and releases any
+  // resources allocated. The CDM must call this method when it finished using
+  // this object. A FileIO object must not be used after Close() is called.
+  virtual void Close() = 0;
+
+ protected:
+  FileIO() {}
+  virtual ~FileIO() {}
+};
+
+// Responses to FileIO calls. All responses will be called asynchronously.
+class FileIOClient {
+ public:
+  enum Status {
+    kSuccess = 0,
+    kInUse,
+    kError
+  };
+
+  // Response to a FileIO::Open() call with the open |status|.
+  virtual void OnOpenComplete(Status status) = 0;
+
+  // Response to a FileIO::Read() call to provide |data_size| bytes of |data|
+  // read from the file.
+  // - kSuccess indicates that all contents of the file has been successfully
+  //   read. In this case, 0 |data_size| means that the file is empty.
+  // - kInUse indicates that there are other read/write operations pending.
+  // - kError indicates read failure, e.g. the storage isn't open or cannot be
+  //   fully read.
+  virtual void OnReadComplete(Status status,
+                              const uint8_t* data, uint32_t data_size) = 0;
+
+  // Response to a FileIO::Write() call.
+  // - kSuccess indicates that all the data has been written into the file
+  //   successfully.
+  // - kInUse indicates that there are other read/write operations pending.
+  // - kError indicates write failure, e.g. the storage isn't open or cannot be
+  //   fully written. Upon write failure, the contents of the file should be
+  //   regarded as corrupt and should not used.
+  virtual void OnWriteComplete(Status status) = 0;
+
+ protected:
+  FileIOClient() {}
+  virtual ~FileIOClient() {}
+};
+
 // WARNING: Deprecated.  Will be removed in the near future.  CDMs should
 // implement ContentDecryptionModule_2 instead.
 
@@ -921,6 +997,12 @@ class Host_3 {
   // InitializeAudioDecoder() or InitializeVideoDecoder().
   virtual void OnDeferredInitializationDone(StreamType stream_type,
                                             Status decoder_status) = 0;
+
+  // Creates a FileIO object from the host to do file IO operation. Returns NULL
+  // if a FileIO object cannot be obtained. Once a valid FileIO object is
+  // returned, |client| must be valid until FileIO::Close() is called. The
+  // CDM can call this method multiple times to operate on different files.
+  virtual FileIO* CreateFileIO(FileIOClient* client) = 0;
 
  protected:
   Host_3() {}
