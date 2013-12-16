@@ -340,6 +340,11 @@ class Settings(object):
           if match:
             remote = match.group(1)
             base_url = match.group(2)
+            rewrite_root = RunGit(
+                ['config', 'svn-remote.%s.rewriteRoot' % remote],
+                error_ok=True).strip()
+            if rewrite_root:
+              base_url = rewrite_root
             fetch_spec = RunGit(
                 ['config', 'svn-remote.%s.fetch' % remote],
                 error_ok=True).strip()
