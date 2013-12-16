@@ -389,7 +389,6 @@ bool ContentSettingsObserver::allowWriteToClipboard(WebFrame* frame,
   return allowed;
 }
 
-#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
 bool ContentSettingsObserver::allowWebComponents(WebFrame* frame,
                                                  bool defaultValue) {
   if (defaultValue)
@@ -421,39 +420,6 @@ bool ContentSettingsObserver::allowPushState(WebFrame* frame) {
   const extensions::Extension* extension = GetExtension(origin);
   return !extension || !extension->is_platform_app();
 }
-#else
-bool ContentSettingsObserver::allowWebComponents(const WebDocument& document,
-                                                 bool defaultValue) {
-  if (defaultValue)
-    return true;
-
-  WebSecurityOrigin origin = document.securityOrigin();
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;
-
-  if (const extensions::Extension* extension = GetExtension(origin)) {
-    if (extension->HasAPIPermission(APIPermission::kExperimental))
-      return true;
-  }
-
-  return false;
-}
-
-bool ContentSettingsObserver::allowMutationEvents(const WebDocument& document,
-                                                  bool default_value) {
-  WebSecurityOrigin origin = document.securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  if (extension && extension->is_platform_app())
-    return false;
-  return default_value;
-}
-
-bool ContentSettingsObserver::allowPushState(const WebDocument& document) {
-  WebSecurityOrigin origin = document.securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  return !extension || !extension->is_platform_app();
-}
-#endif
 
 static void SendInsecureContentSignal(int signal) {
   UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,

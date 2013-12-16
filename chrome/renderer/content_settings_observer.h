@@ -72,17 +72,10 @@ class ContentSettingsObserver
                                       bool default_value);
   virtual bool allowWriteToClipboard(blink::WebFrame* frame,
                                      bool default_value);
-#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
   virtual bool allowWebComponents(blink::WebFrame* frame, bool);
   virtual bool allowMutationEvents(blink::WebFrame* frame,
                                    bool default_value);
   virtual bool allowPushState(blink::WebFrame* frame);
-#else
-  virtual bool allowWebComponents(const blink::WebDocument&, bool);
-  virtual bool allowMutationEvents(const blink::WebDocument&,
-                                   bool default_value);
-  virtual bool allowPushState(const blink::WebDocument&);
-#endif
   virtual bool allowWebGLDebugRendererInfo(blink::WebFrame* frame);
   virtual void didNotAllowPlugins(blink::WebFrame* frame);
   virtual void didNotAllowScript(blink::WebFrame* frame);
