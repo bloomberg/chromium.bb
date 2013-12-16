@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -167,6 +168,9 @@ void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);
   request_->SetMaxRetriesOn5xx(max_retries);
+  request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                         net::LOAD_DO_NOT_SAVE_COOKIES);
+
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS. Retrying once should
   // be enough in those cases; let the fetcher retry up to 3 times just in case.
@@ -202,6 +206,8 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetriesOn5xx(max_retries);
+  request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                         net::LOAD_DO_NOT_SAVE_COOKIES);
   // See comment on SetAutomaticallyRetryOnNetworkChanges() above.
   request_->SetAutomaticallyRetryOnNetworkChanges(3);
   request_->Start();
