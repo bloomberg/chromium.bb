@@ -57,7 +57,7 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Chrome.h"
 #include "core/frame/Settings.h"
-#include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSize.h"

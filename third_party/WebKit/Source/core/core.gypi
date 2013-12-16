@@ -2701,7 +2701,6 @@
             'platform/chromium/KeyCodeConversion.h',
             'platform/chromium/KeyCodeConversionAndroid.cpp',
             'platform/chromium/KeyCodeConversionGtk.cpp',
-            'platform/chromium/KeyboardCodes.h',
             'platform/mac/ThemeMac.h',
             'platform/mac/ThemeMac.mm',
             'platform/mediastream/MediaStreamCenter.cpp',

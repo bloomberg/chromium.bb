@@ -49,7 +49,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/page/EventHandler.h"
-#include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenuClient.h"
 #include "platform/PopupMenu.h"

@@ -41,6 +41,7 @@
       'HostWindow.h',
       'JSONValues.cpp',
       'JSONValues.h',
+      'KeyboardCodes.h',
       'KillRing.h',
       'KillRingNone.cpp',
       'Language.cpp',

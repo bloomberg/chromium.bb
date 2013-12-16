@@ -30,7 +30,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Frame.h"
 #include "core/page/EditorClient.h"
-#include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/PlatformKeyboardEvent.h"
 
 namespace WebCore {

@@ -33,7 +33,7 @@
 
 #include "WebInputEvent.h"
 #include "core/platform/chromium/KeyCodeConversion.h"
-#include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/KeyboardCodes.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
