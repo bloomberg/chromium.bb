@@ -140,7 +140,7 @@ void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
     model->AddItem(
         user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2 :
                           IDC_VISIT_DESKTOP_OF_LRU_USER_3,
-        l10n_util::GetStringFUTF16(IDC_VISIT_DESKTOP_OF_LRU_USER,
+        l10n_util::GetStringFUTF16(IDS_VISIT_DESKTOP_OF_LRU_USER,
                                    delegate->GetUserDisplayName(user_index)));
   }
 #endif

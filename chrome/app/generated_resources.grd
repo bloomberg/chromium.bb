@@ -1202,7 +1202,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Detect submenu">
           Auto detect
         </message>
-        <message name="IDC_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
+        <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
           Teleport window to '<ph name="USER_NAME">$1<ex>User name</ex></ph>'
         </message>
       </if>
