@@ -157,7 +157,7 @@ private:
     void addToPastNamesMap(Node*, const AtomicString& pastName);
     void removeFromPastNamesMap(HTMLElement&);
 
-    typedef HashMap<AtomicString, RefPtr<Node> > PastNamesMap;
+    typedef HashMap<AtomicString, Node*> PastNamesMap;
 
     FormSubmission::Attributes m_attributes;
     OwnPtr<PastNamesMap> m_pastNamesMap;
