@@ -6346,3 +6346,14 @@
    ...
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
 }
+{
+   bug_328987
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN4base26PostTaskAndReplyWithResultIN3net20WifiPHYLayerProtocolES2_EEbPNS_10TaskRunnerERKN15tracked_objects8LocationERKNS_8CallbackIFT_vEEERKNS9_IFvT0_EEE
+   fun:_ZN22MetricsNetworkObserver25ProbeWifiPHYLayerProtocolEv
+   fun:_ZN22MetricsNetworkObserverC1Ev
+   fun:_ZN10MetricsLogC1ERKSsi
+}
