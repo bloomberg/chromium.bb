@@ -30,13 +30,14 @@ class HitTestResult;
 class EllipsisBox FINAL : public InlineBox {
 public:
     EllipsisBox(RenderObject* obj, const AtomicString& ellipsisStr, InlineFlowBox* parent,
-                int width, int height, int y, bool firstLine, bool isVertical, InlineBox* markupBox)
-        : InlineBox(obj, FloatPoint(0, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
+        int width, int height, int x, int y, bool firstLine, bool isVertical, InlineBox* markupBox)
+        : InlineBox(obj, FloatPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
         , m_shouldPaintMarkupBox(markupBox)
         , m_height(height)
         , m_str(ellipsisStr)
         , m_selectionState(RenderObject::SelectionNone)
     {
+        setHasVirtualLogicalHeight();
     }
 
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
@@ -44,11 +45,12 @@ public:
     void setSelectionState(RenderObject::SelectionState s) { m_selectionState = s; }
     IntRect selectionRect();
 
+    virtual float virtualLogicalHeight() const OVERRIDE { return m_height; }
 private:
     void paintMarkupBox(PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle*);
     virtual int height() const { return m_height; }
     virtual RenderObject::SelectionState selectionState() { return m_selectionState; }
-    void paintSelection(GraphicsContext*, const LayoutPoint&, RenderStyle*, const Font&);
+    void paintSelection(GraphicsContext*, const FloatPoint&, RenderStyle*, const Font&);
     InlineBox* markupBox() const;
 
     bool m_shouldPaintMarkupBox;

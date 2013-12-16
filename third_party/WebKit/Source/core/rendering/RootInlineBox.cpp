@@ -129,7 +129,7 @@ float RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, f
     // Create an ellipsis box.
     EllipsisBox* ellipsisBox = new EllipsisBox(renderer(), ellipsisStr, this,
         ellipsisWidth - (markupBox ? markupBox->logicalWidth() : 0), logicalHeight(),
-        y(), !prevRootBox(), isHorizontal(), markupBox);
+        x(), y(), !prevRootBox(), isHorizontal(), markupBox);
 
     if (!gEllipsisBoxMap)
         gEllipsisBoxMap = new EllipsisBoxMap();
@@ -137,8 +137,8 @@ float RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, f
     setHasEllipsisBox(true);
 
     // FIXME: Do we need an RTL version of this?
-    if (ltr && (x() + logicalWidth() + ellipsisWidth) <= blockRightEdge) {
-        ellipsisBox->setX(x() + logicalWidth());
+    if (ltr && (logicalLeft() + logicalWidth() + ellipsisWidth) <= blockRightEdge) {
+        ellipsisBox->setLogicalLeft(logicalLeft() + logicalWidth());
         return logicalWidth() + ellipsisWidth;
     }
 
@@ -148,7 +148,7 @@ float RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, f
     bool foundBox = false;
     float truncatedWidth = 0;
     float position = placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth, foundBox);
-    ellipsisBox->setX(position);
+    ellipsisBox->setLogicalLeft(position);
     return truncatedWidth;
 }
 

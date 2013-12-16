@@ -197,8 +197,8 @@ public:
 
     const FloatPoint& topLeft() const { return m_topLeft; }
 
-    float width() const { return isHorizontal() ? logicalWidth() : logicalHeight(); }
-    float height() const { return isHorizontal() ? logicalHeight() : logicalWidth(); }
+    float width() const { return isHorizontal() ? logicalWidth() : hasVirtualLogicalHeight() ? virtualLogicalHeight() : logicalHeight(); }
+    float height() const { return isHorizontal() ? hasVirtualLogicalHeight() ? virtualLogicalHeight() : logicalHeight() : logicalWidth(); }
     FloatSize size() const { return FloatSize(width(), height()); }
     float right() const { return left() + width(); }
     float bottom() const { return top() + height(); }

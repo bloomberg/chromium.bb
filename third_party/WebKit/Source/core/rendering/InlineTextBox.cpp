@@ -269,8 +269,8 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
     // Criteria for full truncation:
     // LTR: the left edge of the ellipsis is to the left of our text run.
     // RTL: the right edge of the ellipsis is to the right of our text run.
-    bool ltrFullTruncation = flowIsLTR && ellipsisX <= left();
-    bool rtlFullTruncation = !flowIsLTR && ellipsisX >= left() + logicalWidth();
+    bool ltrFullTruncation = flowIsLTR && ellipsisX <= logicalLeft();
+    bool rtlFullTruncation = !flowIsLTR && ellipsisX >= logicalLeft() + logicalWidth();
     if (ltrFullTruncation || rtlFullTruncation) {
         // Too far.  Just set full truncation, but return -1 and let the ellipsis just be placed at the edge of the box.
         m_truncation = cFullTruncation;
@@ -278,8 +278,8 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
         return -1;
     }
 
-    bool ltrEllipsisWithinBox = flowIsLTR && (ellipsisX < right());
-    bool rtlEllipsisWithinBox = !flowIsLTR && (ellipsisX > left());
+    bool ltrEllipsisWithinBox = flowIsLTR && (ellipsisX < logicalRight());
+    bool rtlEllipsisWithinBox = !flowIsLTR && (ellipsisX > logicalLeft());
     if (ltrEllipsisWithinBox || rtlEllipsisWithinBox) {
         foundBox = true;
 
@@ -288,9 +288,9 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
         // must keep track of these separately.
         bool ltr = isLeftToRightDirection();
         if (ltr != flowIsLTR) {
-          // Width in pixels of the visible portion of the box, excluding the ellipsis.
-          int visibleBoxWidth = visibleRightEdge - visibleLeftEdge  - ellipsisWidth;
-          ellipsisX = ltr ? left() + visibleBoxWidth : right() - visibleBoxWidth;
+            // Width in pixels of the visible portion of the box, excluding the ellipsis.
+            int visibleBoxWidth = visibleRightEdge - visibleLeftEdge  - ellipsisWidth;
+            ellipsisX = ltr ? logicalLeft() + visibleBoxWidth : logicalRight() - visibleBoxWidth;
         }
 
         int offset = offsetForPosition(ellipsisX, false);
@@ -299,7 +299,7 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
             // and the ellipsis edge.
             m_truncation = cFullTruncation;
             truncatedWidth += ellipsisWidth;
-            return min(ellipsisX, x());
+            return min(ellipsisX, logicalLeft());
         }
 
         // Set the truncation index on the text run.
@@ -316,9 +316,9 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
         // have a situation such as |Hello| -> |...He|
         truncatedWidth += widthOfVisibleText + ellipsisWidth;
         if (flowIsLTR)
-            return left() + widthOfVisibleText;
+            return logicalLeft() + widthOfVisibleText;
         else
-            return right() - widthOfVisibleText - ellipsisWidth;
+            return logicalRight() - widthOfVisibleText - ellipsisWidth;
     }
     truncatedWidth += logicalWidth();
     return -1;
@@ -465,14 +465,6 @@ bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosi
 
     // The emphasis marks over are suppressed only if there is a ruby text box and it not empty.
     return !rubyText || !rubyText->firstLineBox();
-}
-
-enum RotationDirection { Counterclockwise, Clockwise };
-
-static inline AffineTransform rotation(const FloatRect& boxRect, RotationDirection clockwise)
-{
-    return clockwise ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(), boxRect.maxY() - boxRect.x())
-        : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.maxY(), boxRect.x() + boxRect.maxY());
 }
 
 void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /*lineTop*/, LayoutUnit /*lineBottom*/)
