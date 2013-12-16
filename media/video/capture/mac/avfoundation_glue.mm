@@ -57,7 +57,7 @@ static NSString* ReadNSStringPtr(const char* symbol) {
 
 bool AVFoundationGlue::IsAVFoundationSupported() {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  return cmd_line->HasSwitch(switches::kEnableAVFoundation) &&
+  return !cmd_line->HasSwitch(switches::kDisableAVFoundation) &&
       base::mac::IsOSLionOrLater() && [AVFoundationBundle() load];
 }
 
