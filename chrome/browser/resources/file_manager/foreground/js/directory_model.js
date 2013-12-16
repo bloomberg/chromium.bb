@@ -30,6 +30,7 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
   this.pendingScan_ = null;
   this.rescanTime_ = null;
   this.scanFailures_ = 0;
+  this.changeDirectorySequence_ = 0;
 
   this.fileFilter_ = fileFilter;
   this.fileFilter_.addEventListener('changed',
@@ -777,23 +778,33 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
 /**
  * Changes directory. Causes 'directory-change' event.
  *
+ * The directory will not be changed, if another request is started before it is
+ * finished. The error callback will not be called, and the event for the first
+ * request will not be invoked.
+ *
  * @param {string} path New current directory path.
  * @param {function(FileError)=} opt_errorCallback Executed if the change
  *     directory failed.
  */
 DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
+  this.changeDirectorySequence_++;
+
   if (PathUtil.isSpecialSearchRoot(path)) {
     this.specialSearch(path, '');
     return;
   }
 
-  this.resolveDirectory(path, function(directoryEntry) {
-    this.changeDirectoryEntry(directoryEntry);
-  }.bind(this), function(error) {
-    console.error('Error changing directory to ' + path + ': ', error);
-    if (opt_errorCallback)
-      opt_errorCallback(error);
-  });
+  this.resolveDirectory(
+      path,
+      function(sequence, directoryEntry) {
+        if (this.changeDirectorySequence_ === sequence)
+          this.changeDirectoryEntry(directoryEntry);
+      }.bind(this, this.changeDirectorySequence_),
+      function(error) {
+        console.error('Error changing directory to ' + path + ': ', error);
+        if (opt_errorCallback)
+          opt_errorCallback(error);
+      });
 };
 
 /**
@@ -876,7 +887,9 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
-  this.fileWatcher_.changeWatchedDirectory(dirEntry, function() {
+  this.fileWatcher_.changeWatchedDirectory(dirEntry, function(sequence) {
+    if (this.changeDirectorySequence_ !== sequence)
+      return;
     var previous = this.currentDirContents_.getDirectoryEntry();
     this.clearSearch_();
     this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
@@ -885,7 +898,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
     e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
     this.dispatchEvent(e);
-  }.bind(this));
+  }.bind(this, this.changeDirectorySequence_));
 };
 
 /**
@@ -1106,7 +1119,9 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
   this.onSearchCompleted_ = null;
   this.onClearSearch_ = null;
 
-  var onDriveDirectoryResolved = function(driveRoot) {
+  var onDriveDirectoryResolved = function(sequence, driveRoot) {
+    if (this.changeDirectorySequence_ !== sequence)
+      return;
     if (!driveRoot || driveRoot == DirectoryModel.fakeDriveEntry_) {
       // Drive root not available or not ready. onVolumeInfoListUpdated_()
       // handles the rescan if necessary.
@@ -1143,7 +1158,7 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
     this.dispatchEvent(e);
-  }.bind(this);
+  }.bind(this, this.changeDirectorySequence_);
 
   this.resolveDirectory(DirectoryModel.fakeDriveEntry_.fullPath,
                         onDriveDirectoryResolved /* success */,
