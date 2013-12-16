@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Test the cros_build_lib module."""
+
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
@@ -51,6 +53,7 @@ class RunCommandMock(partial_mock.PartialCmdMock):
 
 
 class RunCommandTestCase(cros_test_lib.MockTestCase):
+  """MockTestCase that mocks out RunCommand by default."""
 
   def setUp(self):
     self.rc = self.StartPatcher(RunCommandMock())
@@ -118,6 +121,7 @@ def _ForceLoggingLevel(functor):
 
 
 class TestRunCommand(cros_test_lib.MoxTestCase):
+  """Tests of RunCommand functionality."""
 
   def setUp(self):
     # Get the original value for SIGINT so our signal() mock can return the
@@ -416,6 +420,7 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
 
 
 class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
+  """Tests of RunCommand logging."""
 
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
@@ -454,6 +459,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
 
 
 class TestRetries(cros_test_lib.MoxTestCase):
+  """Tests of GenericRetry and relatives."""
 
   def testGenericRetry(self):
     source, source2 = iter(xrange(5)).next, iter(xrange(5)).next
@@ -585,6 +591,7 @@ class TestTimedCommand(cros_test_lib.MoxTestCase):
 
 
 class TestListFiles(cros_test_lib.TempDirTestCase):
+  """Tests of ListFiles funciton."""
 
   def _CreateNestedDir(self, dir_structure):
     for entry in dir_structure:
@@ -686,6 +693,7 @@ class YNInteraction():
 
 
 class TestInput(cros_test_lib.MoxOutputTestCase):
+  """Tests of input gathering functionality."""
 
   def testGetInput(self):
     self.mox.StubOutWithMock(__builtin__, 'raw_input')
@@ -735,12 +743,14 @@ class TestInput(cros_test_lib.MoxOutputTestCase):
 
 
 class TestContextManagerStack(cros_test_lib.TestCase):
+  """Test the ContextManagerStack class."""
 
   def test(self):
     invoked = []
     counter = iter(itertools.count()).next
     def _mk_kls(has_exception=None, exception_kls=None, suppress=False):
       class foon(object):
+        """Simple context manager which runs checks on __exit__."""
         marker = counter()
         def __enter__(self):
           return self
@@ -771,6 +781,7 @@ class TestContextManagerStack(cros_test_lib.TestCase):
 
 
 class TestManifestCheckout(cros_test_lib.TempDirTestCase):
+  """Tests for ManifestCheckout functionality."""
 
   def setUp(self):
     self.manifest_dir = os.path.join(self.tempdir, '.repo', 'manifests')
@@ -888,6 +899,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
 
 
 class Test_iflatten_instance(cros_test_lib.TestCase):
+  """Test iflatten_instance function."""
 
   def test_it(self):
     f = lambda *a: list(cros_build_lib.iflatten_instance(*a))
@@ -899,6 +911,7 @@ class Test_iflatten_instance(cros_test_lib.TestCase):
 
 
 class TestKeyValueFiles(cros_test_lib.TempDirTestCase):
+  """Tests handling of key/value files."""
 
   def setUp(self):
     self.contents = """# A comment !@
@@ -1005,9 +1018,11 @@ class SafeRunTest(cros_test_lib.TestCase):
   def testRaisesFirstException(self):
     """Verify we raise the first exception when multiple are encountered."""
     class E1(Exception):
+      """Simple exception class."""
       pass
 
     class E2(Exception):
+      """Simple exception class."""
       pass
 
     f_list = [functools.partial(self._raise_exception, e) for e in [E1, E2]]

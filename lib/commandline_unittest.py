@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Test the commandline module."""
+
 import cPickle
 import signal
 import os
@@ -174,6 +176,7 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self.parser = commandline.ArgumentParser(caching=True)
 
   def _CheckCall(self, expected):
+    # pylint: disable=E1101
     f = self.parser.ConfigureCacheDir
     self.assertEquals(1, f.call_count)
     self.assertTrue(f.call_args[0][0].startswith(expected))

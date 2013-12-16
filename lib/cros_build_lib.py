@@ -60,10 +60,13 @@ class RunCommandError(Exception):
   def Stringify(self, error=True, output=True):
     """Custom method for controlling what is included in stringifying this.
 
+    Each individual argument is the literal name of an attribute
+    on the result object; if False, that value is ignored for adding
+    to this string content.  If true, it'll be incorporated.
+
     Args:
-      Each individual argument is the literal name of an attribute
-      on the result object; if False, that value is ignored for adding
-      to this string content.  If true, it'll be incorporated.
+      error: See comment about individual arguments above.
+      output: See comment about individual arguments above.
     """
     items = ['return code: %s' % (self.result.returncode,)]
     if error and self.result.error:
@@ -203,9 +206,7 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
 
 
 class _Popen(subprocess.Popen):
-
-  """
-  subprocess.Popen derivative customized for our usage.
+  """subprocess.Popen derivative customized for our usage.
 
   Specifically, we fix terminate/send_signal/kill to work if the child process
   was a setuid binary; on vanilla kernels, the parent can wax the child
@@ -673,7 +674,10 @@ def RetryException(exc_retry, max_retry, functor, *args, **kwargs):
     exc_retry: A class (or tuple of classes).  If the raised exception
       is the given class(es), a retry will be attempted.  Otherwise,
       the exception is raised.
-    *: See GenericRetry.
+    max_retry: See GenericRetry.
+    functor: See GenericRetry.
+    *args: See GenericRetry.
+    **kwargs: See GenericRetry.
   """
   if not isinstance(exc_retry, (tuple, type)):
     raise TypeError('exc_retry should be an exception (or tuple), not %r' %
@@ -735,7 +739,9 @@ def RunCommandWithRetries(max_retry, *args, **kwargs):
   """Wrapper for RunCommand that will retry a command
 
   Args:
-    See RetryCommand and RunCommand; This is just a wrapper around it.
+    max_retry: See RetryCommand and RunCommand.
+    *args: See RetryCommand and RunCommand.
+    **kwargs: See RetryCommand and RunCommand.
 
   Returns:
     A CommandResult object.
@@ -967,11 +973,7 @@ def BooleanShellValue(sval, default, msg=None):
 # Suppress whacked complaints about abstract class being unused.
 #pylint: disable=R0921
 class MasterPidContextManager(object):
-
-  """
-  Class for context managers that need to run their exit
-  strictly from within the same PID.
-  """
+  """Allow context managers to restrict their exit to within the same PID."""
 
   # In certain cases we actually want this ran outside
   # of the main pid- specifically in backup processes
