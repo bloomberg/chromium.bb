@@ -9,18 +9,68 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
 typedef PolicyServiceImpl::Providers::const_iterator Iterator;
 
-PolicyServiceImpl::PolicyServiceImpl(
-    const Providers& providers,
-    const PreprocessCallback& preprocess_callback)
-    : preprocess_callback_(preprocess_callback),
-      update_task_ptr_factory_(this) {
+namespace {
+
+const char* kProxyPolicies[] = {
+  key::kProxyMode,
+  key::kProxyServerMode,
+  key::kProxyServer,
+  key::kProxyPacUrl,
+  key::kProxyBypassList,
+};
+
+void FixDeprecatedPolicies(PolicyMap* policies) {
+  // Proxy settings have been configured by 5 policies that didn't mix well
+  // together, and maps of policies had to take this into account when merging
+  // policy sources. The proxy settings will eventually be configured by a
+  // single Dictionary policy when all providers have support for that. For
+  // now, the individual policies are mapped here to a single Dictionary policy
+  // that the rest of the policy machinery uses.
+
+  // The highest (level, scope) pair for an existing proxy policy is determined
+  // first, and then only policies with those exact attributes are merged.
+  PolicyMap::Entry current_priority;  // Defaults to the lowest priority.
+  scoped_ptr<base::DictionaryValue> proxy_settings(new base::DictionaryValue);
+  for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
+    const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
+    if (entry) {
+      if (entry->has_higher_priority_than(current_priority)) {
+        proxy_settings->Clear();
+        current_priority = *entry;
+      }
+      if (!entry->has_higher_priority_than(current_priority) &&
+          !current_priority.has_higher_priority_than(*entry)) {
+        proxy_settings->Set(kProxyPolicies[i], entry->value->DeepCopy());
+      }
+      policies->Erase(kProxyPolicies[i]);
+    }
+  }
+  // Sets the new |proxy_settings| if kProxySettings isn't set yet, or if the
+  // new priority is higher.
+  const PolicyMap::Entry* existing = policies->Get(key::kProxySettings);
+  if (!proxy_settings->empty() &&
+      (!existing || current_priority.has_higher_priority_than(*existing))) {
+    policies->Set(key::kProxySettings,
+                  current_priority.level,
+                  current_priority.scope,
+                  proxy_settings.release(),
+                  NULL);
+  }
+}
+
+}  // namespace
+
+PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
+    : update_task_ptr_factory_(this) {
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   providers_ = providers;
@@ -130,12 +180,12 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
 
 void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // Merge from each provider in their order of priority.
+  const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   PolicyBundle bundle;
   for (Iterator it = providers_.begin(); it != providers_.end(); ++it) {
     PolicyBundle provided_bundle;
     provided_bundle.CopyFrom((*it)->policies());
-    if (!preprocess_callback_.is_null())
-      preprocess_callback_.Run(&provided_bundle);
+    FixDeprecatedPolicies(&provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
   }
 

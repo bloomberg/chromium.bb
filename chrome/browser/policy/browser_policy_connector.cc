@@ -26,7 +26,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
-#include "chrome/browser/policy/policy_transformations.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -398,8 +397,7 @@ PolicyService* BrowserPolicyConnector::GetPolicyService() {
       providers.push_back(&global_user_cloud_policy_provider_);
 #endif
     }
-    policy_service_.reset(new PolicyServiceImpl(
-        providers, base::Bind(&policy::FixDeprecatedPolicies)));
+    policy_service_.reset(new PolicyServiceImpl(providers));
   }
   return policy_service_.get();
 }

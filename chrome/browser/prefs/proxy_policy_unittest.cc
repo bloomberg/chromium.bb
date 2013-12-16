@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/policy/policy_transformations.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -91,8 +90,7 @@ class ProxyPolicyTest : public testing::Test {
 
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
-    policy_service_.reset(
-        new PolicyServiceImpl(providers, base::Bind(&FixDeprecatedPolicies)));
+    policy_service_.reset(new PolicyServiceImpl(providers));
     provider_.Init();
   }
 

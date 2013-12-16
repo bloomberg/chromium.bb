@@ -10,10 +10,6 @@
 namespace policy {
 namespace policy_prefs {
 
-// Constants for the names of policy-related preferences.
-// TODO(dconnelly): remove POLICY_EXPORT once the policy code moves to the
-// policy component (crbug.com/271392).
-
 POLICY_EXPORT extern const char kLastPolicyStatisticsUpdate[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
 

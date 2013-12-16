@@ -59,12 +59,6 @@ v8.log
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
 /ceee/internal/
-/chrome/app/policy/chrome_settings_proto_compile.xml
-/chrome/app/policy/chrome_settings_proto_generated_compile.xml
-/chrome/app/policy/cloud_policy_backend_header_compile.xml
-/chrome/app/policy/cloud_policy_proto_compile.xml
-/chrome/app/policy/cloud_policy_proto_generated_compile.xml
-/chrome/app/policy/policy_proto_compile.xml
 /chrome/app/theme/default_100_percent/google_chrome
 /chrome/app/theme/default_200_percent/google_chrome
 /chrome/app/theme/google_chrome

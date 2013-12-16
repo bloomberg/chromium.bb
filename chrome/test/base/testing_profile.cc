@@ -655,8 +655,7 @@ void TestingProfile::CreateProfilePolicyConnector() {
 if (!policy_service_) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
     std::vector<policy::ConfigurationPolicyProvider*> providers;
-    policy_service_.reset(new policy::PolicyServiceImpl(
-        providers, policy::PolicyServiceImpl::PreprocessCallback()));
+    policy_service_.reset(new policy::PolicyServiceImpl(providers));
 #else
     policy_service_.reset(new policy::PolicyServiceStub());
 #endif

@@ -323,9 +323,8 @@ void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
   PolicyServiceImpl::Providers providers;
   providers.push_back(device_local_account_policy_provider_.get());
   TestingProfile::Builder builder;
-  builder.SetPolicyService(scoped_ptr<PolicyService>(new PolicyServiceImpl(
-      providers,
-      PolicyServiceImpl::PreprocessCallback())));
+  builder.SetPolicyService(
+      scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
 
   profile_ = builder.Build();
   profile_->set_profile_name(user_id);
@@ -356,9 +355,8 @@ void CloudExternalDataPolicyObserverTest::LogInAsRegularUser() {
   PolicyServiceImpl::Providers providers;
   providers.push_back(&user_policy_provider_);
   TestingProfile::Builder builder;
-  builder.SetPolicyService(scoped_ptr<PolicyService>(new PolicyServiceImpl(
-      providers,
-      PolicyServiceImpl::PreprocessCallback())));
+  builder.SetPolicyService(
+      scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
 
   profile_ = builder.Build();
   profile_->set_profile_name(kRegularUserID);

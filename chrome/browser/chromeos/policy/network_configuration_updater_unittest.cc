@@ -136,8 +136,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     provider_.Init();
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
-    policy_service_.reset(new PolicyServiceImpl(
-        providers, PolicyServiceImpl::PreprocessCallback()));
+    policy_service_.reset(new PolicyServiceImpl(providers));
 
     scoped_ptr<base::DictionaryValue> fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);

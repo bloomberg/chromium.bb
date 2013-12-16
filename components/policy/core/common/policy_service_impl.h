@@ -28,15 +28,12 @@ class POLICY_EXPORT PolicyServiceImpl
       public ConfigurationPolicyProvider::Observer {
  public:
   typedef std::vector<ConfigurationPolicyProvider*> Providers;
-  typedef base::Callback<void(PolicyBundle*)> PreprocessCallback;
 
   // The PolicyServiceImpl will merge policies from |providers|. |providers|
   // must be sorted in decreasing order of priority; the first provider will
   // have the highest priority. The PolicyServiceImpl does not take ownership of
   // the providers, and they must outlive the PolicyServiceImpl.
-  // |preprocess_callback| will be applied every PolicyBundle before merginng.
-  PolicyServiceImpl(const Providers& providers,
-                    const PreprocessCallback& preprocess_callback);
+  explicit PolicyServiceImpl(const Providers& providers);
 
   virtual ~PolicyServiceImpl();
 
@@ -89,9 +86,6 @@ class POLICY_EXPORT PolicyServiceImpl
   // Set of providers that have a pending update that was triggered by a
   // call to RefreshPolicies().
   std::set<ConfigurationPolicyProvider*> refresh_pending_;
-
-  // Callback invoked to manipulate a PolicyBundle before it is merged.
-  PreprocessCallback preprocess_callback_;
 
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.

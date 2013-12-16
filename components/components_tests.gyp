@@ -227,6 +227,7 @@
                 'policy/core/common/cloud/user_info_fetcher_unittest.cc',
                 'policy/core/common/config_dir_policy_loader_unittest.cc',
                 'policy/core/common/forwarding_policy_provider_unittest.cc',
+                'policy/core/common/generate_policy_source_unittest.cc',
                 'policy/core/common/policy_bundle_unittest.cc',
                 'policy/core/common/policy_loader_mac_unittest.cc',
                 'policy/core/common/policy_loader_win_unittest.cc',

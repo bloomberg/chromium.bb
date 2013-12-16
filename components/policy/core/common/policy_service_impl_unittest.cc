@@ -13,6 +13,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/mock_policy_service.h"
+#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,17 +29,6 @@ namespace {
 const char kExtension[] = "extension-id";
 const char kSameLevelPolicy[] = "policy-same-level-and-scope";
 const char kDiffLevelPolicy[] = "chrome-diff-level-and-scope";
-
-void SetPolicyMapValue(const std::string& key,
-                       const std::string& value,
-                       PolicyBundle* bundle) {
-  bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(key,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
-           new base::StringValue(value),
-           NULL);
-}
 
 // Helper to compare the arguments to an EXPECT_CALL of OnPolicyUpdated() with
 // their expected values.
@@ -122,8 +112,7 @@ class PolicyServiceTest : public testing::Test {
     providers.push_back(&provider0_);
     providers.push_back(&provider1_);
     providers.push_back(&provider2_);
-    policy_service_.reset(new PolicyServiceImpl(
-        providers, PolicyServiceImpl::PreprocessCallback()));
+    policy_service_.reset(new PolicyServiceImpl(providers));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -534,39 +523,6 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension)).Equals(expected));
 }
 
-TEST_F(PolicyServiceTest, PolicyPreprocessing) {
-  // Reset the PolicyServiceImpl to one that has the preprocessor.
-  PolicyServiceImpl::Providers providers;
-  providers.push_back(&provider0_);
-  policy_service_.reset(new PolicyServiceImpl(
-      providers, base::Bind(&SetPolicyMapValue, kSameLevelPolicy, "bar")));
-
-  // Set the policy value to "foo".
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-  PolicyMap& map =
-      bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  map.Set(kSameLevelPolicy,
-          POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_USER,
-          base::Value::CreateStringValue("foo"),
-          NULL);
-
-  // Push the update through the provider.
-  provider0_.UpdatePolicy(bundle.Pass());
-  RunUntilIdle();
-
-  // The value should have been changed from "foo" to "bar".
-  const PolicyMap& actual = policy_service_->GetPolicies(
-        PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  PolicyMap expected;
-  expected.Set(kSameLevelPolicy,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("bar"),
-               NULL);
-  EXPECT_TRUE(actual.Equals(expected));
-}
-
 TEST_F(PolicyServiceTest, IsInitializationComplete) {
   // |provider0| has all domains initialized.
   Mock::VerifyAndClearExpectations(&provider1_);
@@ -579,8 +535,7 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   providers.push_back(&provider0_);
   providers.push_back(&provider1_);
   providers.push_back(&provider2_);
-  policy_service_.reset(new PolicyServiceImpl(
-      providers, PolicyServiceImpl::PreprocessCallback()));
+  policy_service_.reset(new PolicyServiceImpl(providers));
   EXPECT_FALSE(policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_FALSE(
       policy_service_->IsInitializationComplete(POLICY_DOMAIN_EXTENSIONS));
@@ -646,6 +601,50 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   // Cleanup.
   policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, &observer);
   policy_service_->RemoveObserver(POLICY_DOMAIN_EXTENSIONS, &observer);
+}
+
+TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
+  const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
+  const PolicyNamespace extension_namespace(POLICY_DOMAIN_EXTENSIONS, "xyz");
+
+  scoped_ptr<PolicyBundle> policy_bundle(new PolicyBundle());
+  PolicyMap& policy_map = policy_bundle->Get(chrome_namespace);
+  // Individual proxy policy values in the Chrome namespace should be collected
+  // into a dictionary.
+  policy_map.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(3), NULL);
+
+  // Both these policies should be ignored, since there's a higher priority
+  // policy available.
+  policy_map.Set(key::kProxyMode, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("pac_script"), NULL);
+  policy_map.Set(key::kProxyPacUrl, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("http://example.com/wpad.dat"),
+                 NULL);
+
+  // Add a value to a non-Chrome namespace.
+  policy_bundle->Get(extension_namespace)
+      .Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateIntegerValue(3), NULL);
+
+  // The resulting Chrome namespace map should have the collected policy.
+  PolicyMap expected_chrome;
+  scoped_ptr<base::DictionaryValue> expected_value(new base::DictionaryValue);
+  expected_value->SetInteger(key::kProxyServerMode, 3);
+  expected_chrome.Set(key::kProxySettings, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, expected_value.release(), NULL);
+
+  // The resulting Extensions namespace map shouldn't have been modified.
+  PolicyMap expected_extension;
+  expected_extension.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY,
+                         POLICY_SCOPE_USER, base::Value::CreateIntegerValue(3),
+                         NULL);
+
+  provider0_.UpdatePolicy(policy_bundle.Pass());
+  RunUntilIdle();
+
+  EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));
+  EXPECT_TRUE(VerifyPolicies(extension_namespace, expected_extension));
 }
 
 }  // namespace policy
