@@ -26,11 +26,14 @@ namespace {
 // The Registry subkey that contains information about external extensions.
 const char kRegistryExtensions[] = "Software\\Google\\Chrome\\Extensions";
 
-// Registry value of of that key that defines the path to the .crx file.
+// Registry value of the key that defines the path to the .crx file.
 const wchar_t kRegistryExtensionPath[] = L"path";
 
 // Registry value of that key that defines the current version of the .crx file.
 const wchar_t kRegistryExtensionVersion[] = L"version";
+
+// Registry value of the key that defines an external update URL.
+const wchar_t kRegistryExtensionUpdateUrl[] = L"update_url";
 
 bool CanOpenFileForReading(const base::FilePath& path) {
   ScopedStdioHandle file_handle(base::OpenFile(path, "rb"));
@@ -83,6 +86,25 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       }
     }
 
+    std::string id = WideToASCII(*it);
+    StringToLowerASCII(&id);
+    if (!Extension::IdIsValid(id)) {
+      LOG(ERROR) << "Invalid id value " << id
+                 << " for key " << key_path << ".";
+      continue;
+    }
+
+    // If there is an update URL present, copy it to prefs and ignore
+    // path and version keys for this entry.
+    base::string16 extension_update_url;
+    if (key.ReadValue(kRegistryExtensionUpdateUrl, &extension_update_url)
+        == ERROR_SUCCESS) {
+      prefs->SetString(
+          id + "." + ExternalProviderImpl::kExternalUpdateUrl,
+          WideToASCII(extension_update_url));
+      continue;
+    }
+
     base::string16 extension_path_str;
     if (key.ReadValue(kRegistryExtensionPath, &extension_path_str)
         != ERROR_SUCCESS) {
@@ -120,14 +142,6 @@ void ExternalRegistryLoader::LoadOnFileThread() {
         != ERROR_SUCCESS) {
       // TODO(erikkay): find a way to get this into about:extensions
       LOG(ERROR) << "Missing value " << kRegistryExtensionVersion
-                 << " for key " << key_path << ".";
-      continue;
-    }
-
-    std::string id = WideToASCII(*it);
-    StringToLowerASCII(&id);
-    if (!Extension::IdIsValid(id)) {
-      LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";
       continue;
     }
