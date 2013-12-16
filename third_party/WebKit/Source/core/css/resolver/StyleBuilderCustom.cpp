@@ -564,6 +564,15 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverStat
     state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyTouchAction(StyleResolverState& state, CSSValue* value)
+{
+    TouchAction action = RenderStyle::initialTouchAction();
+    for (CSSValueListIterator i(value); i.hasMore(); i.advance())
+        action |= *toCSSPrimitiveValue(i.value());
+
+    state.style()->setTouchAction(action);
+}
+
 static void resetEffectiveZoom(StyleResolverState& state)
 {
     // Reset the zoom in effect. This allows the setZoom method to accurately compute a new zoom in effect.

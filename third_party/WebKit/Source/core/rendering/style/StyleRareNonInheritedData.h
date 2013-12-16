@@ -33,6 +33,7 @@
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/NinePieceImage.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/ShapeValue.h"
 #include "platform/LengthPoint.h"
 #include "wtf/OwnPtr.h"
@@ -184,7 +185,7 @@ public:
 
     unsigned m_effectiveBlendMode: 5; // EBlendMode
 
-    unsigned m_touchAction : 1; // TouchAction
+    unsigned m_touchAction : TouchActionBits; // TouchAction
 
     unsigned m_objectFit : 3; // ObjectFit
 

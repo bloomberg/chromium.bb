@@ -281,6 +281,8 @@ public:
 
     bool parseTextEmphasisStyle(bool important);
 
+    bool parseTouchAction(bool important);
+
     void addTextDecorationProperty(CSSPropertyID, PassRefPtr<CSSValue>, bool important);
     bool parseTextDecoration(CSSPropertyID propId, bool important);
     bool parseTextUnderlinePosition(bool important);

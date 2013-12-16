@@ -1013,3 +1013,7 @@ isolate
 // touch-action-delay
 // none
 script
+
+// touch-action
+pan-x
+pan-y

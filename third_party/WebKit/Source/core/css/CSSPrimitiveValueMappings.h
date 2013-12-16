@@ -4866,20 +4866,6 @@ template<> inline CSSPrimitiveValue::operator EMaskType() const
     return MT_LUMINANCE;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TouchAction t)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_VALUE_ID;
-    switch (t) {
-    case TouchActionNone:
-        m_value.valueID = CSSValueNone;
-        break;
-    case TouchActionAuto:
-        m_value.valueID = CSSValueAuto;
-        break;
-    }
-}
-
 template<> inline CSSPrimitiveValue::operator TouchAction() const
 {
     ASSERT(isValueID());
@@ -4888,6 +4874,10 @@ template<> inline CSSPrimitiveValue::operator TouchAction() const
         return TouchActionNone;
     case CSSValueAuto:
         return TouchActionAuto;
+    case CSSValuePanX:
+        return TouchActionPanX;
+    case CSSValuePanY:
+        return TouchActionPanY;
     default:
         break;
     }

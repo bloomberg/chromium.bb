@@ -129,7 +129,7 @@ text-rendering custom_all
 text-shadow converter=convertShadow
 text-transform
 top type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
-touch-action type_name=TouchAction, initial=initialTouchAction
+touch-action type_name=TouchAction, custom_value
 touch-action-delay type_name=TouchActionDelay, initial=initialTouchActionDelay
 unicode-bidi
 vertical-align custom_value

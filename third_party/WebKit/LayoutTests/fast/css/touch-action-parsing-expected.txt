@@ -12,10 +12,31 @@ PASS style.touchAction is "none"
 Test case: explicit-auto
 PASS style.touchAction is "auto"
 
+Test case: explicit-pan-x
+PASS style.touchAction is "pan-x"
+
+Test case: explicit-pan-y
+PASS style.touchAction is "pan-y"
+
+Test case: explicit-pan-x-pan-y
+PASS style.touchAction is "pan-x pan-y"
+
+Test case: explicit-pan-y-pan-x
+PASS style.touchAction is "pan-x pan-y"
+
 Test case: explicit-none
 PASS style.touchAction is "none"
 
-Test case: explicit-invalid
+Test case: explicit-invalid-1
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-2
+PASS style.touchAction is "none"
+
+Test case: explicit-invalid-3
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-4
 PASS style.touchAction is "auto"
 
 Test case: not-inherited

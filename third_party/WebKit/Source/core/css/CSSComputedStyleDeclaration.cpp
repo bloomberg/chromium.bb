@@ -1546,6 +1546,24 @@ static PassRefPtr<CSSPrimitiveValue> valueForFontWeight(RenderStyle& style)
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }
 
+static PassRefPtr<CSSValue> touchActionFlagsToCSSValue(TouchAction touchAction)
+{
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    if (touchAction == TouchActionAuto)
+        list->append(cssValuePool().createIdentifierValue(CSSValueAuto));
+    if (touchAction & TouchActionNone) {
+        ASSERT(touchAction == TouchActionNone);
+        list->append(cssValuePool().createIdentifierValue(CSSValueNone));
+    }
+    if (touchAction & TouchActionPanX)
+        list->append(cssValuePool().createIdentifierValue(CSSValuePanX));
+    if (touchAction & TouchActionPanY)
+        list->append(cssValuePool().createIdentifierValue(CSSValuePanY));
+
+    ASSERT(list->length());
+    return list.release();
+}
+
 static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> style, RenderObject* renderer)
 {
     // Some properties only depend on layout in certain conditions which
@@ -2320,7 +2338,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTop:
             return valueForPositionOffset(*style, CSSPropertyTop, renderer, m_node->document().renderView());
         case CSSPropertyTouchAction:
-            return cssValuePool().createValue(style->touchAction());
+            return touchActionFlagsToCSSValue(style->touchAction());
         case CSSPropertyTouchActionDelay:
             return cssValuePool().createValue(style->touchActionDelay());
         case CSSPropertyUnicodeBidi:

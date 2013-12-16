@@ -621,10 +621,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if ((valueID >= CSSValueCapitalize && valueID <= CSSValueLowercase) || valueID == CSSValueNone)
             return true;
         break;
-    case CSSPropertyTouchAction: // auto | none
-        if (RuntimeEnabledFeatures::cssTouchActionEnabled() && (valueID == CSSValueAuto || valueID == CSSValueNone))
-            return true;
-        break;
     case CSSPropertyTouchActionDelay: // none | script
         if (RuntimeEnabledFeatures::cssTouchActionEnabled() && (valueID == CSSValueScript || valueID == CSSValueNone))
             return true;
@@ -882,7 +878,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTextTransform:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
-    case CSSPropertyTouchAction:
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
@@ -2706,6 +2701,11 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyShapeImageThreshold:
         validPrimitive = (RuntimeEnabledFeatures::cssShapesEnabled() && !id && validUnit(value, FNumber));
         break;
+
+    case CSSPropertyTouchAction:
+        // auto | none | [pan-x || pan-y]
+        return parseTouchAction(important);
+
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -2746,7 +2746,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTextTransform:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
-    case CSSPropertyTouchAction:
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVariable:
     case CSSPropertyVisibility:
@@ -9012,6 +9011,49 @@ bool CSSParser::parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& prop
     }
 
     return value;
+}
+
+bool CSSParser::parseTouchAction(bool important)
+{
+    if (!RuntimeEnabledFeatures::cssTouchActionEnabled())
+        return false;
+
+    CSSParserValue* value = m_valueList->current();
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    if (m_valueList->size() == 1 && value && (value->id == CSSValueAuto || value->id == CSSValueNone)) {
+        list->append(cssValuePool().createIdentifierValue(value->id));
+        addProperty(CSSPropertyTouchAction, list.release(), important);
+        m_valueList->next();
+        return true;
+    }
+
+    bool isValid = true;
+    while (isValid && value) {
+        switch (value->id) {
+        case CSSValuePanX:
+        case CSSValuePanY: {
+            RefPtr<CSSValue> panValue = cssValuePool().createIdentifierValue(value->id);
+            if (list->hasValue(panValue.get())) {
+                isValid = false;
+                break;
+            }
+            list->append(panValue.release());
+            break;
+        }
+        default:
+            isValid = false;
+            break;
+        }
+        if (isValid)
+            value = m_valueList->next();
+    }
+
+    if (list->length() && isValid) {
+        addProperty(CSSPropertyTouchAction, list.release(), important);
+        return true;
+    }
+
+    return false;
 }
 
 void CSSParser::addTextDecorationProperty(CSSPropertyID propId, PassRefPtr<CSSValue> value, bool important)
