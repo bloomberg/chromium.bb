@@ -895,6 +895,23 @@ paladin.add_config('x32-generic-paladin',
   important=False,
 )
 
+paladin.add_config('x86-generic-asan-paladin',
+  asan,
+  boards=['x86-generic'],
+  paladin_builder_name='x86-generic asan-paladin',
+  description='Paladin build with Address Sanitizer (Clang)',
+  important=False,
+)
+
+incremental.add_config('amd64-generic-asan-paladin',
+  amd64,
+  asan,
+  boards=['amd64-generic'],
+  paladin_builder_name='amd64-generic asan-paladin',
+  description='Paladin build with Address Sanitizer (Clang)',
+  important=False,
+)
+
 telemetry = _config(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
