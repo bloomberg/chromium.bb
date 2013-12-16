@@ -178,16 +178,6 @@ bool IsPassphraseAccepted(const ProfileSyncServiceHarness* harness) {
           harness->service()->IsUsingSecondaryPassphrase());
 }
 
-// Helper function which returns true if the sync client successfully completed
-// encryption with a custom passphase.
-bool IsEncryptionComplete(const ProfileSyncServiceHarness* harness) {
-  // TODO(rsimha): Revisit these conditions. See crbug.com/95619.
-  DCHECK(harness);
-  return (harness->IsEncryptionComplete() &&
-          harness->IsFullySynced() &&
-          harness->GetLastSessionSnapshot().num_encryption_conflicts() == 0);
-}
-
 // Helper function which returns true if the sync client no longer has a pending
 // backend migration.
 bool NoPendingBackendMigration(const ProfileSyncServiceHarness* harness) {
@@ -1035,16 +1025,14 @@ bool ProfileSyncServiceHarness::EnableEncryption() {
 }
 
 bool ProfileSyncServiceHarness::WaitForEncryption() {
-  // TODO(rsimha): Revisit these conditions. See crbug.com/95619.
-  if (IsEncryptionComplete() &&
-      IsFullySynced() &&
-      GetLastSessionSnapshot().num_encryption_conflicts() == 0) {
+  if (IsEncryptionComplete()) {
     // Encryption is already complete; do not wait.
     return true;
   }
 
   StatusChangeChecker encryption_complete_checker(
-      base::Bind(&::IsEncryptionComplete, base::Unretained(this)),
+      base::Bind(&ProfileSyncServiceHarness::IsEncryptionComplete,
+                 base::Unretained(this)),
       "IsEncryptionComplete");
   return AwaitStatusChange(&encryption_complete_checker, "WaitForEncryption");
 }
