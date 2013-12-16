@@ -144,7 +144,7 @@ WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
 #define CRASH() \
     (WTFReportBacktrace(), \
      WTFInvokeCrashHook(), \
-     (*(int*)0xbbadbeef = 0), \
+     (*(int*)0xfbadbeef = 0), \
      IMMEDIATE_CRASH())
 #endif
 
