@@ -85,41 +85,6 @@ static double ExpectedTimeBetweenCallbacks(AudioParameters params) {
               static_cast<double>(params.sample_rate()))).InMillisecondsF();
 }
 
-// Helper method which verifies that the device list starts with a valid
-// default device name followed by non-default device names.
-static void CheckDeviceNames(const AudioDeviceNames& device_names) {
-  VLOG(2) << "Got " << device_names.size() << " audio devices.";
-  if (device_names.empty()) {
-    // Log a warning so we can see the status on the build bots.  No need to
-    // break the test though since this does successfully test the code and
-    // some failure cases.
-    LOG(WARNING) << "No input devices detected";
-    return;
-  }
-
-  AudioDeviceNames::const_iterator it = device_names.begin();
-
-  // The first device in the list should always be the default device.
-  EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceName),
-            it->device_name);
-  EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
-  ++it;
-
-  // Other devices should have non-empty name and id and should not contain
-  // default name or id.
-  while (it != device_names.end()) {
-    EXPECT_FALSE(it->device_name.empty());
-    EXPECT_FALSE(it->unique_id.empty());
-    VLOG(2) << "Device ID(" << it->unique_id
-            << "), label: " << it->device_name;
-    EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceName),
-              it->device_name);
-    EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
-              it->unique_id);
-    ++it;
-  }
-}
-
 std::ostream& operator<<(std::ostream& os, const AudioParameters& params) {
   using namespace std;
   os << endl << "format: " << FormatToString(params.format()) << endl
@@ -600,24 +565,6 @@ TEST_F(AudioAndroidOutputTest, IsAudioLowLatencySupported) {
   bool low_latency = manager->IsAudioLowLatencySupported();
   low_latency ? VLOG(0) << "Low latency output is supported"
               : VLOG(0) << "Low latency output is *not* supported";
-}
-
-// Verify input device enumeration.
-TEST_F(AudioAndroidInputTest, GetAudioInputDeviceNames) {
-  if (!audio_manager()->HasAudioInputDevices())
-    return;
-  AudioDeviceNames devices;
-  audio_manager()->GetAudioInputDeviceNames(&devices);
-  CheckDeviceNames(devices);
-}
-
-// Verify output device enumeration.
-TEST_F(AudioAndroidOutputTest, GetAudioOutputDeviceNames) {
-  if (!audio_manager()->HasAudioOutputDevices())
-    return;
-  AudioDeviceNames devices;
-  audio_manager()->GetAudioOutputDeviceNames(&devices);
-  CheckDeviceNames(devices);
 }
 
 // Ensure that a default input stream can be created and closed.
