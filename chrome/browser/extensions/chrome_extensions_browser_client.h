@@ -51,6 +51,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
+      OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

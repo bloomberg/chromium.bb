@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -127,6 +128,11 @@ scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return chrome::IsRunningInForcedAppMode();
+}
+
+content::JavaScriptDialogManager*
+ChromeExtensionsBrowserClient::GetJavaScriptDialogManager() {
+  return GetJavaScriptDialogManagerInstance();
 }
 
 }  // namespace extensions

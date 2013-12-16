@@ -41,6 +41,8 @@ class ShellExtensionsBrowserClient
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
   virtual scoped_ptr<extensions::AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
+      OVERRIDE;
 
  private:
   // The single BrowserContext for app_shell. Not owned.

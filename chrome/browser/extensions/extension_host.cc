@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
@@ -323,20 +323,6 @@ void ExtensionHost::CloseContents(WebContents* contents) {
   Close();
 }
 
-void ExtensionHost::WillRunJavaScriptDialog() {
-  ProcessManager* pm = ExtensionSystem::GetForBrowserContext(
-      browser_context_)->process_manager();
-  if (pm)
-    pm->IncrementLazyKeepaliveCount(extension());
-}
-
-void ExtensionHost::DidCloseJavaScriptDialog() {
-  ProcessManager* pm = ExtensionSystem::GetForBrowserContext(
-      browser_context_)->process_manager();
-  if (pm)
-    pm->DecrementLazyKeepaliveCount(extension());
-}
-
 bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
@@ -426,10 +412,7 @@ void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
 }
 
 content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager() {
-  if (!dialog_manager_) {
-    dialog_manager_.reset(CreateJavaScriptDialogManagerInstance(this));
-  }
-  return dialog_manager_.get();
+  return ExtensionsBrowserClient::Get()->GetJavaScriptDialogManager();
 }
 
 void ExtensionHost::AddNewContents(WebContents* source,

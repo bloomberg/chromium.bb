@@ -12,6 +12,7 @@ class PrefService;
 
 namespace content {
 class BrowserContext;
+class JavaScriptDialogManager;
 }
 
 namespace extensions {
@@ -78,6 +79,10 @@ class ExtensionsBrowserClient {
 
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;
+
+  // Returns the embedder's JavaScriptDialogManager or NULL if the embedder
+  // does not support JavaScript dialogs.
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

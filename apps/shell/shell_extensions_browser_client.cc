@@ -105,4 +105,12 @@ bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
 }
 
+content::JavaScriptDialogManager*
+ShellExtensionsBrowserClient::GetJavaScriptDialogManager() {
+  // TODO(jamescook): Create a JavaScriptDialogManager or reuse the one from
+  // content_shell.
+  NOTREACHED();
+  return NULL;
+}
+
 }  // namespace apps
