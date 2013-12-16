@@ -623,6 +623,18 @@ ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 
 
 {##############################################################################}
+{% block to_event_target %}
+{% if is_event_target %}
+EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
+{
+    return toNative(object);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block wrap %}
 {% if special_wrap_for %}
 v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

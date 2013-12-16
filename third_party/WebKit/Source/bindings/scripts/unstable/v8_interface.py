@@ -140,6 +140,8 @@ def generate_interface(interface):
             interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'is_event_target': inherits_interface(interface, 'EventTarget'),
+        'is_node': inherits_interface(interface, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
@@ -381,3 +383,11 @@ def interface_length(interface, constructors):
         return 0
     return min(constructor['number_of_required_arguments']
                for constructor in constructors)
+
+
+# Interface dependencies
+
+def inherits_interface(interface, ancestor):
+    # FIXME: support distant ancestors (but don't parse all ancestors!)
+    # Do by computing ancestor chain in compute_dependencies.py
+    return ancestor in [interface.name, interface.parent]

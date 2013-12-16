@@ -64,11 +64,13 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class}}* object
 namespace WebCore {
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
+{% set to_event_target = '%s::toEventTarget' % v8_class
+                         if is_event_target else '0' %}
 {% set visit_dom_wrapper = '%s::visitDOMWrapper' % v8_class
                            if has_visit_dom_wrapper else '0' %}
 {% set parent_wrapper_type_info = '&V8%s::wrapperTypeInfo' % parent_interface
                                   if parent_interface else '0' %}
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, 0, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, WrapperTypeObjectPrototype };
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, WrapperTypeObjectPrototype };
 
 namespace {{cpp_class}}V8Internal {
 
@@ -137,6 +139,7 @@ template <typename T> void V8_USE(T) { }
 {% block install_per_context_attributes %}{% endblock %}
 {% block install_per_context_methods %}{% endblock %}
 {% block to_active_dom_object %}{% endblock %}
+{% block to_event_target %}{% endblock %}
 {% block wrap %}{% endblock %}
 {% block create_wrapper %}{% endblock %}
 {% block deref_object_and_to_v8_no_inline %}{% endblock %}
