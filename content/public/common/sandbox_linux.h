@@ -22,6 +22,9 @@ enum LinuxSandboxStatus {
 
   // seccomp-bpf sandbox active.
   kSandboxLinuxSeccompBPF = 1 << 3,
+
+  // A flag that denotes an invalid sandbox status.
+  kSandboxLinuxInvalid = 1 << 31,
 };
 
 }  // namespace content

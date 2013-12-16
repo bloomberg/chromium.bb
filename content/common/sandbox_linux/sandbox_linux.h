@@ -47,13 +47,13 @@ class LinuxSandbox {
   // LinuxSandbox singleton if it doesn't already exist.
   static bool InitializeSandbox();
 
-  // Returns the Status of the renderers' sandbox. Can only be queried after
-  // going through PreinitializeSandbox(). This is a bitmask and uses the
-  // constants defined in "enum LinuxSandboxStatus". Since the status needs to
-  // be provided before the sandboxes are actually started, this returns what
-  // will actually happen once the various Start* functions are called from
-  // inside a renderer.
-  int GetStatus() const;
+  // Returns the status of the renderer, worker and ppapi sandbox. Can only
+  // be queried after going through PreinitializeSandbox(). This is a bitmask
+  // and uses the constants defined in "enum LinuxSandboxStatus". Since the
+  // status needs to be provided before the sandboxes are actually started,
+  // this returns what will actually happen once InitializeSandbox()
+  // is called from inside these processes.
+  int GetStatus();
   // Returns true if the current process is single-threaded or if the number
   // of threads cannot be determined.
   bool IsSingleThreaded() const;
@@ -78,6 +78,9 @@ class LinuxSandbox {
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
 
+  // InitializeSandbox() is static and gets an instance of the Singleton. This
+  // is the non-static implementation.
+  bool InitializeSandboxImpl();
   // We must have been pre_initialized_ before using this.
   bool seccomp_bpf_supported() const;
   // Returns true if it can be determined that the current process has open
@@ -87,12 +90,17 @@ class LinuxSandbox {
   // The last part of the initialization is to make sure any temporary "hole"
   // in the sandbox is closed. For now, this consists of closing proc_fd_.
   void SealSandbox();
+  // GetStatus() makes promises as to how the sandbox will behave. This
+  // checks that no promises have been broken.
+  void CheckForBrokenPromises(const std::string& process_type);
 
   // A file descriptor to /proc. It's dangerous to have it around as it could
   // allow for sandbox bypasses. It needs to be closed before we consider
   // ourselves sandboxed.
   int proc_fd_;
   bool seccomp_bpf_started_;
+  // The value returned by GetStatus(). Gets computed once and then cached.
+  int sandbox_status_flags_;
   // Did PreinitializeSandbox() run?
   bool pre_initialized_;
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.

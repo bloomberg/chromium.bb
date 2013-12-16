@@ -34,7 +34,7 @@ RendererProcessPolicy::RendererProcessPolicy() {}
 RendererProcessPolicy::~RendererProcessPolicy() {}
 
 ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                         int sysno) const {
+                                                 int sysno) const {
   switch (sysno) {
     case __NR_clone:
       return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
@@ -52,7 +52,7 @@ ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
 #if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
 #endif
-    case __NR_mremap:   // See crbug.com/149834.
+    case __NR_mremap:  // See crbug.com/149834.
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sched_getaffinity:

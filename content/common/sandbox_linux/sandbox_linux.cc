@@ -71,6 +71,7 @@ namespace content {
 LinuxSandbox::LinuxSandbox()
     : proc_fd_(-1),
       seccomp_bpf_started_(false),
+      sandbox_status_flags_(kSandboxLinuxInvalid),
       pre_initialized_(false),
       seccomp_bpf_supported_(false),
       setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()) {
@@ -120,65 +121,32 @@ void LinuxSandbox::PreinitializeSandbox() {
 }
 
 bool LinuxSandbox::InitializeSandbox() {
-  bool seccomp_bpf_started = false;
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-  // We need to make absolutely sure that our sandbox is "sealed" before
-  // InitializeSandbox does exit.
-  base::ScopedClosureRunner sandbox_sealer(
-      base::Bind(&LinuxSandbox::SealSandbox, base::Unretained(linux_sandbox)));
-  const std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType);
-
-  // No matter what, it's always an error to call InitializeSandbox() after
-  // threads have been created.
-  if (!linux_sandbox->IsSingleThreaded()) {
-    std::string error_message = "InitializeSandbox() called with multiple "
-                                "threads in process " + process_type;
-    // TSAN starts a helper thread. So we don't start the sandbox and don't
-    // even report an error about it.
-    if (IsRunningTSAN())
-      return false;
-    // The GPU process is allowed to call InitializeSandbox() with threads for
-    // now, because it loads third party libraries.
-    if (process_type != switches::kGpuProcess)
-      CHECK(false) << error_message;
-    LOG(ERROR) << error_message;
-    return false;
-  }
-
-  DCHECK(!linux_sandbox->HasOpenDirectories()) <<
-      "InitializeSandbox() called after unexpected directories have been " <<
-      "opened. This breaks the security of the setuid sandbox.";
-
-  // Attempt to limit the future size of the address space of the process.
-  linux_sandbox->LimitAddressSpace(process_type);
-
-  // First, try to enable seccomp-bpf.
-  seccomp_bpf_started = linux_sandbox->StartSeccompBPF(process_type);
-
-  return seccomp_bpf_started;
+  return linux_sandbox->InitializeSandboxImpl();
 }
 
-int LinuxSandbox::GetStatus() const {
+int LinuxSandbox::GetStatus() {
   CHECK(pre_initialized_);
-  int sandbox_flags = 0;
-  if (setuid_sandbox_client_->IsSandboxed()) {
-    sandbox_flags |= kSandboxLinuxSUID;
-    if (setuid_sandbox_client_->IsInNewPIDNamespace())
-      sandbox_flags |= kSandboxLinuxPIDNS;
-    if (setuid_sandbox_client_->IsInNewNETNamespace())
-      sandbox_flags |= kSandboxLinuxNetNS;
+  if (kSandboxLinuxInvalid == sandbox_status_flags_) {
+    // Initialize sandbox_status_flags_.
+    sandbox_status_flags_ = 0;
+    if (setuid_sandbox_client_->IsSandboxed()) {
+      sandbox_status_flags_ |= kSandboxLinuxSUID;
+      if (setuid_sandbox_client_->IsInNewPIDNamespace())
+        sandbox_status_flags_ |= kSandboxLinuxPIDNS;
+      if (setuid_sandbox_client_->IsInNewNETNamespace())
+        sandbox_status_flags_ |= kSandboxLinuxNetNS;
+    }
+
+    // We report whether the sandbox will be activated when renderers, workers
+    // and PPAPI plugins go through sandbox initialization.
+    if (seccomp_bpf_supported() &&
+        SandboxSeccompBPF::ShouldEnableSeccompBPF(switches::kRendererProcess)) {
+      sandbox_status_flags_ |= kSandboxLinuxSeccompBPF;
+    }
   }
 
-  if (seccomp_bpf_supported() &&
-      SandboxSeccompBPF::ShouldEnableSeccompBPF(switches::kRendererProcess)) {
-    // We report whether the sandbox will be activated when renderers go
-    // through sandbox initialization.
-    sandbox_flags |= kSandboxLinuxSeccompBPF;
-  }
-
-  return sandbox_flags;
+  return sandbox_status_flags_;
 }
 
 // Threads are counted via /proc/self/task. This is a little hairy because of
@@ -228,8 +196,7 @@ sandbox::SetuidSandboxClient*
 // For seccomp-bpf, we use the SandboxSeccompBPF class.
 bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
   CHECK(!seccomp_bpf_started_);
-  if (!pre_initialized_)
-    PreinitializeSandbox();
+  CHECK(pre_initialized_);
   if (seccomp_bpf_supported())
     seccomp_bpf_started_ = SandboxSeccompBPF::StartSandbox(process_type);
 
@@ -238,6 +205,58 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
 
   return seccomp_bpf_started_;
 }
+
+bool LinuxSandbox::InitializeSandboxImpl() {
+  const std::string process_type =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+
+  // We need to make absolutely sure that our sandbox is "sealed" before
+  // returning.
+  // Unretained() since the current object is a Singleton.
+  base::ScopedClosureRunner sandbox_sealer(
+      base::Bind(&LinuxSandbox::SealSandbox, base::Unretained(this)));
+  // Make sure that this function enables sandboxes as promised by GetStatus().
+  // Unretained() since the current object is a Singleton.
+  base::ScopedClosureRunner sandbox_promise_keeper(
+      base::Bind(&LinuxSandbox::CheckForBrokenPromises,
+                 base::Unretained(this),
+                 process_type));
+
+  // No matter what, it's always an error to call InitializeSandbox() after
+  // threads have been created.
+  if (!IsSingleThreaded()) {
+    std::string error_message = "InitializeSandbox() called with multiple "
+                                "threads in process " + process_type;
+    // TSAN starts a helper thread. So we don't start the sandbox and don't
+    // even report an error about it.
+    if (IsRunningTSAN())
+      return false;
+    // The GPU process is allowed to call InitializeSandbox() with threads for
+    // now, because it loads third-party libraries.
+    if (process_type != switches::kGpuProcess)
+      CHECK(false) << error_message;
+    LOG(ERROR) << error_message;
+    return false;
+  }
+
+  // Only one thread is running, pre-initialize if not already done.
+  if (!pre_initialized_)
+    PreinitializeSandbox();
+
+  DCHECK(!HasOpenDirectories()) <<
+      "InitializeSandbox() called after unexpected directories have been " <<
+      "opened. This breaks the security of the setuid sandbox.";
+
+  // Attempt to limit the future size of the address space of the process.
+  LimitAddressSpace(process_type);
+
+  // Try to enable seccomp-bpf.
+  bool seccomp_bpf_started = StartSeccompBPF(process_type);
+
+  return seccomp_bpf_started;
+}
+
 
 bool LinuxSandbox::seccomp_bpf_supported() const {
   CHECK(pre_initialized_);
@@ -296,5 +315,19 @@ void LinuxSandbox::SealSandbox() {
   }
 }
 
-}  // namespace content
+void LinuxSandbox::CheckForBrokenPromises(const std::string& process_type) {
+  // Make sure that any promise made with GetStatus() wasn't broken.
+  bool promised_seccomp_bpf_would_start = false;
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kWorkerProcess ||
+      process_type == switches::kPpapiPluginProcess) {
+    promised_seccomp_bpf_would_start =
+        (sandbox_status_flags_ != kSandboxLinuxInvalid) &&
+        (GetStatus() & kSandboxLinuxSeccompBPF);
+  }
+  if (promised_seccomp_bpf_would_start) {
+    CHECK(seccomp_bpf_started_);
+  }
+}
 
+}  // namespace content
