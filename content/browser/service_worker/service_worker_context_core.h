@@ -91,8 +91,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const RegistrationCallback& callback,
       ServiceWorkerRegistrationStatus status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
-  void UnregistrationComplete(const UnregistrationCallback& callback,
-                              ServiceWorkerRegistrationStatus status);
 
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;

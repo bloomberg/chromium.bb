@@ -6,22 +6,21 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::MessageLoop;
 
 namespace content {
 
 class ServiceWorkerDispatcherHostTest : public testing::Test {
  protected:
   ServiceWorkerDispatcherHostTest()
-      : io_thread_(BrowserThread::IO, &message_loop_) {}
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() {
     context_wrapper_ = new ServiceWorkerContextWrapper;
@@ -37,9 +36,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   ServiceWorkerContextCore* context() { return context_wrapper_->context(); }
 
+  TestBrowserThreadBundle browser_thread_bundle_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl io_thread_;
 };
 
 static const int kRenderProcessId = 1;
@@ -106,6 +104,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Enabled) {
       ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
       &handled);
   EXPECT_TRUE(handled);
+  base::RunLoop().RunUntilIdle();
 
   // TODO(alecflett): Pump the message loop when this becomes async.
   ASSERT_EQ(1UL, dispatcher_host->sent_messages_.size());

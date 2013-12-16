@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "url/gurl.h"
 
-namespace content {
+using blink::WebServiceWorkerError;
 
 namespace {
 
@@ -23,14 +23,9 @@ const char kDisabledErrorMessage[] =
 const char kDomainMismatchErrorMessage[] =
     "Scope and scripts do not have the same origin";
 
-// TODO(alecflett): Store the service_worker_id keyed by (domain+pattern,
-// script) so we don't always return a new service worker id.
-int64 NextWorkerId() {
-  static int64 service_worker_id = 0;
-  return service_worker_id++;
-}
-
 }  // namespace
+
+namespace content {
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     int render_process_id)
@@ -95,7 +90,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        blink::WebServiceWorkerError::DisabledError,
+        WebServiceWorkerError::DisabledError,
         ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
@@ -107,13 +102,18 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        blink::WebServiceWorkerError::SecurityError,
+        WebServiceWorkerError::SecurityError,
         ASCIIToUTF16(kDomainMismatchErrorMessage)));
     return;
   }
 
-  Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, NextWorkerId()));
+  context_->RegisterServiceWorker(
+      pattern,
+      script_url,
+      base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete,
+                 this,
+                 thread_id,
+                 request_id));
 }
 
 void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
@@ -132,7 +132,12 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
 
-  Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
+  context_->UnregisterServiceWorker(
+      pattern,
+      base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete,
+                 this,
+                 thread_id,
+                 request_id));
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {
@@ -155,6 +160,44 @@ void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
     return;
   }
   context_->RemoveProviderHost(render_process_id_, provider_id);
+}
+
+void ServiceWorkerDispatcherHost::RegistrationComplete(
+    int32 thread_id,
+    int32 request_id,
+    ServiceWorkerRegistrationStatus status,
+    int64 registration_id) {
+  if (status != REGISTRATION_OK) {
+    SendRegistrationError(thread_id, request_id, status);
+    return;
+  }
+
+  Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
+      thread_id, request_id, registration_id));
+}
+
+void ServiceWorkerDispatcherHost::UnregistrationComplete(
+    int32 thread_id,
+    int32 request_id,
+    ServiceWorkerRegistrationStatus status) {
+  if (status != REGISTRATION_OK) {
+    SendRegistrationError(thread_id, request_id, status);
+    return;
+  }
+
+  Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
+}
+
+void ServiceWorkerDispatcherHost::SendRegistrationError(
+    int32 thread_id,
+    int32 request_id,
+    ServiceWorkerRegistrationStatus status) {
+  base::string16 error_message;
+  blink::WebServiceWorkerError::ErrorType error_type;
+  GetServiceWorkerRegistrationStatusResponse(
+      status, &error_type, &error_message);
+  Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+      thread_id, request_id, error_type, error_message));
 }
 
 }  // namespace content

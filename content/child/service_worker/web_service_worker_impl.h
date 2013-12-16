@@ -14,12 +14,12 @@ namespace content {
 class WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
-  explicit WebServiceWorkerImpl(int64 service_worker_id)
-      : service_worker_id_(service_worker_id) {}
+  explicit WebServiceWorkerImpl(int64 registration_id)
+      : registration_id_(registration_id) {}
   virtual ~WebServiceWorkerImpl();
 
  private:
-  int64 service_worker_id_;
+  int64 registration_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);
 };

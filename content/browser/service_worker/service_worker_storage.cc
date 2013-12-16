@@ -46,7 +46,7 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 
 void ServiceWorkerStorage::FindRegistrationForPattern(
     const GURL& pattern,
-    const RegistrationCallback& callback) {
+    const FindRegistrationCallback& callback) {
   PatternToRegistrationMap::const_iterator match =
       registration_by_pattern_.find(pattern);
   if (match == registration_by_pattern_.end()) {
@@ -54,18 +54,20 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(callback,
-                   REGISTRATION_NOT_FOUND,
+                   false /* found */,
+                   REGISTRATION_OK,
                    scoped_refptr<ServiceWorkerRegistration>()));
     return;
   }
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(callback, REGISTRATION_OK, match->second));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(callback, true /* found */, REGISTRATION_OK, match->second));
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
     const GURL& document_url,
-    const RegistrationCallback& callback) {
+    const FindRegistrationCallback& callback) {
   // TODO(alecflett): This needs to be synchronous in the fast path,
   // but asynchronous in the slow path (when the patterns have to be
   // loaded from disk). For now it is always pessimistically async.
@@ -78,6 +80,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
           BrowserThread::IO,
           FROM_HERE,
           base::Bind(callback,
+                     true /* found */,
                      REGISTRATION_OK,
                      scoped_refptr<ServiceWorkerRegistration>(it->second)));
       return;
@@ -87,7 +90,8 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(callback,
-                 REGISTRATION_NOT_FOUND,
+                 false /* found */,
+                 REGISTRATION_OK,
                  scoped_refptr<ServiceWorkerRegistration>()));
 }
 

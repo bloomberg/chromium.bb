@@ -31,7 +31,7 @@ void ServiceWorkerRegisterJob::StartRegister(const GURL& pattern,
                  script_url,
                  finish_registration));
 
-  ServiceWorkerStorage::RegistrationCallback unregister_old(
+  ServiceWorkerStorage::FindRegistrationCallback unregister_old(
       base::Bind(&ServiceWorkerRegisterJob::UnregisterPatternAndContinue,
                  weak_factory_.GetWeakPtr(),
                  pattern,
@@ -48,7 +48,7 @@ void ServiceWorkerRegisterJob::StartUnregister(const GURL& pattern) {
       base::Bind(&ServiceWorkerRegisterJob::UnregisterComplete,
                  weak_factory_.GetWeakPtr()));
 
-  ServiceWorkerStorage::RegistrationCallback unregister(
+  ServiceWorkerStorage::FindRegistrationCallback unregister(
       base::Bind(&ServiceWorkerRegisterJob::UnregisterPatternAndContinue,
                  weak_factory_.GetWeakPtr(),
                  pattern,
@@ -63,14 +63,14 @@ void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
     const GURL& script_url,
     const ServiceWorkerStorage::RegistrationCallback& callback,
     ServiceWorkerRegistrationStatus previous_status) {
-  if (previous_status != REGISTRATION_OK &&
-      previous_status != REGISTRATION_NOT_FOUND) {
+  if (previous_status != REGISTRATION_OK) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(callback,
                    previous_status,
                    scoped_refptr<ServiceWorkerRegistration>()));
+    return;
   }
 
   // TODO: Eventually RegisterInternal will be replaced by an asynchronous
@@ -86,13 +86,12 @@ void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
     const GURL& pattern,
     const GURL& new_script_url,
     const ServiceWorkerStorage::UnregistrationCallback& callback,
+    bool found,
     ServiceWorkerRegistrationStatus previous_status,
     const scoped_refptr<ServiceWorkerRegistration>& previous_registration) {
-  DCHECK(previous_status == REGISTRATION_OK ||
-         previous_status == REGISTRATION_NOT_FOUND);
 
   // The previous registration may not exist, which is ok.
-  if (previous_status == REGISTRATION_OK &&
+  if (previous_status == REGISTRATION_OK && found &&
       (new_script_url.is_empty() ||
        previous_registration->script_url() != new_script_url)) {
     // TODO: Eventually UnregisterInternal will be replaced by an

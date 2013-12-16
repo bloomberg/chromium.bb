@@ -58,6 +58,7 @@ class ServiceWorkerRegisterJob {
       const GURL& pattern,
       const GURL& script_url,
       const ServiceWorkerStorage::UnregistrationCallback& callback,
+      bool found,
       ServiceWorkerRegistrationStatus previous_status,
       const scoped_refptr<ServiceWorkerRegistration>& previous_registration);
 

@@ -6,11 +6,10 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -28,6 +27,20 @@ void SaveRegistrationCallback(
   *registration = result;
 }
 
+void SaveFoundRegistrationCallback(
+    bool expected_found,
+    ServiceWorkerRegistrationStatus expected_status,
+    bool* called,
+    scoped_refptr<ServiceWorkerRegistration>* registration,
+    bool found,
+    ServiceWorkerRegistrationStatus status,
+    const scoped_refptr<ServiceWorkerRegistration>& result) {
+  EXPECT_EQ(expected_found, found);
+  EXPECT_EQ(expected_status, status);
+  *called = true;
+  *registration = result;
+}
+
 // Creates a callback which both keeps track of if it's been called,
 // as well as the resulting registration. Whent the callback is fired,
 // it ensures that the resulting status matches the expectation.
@@ -40,6 +53,19 @@ ServiceWorkerStorage::RegistrationCallback SaveRegistration(
   *called = false;
   return base::Bind(
       &SaveRegistrationCallback, expected_status, called, registration);
+}
+
+ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
+    bool expected_found,
+    ServiceWorkerRegistrationStatus expected_status,
+    bool* called,
+    scoped_refptr<ServiceWorkerRegistration>* registration) {
+  *called = false;
+  return base::Bind(&SaveFoundRegistrationCallback,
+                    expected_found,
+                    expected_status,
+                    called,
+                    registration);
 }
 
 void SaveUnregistrationCallback(ServiceWorkerRegistrationStatus expected_status,
@@ -107,11 +133,11 @@ TEST_F(ServiceWorkerStorageTest, SameDocumentSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
-      SaveRegistration(REGISTRATION_OK, &called, &registration1));
+      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
-      SaveRegistration(REGISTRATION_OK, &called, &registration2));
+      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration2));
 
   ServiceWorkerRegistration* null_registration(NULL);
   ASSERT_EQ(null_registration, registration1);
@@ -141,7 +167,7 @@ TEST_F(ServiceWorkerStorageTest, SameMatchSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/one"),
-      SaveRegistration(REGISTRATION_OK, &called, &registration1));
+      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration1));
 
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -150,7 +176,7 @@ TEST_F(ServiceWorkerStorageTest, SameMatchSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/two"),
-      SaveRegistration(REGISTRATION_OK, &called, &registration2));
+      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration2));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -182,11 +208,11 @@ TEST_F(ServiceWorkerStorageTest, DifferentMatchDifferentRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/one/"),
-      SaveRegistration(REGISTRATION_OK, &called1, &registration1));
+      SaveFoundRegistration(true, REGISTRATION_OK, &called1, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/two/"),
-      SaveRegistration(REGISTRATION_OK, &called2, &registration2));
+      SaveFoundRegistration(true, REGISTRATION_OK, &called2, &registration2));
 
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -236,7 +262,7 @@ TEST_F(ServiceWorkerStorageTest, Unregister) {
 
   storage_->FindRegistrationForPattern(
       pattern,
-      SaveRegistration(REGISTRATION_NOT_FOUND, &called, &registration));
+      SaveFoundRegistration(false, REGISTRATION_OK, &called, &registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -264,7 +290,8 @@ TEST_F(ServiceWorkerStorageTest, RegisterNewScript) {
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern;
   storage_->FindRegistrationForPattern(
       pattern,
-      SaveRegistration(REGISTRATION_OK, &called, &old_registration_by_pattern));
+      SaveFoundRegistration(
+          true, REGISTRATION_OK, &called, &old_registration_by_pattern));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -289,7 +316,8 @@ TEST_F(ServiceWorkerStorageTest, RegisterNewScript) {
 
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern;
   storage_->FindRegistrationForPattern(
-      pattern, SaveRegistration(REGISTRATION_OK, &called, &new_registration));
+      pattern,
+      SaveFoundRegistration(true, REGISTRATION_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -318,7 +346,8 @@ TEST_F(ServiceWorkerStorageTest, RegisterDuplicateScript) {
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern;
   storage_->FindRegistrationForPattern(
       pattern,
-      SaveRegistration(REGISTRATION_OK, &called, &old_registration_by_pattern));
+      SaveFoundRegistration(
+          true, REGISTRATION_OK, &called, &old_registration_by_pattern));
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
@@ -342,7 +371,8 @@ TEST_F(ServiceWorkerStorageTest, RegisterDuplicateScript) {
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern;
   storage_->FindRegistrationForPattern(
       pattern,
-      SaveRegistration(REGISTRATION_OK, &called, &new_registration_by_pattern));
+      SaveFoundRegistration(
+          true, REGISTRATION_OK, &called, &new_registration_by_pattern));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();

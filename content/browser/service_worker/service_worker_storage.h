@@ -39,10 +39,16 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   typedef base::Callback<
       void(ServiceWorkerRegistrationStatus status)> UnregistrationCallback;
 
+  // `found` is only valid if status == REGISTRATION_OK.
+  typedef base::Callback<void(bool found,
+                              ServiceWorkerRegistrationStatus status,
+                              const scoped_refptr<ServiceWorkerRegistration>&
+                                  registration)> FindRegistrationCallback;
+
   void FindRegistrationForDocument(const GURL& document_url,
-                                   const RegistrationCallback& callback);
+                                   const FindRegistrationCallback& callback);
   void FindRegistrationForPattern(const GURL& pattern,
-                                  const RegistrationCallback& callback);
+                                  const FindRegistrationCallback& callback);
 
   void Register(const GURL& pattern,
                 const GURL& script_url,

@@ -1103,6 +1103,7 @@
     'browser/service_worker/service_worker_register_job.h',
     'browser/service_worker/service_worker_registration.cc',
     'browser/service_worker/service_worker_registration.h',
+    'browser/service_worker/service_worker_registration_status.cc',
     'browser/service_worker/service_worker_registration_status.h',
     'browser/service_worker/service_worker_storage.cc',
     'browser/service_worker/service_worker_storage.h',

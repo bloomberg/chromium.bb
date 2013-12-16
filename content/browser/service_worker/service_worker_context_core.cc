@@ -81,11 +81,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
     const UnregistrationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  storage_->Unregister(
-      pattern,
-      base::Bind(&ServiceWorkerContextCore::UnregistrationComplete,
-                 AsWeakPtr(),
-                 callback));
+  storage_->Unregister(pattern, callback);
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(
@@ -98,16 +94,6 @@ void ServiceWorkerContextCore::RegistrationComplete(
   }
 
   callback.Run(status, registration->id());
-}
-
-void ServiceWorkerContextCore::UnregistrationComplete(
-    const UnregistrationCallback& callback,
-    ServiceWorkerRegistrationStatus status) {
-  // Unregistering a non-existent registration is a no-op.
-  if (status == REGISTRATION_OK || status == REGISTRATION_NOT_FOUND)
-    callback.Run(REGISTRATION_OK);
-  else
-    callback.Run(status);
 }
 
 }  // namespace content
