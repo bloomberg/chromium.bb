@@ -10,7 +10,7 @@
     on-pointerdown="{{down}}" on-pointerout="{{out}}"
     on-enable-sel="{{enableSel}}" on-enable-dbl="{{enableDbl}}"
     on-key-out="{{keyOut}}" on-show-options="{{showOptions}}"
-    on-set-layout="{{setLayout}}"
+    on-set-layout="{{setLayout}}" on-type-key="{{type}}"
     attributes="keyset layout inputType inputTypeToLayoutMap">
   <template>
     <style>
@@ -143,18 +143,6 @@
       ALT: 8,
       CONTROL: 4,
       SHIFT: 2
-    };
-
-    /**
-     * The enumeration of swipe directions.
-     * @const
-     * @type {Enum}
-     */
-    var SWIPE_DIRECTION = {
-      RIGHT: 0x1,
-      LEFT: 0x2,
-      UP: 0x4,
-      DOWN: 0x8
     };
 
     /**
@@ -446,24 +434,16 @@
         // Triggers swipe hintText if it's a purely vertical swipe.
         if (!(direction & (SWIPE_DIRECTION.LEFT | SWIPE_DIRECTION.RIGHT))) {
           // Check if event is relevant to us.
-          if ((!detail.endSwipe) ||
-              (direction & SWIPE_DIRECTION.DOWN) ||
-              (detail.isComplex)) {
+          if ((!detail.endSwipe) || (detail.isComplex))
             return;
-          }
           // Too long a swipe.
           var distance = Math.abs(detail.startEvent.screenY -
               detail.currentEvent.screenY);
           if (distance > MAX_SWIPE_FLICK_DIST)
             return;
           var triggerKey = detail.startEvent.target;
-          // Swipe-up on a key without hintText.
-          if (!triggerKey || !triggerKey.hintTextValue)
-            return;
-          var detail = {};
-          detail.char = triggerKey.hintTextValue;
-          this.keyTyped(detail);
-          return;
+          if (triggerKey && triggerKey.onFlick)
+            triggerKey.onFlick(detail);
         }
       },
 
@@ -650,6 +630,16 @@
         swipeInProgress = false;
         swipeTracker.resetAll();
         this.removeEventListener('pointermove', this.swipeHandler, false);
+      },
+
+      /**
+       * Handles a TypeKey event. This is used for when we programmatically
+       * want to type a specific key.
+       * @param {CustomEvent} event The TypeKey event that bubbled to the
+       *    kb-keyboard.
+       */
+      type: function(event) {
+        this.keyTyped(event.detail);
       },
 
       /**

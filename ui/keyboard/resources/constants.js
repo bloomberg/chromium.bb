@@ -22,3 +22,16 @@ var FONT_SIZE_RATIO = 3;
 // in kb-keyset. Remove this variable once figure out how to calculate the
 // number from keysets.
 var ROW_LENGTH = 4;
+
+/**
+ * The enumeration of swipe directions.
+ * @const
+ * @type {Enum}
+ */
+var SWIPE_DIRECTION = {
+  RIGHT: 0x1,
+  LEFT: 0x2,
+  UP: 0x4,
+  DOWN: 0x8
+};
+
