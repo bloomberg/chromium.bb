@@ -72,12 +72,22 @@ namespace TestInterfaceConstructorV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 5)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterfaceConstructor", ExceptionMessages::notEnoughArguments(5, info.Length())), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ExecutionContext* context = getExecutionContext();
+    Document& document = *toDocument(getExecutionContext());
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, exceptionState);
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
+
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
+}
+
+static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
     V8TRYCATCH_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[1]);
@@ -93,23 +103,29 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "parameter 6 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[6]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultNullStringOptionalStringArg, argumentOrNull(info, 7));
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[8], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[8])) : 0);
-    V8TRYCATCH_VOID(Dictionary, defaultUndefinedOptionalDictionaryArg, Dictionary(info[9], info.GetIsolate()));
-    if (!defaultUndefinedOptionalDictionaryArg.isUndefinedOrNull() && !defaultUndefinedOptionalDictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "parameter 10 ('defaultUndefinedOptionalDictionaryArg') is not an object."), info.GetIsolate());
-        return;
-    }
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[6])) : 0);
     ExecutionContext* context = getExecutionContext();
     Document& document = *toDocument(getExecutionContext());
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, optionalTestInterfaceEmptyArg, defaultUndefinedOptionalDictionaryArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
+}
+
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 0))) {
+        TestInterfaceConstructorV8Internal::constructor1(info);
+        return;
+    }
+    if (((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[4]->IsArray())) || ((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[4]->IsArray())) || ((info.Length() == 7) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[4]->IsArray()) && (V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+        TestInterfaceConstructorV8Internal::constructor2(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "No matching constructor signature."), info.GetIsolate());
 }
 
 } // namespace TestInterfaceConstructorV8Internal
@@ -142,7 +158,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceConstructorTempl
         0, 0,
         isolate, currentWorldType);
     functionTemplate->SetCallHandler(V8TestInterfaceConstructor::constructorCallback);
-    functionTemplate->SetLength(5);
+    functionTemplate->SetLength(0);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
 

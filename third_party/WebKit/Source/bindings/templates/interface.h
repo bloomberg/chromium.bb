@@ -67,7 +67,7 @@ public:
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endfilter %}
     {% endfor %}
-    {% if has_constructor or has_event_constructor %}
+    {% if constructors or has_event_constructor %}
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
     {% for attribute in attributes %}

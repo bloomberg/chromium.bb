@@ -97,7 +97,8 @@ template <typename T> void V8_USE(T) { }
 {% block security_check_functions %}{% endblock %}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
-       method_callback, origin_safe_method_getter with context %}
+       method_callback, origin_safe_method_getter, constructor_callback
+       with context %}
 {% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
@@ -117,7 +118,10 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% block origin_safe_method_setter %}{% endblock %}
 {# Constructors #}
-{% block constructor %}{% endblock %}
+{% for constructor in constructors %}
+{{constructor_callback(constructor)}}
+{% endfor %}
+{% block overloaded_constructor_callback %}{% endblock %}
 {% block event_constructor %}{% endblock %}
 } // namespace {{cpp_class}}V8Internal
 

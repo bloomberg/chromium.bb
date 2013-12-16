@@ -28,19 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Note that length == 0 and overloaded; need other tests for other cases.
+// Test for length > 0, overloaded constructor.
+// Need separate tests for constructors with length == 0 and length > 0,
+// and for overloaded vs. non-overloaded, if length > 0.
+// length == 0, non-overloaded just omits a block and is not worth another test.
+//
+// Also includes some [Default] arguments (instead of in
+// TestInterfaceConstructor.idl), otherwise overload resolution check string is
+// extremely long and triggers a lint warning (line length).
 [
-    Constructor,
+    Constructor(DOMString stringArg),
     Constructor(
-        double doubleArg,
-        DOMString stringArg,
         TestInterfaceEmpty testInterfaceEmptyArg,
-        Dictionary dictionaryArg,
-        sequence<DOMString> sequenceStringArg,
-        optional Dictionary optionalDictionaryArg,
-        [Default=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg),
-    ConstructorCallWith=ExecutionContext&Document,
-    MeasureAs=TestFeature,
-    RaisesException=Constructor,
-] interface TestInterfaceConstructor {
+        [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
+        [Default=NullString] optional DOMString defaultNullStringOptionalStringArg,
+        [Default=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg),
+] interface TestInterfaceConstructor2 {
 };

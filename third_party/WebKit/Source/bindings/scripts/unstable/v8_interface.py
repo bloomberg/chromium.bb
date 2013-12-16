@@ -93,9 +93,10 @@ def generate_interface(interface):
         v8_types.add_includes_for_type(special_wrap_interface)
 
     # Constructors
-    # [Constructor]
-    has_constructor = 'Constructor' in extended_attributes
-    if has_constructor:
+    constructors = [generate_constructor(interface, constructor)
+                    for constructor in interface.constructors]
+    generate_constructor_overloads(constructors)
+    if constructors:
         includes.add('bindings/v8/V8ObjectConstructor.h')
 
     # [EventConstructor]
@@ -111,14 +112,9 @@ def generate_interface(interface):
     template_contents = {
         'any_type_attributes': any_type_attributes,
         'conditional_string': conditional_string(interface),  # [Conditional]
-        'constructor_argument_list': constructor_argument_list(interface),
-        'constructor_arguments': constructor_arguments(interface),
-        'constructor_method': {
-            'is_constructor': True,
-        },
+        'constructors': constructors,
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
-        'has_constructor': has_constructor,
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
@@ -128,7 +124,7 @@ def generate_interface(interface):
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
             'GenerateVisitDOMWrapper' in extended_attributes),
         'header_includes': header_includes,
-        'interface_length': interface_length(interface),
+        'interface_length': interface_length(interface, constructors),
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
@@ -314,11 +310,21 @@ def overload_check_argument(index, argument):
 
 # Constructors
 
-def constructor_argument_list(interface):
-    if not interface.constructors:
-        return []
-    constructor = interface.constructors[0]  # FIXME: support overloading
+# [Constructor]
+def generate_constructor(interface, constructor):
+    return {
+        'argument_list': constructor_argument_list(interface, constructor),
+        'arguments': [constructor_argument(argument, index)
+                      for index, argument in enumerate(constructor.arguments)],
+        'is_constructor': True,
+        'is_variadic': False,  # Required for overload resolution
+        'number_of_required_arguments':
+            len([argument for argument in constructor.arguments
+                 if not argument.is_optional]),
+    }
 
+
+def constructor_argument_list(interface, constructor):
     arguments = []
     # [ConstructorCallWith=ExecutionContext]
     if has_extended_attribute_value(interface, 'ConstructorCallWith', 'ExecutionContext'):
@@ -336,31 +342,36 @@ def constructor_argument_list(interface):
     return arguments
 
 
-def constructor_arguments(interface):
-    if not interface.constructors:
-        return []
-    constructor = interface.constructors[0]  # FIXME: support overloading
-    return [constructor_argument(argument, index)
-            for index, argument in enumerate(constructor.arguments)]
-
-
 def constructor_argument(argument, index):
     return {
+        'has_default': 'Default' in argument.extended_attributes,
         'idl_type': argument.idl_type,
         'index': index,
+        'is_nullable': False,  # Required for overload resolution
+        'is_optional': argument.is_optional,
+        'is_strict_type_checking': False,  # Required for overload resolution
         'name': argument.name,
         'v8_value_to_local_cpp_value':
             v8_methods.v8_value_to_local_cpp_value(argument, index),
     }
 
 
-def interface_length(interface):
+def generate_constructor_overloads(constructors):
+    if len(constructors) <= 1:
+        return
+    for overload_index, constructor in enumerate(constructors):
+        constructor.update({
+            'overload_index': overload_index + 1,
+            'overload_resolution_expression':
+                overload_resolution_expression(constructor),
+        })
+
+
+def interface_length(interface, constructors):
     # Docs: http://heycam.github.io/webidl/#es-interface-call
     if 'EventConstructor' in interface.extended_attributes:
         return 1
-    if not interface.constructors:
+    if not constructors:
         return 0
-    constructor = interface.constructors[0]  # FIXME: support overloading
-    return len([argument
-                for argument in constructor.arguments
-                if not argument.is_optional])
+    return min(constructor['number_of_required_arguments']
+               for constructor in constructors)

@@ -129,40 +129,28 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 
 
 {##############################################################################}
-{% from 'methods.cpp' import generate_argument with context %}
-{% block constructor %}
-{% if has_constructor %}
-{# FIXME: support overloading #}
+{% block overloaded_constructor_callback %}
+{% if constructors|length > 1 %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {% if constructor_arguments %}
-    {# FIXME: remove this UNLIKELY: constructors are heavy, so no difference. #}
-    if (UNLIKELY(info.Length() < {{interface_length}})) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{interface_length}}, info.Length())), info.GetIsolate());
+    {% for constructor in constructors %}
+    if ({{constructor.overload_resolution_expression}}) {
+        {{cpp_class}}V8Internal::constructor{{constructor.overload_index}}(info);
         return;
     }
-    {% endif %}
-    {% if is_constructor_raises_exception %}
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    {% endif %}
-    {% for argument in constructor_arguments %}
-    {{generate_argument(constructor_method, argument) | indent}}
     {% endfor %}
-    {% if is_constructor_call_with_execution_context %}
-    ExecutionContext* context = getExecutionContext();
-    {% endif %}
-    {% if is_constructor_call_with_document %}
-    Document& document = *toDocument(getExecutionContext());
-    {% endif %}
-    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor_argument_list | join(', ')}});
-    v8::Handle<v8::Object> wrapper = info.Holder();
-    {% if is_constructor_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    {% if interface_length %}
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < {{interface_length}})) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{interface_length}}, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
+    }
+    exceptionState.throwTypeError("No matching constructor signature.");
+    exceptionState.throwIfNeeded();
+    {% else %}
+    throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "No matching constructor signature."), info.GetIsolate());
     {% endif %}
-
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    v8SetReturnValue(info, wrapper);
 }
 
 {% endif %}
@@ -337,7 +325,7 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
 
 {##############################################################################}
 {% block constructor_callback %}
-{% if has_constructor or has_event_constructor %}
+{% if constructors or has_event_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
@@ -399,7 +387,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
         isolate, currentWorldType);
     {% endfilter %}
 
-    {% if has_constructor or has_event_constructor %}
+    {% if constructors or has_event_constructor %}
     functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
     functionTemplate->SetLength({{interface_length}});
     {% endif %}

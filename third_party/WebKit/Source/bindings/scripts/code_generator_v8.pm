@@ -2699,13 +2699,10 @@ sub GenerateOverloadedConstructorCallback
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
-    my $hasExceptionState = 0;
-    my $header = "";
-    $header .= <<END;
+    my $code .= <<END;
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 END
-    my $code = "";
     my $leastNumMandatoryParams = 255;
     foreach my $constructor (@{$interface->constructors}) {
         my $name = "constructor" . $constructor->overloadedIndex;
@@ -2717,18 +2714,13 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        if (!$hasExceptionState) {
-            $header .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
-            $hasExceptionState = 1;
-        }
-        $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
-        $code .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));\n";
-        $code .= "        exceptionState.throwIfNeeded();\n";
-        $code .= "        return;\n";
-        $code .= "    }\n";
-    }
-    if ($hasExceptionState) {
         $code .= <<END;
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
     exceptionState.throwTypeError(\"No matching constructor signature.\");
     exceptionState.throwIfNeeded();
 END
@@ -2738,7 +2730,7 @@ END
 END
     }
     $code .= "}\n\n";
-    $implementation{nameSpaceInternal}->add($header . $code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateSingleConstructorCallback
