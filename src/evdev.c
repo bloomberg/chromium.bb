@@ -444,11 +444,10 @@ evdev_configure_device(struct evdev_device *device)
 	unsigned long abs_bits[NBITS(ABS_MAX)];
 	unsigned long rel_bits[NBITS(REL_MAX)];
 	unsigned long key_bits[NBITS(KEY_MAX)];
-	int has_key, has_abs, has_rel, has_mt;
+	int has_abs, has_rel, has_mt;
 	int has_button, has_keyboard, has_touch;
 	unsigned int i;
 
-	has_key = 0;
 	has_rel = 0;
 	has_abs = 0;
 	has_mt = 0;
@@ -521,7 +520,6 @@ evdev_configure_device(struct evdev_device *device)
 			has_rel = 1;
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
-		has_key = 1;
 		ioctl(device->fd, EVIOCGBIT(EV_KEY, sizeof(key_bits)),
 		      key_bits);
 		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) &&
@@ -550,16 +548,6 @@ evdev_configure_device(struct evdev_device *device)
 	}
 	if (TEST_BIT(ev_bits, EV_LED))
 		has_keyboard = 1;
-
-	/* This rule tries to catch accelerometer devices and opt out. We may
-	 * want to adjust the protocol later adding a proper event for dealing
-	 * with accelerometers and implement here accordingly */
-	if (has_abs && !has_key && !device->is_mt) {
-		weston_log("input device %s, %s "
-			   "ignored: unsupported device type\n",
-			   device->devname, device->devnode);
-		return 0;
-	}
 
 	if ((has_abs || has_rel) && has_button) {
 		weston_seat_init_pointer(device->seat);
