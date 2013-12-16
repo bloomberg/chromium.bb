@@ -181,6 +181,8 @@ fast/xsl/import-non-document-node.xhtml
 fast/xsl/xslt-doc-enc.xml
 fullscreen/full-screen-request-rejected.html
 http/tests/download/inherited-encoding-form-submission-result.html
+http/tests/media/media-source/mediasource-play.html
+http/tests/media/media-source/webkitmediasource-play.html
 http/tests/security/no-javascript-refresh.php
 inspector-protocol/input/dispatchMouseEvent.html
 loader/reload-subresource-when-type-changes.html
