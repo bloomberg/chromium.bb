@@ -187,6 +187,18 @@
             }
         }
     },
+    "ipsec-with-psk-and-cacert": {
+      "AuthenticationType": "PSK",
+      "IKEVersion": 1,
+      "PSK": "some psk",
+      "ServerCARef": "a cert ref"
+    },
+    "ipsec-with-client-cert-missing-cacert": {
+      "AuthenticationType": "Cert",
+      "IKEVersion": 1,
+      "ClientCertType": "Ref",
+      "ClientCertRef": "a cert ref"
+    },
     "openvpn-missing-verify-x509-name": {
       "GUID": "guid",
       "Type": "VPN",

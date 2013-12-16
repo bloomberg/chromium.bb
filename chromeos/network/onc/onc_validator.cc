@@ -594,7 +594,13 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
   if (auth == kCert) {
     all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertType) &&
                           RequireField(*result, kServerCARef);
+  } else if (result->HasKey(kServerCARef)) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << MessageHeader() << kServerCARef << " can only be set if "
+               << kAuthenticationType << " is set to " << kCert << ".";
+    return false;
   }
+
   std::string cert_type;
   result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
                                         &cert_type);
