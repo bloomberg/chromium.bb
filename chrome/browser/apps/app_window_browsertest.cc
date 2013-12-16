@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestCreate) {
   ASSERT_TRUE(RunAppWindowAPITest("testCreate")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestSingleton) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestSingleton) {
   ASSERT_TRUE(RunAppWindowAPITest("testSingleton")) << message_;
 }
 
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestBounds) {
   ASSERT_TRUE(RunAppWindowAPITest("testBounds")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestCloseEvent) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestCloseEvent) {
   ASSERT_TRUE(RunAppWindowAPITest("testCloseEvent")) << message_;
 }
 
