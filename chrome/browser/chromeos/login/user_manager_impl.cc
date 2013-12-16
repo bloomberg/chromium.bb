@@ -584,7 +584,7 @@ User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
 
 Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
   Profile* profile = NULL;
-  if (IsMultipleProfilesAllowed())
+  if (IsMultipleProfilesAllowed() && user->is_profile_created())
     profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
   else
     profile = g_browser_process->profile_manager()->GetDefaultProfile();
