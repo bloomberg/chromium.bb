@@ -26,6 +26,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       show_menu_factory_(this) {
+  set_context_menu_controller(this);
 }
 
 ToolbarButton::~ToolbarButton() {
