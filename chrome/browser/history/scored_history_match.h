@@ -65,12 +65,15 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   bool can_inline() const { return can_inline_; }
 
   // Returns |term_matches| after removing all matches that are not at a
-  // word break that starts after position |start_pos|.  If |start_pos| is
-  // string::npos, does no filtering and simply returns |term_matches|.
+  // word break that are in the range [|start_pos|, |end_pos|).
+  // start_pos == string::npos is treated as start_pos = length of string.
+  // (In other words, no matches will be filtered.)
+  // end_pos == string::npos is treated as end_pos = length of string.
   static TermMatches FilterTermMatchesByWordStarts(
       const TermMatches& term_matches,
       const WordStarts& word_starts,
-      const size_t start_pos);
+      size_t start_pos,
+      size_t end_pos);
 
  private:
   friend class ScoredHistoryMatchTest;

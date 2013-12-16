@@ -110,7 +110,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
       NULL;
   can_inline_ = (best_inlineable_prefix != NULL) &&
       !IsWhitespace(*(lower_string.rbegin()));
-  match_in_scheme = can_inline_ && best_inlineable_prefix->prefix.empty();
   if (can_inline_) {
     // Initialize innermost_match.
     // The idea here is that matches that occur in the scheme or
@@ -252,7 +251,9 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
 TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
     const TermMatches& term_matches,
     const WordStarts& word_starts,
-    const size_t start_pos) {
+    size_t start_pos,
+    size_t end_pos) {
+  // Return early if no filtering is needed.
   if (start_pos == std::string::npos)
     return term_matches;
   TermMatches filtered_matches;
@@ -266,8 +267,10 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
            (*next_word_starts < iter->offset))
       ++next_word_starts;
     // Add the match if it's before the position we start filtering at or
-    // if it's at a word boundary.
+    // after the position we stop filtering at (assuming we have a position
+    // to stop filtering at) or if it's at a word boundary.
     if ((iter->offset < start_pos) ||
+        ((end_pos != std::string::npos) && (iter->offset >= end_pos)) ||
         ((next_word_starts != end_word_starts) &&
          (*next_word_starts == iter->offset)))
       filtered_matches.push_back(*iter);
@@ -319,10 +322,21 @@ float ScoredHistoryMatch::GetTopicalityScore(
       url.rfind('.', end_of_hostname_pos) :
       url.rfind('.');
   // Loop through all URL matches and score them appropriately.
+  // First, filter all matches not at a word boundary and in the path (or
+  // later).
   url_matches_ = FilterTermMatchesByWordStarts(
       url_matches_,
       word_starts.url_word_starts_,
-      end_of_hostname_pos);
+      end_of_hostname_pos,
+      std::string::npos);
+  if (colon_pos != std::string::npos) {
+    // Also filter matches not at a word boundary and in the scheme.
+    url_matches_ = FilterTermMatchesByWordStarts(
+        url_matches_,
+        word_starts.url_word_starts_,
+        0u,
+        colon_pos);
+  }
   for (TermMatches::const_iterator iter = url_matches_.begin();
        iter != url_matches_.end(); ++iter) {
     // Advance next_word_starts until it's >= the position of the term
@@ -359,8 +373,11 @@ float ScoredHistoryMatch::GetTopicalityScore(
       }
     } else {
       // The match is in the protocol (a.k.a. scheme).
+      // Matches not at a word boundary should have been filtered already.
+      DCHECK(at_word_boundary);
+      match_in_scheme = true;
       if (allow_scheme_matches_)
-        term_scores[iter->term_num] += at_word_boundary ? 10 : 0;
+        term_scores[iter->term_num] += 10;
     }
   }
   // Now do the analogous loop over all matches in the title.
@@ -368,7 +385,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
   end_word_starts = word_starts.title_word_starts_.end();
   int word_num = 0;
   title_matches_ = FilterTermMatchesByWordStarts(
-      title_matches_, word_starts.title_word_starts_, 0u);
+      title_matches_, word_starts.title_word_starts_, 0u, std::string::npos);
   for (TermMatches::const_iterator iter = title_matches_.begin();
        iter != title_matches_.end(); ++iter) {
     // Advance next_word_starts until it's >= the position of the term

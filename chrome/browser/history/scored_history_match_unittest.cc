@@ -308,6 +308,7 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
 
   {
     URLRow row(MakeURLRow("http://www.google.com", "abcdef", 3, 30, 1));
+    PopulateWordStarts(row, &word_starts);
     ScoredHistoryMatch scored_a(row, visits, std::string(),
                                 ASCIIToUTF16("g"), Make1Term("g"),
                                 word_starts, now, NULL);
@@ -332,6 +333,7 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
 
   {
     URLRow row(MakeURLRow("http://teams.foo.com", "abcdef", 3, 30, 1));
+    PopulateWordStarts(row, &word_starts);
     ScoredHistoryMatch scored_a(row, visits, std::string(),
                                 ASCIIToUTF16("t"), Make1Term("t"),
                                 word_starts, now, NULL);
@@ -351,6 +353,7 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
 
   {
     URLRow row(MakeURLRow("https://www.testing.com", "abcdef", 3, 30, 1));
+    PopulateWordStarts(row, &word_starts);
     ScoredHistoryMatch scored_a(row, visits, std::string(),
                                 ASCIIToUTF16("t"), Make1Term("t"),
                                 word_starts, now, NULL);

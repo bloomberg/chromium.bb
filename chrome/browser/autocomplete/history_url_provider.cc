@@ -1107,7 +1107,7 @@ ACMatchClassifications HistoryURLProvider::ClassifyDescription(
       clean_description, false, &description_word_starts);
   description_matches =
       history::ScoredHistoryMatch::FilterTermMatchesByWordStarts(
-          description_matches, description_word_starts, 0);
+          description_matches, description_word_starts, 0u, std::string::npos);
   return SpansFromTermMatch(
       description_matches, clean_description.length(), false);
 }
