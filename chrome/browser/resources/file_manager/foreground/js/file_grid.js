@@ -147,10 +147,9 @@ FileGrid.decorateThumbnailBox = function(
     return;
   }
 
-  var imageUrl = entry.toURL();
   var metadataTypes = 'thumbnail|filesystem';
 
-  if (FileType.isOnDrive(imageUrl)) {
+  if (FileType.isOnDrive(entry)) {
     metadataTypes += '|drive';
   } else {
     // TODO(dgozman): If we ask for 'media' for a Drive file we fall into an
@@ -167,15 +166,15 @@ FileGrid.decorateThumbnailBox = function(
       useEmbedded = ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
       break;
     case FileGrid.ThumbnailQuality.HIGH:
-      useEmbedded = FileType.isOnDrive(imageUrl) ?
+      useEmbedded = FileType.isOnDrive(entry) ?
           ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
           ThumbnailLoader.UseEmbedded.NO_EMBEDDED;
       break;
   }
 
-  metadataCache.get(imageUrl, metadataTypes,
+  metadataCache.get(entry, metadataTypes,
       function(metadata) {
-        new ThumbnailLoader(imageUrl,
+        new ThumbnailLoader(entry.toURL(),
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata,
                             undefined,  // opt_mediaType

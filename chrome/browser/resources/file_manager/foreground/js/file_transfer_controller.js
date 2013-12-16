@@ -227,16 +227,15 @@ FileTransferController.prototype = {
    * @param {Entry} entry Entry to preload a thumbnail for.
    */
   preloadThumbnailImage_: function(entry) {
-    var imageUrl = entry.toURL();
     var metadataTypes = 'thumbnail|filesystem';
     var thumbnailContainer = this.document_.createElement('div');
     this.preloadedThumbnailImageNode_ = thumbnailContainer;
     this.preloadedThumbnailImageNode_.className = 'img-container';
     this.metadataCache_.get(
-        imageUrl,
+        entry,
         metadataTypes,
         function(metadata) {
-          new ThumbnailLoader(imageUrl,
+          new ThumbnailLoader(entry.toURL(),
                               ThumbnailLoader.LoaderType.IMAGE,
                               metadata).
               load(thumbnailContainer,
@@ -757,9 +756,8 @@ FileTransferController.prototype = {
 
     if (this.isOnDrive) {
       this.allDriveFilesAvailable = false;
-      var urls = entries.map(function(e) { return e.toURL() });
       this.metadataCache_.get(
-          urls, 'drive', function(props) {
+          entries, 'drive', function(props) {
         // We consider directories not available offline for the purposes of
         // file transfer since we cannot afford to recursive traversal.
         this.allDriveFilesAvailable =

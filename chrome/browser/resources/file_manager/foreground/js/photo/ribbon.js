@@ -311,7 +311,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
 
   util.createChild(thumbnail, 'image-wrapper');
 
-  this.metadataCache_.get(item.getEntry().toURL(), Gallery.METADATA_TYPE,
+  this.metadataCache_.get(item.getEntry(), Gallery.METADATA_TYPE,
       this.setThumbnailImage_.bind(this, thumbnail, url));
 
   // TODO: Implement LRU eviction.

@@ -1334,7 +1334,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onWatcherMetadataChanged_ = function(event) {
-    this.updateMetadataInUI_(event.metadataType, event.urls, event.properties);
+    this.updateMetadataInUI_(
+        event.metadataType, event.entries, event.properties);
   };
 
   /**
@@ -1619,9 +1620,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // TODO(dgozman): refresh content metadata only when modificationTime
     // changed.
-    var isFakeEntry = typeof directoryEntry.toURL !== 'function';
+    var isFakeEntry = util.isFakeEntry(directoryEntry);
     var getEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
-    this.metadataCache_.clearRecursively(directoryEntry, '*');
+    if (!isFakeEntry)
+      this.metadataCache_.clearRecursively(directoryEntry, '*');
     this.metadataCache_.get(getEntries, 'filesystem', null);
 
     if (this.isOnDrive())
@@ -1644,13 +1646,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.dailyUpdateModificationTime_ = function() {
     var fileList = this.directoryModel_.getFileList();
-    var urls = [];
+    var entries = [];
     for (var i = 0; i < fileList.length; i++) {
-      urls.push(fileList.item(i).toURL());
+      entries.push(fileList.item(i));
     }
     this.metadataCache_.get(
-        fileList.slice(), 'filesystem',
-        this.updateMetadataInUI_.bind(this, 'filesystem', urls));
+        entries,
+        'filesystem',
+        this.updateMetadataInUI_.bind(this, 'filesystem', entries));
 
     setTimeout(this.dailyUpdateModificationTime_.bind(this),
                MILLISECONDS_IN_DAY);
@@ -1658,22 +1661,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * @param {string} type Type of metadata changed.
-   * @param {Array.<string>} urls Array of urls.
+   * @param {Array.<Entry>} entries Array of entries.
    * @param {Object.<string, Object>} props Map from entry URLs to metadata
    *     props.
    * @private
    */
   FileManager.prototype.updateMetadataInUI_ = function(
-      type, urls, properties) {
-    var propertyByUrl = urls.reduce(function(map, url, index) {
-      map[url] = properties[index];
-      return map;
-    }, {});
-
+      type, entries, properties) {
     if (this.listType_ == FileManager.ListType.DETAIL)
-      this.table_.updateListItemsMetadata(type, propertyByUrl);
+      this.table_.updateListItemsMetadata(type, properties);
     else
-      this.grid_.updateListItemsMetadata(type, propertyByUrl);
+      this.grid_.updateListItemsMetadata(type, properties);
     // TODO: update bottom panel thumbnails.
   };
 
@@ -3115,7 +3113,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this);
 
     setup();
-    this.metadataCache_.get(selection.urls, 'drive', onProperties);
+    this.metadataCache_.get(selection.entries, 'drive', onProperties);
   };
 
   /**

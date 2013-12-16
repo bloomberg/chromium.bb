@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * MetadataCache is a map from url to an object containing properties.
+ * MetadataCache is a map from Entry to an object containing properties.
  * Properties are divided by types, and all properties of one type are accessed
  * at once.
  * Some of the properties:
@@ -34,7 +34,7 @@
  *
  *   cache.set(entry, 'internal', {presence: 'deleted'});
  *
- *   cache.clear([fileUrl1, fileUrl2], 'filesystem');
+ *   cache.clear([fileEntry1, fileEntry2], 'filesystem');
  *
  *   // Getting fresh value.
  *   cache.clear(entry, 'thumbnail');
@@ -50,9 +50,9 @@
  */
 function MetadataCache() {
   /**
-   * Map from urls to entries. Entry contains |properties| - an hierarchical
-   * object of values, and an object for each metadata provider:
-   * <prodiver-id>: { time, callbacks }
+   * Map from Entry (using Entry.toURL) to metadata. Metadata contains
+   * |properties| - an hierarchical object of values, and an object for each
+   * metadata provider: <prodiver-id>: {time, callbacks}
    * @private
    */
   this.cache_ = {};
@@ -68,7 +68,6 @@ function MetadataCache() {
    *   re - regexp of urls;
    *   type - metadata type;
    *   callback - the callback.
-   * TODO(dgozman): pass entries to observer if present.
    * @private
    */
   this.observers_ = [];
@@ -86,20 +85,20 @@ function MetadataCache() {
 }
 
 /**
- * Observer type: it will be notified if the url changed is exactly the same
- * as the url passed.
+ * Observer type: it will be notified if the changed Entry is exactly the same
+ * as the observed Entry.
  */
 MetadataCache.EXACT = 0;
 
 /**
- * Observer type: it will be notified if the url changed is an immediate child
- * of the url passed.
+ * Observer type: it will be notified if the changed Entry is an immediate child
+ * of the observed Entry.
  */
 MetadataCache.CHILDREN = 1;
 
 /**
- * Observer type: it will be notified if the url changed is any descendant
- * of the url passed.
+ * Observer type: it will be notified if the changed Entry is a descendant of
+ * of the observer Entry.
  */
 MetadataCache.DESCENDANTS = 2;
 
@@ -161,24 +160,24 @@ MetadataCache.prototype.isInitialized = function() {
 /**
  * Fetches the metadata, puts it in the cache, and passes to callback.
  * If required metadata is already in the cache, does not fetch it again.
- * @param {string|Entry|Array.<string|Entry>} items The list of entries or
- *     file urls. May be just a single item.
+ * @param {Entry|Array.<Entry>} entries The list of entries. May be just a
+ *     single item.
  * @param {string} type The metadata type.
  * @param {function(Object)} callback The metadata is passed to callback.
  */
-MetadataCache.prototype.get = function(items, type, callback) {
-  if (!(items instanceof Array)) {
-    this.getOne(items, type, callback);
+MetadataCache.prototype.get = function(entries, type, callback) {
+  if (!(entries instanceof Array)) {
+    this.getOne(entries, type, callback);
     return;
   }
 
-  if (items.length == 0) {
+  if (entries.length == 0) {
     if (callback) callback([]);
     return;
   }
 
   var result = [];
-  var remaining = items.length;
+  var remaining = entries.length;
   this.startBatchUpdates();
 
   var onOneItem = function(index, value) {
@@ -190,19 +189,19 @@ MetadataCache.prototype.get = function(items, type, callback) {
     }
   };
 
-  for (var index = 0; index < items.length; index++) {
+  for (var index = 0; index < entries.length; index++) {
     result.push(null);
-    this.getOne(items[index], type, onOneItem.bind(this, index));
+    this.getOne(entries[index], type, onOneItem.bind(this, index));
   }
 };
 
 /**
- * Fetches the metadata for one Entry/FileUrl. See comments to |get|.
- * @param {Entry|string} item The entry or url.
+ * Fetches the metadata for one Entry. See comments to |get|.
+ * @param {Entry} entry The entry.
  * @param {string} type Metadata type.
  * @param {function(Object)} callback The callback.
  */
-MetadataCache.prototype.getOne = function(item, type, callback) {
+MetadataCache.prototype.getOne = function(entry, type, callback) {
   if (type.indexOf('|') != -1) {
     var types = type.split('|');
     var result = {};
@@ -215,26 +214,23 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     };
 
     for (var index = 0; index < types.length; index++) {
-      this.getOne(item, types[index], onOneType.bind(null, types[index]));
+      this.getOne(entry, types[index], onOneType.bind(null, types[index]));
     }
     return;
   }
 
-  var url = this.itemToUrl_(item);
-
-  // Passing entry to fetchers may save one round-trip to APIs.
-  var fsEntry = item === url ? null : item;
   callback = callback || function() {};
 
-  if (!(url in this.cache_)) {
-    this.cache_[url] = this.createEmptyEntry_();
+  var entryURL = entry.toURL();
+  if (!(entryURL in this.cache_)) {
+    this.cache_[entryURL] = this.createEmptyItem_();
     this.totalCount_++;
   }
 
-  var entry = this.cache_[url];
+  var item = this.cache_[entryURL];
 
-  if (type in entry.properties) {
-    callback(entry.properties[type]);
+  if (type in item.properties) {
+    callback(item.properties[type]);
     return;
   }
 
@@ -244,10 +240,10 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
   var self = this;
 
   var onFetched = function() {
-    if (type in entry.properties) {
+    if (type in item.properties) {
       self.endBatchUpdates();
       // Got properties from provider.
-      callback(entry.properties[type]);
+      callback(item.properties[type]);
     } else {
       tryNextProvider();
     }
@@ -255,10 +251,10 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
 
   var onProviderProperties = function(properties) {
     var id = currentProvider.getId();
-    var fetchedCallbacks = entry[id].callbacks;
-    delete entry[id].callbacks;
-    entry.time = new Date();
-    self.mergeProperties_(url, properties);
+    var fetchedCallbacks = item[id].callbacks;
+    delete item[id].callbacks;
+    item.time = new Date();
+    self.mergeProperties_(entry, properties);
 
     for (var index = 0; index < fetchedCallbacks.length; index++) {
       fetchedCallbacks[index]();
@@ -267,24 +263,24 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
 
   var queryProvider = function() {
     var id = currentProvider.getId();
-    if ('callbacks' in entry[id]) {
+    if ('callbacks' in item[id]) {
       // We are querying this provider now.
-      entry[id].callbacks.push(onFetched);
+      item[id].callbacks.push(onFetched);
     } else {
-      entry[id].callbacks = [onFetched];
-      currentProvider.fetch(url, type, onProviderProperties, fsEntry);
+      item[id].callbacks = [onFetched];
+      currentProvider.fetch(entry, type, onProviderProperties);
     }
   };
 
   var tryNextProvider = function() {
     if (providers.length == 0) {
       self.endBatchUpdates();
-      callback(entry.properties[type] || null);
+      callback(item.properties[type] || null);
       return;
     }
 
     currentProvider = providers.shift();
-    if (currentProvider.supportsUrl(url) &&
+    if (currentProvider.supportsEntry(entry) &&
         currentProvider.providesType(type)) {
       queryProvider();
     } else {
@@ -297,23 +293,23 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
 
 /**
  * Returns the cached metadata value, or |null| if not present.
- * @param {string|Entry|Array.<string|Entry>} items The list of entries or
- *     file urls. May be just a single item.
+ * @param {Entry|Array.<Entry>} entries The list of entries. May be just a
+ *     single entry.
  * @param {string} type The metadata type.
  * @return {Object} The metadata or null.
  */
-MetadataCache.prototype.getCached = function(items, type) {
+MetadataCache.prototype.getCached = function(entries, type) {
   var single = false;
-  if (!(items instanceof Array)) {
+  if (!(entries instanceof Array)) {
     single = true;
-    items = [items];
+    entries = [entries];
   }
 
   var result = [];
-  for (var index = 0; index < items.length; index++) {
-    var url = this.itemToUrl_(items[index]);
-    result.push(url in this.cache_ ?
-        (this.cache_[url].properties[type] || null) : null);
+  for (var index = 0; index < entries.length; index++) {
+    var entryURL = entries[index].toURL();
+    result.push(entryURL in this.cache_ ?
+        (this.cache_[entryURL].properties[type] || null) : null);
   }
 
   return single ? result[0] : result;
@@ -321,51 +317,52 @@ MetadataCache.prototype.getCached = function(items, type) {
 
 /**
  * Puts the metadata into cache
- * @param {string|Entry|Array.<string|Entry>} items The list of entries or
- *     file urls. May be just a single item.
+ * @param {Entry|Array.<Entry>} entries The list of entries. May be just a
+ *     single entry.
  * @param {string} type The metadata type.
  * @param {Array.<Object>} values List of corresponding metadata values.
  */
-MetadataCache.prototype.set = function(items, type, values) {
-  if (!(items instanceof Array)) {
-    items = [items];
+MetadataCache.prototype.set = function(entries, type, values) {
+  if (!(entries instanceof Array)) {
+    entries = [entries];
     values = [values];
   }
 
   this.startBatchUpdates();
-  for (var index = 0; index < items.length; index++) {
-    var url = this.itemToUrl_(items[index]);
-    if (!(url in this.cache_)) {
-      this.cache_[url] = this.createEmptyEntry_();
+  for (var index = 0; index < entries.length; index++) {
+    var entryURL = entries[index].toURL();
+    if (!(entryURL in this.cache_)) {
+      this.cache_[entryURL] = this.createEmptyItem_();
       this.totalCount_++;
     }
-    this.cache_[url].properties[type] = values[index];
-    this.notifyObservers_(url, type);
+    this.cache_[entryURL].properties[type] = values[index];
+    this.notifyObservers_(entries[index], type);
   }
   this.endBatchUpdates();
 };
 
 /**
  * Clears the cached metadata values.
- * @param {string|Entry|Array.<string|Entry>} items The list of entries or
- *     file urls. May be just a single item.
+ * @param {Entry|Array.<Entry>} entries The list of entries. May be just a
+ *     single entry.
  * @param {string} type The metadata types or * for any type.
  */
-MetadataCache.prototype.clear = function(items, type) {
-  if (!(items instanceof Array))
-    items = [items];
+MetadataCache.prototype.clear = function(entries, type) {
+  if (!(entries instanceof Array))
+    entries = [entries];
 
   var types = type.split('|');
 
-  for (var index = 0; index < items.length; index++) {
-    var url = this.itemToUrl_(items[index]);
-    if (url in this.cache_) {
+  for (var index = 0; index < entries.length; index++) {
+    var entry = entries[index];
+    var entryURL = entry.toURL();
+    if (entryURL in this.cache_) {
       if (type === '*') {
-        this.cache_[url].properties = {};
+        this.cache_[entryURL].properties = {};
       } else {
         for (var j = 0; j < types.length; j++) {
           var type = types[j];
-          delete this.cache_[url].properties[type];
+          delete this.cache_[entryURL].properties[type];
         }
       }
     }
@@ -374,23 +371,23 @@ MetadataCache.prototype.clear = function(items, type) {
 
 /**
  * Clears the cached metadata values recursively.
- * @param {Entry|string} item An entry or a url.
+ * @param {Entry} entry An entry to be cleared recursively from cache.
  * @param {string} type The metadata types or * for any type.
  */
-MetadataCache.prototype.clearRecursively = function(item, type) {
+MetadataCache.prototype.clearRecursively = function(entry, type) {
   var types = type.split('|');
   var keys = Object.keys(this.cache_);
-  var url = this.itemToUrl_(item);
+  var entryURL = entry.toURL();
 
   for (var index = 0; index < keys.length; index++) {
-    var entryUrl = keys[index];
-    if (entryUrl.substring(0, url.length) === url) {
+    var cachedEntryURL = keys[index];
+    if (cachedEntryURL.substring(0, entryURL.length) === entryURL) {
       if (type === '*') {
-        this.cache_[entryUrl].properties = {};
+        this.cache_[cachedEntryURL].properties = {};
       } else {
         for (var j = 0; j < types.length; j++) {
           var type = types[j];
-          delete this.cache_[entryUrl].properties[type];
+          delete this.cache_[cachedEntryURL].properties[type];
         }
       }
     }
@@ -399,22 +396,25 @@ MetadataCache.prototype.clearRecursively = function(item, type) {
 
 /**
  * Adds an observer, which will be notified when metadata changes.
- * @param {string|Entry} item The root item to look at.
+ * @param {Entry} entry The root entry to look at.
  * @param {number} relation This defines, which items will trigger the observer.
  *     See comments to |MetadataCache.EXACT| and others.
  * @param {string} type The metadata type.
- * @param {function(Array.<string>, Array.<Object>)} observer List of file urls
+ * @param {function(Array.<Entry>, Array.<Object>)} observer List of entries
  *     and corresponding metadata values are passed to this callback.
  * @return {number} The observer id, which can be used to remove it.
  */
-MetadataCache.prototype.addObserver = function(item, relation, type, observer) {
-  var url = this.itemToUrl_(item);
-  var re = url;
-  if (relation == MetadataCache.CHILDREN) {
-    re += '(/[^/]*)?';
-  } else if (relation == MetadataCache.DESCENDANTS) {
-    re += '(/.*)?';
-  }
+MetadataCache.prototype.addObserver = function(
+    entry, relation, type, observer) {
+  var entryURL = entry.toURL();
+  var re;
+  if (relation == MetadataCache.CHILDREN)
+    re = entryURL + '(/[^/]*)?';
+  else if (relation == MetadataCache.DESCENDANTS)
+    re = entryURL + '(/.*)?';
+  else
+    re = entryURL;
+
   var id = ++this.observerId_;
   this.observers_.push({
     re: new RegExp('^' + re + '$'),
@@ -423,6 +423,7 @@ MetadataCache.prototype.addObserver = function(item, relation, type, observer) {
     id: id,
     pending: {}
   });
+
   return id;
 };
 
@@ -460,36 +461,41 @@ MetadataCache.prototype.endBatchUpdates = function() {
     this.evict_();
   for (var index = 0; index < this.observers_.length; index++) {
     var observer = this.observers_[index];
-    var urls = [];
+    var entries = [];
     var properties = [];
-    for (var url in observer.pending) {
-      if (observer.pending.hasOwnProperty(url) && url in this.cache_) {
-        urls.push(url);
-        properties.push(this.cache_[url].properties[observer.type] || null);
+    for (var entryURL in observer.pending) {
+      if (observer.pending.hasOwnProperty(entryURL) &&
+          entryURL in this.cache_) {
+        var entry = observer.pending[entryURL];
+        entries.push(entry);
+        properties.push(
+            this.cache_[entryURL].properties[observer.type] || null);
       }
     }
     observer.pending = {};
-    if (urls.length > 0) {
-      observer.callback(urls, properties);
+    if (entries.length > 0) {
+      observer.callback(entries, properties);
     }
   }
 };
 
 /**
  * Notifies observers or puts the data to pending list.
- * @param {string} url Url of entry changed.
+ * @param {Entry} entry Changed entry.
  * @param {string} type Metadata type.
  * @private
  */
-MetadataCache.prototype.notifyObservers_ = function(url, type) {
+MetadataCache.prototype.notifyObservers_ = function(entry, type) {
+  var entryURL = entry.toURL();
   for (var index = 0; index < this.observers_.length; index++) {
     var observer = this.observers_[index];
-    if (observer.type == type && observer.re.test(url)) {
+    if (observer.type == type && observer.re.test(entryURL)) {
       if (this.batchCount_ == 0) {
         // Observer expects array of urls and array of properties.
-        observer.callback([url], [this.cache_[url].properties[type] || null]);
+        observer.callback(
+            [entry], [this.cache_[entryURL].properties[type] || null]);
       } else {
-        observer.pending[url] = true;
+        observer.pending[entryURL] = entry;
       }
     }
   }
@@ -527,51 +533,30 @@ MetadataCache.prototype.evict_ = function() {
 };
 
 /**
- * Converts Entry or file url to url.
- * @param {string|Entry} item Item to convert.
- * @return {string} File url.
+ * @return {Object} Empty cache item.
  * @private
  */
-MetadataCache.prototype.itemToUrl_ = function(item) {
-  if (typeof(item) == 'string')
-    return item;
-
-  if (!item._URL_) {
-    // Is a fake entry.
-    if (typeof item.toURL !== 'function')
-      item._URL_ = util.makeFilesystemUrl(item.fullPath);
-    else
-      item._URL_ = item.toURL();
-  }
-
-  return item._URL_;
-};
-
-/**
- * @return {Object} Empty cache entry.
- * @private
- */
-MetadataCache.prototype.createEmptyEntry_ = function() {
-  var entry = {properties: {}};
+MetadataCache.prototype.createEmptyItem_ = function() {
+  var item = {properties: {}};
   for (var index = 0; index < this.providers_.length; index++) {
-    entry[this.providers_[index].getId()] = {};
+    item[this.providers_[index].getId()] = {};
   }
-  return entry;
+  return item;
 };
 
 /**
- * Caches all the properties from data to cache entry for url.
- * @param {string} url The url.
+ * Caches all the properties from data to cache entry for the entry.
+ * @param {Entry} entry The file entry.
  * @param {Object} data The properties.
  * @private
  */
-MetadataCache.prototype.mergeProperties_ = function(url, data) {
+MetadataCache.prototype.mergeProperties_ = function(entry, data) {
   if (data == null) return;
-  var properties = this.cache_[url].properties;
+  var properties = this.cache_[entry.toURL()].properties;
   for (var type in data) {
     if (data.hasOwnProperty(type) && !properties.hasOwnProperty(type)) {
       properties[type] = data[type];
-      this.notifyObservers_(url, type);
+      this.notifyObservers_(entry, type);
     }
   }
 };
@@ -584,10 +569,10 @@ function MetadataProvider() {
 }
 
 /**
- * @param {string} url The url.
- * @return {boolean} Whether this provider supports the url.
+ * @param {Entry} entry The entry.
+ * @return {boolean} Whether this provider supports the entry.
  */
-MetadataProvider.prototype.supportsUrl = function(url) { return false; };
+MetadataProvider.prototype.supportsEntry = function(entry) { return false; };
 
 /**
  * @param {string} type The metadata type.
@@ -608,13 +593,12 @@ MetadataProvider.prototype.isInitialized = function() { return true; };
 /**
  * Fetches the metadata. It's suggested to return all the metadata this provider
  * can fetch at once.
- * @param {string} url File url.
+ * @param {Entry} entry File entry.
  * @param {string} type Requested metadata type.
  * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
- * @param {Entry=} opt_entry The file entry if present.
  */
-MetadataProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+MetadataProvider.prototype.fetch = function(entry, type, callback) {
   throw new Error('Default metadata provider cannot fetch.');
 };
 
@@ -634,10 +618,10 @@ FilesystemProvider.prototype = {
 };
 
 /**
- * @param {string} url The url.
- * @return {boolean} Whether this provider supports the url.
+ * @param {Entry} entry The entry.
+ * @return {boolean} Whether this provider supports the entry.
  */
-FilesystemProvider.prototype.supportsUrl = function(url) {
+FilesystemProvider.prototype.supportsEntry = function(entry) {
   return true;
 };
 
@@ -656,13 +640,13 @@ FilesystemProvider.prototype.getId = function() { return 'filesystem'; };
 
 /**
  * Fetches the metadata.
- * @param {string} url File url.
+ * @param {Entry} entry File entry.
  * @param {string} type Requested metadata type.
  * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
- * @param {Entry=} opt_entry The file entry if present.
  */
-FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+FilesystemProvider.prototype.fetch = function(
+    entry, type, callback) {
   function onError(error) {
     callback(null);
   }
@@ -676,14 +660,7 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
     });
   }
 
-  function onEntry(entry) {
-    entry.getMetadata(onMetadata.bind(null, entry), onError);
-  }
-
-  if (opt_entry)
-    onEntry(opt_entry);
-  else
-    window.webkitResolveLocalFileSystemURL(url, onEntry, onError);
+  entry.getMetadata(onMetadata.bind(null, entry), onError);
 };
 
 /**
@@ -698,7 +675,7 @@ function DriveProvider() {
   MetadataProvider.call(this);
 
   // We batch metadata fetches into single API call.
-  this.urls_ = [];
+  this.entries_ = [];
   this.callbacks_ = [];
   this.scheduled_ = false;
 
@@ -710,11 +687,11 @@ DriveProvider.prototype = {
 };
 
 /**
- * @param {string} url The url.
- * @return {boolean} Whether this provider supports the url.
+ * @param {Entry} entry The entry.
+ * @return {boolean} Whether this provider supports the entry.
  */
-DriveProvider.prototype.supportsUrl = function(url) {
-  return FileType.isOnDrive(url);
+DriveProvider.prototype.supportsEntry = function(entry) {
+  return FileType.isOnDrive(entry);
 };
 
 /**
@@ -733,14 +710,13 @@ DriveProvider.prototype.getId = function() { return 'drive'; };
 
 /**
  * Fetches the metadata.
- * @param {string} url File url.
+ * @param {Entry} entry File entry.
  * @param {string} type Requested metadata type.
  * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
- * @param {Entry=} opt_entry The file entry if present.
  */
-DriveProvider.prototype.fetch = function(url, type, callback, opt_entry) {
-  this.urls_.push(url);
+DriveProvider.prototype.fetch = function(entry, type, callback) {
+  this.entries_.push(entry);
   this.callbacks_.push(callback);
   if (!this.scheduled_) {
     this.scheduled_ = true;
@@ -755,29 +731,31 @@ DriveProvider.prototype.fetch = function(url, type, callback, opt_entry) {
 DriveProvider.prototype.callApi_ = function() {
   this.scheduled_ = false;
 
-  var urls = this.urls_;
+  var entries = this.entries_;
   var callbacks = this.callbacks_;
-  this.urls_ = [];
+  this.entries_ = [];
   this.callbacks_ = [];
   var self = this;
 
-  var task = function(url, callback) {
-    chrome.fileBrowserPrivate.getDriveEntryProperties(url,
+  var task = function(entry, callback) {
+    // TODO(mtomasz): Make getDriveEntryProperties accept Entry instead of URL.
+    var entryURL = entry.toURL();
+    chrome.fileBrowserPrivate.getDriveEntryProperties(entryURL,
         function(properties) {
-          callback(self.convert_(properties, url));
+          callback(self.convert_(properties, entry));
         });
   };
 
-  for (var i = 0; i < urls.length; i++)
-    task(urls[i], callbacks[i]);
+  for (var i = 0; i < entries.length; i++)
+    task(entries[i], callbacks[i]);
 };
 
 /**
  * @param {DriveEntryProperties} data Drive entry properties.
- * @param {string} url File url.
+ * @param {Entry} entry File entry.
  * @return {boolean} True if the file is available offline.
  */
-DriveProvider.isAvailableOffline = function(data, url) {
+DriveProvider.isAvailableOffline = function(data, entry) {
   if (data.isPresent)
     return true;
 
@@ -786,7 +764,7 @@ DriveProvider.isAvailableOffline = function(data, url) {
 
   // What's available offline? See the 'Web' column at:
   // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
-  var subtype = FileType.getType(url).subtype;
+  var subtype = FileType.getType(entry).subtype;
   return (subtype == 'doc' ||
           subtype == 'draw' ||
           subtype == 'sheet' ||
@@ -805,11 +783,11 @@ DriveProvider.isAvailableWhenMetered = function(data) {
 /**
  * Converts API metadata to internal format.
  * @param {Object} data Metadata from API call.
- * @param {string} url File url.
+ * @param {Entry} entry File entry.
  * @return {Object} Metadata in internal format.
  * @private
  */
-DriveProvider.prototype.convert_ = function(data, url) {
+DriveProvider.prototype.convert_ = function(data, entry) {
   var result = {};
   result.drive = {
     present: data.isPresent,
@@ -818,7 +796,7 @@ DriveProvider.prototype.convert_ = function(data, url) {
     imageWidth: data.imageWidth,
     imageHeight: data.imageHeight,
     imageRotation: data.imageRotation,
-    availableOffline: DriveProvider.isAvailableOffline(data, url),
+    availableOffline: DriveProvider.isAvailableOffline(data, entry),
     availableWhenMetered: DriveProvider.isAvailableWhenMetered(data),
     customIconUrl: data.customIconUrl || '',
     contentMimeType: data.contentMimeType || '',
@@ -834,7 +812,7 @@ DriveProvider.prototype.convert_ = function(data, url) {
 
   if ('thumbnailUrl' in data) {
     result.thumbnail = {
-      url: data.thumbnailUrl.replace(/s220/, 's500'),
+      url: data.thumbnailUrl,
       transform: null
     };
   }
@@ -867,12 +845,8 @@ function ContentProvider() {
       path.substring(0, path.lastIndexOf('/') + 1) +
       'foreground/js/metadata/metadata_dispatcher.js';
 
-  if (ContentProvider.USE_SHARED_WORKER) {
-    this.dispatcher_ = new SharedWorker(workerPath).port;
-    this.dispatcher_.start();
-  } else {
-    this.dispatcher_ = new Worker(workerPath);
-  }
+  this.dispatcher_ = new SharedWorker(workerPath).port;
+  this.dispatcher_.start();
 
   this.dispatcher_.onmessage = this.onMessage_.bind(this);
   this.dispatcher_.postMessage({verb: 'init'});
@@ -881,28 +855,21 @@ function ContentProvider() {
   // 'initialized' message.  See below.
   this.initialized_ = false;
 
-  // Map from url to callback.
+  // Map from Entry.toURL() to callback.
   // Note that simultaneous requests for same url are handled in MetadataCache.
   this.callbacks_ = {};
 }
-
-/**
- * Flag defining which kind of a worker to use.
- * TODO(kaznacheev): Observe for some time and remove if SharedWorker does not
- * cause any problems.
- */
-ContentProvider.USE_SHARED_WORKER = true;
 
 ContentProvider.prototype = {
   __proto__: MetadataProvider.prototype
 };
 
 /**
- * @param {string} url The url.
- * @return {boolean} Whether this provider supports the url.
+ * @param {Entry} entry The entry.
+ * @return {boolean} Whether this provider supports the entry.
  */
-ContentProvider.prototype.supportsUrl = function(url) {
-  return url.match(this.urlFilter_);
+ContentProvider.prototype.supportsEntry = function(entry) {
+  return entry.toURL().match(this.urlFilter_);
 };
 
 /**
@@ -920,19 +887,19 @@ ContentProvider.prototype.getId = function() { return 'content'; };
 
 /**
  * Fetches the metadata.
- * @param {string} url File url.
+ * @param {Entry} entry File entry.
  * @param {string} type Requested metadata type.
  * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
- * @param {Entry=} opt_entry The file entry if present.
  */
-ContentProvider.prototype.fetch = function(url, type, callback, opt_entry) {
-  if (opt_entry && opt_entry.isDirectory) {
+ContentProvider.prototype.fetch = function(entry, type, callback) {
+  if (entry.isDirectory) {
     callback({});
     return;
   }
-  this.callbacks_[url] = callback;
-  this.dispatcher_.postMessage({verb: 'request', arguments: [url]});
+  var entryURL = entry.toURL();
+  this.callbacks_[entryURL] = callback;
+  this.dispatcher_.postMessage({verb: 'request', arguments: [entryURL]});
 };
 
 /**
@@ -1025,7 +992,7 @@ ContentProvider.prototype.onResult_ = function(url, metadata) {
 
 /**
  * Handles the 'error' message from the worker.
- * @param {string} url File url.
+ * @param {string} url File entry.
  * @param {string} step Step failed.
  * @param {string} error Error description.
  * @param {Object?} metadata The metadata, if available.

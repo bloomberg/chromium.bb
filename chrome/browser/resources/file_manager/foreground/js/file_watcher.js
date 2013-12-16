@@ -57,40 +57,40 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
 /**
  * Called when general metadata in the watched directory has been changed.
  *
- * @param {Array.<string>} urls Array of urls.
+ * @param {Array.<Entry>} entries Array of entries.
  * @param {Object.<string, Object>} properties Map from entry URLs to metadata
  *     properties.
  * @private
  */
 FileWatcher.prototype.onFilesystemMetadataChanged_ = function(
-    urls, properties) {
-  this.dispatchMetadataEvent_('filesystem', urls, properties);
+    entries, properties) {
+  this.dispatchMetadataEvent_('filesystem', entries, properties);
 };
 
 /**
  * Called when thumbnail metadata in the watched directory has been changed.
  *
- * @param {Array.<string>} urls Array of urls.
+ * @param {Array.<Entry>} entries Arrray of entries.
  * @param {Object.<string, Object>} properties Map from entry URLs to metadata
  *     properties.
  * @private
  */
 FileWatcher.prototype.onThumbnailMetadataChanged_ = function(
-    urls, properties) {
-  this.dispatchMetadataEvent_('thumbnail', urls, properties);
+    entries, properties) {
+  this.dispatchMetadataEvent_('thumbnail', entries, properties);
 };
 
 /**
  * Called when drive metadata in the watched directory has been changed.
  *
- * @param {Array.<string>} urls Array of urls.
+ * @param {Array.<Entry>} entries Array of entries.
  * @param {Object.<string, Object>} properties Map from entry URLs to metadata
  *     properties.
  * @private
  */
 FileWatcher.prototype.onDriveMetadataChanged_ = function(
-    urls, properties) {
-  this.dispatchMetadataEvent_('drive', urls, properties);
+    entries, properties) {
+  this.dispatchMetadataEvent_('drive', entries, properties);
 };
 
 /**
@@ -98,16 +98,16 @@ FileWatcher.prototype.onDriveMetadataChanged_ = function(
  * directory.
  *
  * @param {string} type Type of the metadata change.
- * @param {Array.<string>} urls Array of urls.
+ * @param {Array.<Entry>} entries Array of entries.
  * @param {Object.<string, Object>} properties Map from entry URLs to metadata
  *     properties.
  * @private
  */
 FileWatcher.prototype.dispatchMetadataEvent_ = function(
-    type, urls, properties) {
+    type, entries, properties) {
   var e = new Event('watcher-metadata-changed');
   e.metadataType = type;
-  e.urls = urls;
+  e.entries = entries;
   e.properties = properties;
   this.dispatchEvent(e);
 };
