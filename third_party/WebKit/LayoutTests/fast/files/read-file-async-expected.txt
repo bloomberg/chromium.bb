@@ -173,10 +173,10 @@ result: data:text/plain;base64,SGVsbG8=
 Received loadend event
 Test calling multiple concurrent read methods
 readyState: 0
-Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
-Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
-Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
-Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
+Received exception, code: 11, name: InvalidStateError, message: Failed to execute 'readAsArrayBuffer' on 'FileReader': The object is already busy reading Blobs.
+Received exception, code: 11, name: InvalidStateError, message: Failed to execute 'readAsBinaryString' on 'FileReader': The object is already busy reading Blobs.
+Received exception, code: 11, name: InvalidStateError, message: Failed to execute 'readAsText' on 'FileReader': The object is already busy reading Blobs.
+Received exception, code: 11, name: InvalidStateError, message: Failed to execute 'readAsDataURL' on 'FileReader': The object is already busy reading Blobs.
 Received loadstart event
 readyState: 1
 Received load event

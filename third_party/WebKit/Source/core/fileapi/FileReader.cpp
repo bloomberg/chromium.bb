@@ -160,8 +160,10 @@ void FileReader::stop()
 
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob)
+    if (!blob) {
+        exceptionState.throwTypeError("The argument is not a Blob.");
         return;
+    }
 
     WTF_LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
@@ -170,8 +172,10 @@ void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob)
+    if (!blob) {
+        exceptionState.throwTypeError("The argument is not a Blob.");
         return;
+    }
 
     WTF_LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
@@ -180,8 +184,10 @@ void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionState& exceptionState)
 {
-    if (!blob)
+    if (!blob) {
+        exceptionState.throwTypeError("The argument is not a Blob.");
         return;
+    }
 
     WTF_LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
@@ -196,8 +202,10 @@ void FileReader::readAsText(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readAsDataURL(Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob)
+    if (!blob) {
+        exceptionState.throwTypeError("The argument is not a Blob.");
         return;
+    }
 
     WTF_LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
@@ -208,7 +216,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
 {
     // If multiple concurrent read methods are called on the same FileReader, InvalidStateError should be thrown when the state is LOADING.
     if (m_state == LOADING) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The object is already busy reading Blobs.");
         return;
     }
 
