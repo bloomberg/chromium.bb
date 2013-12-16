@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <style>
+            section {
+                position: relative;
+                display: inline-block;
+                width: 300px;
+                height: 100px;
+                border: 1px solid red;
+                overflow: hidden;
+            }
+            img {
+                position: absolute;
+                left: 0px;
+                top: 50px;
+                width: 100px;
+                height: 80px;
+            }
+            span {
+                position: absolute;
+                left: 1px;
+                top: 51px;
+            }
+        </style>
+    </head>
+    <body>
+        <section>
+            <h2>ltr image, rtl alt</h2>
+            <span>یا</span>
+            <img src="about:blank">
+        </section>
+        <section>
+            <h2>rtl image, rtl alt</h2>
+            <span>یا</span>
+            <img src="about:blank">
+        </section>
+        <section>
+            <h2>ltr image, ltr alt</h2>
+            <span>alt</span>
+            <img src="about:blank">
+        </section>
+        <section>
+            <h2>rtl image, ltr alt</h2>
+            <span>alt</span>
+            <img src="about:blank">
+        </section>
+        <section>
+            <h2>ltr image, weak alt</h2>
+            <span>.,</span>
+            <img src="about:blank">
+        </section>
+        <section>
+            <h2>rtl image, weak alt</h2>
+            <span>,.</span>
+            <img src="about:blank">
+        </section>
+        <p>
+            Tests that image alt text takes directionality into account.
+        </p>
+        <script>
+            // Offset for complex alt text is slightly different on mac.
+            if (navigator.platform.toLowerCase().indexOf('mac') != -1) {
+                var elements = document.getElementsByTagName('span');
+                elements[0].style.top = '50px';
+                elements[1].style.top = '50px';
+            }
+        </script>
+    </body>
+</html>
