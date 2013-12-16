@@ -7,17 +7,21 @@
 function initialize_TimelineCoalescing()
 {
 
-InspectorTest.dumpAggrergatedStats = function(record)
+InspectorTest.dumpStats = function(record)
 {
+    if (!record.parent)
+        return "";
     var aggregatedStats = record.aggregatedStats;
-    var result = "";
+    var timeByCategory = "";
     
     for (category in aggregatedStats) {
-        if (result)
-            result += ", ";
-        result += category + ": " + aggregatedStats[category].toFixed(5);
+        if (timeByCategory)
+            timeByCategory += ", ";
+        timeByCategory += category + ": " + aggregatedStats[category].toFixed(5);
     }
-    return result ? "(" + result + ")" : "";
+    var duration = (record.endTime - record.startTime).toFixed(5);
+    var durationTillLastChild = (record.lastChildEndTime - record.startTime).toFixed(5);
+    return "duration: " + duration + ":" + durationTillLastChild + (timeByCategory ? " (" + timeByCategory + ")" : "");
 }
 
 }
@@ -80,7 +84,7 @@ function test()
     InspectorTest.loadTimelineRecords(records);
 
     var rootRecord = WebInspector.panels.timeline._presentationModel.rootRecord();
-    InspectorTest.dumpTimelineRecord(rootRecord, InspectorTest.dumpAggrergatedStats);
+    InspectorTest.dumpTimelineRecord(rootRecord, InspectorTest.dumpStats);
     var coalesced = rootRecord.children[0];
     InspectorTest.addResult("coalesced record's hasWarnings(): " + coalesced.hasWarnings());
     InspectorTest.addResult("coalesced record's childHasWarnings(): " + coalesced.childHasWarnings());
