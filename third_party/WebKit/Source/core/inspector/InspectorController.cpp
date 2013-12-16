@@ -119,9 +119,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(PageRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), pageScriptDebugServer, page, pageAgent));
 
-    OwnPtr<InspectorConsoleAgent> consoleAgentPtr(PageConsoleAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), domAgent, m_timelineAgent));
-    InspectorConsoleAgent* consoleAgent = consoleAgentPtr.get();
-    m_agents.append(consoleAgentPtr.release());
+    m_agents.append(PageConsoleAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), domAgent, m_timelineAgent));
 
     OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), pageScriptDebugServer, pageAgent, m_injectedScriptManager.get(), m_overlay.get()));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
@@ -129,7 +127,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorDOMDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), domAgent, debuggerAgent));
 
-    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent, m_state.get(), m_injectedScriptManager.get(), m_overlay.get()));
+    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), m_overlay.get()));
 
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
 

@@ -41,7 +41,6 @@
 namespace WebCore {
 
 class InjectedScriptManager;
-class InspectorConsoleAgent;
 class InspectorFrontend;
 class InspectorOverlay;
 class InstrumentingAgents;
@@ -54,7 +53,7 @@ typedef String ErrorString;
 class InspectorProfilerAgent : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
     void consoleProfile(const String& title, ScriptState*);
@@ -76,12 +75,11 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
+    InspectorProfilerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
     bool enabled();
     void doEnable();
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
 
-    InspectorConsoleAgent* m_consoleAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
     // This is a temporary workaround to make sure v8 doesn't stop profiling when
