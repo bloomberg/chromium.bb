@@ -59,9 +59,11 @@ void V8TextTrackCue::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>
 
     Document& document = *toDocument(getExecutionContext());
     UseCounter::count(document, UseCounter::TextTrackCueConstructor);
-    VTTCue* impl = VTTCue::create(document, startTime, endTime, text).leakRef();
-    v8::Handle<v8::Object> wrapper = wrap(impl, info.Holder(), info.GetIsolate());
-    info.GetReturnValue().Set(wrapper);
+
+    RefPtr<VTTCue> impl = VTTCue::create(document, startTime, endTime, text);
+    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
+
+    v8SetReturnValue(info, wrapper);
 }
 
 } // namespace WebCore
