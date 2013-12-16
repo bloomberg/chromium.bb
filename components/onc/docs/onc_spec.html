@@ -658,7 +658,7 @@
         <span class="rule">
           <span class="rule_id"></span>
           Allowed values are <span class="value">PSK</span> and
-          <span class="value">Cert</span>
+          <span class="value">Cert</span>. If <span class="value">Cert</span> is used, <span class="field">ClientCertType</span> and <span class="field">ServerCARefs</span> (or the deprecated <span class="field">ServerCARef</span>) must be set.
         </span>
       </dd>
 
@@ -749,14 +749,25 @@
         (PSK) each time they connect.
       </dd>
 
+      <dt class="field">ServerCARefs</dt>
+      <dd>
+        <span class="field_meta">
+          (optional if <span class="field">AuthenticationType</span>
+          is <span class="value">Cert</span>, otherwise rejected)
+          <span class="type">array of string</span>
+        </span>
+        Non-empty list of references to CA certificates in <span class="field">Certificates</span> to be used for verifying the host's certificate chain. At least one of the CA certificates must match. If this field is set, <span class="field">ServerCARef</span> must be unset.
+      </dd>
+
       <dt class="field">ServerCARef</dt>
       <dd>
         <span class="field_meta">
-          (required if <span class="field">AuthenticationType</span>
+          (optional if <span class="field">AuthenticationType</span>
           is <span class="value">Cert</span>, otherwise rejected)
           <span class="type">string</span>
         </span>
-        Reference to server certificate authority stored in certificate section.
+        DEPRECATED, use <span class="field">ServerCARefs</span> instead.<br/>
+        Reference to a CA certificate in <span class="field">Certificates</span>. Certificate authority to use for verifying connection. If this field is set, <span class="field">ServerCARefs</span> must be unset.
       </dd>
 
       <dt class="field">XAUTH</dt>
@@ -770,6 +781,16 @@
         present.
       </dd>
     </dl>
+
+    <p class="rule">
+      <span class="rule_id"></span>
+      If <span class="field">AuthenticationType</span> is set to <span class="value">Cert</span>, <span class="field">ServerCARefs</span> or <span class="field">ServerCARef</span> must be set.
+    </p>
+
+    <p class="rule">
+      <span class="rule_id"></span>
+      At most one of <span class="field">ServerCARefs</span> and <span class="field">ServerCARef</span> can be set.
+    </p>
 
     <p>
       <span class="type">L2TP</span> type contains the following:
@@ -1108,14 +1129,23 @@
       each time they connect.
     </dd>
 
+    <dt class="field">ServerCARefs</dt>
+    <dd>
+      <span class="field_meta">
+        (optional)
+        <span class="type">array of string</span>
+      </span>
+      Non-empty list of references to CA certificates in <span class="field">Certificates</span> to be used for verifying the host's certificate chain. At least one of the CA certificates must match. See also OpenVPN's command line option "--ca". If this field is set, <span class="field">ServerCARef</span> must be unset.
+    </dd>
+
     <dt class="field">ServerCARef</dt>
     <dd>
       <span class="field_meta">
         (optional)
         <span class="type">string</span>
       </span>
-      Reference to a certificate. Certificate authority to use for verifying
-      connection.
+      DEPRECATED, use <span class="field">ServerCARefs</span> instead.<br/>
+      Reference to a CA certificate in <span class="field">Certificates</span>. Certificate authority to use for verifying connection. If this field is set, <span class="field">ServerCARefs</span> must be unset.
     </dd>
 
     <dt class="field">ServerCertRef</dt>
@@ -1214,6 +1244,11 @@
        If set, the "--verify-x509-name" argument is passed to OpenVPN with the values of this object and only connections will be accepted if a host's X.509 name is equal to the given name.
     </dd>
   </dl>
+
+  <p class="rule">
+    <span class="rule_id"></span>
+    At most one of <span class="field">ServerCARefs</span> and <span class="field">ServerCARef</span> can be set.
+  </p>
 
   <p>
     <span class="type">VerifyX509</span> type contains the following:
@@ -1618,16 +1653,23 @@
       <span class="value">false</span> is not allowed.
     </dd>
 
+    <dt class="field">ServerCARefs</dt>
+    <dd>
+      <span class="field_meta">
+        (optional)
+        <span class="type">array of string</span>
+      </span>
+      Non-empty list of references to CA certificates in <span class="field">Certificates</span> to be used for verifying the host's certificate chain. At least one of the CA certificates must match. If this field is set, <span class="field">ServerCARef</span> must be unset. If neither <span class="field">ServerCARefs</span> nor <span class="field">ServerCARef</span> is set, the client does not check that the server certificate is signed by a specific CA. A verification using the system's CA certificates may still apply. See <span class="field">UseSystemCAs</span> for this.
+    </dd>
+
     <dt class="field">ServerCARef</dt>
     <dd>
       <span class="field_meta">
         (optional)
         <span class="type">string</span>
       </span>
-      Reference to server certificate authority stored in certificate
-      section. If not specified, client does not check the server certificate is
-      signed by a specific CA. It will still check the server CA
-      if <span class="field">UseSystemCAs</span> is set.
+      DEPRECATED, use <span class="field">ServerCARefs</span> instead.<br/>
+      Reference to a CA certificate in <span class="field">Certificates</span>. If this field is set, <span class="field">ServerCARefs</span> must be unset. If neither <span class="field">ServerCARefs</span> nor <span class="field">ServerCARef</span> is set, the client does not check that the server certificate is signed by a specific CA. A verification using the system's CA certificates may still apply. See <span class="field">UseSystemCAs</span> for this.
     </dd>
 
     <dt class="field">UseSystemCAs</dt>
@@ -1637,15 +1679,19 @@
         <span class="type">boolean</span>
       </span>
       Required server certificate to be signed by "system default certificate
-      authorities". If both <span class="field">ServerCARef</span>
+      authorities". If both <span class="field">ServerCARefs</span> (or <span class="field">ServerCARef</span>)
       and <span class="field">UseSystemCAs</span> are supplied, a server
       certificate will be allowed if it either has a chain of trust to a system
-      CA or to the given server CA. If <span class="field">UseSystemCAs</span>
-      is <span class="value">false</span>, and
-      no <span class="field">ServerCARef</span> is set, then the certificate
+      CA or to one of the given CA certificates. If <span class="field">UseSystemCAs</span>
+      is <span class="value">false</span>, and no <span class="field">ServerCARef</span> is set, the certificate
       must be a self signed certificate, and no CA signature is required.
     </dd>
   </dl>
+
+  <p class="rule">
+    <span class="rule_id"></span>
+    At most one of <span class="field">ServerCARefs</span> and <span class="field">ServerCARef</span> can be set.
+  </p>
 </section>
 
 <section>

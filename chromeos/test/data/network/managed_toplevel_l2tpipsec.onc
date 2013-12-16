@@ -8,10 +8,12 @@
       "VPN": {
         "Host": "l2tp.acme.org",
         "IPsec": {
-          "AuthenticationType": "PSK",
+          "AuthenticationType": "Cert",
           "IKEVersion": 1,
+          "ClientCertType": "Ref",
+          "ClientCertRef": "a cert ref",
           "SaveCredentials": false,
-          "PSK": "passphrase"
+          "ServerCARefs": ["ref1", "ref2"]
         },
         "L2TP": {
           "Recommended": [

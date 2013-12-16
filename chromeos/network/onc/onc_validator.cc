@@ -348,9 +348,20 @@ bool Validator::FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
 
 bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
                                       const std::string& field_name) {
-  std::string value;
-  if (!object.GetStringWithoutPathExpansion(field_name, &value) ||
-      !value.empty()) {
+  const base::Value* value = NULL;
+  if (!object.GetWithoutPathExpansion(field_name, &value))
+    return false;
+
+  std::string str;
+  const base::ListValue* list = NULL;
+  if (value->GetAsString(&str)) {
+    if (!str.empty())
+      return false;
+  } else if (value->GetAsList(&list)) {
+    if (!list->empty())
+      return false;
+  } else {
+    NOTREACHED();
     return false;
   }
 
@@ -583,7 +594,15 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
   if (FieldExistsAndHasNoValidValue(
           *result, kAuthenticationType, kValidAuthentications) ||
       FieldExistsAndHasNoValidValue(
-          *result, ::onc::vpn::kClientCertType, kValidCertTypes)) {
+          *result, ::onc::vpn::kClientCertType, kValidCertTypes) ||
+      FieldExistsAndIsEmpty(*result, kServerCARefs)) {
+    return false;
+  }
+
+  if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << MessageHeader() << "At most one of " << kServerCARefs
+               << " and " << kServerCARef << " can be set.";
     return false;
   }
 
@@ -591,13 +610,25 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
                             RequireField(*result, kIKEVersion);
   std::string auth;
   result->GetStringWithoutPathExpansion(kAuthenticationType, &auth);
+  bool has_server_ca_cert =
+      result->HasKey(kServerCARefs) || result->HasKey(kServerCARef);
   if (auth == kCert) {
-    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertType) &&
-                          RequireField(*result, kServerCARef);
-  } else if (result->HasKey(kServerCARef)) {
+    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertType);
+    if (!has_server_ca_cert) {
+      all_required_exist = false;
+      error_or_warning_found_ = true;
+      std::string message = MessageHeader() + "The required field '" +
+                            kServerCARefs + "' is missing.";
+      if (error_on_missing_field_)
+        LOG(ERROR) << message;
+      else
+        LOG(WARNING) << message;
+    }
+  } else if (has_server_ca_cert) {
     error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << kServerCARef << " can only be set if "
-               << kAuthenticationType << " is set to " << kCert << ".";
+    LOG(ERROR) << MessageHeader() << kServerCARefs << " (or " << kServerCARef
+               << ") can only be set if " << kAuthenticationType
+               << " is set to " << kCert << ".";
     return false;
   }
 
@@ -632,7 +663,15 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
       FieldExistsAndHasNoValidValue(
           *result, ::onc::vpn::kClientCertType, kValidCertTypes) ||
       FieldExistsAndHasNoValidValue(
-          *result, kRemoteCertTLS, kValidCertTlsValues)) {
+          *result, kRemoteCertTLS, kValidCertTlsValues) ||
+      FieldExistsAndIsEmpty(*result, kServerCARefs)) {
+    return false;
+  }
+
+  if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << MessageHeader() << "At most one of " << kServerCARefs
+               << " and " << kServerCARef << " can be set.";
     return false;
   }
 
@@ -727,7 +766,15 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
   if (FieldExistsAndHasNoValidValue(*result, kInner, kValidInnerValues) ||
       FieldExistsAndHasNoValidValue(*result, kOuter, kValidOuterValues) ||
       FieldExistsAndHasNoValidValue(
-          *result, kClientCertType, kValidCertTypes)) {
+          *result, kClientCertType, kValidCertTypes) ||
+      FieldExistsAndIsEmpty(*result, kServerCARefs)) {
+    return false;
+  }
+
+  if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << MessageHeader() << "At most one of " << kServerCARefs
+               << " and " << kServerCARef << " can be set.";
     return false;
   }
 

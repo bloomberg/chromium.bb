@@ -199,6 +199,33 @@
       "ClientCertType": "Ref",
       "ClientCertRef": "a cert ref"
     },
+    "ipsec-with-empty-cacertrefs": {
+      "AuthenticationType": "Cert",
+      "IKEVersion": 1,
+      "ClientCertType": "Ref",
+      "ClientCertRef": "a cert ref",
+      "ServerCARefs": []
+    },
+    "ipsec-with-servercaref-and-servercarefs": {
+      "AuthenticationType": "Cert",
+      "ClientCertType": "Ref",
+      "ClientCertRef": "a cert ref",
+      "IKEVersion": 1,
+      "ServerCARef": "a cert ref",
+      "ServerCARefs": ["ref1", "ref2"]
+    },
+    "openvpn-with-servercaref-and-servercarefs": {
+      "ClientCertType": "None",
+      "ServerCARef": "a cert ref",
+      "ServerCARefs": ["ref1", "ref2"]
+    },
+    "eap-with-servercaref-and-servercarefs": {
+      "ClientCertType": "Ref",
+      "ClientCertRef": "a cert ref",
+      "Outer": "LEAP",
+      "ServerCARef": "a cert ref",
+      "ServerCARefs": ["ref1", "ref2"]
+    },
     "openvpn-missing-verify-x509-name": {
       "GUID": "guid",
       "Type": "VPN",

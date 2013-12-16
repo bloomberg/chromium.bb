@@ -101,6 +101,10 @@
             "Effective": "DevicePolicy",
             "UserEditable": true,
             "UserPolicy": "policy user"
+         },
+         "ServerCARefs": {
+            "UserPolicy": ["ref1", "ref2"],
+            "Effective": "UserPolicy"
          }
       },
       "Type": {

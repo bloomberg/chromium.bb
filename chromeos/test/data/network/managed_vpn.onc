@@ -18,7 +18,8 @@
       "ClientCertPattern": {
         "IssuerCARef": [ "openvpn-test-ca" ],
         "Recommended": [ "EnrollmentURI", "IssuerCARef" ]
-      }
+      },
+      "ServerCARefs": ["ref1", "ref2"]
     },
     "IPsec": {
       "AuthenticationType": "PSK",

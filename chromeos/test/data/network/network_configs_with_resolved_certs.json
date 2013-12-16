@@ -1,5 +1,88 @@
 {
-  "OpenVPN and IssuerCARef": {
+  "OpenVPN with CARefs": {
+    "WithCertRefs": [ {
+        "Type": "VPN",
+        "VPN": {
+          "Type": "OpenVPN",
+          "OpenVPN": {
+            "PushPeerInfo": true,
+            "ServerCARefs": [ "cert_google", "cert_webkit" ]
+          }
+        },
+      } ],
+    "WithResolvedRefs": [ {
+        "Type": "VPN",
+        "VPN": {
+          "Type": "OpenVPN",
+          "OpenVPN": {
+            "PushPeerInfo": true,
+            "ServerCAPEMs":  [ "pem_google", "pem_webkit" ]
+          }
+        },
+      } ]
+  },
+  "OpenVPN with CARefs and CARef": {
+    "WithCertRefs": [ {
+        "Type": "VPN",
+        "VPN": {
+          "Type": "OpenVPN",
+          "OpenVPN": {
+            "PushPeerInfo": true,
+            "ServerCARef": "cert_google",
+            "ServerCARefs": [ "cert_google", "cert_webkit" ]
+          }
+        },
+      } ],
+    "WithResolvedRefs": [ {
+        "Type": "VPN",
+        "VPN": {
+          "Type": "OpenVPN",
+          "OpenVPN": {
+            "PushPeerInfo": true,
+            "ServerCAPEMs":  [ "pem_google", "pem_webkit" ]
+          }
+        },
+      } ]
+  },
+  "EAP with CARefs": {
+    "WithCertRefs": 
+    [ { "WiFi": {
+          "EAP": {
+            "ServerCARefs": [ "cert_google", "cert_webkit" ]
+          }
+        }
+      }
+    ],
+    "WithResolvedRefs": 
+    [ { "WiFi": {
+          "EAP": {
+            "ServerCAPEMs": [ "pem_google", "pem_webkit" ]
+          }
+        }
+      }
+    ]
+  },
+  "L2TP with CARefs": {
+    "WithCertRefs": 
+    [ { "VPN": {
+          "IPsec": {
+            "SaveCredentials": true,
+            "ServerCARefs": [ "cert_google", "cert_webkit" ]
+          }
+        }
+      }
+    ],
+    "WithResolvedRefs": 
+    [ { "VPN": {
+          "IPsec": {
+            "SaveCredentials": true,
+            "ServerCAPEMs": [ "pem_google", "pem_webkit" ]
+          }
+        }
+      }
+    ]
+  },
+  "OpenVPN with ServerCARef and IssuerCARef": {
     "WithCertRefs": [
       {
         "GUID": "{a3860e83-f03d-4cb1-bafa-789oij}",
@@ -51,7 +134,7 @@
         }
       } ]
   },
-  "EAP and L2TP without ref": {
+  "EAP with and L2TP without ref": {
     "WithCertRefs": 
     [ { "WiFi": {
           "EAP": {
@@ -68,7 +151,7 @@
       },
       { "VPN": {
           "IPsec": {
-            "SaveCredentials": true,
+            "SaveCredentials": true
           }
         }
       }
@@ -91,7 +174,7 @@
       },
       { "VPN": {
           "IPsec": {
-            "SaveCredentials": true,
+            "SaveCredentials": true
           }
         }
       }
@@ -126,7 +209,7 @@
             "SaveCredentials": true,
             "ServerCAPEMs": [ 
               "pem_google"
-            ],
+            ]
           }
         }
       }

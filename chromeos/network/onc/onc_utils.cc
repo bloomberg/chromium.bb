@@ -431,7 +431,6 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
       success = false;
     }
 
-    ResolveServerCertRefsInNetworks(server_and_ca_certs, validated_networks);
     network_configs->Swap(validated_networks);
   }
 
@@ -537,6 +536,29 @@ bool ResolveSingleCertRefToList(const CertPEMsByGUIDMap& certs_by_guid,
   return true;
 }
 
+// Resolves the reference list at |key_guid_refs| if present and otherwise the
+// single reference at |key_guid_ref|. Returns whether the respective resolving
+// was successful.
+bool ResolveCertRefsOrRefToList(const CertPEMsByGUIDMap& certs_by_guid,
+                                const std::string& key_guid_refs,
+                                const std::string& key_guid_ref,
+                                const std::string& key_pem_list,
+                                base::DictionaryValue* onc_object) {
+  if (onc_object->HasKey(key_guid_refs)) {
+    if (onc_object->HasKey(key_guid_ref)) {
+      LOG(ERROR) << "Found both " << key_guid_refs << " and " << key_guid_ref
+                 << ". Ignoring and removing the latter.";
+      onc_object->RemoveWithoutPathExpansion(key_guid_ref, NULL);
+    }
+    return ResolveCertRefList(
+        certs_by_guid, key_guid_refs, key_pem_list, onc_object);
+  }
+
+  // Only resolve |key_guid_ref| if |key_guid_refs| isn't present.
+  return ResolveSingleCertRefToList(
+      certs_by_guid, key_guid_ref, key_pem_list, onc_object);
+}
+
 bool ResolveServerCertRefsInObject(const CertPEMsByGUIDMap& certs_by_guid,
                                    const OncValueSignature& signature,
                                    base::DictionaryValue* onc_object) {
@@ -546,21 +568,32 @@ bool ResolveServerCertRefsInObject(const CertPEMsByGUIDMap& certs_by_guid,
       return false;
     }
   } else if (&signature == &kEAPSignature) {
-    if (!ResolveSingleCertRefToList(certs_by_guid, eap::kServerCARef,
-                                    eap::kServerCAPEMs, onc_object)) {
+    if (!ResolveCertRefsOrRefToList(certs_by_guid,
+                                    eap::kServerCARefs,
+                                    eap::kServerCARef,
+                                    eap::kServerCAPEMs,
+                                    onc_object)) {
       return false;
     }
   } else if (&signature == &kIPsecSignature) {
-    if (!ResolveSingleCertRefToList(certs_by_guid, ipsec::kServerCARef,
-                                    ipsec::kServerCAPEMs, onc_object)) {
+    if (!ResolveCertRefsOrRefToList(certs_by_guid,
+                                    ipsec::kServerCARefs,
+                                    ipsec::kServerCARef,
+                                    ipsec::kServerCAPEMs,
+                                    onc_object)) {
       return false;
     }
   } else if (&signature == &kIPsecSignature ||
              &signature == &kOpenVPNSignature) {
-    if (!ResolveSingleCertRef(certs_by_guid, openvpn::kServerCertRef,
-                              openvpn::kServerCertPEM, onc_object) ||
-        !ResolveSingleCertRefToList(certs_by_guid, openvpn::kServerCARef,
-                                    openvpn::kServerCAPEMs, onc_object)) {
+    if (!ResolveSingleCertRef(certs_by_guid,
+                              openvpn::kServerCertRef,
+                              openvpn::kServerCertPEM,
+                              onc_object) ||
+        !ResolveCertRefsOrRefToList(certs_by_guid,
+                                    openvpn::kServerCARefs,
+                                    openvpn::kServerCARef,
+                                    openvpn::kServerCAPEMs,
+                                    onc_object)) {
       return false;
     }
   }

@@ -47,6 +47,7 @@ const OncFieldSignature certificate_pattern_fields[] = {
     { ::onc::certificate::kEnrollmentURI, &kStringListSignature},
     { ::onc::certificate::kIssuer, &kIssuerSubjectPatternSignature},
     { ::onc::certificate::kIssuerCARef, &kStringListSignature},
+    // Used internally. Not officially supported.
     { ::onc::certificate::kIssuerCAPEMs, &kStringListSignature},
     { ::onc::certificate::kSubject, &kIssuerSubjectPatternSignature},
     {NULL}};
@@ -62,8 +63,10 @@ const OncFieldSignature eap_fields[] = {
     { ::onc::eap::kOuter, &kStringSignature},
     { ::onc::eap::kPassword, &kStringSignature},
     { ::onc::eap::kSaveCredentials, &kBoolSignature},
+    // Used internally. Not officially supported.
     { ::onc::eap::kServerCAPEMs, &kStringListSignature},
     { ::onc::eap::kServerCARef, &kStringSignature},
+    { ::onc::eap::kServerCARefs, &kStringListSignature},
     { ::onc::eap::kUseSystemCAs, &kBoolSignature},
     {NULL}};
 
@@ -77,8 +80,10 @@ const OncFieldSignature ipsec_fields[] = {
     { ::onc::ipsec::kIKEVersion, &kIntegerSignature},
     { ::onc::ipsec::kPSK, &kStringSignature},
     { ::onc::vpn::kSaveCredentials, &kBoolSignature},
-    { ::onc::ipsec::kServerCAPEMs, &kStringSignature},
+    // Used internally. Not officially supported.
+    { ::onc::ipsec::kServerCAPEMs, &kStringListSignature},
     { ::onc::ipsec::kServerCARef, &kStringSignature},
+    { ::onc::ipsec::kServerCARefs, &kStringListSignature},
     // Not yet supported.
     //  { ipsec::kEAP, &kEAPSignature },
     //  { ipsec::kXAUTH, &kXAUTHSignature },
@@ -113,8 +118,10 @@ const OncFieldSignature openvpn_fields[] = {
     { ::onc::openvpn::kRemoteCertTLS, &kStringSignature},
     { ::onc::openvpn::kRenegSec, &kIntegerSignature},
     { ::onc::vpn::kSaveCredentials, &kBoolSignature},
+    // Used internally. Not officially supported.
     { ::onc::openvpn::kServerCAPEMs, &kStringListSignature},
     { ::onc::openvpn::kServerCARef, &kStringSignature},
+    { ::onc::openvpn::kServerCARefs, &kStringListSignature},
     // Not supported, yet.
     { ::onc::openvpn::kServerCertPEM, &kStringSignature},
     { ::onc::openvpn::kServerCertRef, &kStringSignature},

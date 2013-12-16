@@ -226,8 +226,9 @@ ONC_EXPORT extern const char kPAP[];
 ONC_EXPORT extern const char kPEAP[];
 ONC_EXPORT extern const char kPassword[];
 ONC_EXPORT extern const char kSaveCredentials[];
-ONC_EXPORT extern const char kServerCARef[];
 ONC_EXPORT extern const char kServerCAPEMs[];
+ONC_EXPORT extern const char kServerCARef[];
+ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kUseSystemCAs[];
 }  // namespace eap
 
@@ -254,8 +255,9 @@ ONC_EXPORT extern const char kEAP[];
 ONC_EXPORT extern const char kGroup[];
 ONC_EXPORT extern const char kIKEVersion[];
 ONC_EXPORT extern const char kPSK[];
-ONC_EXPORT extern const char kServerCARef[];
 ONC_EXPORT extern const char kServerCAPEMs[];
+ONC_EXPORT extern const char kServerCARef[];
+ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kXAUTH[];
 }  // namespace ipsec
 
@@ -280,6 +282,7 @@ ONC_EXPORT extern const char kRemoteCertTLS[];
 ONC_EXPORT extern const char kRenegSec[];
 ONC_EXPORT extern const char kServerCAPEMs[];
 ONC_EXPORT extern const char kServerCARef[];
+ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kServerCertPEM[];
 ONC_EXPORT extern const char kServerCertRef[];
 ONC_EXPORT extern const char kServerPollTimeout[];
