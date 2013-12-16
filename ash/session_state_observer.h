@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "base/basictypes.h"
 
 namespace ash {
 
@@ -21,6 +22,19 @@ class ASH_EXPORT SessionStateObserver {
 
  protected:
   virtual ~SessionStateObserver() {}
+};
+
+// A class to attach / detach an object as a session state observer with a
+// scoped pointer.
+class ASH_EXPORT ScopedSessionStateObserver {
+ public:
+  explicit ScopedSessionStateObserver(ash::SessionStateObserver* observer);
+  virtual ~ScopedSessionStateObserver();
+
+ private:
+  ash::SessionStateObserver* observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSessionStateObserver);
 };
 
 }  // namespace ash

@@ -138,6 +138,10 @@ bool IsLargeCursorEnabled() {
   return AccessibilityManager::Get()->IsLargeCursorEnabled();
 }
 
+bool ShouldShowAccessibilityMenu() {
+  return AccessibilityManager::Get()->ShouldShowAccessibilityMenu();
+}
+
 void SetHighContrastEnabled(bool enabled) {
   return AccessibilityManager::Get()->EnableHighContrast(enabled);
 }
@@ -558,6 +562,43 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(GetHighContrastEnabledFromPref());
   EXPECT_TRUE(GetAutoclickEnabledFromPref());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelayFromPref());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AcessibilityMenuVisibility) {
+  // Log in.
+  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  UserManager::Get()->SessionStarted();
+
+  // Confirms that the features are disabled.
+  EXPECT_FALSE(IsLargeCursorEnabled());
+  EXPECT_FALSE(IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(IsHighContrastEnabled());
+  EXPECT_FALSE(IsAutoclickEnabled());
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
+
+  // Check large cursor.
+  SetLargeCursorEnabled(true);
+  EXPECT_TRUE(ShouldShowAccessibilityMenu());
+  SetLargeCursorEnabled(false);
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
+
+  // Check spoken feedback.
+  SetSpokenFeedbackEnabled(true);
+  EXPECT_TRUE(ShouldShowAccessibilityMenu());
+  SetSpokenFeedbackEnabled(false);
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
+
+  // Check high contrast.
+  SetHighContrastEnabled(true);
+  EXPECT_TRUE(ShouldShowAccessibilityMenu());
+  SetHighContrastEnabled(false);
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
+
+  // Check autoclick.
+  SetAutoclickEnabled(true);
+  EXPECT_TRUE(ShouldShowAccessibilityMenu());
+  SetAutoclickEnabled(false);
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
 }
 
 }  // namespace chromeos

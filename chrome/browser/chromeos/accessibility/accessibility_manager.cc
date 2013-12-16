@@ -7,6 +7,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/event_rewriter_event_filter.h"
@@ -322,6 +323,7 @@ AccessibilityManager::AccessibilityManager()
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_EXTENSION_UNLOADED,
                               content::NotificationService::AllSources());
+
   GetBrailleController()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -345,6 +347,27 @@ AccessibilityManager::~AccessibilityManager() {
     extensions::ExtensionSystem::Get(profile_)->
         event_router()->UnregisterObserver(this);
   }
+}
+
+bool AccessibilityManager::ShouldShowAccessibilityMenu() {
+  // If any of the loaded profiles has an accessibility feature turned on - or
+  // enforced to always show the menu - we return true to show the menu.
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (std::vector<Profile*>::iterator it = profiles.begin();
+       it != profiles.end();
+       ++it) {
+    PrefService* pref_service = (*it)->GetPrefs();
+    if (pref_service->GetBoolean(prefs::kStickyKeysEnabled) ||
+        pref_service->GetBoolean(prefs::kLargeCursorEnabled) ||
+        pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled) ||
+        pref_service->GetBoolean(prefs::kHighContrastEnabled) ||
+        pref_service->GetBoolean(prefs::kAutoclickEnabled) ||
+        pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu) ||
+        pref_service->GetBoolean(prefs::kScreenMagnifierEnabled))
+      return true;
+  }
+  return false;
 }
 
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
@@ -739,6 +762,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateAutoclickDelayFromPref();
 }
 
+void AccessibilityManager::ActiveUserChanged(const std::string& user_id) {
+  SetProfile(ProfileManager::GetActiveUserProfile());
+}
+
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
 }
@@ -807,17 +834,22 @@ void AccessibilityManager::Observe(
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
       // Update |profile_| when entering the login screen.
-      Profile* profile = ProfileManager::GetDefaultProfile();
+      Profile* profile = ProfileManager::GetActiveUserProfile();
       if (ProfileHelper::IsSigninProfile(profile))
         SetProfile(profile);
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED:
       // Update |profile_| when entering a session.
-      SetProfile(ProfileManager::GetDefaultProfile());
+      SetProfile(ProfileManager::GetActiveUserProfile());
 
       // Ensure ChromeVox makes announcements at the start of new sessions.
       should_speak_chrome_vox_announcements_on_user_screen_ = true;
+
+      // Add a session state observer to be able to monitor session changes.
+      if (!session_state_observer_.get() && ash::Shell::HasInstance())
+        session_state_observer_.reset(
+            new ash::ScopedSessionStateObserver(this));
       break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Update |profile_| when exiting a session or shutting down.

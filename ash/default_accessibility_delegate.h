@@ -29,7 +29,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   virtual bool IsLargeCursorEnabled() const OVERRIDE;
   virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
   virtual bool IsAutoclickEnabled() const OVERRIDE;
-  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
+  virtual bool ShouldShowAccessibilityMenu() const OVERRIDE;
   virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual void ToggleSpokenFeedback(
       AccessibilityNotificationVisibility notify) OVERRIDE;

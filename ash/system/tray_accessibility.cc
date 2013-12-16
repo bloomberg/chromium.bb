@@ -326,10 +326,9 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
   if (login_ != user::LOGGED_IN_NONE &&
-      !delegate->ShouldAlwaysShowAccessibilityMenu() &&
-      // On login screen, keeps the initial visivility of the menu.
-      (status != user::LOGGED_IN_LOCKED || !show_a11y_menu_on_lock_screen_) &&
-      GetAccessibilityState() == A11Y_NONE)
+      !delegate->ShouldShowAccessibilityMenu() &&
+      // On login screen, keeps the initial visibility of the menu.
+      (status != user::LOGGED_IN_LOCKED || !show_a11y_menu_on_lock_screen_))
     return NULL;
 
   CHECK(default_ == NULL);

@@ -185,6 +185,7 @@
         'screensaver/screensaver_view.h',
         'screenshot_delegate.h',
         'session_state_delegate.h',
+        'session_state_observer.cc',
         'session_state_observer.h',
         'shelf/alternate_app_list_button.cc',
         'shelf/alternate_app_list_button.h',

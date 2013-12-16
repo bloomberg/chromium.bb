@@ -118,14 +118,10 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::AccessibilityManager::Get()->IsAutoclickEnabled();
   }
 
-  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE {
-    Profile* profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
-    if (!profile)
-      return false;
-
-    PrefService* user_pref_service = profile->GetPrefs();
-    return user_pref_service && user_pref_service->GetBoolean(
-        prefs::kShouldAlwaysShowAccessibilityMenu);
+  virtual bool ShouldShowAccessibilityMenu() const OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->
+        ShouldShowAccessibilityMenu();
   }
 
   virtual void SilenceSpokenFeedback() const OVERRIDE {

@@ -82,10 +82,14 @@ bool BrailleDisplayPrivateAPI::IsProfileActive() {
   Profile* active_profile;
   chromeos::ScreenLocker* screen_locker =
       chromeos::ScreenLocker::default_screen_locker();
-  if (screen_locker && screen_locker->locked())
+  if (screen_locker && screen_locker->locked()) {
     active_profile = chromeos::ProfileHelper::GetSigninProfile();
-  else
-    active_profile = ProfileManager::GetDefaultProfile();
+  } else {
+    // Since we are creating one instance per profile / user, we should be fine
+    // comparing against the active user. That said - if we ever change that,
+    // this code will need to be changed.
+    active_profile = ProfileManager::GetActiveUserProfile();
+  }
   return profile_->IsSameProfile(active_profile);
 #else  // !defined(OS_CHROMEOS)
   return true;

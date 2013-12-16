@@ -116,7 +116,7 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
     return std::numeric_limits<double>::min();
   }
 
-  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE {
+  virtual bool ShouldShowAccessibilityMenu() const OVERRIDE {
     return false;
   }
 

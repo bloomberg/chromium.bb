@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
 #include "ash/accessibility_delegate.h"
+#include "ash/session_state_observer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time/time.h"
@@ -40,7 +41,8 @@ struct AccessibilityStatusEventDetails {
 // TODO(yoshiki): merge MagnificationManager with AccessibilityManager.
 class AccessibilityManager : public content::NotificationObserver,
     public extensions::EventRouter::Observer,
-    extensions::api::braille_display_private::BrailleObserver {
+    extensions::api::braille_display_private::BrailleObserver,
+    public ash::SessionStateObserver {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
@@ -66,6 +68,9 @@ class AccessibilityManager : public content::NotificationObserver,
    private:
     const char* pref_path_;
   };
+
+  // Returns true when the accessibility menu should be shown.
+  bool ShouldShowAccessibilityMenu();
 
   // Enables or disables the large cursor.
   void EnableLargeCursor(bool enabled);
@@ -109,6 +114,9 @@ class AccessibilityManager : public content::NotificationObserver,
 
   // Returns the autoclick delay in milliseconds.
   int GetAutoclickDelay() const;
+
+  // SessionStateObserver overrides:
+  virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
 
   void SetProfileForTest(Profile* profile);
 
@@ -185,6 +193,7 @@ class AccessibilityManager : public content::NotificationObserver,
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
+  scoped_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
 
   PrefHandler large_cursor_pref_handler_;
   PrefHandler spoken_feedback_pref_handler_;
