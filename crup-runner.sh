@@ -40,7 +40,7 @@ update_submodule_url () {
   # this way because `git submodule sync` is absurdly slow.
   new_url=$(git config -f .gitmodules "submodule.$1.url" 2>/dev/null)
   old_url=$(git config "submodule.$1.url" 2>/dev/null)
-  if [ -n "$old_url" -a "$new_url" != "$old_url" ]; then
+  if [ "$new_url" != "$old_url" ]; then
     git config "submodule.$1.url" "$new_url"
     if [ -e "$1"/.git ]; then
       ( cd $submod && git config remote.origin.url "$new_url" )
