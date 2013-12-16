@@ -218,7 +218,7 @@ TEST(AnimationTimedItemCalculationsTest, TransformedTime)
     // Timing function when iterationDuration is infinity
     timing.direction = Timing::PlaybackDirectionNormal;
     EXPECT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
-    EXPECT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
+    EXPECT_EQ(1, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
     timing.direction = Timing::PlaybackDirectionReverse;
     EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
     EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));

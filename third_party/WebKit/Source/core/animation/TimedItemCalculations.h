@@ -186,10 +186,8 @@ static inline double calculateTransformedTime(double currentIteration, double it
     double directedTime = calculateDirectedTime(currentIteration, iterationDuration, iterationTime, specified);
     if (isNull(directedTime))
         return nullValue();
-    if (!std::isfinite(directedTime)) {
-        ASSERT(!std::isfinite(iterationDuration));
+    if (!std::isfinite(iterationDuration))
         return directedTime;
-    }
     double timeFraction = directedTime / iterationDuration;
     ASSERT(timeFraction >= 0 && timeFraction <= 1);
     return specified.timingFunction
