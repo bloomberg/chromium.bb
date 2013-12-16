@@ -466,6 +466,46 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     raise gclient_utils.Error('Unknown url type')
 
+  @staticmethod
+  def MergeWithOsDeps(deps, deps_os, target_os_list):
+    """Returns a new "deps" structure that is the deps sent in updated
+    with information from deps_os (the deps_os section of the DEPS
+    file) that matches the list of target os."""
+    os_overrides = {}
+    for the_target_os in target_os_list:
+      the_target_os_deps = deps_os.get(the_target_os, {})
+      for os_dep_key, os_dep_value in the_target_os_deps.iteritems():
+        overrides = os_overrides.setdefault(os_dep_key, [])
+        overrides.append((the_target_os, os_dep_value))
+
+    # If any os didn't specify a value (we have fewer value entries
+    # than in the os list), then it wants to use the default value.
+    for os_dep_key, os_dep_value in os_overrides.iteritems():
+      if len(os_dep_value) != len(target_os_list):
+        # Record the default value too so that we don't accidently
+        # set it to None or miss a conflicting DEPS.
+        if os_dep_key in deps:
+          os_dep_value.append(('default', deps[os_dep_key]))
+
+    target_os_deps = {}
+    for os_dep_key, os_dep_value in os_overrides.iteritems():
+      # os_dep_value is a list of (os, value) pairs.
+      possible_values = set(x[1] for x in os_dep_value if x[1] is not None)
+      if not possible_values:
+        target_os_deps[os_dep_key] = None
+      else:
+        if len(possible_values) > 1:
+          # It would be possible to abort here but it would be
+          # unfortunate if we end up preventing any kind of checkout.
+          logging.error('Conflicting dependencies for %s: %s. (target_os=%s)',
+                        os_dep_key, os_dep_value, target_os_list)
+        # Sorting to get the same result every time in case of conflicts.
+        target_os_deps[os_dep_key] = sorted(possible_values)[0]
+
+    new_deps = deps.copy()
+    new_deps.update(target_os_deps)
+    return new_deps
+
   def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
     assert not self.deps_parsed
@@ -502,22 +542,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self.local_target_os = local_scope['target_os']
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
-    target_os_deps = {}
-    if 'deps_os' in local_scope:
-      for deps_os_key in self.target_os:
-        os_deps = local_scope['deps_os'].get(deps_os_key, {})
-        if len(self.target_os) > 1:
-          # Ignore any conflict when including deps for more than one
-          # platform, so we collect the broadest set of dependencies
-          # available. We may end up with the wrong revision of something for
-          # our platform, but this is the best we can do.
-          target_os_deps.update(
-              [x for x in os_deps.items() if not x[0] in target_os_deps])
-        else:
-          target_os_deps.update(os_deps)
-
-    # deps_os overrides paths from deps
-    deps.update(target_os_deps)
+    target_os_list = self.target_os
+    if 'deps_os' in local_scope and target_os_list:
+      deps = self.MergeWithOsDeps(deps, local_scope['deps_os'], target_os_list)
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.

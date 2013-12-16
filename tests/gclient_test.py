@@ -9,6 +9,7 @@ See gclient_smoketest.py for integration tests.
 """
 
 import Queue
+import copy
 import logging
 import os
 import sys
@@ -475,8 +476,85 @@ class GclientTest(trial_dir.TestCase):
           ],
         sorted(self._get_processed()))
 
+  def testUpdateWithOsDeps(self):
+    """Verifies that complicated deps_os constructs result in the
+    correct data also with multple operating systems. Also see
+    testDepsOsOverrideDepsInDepsFile."""
+
+    test_data = [
+      # Tuples of deps, deps_os, os_list and expected_deps.
+      (
+        # OS doesn't need module.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None } },
+        ['os1'],
+        {'foo': None}
+        ),
+      (
+        # OS wants a different version of module.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': 'os1_foo'} },
+        ['os1'],
+        {'foo': 'os1_foo'}
+        ),
+      (
+        # OS with no overrides at all.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None } },
+        ['os2'],
+        {'foo': 'default_foo'}
+        ),
+      (
+        # One OS doesn't need module, one OS wants the default.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None },
+         'os2': {}},
+        ['os1', 'os2'],
+        {'foo': 'default_foo'}
+        ),
+      (
+        # One OS doesn't need module, another OS wants a special version.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None },
+         'os2': { 'foo': 'os2_foo'}},
+        ['os1', 'os2'],
+        {'foo': 'os2_foo'}
+        ),
+      (
+        # One OS wants to add a module.
+        {'foo': 'default_foo'},
+        {'os1': { 'bar': 'os1_bar' }},
+        ['os1'],
+        {'foo': 'default_foo',
+         'bar': 'os1_bar'}
+        ),
+      (
+        # One OS wants to add a module. One doesn't care.
+        {'foo': 'default_foo'},
+        {'os1': { 'bar': 'os1_bar' }},
+        ['os1', 'os2'],
+        {'foo': 'default_foo',
+         'bar': 'os1_bar'}
+        ),
+      (
+        # Two OSes want to add a module with the same definition.
+        {'foo': 'default_foo'},
+        {'os1': { 'bar': 'os12_bar' },
+         'os2': { 'bar': 'os12_bar' }},
+        ['os1', 'os2'],
+        {'foo': 'default_foo',
+         'bar': 'os12_bar'}
+        ),
+      ]
+    for deps, deps_os, target_os_list, expected_deps in test_data:
+      orig_deps = copy.deepcopy(deps)
+      result = gclient.Dependency.MergeWithOsDeps(deps, deps_os, target_os_list)
+      self.assertEqual(result, expected_deps)
+      self.assertEqual(deps, orig_deps)
+
   def testDepsOsOverrideDepsInDepsFile(self):
-    """Verifies that a 'deps_os' path can override a 'deps' path.
+    """Verifies that a 'deps_os' path can override a 'deps' path. Also
+    see testUpdateWithOsDeps above.
     """
 
     write(
@@ -495,7 +573,8 @@ class GclientTest(trial_dir.TestCase):
         'deps_os = {\n'
         '  "unix": { "foo/unix": "/unix",'
         '            "foo/src": "/src_unix"},\n'
-        '  "baz": { "foo/baz": "/baz", },\n'
+        '  "baz": { "foo/baz": "/baz",\n'
+        '           "foo/src": None},\n'
         '  "jaz": { "foo/jaz": "/jaz", },\n'
         '}')
 
