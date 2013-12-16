@@ -36,17 +36,21 @@ const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 
 // WebRTC-AppRTC integration test. Requires a real webcam and microphone
 // on the running system. This test is not meant to run in the main browser
-// test suite since normal tester machines do not have webcams.
+// test suite since normal tester machines do not have webcams. Chrome will use
+// this camera for the regular AppRTC test whereas Firefox will use it in the
+// Firefox interop test (where case Chrome will use its built-in fake device).
 //
 // This test will bring up a AppRTC instance on localhost and verify that the
 // call gets up when connecting to the same room from two tabs in a browser.
 class WebrtcApprtcBrowserTest : public WebRtcTestBase {
  public:
+  WebrtcApprtcBrowserTest()
+      : dev_appserver_(base::kNullProcessHandle),
+        firefox_(base::kNullProcessHandle) {
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    EXPECT_FALSE(command_line->HasSwitch(
-        switches::kUseFakeDeviceForMediaStream));
-    EXPECT_FALSE(command_line->HasSwitch(
-        switches::kUseFakeUIForMediaStream));
+    EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
@@ -54,6 +58,15 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
     // TODO(mcasas): Remove this switch when http://crbug.com/327618 is solved.
     command_line->AppendSwitch(switches::kDisableAVFoundation);
 #endif
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Kill any processes we may have brought up.
+    if (dev_appserver_ != base::kNullProcessHandle)
+      base::KillProcess(dev_appserver_, 0, false);
+    // TODO(phoglund): Find some way to shut down Firefox cleanly on Windows.
+    if (firefox_ != base::kNullProcessHandle)
+      base::KillProcess(firefox_, 0, false);
   }
 
  protected:
@@ -84,7 +97,7 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendArg("--admin_port=9998");
     command_line.AppendArg("--skip_sdk_update_check");
 
-    VLOG(0) << "Running " << command_line.GetCommandLineString();
+    VLOG(1) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
                                &dev_appserver_);
   }
@@ -104,10 +117,6 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
     return result == kTitlePageOfAppEngineAdminPage;
   }
 
-  bool StopApprtcInstance() {
-    return base::KillProcess(dev_appserver_, 0, false);
-  }
-
   bool WaitForCallToComeUp(content::WebContents* tab_contents) {
     // Apprtc will set remoteVideo.style.opacity to 1 when the call comes up.
     std::string javascript =
@@ -121,8 +130,38 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
     return source_dir;
   }
 
+  bool LaunchFirefoxWithUrl(const GURL& url) {
+    base::FilePath firefox_binary =
+        GetSourceDir().Append(
+            FILE_PATH_LITERAL("../firefox-nightly/firefox/firefox"));
+    if (!base::PathExists(firefox_binary)) {
+      LOG(ERROR) << "Missing firefox binary at " <<
+          firefox_binary.value() << ". " << kAdviseOnGclientSolution;
+      return false;
+    }
+    base::FilePath firefox_launcher =
+        GetSourceDir().Append(
+            FILE_PATH_LITERAL("../webrtc.DEPS/run_firefox_webrtc.py"));
+    if (!base::PathExists(firefox_launcher)) {
+      LOG(ERROR) << "Missing firefox launcher at " <<
+          firefox_launcher.value() << ". " << kAdviseOnGclientSolution;
+      return false;
+    }
+
+    CommandLine command_line(firefox_launcher);
+    command_line.AppendSwitchPath("--binary", firefox_binary);
+    command_line.AppendSwitchASCII("--webpage", url.spec());
+
+    VLOG(1) << "Running " << command_line.GetCommandLineString();
+    return base::LaunchProcess(command_line, base::LaunchOptions(),
+                               &firefox_);
+
+    return true;
+  }
+
  private:
   base::ProcessHandle dev_appserver_;
+  base::ProcessHandle firefox_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
@@ -135,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
-    VLOG(0) << "Waiting for AppRTC to come up...";
+    VLOG(1) << "Waiting for AppRTC to come up...";
 
   GURL room_url = GURL(base::StringPrintf("localhost:9999?r=room_%d",
                                           base::RandInt(0, 65536)));
@@ -150,6 +189,43 @@ IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
   ASSERT_TRUE(WaitForCallToComeUp(left_tab));
   ASSERT_TRUE(WaitForCallToComeUp(right_tab));
+}
 
-  ASSERT_TRUE(StopApprtcInstance());
+#if defined(OS_LINUX)
+#define MAYBE_MANUAL_FirefoxApprtcInteropTest MANUAL_FirefoxApprtcInteropTest
+#else
+// Not implemented yet on Windows and Mac.
+#define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest,
+                       MAYBE_MANUAL_FirefoxApprtcInteropTest) {
+  // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
+  // http://code.google.com/p/webrtc/issues/detail?id=2703
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
+  DetectErrorsInJavaScript();
+  ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
+  while (!LocalApprtcInstanceIsUp())
+    VLOG(1) << "Waiting for AppRTC to come up...";
+
+  // Run Chrome with a fake device to avoid having the browsers fight over the
+  // camera (we'll just give that to firefox here).
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseFakeDeviceForMediaStream);
+
+  GURL room_url = GURL(base::StringPrintf("http://localhost:9999?r=room_%d",
+                                          base::RandInt(0, 65536)));
+  content::WebContents* chrome_tab = OpenPageAndAcceptUserMedia(room_url);
+
+  // TODO(phoglund): Remove when this bug gets fixed:
+  // http://code.google.com/p/webrtc/issues/detail?id=1742
+  SleepInJavascript(chrome_tab, 5000);
+
+  ASSERT_TRUE(LaunchFirefoxWithUrl(room_url));
+
+  ASSERT_TRUE(WaitForCallToComeUp(chrome_tab));
 }
