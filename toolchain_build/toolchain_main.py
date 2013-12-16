@@ -30,6 +30,16 @@ DEFAULT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'cache')
 DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
+def PrintFlush(message):
+  """Flush stdout and print a message to stderr.
+
+  Buildbot annotator messages must be at the beginning of a line, and we want to
+  ensure that any output from the script or from subprocesses appears in the
+  correct order wrt BUILD_STEP messages. So we flush stdout before printing all
+  buildbot messages here.
+  """
+  sys.stdout.flush()
+  print >>sys.stderr, message
 
 def PrintAnnotatorURL(url):
   """Print an URL in buildbot annotator form.
@@ -37,7 +47,7 @@ def PrintAnnotatorURL(url):
   Args:
     url: A URL to print.
   """
-  print >>sys.stderr, '@@@STEP_LINK@download@%s@@@' % url
+  PrintFlush('@@@STEP_LINK@download@%s@@@' % url)
 
 
 class PackageBuilder(object):
@@ -95,7 +105,6 @@ class PackageBuilder(object):
     """
     self._packages = packages
     self.DecodeArgs(packages, args)
-    self.SetupLogging()
     self._build_once = once.Once(
         use_cached_results=self._options.use_cached_results,
         cache_results=self._options.cache_results,
@@ -110,17 +119,12 @@ class PackageBuilder(object):
 
   def Main(self):
     """Main entry point."""
-    if self._options.sync_sources:
-      self.SyncAll()
+    file_tools.MakeDirectoryIfAbsent(self._options.source)
+    file_tools.MakeDirectoryIfAbsent(self._options.output)
+    log_tools.SetupLogging(self._options.verbose,
+                           open(os.path.join(self._options.output,
+                                             'toolchain_build.log'), 'w'))
     self.BuildAll()
-
-  def SetupLogging(self):
-    """Setup python logging based on options."""
-    if self._options.verbose:
-      logging.getLogger().setLevel(logging.DEBUG)
-    else:
-      logging.getLogger().setLevel(logging.INFO)
-    logging.basicConfig(format='%(levelname)s: %(message)s')
 
   def GetOutputDir(self, package):
     # The output dir of source packages is in the source directory, and can be
@@ -157,7 +161,8 @@ class PackageBuilder(object):
       logging.debug('Sync skipped: not running commands for %s' % package)
       return
 
-    print >>sys.stderr, '@@@BUILD_STEP %s (%s)@@@' % (package, type_text)
+    PrintFlush('@@@BUILD_STEP %s (%s)@@@' % (package, type_text))
+    logging.debug('Building %s package %s' % (type_text, package))
 
     dependencies = package_info.get('dependencies', [])
 
@@ -231,13 +236,8 @@ class PackageBuilder(object):
       Add(target, [])
     return order
 
-  def SyncAll(self):
-    """Sync all packages selected and their dependencies."""
-    file_tools.MakeDirectoryIfAbsent(self._options.source)
-
   def BuildAll(self):
     """Build all packages selected and their dependencies."""
-    file_tools.MakeDirectoryIfAbsent(self._options.output)
     for target in self._targets:
       self.BuildPackage(target)
 
