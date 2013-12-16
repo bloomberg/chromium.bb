@@ -293,6 +293,9 @@ void LoaderImpl::BackgroundLoadBuildConfig(
 
   trace.Done();
 
+  if (err.has_error())
+    g_scheduler->FailWithError(err);
+
   base_config->ClearProcessingBuildConfig();
   if (settings->is_default()) {
     // The default toolchain must have been set in the default build config

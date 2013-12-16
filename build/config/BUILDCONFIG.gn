@@ -55,6 +55,16 @@ declare_args() {
   # Set to true on the command line when invoked by GYP. Build files can key
   # off of this to make any GYP-output-specific changes to the build.
   is_gyp = false
+
+  # Selects the desired build flavor. Official builds get additional
+  # processing to prepare for release. Normally you will want to develop and
+  # test with this flag off.
+  is_official_build = false
+
+  # Select the desired branding flavor. False means normal Chromium branding,
+  # true means official Google Chrome branding (requires extra Google-internal
+  # resources).
+  is_chrome_branded = false
 }
 
 # =============================================================================

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/sysroot.gni")
+
 # Base compiler configuration.
 config("compiler") {
   include_dirs = [ "//", root_gen_dir ]
@@ -45,10 +47,7 @@ config("compiler") {
 
       # These flags are shared between the C compiler and linker.
       common_mac_flags = [
-        # Set which SDK to use.
-        # TODO(brettw) this needs to be configurable somehow.
-        "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk",
-
+        "-isysroot", sysroot,
         "-mmacosx-version-min=10.6",
       ]
 
@@ -121,6 +120,11 @@ config("compiler") {
           "-Wl,--threads",
           "-Wl,--thread-count=4",
         ]
+      }
+
+      if (sysroot != "") {
+        cflags += "--sysroot=" + sysroot
+        ldflags += "--sysroot=" + sysroot
       }
 
       ldflags += [

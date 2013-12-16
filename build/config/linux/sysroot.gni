@@ -1,0 +1,27 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This header file defines the "sysroot" variable which is the absolute path
+# of the sysroot. If no sysroot applies, the variable will be an empty string.
+
+# For official builds, use the sysroot checked into the internal source repo so
+# that the builds work on older versions of Linux.
+if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
+  if (cpu_arch == "x64") {
+    sysroot = rebase_path(
+      "//chrome/installer/linux/debian_wheezy_amd64-sysroot", ".", "")
+  } else if (cpu_arch == "x86") {
+    sysroot = rebase_path(
+      "//chrome/installer/linux/debian_wheezy_i386-sysroot", ".", "")
+  } else {
+    assert(false,
+           "Official builds on non-x86/64 processors not supported.")
+  }
+} else if (is_mac) {
+  # Set which SDK to use.
+  # TODO(brettw) this needs to be configurable somehow.
+  sysroot = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
+} else {
+  sysroot = ""
+}

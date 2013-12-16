@@ -115,12 +115,19 @@ def GetArgsStringForGN(supplemental_files):
   vars_dict = GetGypVarsForGN(supplemental_files)
   gn_args = ''
 
-  # Map "component=shared_library" to "is_component_build=true"
-  if "component" in vars_dict and vars_dict["component"] == "shared_library":
-    gn_args += ' is_component_build=true'
+  # These tuples of (key, value, gn_arg_string) use the gn_arg_string for
+  # gn when the key is set to the given value in the GYP arguments.
+  remap_cases = [
+      ('branding', 'Chrome', 'is_chrome_branded=true'),
+      ('buildtype', 'Official', 'is_official_build=true'),
+      ('component', 'shared_library', 'is_component_build=true'),
+  ]
+  for i in remap_cases:
+    if i[0] in vars_dict and vars_dict[i[0]] == i[1]:
+      gn_args += ' ' + i[2]
 
   # These string arguments get passed directly.
-  for v in ['window_sdk_path']:
+  for v in ['windows_sdk_path']:
     if v in vars_dict:
       gn_args += ' ' + v + '="' + EscapeStringForGN(vars_dict[v]) + '"'
 
