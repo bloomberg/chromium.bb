@@ -487,9 +487,10 @@ gfx::Image CreditCardIconForType(const std::string& credit_card_type) {
   if (input_card_idr == IDR_AUTOFILL_CC_GENERIC) {
     // When the credit card type is unknown, no image should be shown. However,
     // to simplify the view code on Mac, save space for the credit card image by
-    // returning a transparent image of the appropriate size.
+    // returning a transparent image of the appropriate size. Not all credit
+    // card images are the same size, but none is larger than the Visa icon.
     result = gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(
-        result.AsImageSkia(), 0));
+        rb.GetImageNamed(IDR_AUTOFILL_CC_VISA).AsImageSkia(), 0));
   }
   return result;
 }
