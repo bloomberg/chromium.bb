@@ -100,7 +100,6 @@
         ],
         'isolate_dependency_untracked': [
           '../third_party/bidichecker/',
-          '<(PRODUCT_DIR)/lib64/',
           '<(PRODUCT_DIR)/plugins/',
           '<(PRODUCT_DIR)/resources/extension/',
         ],

@@ -30,7 +30,6 @@
           '<(PRODUCT_DIR)/resources.pak',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/lib64/',
           '<(PRODUCT_DIR)/plugins/',
           '<(PRODUCT_DIR)/resources/extension/',
         ],
