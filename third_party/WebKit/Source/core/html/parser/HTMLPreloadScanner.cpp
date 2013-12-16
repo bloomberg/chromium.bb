@@ -399,7 +399,7 @@ void HTMLPreloadScanner::scan(HTMLResourcePreloader* preloader, const KURL& star
 
     while (m_tokenizer->nextToken(m_source, m_token)) {
         if (m_token.type() == HTMLToken::StartTag)
-            m_tokenizer->updateStateFor(AtomicString(m_token.name()));
+            m_tokenizer->updateStateFor(attemptStaticStringCreation(m_token.name(), Likely8Bit));
         m_scanner.scan(m_token, m_source, requests);
         m_token.clear();
     }

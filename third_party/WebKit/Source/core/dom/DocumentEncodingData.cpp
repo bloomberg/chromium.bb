@@ -28,37 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentEncodingData_h
-#define DocumentEncodingData_h
+#include "config.h"
+#include "core/dom/DocumentEncodingData.h"
 
-#include "wtf/text/TextEncoding.h"
+#include "core/html/parser/TextResourceDecoder.h"
 
 namespace WebCore {
-class TextResourceDecoder;
 
-class DocumentEncodingData {
-public:
-    DocumentEncodingData();
-    explicit DocumentEncodingData(const TextResourceDecoder&);
-
-    const WTF::TextEncoding& encoding() const { return m_encoding; }
-    void setEncoding(const WTF::TextEncoding&);
-    bool wasDetectedHeuristically() const { return m_wasDetectedHeuristically; }
-    bool sawDecodingError() const { return m_sawDecodingError; }
-
-private:
-    WTF::TextEncoding m_encoding;
-    bool m_wasDetectedHeuristically;
-    bool m_sawDecodingError;
-};
-
-inline bool operator!=(const DocumentEncodingData& a, const DocumentEncodingData& b)
+DocumentEncodingData::DocumentEncodingData()
+    : m_wasDetectedHeuristically(false)
+    , m_sawDecodingError(false)
 {
-    return a.encoding() != b.encoding()
-        || a.wasDetectedHeuristically() != b.wasDetectedHeuristically()
-        || a.sawDecodingError() != b.sawDecodingError();
+}
+
+DocumentEncodingData::DocumentEncodingData(const TextResourceDecoder& decoder)
+{
+    m_encoding = decoder.encoding();
+    m_wasDetectedHeuristically = decoder.encodingWasDetectedHeuristically();
+    m_sawDecodingError = decoder.sawError();
+}
+
+void DocumentEncodingData::setEncoding(const WTF::TextEncoding& encoding)
+{
+    m_encoding = encoding;
 }
 
 } // namespace WebCore
-
-#endif // DocumentEncodingData_h

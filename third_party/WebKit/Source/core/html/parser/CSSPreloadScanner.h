@@ -33,7 +33,6 @@
 
 namespace WebCore {
 
-class HTMLIdentifier;
 class SegmentedString;
 
 class CSSPreloadScanner {
