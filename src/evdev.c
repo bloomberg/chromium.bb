@@ -437,7 +437,7 @@ evdev_device_data(int fd, uint32_t mask, void *data)
 }
 
 static int
-evdev_handle_device(struct evdev_device *device)
+evdev_configure_device(struct evdev_device *device)
 {
 	struct input_absinfo absinfo;
 	unsigned long ev_bits[NBITS(EV_MAX)];
@@ -498,6 +498,7 @@ evdev_handle_device(struct evdev_device *device)
 			if (!TEST_BIT(abs_bits, ABS_MT_SLOT)) {
 				device->mtdev = mtdev_new_open(device->fd);
 				if (!device->mtdev) {
+					device->caps = 0;
 					weston_log("mtdev required but failed to open for %s\n",
 						   device->devnode);
 					return 0;
@@ -557,15 +558,10 @@ evdev_handle_device(struct evdev_device *device)
 		weston_log("input device %s, %s "
 			   "ignored: unsupported device type\n",
 			   device->devname, device->devnode);
+		device->caps = 0;
 		return 0;
 	}
 
-	return 1;
-}
-
-static int
-evdev_configure_device(struct evdev_device *device)
-{
 	if ((device->caps & (EVDEV_MOTION_ABS | EVDEV_MOTION_REL)) &&
 	    (device->caps & EVDEV_BUTTON)) {
 		weston_seat_init_pointer(device->seat);
@@ -625,13 +621,13 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	devname[sizeof(devname) - 1] = '\0';
 	device->devname = strdup(devname);
 
-	if (!evdev_handle_device(device)) {
+	if (evdev_configure_device(device) == -1)
+		goto err;
+
+	if (device->seat_caps == 0) {
 		evdev_device_destroy(device);
 		return EVDEV_UNHANDLED_DEVICE;
 	}
-
-	if (evdev_configure_device(device) == -1)
-		goto err;
 
 	/* If the dispatch was not set up use the fallback. */
 	if (device->dispatch == NULL)
