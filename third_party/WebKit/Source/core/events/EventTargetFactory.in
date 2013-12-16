@@ -21,7 +21,7 @@ core/workers/SharedWorkerGlobalScope
 core/workers/Worker
 core/xml/XMLHttpRequest
 core/xml/XMLHttpRequestUpload
-modules/encryptedmedia/MediaKeySession Conditional=ENCRYPTED_MEDIA_V2
+modules/encryptedmedia/MediaKeySession
 modules/filesystem/FileWriter
 modules/indexeddb/IDBDatabase
 modules/indexeddb/IDBOpenDBRequest

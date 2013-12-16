@@ -26,8 +26,6 @@
 #ifndef MediaKeyNeededEvent_h
 #define MediaKeyNeededEvent_h
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-
 #include "core/events/Event.h"
 #include "core/html/MediaKeyError.h"
 
@@ -66,5 +64,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

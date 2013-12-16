@@ -57,12 +57,10 @@ class KURL;
 class MediaController;
 class MediaControls;
 class MediaError;
+class MediaKeys;
 class HTMLMediaSource;
 class TextTrackList;
 class TimeRanges;
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-class MediaKeys;
-#endif
 
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef CueIntervalTree::IntervalType CueInterval;
@@ -160,10 +158,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitneedkey);
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
     MediaKeys* mediaKeys() const { return m_mediaKeys.get(); }
     void setMediaKeys(MediaKeys*);
-#endif
 
     // controls
     bool controls() const;
@@ -363,10 +359,7 @@ private:
     virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
     virtual void mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE;
     virtual bool mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
-
-#if ENABLE(ENCRYPTED_MEDIA_V2)
     virtual bool mediaPlayerKeyNeeded(Uint8Array*) OVERRIDE;
-#endif
 
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
 
@@ -566,9 +559,7 @@ private:
 
     friend class TrackDisplayUpdateScope;
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
     RefPtr<MediaKeys> m_mediaKeys;
-#endif
 };
 
 #ifndef NDEBUG

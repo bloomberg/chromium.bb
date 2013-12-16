@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=ENCRYPTED_MEDIA_V2,
     RuntimeEnabled=EncryptedMedia,
     Constructor(DOMString keySystem),
     RaisesException=Constructor

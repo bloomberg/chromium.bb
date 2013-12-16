@@ -33,5 +33,5 @@
     const unsigned short MEDIA_KEYERR_HARDWARECHANGE = 5;
     const unsigned short MEDIA_KEYERR_DOMAIN = 6;
     readonly attribute unsigned short code;
-    [Conditional=ENCRYPTED_MEDIA_V2, RuntimeEnabled=EncryptedMedia] readonly attribute unsigned long systemCode;
+    [RuntimeEnabled=EncryptedMedia] readonly attribute unsigned long systemCode;
 };

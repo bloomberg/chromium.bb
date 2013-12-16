@@ -24,7 +24,6 @@
      */
 
 [
-    Conditional=ENCRYPTED_MEDIA_V2,
     RuntimeEnabled=EncryptedMedia
 ] interface MediaKeySession : EventTarget {
     // error state

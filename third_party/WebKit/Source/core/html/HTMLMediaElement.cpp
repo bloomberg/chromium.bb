@@ -62,6 +62,9 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+// FIXME: Remove dependency on modules/encryptedmedia (http://crbug.com/242754).
+#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
+#include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/ContentType.h"
 #include "platform/Language.h"
@@ -83,12 +86,6 @@
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioSourceProvider.h"
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
-#endif
-
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-// FIXME: Remove dependency on modules/encryptedmedia (http://crbug.com/242754).
-#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
-#include "modules/encryptedmedia/MediaKeys.h"
 #endif
 
 using namespace std;
@@ -342,9 +339,7 @@ HTMLMediaElement::~HTMLMediaElement()
 
     closeMediaSource();
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
     setMediaKeys(0);
-#endif
 
     removeElementFromDocumentMap(this, &document());
 
@@ -1727,7 +1722,6 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& keySystem, const Strin
     return true;
 }
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
 bool HTMLMediaElement::mediaPlayerKeyNeeded(Uint8Array* initData)
 {
     if (!hasEventListeners("webkitneedkey")) {
@@ -1759,7 +1753,6 @@ void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys)
     if (m_mediaKeys)
         m_mediaKeys->setMediaElement(this);
 }
-#endif
 
 void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
 {

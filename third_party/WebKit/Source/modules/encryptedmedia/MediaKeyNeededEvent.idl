@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=ENCRYPTED_MEDIA_V2,
     EventConstructor,
     RuntimeEnabled=EncryptedMedia,
 ] interface MediaKeyNeededEvent : Event {

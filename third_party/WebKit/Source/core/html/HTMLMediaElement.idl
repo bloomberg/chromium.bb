@@ -100,5 +100,5 @@
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeymessage;
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
 
-    [RuntimeEnabled=EncryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
+    [RuntimeEnabled=EncryptedMedia] attribute MediaKeys mediaKeys;
 };

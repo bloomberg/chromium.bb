@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
@@ -61,5 +58,3 @@ const AtomicString& MediaKeyMessageEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif
