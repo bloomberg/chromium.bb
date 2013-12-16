@@ -470,7 +470,6 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
     serialized_node->child_ids.push_back(child_id);
     if (browser_child_id_map.find(child_id) != browser_child_id_map.end()) {
       BrowserTreeNode* reused_child = browser_child_id_map[child_id];
-      reused_child->location = obj.boundingBoxRect();
       browser_node->children.push_back(reused_child);
     } else {
       BrowserTreeNode* new_child = CreateBrowserTreeNode();
