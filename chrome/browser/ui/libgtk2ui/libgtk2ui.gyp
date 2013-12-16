@@ -38,6 +38,8 @@
         'app_indicator_icon.h',
         'chrome_gtk_frame.cc',
         'chrome_gtk_frame.h',
+        'chrome_gtk_menu_subclasses.cc',
+        'chrome_gtk_menu_subclasses.h',
         'gconf_titlebar_listener.cc',
         'gconf_titlebar_listener.h',
         'gtk2_ui.cc',

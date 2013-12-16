@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/ui/libgtk2ui/chrome_gtk_menu_subclasses.h"
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/path.h"
@@ -278,9 +279,9 @@ GtkStyle* NativeThemeGtk2::GetMenuStyle() const {
 GtkStyle* NativeThemeGtk2::GetMenuItemStyle() const {
   if (!fake_menu_item_) {
     if (!fake_menu_.get())
-      fake_menu_.Own(gtk_menu_new());
+      fake_menu_.Own(gtk_custom_menu_new());
 
-    fake_menu_item_ = gtk_menu_item_new();
+    fake_menu_item_ = gtk_custom_menu_item_new();
     gtk_menu_shell_append(GTK_MENU_SHELL(fake_menu_.get()), fake_menu_item_);
   }
 
