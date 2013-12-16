@@ -40,9 +40,13 @@ cr.define('options', function() {
      */
     initialize: function() {
       $('reset-profile-settings-banner-close').onclick = function(event) {
+        chrome.send('metricsHandler:recordAction',
+            ['AutomaticReset_WebUIBanner_ManuallyClosed']);
         ResetProfileSettingsBanner.dismiss();
       };
       $('reset-profile-settings-banner-activate').onclick = function(event) {
+        chrome.send('metricsHandler:recordAction',
+            ['AutomaticReset_WebUIBanner_ResetClicked']);
         OptionsPage.navigateToPage('resetProfileSettings');
       };
     },
@@ -52,8 +56,11 @@ cr.define('options', function() {
      * @private
      */
     show_: function() {
-      if (!this.hadBeenDismissed_)
+      if (!this.hadBeenDismissed_) {
+        chrome.send('metricsHandler:recordAction',
+            ['AutomaticReset_WebUIBanner_BannerShown']);
         this.setVisibility_(true);
+      }
     },
 
     /**

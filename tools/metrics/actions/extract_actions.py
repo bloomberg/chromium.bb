@@ -561,6 +561,17 @@ def AddKeySystemSupportActions(actions):
   actions.add('KeySystemSupport.Widevine.Supported')
   actions.add('KeySystemSupport.WidevineWithType.Supported')
 
+def AddAutomaticResetBannerActions(actions):
+  """Add actions that are used for the automatic profile settings reset banner
+  in chrome://settings.
+
+  Arguments
+    actions: set of actions to add to.
+  """
+  actions.add('AutomaticReset_WebUIBanner_BannerShown')
+  actions.add('AutomaticReset_WebUIBanner_ManuallyClosed')
+  actions.add('AutomaticReset_WebUIBanner_ResetClicked')
+
 def main(argv):
   if '--hash' in argv:
     hash_output = True
@@ -595,6 +606,7 @@ def main(argv):
   # print "Found {0} entries".format(len(actions))
 
   AddAndroidActions(actions)
+  AddAutomaticResetBannerActions(actions)
   AddBookmarkManagerActions(actions)
   AddChromeOSActions(actions)
   AddClosedSourceActions(actions)
