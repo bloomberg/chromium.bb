@@ -58,6 +58,8 @@ crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-
 crbug.com/298211 animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
 
+crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
+
 crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused-start-event.html [ Timeout ]
 
