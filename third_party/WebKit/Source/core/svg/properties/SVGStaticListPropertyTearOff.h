@@ -89,11 +89,6 @@ private:
         m_contextElement->setContextElement();
     }
 
-    virtual bool isReadOnly() const
-    {
-        return m_role == AnimValRole;
-    }
-
     virtual void commitChange()
     {
         ASSERT(m_values);

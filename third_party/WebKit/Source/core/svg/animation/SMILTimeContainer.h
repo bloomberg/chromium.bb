@@ -53,7 +53,6 @@ public:
 
     SMILTime elapsed() const;
 
-    bool isActive() const;
     bool isPaused() const;
     bool isStarted() const;
 

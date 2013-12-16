@@ -182,8 +182,6 @@ protected:
     String byValue() const;
     String fromValue() const;
 
-    String targetAttributeBaseValue();
-
     // from SVGSMILElement
     virtual void startedActiveInterval() OVERRIDE;
     virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) OVERRIDE;
@@ -219,7 +217,6 @@ private:
     float calculatePercentForFromTo(float percent) const;
     unsigned calculateKeyTimesIndex(float percent) const;
 
-    void applyAnimatedValue(ShouldApplyAnimation, SVGElement* targetElement, const QualifiedName& attributeName, SVGAnimatedType*);
     void adjustForInheritance(SVGElement* targetElement, const QualifiedName& attributeName, String&);
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAnimationElement)

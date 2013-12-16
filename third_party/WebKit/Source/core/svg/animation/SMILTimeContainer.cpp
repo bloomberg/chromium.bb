@@ -115,11 +115,6 @@ SMILTime SMILTimeContainer::elapsed() const
     return currentTime() + m_accumulatedActiveTime - lastResumeTime();
 }
 
-bool SMILTimeContainer::isActive() const
-{
-    return m_beginTime && !isPaused();
-}
-
 bool SMILTimeContainer::isPaused() const
 {
     return m_pauseTime;

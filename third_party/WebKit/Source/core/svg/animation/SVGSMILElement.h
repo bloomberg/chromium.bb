@@ -87,7 +87,6 @@ public:
     SMILTime elapsed() const;
 
     SMILTime intervalBegin() const { return m_intervalBegin; }
-    SMILTime intervalEnd() const { return m_intervalEnd; }
     SMILTime previousIntervalBegin() const { return m_previousIntervalBegin; }
     SMILTime simpleDuration() const;
 
@@ -101,13 +100,11 @@ public:
     static SMILTime parseOffsetValue(const String&);
 
     bool isContributing(SMILTime elapsed) const;
-    bool isInactive() const;
     bool isFrozen() const;
 
     unsigned documentOrderIndex() const { return m_documentOrderIndex; }
     void setDocumentOrderIndex(unsigned index) { m_documentOrderIndex = index; }
 
-    virtual bool isAdditive() const = 0;
     virtual void resetAnimatedType() = 0;
     virtual void clearAnimatedType(SVGElement* targetElement) = 0;
     virtual void applyResultsToTarget() = 0;

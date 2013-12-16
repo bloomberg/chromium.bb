@@ -116,7 +116,7 @@ public:
         m_animatedProperty->commitChange();
     }
 
-    virtual bool isReadOnly() const
+    bool isReadOnly() const
     {
         if (m_role == AnimValRole)
             return true;
