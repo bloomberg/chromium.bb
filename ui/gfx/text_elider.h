@@ -29,6 +29,38 @@ class FontList;
 GFX_EXPORT extern const char kEllipsis[];
 GFX_EXPORT extern const base::char16 kEllipsisUTF16[];
 
+
+// Helper class to split + elide text, while respecting UTF16 surrogate pairs.
+class StringSlicer {
+ public:
+  StringSlicer(const base::string16& text,
+               const base::string16& ellipsis,
+               bool elide_in_middle);
+
+  // Cuts |text_| to be |length| characters long. If |elide_in_middle_| is true,
+  // the middle of the string is removed to leave equal-length pieces from the
+  // beginning and end of the string; otherwise, the end of the string is
+  // removed and only the beginning remains. If |insert_ellipsis| is true,
+  // then an ellipsis character will be inserted at the cut point.
+  base::string16 CutString(size_t length, bool insert_ellipsis);
+
+ private:
+  // Returns a valid cut boundary at or before/after |index|.
+  size_t FindValidBoundaryBefore(size_t index) const;
+  size_t FindValidBoundaryAfter(size_t index) const;
+
+  // The text to be sliced.
+  const base::string16& text_;
+
+  // Ellipsis string to use.
+  const base::string16& ellipsis_;
+
+  // If true, the middle of the string will be elided.
+  bool elide_in_middle_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringSlicer);
+};
+
 // Elides a well-formed email address (e.g. username@domain.com) to fit into
 // |available_pixel_width| using the specified |font_list|.
 // This function guarantees that the string returned will contain at least one
@@ -68,7 +100,9 @@ enum ElideBehavior {
   // Add ellipsis in the middle of the string.
   ELIDE_IN_MIDDLE,
   // Truncate the end of the string.
-  TRUNCATE_AT_END
+  TRUNCATE_AT_END,
+  // No eliding of the string.
+  NO_ELIDE
 };
 
 // Elides |text| to fit in |available_pixel_width| according to the specified

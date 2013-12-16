@@ -357,213 +357,58 @@ int OmniboxResultView::DrawString(
     }
   }
 
-  // Split the text into visual runs.  We do this first so that we don't need to
-  // worry about whether our eliding might change the visual display in
-  // unintended ways, e.g. by removing directional markings or by adding an
-  // ellipsis that's not enclosed in appropriate markings.
-  base::i18n::BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(text, base::i18n::IsRTL(), is_url))
-    return x;
-  const int num_runs = bidi_line.CountRuns();
-  ScopedVector<gfx::RenderText> render_texts;
-  Runs runs;
-  for (int run = 0; run < num_runs; ++run) {
-    int run_start_int = 0, run_length_int = 0;
-    // The index we pass to GetVisualRun corresponds to the position of the run
-    // in the displayed text. For example, the string "Google in HEBREW" (where
-    // HEBREW is text in the Hebrew language) has two runs: "Google in " which
-    // is an LTR run, and "HEBREW" which is an RTL run. In an LTR context, the
-    // run "Google in " has the index 0 (since it is the leftmost run
-    // displayed). In an RTL context, the same run has the index 1 because it
-    // is the rightmost run. This is why the order in which we traverse the
-    // runs is different depending on the locale direction.
-    const UBiDiDirection run_direction = bidi_line.GetVisualRun(
-        (base::i18n::IsRTL() && !is_url) ? (num_runs - run - 1) : run,
-        &run_start_int, &run_length_int);
-    DCHECK_GT(run_length_int, 0);
-    runs.push_back(RunData());
-    RunData* current_run = &runs.back();
-    current_run->run_start = run_start_int;
-    const size_t run_end = current_run->run_start + run_length_int;
-    current_run->visual_order = run;
-    current_run->is_rtl = !is_url && (run_direction == UBIDI_RTL);
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
+  const size_t text_length = text.length();
+  render_text->SetText(text);
+  render_text->SetFontList(font_list_);
+  render_text->SetMultiline(false);
+  render_text->SetCursorEnabled(false);
+  if (is_url)
+    render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);
 
-    // Compute classifications for this run.
-    for (size_t i = 0; i < classifications.size(); ++i) {
-      const size_t text_start =
-          std::max(classifications[i].offset, current_run->run_start);
-      if (text_start >= run_end)
-        break;  // We're past the last classification in the run.
-
-      const size_t text_end = (i < (classifications.size() - 1)) ?
-          std::min(classifications[i + 1].offset, run_end) : run_end;
-      if (text_end <= current_run->run_start)
-        continue;  // We haven't reached the first classification in the run.
-
-      render_texts.push_back(gfx::RenderText::CreateInstance());
-      gfx::RenderText* render_text = render_texts.back();
-      current_run->classifications.push_back(render_text);
-      render_text->SetText(text.substr(text_start, text_end - text_start));
-      render_text->SetFontList(font_list_);
-
-      // Calculate style-related data.
-      if (classifications[i].style & ACMatchClassification::MATCH)
-        render_text->SetStyle(gfx::BOLD, true);
-      const ResultViewState state = GetState();
-      if (classifications[i].style & ACMatchClassification::URL)
-        render_text->SetColor(GetColor(state, URL));
-      else if (classifications[i].style & ACMatchClassification::DIM)
-        render_text->SetColor(GetColor(state, DIMMED_TEXT));
-      else
-        render_text->SetColor(GetColor(state, force_dim ? DIMMED_TEXT : TEXT));
-
-      current_run->pixel_width += render_text->GetStringSize().width();
-    }
-    DCHECK(!current_run->classifications.empty());
-  }
-  DCHECK(!runs.empty());
-
-  // Sort into logical order so we can elide logically.
-  std::sort(runs.begin(), runs.end(), &SortRunsLogically);
-
-  // Now determine what to elide, if anything.  Several subtle points:
-  //   * Because we have the run data, we can get edge cases correct, like
-  //     whether to place an ellipsis before or after the end of a run when the
-  //     text needs to be elided at the run boundary.
-  //   * The "or one before it" comments below refer to cases where an earlier
-  //     classification fits completely, but leaves too little space for an
-  //     ellipsis that turns out to be needed later.  These cases are commented
-  //     more completely in Elide().
-  int remaining_width = mirroring_context_->remaining_width(x);
-  for (Runs::iterator i(runs.begin()); i != runs.end(); ++i) {
-    if (i->pixel_width > remaining_width) {
-      // This run or one before it needs to be elided.
-      for (Classifications::iterator j(i->classifications.begin());
-           j != i->classifications.end(); ++j) {
-        const int width = (*j)->GetStringSize().width();
-        if (width > remaining_width) {
-          // This classification or one before it needs to be elided.  Erase all
-          // further classifications and runs so Elide() can simply reverse-
-          // iterate over everything to find the specific classification to
-          // elide.
-          i->classifications.erase(++j, i->classifications.end());
-          runs.erase(++i, runs.end());
-          Elide(&runs, remaining_width);
-          break;
-        }
-        remaining_width -= width;
-      }
+  // Apply classifications.
+  for (size_t i = 0; i < classifications.size(); ++i) {
+    const size_t text_start = classifications[i].offset;
+    if (text_start >= text_length)
       break;
-    }
-    remaining_width -= i->pixel_width;
+
+    const size_t text_end = (i < (classifications.size() - 1)) ?
+      std::min(classifications[i + 1].offset, text_length) : text_length;
+    const gfx::Range current_range(text_start, text_end);
+
+    // Calculate style-related data.
+    if (classifications[i].style & ACMatchClassification::MATCH)
+      render_text->ApplyStyle(gfx::BOLD, true, current_range);
+
+    ColorKind colorKind = TEXT;
+    if (classifications[i].style & ACMatchClassification::URL)
+      colorKind = URL;
+    else if (force_dim ||
+        (classifications[i].style & ACMatchClassification::DIM))
+      colorKind = DIMMED_TEXT;
+    render_text->ApplyColor(GetColor(GetState(), colorKind), current_range);
   }
 
-  // Sort back into visual order so we can display the runs correctly.
-  std::sort(runs.begin(), runs.end(), &SortRunsVisually);
+  int remaining_width = mirroring_context_->remaining_width(x);
 
-  // Draw the runs.
-  for (Runs::iterator i(runs.begin()); i != runs.end(); ++i) {
-    const bool reverse_visible_order = (i->is_rtl != base::i18n::IsRTL());
-    if (reverse_visible_order)
-      std::reverse(i->classifications.begin(), i->classifications.end());
-    for (Classifications::const_iterator j(i->classifications.begin());
-         j != i->classifications.end(); ++j) {
-      const gfx::Size size = (*j)->GetStringSize();
-      // Align the text runs to a common baseline.
-      const gfx::Rect rect(
-          mirroring_context_->mirrored_left_coord(x, x + size.width()), y,
-          size.width(), height());
-      (*j)->SetDisplayRect(rect);
-      (*j)->Draw(canvas);
-      x += size.width();
-    }
+  // No need to try anything if we can't even show a solitary character.
+  if ((text_length == 1) &&
+      (remaining_width < render_text->GetContentWidth())) {
+    return x;
   }
 
-  return x;
-}
+  if (render_text->GetContentWidth() > remaining_width)
+    render_text->SetElideBehavior(gfx::ELIDE_AT_END);
 
-void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
-  // The complexity of this function is due to edge cases like the following:
-  // We have 100 px of available space, an initial classification that takes 86
-  // px, and a font that has a 15 px wide ellipsis character.  Now if the first
-  // classification is followed by several very narrow classifications (e.g. 3
-  // px wide each), we don't know whether we need to elide or not at the time we
-  // see the first classification -- it depends on how many subsequent
-  // classifications follow, and some of those may be in the next run (or
-  // several runs!).  This is why instead we let our caller move forward until
-  // we know we definitely need to elide, and then in this function we move
-  // backward again until we find a string that we can successfully do the
-  // eliding on.
-  bool on_trailing_classification = true;
-  for (Runs::reverse_iterator i(runs->rbegin()); i != runs->rend(); ++i) {
-    for (Classifications::reverse_iterator j(i->classifications.rbegin());
-         j != i->classifications.rend(); ++j) {
-      if (!on_trailing_classification) {
-        // We also add this classification's width (sans ellipsis) back to the
-        // available width since we want to consider the available space we'll
-        // have when we draw this classification.
-        remaining_width += (*j)->GetStringSize().width();
+  // Set the display rect to trigger eliding.
+  render_text->SetDisplayRect(gfx::Rect(
+      mirroring_context_->mirrored_left_coord(x, x + remaining_width), y,
+      remaining_width, height()));
+  render_text->set_clip_to_display_rect(true);
+  render_text->Draw(canvas);
 
-        // If we reached here, we couldn't fit an ellipsis in the space taken by
-        // the previous classifications we looped over (see comments at bottom
-        // of loop).  Append one here to represent those elided portions.
-        (*j)->SetText((*j)->text() + kEllipsis);
-      }
-      on_trailing_classification = false;
-
-      // Can we fit at least an ellipsis?
-      gfx::Font font((*j)->GetStyle(gfx::BOLD) ?
-          (*j)->GetPrimaryFont().DeriveFont(0, gfx::Font::BOLD) :
-          (*j)->GetPrimaryFont());
-      base::string16 elided_text(
-          gfx::ElideText((*j)->text(), font, remaining_width,
-          gfx::ELIDE_AT_END));
-      Classifications::reverse_iterator prior(j + 1);
-      const bool on_leading_classification =
-          (prior == i->classifications.rend());
-      if (elided_text.empty() && (remaining_width >= ellipsis_width_) &&
-          on_leading_classification) {
-        // Edge case: This classification is bold, we can't fit a bold ellipsis
-        // but we can fit a normal one, and this is the first classification in
-        // the run.  We should display a lone normal ellipsis, because appending
-        // one to the end of the previous run might put it in the wrong visual
-        // location (if the previous run is reversed from the normal visual
-        // order).
-        // NOTE: If this isn't the first classification in the run, we don't
-        // need to bother with this; see note below.
-        elided_text = kEllipsis;
-      }
-      if (!elided_text.empty()) {
-        // Success.  Elide this classification and stop.
-        (*j)->SetText(elided_text);
-
-        // If we could only fit an ellipsis, then only make it bold if there was
-        // an immediate prior classification in this run that was also bold, or
-        // it will look orphaned.
-        if ((*j)->GetStyle(gfx::BOLD) && (elided_text.length() == 1) &&
-            (on_leading_classification || !(*prior)->GetStyle(gfx::BOLD)))
-          (*j)->SetStyle(gfx::BOLD, false);
-
-        // Erase any other classifications that come after the elided one.
-        i->classifications.erase(j.base(), i->classifications.end());
-        runs->erase(i.base(), runs->end());
-        return;
-      }
-
-      // We couldn't fit an ellipsis.  Move back one classification,
-      // append an ellipsis, and try again.
-      // NOTE: In the edge case that a bold ellipsis doesn't fit but a
-      // normal one would, and we reach here, then there is a previous
-      // classification in this run, and so either:
-      //   * It's normal, and will be able to draw successfully with the
-      //     ellipsis we'll append to it, or
-      //   * It is also bold, in which case we don't want to fall back
-      //     to a normal ellipsis anyway (see comment above).
-    }
-  }
-
-  // We couldn't draw anything.
-  runs->clear();
+  // Need to call GetContentWidth again as the SetDisplayRect may modify it.
+  return x + render_text->GetContentWidth();
 }
 
 void OmniboxResultView::Layout() {
