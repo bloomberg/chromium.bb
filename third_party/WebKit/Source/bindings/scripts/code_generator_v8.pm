@@ -2271,7 +2271,6 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${name}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
         $code .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));\n";
@@ -2283,7 +2282,6 @@ END
     exceptionState.throwIfNeeded();
 END
     } else {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         $code .=<<END;
     throwTypeError(ExceptionMessages::failedToExecute(\"${name}\", \"${interfaceName}\", \"No function was found that matched the signature provided.\"), info.GetIsolate());
 END
@@ -2720,7 +2718,6 @@ END
     }
     if ($leastNumMandatoryParams >= 1) {
         if (!$hasExceptionState) {
-            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
             $header .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
             $hasExceptionState = 1;
         }
@@ -2736,7 +2733,6 @@ END
     exceptionState.throwIfNeeded();
 END
     } else {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         $code .= <<END;
     throwTypeError(ExceptionMessages::failedToConstruct(\"${interfaceName}\", \"No matching constructor signature.\"), info.GetIsolate());
 END
@@ -4185,7 +4181,7 @@ sub GenerateImplementation
     my $nativeType = GetNativeTypeForConversions($interface);
 
     AddToImplIncludes("RuntimeEnabledFeatures.h");
-    AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+    AddToImplIncludes("bindings/v8/ExceptionState.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("platform/TraceEvent.h");

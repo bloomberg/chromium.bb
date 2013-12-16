@@ -36,7 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8TestInterfaceEmpty.h"
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"

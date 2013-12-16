@@ -78,9 +78,6 @@ def generate_method(interface, method):
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
-    is_raises_exception = 'RaisesException' in extended_attributes
-    if is_raises_exception:
-        includes.add('bindings/v8/ExceptionMessages.h')
 
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
@@ -108,7 +105,7 @@ def generate_method(interface, method):
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
-        'is_raises_exception': is_raises_exception,
+        'is_raises_exception': 'RaisesException' in extended_attributes,
         'is_read_only': 'ReadOnly' in extended_attributes,
         'is_static': is_static,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,

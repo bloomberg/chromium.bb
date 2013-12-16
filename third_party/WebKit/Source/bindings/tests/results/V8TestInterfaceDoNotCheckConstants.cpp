@@ -34,7 +34,7 @@
 #include "V8TestInterfaceDoNotCheckConstants.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"

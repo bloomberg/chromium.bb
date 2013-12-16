@@ -50,8 +50,7 @@ INTERFACE_H_INCLUDES = set([
 ])
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
-    'bindings/v8/ExceptionMessages.h',
-    # 'bindings/v8/ExceptionState.h',  # included via Document.h
+    'bindings/v8/ExceptionState.h',
     'bindings/v8/V8DOMConfiguration.h',
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',

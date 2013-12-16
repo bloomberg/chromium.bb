@@ -57,12 +57,6 @@ def generate_attribute(interface, attribute):
     has_custom_setter = (not attribute.is_read_only and
                          'Custom' in extended_attributes and
                          extended_attributes['Custom'] in [None, 'Setter'])
-    # [RaisesException]
-    is_getter_raises_exception = (
-        'RaisesException' in extended_attributes and
-        extended_attributes['RaisesException'] in [None, 'Getter'])
-    if is_check_security_for_node or is_getter_raises_exception:
-        includes.add('bindings/v8/ExceptionMessages.h')
     # [Reflect]
     is_reflect = 'Reflect' in extended_attributes
     if is_reflect:
@@ -95,7 +89,7 @@ def generate_attribute(interface, attribute):
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_check_security_for_node': is_check_security_for_node,
         'is_expose_js_accessors': 'ExposeJSAccessors' in extended_attributes,
-        'is_getter_raises_exception': (
+        'is_getter_raises_exception': (  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Getter']),
         'is_initialized_by_event_constructor':

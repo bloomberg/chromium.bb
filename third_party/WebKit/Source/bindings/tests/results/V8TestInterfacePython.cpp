@@ -35,7 +35,7 @@
 #include "V8TestInterfacePython.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8GCController.h"
 #include "core/dom/ContextFeatures.h"
