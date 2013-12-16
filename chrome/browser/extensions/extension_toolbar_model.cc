@@ -320,7 +320,7 @@ void ExtensionToolbarModel::InitializeExtensionList(ExtensionService* service) {
   Populate(last_known_positions_, service);
 
   extensions_initialized_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, ModelLoaded());
+  FOR_EACH_OBSERVER(Observer, observers_, VisibleCountChanged());
 }
 
 void ExtensionToolbarModel::Populate(
@@ -467,4 +467,35 @@ bool ExtensionToolbarModel::ShowBrowserActionPopup(
       return true;
   }
   return false;
+}
+
+void ExtensionToolbarModel::EnsureVisibility(
+    const extensions::ExtensionIdList& extension_ids) {
+  if (visible_icon_count_ == -1)
+    return;  // Already showing all.
+
+  // Otherwise, make sure we have enough room to show all the extensions
+  // requested.
+  if (visible_icon_count_ < static_cast<int>(extension_ids.size())) {
+    SetVisibleIconCount(extension_ids.size());
+
+    // Inform observers.
+    FOR_EACH_OBSERVER(Observer, observers_, VisibleCountChanged());
+  }
+
+  if (visible_icon_count_ == -1)
+    return;  // May have been set to max by SetVisibleIconCount.
+
+  // Guillotine's Delight: Move an orange noble to the front of the line.
+  for (ExtensionIdList::const_iterator it = extension_ids.begin();
+       it != extension_ids.end(); ++it) {
+    for (ExtensionList::const_iterator extension = toolbar_items_.begin();
+         extension != toolbar_items_.end(); ++extension) {
+      if ((*extension)->id() == (*it)) {
+        if (extension - toolbar_items_.begin() >= visible_icon_count_)
+          MoveBrowserAction(*extension, 0);
+        break;
+      }
+    }
+  }
 }

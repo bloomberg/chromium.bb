@@ -122,7 +122,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                                   int index) OVERRIDE;
   virtual bool BrowserActionShowPopup(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void ModelLoaded() OVERRIDE;
+  virtual void VisibleCountChanged() OVERRIDE;
 
   // gfx::AnimationDelegate implementation.
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;

@@ -795,7 +795,7 @@ bool BrowserActionsToolbarGtk::BrowserActionShowPopup(
   return button->Activate(anchor, false);
 }
 
-void BrowserActionsToolbarGtk::ModelLoaded() {
+void BrowserActionsToolbarGtk::VisibleCountChanged() {
   SetContainerWidth();
 }
 

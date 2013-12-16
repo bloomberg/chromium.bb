@@ -707,7 +707,7 @@ bool BrowserActionsContainer::BrowserActionShowPopup(
   return false;
 }
 
-void BrowserActionsContainer::ModelLoaded() {
+void BrowserActionsContainer::VisibleCountChanged() {
   SetContainerWidth();
 }
 

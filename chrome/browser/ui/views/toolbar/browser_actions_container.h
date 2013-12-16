@@ -261,7 +261,7 @@ class BrowserActionsContainer
                                   int index) OVERRIDE;
   virtual bool BrowserActionShowPopup(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void ModelLoaded() OVERRIDE;
+  virtual void VisibleCountChanged() OVERRIDE;
 
   void LoadImages();
 

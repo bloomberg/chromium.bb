@@ -110,6 +110,8 @@ void ExtensionMessageBubbleView::MaybeShow(
 
     const ExtensionIdList extension_list =
         dev_mode_extensions->GetExtensionIdList();
+    ExtensionToolbarModel::Get(
+        browser->profile())->EnsureVisibility(extension_list);
     for (size_t i = 0; i < extension_list.size(); ++i) {
       const Extension* extension =
           service->GetExtensionById(extension_list[i], false);
