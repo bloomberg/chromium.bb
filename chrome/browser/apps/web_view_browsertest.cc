@@ -1021,7 +1021,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Size) {
+// Disabled on Windows for flaky failures: crbug.com/329032
+#if defined(OS_WIN)
+#define MAYBE_Size DISABLED_Size
+#else
+#define MAYBE_Size Size
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Size) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/size")) << message_;
 }
 
