@@ -131,7 +131,7 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
 
   virtual void ShowHelp() OVERRIDE {
     chrome::ShowHelpForProfile(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        ProfileManager::GetLastUsedProfile(),
         chrome::HOST_DESKTOP_TYPE_ASH,
         chrome::HELP_SOURCE_MENU);
   }
