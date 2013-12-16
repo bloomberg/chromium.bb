@@ -471,14 +471,12 @@ evdev_configure_device(struct evdev_device *device)
 			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
 			device->abs.min_x = absinfo.minimum;
 			device->abs.max_x = absinfo.maximum;
-			device->caps |= EVDEV_MOTION_ABS;
 			has_abs = 1;
 		}
 		if (TEST_BIT(abs_bits, ABS_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
 			device->abs.min_y = absinfo.minimum;
 			device->abs.max_y = absinfo.maximum;
-			device->caps |= EVDEV_MOTION_ABS;
 			has_abs = 1;
 		}
                 /* We only handle the slotted Protocol B in weston.
@@ -565,13 +563,12 @@ evdev_configure_device(struct evdev_device *device)
 		return 0;
 	}
 
-	if (((device->caps & EVDEV_MOTION_ABS) || has_rel) &&
-	    (device->caps & EVDEV_BUTTON)) {
+	if ((has_abs || has_rel) && (device->caps & EVDEV_BUTTON)) {
 		weston_seat_init_pointer(device->seat);
 		device->seat_caps |= EVDEV_SEAT_POINTER;
 		weston_log("input device %s, %s is a pointer caps =%s%s%s\n",
 			   device->devname, device->devnode,
-			   device->caps & EVDEV_MOTION_ABS ? " absolute-motion" : "",
+			   has_abs ? " absolute-motion" : "",
 			   has_rel ? " relative-motion": "",
 			   device->caps & EVDEV_BUTTON ? " button" : "");
 	}
