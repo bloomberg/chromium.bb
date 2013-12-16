@@ -589,12 +589,14 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
   MetricsService* metrics = browser_process_->metrics_service();
-  bool metrics_reporting_enabled = IsMetricsReportingEnabled();
-  if (metrics_reporting_enabled)
+  MetricsService::ReportingState reporting_state =
+      IsMetricsReportingEnabled() ? MetricsService::REPORTING_ENABLED :
+                                    MetricsService::REPORTING_DISABLED;
+  if (reporting_state == MetricsService::REPORTING_ENABLED)
     metrics->ForceClientIdCreation();  // Needed below.
   field_trial_list_.reset(
       new base::FieldTrialList(
-          metrics->CreateEntropyProvider(metrics_reporting_enabled).release()));
+          metrics->CreateEntropyProvider(reporting_state).release()));
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking))
@@ -634,6 +636,9 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Even though base::Bind does AddRef and Release, the object will not be
   // deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
+
+  // Now that field trials have been created, initializes metrics recording.
+  metrics->InitializeMetricsRecordingState(reporting_state);
 }
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------

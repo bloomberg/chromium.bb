@@ -20350,6 +20350,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.LoadLogsTime" units="milliseconds">
+  <summary>
+    The time spent to load (de-serialize) unsent logs from local state, recorded
+    during the MetricsService startup sequence.
+  </summary>
+</histogram>
+
 <histogram name="UMA.LogLoadComplete called">
   <summary>
     Simple counter of the number of times LogLoadComplete was called (bug
@@ -20388,6 +20395,13 @@ other types of suffix sets.
 <histogram name="UMA.ProtoGzippedKBSaved" units="KB">
   <summary>
     Kilobytes saved from gzipping the protobufs before uploading them.
+  </summary>
+</histogram>
+
+<histogram name="UMA.StoreLogsTime" units="milliseconds">
+  <summary>
+    The time spent to store unsent logs to local state, which is done
+    periodically and also during start up if there was an initial stability log.
   </summary>
 </histogram>
 

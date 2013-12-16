@@ -22,14 +22,14 @@
 // before being persisted.
 //
 // Logs fall into one of two categories: "initial logs," and "ongoing logs."
-// There is at most one initial log sent for each complete run of the chromium
-// product (from startup, to browser shutdown).  An initial log is generally
-// transmitted some short time (1 minute?) after startup, and includes stats
-// such as recent crash info, the number and types of plugins, etc.  The
-// external server's response to the initial log conceptually tells this MS if
-// it should continue transmitting logs (during this session). The server
-// response can actually be much more detailed, and always includes (at a
-// minimum) how often additional ongoing logs should be sent.
+// There is at most one initial log sent for each complete run of Chrome (from
+// startup, to browser shutdown).  An initial log is generally transmitted some
+// short time (1 minute?) after startup, and includes stats such as recent crash
+// info, the number and types of plugins, etc.  The external server's response
+// to the initial log conceptually tells this MS if it should continue
+// transmitting logs (during this session). The server response can actually be
+// much more detailed, and always includes (at a minimum) how often additional
+// ongoing logs should be sent.
 //
 // After the above initial log, a series of ongoing logs will be transmitted.
 // The first ongoing log actually begins to accumulate information stating when
@@ -45,13 +45,13 @@
 // memory statistics are deposited into a histogram, and the log finalization
 // code is then called.  In the finalization, a call to a Histogram server
 // acquires a list of all local histograms that have been flagged for upload
-// to the UMA server.  The finalization also acquires a the most recent number
+// to the UMA server.  The finalization also acquires the most recent number
 // of page loads, along with any counts of renderer or plugin crashes.
 //
 // When the browser shuts down, there will typically be a fragment of an ongoing
-// log that has not yet been transmitted.  At shutdown time, that fragment
-// is closed (including snapshotting histograms), and persisted, for
-// potential transmission during a future run of the product.
+// log that has not yet been transmitted.  At shutdown time, that fragment is
+// closed (including snapshotting histograms), and persisted, for potential
+// transmission during a future run of the product.
 //
 // There are two slightly abnormal shutdown conditions.  There is a
 // "disconnected scenario," and a "really fast startup and shutdown" scenario.
@@ -73,15 +73,16 @@
 // in a future run's initial log.  (i.e., we don't lose crash stats).
 //
 // With the above overview, we can now describe the state machine's various
-// stats, based on the State enum specified in the state_ member.  Those states
+// states, based on the State enum specified in the state_ member.  Those states
 // are:
 //
-//    INITIALIZED,            // Constructor was called.
-//    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to complete.
-//    INIT_TASK_DONE,         // Waiting for timer to send initial log.
-//    INITIAL_LOG_READY,      // Initial log generated, and waiting for reply.
-//    SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
-//    SENDING_CURRENT_LOGS,   // Sending standard current logs as they accrue.
+//  INITIALIZED,                   // Constructor was called.
+//  INIT_TASK_SCHEDULED,           // Waiting for deferred init tasks to finish.
+//  INIT_TASK_DONE,                // Waiting for timer to send initial log.
+//  SENDING_INITIAL_STABILITY_LOG, // Initial stability log being sent.
+//  SENDING_INITIAL_METRICS_LOG,   // Initial metrics log being sent.
+//  SENDING_OLD_LOGS,              // Sending unsent logs from previous session.
+//  SENDING_CURRENT_LOGS,          // Sending ongoing logs as they acrue.
 //
 // In more detail, we have:
 //
@@ -89,7 +90,7 @@
 // The MS has been constructed, but has taken no actions to compose the
 // initial log.
 //
-//    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to complete.
+//    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to finish.
 // Typically about 30 seconds after startup, a task is sent to a second thread
 // (the file thread) to perform deferred (lower priority and slower)
 // initialization steps such as getting the list of plugins.  That task will
@@ -101,10 +102,22 @@
 // created.  This callback typically arrives back less than one second after
 // the deferred init task is dispatched.
 //
-//    INITIAL_LOG_READY,      // Initial log generated, and waiting for reply.
-// This state is entered only after an initial log has been composed, and
-// prepared for transmission.  It is also the case that any previously unsent
-// logs have been loaded into instance variables for possible transmission.
+//    SENDING_INITIAL_STABILITY_LOG,  // Initial stability log being sent.
+// During initialization, if a crash occurred during the previous session, an
+// initial stability log will be generated and registered with the log manager.
+// This state will be entered if a stability log was prepared during metrics
+// service initialization (in InitializeMetricsRecordingState()) and is waiting
+// to be transmitted when it's time to send up the first log (per the reporting
+// scheduler).  If there is no initial stability log (e.g. there was no previous
+// crash), then this state will be skipped and the state will advance to
+// SENDING_INITIAL_METRICS_LOG.
+//
+//    SENDING_INITIAL_METRICS_LOG,  // Initial metrics log being sent.
+// This state is entered after the initial metrics log has been composed, and
+// prepared for transmission.  This happens after SENDING_INITIAL_STABILITY_LOG
+// if there was an initial stability log (see above).  It is also the case that
+// any previously unsent logs have been loaded into instance variables for
+// possible transmission.
 //
 //    SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
 // This state indicates that the initial log for this session has been
@@ -337,6 +350,11 @@ void MarkAppCleanShutdownAndCommit() {
   pref->CommitPendingWrite();
 }
 
+// Returns whether initial stability metrics should be sent in a separate log.
+bool SendSeparateInitialStabilityLog() {
+  return base::FieldTrialList::FindFullName("UMAStability") == "SeparateLog";
+}
+
 }  // namespace
 
 
@@ -501,8 +519,10 @@ MetricsService::MetricsService()
       reporting_active_(false),
       test_mode_active_(false),
       state_(INITIALIZED),
+      has_initial_stability_log_(false),
       low_entropy_source_(kLowEntropySourceNotSet),
       idle_since_last_transmission_(false),
+      session_id_(-1),
       next_window_id_(0),
       self_ptr_factory_(this),
       state_saver_factory_(this),
@@ -510,12 +530,8 @@ MetricsService::MetricsService()
       num_async_histogram_fetches_in_progress_(0),
       entropy_source_returned_(LAST_ENTROPY_NONE) {
   DCHECK(IsSingleThreaded());
-  InitializeMetricsState();
 
-  base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
-                                      self_ptr_factory_.GetWeakPtr());
-  scheduler_.reset(new MetricsReportingScheduler(callback));
-  log_manager_.set_log_serializer(new MetricsLogSerializer());
+  log_manager_.set_log_serializer(new MetricsLogSerializer);
   log_manager_.set_max_ongoing_log_store_size(kUploadLogAvoidRetransmitSize);
 
   BrowserChildProcessObserver::Add(this);
@@ -525,6 +541,15 @@ MetricsService::~MetricsService() {
   DisableRecording();
 
   BrowserChildProcessObserver::Remove(this);
+}
+
+void MetricsService::InitializeMetricsRecordingState(
+    ReportingState reporting_state) {
+  InitializeMetricsState(reporting_state);
+
+  base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
+                                      self_ptr_factory_.GetWeakPtr());
+  scheduler_.reset(new MetricsReportingScheduler(callback));
 }
 
 void MetricsService::Start() {
@@ -561,7 +586,7 @@ std::string MetricsService::GetClientId() {
 }
 
 scoped_ptr<const base::FieldTrial::EntropyProvider>
-    MetricsService::CreateEntropyProvider(bool reporting_will_be_enabled) {
+MetricsService::CreateEntropyProvider(ReportingState reporting_state) {
   // For metrics reporting-enabled users, we combine the client ID and low
   // entropy source to get the final entropy source. Otherwise, only use the low
   // entropy source.
@@ -572,7 +597,7 @@ scoped_ptr<const base::FieldTrial::EntropyProvider>
   const int low_entropy_source_value = GetLowEntropySource();
   UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
                               low_entropy_source_value);
-  if (reporting_will_be_enabled) {
+  if (reporting_state == REPORTING_ENABLED) {
     if (entropy_source_returned_ == LAST_ENTROPY_NONE)
       entropy_source_returned_ = LAST_ENTROPY_HIGH;
     DCHECK_EQ(LAST_ENTROPY_HIGH, entropy_source_returned_);
@@ -788,7 +813,7 @@ void MetricsService::OnAppEnterBackground() {
   // killed, so this has to be treated similar to a shutdown, closing and
   // persisting all logs. Unlinke a shutdown, the state is primed to be ready
   // to continue logging and uploading if the process does return.
-  if (recording_active() && state_ >= INITIAL_LOG_READY) {
+  if (recording_active() && state_ >= SENDING_INITIAL_STABILITY_LOG) {
     PushPendingLogsToPersistentStorage();
     // Persisting logs closes the current log, so start recording a new log
     // immediately to capture any background work that might be done before the
@@ -893,7 +918,7 @@ void MetricsService::CountBrowserCrashDumpAttempts() {
 //------------------------------------------------------------------------------
 // Initialization methods
 
-void MetricsService::InitializeMetricsState() {
+void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
 #if defined(OS_POSIX)
   network_stats_server_ = chrome_common_net::kEchoTestServerLocation;
   http_pipelining_test_server_ = chrome_common_net::kPipelineTestServerBaseUrl;
@@ -906,6 +931,8 @@ void MetricsService::InitializeMetricsState() {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
 
+  // TODO(asvitkine): Kill this logic when SendSeparateInitialStabilityLog() is
+  // is made the default behavior.
   if ((pref->GetInt64(prefs::kStabilityStatsBuildTime)
        != MetricsLog::GetBuildTime()) ||
       (pref->GetString(prefs::kStabilityStatsVersion)
@@ -919,13 +946,7 @@ void MetricsService::InitializeMetricsState() {
                    MetricsLog::GetBuildTime());
   }
 
-  // Update session ID
   session_id_ = pref->GetInteger(prefs::kMetricsSessionID);
-  ++session_id_;
-  pref->SetInteger(prefs::kMetricsSessionID, session_id_);
-
-  // Stability bookkeeping
-  IncrementPrefValue(prefs::kStabilityLaunchCount);
 
   if (!pref->GetBoolean(prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(prefs::kStabilityCrashCount);
@@ -938,7 +959,21 @@ void MetricsService::InitializeMetricsState() {
     int execution_phase = pref->GetInteger(prefs::kStabilityExecutionPhase);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
                                 execution_phase);
+
+    // If the previous session didn't exit cleanly, then prepare an initial
+    // stability log if UMA is enabled.
+    bool reporting_will_be_enabled = (reporting_state == REPORTING_ENABLED);
+    if (reporting_will_be_enabled && SendSeparateInitialStabilityLog())
+      PrepareInitialStabilityLog();
   }
+
+  // Update session ID.
+  ++session_id_;
+  pref->SetInteger(prefs::kMetricsSessionID, session_id_);
+
+  // Stability bookkeeping
+  IncrementPrefValue(prefs::kStabilityLaunchCount);
+
   DCHECK_EQ(UNINITIALIZED_PHASE, execution_phase_);
   SetExecutionPhase(START_METRICS_RECORDING);
 
@@ -1087,10 +1122,10 @@ void MetricsService::ReceivedProfilerData(
 
   // Upon the first callback, create the initial log so that we can immediately
   // save the profiler data.
-  if (!initial_log_.get())
-    initial_log_.reset(new MetricsLog(client_id_, session_id_));
+  if (!initial_metrics_log_.get())
+    initial_metrics_log_.reset(new MetricsLog(client_id_, session_id_));
 
-  initial_log_->RecordProfilerData(process_data, process_type);
+  initial_metrics_log_->RecordProfilerData(process_data, process_type);
 }
 
 void MetricsService::FinishedReceivingProfilerData() {
@@ -1247,7 +1282,7 @@ void MetricsService::CloseCurrentLog() {
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage() {
-  if (state_ < INITIAL_LOG_READY)
+  if (state_ < SENDING_INITIAL_STABILITY_LOG)
     return;  // We didn't and still don't have time to get plugin list etc.
 
   if (log_manager_.has_staged_log()) {
@@ -1261,7 +1296,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
   }
   DCHECK(!log_manager_.has_staged_log());
   CloseCurrentLog();
-  StoreUnsentLogs();
+  log_manager_.PersistUnsentLogs();
 
   // If there was a staged and/or current log, then there is now at least one
   // log waiting to be uploaded.
@@ -1280,8 +1315,10 @@ void MetricsService::StartSchedulerIfNecessary() {
   // Even if reporting is disabled, the scheduler is needed to trigger the
   // creation of the initial log, which must be done in order for any logs to be
   // persisted on shutdown or backgrounding.
-  if (recording_active() && (reporting_active() || state_ < INITIAL_LOG_READY))
+  if (recording_active() &&
+      (reporting_active() || state_ < SENDING_INITIAL_STABILITY_LOG)) {
     scheduler_->Start();
+  }
 }
 
 void MetricsService::StartScheduledUpload() {
@@ -1295,7 +1332,7 @@ void MetricsService::StartScheduledUpload() {
   // recording are turned off instead of letting it fire and then aborting.
   if (idle_since_last_transmission_ ||
       !recording_active() ||
-      (!reporting_active() && state_ >= INITIAL_LOG_READY)) {
+      (!reporting_active() && state_ >= SENDING_INITIAL_STABILITY_LOG)) {
     scheduler_->Stop();
     scheduler_->UploadCancelled();
     return;
@@ -1444,10 +1481,25 @@ void MetricsService::StageNewLog() {
       return;
 
     case INIT_TASK_DONE:
-      PrepareInitialLog();
-      DCHECK_EQ(INIT_TASK_DONE, state_);
-      log_manager_.LoadPersistedUnsentLogs();
-      state_ = INITIAL_LOG_READY;
+      if (has_initial_stability_log_) {
+        // There's an initial stability log, ready to send.
+        log_manager_.StageNextLogForUpload();
+        has_initial_stability_log_ = false;
+        state_ = SENDING_INITIAL_STABILITY_LOG;
+      } else {
+        // TODO(asvitkine): When the field trial is removed, the |log_type|
+        // arg should be removed and PrepareInitialMetricsLog() should always
+        // use ONGOING_LOG. Use INITIAL_LOG only to match to the old behavior
+        // when the field trial is off.
+        MetricsLog::LogType log_type = SendSeparateInitialStabilityLog() ?
+            MetricsLog::ONGOING_LOG : MetricsLog::INITIAL_LOG;
+        PrepareInitialMetricsLog(log_type);
+        // If the stability log field trial is off, load unsent logs from local
+        // state here. Otherwise, they have already been loaded earlier.
+        if (log_type == MetricsLog::INITIAL_LOG)
+          log_manager_.LoadPersistedUnsentLogs();
+        state_ = SENDING_INITIAL_METRICS_LOG;
+      }
       break;
 
     case SENDING_OLD_LOGS:
@@ -1468,38 +1520,54 @@ void MetricsService::StageNewLog() {
   DCHECK(log_manager_.has_staged_log());
 }
 
-void MetricsService::PrepareInitialLog() {
-  DCHECK_EQ(INIT_TASK_DONE, state_);
+void MetricsService::PrepareInitialStabilityLog() {
+  DCHECK_EQ(INITIALIZED, state_);
+  PrefService* pref = g_browser_process->local_state();
+  DCHECK_NE(0, pref->GetInteger(prefs::kStabilityCrashCount));
 
-  DCHECK(initial_log_.get());
-  initial_log_->set_hardware_class(hardware_class_);
+  scoped_ptr<MetricsLog> initial_stability_log(
+      new MetricsLog(client_id_, session_id_));
+  if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
+    return;
+  initial_stability_log->RecordStabilityMetrics(base::TimeDelta(),
+                                                MetricsLog::INITIAL_LOG);
+  log_manager_.LoadPersistedUnsentLogs();
+
+  log_manager_.PauseCurrentLog();
+  log_manager_.BeginLoggingWithLog(initial_stability_log.release(),
+                                   MetricsLog::INITIAL_LOG);
+  log_manager_.FinishCurrentLog();
+  log_manager_.ResumePausedLog();
+
+  // Store unsent logs, including the stability log that was just saved, so
+  // that they're not lost in case of a crash before upload time.
+  log_manager_.PersistUnsentLogs();
+
+  has_initial_stability_log_ = true;
+}
+
+void MetricsService::PrepareInitialMetricsLog(MetricsLog::LogType log_type) {
+  DCHECK(state_ == INIT_TASK_DONE || state_ == SENDING_INITIAL_STABILITY_LOG);
+  initial_metrics_log_->set_hardware_class(hardware_class_);
 
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
-                                  synthetic_trials);
+  initial_metrics_log_->RecordEnvironment(plugins_, google_update_metrics_,
+                                          synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
-  initial_log_->RecordStabilityMetrics(GetIncrementalUptime(pref),
-                                       MetricsLog::INITIAL_LOG);
+  initial_metrics_log_->RecordStabilityMetrics(GetIncrementalUptime(pref),
+                                               log_type);
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_log_.release(),
-                                   MetricsLog::INITIAL_LOG);
+  log_manager_.BeginLoggingWithLog(initial_metrics_log_.release(), log_type);
   RecordCurrentHistograms();
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
 
   DCHECK(!log_manager_.has_staged_log());
   log_manager_.StageNextLogForUpload();
-}
-
-void MetricsService::StoreUnsentLogs() {
-  if (state_ < INITIAL_LOG_READY)
-    return;  // We never Recalled the prior unsent logs.
-
-  log_manager_.PersistUnsentLogs();
 }
 
 void MetricsService::SendStagedLog() {
@@ -1607,14 +1675,26 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (!log_manager_.has_staged_log()) {
     switch (state_) {
-      case INITIAL_LOG_READY:
+      case SENDING_INITIAL_STABILITY_LOG:
+        // Store the updated list to disk now that the removed log is uploaded.
+        log_manager_.PersistUnsentLogs();
+        PrepareInitialMetricsLog(MetricsLog::ONGOING_LOG);
+        SendStagedLog();
+        state_ = SENDING_INITIAL_METRICS_LOG;
+        break;
+
+      case SENDING_INITIAL_METRICS_LOG:
+        // The initial metrics log never gets persisted to local state, so it's
+        // not necessary to call log_manager_.PersistUnsentLogs() here.
+        // TODO(asvitkine): It should be persisted like the initial stability
+        // log and old unsent logs. http://crbug.com/328417
         state_ = log_manager_.has_unsent_logs() ? SENDING_OLD_LOGS
                                                 : SENDING_CURRENT_LOGS;
         break;
 
       case SENDING_OLD_LOGS:
         // Store the updated list to disk now that the removed log is uploaded.
-        StoreUnsentLogs();
+        log_manager_.PersistUnsentLogs();
         if (!log_manager_.has_unsent_logs())
           state_ = SENDING_CURRENT_LOGS;
         break;
@@ -1634,7 +1714,13 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
-  scheduler_->UploadFinished(server_is_healthy, log_manager_.has_unsent_logs());
+  // Don't notify the scheduler that the upload is finished if we've only sent
+  // the initial stability log, but not yet the initial metrics log (treat the
+  // two as a single unit of work as far as the scheduler is concerned).
+  if (state_ != SENDING_INITIAL_METRICS_LOG) {
+    scheduler_->UploadFinished(server_is_healthy,
+                               log_manager_.has_unsent_logs());
+  }
 
   // Collect network stats if UMA upload succeeded.
   IOThread* io_thread = g_browser_process->io_thread();
@@ -1700,8 +1786,8 @@ void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
   } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive",
                                was_extension_process ? 2 : 1);
-    }
   }
+}
 
 void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);

@@ -2,28 +2,94 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/metrics/metrics_service.h"
+
 #include <ctype.h>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/size.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#endif  // OS_CHROMEOS
 
 namespace {
+
+class TestMetricsService : public MetricsService {
+ public:
+  TestMetricsService() {}
+  virtual ~TestMetricsService() {}
+
+  MetricsLogManager* log_manager() {
+    return &log_manager_;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMetricsService);
+};
+
+class TestMetricsLog : public MetricsLog {
+ public:
+  TestMetricsLog(const std::string& client_id, int session_id)
+      : MetricsLog(client_id, session_id) {}
+  virtual ~TestMetricsLog() {}
+
+ private:
+  virtual gfx::Size GetScreenSize() const OVERRIDE {
+    return gfx::Size(1024, 768);
+  }
+
+  virtual float GetScreenDeviceScaleFactor() const OVERRIDE {
+    return 1.0f;
+  }
+
+  virtual int GetScreenCount() const OVERRIDE {
+    return 1;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
+};
 
 class MetricsServiceTest : public testing::Test {
  public:
   MetricsServiceTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+#if defined(OS_CHROMEOS)
+    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
+        new chromeos::FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetBluetoothAdapterClient(
+        scoped_ptr<chromeos::BluetoothAdapterClient>(
+            new chromeos::FakeBluetoothAdapterClient));
+    fake_dbus_thread_manager->SetBluetoothDeviceClient(
+        scoped_ptr<chromeos::BluetoothDeviceClient>(
+            new chromeos::FakeBluetoothDeviceClient));
+    fake_dbus_thread_manager->SetBluetoothInputClient(
+        scoped_ptr<chromeos::BluetoothInputClient>(
+            new chromeos::FakeBluetoothInputClient));
+    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+#endif  // OS_CHROMEOS
+  }
+
+  virtual ~MetricsServiceTest() {
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Shutdown();
+#endif  // OS_CHROMEOS
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
   }
 
   PrefService* GetLocalState() {
@@ -137,6 +203,70 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
 
     EXPECT_TRUE(GetLocalState()->GetString(kCachePrefName).empty());
   }
+}
+
+TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
+  base::FieldTrialList field_trial_list(NULL);
+  base::FieldTrialList::CreateFieldTrial("UMAStability", "SeparateLog");
+
+  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
+
+  TestMetricsService service;
+  service.InitializeMetricsRecordingState(MetricsService::REPORTING_ENABLED);
+  // No initial stability log should be generated.
+  EXPECT_FALSE(service.log_manager()->has_unsent_logs());
+  EXPECT_FALSE(service.log_manager()->has_staged_log());
+}
+
+TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
+  base::FieldTrialList field_trial_list(NULL);
+  base::FieldTrialList::CreateFieldTrial("UMAStability", "SeparateLog");
+
+  GetLocalState()->ClearPref(prefs::kStabilityExitedCleanly);
+
+  // Set up prefs to simulate restarting after a crash.
+
+  // Save an existing system profile to prefs, to correspond to what would be
+  // saved from a previous session.
+  TestMetricsLog log("client", 1);
+  log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+                        GoogleUpdateMetrics(),
+                        std::vector<chrome_variations::ActiveGroupId>());
+
+  // Record stability build time and version from previous session, so that
+  // stability metrics (including exited cleanly flag) won't be cleared.
+  GetLocalState()->SetInt64(prefs::kStabilityStatsBuildTime,
+                            MetricsLog::GetBuildTime());
+  GetLocalState()->SetString(prefs::kStabilityStatsVersion,
+                             MetricsLog::GetVersionString());
+
+  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
+
+  TestMetricsService service;
+  service.InitializeMetricsRecordingState(MetricsService::REPORTING_ENABLED);
+
+  // The initial stability log should be generated and persisted in unsent logs.
+  MetricsLogManager* log_manager = service.log_manager();
+  EXPECT_TRUE(log_manager->has_unsent_logs());
+  EXPECT_FALSE(log_manager->has_staged_log());
+
+  // Stage the log and retrieve it.
+  log_manager->StageNextLogForUpload();
+  EXPECT_TRUE(log_manager->has_staged_log());
+
+  metrics::ChromeUserMetricsExtension uma_log;
+  EXPECT_TRUE(uma_log.ParseFromString(log_manager->staged_log_text()));
+
+  EXPECT_TRUE(uma_log.has_client_id());
+  EXPECT_TRUE(uma_log.has_session_id());
+  EXPECT_TRUE(uma_log.has_system_profile());
+  EXPECT_EQ(0, uma_log.user_action_event_size());
+  EXPECT_EQ(0, uma_log.omnibox_event_size());
+  EXPECT_EQ(0, uma_log.histogram_event_size());
+  EXPECT_EQ(0, uma_log.profiler_event_size());
+  EXPECT_EQ(0, uma_log.perf_data_size());
+
+  EXPECT_EQ(1, uma_log.system_profile().stability().crash_count());
 }
 
 // Crashes on at least Mac and Linux.  http://crbug.com/320433

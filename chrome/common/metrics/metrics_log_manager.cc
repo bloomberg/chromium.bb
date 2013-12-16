@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/common/metrics/metrics_log_base.h"
 
 MetricsLogManager::SerializedLog::SerializedLog() {}
@@ -38,7 +39,8 @@ void MetricsLogManager::SerializedLog::Swap(
 }
 
 MetricsLogManager::MetricsLogManager()
-    : current_log_type_(MetricsLogBase::NO_LOG),
+    : unsent_logs_loaded_(false),
+      current_log_type_(MetricsLogBase::NO_LOG),
       paused_log_type_(MetricsLogBase::NO_LOG),
       staged_log_type_(MetricsLogBase::NO_LOG),
       max_ongoing_log_store_size_(0),
@@ -167,6 +169,11 @@ void MetricsLogManager::PersistUnsentLogs() {
   DCHECK(log_serializer_.get());
   if (!log_serializer_.get())
     return;
+  DCHECK(unsent_logs_loaded_);
+  if (!unsent_logs_loaded_)
+    return;
+
+  base::ElapsedTimer timer;
   // Remove any ongoing logs that are over the serialization size limit.
   if (max_ongoing_log_store_size_) {
     for (std::vector<SerializedLog>::iterator it = unsent_ongoing_logs_.begin();
@@ -185,16 +192,22 @@ void MetricsLogManager::PersistUnsentLogs() {
                                  MetricsLogBase::INITIAL_LOG);
   log_serializer_->SerializeLogs(unsent_ongoing_logs_,
                                  MetricsLogBase::ONGOING_LOG);
+  UMA_HISTOGRAM_TIMES("UMA.StoreLogsTime", timer.Elapsed());
 }
 
 void MetricsLogManager::LoadPersistedUnsentLogs() {
   DCHECK(log_serializer_.get());
   if (!log_serializer_.get())
     return;
+
+  base::ElapsedTimer timer;
   log_serializer_->DeserializeLogs(MetricsLogBase::INITIAL_LOG,
                                    &unsent_initial_logs_);
   log_serializer_->DeserializeLogs(MetricsLogBase::ONGOING_LOG,
                                    &unsent_ongoing_logs_);
+  UMA_HISTOGRAM_TIMES("UMA.LoadLogsTime", timer.Elapsed());
+
+  unsent_logs_loaded_ = true;
 }
 
 void MetricsLogManager::CompressCurrentLog(SerializedLog* compressed_log) {

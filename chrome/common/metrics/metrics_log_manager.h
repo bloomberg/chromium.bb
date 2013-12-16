@@ -172,6 +172,9 @@ class MetricsLogManager {
   // Compresses |current_log_| into |compressed_log|.
   void CompressCurrentLog(SerializedLog* compressed_log);
 
+  // Tracks whether unsent logs (if any) have been loaded from the serializer.
+  bool unsent_logs_loaded_;
+
   // The log that we are still appending to.
   scoped_ptr<MetricsLogBase> current_log_;
   LogType current_log_type_;
