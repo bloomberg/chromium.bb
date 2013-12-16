@@ -87,6 +87,8 @@
         'system/dispatcher.cc',
         'system/dispatcher.h',
         'system/limits.h',
+        'system/local_data_pipe.cc',
+        'system/local_data_pipe.h',
         'system/local_message_pipe_endpoint.cc',
         'system/local_message_pipe_endpoint.h',
         'system/memory.cc',

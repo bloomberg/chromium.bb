@@ -63,13 +63,25 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                MojoResult wake_result);
   void ConsumerRemoveWaiter(Waiter* waiter);
 
-  // Thread-safe and fast (doesn't take the lock).
+  // Thread-safe and fast (they don't take the lock):
+  bool may_discard() const { return may_discard_; }
   size_t element_size() const { return element_size_; }
+  size_t capacity_num_elements() const { return capacity_num_elements_; }
 
  protected:
   DataPipe(bool has_local_producer, bool has_local_consumer);
 
-  void Init(size_t element_size);
+  friend class base::RefCountedThreadSafe<DataPipe>;
+  virtual ~DataPipe();
+
+  // Not thread-safe; must be called before any other methods are called. This
+  // object is only usable on success.
+  MojoResult Init(bool may_discard,
+                  size_t element_size,
+                  size_t capacity_num_elements);
+
+  void AwakeProducerWaitersForStateChangeNoLock();
+  void AwakeConsumerWaitersForStateChangeNoLock();
 
   virtual void ProducerCloseImplNoLock() = 0;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
@@ -95,9 +107,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;
 
  private:
-  friend class base::RefCountedThreadSafe<DataPipe>;
-  virtual ~DataPipe();
-
   bool has_local_producer_no_lock() const {
     return !!producer_waiter_list_.get();
   }
@@ -105,12 +114,16 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     return !!consumer_waiter_list_.get();
   }
 
-  // Set by |Init()| and never changed afterwards.
+  // Set by |Init()| and never changed afterwards:
+  bool may_discard_;
   size_t element_size_;
+  size_t capacity_num_elements_;
 
   base::Lock lock_;  // Protects the following members.
   scoped_ptr<WaiterList> producer_waiter_list_;
   scoped_ptr<WaiterList> consumer_waiter_list_;
+  bool producer_in_two_phase_write_;
+  bool consumer_in_two_phase_read_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPipe);
 };

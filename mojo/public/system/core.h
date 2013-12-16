@@ -200,6 +200,9 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
 //     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD|: May discard data for
 //         whatever reason; best-effort delivery. In particular, if the capacity
 //         is reached, old data may be discard to make room for new data.
+//
+// |element_size * capacity_num_elements| must be less than 2^32 (i.e., it must
+// fit into a 32-bit unsigned integer).
 // TODO(vtl): Finish this.
 typedef uint32_t MojoCreateDataPipeOptionsFlags;
 
@@ -218,8 +221,8 @@ const MojoCreateDataPipeOptionsFlags
 struct MojoCreateDataPipeOptions {
   size_t struct_size;  // Set to the size of this structure.
   MojoCreateDataPipeOptionsFlags flags;
-  uint32_t element_size;
-  uint32_t capacity_num_elements;
+  uint32_t element_size;  // Must be nonzero.
+  uint32_t capacity_num_elements;  // Zero means "default"/automatic.
 };
 
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|

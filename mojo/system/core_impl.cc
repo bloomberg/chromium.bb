@@ -12,6 +12,7 @@
 #include "mojo/system/data_pipe_producer_dispatcher.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/limits.h"
+#include "mojo/system/local_data_pipe.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
@@ -361,7 +362,6 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-/* TODO(vtl): The rest of the code will look something like this:
   scoped_refptr<LocalDataPipe> data_pipe(new LocalDataPipe());
   MojoResult result = data_pipe->Init(options);
   if (result != MOJO_RESULT_OK)
@@ -393,9 +393,6 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   *data_pipe_producer_handle = producer_handle;
   *data_pipe_consumer_handle = consumer_handle;
   return MOJO_RESULT_OK;
-*/
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
 }
 
 MojoResult CoreImpl::WriteData(MojoHandle data_pipe_producer_handle,
