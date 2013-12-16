@@ -24,7 +24,7 @@ ScriptBubbleIconView::ScriptBubbleIconView(
       script_count_(0) {
   set_id(VIEW_ID_SCRIPT_BUBBLE);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_SCRIPT_BUBBLE));
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
   LocationBarView::InitTouchableLocationBarChildView(this);
 }
 

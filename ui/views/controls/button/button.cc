@@ -48,7 +48,7 @@ void Button::GetAccessibleState(ui::AccessibleViewState* state) {
 Button::Button(ButtonListener* listener)
     : listener_(listener),
       tag_(-1) {
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
 }
 
 void Button::NotifyClick(const ui::Event& event) {

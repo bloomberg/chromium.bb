@@ -24,7 +24,7 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   TestBubbleDelegateView(View* anchor_view)
       : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT),
         view_(new View()) {
-    view_->set_focusable(true);
+    view_->SetFocusable(true);
     AddChildView(view_);
   }
   virtual ~TestBubbleDelegateView() {}

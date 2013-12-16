@@ -306,7 +306,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
 
   checkbox_->SetChecked(notifier_->enabled);
   checkbox_->set_listener(this);
-  checkbox_->set_focusable(false);
+  checkbox_->SetFocusable(false);
   checkbox_->SetAccessibleName(notifier_->name);
 
   if (ShouldHaveLearnMoreButton()) {
@@ -314,7 +314,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     learn_more_ = new views::ImageButton(this);
     learn_more_->SetFocusPainter(CreateFocusPainter());
     learn_more_->set_request_focus_on_press(false);
-    learn_more_->set_focusable(true);
+    learn_more_->SetFocusable(true);
 
     ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     learn_more_->SetImage(
@@ -483,7 +483,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   if (provider_)
     provider_->AddObserver(this);
 
-  set_focusable(true);
+  SetFocusable(true);
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
   if (get_use_acceleration_when_possible())
@@ -601,7 +601,7 @@ void NotifierSettingsView::UpdateContentsView(
     notifier_group_selector_->set_border(selector_border.release());
     notifier_group_selector_->SetFocusPainter(scoped_ptr<views::Painter>());
     notifier_group_selector_->set_animate_on_state_change(false);
-    notifier_group_selector_->set_focusable(true);
+    notifier_group_selector_->SetFocusable(true);
     contents_title_view->AddChildView(notifier_group_selector_);
   }
 
@@ -627,7 +627,7 @@ void NotifierSettingsView::UpdateContentsView(
           settings::kEntrySeparatorColor));
     }
     entry->set_border(entry_border.release());
-    entry->set_focusable(true);
+    entry->SetFocusable(true);
     contents_view->AddChildView(entry);
     buttons_.insert(button);
   }

@@ -73,7 +73,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Press me"));
   button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
   View* view = new View();
-  view->set_focusable(true);
+  view->SetFocusable(true);
 
   GetContentsView()->AddChildView(button);
   button->SetBounds(10, 10, 200, 30);

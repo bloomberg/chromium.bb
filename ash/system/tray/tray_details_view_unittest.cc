@@ -63,7 +63,7 @@ class TestItem : public SystemTrayItem {
   }
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
     default_view_ = new views::View;
-    default_view_->set_focusable(true);
+    default_view_->SetFocusable(true);
     return default_view_;
   }
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {

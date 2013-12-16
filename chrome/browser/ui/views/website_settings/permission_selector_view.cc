@@ -216,7 +216,7 @@ PermissionSelectorView::PermissionSelectorView(
       menu_button_model_.get(),
       button_enabled);
   menu_button_->SetEnabled(button_enabled);
-  menu_button_->set_focusable(button_enabled);
+  menu_button_->SetFocusable(button_enabled);
   menu_button_->SetAccessibleName(
       WebsiteSettingsUI::PermissionTypeToUIString(type));
   layout->AddView(menu_button_);

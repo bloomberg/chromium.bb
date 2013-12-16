@@ -238,7 +238,7 @@ ShelfButton::ShelfButton(views::ButtonListener* listener,
       state_(STATE_NORMAL),
       shelf_layout_manager_(shelf_layout_manager),
       destroyed_flag_(NULL) {
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
 
   const gfx::ShadowValue kShadows[] = {
     gfx::ShadowValue(gfx::Point(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),

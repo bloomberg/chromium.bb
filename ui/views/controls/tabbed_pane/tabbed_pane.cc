@@ -238,7 +238,7 @@ TabbedPane::TabbedPane()
     tab_strip_(new TabStrip(this)),
     contents_(new View()),
     selected_tab_index_(-1) {
-  set_focusable(true);
+  SetFocusable(true);
   AddChildView(tab_strip_);
   AddChildView(contents_);
 }

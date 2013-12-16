@@ -55,7 +55,7 @@ void SearchResultActionsView::CreateBlueButton(
   button->SetTooltipText(action.tooltip_text);
   button->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::SmallBoldFont));
-  button->set_focusable(false);
+  button->SetFocusable(false);
   AddChildView(button);
 }
 

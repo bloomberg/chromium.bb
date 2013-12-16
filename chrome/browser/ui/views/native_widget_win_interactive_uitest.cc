@@ -85,7 +85,7 @@ class NativeWidgetWinTest1 : public NativeWidgetWinTest {
     child_->Init(child_params);
 
     native_view_host_ = new views::NativeViewHost;
-    native_view_host_->set_focusable(true);
+    native_view_host_->SetFocusable(true);
     contents_view_->AddChildView(native_view_host_);
     native_view_host_->SetBoundsRect(gfx::Rect(0, 0, 200, 200));
     native_view_host_->Attach(child_->GetNativeView());

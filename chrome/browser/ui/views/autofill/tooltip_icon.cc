@@ -54,7 +54,7 @@ TooltipIcon::TooltipIcon(const base::string16& tooltip)
       mouse_inside_(false),
       bubble_(NULL) {
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
-  set_focusable(true);
+  SetFocusable(true);
 }
 
 TooltipIcon::~TooltipIcon() {

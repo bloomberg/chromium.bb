@@ -80,7 +80,7 @@ TreeView::TreeView()
       root_shown_(true),
       has_custom_icons_(false),
       row_height_(font_.GetHeight() + kTextVerticalPadding * 2) {
-  set_focusable(true);
+  SetFocusable(true);
   closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       (base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
                            : IDR_FOLDER_CLOSED)).ToImageSkia();

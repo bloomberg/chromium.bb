@@ -53,7 +53,7 @@ class SimpleTestView : public View {
  public:
   SimpleTestView(std::vector<FocusTestEvent>* event_list, int view_id)
       : event_list_(event_list) {
-    set_focusable(true);
+    SetFocusable(true);
     set_id(view_id);
   }
 
@@ -103,9 +103,9 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
 
 TEST_F(FocusManagerTest, FocusChangeListener) {
   View* view1 = new View();
-  view1->set_focusable(true);
+  view1->SetFocusable(true);
   View* view2 = new View();
-  view2->set_focusable(true);
+  view2->SetFocusable(true);
   GetContentsView()->AddChildView(view1);
   GetContentsView()->AddChildView(view2);
 
@@ -630,17 +630,17 @@ TEST_F(FocusManagerTest, FocusInAboutToRequestFocusFromTabTraversal) {
   // Create 3 views focuses the 3 and advances to the second. The 2nd views
   // implementation of AboutToRequestFocusFromTabTraversal() focuses the first.
   views::View* v1 = new View;
-  v1->set_focusable(true);
+  v1->SetFocusable(true);
   GetContentsView()->AddChildView(v1);
 
   FocusInAboutToRequestFocusFromTabTraversalView* v2 =
       new FocusInAboutToRequestFocusFromTabTraversalView;
-  v2->set_focusable(true);
+  v2->SetFocusable(true);
   v2->set_view_to_focus(v1);
   GetContentsView()->AddChildView(v2);
 
   views::View* v3 = new View;
-  v3->set_focusable(true);
+  v3->SetFocusable(true);
   GetContentsView()->AddChildView(v3);
 
   v3->RequestFocus();
@@ -653,22 +653,22 @@ TEST_F(FocusManagerTest, RotatePaneFocus) {
   GetContentsView()->AddChildView(pane1);
 
   views::View* v1 = new View;
-  v1->set_focusable(true);
+  v1->SetFocusable(true);
   pane1->AddChildView(v1);
 
   views::View* v2 = new View;
-  v2->set_focusable(true);
+  v2->SetFocusable(true);
   pane1->AddChildView(v2);
 
   views::AccessiblePaneView* pane2 = new AccessiblePaneView();
   GetContentsView()->AddChildView(pane2);
 
   views::View* v3 = new View;
-  v3->set_focusable(true);
+  v3->SetFocusable(true);
   pane2->AddChildView(v3);
 
   views::View* v4 = new View;
-  v4->set_focusable(true);
+  v4->SetFocusable(true);
   pane2->AddChildView(v4);
 
   std::vector<views::View*> panes;
@@ -723,11 +723,11 @@ TEST_F(FocusManagerTest, RotatePaneFocus) {
 // Verifies the stored focus view tracks the focused view.
 TEST_F(FocusManagerTest, ImplicitlyStoresFocus) {
   views::View* v1 = new View;
-  v1->set_focusable(true);
+  v1->SetFocusable(true);
   GetContentsView()->AddChildView(v1);
 
   views::View* v2 = new View;
-  v2->set_focusable(true);
+  v2->SetFocusable(true);
   GetContentsView()->AddChildView(v2);
 
   // Verify a focus request on |v1| implicitly updates the stored focus view.
@@ -785,7 +785,7 @@ TEST_F(FocusManagerArrowKeyTraversalTest, ArrowKeyTraversal) {
   std::vector<views::View*> v;
   for (size_t i = 0; i < 2; ++i) {
     views::View* view = new View;
-    view->set_focusable(true);
+    view->SetFocusable(true);
     GetContentsView()->AddChildView(view);
     v.push_back(view);
   }
@@ -864,7 +864,7 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
 TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   // Add |widget_view| as a child of the Widget.
   View* widget_view = new View;
-  widget_view->set_focusable(true);
+  widget_view->SetFocusable(true);
   widget_view->SetBounds(20, 0, 20, 20);
   GetContentsView()->AddChildView(widget_view);
 
@@ -880,10 +880,10 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   params.delegate = delegate.get();
   child_widget.Init(params);
   View* view1 = new View;
-  view1->set_focusable(true);
+  view1->SetFocusable(true);
   view1->SetBounds(0, 0, 20, 20);
   View* view2 = new View;
-  view2->set_focusable(true);
+  view2->SetFocusable(true);
   view2->SetBounds(20, 0, 20, 20);
   child_widget.client_view()->AddChildView(view1);
   child_widget.client_view()->AddChildView(view2);

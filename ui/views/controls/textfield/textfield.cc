@@ -72,7 +72,7 @@ Textfield::Textfield()
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       weak_ptr_factory_(this) {
-  set_focusable(true);
+  SetFocusable(true);
 
   if (ViewsDelegate::views_delegate) {
     obscured_reveal_duration_ = ViewsDelegate::views_delegate->
@@ -100,7 +100,7 @@ Textfield::Textfield(StyleFlags style)
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       weak_ptr_factory_(this) {
-  set_focusable(true);
+  SetFocusable(true);
   if (IsObscured())
     SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 

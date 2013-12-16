@@ -43,7 +43,7 @@ OverflowButton::OverflowButton(views::ButtonListener* listener)
   bottom_image_ = rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToImageSkia();
 
 
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));
 }
 

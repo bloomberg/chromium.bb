@@ -329,7 +329,7 @@ TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
   ViewWithNameAndRole* child = new ViewWithNameAndRole(
       ASCIIToUTF16(kOldNameASCII),
       ui::AccessibilityTypes::ROLE_PUSHBUTTON);
-  child->set_focusable(true);
+  child->SetFocusable(true);
   contents->AddChildView(child);
 
   // Put the view in a window.
@@ -365,7 +365,7 @@ TEST_F(AccessibilityEventRouterViewsTest, NotificationOnDeletedObject) {
   ViewWithNameAndRole* child = new ViewWithNameAndRole(
       ASCIIToUTF16(kNameASCII),
       ui::AccessibilityTypes::ROLE_PUSHBUTTON);
-  child->set_focusable(true);
+  child->SetFocusable(true);
   contents->AddChildView(child);
 
   // Put the view in a window.

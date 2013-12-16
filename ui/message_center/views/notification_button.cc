@@ -23,7 +23,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
       focus_painter_(views::Painter::CreateSolidFocusPainter(
           message_center::kFocusBorderColor,
           gfx::Insets(1, 2, 2, 2))) {
-  set_focusable(true);
+  SetFocusable(true);
   set_request_focus_on_press(false);
   set_notify_enter_exit_on_child(true);
   SetLayoutManager(

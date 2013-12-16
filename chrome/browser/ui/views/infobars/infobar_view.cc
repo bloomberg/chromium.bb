@@ -97,7 +97,7 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->set_listener(listener);
   link->SetBackgroundColor(background()->get_color());
-  link->set_focusable(true);
+  link->SetFocusable(true);
   return link;
 }
 
@@ -127,7 +127,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
   menu_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  menu_button->set_focusable(true);
+  menu_button->SetFocusable(true);
   return menu_button;
 }
 
@@ -183,7 +183,7 @@ views::LabelButton* InfoBarView::CreateLabelButton(
     }
   }
 #endif
-  label_button->set_focusable(true);
+  label_button->SetFocusable(true);
   return label_button;
 }
 
@@ -271,7 +271,7 @@ void InfoBarView::ViewHierarchyChanged(
                             rb.GetImageNamed(IDR_CLOSE_1_P).ToImageSkia());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-    close_button_->set_focusable(true);
+    close_button_->SetFocusable(true);
     AddChildView(close_button_);
   } else if ((close_button_ != NULL) && (details.parent == this) &&
       (details.child != close_button_) && (close_button_->parent() == this) &&

@@ -2796,9 +2796,9 @@ TEST_F(ViewTest, ReorderChildren) {
   child->AddChildView(foo2);
   View* foo3 = new View();
   child->AddChildView(foo3);
-  foo1->set_focusable(true);
-  foo2->set_focusable(true);
-  foo3->set_focusable(true);
+  foo1->SetFocusable(true);
+  foo2->SetFocusable(true);
+  foo3->SetFocusable(true);
 
   ASSERT_EQ(0, child->GetIndexOf(foo1));
   ASSERT_EQ(1, child->GetIndexOf(foo2));

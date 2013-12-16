@@ -54,7 +54,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       new ExtensionActionIconFactory(
           owner_->profile(), extension, page_action, this));
 
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
   set_context_menu_controller(this);
 
   extensions::CommandService* command_service =

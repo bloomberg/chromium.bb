@@ -162,7 +162,7 @@ class NestedLoopCaptureView : public View {
 TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Create widget 1 and expect the active window to be its window.
   View* contents_view1 = new View;
-  contents_view1->set_focusable(true);
+  contents_view1->SetFocusable(true);
   Widget widget1;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);

@@ -128,7 +128,7 @@ void TouchEditingMenuView::CreateButtons() {
 Button* TouchEditingMenuView::CreateButton(const string16& title, int tag) {
   string16 label = gfx::RemoveAcceleratorChar(title, '&', NULL, NULL);
   LabelButton* button = new LabelButton(this, label);
-  button->set_focusable(true);
+  button->SetFocusable(true);
   button->set_request_focus_on_press(false);
   gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::SmallFont);

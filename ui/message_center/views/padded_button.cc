@@ -15,7 +15,7 @@ namespace message_center {
 
 PaddedButton::PaddedButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  set_focusable(true);
+  SetFocusable(true);
   set_request_focus_on_press(false);
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,

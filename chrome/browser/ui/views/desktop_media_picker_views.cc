@@ -215,7 +215,7 @@ DesktopMediaSourceView::DesktopMediaSourceView(
       selected_(false)  {
   AddChildView(image_view_);
   AddChildView(label_);
-  set_focusable(true);
+  SetFocusable(true);
 }
 
 DesktopMediaSourceView::~DesktopMediaSourceView() {}

@@ -13,7 +13,7 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
     : command_updater_(command_updater),
       command_id_(command_id),
       suppress_mouse_released_action_(false) {
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
   LocationBarView::InitTouchableLocationBarChildView(this);
 }
 

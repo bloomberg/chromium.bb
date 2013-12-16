@@ -9,7 +9,7 @@
 
 LocationBarDecorationView::LocationBarDecorationView()
     : could_handle_click_(true) {
-  set_accessibility_focusable(true);
+  SetAccessibilityFocusable(true);
   LocationBarView::InitTouchableLocationBarChildView(this);
 }
 

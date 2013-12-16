@@ -154,7 +154,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
   }
   if (style == STYLE_BUTTON || style == STYLE_NATIVE_TEXTBUTTON) {
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    set_focusable(true);
+    SetFocusable(true);
   }
   if (style == STYLE_BUTTON)
     set_min_size(gfx::Size(70, 33));

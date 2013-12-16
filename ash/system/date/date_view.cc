@@ -138,7 +138,7 @@ DateView::DateView()
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
-  set_focusable(actionable_);
+  SetFocusable(actionable_);
 }
 
 DateView::~DateView() {
@@ -146,7 +146,7 @@ DateView::~DateView() {
 
 void DateView::SetActionable(bool actionable) {
   actionable_ = actionable;
-  set_focusable(actionable_);
+  SetFocusable(actionable_);
 }
 
 void DateView::UpdateTimeFormat() {
@@ -196,7 +196,7 @@ TimeView::TimeView(TrayDate::ClockLayout clock_layout)
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);
-  set_focusable(false);
+  SetFocusable(false);
 }
 
 TimeView::~TimeView() {

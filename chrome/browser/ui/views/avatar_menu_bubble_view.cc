@@ -721,7 +721,7 @@ void AvatarMenuBubbleView::InitMenuContents(
                                                      avatar_menu_.get());
     item_view->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME, item.name));
-    item_view->set_focusable(true);
+    item_view->SetFocusable(true);
     AddChildView(item_view);
     item_views_.push_back(item_view);
   }

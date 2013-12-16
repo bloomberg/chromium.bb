@@ -19,7 +19,7 @@ const int kSeparatorHeight = 1;
 const SkColor kDefaultColor = SkColorSetARGB(255, 233, 233, 233);
 
 Separator::Separator(Orientation orientation) : orientation_(orientation) {
-  set_focusable(false);
+  SetFocusable(false);
 }
 
 Separator::~Separator() {

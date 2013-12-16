@@ -479,7 +479,7 @@ AutofillDialogViews::AccountChooser::AccountChooser(
   gfx::Insets insets = GetInsets();
   menu_button_->SetFocusPainter(
       views::Painter::CreateDashedFocusPainterWithInsets(insets));
-  menu_button_->set_focusable(true);
+  menu_button_->SetFocusable(true);
   AddChildView(menu_button_);
 
   link_->set_listener(this);
@@ -945,7 +945,7 @@ AutofillDialogViews::SuggestedButton::SuggestedButton(
                         -kFocusBorderWidth, -kFocusBorderWidth);
   SetFocusPainter(
       views::Painter::CreateDashedFocusPainterWithInsets(insets));
-  set_focusable(true);
+  SetFocusable(true);
 }
 
 AutofillDialogViews::SuggestedButton::~SuggestedButton() {}

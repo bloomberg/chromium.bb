@@ -278,7 +278,7 @@ void LocationBarView::Init() {
   omnibox_view_ = new OmniboxViewViews(this, profile_, command_updater(),
                                        is_popup_mode_, this, font_list);
   omnibox_view_->Init();
-  omnibox_view_->set_focusable(true);
+  omnibox_view_->SetFocusable(true);
   AddChildView(omnibox_view_);
 
   // Initialize the inline autocomplete view which is visible only when IME is
@@ -316,7 +316,7 @@ void LocationBarView::Init() {
 
   mic_search_view_ = new views::ImageButton(this);
   mic_search_view_->set_id(VIEW_ID_MIC_SEARCH_BUTTON);
-  mic_search_view_->set_accessibility_focusable(true);
+  mic_search_view_->SetAccessibilityFocusable(true);
   mic_search_view_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_MIC_SEARCH));
   mic_search_view_->SetImage(
@@ -369,7 +369,7 @@ void LocationBarView::Init() {
   search_button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   search_button_->SetStyle(views::Button::STYLE_BUTTON);
-  search_button_->set_focusable(false);
+  search_button_->SetFocusable(false);
   search_button_->set_min_size(gfx::Size());
   views::LabelButtonBorder* search_button_border =
       static_cast<views::LabelButtonBorder*>(search_button_->border());

@@ -16,7 +16,7 @@ const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
 ActionableView::ActionableView()
     : has_capture_(false) {
-  set_focusable(true);
+  SetFocusable(true);
 }
 
 ActionableView::~ActionableView() {

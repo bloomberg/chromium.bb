@@ -206,7 +206,7 @@ class VolumeView : public ActionableView,
         device_type_(NULL),
         more_(NULL),
         is_default_view_(is_default_view) {
-    set_focusable(false);
+    SetFocusable(false);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 

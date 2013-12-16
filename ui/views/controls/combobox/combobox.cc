@@ -249,7 +249,7 @@ Combobox::Combobox(ui::ComboboxModel* model)
       arrow_button_(new TransparentButton(this)) {
   model_->AddObserver(this);
   UpdateFromModel();
-  set_focusable(true);
+  SetFocusable(true);
   UpdateBorder();
 
   // Initialize the button images.
@@ -274,8 +274,8 @@ Combobox::Combobox(ui::ComboboxModel* model)
 
   text_button_->SetVisible(true);
   arrow_button_->SetVisible(true);
-  text_button_->set_focusable(false);
-  arrow_button_->set_focusable(false);
+  text_button_->SetFocusable(false);
+  arrow_button_->SetFocusable(false);
   AddChildView(text_button_);
   AddChildView(arrow_button_);
 }

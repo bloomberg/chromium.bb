@@ -137,7 +137,7 @@ class ColorChooserView::HueView : public LocatedEventHandlerView {
 ColorChooserView::HueView::HueView(ColorChooserView* chooser_view)
     : chooser_view_(chooser_view),
       level_(0) {
-  set_focusable(false);
+  SetFocusable(false);
 }
 
 void ColorChooserView::HueView::OnHueChanged(SkScalar hue) {
@@ -251,7 +251,7 @@ ColorChooserView::SaturationValueView::SaturationValueView(
     ColorChooserView* chooser_view)
     : chooser_view_(chooser_view),
       hue_(0) {
-  set_focusable(false);
+  SetFocusable(false);
   set_border(Border::CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
 }
 
@@ -346,7 +346,7 @@ class ColorChooserView::SelectedColorPatchView : public views::View {
 };
 
 ColorChooserView::SelectedColorPatchView::SelectedColorPatchView() {
-  set_focusable(false);
+  SetFocusable(false);
   SetVisible(true);
   set_border(Border::CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
 }
@@ -368,7 +368,7 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
     : listener_(listener) {
   DCHECK(listener_);
 
-  set_focusable(false);
+  SetFocusable(false);
   set_background(Background::CreateSolidBackground(SK_ColorLTGRAY));
   SetLayoutManager(new BoxLayout(BoxLayout::kVertical, kMarginWidth,
                                  kMarginWidth, kMarginWidth));

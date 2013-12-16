@@ -177,7 +177,7 @@ NativeControl::NativeControl() : hwnd_view_(NULL),
                                  horizontal_alignment_(CENTER),
                                  fixed_height_(-1),
                                  vertical_alignment_(CENTER) {
-  set_focusable(true);
+  SetFocusable(true);
 }
 
 NativeControl::~NativeControl() {

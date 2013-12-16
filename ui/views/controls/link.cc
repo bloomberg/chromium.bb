@@ -205,7 +205,7 @@ void Link::Init() {
   SetPressedColor(SK_ColorRED);
 #endif
   RecalculateFont();
-  set_focusable(true);
+  SetFocusable(true);
 }
 
 void Link::SetPressed(bool pressed) {

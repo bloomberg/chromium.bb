@@ -76,8 +76,8 @@ class ScrollBarThumb : public BaseScrollBarThumb {
 ScrollBarButton::ScrollBarButton(ButtonListener* listener, Type type)
     : BaseScrollBarButton(listener),
       type_(type) {
-  set_focusable(false);
-  set_accessibility_focusable(false);
+  SetFocusable(false);
+  SetAccessibilityFocusable(false);
 }
 
 ScrollBarButton::~ScrollBarButton() {
@@ -157,8 +157,8 @@ ui::NativeTheme::State
 ScrollBarThumb::ScrollBarThumb(BaseScrollBar* scroll_bar)
     : BaseScrollBarThumb(scroll_bar),
       scroll_bar_(scroll_bar) {
-  set_focusable(false);
-  set_accessibility_focusable(false);
+  SetFocusable(false);
+  SetAccessibilityFocusable(false);
 }
 
 ScrollBarThumb::~ScrollBarThumb() {

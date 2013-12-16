@@ -951,7 +951,7 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
 TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
   // Create a widget, show and activate it and focus the contents view.
   View* contents_view = new View;
-  contents_view->set_focusable(true);
+  contents_view->SetFocusable(true);
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -970,7 +970,7 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
   // Show a bubble.
   BubbleDelegateView* bubble_delegate_view =
       new BubbleDelegateView(contents_view, BubbleBorder::TOP_LEFT);
-  bubble_delegate_view->set_focusable(true);
+  bubble_delegate_view->SetFocusable(true);
   BubbleDelegateView::CreateBubble(bubble_delegate_view)->Show();
   bubble_delegate_view->RequestFocus();
 
@@ -1052,7 +1052,7 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
 
 TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterCloseTest) {
   View* contents_view = new View;
-  contents_view->set_focusable(true);
+  contents_view->SetFocusable(true);
   DesktopAuraTestValidPaintWidget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -1072,7 +1072,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterCloseTest) {
 
 TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterHideTest) {
   View* contents_view = new View;
-  contents_view->set_focusable(true);
+  contents_view->SetFocusable(true);
   DesktopAuraTestValidPaintWidget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);

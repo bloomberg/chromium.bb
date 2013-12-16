@@ -32,7 +32,7 @@ ToolbarButton::~ToolbarButton() {
 }
 
 void ToolbarButton::Init() {
-  set_focusable(true);
+  SetFocusable(true);
 
   // Provides the hover/pressed style used by buttons in the toolbar.
   views::LabelButtonBorder* border =

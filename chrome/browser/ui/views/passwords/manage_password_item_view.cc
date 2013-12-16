@@ -65,7 +65,7 @@ ManagePasswordItemView::ManagePasswordItemView(
       new views::Link(GetPasswordDisplayString(password_form_.password_value));
   label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_2_->set_listener(this);
-  label_2_->set_focusable(false);
+  label_2_->SetFocusable(false);
   label_2_->SetEnabled(false);
   label_2_->SetUnderline(false);
 

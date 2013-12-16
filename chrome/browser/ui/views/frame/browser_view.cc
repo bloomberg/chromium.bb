@@ -1822,7 +1822,7 @@ void BrowserView::Layout() {
   views::View::Layout();
 
   // TODO(jamescook): Why was this in the middle of layout code?
-  toolbar_->location_bar()->omnibox_view()->set_focusable(IsToolbarVisible());
+  toolbar_->location_bar()->omnibox_view()->SetFocusable(IsToolbarVisible());
 
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();

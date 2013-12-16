@@ -391,7 +391,7 @@ class WrenchMenuView : public views::View,
         l10n_util::GetStringUTF16(string_id), '&', NULL, NULL));
     button->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
-    button->set_focusable(true);
+    button->SetFocusable(true);
     button->set_request_focus_on_press(false);
     button->set_tag(index);
     button->SetEnabled(menu_model_->IsEnabledAt(index));
@@ -664,7 +664,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
                                     disabled_text_color);
     increment_button_->SetTextColor(views::Button::STATE_DISABLED,
                                     disabled_text_color);
-    fullscreen_button_->set_focusable(true);
+    fullscreen_button_->SetFocusable(true);
     fullscreen_button_->set_request_focus_on_press(false);
     fullscreen_button_->set_tag(fullscreen_index);
     fullscreen_button_->SetImageAlignment(

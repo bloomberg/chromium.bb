@@ -175,7 +175,7 @@ MessageView::MessageView(MessageViewController* controller,
                                              notifier_id,
                                              display_source)),
       scroller_(NULL) {
-  set_focusable(true);
+  SetFocusable(true);
   set_context_menu_controller(context_menu_controller_.get());
 
   PaddedButton *close = new PaddedButton(this);

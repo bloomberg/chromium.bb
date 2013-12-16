@@ -66,12 +66,12 @@ ButtonView::ButtonView(views::ButtonListener* listener,
       deny_button_(NULL) {
   accept_button_ = new views::LabelButton(listener, base::string16());
   accept_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  accept_button_->set_focusable(false);
+  accept_button_->SetFocusable(false);
   AddChildView(accept_button_);
 
   deny_button_ = new views::LabelButton(listener, base::string16());
   deny_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  deny_button_->set_focusable(false);
+  deny_button_->SetFocusable(false);
   AddChildView(deny_button_);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
@@ -138,7 +138,7 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
       SK_ColorWHITE);
   set_background(new views::BubbleBackground(bubble_border));
   set_border(bubble_border);
-  set_focusable(false);
+  SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   message_label_ = new views::Label();
@@ -152,7 +152,7 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
 
   link_ = new views::Link();
   link_->set_collapse_when_hidden(true);
-  link_->set_focusable(false);
+  link_->SetFocusable(false);
 #if defined(OS_CHROMEOS)
   // On CrOS, the link text doesn't change, since it doesn't show the shortcut.
   link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));

@@ -201,7 +201,7 @@ TEST(LabelTest, MultilineSmallAvailableWidthSizing) {
 
 TEST(LabelTest, MultiLineSizing) {
   Label label;
-  label.set_focusable(false);
+  label.SetFocusable(false);
   string16 test_text(
       ASCIIToUTF16("A random string\nwith multiple lines\nand returns!"));
   label.SetText(test_text);
@@ -322,7 +322,7 @@ TEST(LabelTest, AutoDetectDirectionality) {
 
 TEST(LabelTest, DrawSingleLineString) {
   Label label;
-  label.set_focusable(false);
+  label.SetFocusable(false);
 
   // Turn off mirroring so that we don't need to figure out if
   // align right really means align left.
@@ -458,7 +458,7 @@ TEST(LabelTest, DrawSingleLineString) {
 // multiline lables to not ellide in Linux only.
 TEST(LabelTest, DrawMultiLineString) {
   Label label;
-  label.set_focusable(false);
+  label.SetFocusable(false);
 
   // Turn off mirroring so that we don't need to figure out if
   // align right really means align left.
@@ -599,7 +599,7 @@ TEST(LabelTest, DrawMultiLineString) {
 
 TEST(LabelTest, DrawSingleLineStringInRTL) {
   Label label;
-  label.set_focusable(false);
+  label.SetFocusable(false);
 
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
@@ -738,7 +738,7 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
 // multiline lables to not ellide in Linux only.
 TEST(LabelTest, DrawMultiLineStringInRTL) {
   Label label;
-  label.set_focusable(false);
+  label.SetFocusable(false);
 
   // Test for RTL.
   std::string locale = l10n_util::GetApplicationLocale("");

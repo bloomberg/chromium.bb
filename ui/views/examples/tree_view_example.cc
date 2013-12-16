@@ -45,11 +45,11 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view_->SetModel(&model_);
   tree_view_->SetController(this);
   add_ = new LabelButton(this, ASCIIToUTF16("Add"));
-  add_->set_focusable(true);
+  add_->SetFocusable(true);
   remove_ = new LabelButton(this, ASCIIToUTF16("Remove"));
-  remove_->set_focusable(true);
+  remove_->SetFocusable(true);
   change_title_ = new LabelButton(this, ASCIIToUTF16("Change Title"));
-  change_title_->set_focusable(true);
+  change_title_->SetFocusable(true);
 
   GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);

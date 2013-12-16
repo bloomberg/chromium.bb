@@ -90,11 +90,11 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
  protected:
   void SetSectionsFocusable() {
-    dialog()->GetLoadingShieldForTesting()->set_focusable(true);
+    dialog()->GetLoadingShieldForTesting()->SetFocusable(true);
     // The sign in web view is not focusable until a web contents is created.
     // TODO(dbeam): figure out how to create a web contents on the right thread.
-    dialog()->GetNotificationAreaForTesting()->set_focusable(true);
-    dialog()->GetScrollableAreaForTesting()->set_focusable(true);
+    dialog()->GetNotificationAreaForTesting()->SetFocusable(true);
+    dialog()->GetScrollableAreaForTesting()->SetFocusable(true);
   }
 
  private:
