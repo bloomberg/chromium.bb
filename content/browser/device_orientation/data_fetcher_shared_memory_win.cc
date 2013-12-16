@@ -10,6 +10,7 @@
 #include <Sensors.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/windows_version.h"
 
@@ -244,8 +245,11 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
             static_cast<DeviceOrientationHardwareBuffer*>(buffer);
         scoped_refptr<SensorEventSink> sink(
             new SensorEventSinkOrientation(orientation_buffer_));
-        if (RegisterForSensor(SENSOR_TYPE_INCLINOMETER_3D,
-            sensor_inclinometer_.Receive(), sink))
+        bool inclinometer_available = RegisterForSensor(
+            SENSOR_TYPE_INCLINOMETER_3D, sensor_inclinometer_.Receive(), sink);
+        UMA_HISTOGRAM_BOOLEAN("InertialSensor.InclinometerWindowsAvailable",
+            inclinometer_available);
+        if (inclinometer_available)
           return true;
         // if no sensors are available set buffer to ready, to fire null-events.
         SetBufferAvailableState(consumer_type, true);
@@ -261,6 +265,10 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
             sink);
         bool gyrometer_available = RegisterForSensor(
             SENSOR_TYPE_GYROMETER_3D, sensor_gyrometer_.Receive(), sink);
+        UMA_HISTOGRAM_BOOLEAN("InertialSensor.AccelerometerWindowsAvailable",
+            accelerometer_available);
+        UMA_HISTOGRAM_BOOLEAN("InertialSensor.GyrometerWindowsAvailable",
+            gyrometer_available);
         if (accelerometer_available || gyrometer_available) {
           motion_buffer_->seqlock.WriteBegin();
           motion_buffer_->data.interval = GetInterval().InMilliseconds();

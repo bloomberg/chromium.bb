@@ -5637,11 +5637,35 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InertialSensor.AccelerometerWindowsAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the SENSOR_TYPE_ACCELEROMETER_3D was available at the start of
+    Device Motion on the Windows platform.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.GyrometerWindowsAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the SENSOR_TYPE_GYROMETER_3D was available at the start of Device
+    Motion on the Windows platform.
+  </summary>
+</histogram>
+
 <histogram name="InertialSensor.GyroscopeAndroidAvailable"
     enum="BooleanAvailable">
   <summary>
     Whether the Sensor.TYPE_GYROSCOPE was available at the start of Device
     Motion.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.InclinometerWindowsAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the SENSOR_TYPE_INCLINOMETER_3D was available at the start of Device
+    Orientation on the Windows platform.
   </summary>
 </histogram>
 
