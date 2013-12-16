@@ -150,11 +150,16 @@ class SQL_EXPORT Connection {
   // histogram is recorded.
   void AddTaggedHistogram(const std::string& name, size_t sample) const;
 
-  // Run "PRAGMA integrity_check" and post each line of results into
-  // |messages|.  Returns the success of running the statement - per
-  // the SQLite documentation, if no errors are found the call should
-  // succeed, and a single value "ok" should be in messages.
-  bool IntegrityCheck(std::vector<std::string>* messages);
+  // Run "PRAGMA integrity_check" and post each line of
+  // results into |messages|.  Returns the success of running the
+  // statement - per the SQLite documentation, if no errors are found the
+  // call should succeed, and a single value "ok" should be in messages.
+  bool FullIntegrityCheck(std::vector<std::string>* messages);
+
+  // Runs "PRAGMA quick_check" and, unlike the FullIntegrityCheck method,
+  // interprets the results returning true if the the statement executes
+  // without error and results in a single "ok" value.
+  bool QuickIntegrityCheck() WARN_UNUSED_RESULT;
 
   // Initialization ------------------------------------------------------------
 
@@ -539,6 +544,10 @@ class SQL_EXPORT Connection {
   // released before close could be called (which should always be the
   // case for const functions).
   scoped_refptr<StatementRef> GetUntrackedStatement(const char* sql) const;
+
+  bool IntegrityCheckHelper(
+      const char* pragma_sql,
+      std::vector<std::string>* messages) WARN_UNUSED_RESULT;
 
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.

@@ -140,7 +140,7 @@ void ReportCorrupt(sql::Connection* db, size_t startup_kb) {
     std::vector<std::string> messages;
 
     const base::TimeTicks before = base::TimeTicks::Now();
-    db->IntegrityCheck(&messages);
+    db->FullIntegrityCheck(&messages);
     base::StringAppendF(&debug_info, "# %" PRIx64 " ms, %" PRIuS " records\n",
                         (base::TimeTicks::Now() - before).InMilliseconds(),
                         messages.size());

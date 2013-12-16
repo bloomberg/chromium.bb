@@ -207,6 +207,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
 
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, CacheRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, EntryRecords);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, QuickIntegrityCheck);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, NamespaceRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, GroupRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, LazyOpen);

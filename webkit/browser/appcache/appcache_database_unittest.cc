@@ -10,6 +10,7 @@
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/test_helpers.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -72,6 +73,46 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   EXPECT_FALSE(base::DirectoryExists(kNestedDir));
   EXPECT_FALSE(base::PathExists(kOtherFile));
 }
+
+#ifdef NDEBUG
+// Only run in release builds because sql::Connection and familiy
+// crank up DLOG(FATAL)'ness and this test presents it with
+// intentionally bad data which causes debug builds to exit instead
+// of run to completion. In release builds, errors the are delivered
+// to the consumer so  we can test the error handling of the consumer.
+// TODO: crbug/328576
+TEST(AppCacheDatabaseTest, QuickIntegrityCheck) {
+  // Real files on disk for this test too, a corrupt database file.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath mock_dir = temp_dir.path().AppendASCII("mock");
+  ASSERT_TRUE(base::CreateDirectory(mock_dir));
+
+  const base::FilePath kDbFile = mock_dir.AppendASCII("appcache.db");
+  const base::FilePath kOtherFile = mock_dir.AppendASCII("other_file");
+  EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
+
+  // First create a valid db file.
+  AppCacheDatabase db(kDbFile);
+  EXPECT_TRUE(db.LazyOpen(true));
+  EXPECT_TRUE(base::PathExists(kOtherFile));
+  EXPECT_TRUE(base::PathExists(kDbFile));
+  db.CloseConnection();
+
+  // Break it.
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(kDbFile));
+
+  // Reopening will notice the corruption and delete/recreate the directory.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    EXPECT_TRUE(db.LazyOpen(true));
+    EXPECT_FALSE(base::PathExists(kOtherFile));
+    EXPECT_TRUE(base::PathExists(kDbFile));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+}
+#endif  // NDEBUG
 
 TEST(AppCacheDatabaseTest, ExperimentalFlags) {
   const char kExperimentFlagsKey[] = "ExperimentFlags";

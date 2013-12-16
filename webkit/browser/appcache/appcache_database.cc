@@ -1019,7 +1019,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
       db_->Preload();
   }
 
-  if (!opened || !EnsureDatabaseVersion()) {
+  if (!opened || !db_->QuickIntegrityCheck() || !EnsureDatabaseVersion()) {
     LOG(ERROR) << "Failed to open the appcache database.";
     AppCacheHistograms::CountInitResult(
         AppCacheHistograms::SQL_DATABASE_ERROR);

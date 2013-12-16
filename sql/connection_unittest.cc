@@ -822,4 +822,48 @@ TEST_F(SQLConnectionTest, Attach) {
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 
+TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  EXPECT_TRUE(db().QuickIntegrityCheck());
+  db().Close();
+
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    ASSERT_TRUE(db().Open(db_path()));
+    EXPECT_FALSE(db().QuickIntegrityCheck());
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+}
+
+TEST_F(SQLConnectionTest, Basic_FullIntegrityCheck) {
+  const std::string kOk("ok");
+  std::vector<std::string> messages;
+
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  EXPECT_TRUE(db().FullIntegrityCheck(&messages));
+  EXPECT_EQ(1u, messages.size());
+  EXPECT_EQ(kOk, messages[0]);
+  db().Close();
+
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    ASSERT_TRUE(db().Open(db_path()));
+    EXPECT_TRUE(db().FullIntegrityCheck(&messages));
+    EXPECT_LT(1u, messages.size());
+    EXPECT_NE(kOk, messages[0]);
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // TODO(shess): CorruptTableOrIndex could be used to produce a
+  // file that would pass the quick check and fail the full check.
+}
+
 }  // namespace

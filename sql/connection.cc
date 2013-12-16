@@ -1050,9 +1050,21 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt, const char* sql) {
   return err;
 }
 
-// TODO(shess): Allow specifying integrity_check versus quick_check.
+bool Connection::FullIntegrityCheck(std::vector<std::string>* messages) {
+  return IntegrityCheckHelper("PRAGMA integrity_check", messages);
+}
+
+bool Connection::QuickIntegrityCheck() {
+  std::vector<std::string> messages;
+  if (!IntegrityCheckHelper("PRAGMA quick_check", &messages))
+    return false;
+  return messages.size() == 1 && messages[0] == "ok";
+}
+
 // TODO(shess): Allow specifying maximum results (default 100 lines).
-bool Connection::IntegrityCheck(std::vector<std::string>* messages) {
+bool Connection::IntegrityCheckHelper(
+    const char* pragma_sql,
+    std::vector<std::string>* messages) {
   messages->clear();
 
   // This has the side effect of setting SQLITE_RecoveryMode, which
@@ -1065,8 +1077,7 @@ bool Connection::IntegrityCheck(std::vector<std::string>* messages) {
 
   bool ret = false;
   {
-    const char kSql[] = "PRAGMA integrity_check";
-    sql::Statement stmt(GetUniqueStatement(kSql));
+    sql::Statement stmt(GetUniqueStatement(pragma_sql));
 
     // The pragma appears to return all results (up to 100 by default)
     // as a single string.  This doesn't appear to be an API contract,
