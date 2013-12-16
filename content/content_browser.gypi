@@ -71,6 +71,8 @@
     'public/browser/content_browser_client.cc',
     'public/browser/content_browser_client.h',
     'public/browser/cookie_store_factory.h',
+    'public/browser/desktop_media_id.cc',
+    'public/browser/desktop_media_id.h',
     'public/browser/devtools_agent_host.h',
     'public/browser/devtools_client_host.h',
     'public/browser/devtools_external_agent_proxy.h',

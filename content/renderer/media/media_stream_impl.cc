@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/desktop_media_id.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"

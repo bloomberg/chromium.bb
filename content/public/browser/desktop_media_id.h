@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_DESKTOP_MEDIA_ID_H_
-#define CONTENT_PUBLIC_COMMON_DESKTOP_MEDIA_ID_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DESKTOP_MEDIA_ID_H_
+#define CONTENT_PUBLIC_BROWSER_DESKTOP_MEDIA_ID_H_
 
 #include <string>
 
@@ -11,6 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/common/content_export.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace content {
 
@@ -22,8 +26,19 @@ struct CONTENT_EXPORT DesktopMediaID {
     TYPE_NONE,
     TYPE_SCREEN,
     TYPE_WINDOW,
+    TYPE_AURA_WINDOW,
   };
   typedef intptr_t Id;
+
+#if defined(USE_AURA)
+  // Assigns integer identifier to the |window| and returns DesktopMediaID of
+  // type TYPE_AURA_WINDOW that corresponds to that |window|.
+  static DesktopMediaID RegisterAuraWindow(aura::Window* window);
+
+  // For DesktopMediaID of type TYPE_AURA_WINDOW returns the |window| that was
+  // previously registered using RegisterAuraWindow().
+  static aura::Window* GetAuraWindowById(const DesktopMediaID& id);
+#endif  // defined(USE_AURA)
 
   static DesktopMediaID Parse(const std::string& str);
 
@@ -54,4 +69,4 @@ struct CONTENT_EXPORT DesktopMediaID {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_DESKTOP_MEDIA_ID_H_
+#endif  // CONTENT_PUBLIC_BROWSER_DESKTOP_MEDIA_ID_H_

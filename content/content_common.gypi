@@ -39,8 +39,6 @@
     'public/common/context_menu_params.cc',
     'public/common/context_menu_params.h',
     'public/common/console_message_level.h',
-    'public/common/desktop_media_id.cc',
-    'public/common/desktop_media_id.h',
     'public/common/drop_data.cc',
     'public/common/drop_data.h',
     'public/common/favicon_url.cc',

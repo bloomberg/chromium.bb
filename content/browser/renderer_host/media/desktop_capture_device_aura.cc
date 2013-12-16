@@ -82,8 +82,8 @@ class DesktopVideoCaptureMachine
   // The timer that kicks off period captures.
   base::Timer timer_;
 
-  // The desktop id.
-  DesktopMediaID desktop_id_;
+  // The id of the window being captured.
+  DesktopMediaID window_id_;
 
   // Makes all the decisions about which frames to copy, and how.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
@@ -99,7 +99,7 @@ DesktopVideoCaptureMachine::DesktopVideoCaptureMachine(
     : desktop_window_(NULL),
       desktop_layer_(NULL),
       timer_(true, true),
-      desktop_id_(source) {}
+      window_id_(source) {}
 
 DesktopVideoCaptureMachine::~DesktopVideoCaptureMachine() {}
 
@@ -107,11 +107,7 @@ bool DesktopVideoCaptureMachine::Start(
     const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(hshi): get the correct display specified by |desktop_id_|.
-  const gfx::Display& primary_display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  desktop_window_ = gfx::Screen::GetNativeScreen()->GetWindowAtScreenPoint(
-          primary_display.bounds().CenterPoint())->GetRootWindow();
+  desktop_window_ = content::DesktopMediaID::GetAuraWindowById(window_id_);
   if (!desktop_window_)
     return false;
 
@@ -193,9 +189,11 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
         cc::CopyOutputRequest::CreateRequest(
             base::Bind(&DesktopVideoCaptureMachine::DidCopyOutput,
                        AsWeakPtr(), frame, start_time, capture_frame_cb));
-    gfx::Rect desktop_size = ui::ConvertRectToPixel(
-        desktop_layer_, desktop_layer_->bounds());
-    request->set_area(desktop_size);
+    gfx::Rect window_rect =
+        ui::ConvertRectToPixel(desktop_window_->layer(),
+                               gfx::Rect(desktop_window_->bounds().width(),
+                                         desktop_window_->bounds().height()));
+    request->set_area(window_rect);
     desktop_layer_->RequestCopyOfOutput(request.Pass());
   }
 }
@@ -306,10 +304,6 @@ DesktopCaptureDeviceAura::~DesktopCaptureDeviceAura() {
 // static
 media::VideoCaptureDevice* DesktopCaptureDeviceAura::Create(
     const DesktopMediaID& source) {
-  // This implementation only supports screen capture.
-  if (source.type != DesktopMediaID::TYPE_SCREEN)
-    return NULL;
-
   return new DesktopCaptureDeviceAura(source);
 }
 

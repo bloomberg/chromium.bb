@@ -17,8 +17,8 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/media_switches.h"
 #include "media/base/scoped_histogram_timer.h"
@@ -28,7 +28,7 @@
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/renderer_host/media/desktop_capture_device.h"
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA)
 #include "content/browser/renderer_host/media/desktop_capture_device_aura.h"
 #endif
 #endif
@@ -193,13 +193,14 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
     case MEDIA_DESKTOP_VIDEO_CAPTURE: {
 #if defined(ENABLE_SCREEN_CAPTURE)
       DesktopMediaID id = DesktopMediaID::Parse(entry->id);
-      if (id.type != DesktopMediaID::TYPE_NONE) {
-#if defined(OS_CHROMEOS)
-        // TODO(hshi): enable this path for Ash windows in metro mode.
+#if defined(USE_AURA)
+      if (id.type == DesktopMediaID::TYPE_AURA_WINDOW) {
         video_capture_device.reset(DesktopCaptureDeviceAura::Create(id));
-#else
-        video_capture_device = DesktopCaptureDevice::Create(id);
+      } else
 #endif
+      if (id.type != DesktopMediaID::TYPE_NONE &&
+          id.type != DesktopMediaID::TYPE_AURA_WINDOW) {
+        video_capture_device = DesktopCaptureDevice::Create(id);
       }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
       break;

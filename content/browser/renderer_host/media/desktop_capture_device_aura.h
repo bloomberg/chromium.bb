@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/common/desktop_media_id.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace aura {

@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/desktop_media_list.h"
-#include "content/public/common/desktop_media_id.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace webrtc {

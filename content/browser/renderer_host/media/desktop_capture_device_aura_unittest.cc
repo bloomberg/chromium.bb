@@ -6,6 +6,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "media/video/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,9 +93,9 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
 };
 
 TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
-  DesktopMediaID source(DesktopMediaID::TYPE_SCREEN, 0);
   scoped_ptr<media::VideoCaptureDevice> capture_device(
-      DesktopCaptureDeviceAura::Create(source));
+      DesktopCaptureDeviceAura::Create(
+          content::DesktopMediaID::RegisterAuraWindow(root_window())));
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError()).Times(0);

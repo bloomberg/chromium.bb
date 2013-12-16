@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
-#include "content/public/common/desktop_media_id.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 class DesktopMediaListObserver;

@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/desktop_media_id.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
@@ -358,13 +358,6 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
   webrtc::DesktopCaptureOptions options =
       webrtc::DesktopCaptureOptions::CreateDefault();
-
-#if defined(OS_CHROMEOS)
-  // Xdamage is not enabled by default because it's often broken. ChromeOS'
-  // drivers [can be patched to] support DAMAGE properly, so use it.
-  options.set_use_update_notifications(true);
-#endif
-
   // Leave desktop effects enabled during WebRTC captures.
   options.set_disable_effects(false);
 

@@ -24,18 +24,22 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_devices_monitor.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager_base.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/shell.h"
+#endif  //  defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 using content::MediaStreamDevices;
@@ -268,18 +272,23 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
     return;
   }
 
-  // First check if Desktop Capture API (i.e.
-  // chrome.desktopCapture.chooseDesktopMedia()) was used to generate device Id.
+  // If the device id wasn't specified then this is a screen capture request
+  // (i.e. chooseDesktopMedia() API wasn't used to generate device id).
+  if (request.requested_video_device_id.empty()) {
+    ProcessScreenCaptureAccessRequest(
+        web_contents, request, callback, extension);
+    return;
+  }
+
+  // Resolve DesktopMediaID for the specified device id.
   content::DesktopMediaID media_id =
       GetDesktopStreamsRegistry()->RequestMediaForStreamId(
           request.requested_video_device_id, request.render_process_id,
           request.render_view_id, request.security_origin);
 
-  // If the id wasn't generated using Desktop Capture API then process it as a
-  // screen capture request.
+  // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    ProcessScreenCaptureAccessRequest(
-        web_contents, request, callback, extension);
+    callback.Run(devices, ui.Pass());
     return;
   }
 
@@ -311,23 +320,6 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   scoped_ptr<content::MediaStreamUI> ui;
 
   DCHECK_EQ(request.video_type, content::MEDIA_DESKTOP_VIDEO_CAPTURE);
-
-  content::DesktopMediaID media_id =
-      content::DesktopMediaID::Parse(request.requested_video_device_id);
-  if (media_id.is_null()) {
-    LOG(ERROR) << "Invalid desktop media ID: "
-               << request.requested_video_device_id;
-    callback.Run(devices, ui.Pass());
-    return;
-  }
-
-  // Only screen capture can be requested without using desktop media picker.
-  if (media_id.type != content::DesktopMediaID::TYPE_SCREEN) {
-    LOG(ERROR) << "Unsupported desktop media ID: "
-               << request.requested_video_device_id;
-    callback.Run(devices, ui.Pass());
-    return;
-  }
 
   bool loopback_audio_supported = false;
 #if defined(USE_CRAS) || defined(OS_WIN)
@@ -382,6 +374,15 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     }
 
     if (user_approved || component_extension) {
+      content::DesktopMediaID screen_id;
+#if defined(OS_CHROMEOS)
+      screen_id = content::DesktopMediaID::RegisterAuraWindow(
+          ash::Shell::GetInstance()->GetPrimaryRootWindow());
+#else  // defined(OS_CHROMEOS)
+      screen_id =
+          content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+#endif  // !defined(OS_CHROMEOS)
+
       bool capture_audio =
           (request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE &&
            loopback_audio_supported);
@@ -390,7 +391,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       // display the notification for stream capture.
       bool display_notification = !component_extension;
 
-      ui = GetDevicesForDesktopCapture(devices, media_id,  capture_audio,
+      ui = GetDevicesForDesktopCapture(devices, screen_id,  capture_audio,
                                        display_notification, application_title);
     }
   }

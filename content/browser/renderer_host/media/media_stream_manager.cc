@@ -26,7 +26,6 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
@@ -1094,10 +1093,7 @@ bool MediaStreamManager::SetupScreenCaptureRequest(DeviceRequest* request) {
     }
     DCHECK(mandatory);
 
-    if (video_stream_source == kMediaStreamSourceScreen) {
-      video_device_id =
-          DesktopMediaID(DesktopMediaID::TYPE_SCREEN, 0).ToString();
-    } else if (video_stream_source == kMediaStreamSourceDesktop) {
+    if (video_stream_source == kMediaStreamSourceDesktop) {
       if (!request->options.GetFirstVideoConstraintByName(
           kMediaStreamSourceId,
           &video_device_id,
