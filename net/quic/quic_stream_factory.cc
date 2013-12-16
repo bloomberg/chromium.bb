@@ -266,7 +266,7 @@ QuicStreamFactory::QuicStreamFactory(
       clock_(clock),
       max_packet_length_(max_packet_length),
       weak_factory_(this),
-      port_entropy_(random_generator_->RandUint64()) {
+      port_seed_(random_generator_->RandUint64()) {
   config_.SetDefaults();
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
@@ -460,7 +460,7 @@ int QuicStreamFactory::CreateSession(
   QuicGuid guid = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
   scoped_refptr<PortSuggester> port_suggester =
-      new PortSuggester(host_port_proxy_pair.first, port_entropy_);
+      new PortSuggester(host_port_proxy_pair.first, port_seed_);
   scoped_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
           DatagramSocket::RANDOM_BIND,

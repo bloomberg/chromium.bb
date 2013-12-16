@@ -230,13 +230,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
 
-  // Each profile will (probably) have a unique port_entropy_ value.  This value
-  // is used to help seed a pseudo-random number generator (PortSuggester) so
-  // that we consistently (within this profile) suggest the same ephemeral port
-  // when we re-connect to any given server/port.  The differences between
-  // profiles (probablistically) prevent two profiles from colliding in their
-  // ephemeral port requests.
-  uint64 port_entropy_;
+  // Each profile will (probably) have a unique port_seed_ value.  This value is
+  // used to help seed a pseudo-random number generator (PortSuggester) so that
+  // we consistently (within this profile) suggest the same ephemeral port when
+  // we re-connect to any given server/port.  The differences between profiles
+  // (probablistically) prevent two profiles from colliding in their ephemeral
+  // port requests.
+  uint64 port_seed_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFactory);
 };
