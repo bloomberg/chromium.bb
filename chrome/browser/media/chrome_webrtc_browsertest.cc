@@ -57,6 +57,10 @@ class WebrtcBrowserTest : public WebRtcTestBase {
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+#if defined(OS_MACOSX)
+    // TODO(mcasas): Remove this switch when http://crbug.com/327618 is solved.
+    command_line->AppendSwitch(switches::kDisableAVFoundation);
+#endif
   }
 
   void EstablishCall(content::WebContents* from_tab,
