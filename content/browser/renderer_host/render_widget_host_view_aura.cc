@@ -511,6 +511,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
     // similar mechanism to ensure a second popup doesn't cause the first one
     // to never get a chance to filter events. See crbug.com/160589.
     DCHECK(old_child->popup_parent_host_view_ == popup_parent_host_view_);
+    popup_parent_host_view_->window_->RemoveTransientChild(old_child->window_);
     old_child->popup_parent_host_view_ = NULL;
   }
   popup_parent_host_view_->popup_child_host_view_ = this;
@@ -520,6 +521,10 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
   aura::Window* root = popup_parent_host_view_->window_->GetRootWindow();
   aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
+  // Setting the transient child allows for the popup to get mouse events when
+  // in a system modal dialog.
+  // This fixes crbug.com/328593.
+  popup_parent_host_view_->window_->AddTransientChild(window_);
 
   SetBounds(bounds_in_screen);
   Show();
