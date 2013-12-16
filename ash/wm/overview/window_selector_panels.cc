@@ -101,6 +101,15 @@ aura::Window* WindowSelectorPanels::GetRootWindow() {
   return transform_windows_.front()->window()->GetRootWindow();
 }
 
+bool WindowSelectorPanels::HasSelectableWindow(const aura::Window* window) {
+  for (WindowList::const_iterator iter = transform_windows_.begin();
+       iter != transform_windows_.end(); ++iter) {
+    if ((*iter)->window() == window)
+      return true;
+  }
+  return false;
+}
+
 aura::Window* WindowSelectorPanels::TargetedWindow(const aura::Window* target) {
   for (WindowList::const_iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
@@ -127,7 +136,7 @@ aura::Window* WindowSelectorPanels::SelectionWindow() {
 void WindowSelectorPanels::RemoveWindow(const aura::Window* window) {
   for (WindowList::iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
-    if ((*iter)->Contains(window)) {
+    if ((*iter)->window() == window) {
       (*iter)->OnWindowDestroyed();
       transform_windows_.erase(iter);
       break;

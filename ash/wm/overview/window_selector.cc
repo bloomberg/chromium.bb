@@ -61,10 +61,24 @@ int GetOverviewDelayOnCycleMilliseconds() {
   return value;
 }
 
-// A comparator for locating a given target window.
+// A comparator for locating a given selectable window.
 struct WindowSelectorItemComparator
     : public std::unary_function<WindowSelectorItem*, bool> {
-  explicit WindowSelectorItemComparator(const aura::Window* target_window)
+  explicit WindowSelectorItemComparator(const aura::Window* window)
+      : window_(window) {
+  }
+
+  bool operator()(WindowSelectorItem* window) const {
+    return window->HasSelectableWindow(window_);
+  }
+
+  const aura::Window* window_;
+};
+
+// A comparator for locating a selectable window given a targeted window.
+struct WindowSelectorItemTargetComparator
+    : public std::unary_function<WindowSelectorItem*, bool> {
+  explicit WindowSelectorItemTargetComparator(const aura::Window* target_window)
       : target(target_window) {
   }
 
@@ -294,8 +308,10 @@ WindowSelector::WindowSelector(const WindowList& windows,
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-      Shell::GetContainer(*iter,
-                          kSwitchableWindowContainerIds[i])->AddObserver(this);
+      aura::Window* container = Shell::GetContainer(*iter,
+          kSwitchableWindowContainerIds[i]);
+      container->AddObserver(this);
+      observed_windows_.insert(container);
     }
   }
 
@@ -317,13 +333,6 @@ WindowSelector::~WindowSelector() {
   }
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-      Shell::GetContainer(*iter,
-          kSwitchableWindowContainerIds[i])->RemoveObserver(this);
-    }
-  }
   window_overview_.reset();
   // Clearing the window list resets the ignored_by_shelf flag on the windows.
   windows_.clear();
@@ -371,7 +380,7 @@ void WindowSelector::SelectWindow(aura::Window* window) {
     showing_window_->CancelRestore();
   ScopedVector<WindowSelectorItem>::iterator iter =
       std::find_if(windows_.begin(), windows_.end(),
-                   WindowSelectorItemComparator(window));
+                   WindowSelectorItemTargetComparator(window));
   DCHECK(iter != windows_.end());
   // The selected window should not be minimized when window selection is
   // ended.
@@ -400,20 +409,18 @@ void WindowSelector::OnWindowAdded(aura::Window* new_window) {
 }
 
 void WindowSelector::OnWindowDestroying(aura::Window* window) {
+  // window is one of a container, the restore_focus_window and/or
+  // one of the selectable windows in overview.
   ScopedVector<WindowSelectorItem>::iterator iter =
       std::find_if(windows_.begin(), windows_.end(),
                    WindowSelectorItemComparator(window));
-  DCHECK(window == restore_focus_window_ || iter != windows_.end());
   window->RemoveObserver(this);
+  observed_windows_.erase(window);
   if (window == restore_focus_window_)
     restore_focus_window_ = NULL;
-  if (iter == windows_.end()) {
-    CHECK(std::find(observed_windows_.begin(),
-              observed_windows_.end(), window) == observed_windows_.end());
+  if (iter == windows_.end())
     return;
-  }
 
-  observed_windows_.erase(window);
   (*iter)->RemoveWindow(window);
   // If there are still windows in this selector entry then the overview is
   // still active and the active selection remains the same.
@@ -445,7 +452,7 @@ void WindowSelector::OnWindowBoundsChanged(aura::Window* window,
 
   ScopedVector<WindowSelectorItem>::iterator iter =
       std::find_if(windows_.begin(), windows_.end(),
-                   WindowSelectorItemComparator(window));
+                   WindowSelectorItemTargetComparator(window));
   DCHECK(window == restore_focus_window_ || iter != windows_.end());
   if (iter == windows_.end())
     return;

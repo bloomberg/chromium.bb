@@ -647,6 +647,7 @@ Shell::~Shell() {
   shadow_controller_.reset();
   resize_shadow_controller_.reset();
 
+  window_selector_controller_.reset();
   window_cycle_controller_.reset();
   mru_window_tracker_.reset();
 

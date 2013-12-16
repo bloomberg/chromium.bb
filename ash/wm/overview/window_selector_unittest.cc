@@ -946,5 +946,53 @@ TEST_F(WindowSelectorTest, BoundsChangeDuringCycleOnOtherDisplay) {
   StopCycling();
 }
 
+// Tests shutting down during overview.
+TEST_F(WindowSelectorTest, Shutdown) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  // These windows will be deleted when the test exits and the Shell instance
+  // is shut down.
+  aura::Window* window1(CreateWindow(bounds));
+  aura::Window* window2(CreateWindow(bounds));
+  aura::Window* window3(CreatePanelWindow(bounds));
+  aura::Window* window4(CreatePanelWindow(bounds));
+
+  wm::ActivateWindow(window4);
+  wm::ActivateWindow(window3);
+  wm::ActivateWindow(window2);
+  wm::ActivateWindow(window1);
+
+  ToggleOverview();
+}
+
+// Tests removing a display during overview.
+TEST_F(WindowSelectorTest, RemoveDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  gfx::Rect bounds1(0, 0, 100, 100);
+  gfx::Rect bounds2(450, 0, 100, 100);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds1));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds2));
+  scoped_ptr<aura::Window> window3(CreatePanelWindow(bounds1));
+  scoped_ptr<aura::Window> window4(CreatePanelWindow(bounds2));
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  EXPECT_EQ(root_windows[0], window3->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window4->GetRootWindow());
+
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  ToggleOverview();
+  EXPECT_TRUE(IsSelecting());
+  UpdateDisplay("400x400");
+  EXPECT_FALSE(IsSelecting());
+}
+
 }  // namespace internal
 }  // namespace ash

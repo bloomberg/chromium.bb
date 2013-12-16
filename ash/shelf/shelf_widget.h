@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/background_animator.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -26,7 +27,8 @@ class WorkspaceController;
 }
 
 class ASH_EXPORT ShelfWidget : public views::Widget,
-                               public views::WidgetObserver {
+                               public views::WidgetObserver,
+                               public ShelfLayoutManagerObserver {
  public:
   ShelfWidget(
       aura::Window* shelf_container,
@@ -95,6 +97,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Disable dimming animations for running tests.
   void DisableDimmingAnimationsForTest();
+
+  // ShelfLayoutManagerObserver overrides:
+  virtual void WillDeleteShelf() OVERRIDE;
 
  private:
   class DelegateView;

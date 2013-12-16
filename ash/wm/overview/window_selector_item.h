@@ -25,6 +25,10 @@ class WindowSelectorItem {
   // Returns the root window on which this item is shown.
   virtual aura::Window* GetRootWindow() = 0;
 
+  // Returns true if the window selector item has |window| as a selectable
+  // window.
+  virtual bool HasSelectableWindow(const aura::Window* window) = 0;
+
   // Returns the targeted window given the event |target| window.
   // Returns NULL if no Window in this item was selected.
   virtual aura::Window* TargetedWindow(const aura::Window* target) = 0;

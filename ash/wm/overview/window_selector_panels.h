@@ -28,6 +28,7 @@ class WindowSelectorPanels : public WindowSelectorItem {
 
   // WindowSelectorItem:
   virtual aura::Window* GetRootWindow() OVERRIDE;
+  virtual bool HasSelectableWindow(const aura::Window* window) OVERRIDE;
   virtual aura::Window* TargetedWindow(const aura::Window* target) OVERRIDE;
   virtual void RestoreWindowOnExit(aura::Window* window) OVERRIDE;
   virtual aura::Window* SelectionWindow() OVERRIDE;

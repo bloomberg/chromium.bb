@@ -536,6 +536,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
 
   shelf_layout_manager_ = new internal::ShelfLayoutManager(this);
+  shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
@@ -710,6 +711,11 @@ gfx::Rect ShelfWidget::GetDimmerBoundsForTest() {
 void ShelfWidget::DisableDimmingAnimationsForTest() {
   DCHECK(delegate_view_);
   return delegate_view_->disable_dimming_animations_for_test();
+}
+
+void ShelfWidget::WillDeleteShelf() {
+  shelf_layout_manager_->RemoveObserver(this);
+  shelf_layout_manager_ = NULL;
 }
 
 }  // namespace ash

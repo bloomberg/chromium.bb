@@ -19,6 +19,10 @@ aura::Window* WindowSelectorWindow::GetRootWindow() {
   return transform_window_.window()->GetRootWindow();
 }
 
+bool WindowSelectorWindow::HasSelectableWindow(const aura::Window* window) {
+  return transform_window_.window() == window;
+}
+
 aura::Window* WindowSelectorWindow::TargetedWindow(const aura::Window* target) {
   if (transform_window_.Contains(target))
     return transform_window_.window();
