@@ -121,12 +121,8 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
 
     HTMLDialogElement* activeModalDialog = document().activeModalDialog();
     document().removeFromTopLayer(this);
-    if (activeModalDialog == this) {
+    if (activeModalDialog == this)
         inertSubtreesChanged(document());
-
-        if (AXObjectCache* axObjectCache = document().topDocument()->axObjectCache())
-            axObjectCache->hideModalDialog(this);
-    }
 
     if (!returnValue.isNull())
         m_returnValue = returnValue;
@@ -170,9 +166,6 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState)
 
     forceLayoutForCentering();
     setFocusForModalDialog(this);
-
-    if (AXObjectCache* axObjectCache = document().topDocument()->axObjectCache())
-        axObjectCache->showModalDialog(this);
 }
 
 void HTMLDialogElement::setCentered(LayoutUnit centeredPosition)

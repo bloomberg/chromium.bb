@@ -149,8 +149,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXEventAutocorrectionOccured, AXObjectCache::AXA
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventBlur, AXObjectCache::AXBlur);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventCheckedStateChanged, AXObjectCache::AXCheckedStateChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventChildrenChanged, AXObjectCache::AXChildrenChanged);
-COMPILE_ASSERT_MATCHING_ENUM(WebAXEventDialogModalHide, AXObjectCache::AXDialogModalHide);
-COMPILE_ASSERT_MATCHING_ENUM(WebAXEventDialogModalShow, AXObjectCache::AXDialogModalShow);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventFocus, AXObjectCache::AXFocusedUIElementChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventHide, AXObjectCache::AXHide);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventInvalidStatusChanged, AXObjectCache::AXInvalidStatusChanged);

@@ -58,7 +58,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
@@ -1024,19 +1023,6 @@ void AXObjectCache::handleScrolledToAnchor(const Node* anchorNode)
     // The anchor node may not be accessible. Post the notification for the
     // first accessible object.
     postPlatformNotification(AXObject::firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
-}
-
-void AXObjectCache::showModalDialog(HTMLDialogElement* dialog)
-{
-    ASSERT(dialog);
-    postNotification(dialog, AXObjectCache::AXDialogModalShow, true);
-}
-
-void AXObjectCache::hideModalDialog(HTMLDialogElement* dialog)
-{
-    ASSERT(dialog);
-    ASSERT(dialog->ownerDocument());
-    postNotification(dialog->ownerDocument(), AXObjectCache::AXDialogModalHide, true);
 }
 
 } // namespace WebCore
