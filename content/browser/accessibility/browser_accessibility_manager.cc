@@ -126,12 +126,32 @@ void BrowserAccessibilityManager::RemoveNode(BrowserAccessibility* node) {
 
 void BrowserAccessibilityManager::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params) {
+  bool should_send_initial_focus = false;
+
+  // Process all changes to the accessibility tree first.
   for (uint32 index = 0; index < params.size(); index++) {
     const AccessibilityHostMsg_EventParams& param = params[index];
-
-    // Update nodes that changed.
     if (!UpdateNodes(param.nodes))
       return;
+
+    // Set initial focus when a page is loaded.
+    blink::WebAXEvent event_type = param.event_type;
+    if (event_type == blink::WebAXEventLoadComplete) {
+      if (!focus_) {
+        SetFocus(root_, false);
+        should_send_initial_focus = true;
+      }
+    }
+  }
+
+  if (should_send_initial_focus &&
+      (!delegate_ || delegate_->HasFocus())) {
+    NotifyAccessibilityEvent(blink::WebAXEventFocus, focus_);
+  }
+
+  // Now iterate over the events again and fire the events.
+  for (uint32 index = 0; index < params.size(); index++) {
+    const AccessibilityHostMsg_EventParams& param = params[index];
 
     // Find the node corresponding to the id that's the target of the
     // event (which may not be the root of the update tree).
@@ -156,14 +176,6 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
     // Send the event event to the operating system.
     NotifyAccessibilityEvent(event_type, node);
-
-    // Set initial focus when a page is loaded.
-    if (event_type == blink::WebAXEventLoadComplete) {
-      if (!focus_)
-        SetFocus(root_, false);
-      if (!delegate_ || delegate_->HasFocus())
-        NotifyAccessibilityEvent(blink::WebAXEventFocus, focus_);
-    }
   }
 }
 
