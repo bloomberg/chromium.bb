@@ -65,6 +65,8 @@
         'autofill/core/common/form_field_data.h',
         'autofill/core/common/form_field_data_predictions.cc',
         'autofill/core/common/form_field_data_predictions.h',
+        'autofill/core/common/password_autofill_util.cc',
+        'autofill/core/common/password_autofill_util.h',
         'autofill/core/common/password_form.cc',
         'autofill/core/common/password_form.h',
         'autofill/core/common/password_form_fill_data.cc',

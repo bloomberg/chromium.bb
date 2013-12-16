@@ -152,10 +152,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
  private:
   friend class PasswordFormManagerTest;
 
-  // ManagerAction - What does the manager do with this form? Either it fills
-  // it, or it doesn't. If it doesn't fill it, that's either because it has no
-  // match or it is blacklisted. Note that if we don't have an exact match, we
-  // still provide candidates that the user may end up choosing.
+  // ManagerAction - What does the manager do with this form? Either it
+  // fills it, or it doesn't. If it doesn't fill it, that's either
+  // because it has no match, or it is blacklisted, or it is disabled
+  // via the AUTOCOMPLETE=off attribute. Note that if we don't have
+  // an exact match, we still provide candidates that the user may
+  // end up choosing.
   enum ManagerAction {
     kManagerActionNone = 0,
     kManagerActionAutofilled,

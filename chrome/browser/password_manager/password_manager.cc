@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/common/autofill_messages.h"
+#include "components/autofill/core/common/password_autofill_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -222,7 +223,15 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   }
 
   // Always save generated passwords, as the user expresses explicit intent for
-  // Chrome to manage such passwords.
+  // Chrome to manage such passwords. For other passwords, respect the
+  // autocomplete attribute if autocomplete='off' is not ignored.
+  if (!autofill::ShouldIgnoreAutocompleteOffForPasswordFields() &&
+      !manager->HasGeneratedPassword() &&
+      !form.password_autocomplete_set) {
+    RecordFailure(AUTOCOMPLETE_OFF, form.origin.host());
+    return;
+  }
+
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid = form.origin.SchemeIsSecure() &&
       !delegate_->DidLastPageLoadEncounterSSLErrors();

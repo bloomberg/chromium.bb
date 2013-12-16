@@ -12,6 +12,7 @@ namespace autofill {
 
 PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
+      password_autocomplete_set(true),
       ssl_valid(false),
       preferred(false),
       blacklisted_by_user(false),
@@ -36,6 +37,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       other_possible_usernames == form.other_possible_usernames &&
       password_element == form.password_element &&
       password_value == form.password_value &&
+      password_autocomplete_set == form.password_autocomplete_set &&
       old_password_element == form.old_password_element &&
       old_password_value == form.old_password_value &&
       ssl_valid == form.ssl_valid &&
@@ -64,6 +66,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " old_password_element: "
             << UTF16ToUTF8(form.old_password_element)
             << " old_password_value: " << UTF16ToUTF8(form.old_password_value)
+            << " autocomplete_set:" << form.password_autocomplete_set
             << " blacklisted: " << form.blacklisted_by_user
             << " preferred: " << form.preferred
             << " ssl_valid: " << form.ssl_valid

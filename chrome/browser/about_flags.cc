@@ -21,6 +21,7 @@
 #include "chrome/browser/flags_storage.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/switches.h"
@@ -1960,6 +1961,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_DESCRIPTION,
     kOsCrOS | kOsMac | kOsWin,
     MULTI_VALUE_TYPE(kSearchButtonInOmniboxChoices)
+  },
+  {
+    "enable-ignore-autocomplete-off",
+    IDS_FLAGS_ENABLE_IGNORE_AUTOCOMPLETE_OFF_NAME,
+    IDS_FLAGS_ENABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(autofill::switches::kEnableIgnoreAutocompleteOff)
   }
 };
 

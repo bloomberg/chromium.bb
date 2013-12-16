@@ -13,6 +13,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_view.h"
@@ -249,7 +250,9 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   if (iter->second.fill_data.wait_for_username)
     return false;
 
-  if (!IsElementEditable(element) || !element.isText()) {
+  if (!IsElementEditable(element) || !element.isText() ||
+      (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
+       !element.autoComplete())) {
     return false;
   }
 
@@ -637,13 +640,21 @@ void PasswordAutofillAgent::FillFormOnPasswordRecieved(
   if (password_element.document().frame()->parent())
     return;
 
+  if (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
+      !username_element.form().autoComplete())
+    return;
+
   // If we can't modify the password, don't try to set the username
-  if (!IsElementEditable(password_element))
+  if (!IsElementEditable(password_element) ||
+      (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
+       !password_element.autoComplete()))
     return;
 
   // Try to set the username to the preferred name, but only if the field
   // can be set and isn't prefilled.
   if (IsElementEditable(username_element) &&
+      (ShouldIgnoreAutocompleteOffForPasswordFields() ||
+       username_element.autoComplete()) &&
       username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
     username_element.setValue(fill_data.basic_data.fields[0].value);
@@ -711,11 +722,16 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // fields.
 
   // Don't fill username if password can't be set.
-  if (!IsElementEditable(*password_element))
+  if (!IsElementEditable(*password_element) ||
+      (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
+       !password_element->autoComplete())) {
     return false;
+  }
 
   // Input matches the username, fill in required values.
-  if (IsElementEditable(*username_element)) {
+  if (IsElementEditable(*username_element) &&
+      (ShouldIgnoreAutocompleteOffForPasswordFields() ||
+       username_element->autoComplete())) {
     username_element->setValue(username);
     SetElementAutofilled(username_element, true);
 

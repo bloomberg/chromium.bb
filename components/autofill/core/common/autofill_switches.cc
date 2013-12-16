@@ -19,6 +19,9 @@ const char kDisableInteractiveAutocomplete[] =
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
+// Forces the password manager to ignore autocomplete='off' for password forms.
+const char kEnableIgnoreAutocompleteOff[]  = "enable-ignore-autocomplete-off";
+
 // Enables an interactive autocomplete UI and a way to invoke this UI from
 // WebKit by enabling HTMLFormElement#requestAutocomplete (and associated
 // autocomplete* events and logic).

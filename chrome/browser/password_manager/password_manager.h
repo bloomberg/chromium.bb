@@ -112,6 +112,7 @@ class PasswordManager : public LoginModel,
     MATCHING_NOT_COMPLETE,
     FORM_BLACKLISTED,
     INVALID_FORM,
+    AUTOCOMPLETE_OFF,
     MAX_FAILURE_VALUE
   };
 
