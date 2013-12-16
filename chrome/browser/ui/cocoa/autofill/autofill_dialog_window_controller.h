@@ -66,6 +66,9 @@ class AutofillDialogCocoa;
   base::scoped_nsobject<AutofillLoadingShieldController>
       loadingShieldController_;
   base::scoped_nsobject<NSTextView> fieldEditor_;
+
+  // Signals the main container has recently become visible.
+  BOOL mainContainerBecameVisible_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.

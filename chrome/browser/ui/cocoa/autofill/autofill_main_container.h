@@ -87,6 +87,12 @@ namespace autofill {
 // Makes the first invalid input first responder.
 - (void)makeFirstInvalidInputFirstResponder;
 
+// Called when the main container becomes visible. Ensures the right input field
+// becomes first responder, and positions the scrollview correctly. This MUST be
+// called after layout on the main container is complete, since it depends on
+// the size of the contained views to be correct.
+- (void)scrollInitialEditorIntoViewAndMakeFirstResponder;
+
 @end
 
 

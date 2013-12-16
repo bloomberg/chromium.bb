@@ -58,6 +58,10 @@ class AutofillDialogViewDelegate;
 // is found. Looks at both direct input fields and input fields in suggestions.
 - (NSControl*)firstInvalidField;
 
+// Finds the first visible user input field. Returns nil if no field is found.
+// Looks at both direct input fields and input fields in suggestions.
+- (NSControl*)firstVisibleField;
+
 // Positions the scrollview so that given |field| is visible.
 - (void)scrollToView:(NSView*)field;
 

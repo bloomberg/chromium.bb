@@ -390,6 +390,19 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   }
 }
 
+- (void)scrollInitialEditorIntoViewAndMakeFirstResponder {
+  // Try to focus on the first invalid field. If there isn't one, focus on the
+  // first editable field instead.
+  NSView* field = [detailsContainer_ firstInvalidField];
+  if (!field)
+    field = [detailsContainer_ firstVisibleField];
+  if (!field)
+    return;
+
+  [detailsContainer_ scrollToView:field];
+  [[[self view] window] makeFirstResponder:field];
+}
+
 - (void)updateErrorBubble {
   [detailsContainer_ updateErrorBubble];
 }
