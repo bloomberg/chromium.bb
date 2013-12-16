@@ -86,6 +86,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   uint64 stream_bytes_read() { return stream_bytes_read_; }
   uint64 stream_bytes_written() { return stream_bytes_written_; }
 
+  QuicVersion version();
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.

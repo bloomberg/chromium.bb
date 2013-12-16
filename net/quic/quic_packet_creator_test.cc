@@ -374,8 +374,6 @@ TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
 }
 
 TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
-  ValueRestore<bool> old_flag(&FLAGS_pad_quic_handshake_packets, true);
-
   // Compute the total overhead for a single frame in packet.
   const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
       + GetStreamFrameOverhead();
@@ -408,10 +406,7 @@ TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
   }
 }
 
-
 TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
-  ValueRestore<bool> old_flag(&FLAGS_pad_quic_handshake_packets, true);
-
   // Compute the total overhead for a single frame in packet.
   const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
       + GetStreamFrameOverhead();

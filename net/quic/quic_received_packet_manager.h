@@ -39,6 +39,9 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
                             QuicTime receipt_time,
                             bool revived);
 
+  // Checks whether |sequence_number| is missing and less than largest observed.
+  bool IsMissing(QuicPacketSequenceNumber sequence_number);
+
   // Checks if we're still waiting for the packet with |sequence_number|.
   bool IsAwaitingPacket(QuicPacketSequenceNumber sequence_number);
 
@@ -68,6 +71,10 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
 
   // Returns whether the peer is missing packets.
   bool HasMissingPackets();
+
+  // Returns true when there are new missing packets to be reported within 3
+  // packets of the largest observed.
+  bool HasNewMissingPackets();
 
   QuicPacketSequenceNumber peer_largest_observed_packet() {
     return peer_largest_observed_packet_;

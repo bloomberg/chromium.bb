@@ -75,7 +75,9 @@ class MockStream : public ReliableQuicStream {
                                                 const string& details));
   MOCK_METHOD1(Reset, void(QuicRstStreamErrorCode error));
   MOCK_METHOD0(OnCanWrite, void());
-  virtual QuicPriority EffectivePriority() const { return 0; }
+  virtual QuicPriority EffectivePriority() const {
+    return QuicUtils::HighestPriority();
+  }
 };
 
 namespace {
@@ -86,8 +88,8 @@ static const char kPayload[] =
 class QuicStreamSequencerTest : public ::testing::Test {
  protected:
   QuicStreamSequencerTest()
-      : connection_(new MockConnection(1, IPEndPoint(), false)),
-        session_(connection_, true),
+      : connection_(new MockConnection(false)),
+        session_(connection_),
         stream_(&session_, 1),
         sequencer_(new QuicStreamSequencerPeer(&stream_)) {
   }

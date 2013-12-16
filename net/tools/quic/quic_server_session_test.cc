@@ -89,13 +89,12 @@ namespace {
 class QuicServerSessionTest : public ::testing::Test {
  protected:
   QuicServerSessionTest()
-      : guid_(1),
-        crypto_config_(QuicCryptoServerConfig::TESTING,
+      : crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()) {
     config_.SetDefaults();
     config_.set_max_streams_per_connection(3, 3);
 
-    connection_ = new MockConnection(guid_, IPEndPoint(), 0, &eps_, true);
+    connection_ = new MockConnection(true);
     session_.reset(new TestQuicQuicServerSession(
         config_, connection_, &owner_));
     session_->InitializeSession(crypto_config_);
@@ -109,8 +108,6 @@ class QuicServerSessionTest : public ::testing::Test {
     QuicDataStreamPeer::SetHeadersDecompressed(stream, true);
   }
 
-  QuicGuid guid_;
-  EpollServer eps_;
   StrictMock<MockQuicSessionOwner> owner_;
   MockConnection* connection_;
   QuicConfig config_;

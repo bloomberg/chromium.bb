@@ -659,11 +659,9 @@ void QuicConnection::OnPacketComplete() {
   // from unacket_packets_, increasing the least_unacked.
   const bool last_packet_should_instigate_ack = ShouldLastPacketInstigateAck();
 
-  // If we are missing any packets from the peer, then we want to ack
-  // immediately.  We need to check both before and after we process the
-  // current packet because we want to ack immediately when we discover
-  // a missing packet AND when we receive the last missing packet.
-  bool send_ack_immediately = received_packet_manager_.HasMissingPackets();
+  // If the incoming packet was missing, send an ack immediately.
+  bool send_ack_immediately = received_packet_manager_.IsMissing(
+      last_header_.packet_sequence_number);
 
   // Ensure the visitor can process the stream frames before recording and
   // processing the rest of the packet.
@@ -698,7 +696,8 @@ void QuicConnection::OnPacketComplete() {
     DCHECK(!connected_);
   }
 
-  if (received_packet_manager_.HasMissingPackets()) {
+  // If there are new missing packets to report, send an ack immediately.
+  if (received_packet_manager_.HasNewMissingPackets()) {
     send_ack_immediately = true;
   }
 

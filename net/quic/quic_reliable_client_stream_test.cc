@@ -40,7 +40,7 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
 class QuicReliableClientStreamTest : public ::testing::Test {
  public:
   QuicReliableClientStreamTest()
-      : session_(new MockConnection(1, IPEndPoint(), false), false),
+      : session_(new MockConnection(false)),
         stream_(kStreamId, &session_, BoundNetLog()) {
     stream_.SetDelegate(&delegate_);
   }

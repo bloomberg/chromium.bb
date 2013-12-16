@@ -308,7 +308,7 @@ uint32 QuicDataStream::StripPriorityAndHeaderId(
 
       // Spdy priorities are inverted, so the highest numerical value is the
       // lowest legal priority.
-      if (temporary_priority > static_cast<QuicPriority>(kLowestPriority)) {
+      if (temporary_priority > QuicUtils::LowestPriority()) {
         session()->connection()->SendConnectionClose(QUIC_INVALID_PRIORITY);
         return 0;
       }

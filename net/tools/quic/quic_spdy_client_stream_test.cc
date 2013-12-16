@@ -27,7 +27,7 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
  public:
   QuicSpdyClientStreamTest()
       : session_("example.com", DefaultQuicConfig(),
-                 new MockConnection(1, IPEndPoint(), 0, &eps_, false),
+                 new MockConnection(false),
                  &crypto_config_),
         body_("hello world") {
     session_.config()->SetDefaults();
@@ -40,7 +40,6 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
     stream_.reset(new QuicSpdyClientStream(3, &session_));
   }
 
-  EpollServer eps_;
   QuicClientSession session_;
   scoped_ptr<QuicSpdyClientStream> stream_;
   BalsaHeaders headers_;

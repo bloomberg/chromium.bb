@@ -58,11 +58,8 @@ class TestDispatcher : public QuicDispatcher {
 class MockServerConnection : public MockConnection {
  public:
   MockServerConnection(QuicGuid guid,
-                       IPEndPoint address,
-                       int fd,
-                       EpollServer* eps,
                        QuicDispatcher* dispatcher)
-      : MockConnection(guid, address, fd, eps, true),
+      : MockConnection(guid, true),
         dispatcher_(dispatcher) {
   }
   void UnregisterOnConnectionClosed() {
@@ -76,11 +73,9 @@ class MockServerConnection : public MockConnection {
 QuicSession* CreateSession(QuicDispatcher* dispatcher,
                            QuicGuid guid,
                            const IPEndPoint& addr,
-                           MockSession** session,
-                           EpollServer* eps) {
-  MockServerConnection* connection =
-      new MockServerConnection(guid, addr, 0, eps, dispatcher);
-  *session = new MockSession(connection, true);
+                           MockSession** session) {
+  MockServerConnection* connection = new MockServerConnection(guid, dispatcher);
+  *session = new MockSession(connection);
   ON_CALL(*connection, SendConnectionClose(_)).WillByDefault(
       WithoutArgs(Invoke(
           connection, &MockServerConnection::UnregisterOnConnectionClosed)));
@@ -123,12 +118,6 @@ class QuicDispatcherTest : public ::testing::Test {
     EXPECT_TRUE(packet.AsStringPiece().find(data_) != StringPiece::npos);
   }
 
-  IPAddressNumber Loopback4() {
-    net::IPAddressNumber addr;
-    CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &addr));
-    return addr;
-  }
-
   EpollServer eps_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
@@ -139,16 +128,16 @@ class QuicDispatcherTest : public ::testing::Test {
 };
 
 TEST_F(QuicDispatcherTest, ProcessPackets) {
-  IPEndPoint addr(Loopback4(), 1);
+  IPEndPoint addr(net::test::Loopback4(), 1);
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, addr))
       .WillOnce(testing::Return(CreateSession(
-          &dispatcher_, 1, addr, &session1_, &eps_)));
+          &dispatcher_, 1, addr, &session1_)));
   ProcessPacket(addr, 1, true, "foo");
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(2, _, addr))
       .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, 2, addr, &session2_, &eps_)));
+                    &dispatcher_, 2, addr, &session2_)));
   ProcessPacket(addr, 2, true, "bar");
 
   data_ = "eep";
@@ -160,11 +149,11 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
 }
 
 TEST_F(QuicDispatcherTest, Shutdown) {
-  IPEndPoint addr(Loopback4(), 1);
+  IPEndPoint addr(net::test::Loopback4(), 1);
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, addr))
       .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, 1, addr, &session1_, &eps_)));
+                    &dispatcher_, 1, addr, &session1_)));
 
   ProcessPacket(addr, 1, true, "foo");
 
@@ -195,11 +184,11 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
                                              time_wait_list_manager);
   // Create a new session.
-  IPEndPoint addr(Loopback4(), 1);
+  IPEndPoint addr(net::test::Loopback4(), 1);
   QuicGuid guid = 1;
   EXPECT_CALL(dispatcher_, CreateQuicSession(guid, _, addr))
       .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, guid, addr, &session1_, &eps_)));
+                    &dispatcher_, guid, addr, &session1_)));
   ProcessPacket(addr, guid, true, "foo");
 
   // Close the connection by sending public reset packet.
@@ -237,7 +226,7 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
                                              time_wait_list_manager);
 
-  IPEndPoint addr(Loopback4(), 1);
+  IPEndPoint addr(net::test::Loopback4(), 1);
   QuicGuid guid = 1;
   // Dispatcher forwards all packets for this guid to the time wait list
   // manager.
@@ -250,16 +239,16 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
 class QuicWriteBlockedListTest : public QuicDispatcherTest {
  public:
   virtual void SetUp() {
-    IPEndPoint addr(Loopback4(), 1);
+    IPEndPoint addr(net::test::Loopback4(), 1);
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, addr))
         .WillOnce(testing::Return(CreateSession(
-                      &dispatcher_, 1, addr, &session1_, &eps_)));
+                      &dispatcher_, 1, addr, &session1_)));
     ProcessPacket(addr, 1, true, "foo");
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, addr))
         .WillOnce(testing::Return(CreateSession(
-                      &dispatcher_, 2, addr, &session2_, &eps_)));
+                      &dispatcher_, 2, addr, &session2_)));
     ProcessPacket(addr, 2, true, "bar");
 
     blocked_list_ = dispatcher_.write_blocked_list();

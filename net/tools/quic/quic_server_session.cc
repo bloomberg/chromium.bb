@@ -16,7 +16,7 @@ QuicServerSession::QuicServerSession(
     const QuicConfig& config,
     QuicConnection* connection,
     QuicSessionOwner* owner)
-    : QuicSession(connection, config, true),
+    : QuicSession(connection, config),
       owner_(owner) {
 }
 

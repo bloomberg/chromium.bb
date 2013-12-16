@@ -90,7 +90,7 @@ QuicClientSession::QuicClientSession(
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
-    : QuicSession(connection, config, false),
+    : QuicSession(connection, config),
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),

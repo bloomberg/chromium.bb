@@ -26,11 +26,17 @@ namespace net {
 
 namespace test {
 
+static const QuicGuid kTestGuid = 42;
+static const int kTestPort = 123;
+
 // Upper limit on versions we support.
 QuicVersion QuicVersionMax();
 
 // Lower limit on versions we support.
 QuicVersion QuicVersionMin();
+
+// Returns an address for 127.0.0.1.
+IPAddressNumber Loopback4();
 
 void CompareCharArraysWithHexError(const std::string& description,
                                    const char* actual,
@@ -244,13 +250,17 @@ class MockHelper : public QuicConnectionHelperInterface {
 
 class MockConnection : public QuicConnection {
  public:
-  // Uses a MockHelper.
-  MockConnection(QuicGuid guid, IPEndPoint address, bool is_server);
-  MockConnection(QuicGuid guid,
-                 IPEndPoint address,
-                 QuicConnectionHelperInterface* helper,
-                 QuicPacketWriter* writer,
+  // Uses a MockHelper, GUID of 42, and 127.0.0.1:123.
+  explicit MockConnection(bool is_server);
+
+  // Uses a MockHelper, GUID of 42.
+  MockConnection(IPEndPoint address,
                  bool is_server);
+
+  // Uses a MockHelper, and 127.0.0.1:123
+  MockConnection(QuicGuid guid,
+                 bool is_server);
+
   virtual ~MockConnection();
 
   // If the constructor that uses a MockHelper has been used then this method
@@ -282,7 +292,6 @@ class MockConnection : public QuicConnection {
   }
 
  private:
-  const bool has_mock_helper_;
   scoped_ptr<QuicPacketWriter> writer_;
   scoped_ptr<QuicConnectionHelperInterface> helper_;
 
@@ -291,7 +300,7 @@ class MockConnection : public QuicConnection {
 
 class PacketSavingConnection : public MockConnection {
  public:
-  PacketSavingConnection(QuicGuid guid, IPEndPoint address, bool is_server);
+  explicit PacketSavingConnection(bool is_server);
   virtual ~PacketSavingConnection();
 
   virtual bool SendOrQueuePacket(EncryptionLevel level,
@@ -307,7 +316,7 @@ class PacketSavingConnection : public MockConnection {
 
 class MockSession : public QuicSession {
  public:
-  MockSession(QuicConnection* connection, bool is_server);
+  explicit MockSession(QuicConnection* connection);
   virtual ~MockSession();
 
   MOCK_METHOD4(OnPacket, bool(const IPEndPoint& self_address,
@@ -334,9 +343,7 @@ class MockSession : public QuicSession {
 
 class TestSession : public QuicSession {
  public:
-  TestSession(QuicConnection* connection,
-              const QuicConfig& config,
-              bool is_server);
+  TestSession(QuicConnection* connection, const QuicConfig& config);
   virtual ~TestSession();
 
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));

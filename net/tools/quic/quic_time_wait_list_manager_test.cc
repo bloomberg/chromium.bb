@@ -86,7 +86,7 @@ class QuicTimeWaitListManagerTest : public testing::Test {
   virtual ~QuicTimeWaitListManagerTest() {}
 
   void AddGuid(QuicGuid guid) {
-    AddGuid(guid, test::QuicVersionMax(), NULL);
+    AddGuid(guid, net::test::QuicVersionMax(), NULL);
   }
 
   void AddGuid(QuicGuid guid,
@@ -196,7 +196,7 @@ TEST_F(QuicTimeWaitListManagerTest, CheckGuidInTimeWait) {
 TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
   size_t kConnectionCloseLength = 100;
   AddGuid(guid_,
-          QuicVersionMax(),
+          net::test::QuicVersionMax(),
           new QuicEncryptedPacket(
               new char[kConnectionCloseLength], kConnectionCloseLength, true));
   const int kRandomSequenceNumber = 1;
@@ -392,8 +392,8 @@ TEST_F(QuicTimeWaitListManagerTest, MakeSureFramerUsesCorrectVersion) {
   const int kRandomSequenceNumber = 1;
   scoped_ptr<QuicEncryptedPacket> packet;
 
-  AddGuid(guid_, test::QuicVersionMin(), NULL);
-  framer_.set_version(test::QuicVersionMin());
+  AddGuid(guid_, net::test::QuicVersionMin(), NULL);
+  framer_.set_version(net::test::QuicVersionMin());
   packet.reset(
       ConstructEncryptedPacket(ENCRYPTION_NONE, guid_, kRandomSequenceNumber));
 
@@ -402,13 +402,13 @@ TEST_F(QuicTimeWaitListManagerTest, MakeSureFramerUsesCorrectVersion) {
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
   ProcessPacket(guid_, *packet);
   EXPECT_EQ(QuicTimeWaitListManagerPeer::version(&time_wait_list_manager_),
-            test::QuicVersionMin());
+            net::test::QuicVersionMin());
 
   // New guid
   ++guid_;
 
-  AddGuid(guid_, test::QuicVersionMax(), NULL);
-  framer_.set_version(test::QuicVersionMax());
+  AddGuid(guid_, net::test::QuicVersionMax(), NULL);
+  framer_.set_version(net::test::QuicVersionMax());
   packet.reset(
       ConstructEncryptedPacket(ENCRYPTION_NONE, guid_, kRandomSequenceNumber));
 
@@ -417,7 +417,7 @@ TEST_F(QuicTimeWaitListManagerTest, MakeSureFramerUsesCorrectVersion) {
     .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
   ProcessPacket(guid_, *packet);
   EXPECT_EQ(QuicTimeWaitListManagerPeer::version(&time_wait_list_manager_),
-            test::QuicVersionMax());
+            net::test::QuicVersionMax());
 }
 
 TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
@@ -425,17 +425,17 @@ TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
   const int kGuid2 = 456;
   const int kGuid3 = 789;
 
-  AddGuid(kGuid1, test::QuicVersionMin(), NULL);
-  AddGuid(kGuid2, test::QuicVersionMax(), NULL);
-  AddGuid(kGuid3, test::QuicVersionMax(), NULL);
+  AddGuid(kGuid1, net::test::QuicVersionMin(), NULL);
+  AddGuid(kGuid2, net::test::QuicVersionMax(), NULL);
+  AddGuid(kGuid3, net::test::QuicVersionMax(), NULL);
 
-  EXPECT_EQ(test::QuicVersionMin(),
+  EXPECT_EQ(net::test::QuicVersionMin(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromGuid(
                 &time_wait_list_manager_, kGuid1));
-  EXPECT_EQ(test::QuicVersionMax(),
+  EXPECT_EQ(net::test::QuicVersionMax(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromGuid(
                 &time_wait_list_manager_, kGuid2));
-  EXPECT_EQ(test::QuicVersionMax(),
+  EXPECT_EQ(net::test::QuicVersionMax(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromGuid(
                 &time_wait_list_manager_, kGuid3));
 }

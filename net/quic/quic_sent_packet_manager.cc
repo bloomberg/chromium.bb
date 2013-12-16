@@ -44,10 +44,8 @@ static const int kMinRetransmissionTimeMs = 200;
 static const int kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 
-// We want to make sure if we get a nack packet which triggers several
-// retransmissions, we don't queue up too many packets.  10 is TCP's default
-// initial congestion window(RFC 6928).
-static const size_t kMaxRetransmissionsPerAck = kDefaultInitialWindow;
+// We only retransmit 2 packets per ack.
+static const size_t kMaxRetransmissionsPerAck = 2;
 
 // TCP retransmits after 3 nacks.
 static const size_t kNumberOfNacksBeforeRetransmission = 3;
@@ -78,16 +76,11 @@ QuicSentPacketManager::~QuicSentPacketManager() {
   for (UnackedPacketMap::iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it) {
     delete it->second.retransmittable_frames;
-  }
-  while (!previous_transmissions_map_.empty()) {
-    SequenceNumberSet* previous_transmissions =
-        previous_transmissions_map_.begin()->second;
-    for (SequenceNumberSet::const_iterator it = previous_transmissions->begin();
-         it != previous_transmissions->end(); ++it) {
-      DCHECK(ContainsKey(previous_transmissions_map_, *it));
-      previous_transmissions_map_.erase(*it);
+    // Only delete previous_transmissions once, for the newest packet.
+    if (it->second.previous_transmissions != NULL &&
+        it->first == *it->second.previous_transmissions->rbegin()) {
+      delete it->second.previous_transmissions;
     }
-    delete previous_transmissions;
   }
   STLDeleteValues(&packet_history_map_);
 }
@@ -138,8 +131,9 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 
   pending_retransmissions_.erase(old_sequence_number);
 
-  RetransmittableFrames* frames =
-      unacked_packets_[old_sequence_number].retransmittable_frames;
+  UnackedPacketMap::iterator unacked_it =
+      unacked_packets_.find(old_sequence_number);
+  RetransmittableFrames* frames = unacked_it->second.retransmittable_frames;
   DCHECK(frames);
 
   // A notifier may be waiting to hear about ACKs for the original sequence
@@ -149,26 +143,23 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 
   // We keep the old packet in the unacked packet list until it, or one of
   // the retransmissions of it are acked.
-  unacked_packets_[old_sequence_number].retransmittable_frames = NULL;
+  unacked_it->second.retransmittable_frames = NULL;
   unacked_packets_[new_sequence_number] =
       TransmissionInfo(frames, GetSequenceNumberLength(old_sequence_number));
 
   // Keep track of all sequence numbers that this packet
   // has been transmitted as.
-  SequenceNumberSet* previous_transmissions;
-  PreviousTransmissionMap::iterator it =
-      previous_transmissions_map_.find(old_sequence_number);
-  if (it == previous_transmissions_map_.end()) {
+  SequenceNumberSet* previous_transmissions =
+      unacked_it->second.previous_transmissions;
+  if (previous_transmissions == NULL) {
     // This is the first retransmission of this packet, so create a new entry.
     previous_transmissions = new SequenceNumberSet;
-    previous_transmissions_map_[old_sequence_number] = previous_transmissions;
+    unacked_it->second.previous_transmissions = previous_transmissions;
     previous_transmissions->insert(old_sequence_number);
-  } else {
-    // Otherwise, use the existing entry.
-    previous_transmissions = it->second;
   }
   previous_transmissions->insert(new_sequence_number);
-  previous_transmissions_map_[new_sequence_number] = previous_transmissions;
+  unacked_packets_[new_sequence_number].previous_transmissions =
+      previous_transmissions;
 
   DCHECK(HasRetransmittableFrames(new_sequence_number));
 }
@@ -240,28 +231,30 @@ void QuicSentPacketManager::HandleAckForSentPackets(
 }
 
 void QuicSentPacketManager::ClearPreviousRetransmissions(size_t num_to_clear) {
-  UnackedPacketMap::const_iterator it = unacked_packets_.begin();
+  UnackedPacketMap::iterator it = unacked_packets_.begin();
   while (it != unacked_packets_.end() && num_to_clear > 0) {
     QuicPacketSequenceNumber sequence_number = it->first;
-    ++it;
     // If this is not a previous transmission then there is no point
     // in clearing out any further packets, because it will not affect
     // the high water mark.
-    if (!IsPreviousTransmission(sequence_number)) {
+    SequenceNumberSet* previous_transmissions =
+        it->second.previous_transmissions;
+    if (previous_transmissions == NULL) {
+      break;
+    }
+    QuicPacketSequenceNumber newest_transmission =
+        *previous_transmissions->rbegin();
+    if (sequence_number == newest_transmission) {
       break;
     }
 
-    DCHECK(ContainsKey(previous_transmissions_map_, sequence_number));
-    DCHECK(!HasRetransmittableFrames(sequence_number));
-    unacked_packets_.erase(sequence_number);
-    SequenceNumberSet* previous_transmissions =
-        previous_transmissions_map_[sequence_number];
-    previous_transmissions_map_.erase(sequence_number);
+    DCHECK(it->second.retransmittable_frames == NULL);
     previous_transmissions->erase(sequence_number);
     if (previous_transmissions->size() == 1) {
-      previous_transmissions_map_.erase(*previous_transmissions->begin());
+      unacked_packets_[newest_transmission].previous_transmissions = NULL;
       delete previous_transmissions;
     }
+    unacked_packets_.erase(it++);
     --num_to_clear;
   }
 }
@@ -343,31 +336,14 @@ bool QuicSentPacketManager::IsPreviousTransmission(
     QuicPacketSequenceNumber sequence_number) const {
   DCHECK(ContainsKey(unacked_packets_, sequence_number));
 
-  PreviousTransmissionMap::const_iterator it =
-      previous_transmissions_map_.find(sequence_number);
-  if (it == previous_transmissions_map_.end()) {
+  UnackedPacketMap::const_iterator it = unacked_packets_.find(sequence_number);
+  if (it->second.previous_transmissions == NULL) {
     return false;
   }
 
-  SequenceNumberSet* previous_transmissions = it->second;
+  SequenceNumberSet* previous_transmissions = it->second.previous_transmissions;
   DCHECK(!previous_transmissions->empty());
   return *previous_transmissions->rbegin() != sequence_number;
-}
-
-QuicPacketSequenceNumber QuicSentPacketManager::GetMostRecentTransmission(
-    QuicPacketSequenceNumber sequence_number) const {
-  DCHECK(ContainsKey(unacked_packets_, sequence_number));
-
-  PreviousTransmissionMap::const_iterator it =
-      previous_transmissions_map_.find(sequence_number);
-  if (it == previous_transmissions_map_.end()) {
-    return sequence_number;
-  }
-
-  SequenceNumberSet* previous_transmissions =
-      previous_transmissions_map_.find(sequence_number)->second;
-  DCHECK(!previous_transmissions->empty());
-  return *previous_transmissions->rbegin();
 }
 
 QuicSentPacketManager::UnackedPacketMap::iterator
@@ -376,9 +352,9 @@ QuicSentPacketManager::MarkPacketReceivedByPeer(
   DCHECK(ContainsKey(unacked_packets_, sequence_number));
 
   // If this packet has never been retransmitted, then simply drop it.
-  PreviousTransmissionMap::const_iterator previous_it =
-      previous_transmissions_map_.find(sequence_number);
-  if (previous_it == previous_transmissions_map_.end()) {
+  UnackedPacketMap::const_iterator previous_it =
+      unacked_packets_.find(sequence_number);
+  if (previous_it->second.previous_transmissions == NULL) {
     UnackedPacketMap::iterator next_unacked =
         unacked_packets_.find(sequence_number);
     ++next_unacked;
@@ -386,7 +362,8 @@ QuicSentPacketManager::MarkPacketReceivedByPeer(
     return next_unacked;
   }
 
-  SequenceNumberSet* previous_transmissions = previous_it->second;
+  SequenceNumberSet* previous_transmissions =
+      previous_it->second.previous_transmissions;
   DCHECK(!previous_transmissions->empty());
   SequenceNumberSet::reverse_iterator previous_transmissions_it =
       previous_transmissions->rbegin();
@@ -399,17 +376,15 @@ QuicSentPacketManager::MarkPacketReceivedByPeer(
     // but prevent the data from being retransmitted.
     delete unacked_packets_[newest_transmission].retransmittable_frames;
     unacked_packets_[newest_transmission].retransmittable_frames = NULL;
+    unacked_packets_[newest_transmission].previous_transmissions = NULL;
     pending_retransmissions_.erase(newest_transmission);
   }
-  previous_transmissions_map_.erase(newest_transmission);
 
   // Clear out information all previous transmissions.
   ++previous_transmissions_it;
   while (previous_transmissions_it != previous_transmissions->rend()) {
     QuicPacketSequenceNumber previous_transmission = *previous_transmissions_it;
     ++previous_transmissions_it;
-    DCHECK(ContainsKey(previous_transmissions_map_, previous_transmission));
-    previous_transmissions_map_.erase(previous_transmission);
     DiscardPacket(previous_transmission);
   }
 

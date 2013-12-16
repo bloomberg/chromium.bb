@@ -12,6 +12,7 @@
 #include "base/port.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/spdy/write_blocked_list.h"
 
 using base::StringPiece;
 using std::string;
@@ -279,6 +280,16 @@ string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
     s += '\n';
   }
   return s;
+}
+
+// static
+QuicPriority QuicUtils::LowestPriority() {
+  return static_cast<QuicPriority>(kLowestPriority);
+}
+
+// static
+QuicPriority QuicUtils::HighestPriority() {
+  return static_cast<QuicPriority>(kHighestPriority);
 }
 
 }  // namespace net

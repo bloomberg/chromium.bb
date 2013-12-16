@@ -46,9 +46,8 @@ class MockQuicCryptoStream : public QuicCryptoStream {
 class QuicCryptoStreamTest : public ::testing::Test {
  public:
   QuicCryptoStreamTest()
-      : addr_(IPAddressNumber(), 1),
-        connection_(new MockConnection(1, addr_, false)),
-        session_(connection_, true),
+      : connection_(new MockConnection(false)),
+        session_(connection_),
         stream_(&session_) {
     message_.set_tag(kSHLO);
     message_.SetStringPiece(1, "abc");
@@ -62,7 +61,6 @@ class QuicCryptoStreamTest : public ::testing::Test {
   }
 
  protected:
-  IPEndPoint addr_;
   MockConnection* connection_;
   MockSession session_;
   MockQuicCryptoStream stream_;

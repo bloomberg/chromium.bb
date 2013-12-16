@@ -66,18 +66,15 @@ void GenerateBody(string* body, int length) {
   }
 }
 
-// Run all tests with the cross products of all versions
-// and all values of FLAGS_pad_quic_handshake_packets.
+// Run all tests with the cross products of all versions.
 struct TestParams {
   TestParams(const QuicVersionVector& client_supported_versions,
              const QuicVersionVector& server_supported_versions,
              QuicVersion negotiated_version,
-             bool use_padding,
              bool use_pacing)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
-        use_padding(use_padding),
         use_pacing(use_pacing) {
   }
 
@@ -87,7 +84,6 @@ struct TestParams {
     os << " client_supported_versions: "
        << QuicVersionVectorToString(p.client_supported_versions);
     os << " negotiated_version: " << QuicVersionToString(p.negotiated_version);
-    os << " use_padding: " << p.use_padding;
     os << " use_pacing: " << p.use_pacing << " }";
     return os;
   }
@@ -95,7 +91,6 @@ struct TestParams {
   QuicVersionVector client_supported_versions;
   QuicVersionVector server_supported_versions;
   QuicVersion negotiated_version;
-  bool use_padding;
   bool use_pacing;
 };
 
@@ -105,38 +100,36 @@ vector<TestParams> GetTestParams() {
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
 
   for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
-    for (int use_padding = 0; use_padding < 2; ++use_padding) {
-      // Add an entry for server and client supporting all versions.
-      params.push_back(TestParams(all_supported_versions,
+    // Add an entry for server and client supporting all versions.
+    params.push_back(TestParams(all_supported_versions,
+                                all_supported_versions,
+                                all_supported_versions[0],
+                                use_pacing != 0));
+
+    // Test client supporting 1 version and server supporting all versions.
+    // Simulate an old client and exercise version downgrade in the server.
+    // No protocol negotiation should occur. Skip the i = 0 case because it
+    // is essentially the same as the default case.
+    for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+      QuicVersionVector client_supported_versions;
+      client_supported_versions.push_back(all_supported_versions[i]);
+      params.push_back(TestParams(client_supported_versions,
                                   all_supported_versions,
-                                  all_supported_versions[0],
-                                  use_padding != 0, use_pacing != 0));
+                                  client_supported_versions[0],
+                                  use_pacing != 0));
+    }
 
-      // Test client supporting 1 version and server supporting all versions.
-      // Simulate an old client and exercise version downgrade in the server.
-      // No protocol negotiation should occur. Skip the i = 0 case because it
-      // is essentially the same as the default case.
-      for (size_t i = 1; i < all_supported_versions.size(); ++i) {
-        QuicVersionVector client_supported_versions;
-        client_supported_versions.push_back(all_supported_versions[i]);
-        params.push_back(TestParams(client_supported_versions,
-                                    all_supported_versions,
-                                    client_supported_versions[0],
-                                    use_pacing != 0, use_padding != 0));
-      }
-
-      // Test client supporting all versions and server supporting 1 version.
-      // Simulate an old server and exercise version downgrade in the client.
-      // Protocol negotiation should occur. Skip the i = 0 case because it is
-      // essentially the same as the default case.
-      for (size_t i = 1; i < all_supported_versions.size(); ++i) {
-        QuicVersionVector server_supported_versions;
-        server_supported_versions.push_back(all_supported_versions[i]);
-        params.push_back(TestParams(all_supported_versions,
-                                    server_supported_versions,
-                                    server_supported_versions[0],
-                                    use_pacing != 0, use_padding != 0));
-      }
+    // Test client supporting all versions and server supporting 1 version.
+    // Simulate an old server and exercise version downgrade in the client.
+    // Protocol negotiation should occur. Skip the i = 0 case because it is
+    // essentially the same as the default case.
+    for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+      QuicVersionVector server_supported_versions;
+      server_supported_versions.push_back(all_supported_versions[i]);
+      params.push_back(TestParams(all_supported_versions,
+                                  server_supported_versions,
+                                  server_supported_versions[0],
+                                  use_pacing != 0));
     }
   }
   return params;
@@ -156,7 +149,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
     FLAGS_limit_rto_increase_for_tests = true;
-    FLAGS_pad_quic_handshake_packets = GetParam().use_padding;
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
     LOG(INFO) << "Using Configuration: " << GetParam();
 
@@ -561,35 +553,6 @@ TEST_P(EndToEndTest, LargePostLargeBuffer) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-}
-
-// Enable once FLAGS_quic_allow_oversized_packets_for_test is added.
-TEST_P(EndToEndTest, DISABLED_PacketTooLarge) {
-  //FLAGS_quic_allow_oversized_packets_for_test = true;
-  ASSERT_TRUE(Initialize());
-
-  // Wait for the handshake to be confirmed so that the negotiated
-  // max packet size does not overwrite our increased packet size.
-  client_->client()->WaitForCryptoHandshakeConfirmed();
-
-  // If we use packet padding, then the CHLO is padded to such a large
-  // size that it is rejected by the server before the handshake can complete
-  // which results in a test timeout.
-  if (FLAGS_pad_quic_handshake_packets) {
-    return;
-  }
-
-  string body;
-  GenerateBody(&body, kMaxPacketSize);
-
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
-  request.AddBody(body, true);
-  client_->options()->max_packet_length = 20480;
-
-  EXPECT_EQ("", client_->SendCustomSynchronousRequest(request));
-  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
-  EXPECT_EQ(QUIC_PACKET_TOO_LARGE, client_->connection_error());
 }
 
 TEST_P(EndToEndTest, InvalidStream) {

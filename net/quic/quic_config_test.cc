@@ -29,6 +29,8 @@ class QuicConfigTest : public ::testing::Test {
 };
 
 TEST_F(QuicConfigTest, ToHandshakeMessage) {
+  FLAGS_enable_quic_pacing = false;
+  config_.SetDefaults();
   config_.set_idle_connection_state_lifetime(QuicTime::Delta::FromSeconds(5),
                                              QuicTime::Delta::FromSeconds(2));
   config_.set_max_streams_per_connection(4, 2);

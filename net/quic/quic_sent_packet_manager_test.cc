@@ -631,7 +631,7 @@ TEST_F(QuicSentPacketManagerTest, DontEarlyRetransmitPacket) {
   EXPECT_EQ(3u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
-TEST_F(QuicSentPacketManagerTest, NackRetransmit10Packets) {
+TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
   const size_t kNumSentPackets = 20;
   // Transmit 20 packets.
   for (QuicPacketSequenceNumber i = 1; i <= kNumSentPackets; ++i) {
@@ -651,18 +651,18 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit10Packets) {
   }
   EXPECT_CALL(*send_algorithm_,
               OnPacketAcked(kNumSentPackets, _, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(10);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
   SequenceNumberSet retransmissions =
       manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(10u, retransmissions.size());
+  EXPECT_EQ(2u, retransmissions.size());
   for (size_t i = 1; i < kNumSentPackets; ++i) {
     EXPECT_EQ(kNumSentPackets - i,
               QuicSentPacketManagerPeer::GetNackCount(&manager_, i));
   }
 }
 
-TEST_F(QuicSentPacketManagerTest, NackRetransmit10PacketsAlternateAcks) {
+TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
   const size_t kNumSentPackets = 30;
   // Transmit 15 packets of data and 15 ack packets.  The send algorithm will
   // inform the congestion manager not to save the acks by returning false.
@@ -684,11 +684,11 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit10PacketsAlternateAcks) {
   }
   // We never actually get an ack call, since the kNumSentPackets packet was
   // not saved.
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(10);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
   SequenceNumberSet retransmissions =
       manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(10u, retransmissions.size());
+  EXPECT_EQ(2u, retransmissions.size());
   // Only non-ack packets have a nack count.
   for (size_t i = 1; i < kNumSentPackets; i += 2) {
     EXPECT_EQ(kNumSentPackets - i,

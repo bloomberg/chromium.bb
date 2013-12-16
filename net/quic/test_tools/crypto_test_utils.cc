@@ -133,13 +133,8 @@ CryptoTestUtils::FakeClientOptions::FakeClientOptions()
 int CryptoTestUtils::HandshakeWithFakeServer(
     PacketSavingConnection* client_conn,
     QuicCryptoClientStream* client) {
-  QuicGuid guid(1);
-  IPAddressNumber ip;
-  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
-  IPEndPoint addr = IPEndPoint(ip, 1);
-  PacketSavingConnection* server_conn =
-      new PacketSavingConnection(guid, addr, true);
-  TestSession server_session(server_conn, DefaultQuicConfig(), true);
+  PacketSavingConnection* server_conn = new PacketSavingConnection(true);
+  TestSession server_session(server_conn, DefaultQuicConfig());
 
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
                                        QuicRandom::GetInstance());
@@ -166,13 +161,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
     QuicCryptoServerStream* server,
     const FakeClientOptions& options) {
-  QuicGuid guid(1);
-  IPAddressNumber ip;
-  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
-  IPEndPoint addr = IPEndPoint(ip, 1);
-  PacketSavingConnection* client_conn =
-      new PacketSavingConnection(guid, addr, false);
-  TestSession client_session(client_conn, DefaultQuicConfig(), false);
+  PacketSavingConnection* client_conn = new PacketSavingConnection(false);
+  TestSession client_session(client_conn, DefaultQuicConfig());
   QuicCryptoClientConfig crypto_config;
 
   client_session.config()->SetDefaults();

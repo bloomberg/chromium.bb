@@ -18,8 +18,6 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
-NET_EXPORT_PRIVATE extern bool FLAGS_pad_quic_handshake_packets;
-
 namespace net {
 namespace test {
 class QuicPacketCreatorPeer;

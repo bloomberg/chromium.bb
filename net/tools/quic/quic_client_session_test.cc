@@ -28,8 +28,7 @@ const char kServerHostname[] = "www.example.com";
 class ToolsQuicClientSessionTest : public ::testing::Test {
  protected:
   ToolsQuicClientSessionTest()
-      : guid_(1),
-        connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)) {
+      : connection_(new PacketSavingConnection(false)) {
     crypto_config_.SetDefaults();
     session_.reset(new QuicClientSession(kServerHostname, DefaultQuicConfig(),
                                          connection_, &crypto_config_));
@@ -42,7 +41,6 @@ class ToolsQuicClientSessionTest : public ::testing::Test {
         connection_, session_->GetCryptoStream());
   }
 
-  QuicGuid guid_;
   PacketSavingConnection* connection_;
   scoped_ptr<QuicClientSession> session_;
   QuicCryptoClientConfig crypto_config_;

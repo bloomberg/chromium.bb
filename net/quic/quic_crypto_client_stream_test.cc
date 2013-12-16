@@ -24,9 +24,8 @@ const char kServerHostname[] = "example.com";
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
-      : addr_(),
-        connection_(new PacketSavingConnection(1, addr_, false)),
-        session_(new TestSession(connection_, DefaultQuicConfig(), false)),
+      : connection_(new PacketSavingConnection(false)),
+        session_(new TestSession(connection_, DefaultQuicConfig())),
         stream_(new QuicCryptoClientStream(kServerHostname, session_.get(),
                                            &crypto_config_)) {
     session_->SetCryptoStream(stream_.get());
@@ -43,7 +42,6 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
     message_data_.reset(framer.ConstructHandshakeMessage(message_));
   }
 
-  IPEndPoint addr_;
   PacketSavingConnection* connection_;
   scoped_ptr<TestSession> session_;
   scoped_ptr<QuicCryptoClientStream> stream_;
@@ -88,7 +86,8 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
   CompleteCryptoHandshake();
 
   const QuicConfig* config = session_->config();
-  EXPECT_EQ(kQBIC, config->congestion_control());
+  EXPECT_EQ(FLAGS_enable_quic_pacing ? kPACE : kQBIC,
+            config->congestion_control());
   EXPECT_EQ(kDefaultTimeoutSecs,
             config->idle_connection_state_lifetime().ToSeconds());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
@@ -115,8 +114,8 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   // Seed the config with a cached server config.
   CompleteCryptoHandshake();
 
-  connection_ = new PacketSavingConnection(1, addr_, true);
-  session_.reset(new TestSession(connection_, DefaultQuicConfig(), true));
+  connection_ = new PacketSavingConnection(true);
+  session_.reset(new TestSession(connection_, DefaultQuicConfig()));
   stream_.reset(new QuicCryptoClientStream(kServerHostname, session_.get(),
                                            &crypto_config_));
 

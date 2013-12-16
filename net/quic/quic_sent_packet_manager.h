@@ -204,18 +204,23 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     TransmissionInfo()
         : retransmittable_frames(NULL),
           sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
-          sent_time(QuicTime::Zero()) { }
+          sent_time(QuicTime::Zero()),
+          previous_transmissions(NULL) { }
     TransmissionInfo(RetransmittableFrames* retransmittable_frames,
                      QuicSequenceNumberLength sequence_number_length)
         : retransmittable_frames(retransmittable_frames),
           sequence_number_length(sequence_number_length),
-          sent_time(QuicTime::Zero()) {
+          sent_time(QuicTime::Zero()),
+          previous_transmissions(NULL) {
     }
 
     RetransmittableFrames* retransmittable_frames;
     QuicSequenceNumberLength sequence_number_length;
     // Zero when the packet is serialized, non-zero once it's sent.
     QuicTime sent_time;
+    // Stores all previous transmissions if the packet has been retransmitted,
+    // and is NULL otherwise.
+    SequenceNumberSet* previous_transmissions;
   };
 
   typedef linked_hash_map<QuicPacketSequenceNumber,
@@ -252,11 +257,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   QuicSequenceNumberLength GetSequenceNumberLength(
       QuicPacketSequenceNumber sequence_number) const;
 
-  // Returns the sequence number of the packet that |sequence_number| was
-  // most recently transmitted as.
-  QuicPacketSequenceNumber GetMostRecentTransmission(
-      QuicPacketSequenceNumber sequence_number) const;
-
   // Clears up to |num_to_clear| previous transmissions in order to make room
   // in the ack frame for new acks.
   void ClearPreviousRetransmissions(size_t num_to_clear);
@@ -275,12 +275,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Pending retransmissions which have not been packetized and sent yet.
   PendingRetransmissionMap pending_retransmissions_;
-
-  // Map from sequence number to set of all sequence number that this packet has
-  // been transmitted as.  If a packet has not been retransmitted, it will not
-  // have an entry in this map.  If any transmission of a packet has been acked
-  // it will not have an entry in this map.
-  PreviousTransmissionMap previous_transmissions_map_;
 
   // Tracks if the connection was created by the server.
   bool is_server_;

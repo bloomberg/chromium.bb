@@ -54,8 +54,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   };
 
   QuicSession(QuicConnection* connection,
-              const QuicConfig& config,
-              bool is_server);
+              const QuicConfig& config);
 
   virtual ~QuicSession();
 
@@ -173,7 +172,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicErrorCode error() const { return error_; }
 
-  bool is_server() const { return is_server_; }
+  bool is_server() const { return connection_->is_server(); }
 
  protected:
   typedef base::hash_map<QuicStreamId, QuicDataStream*> DataStreamMap;
@@ -274,7 +273,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Map from StreamId to pointers to streams that are owned by the caller.
   DataStreamMap stream_map_;
   QuicStreamId next_stream_id_;
-  bool is_server_;
 
   // Set of stream ids that have been "implicitly created" by receipt
   // of a stream id larger than the next expected stream id.

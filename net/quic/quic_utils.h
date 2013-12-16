@@ -75,6 +75,10 @@ class NET_EXPORT_PRIVATE QuicUtils {
   static char* AsChars(unsigned char* data) {
     return reinterpret_cast<char*>(data);
   }
+
+  static QuicPriority LowestPriority();
+
+  static QuicPriority HighestPriority();
 };
 
 // Utility function that returns an IOVector object wrapped around |str|.

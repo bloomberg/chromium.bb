@@ -313,6 +313,11 @@ class TestPacketWriter : public QuicPacketWriter {
     return is_write_blocked_data_buffered_;
   }
 
+  // Resets the visitor's state by clearing out the headers and frames.
+  void Reset() {
+    visitor_.Reset();
+  }
+
   QuicPacketHeader* header() { return visitor_.header(); }
 
   size_t frame_count() const { return visitor_.frame_count(); }
@@ -918,8 +923,8 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(entropy_calculator_,
               EntropyHash(511)).WillOnce(testing::Return(0));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _, _)).Times(256);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(10);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
   ProcessAckPacket(&frame);
 
   QuicReceivedPacketManager* received_packet_manager =
@@ -933,8 +938,8 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
 
   // Removing one missing packet allows us to ack 192 and one more range.
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(10);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
   ProcessAckPacket(&frame);
   EXPECT_EQ(num_packets,
             received_packet_manager->peer_largest_observed_packet());
@@ -1788,7 +1793,7 @@ TEST_F(QuicConnectionTest, ResumptionAlarmThenWriteBlocked) {
 TEST_F(QuicConnectionTest, LimitPacketsPerNack) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(15, _, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(13);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(4);
   int offset = 0;
   // Send packets 1 to 15.
   for (int i = 0; i < 15; ++i) {
@@ -1806,15 +1811,14 @@ TEST_F(QuicConnectionTest, LimitPacketsPerNack) {
       QuicConnectionPeer::GetSentEntropyHash(&connection_, 15) ^
       QuicConnectionPeer::GetSentEntropyHash(&connection_, 14);
 
-  // 13 packets have been NACK'd 3 times, but we limit retransmissions to 10.
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(10);
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(10);
+  // 13 packets have been NACK'd 3 times, but we limit retransmissions to 2.
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
   ProcessAckPacket(&nack);
 
-  // The next call should trigger retransmitting 3 more packets, because 14
-  // only has 2 nacks so far.
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(3);
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(3);
+  // The next call should trigger retransmitting 2 more packets.
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
   ProcessAckPacket(&nack);
 }
 
@@ -2609,6 +2613,31 @@ TEST_F(QuicConnectionTest, SendDelayedAckOnSecondPacket) {
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_TRUE(writer_->ack());
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_F(QuicConnectionTest, NoAckOnOldNacks) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  // Drop one packet, triggering a sequence of acks.
+  ProcessPacket(2);
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  writer_->Reset();
+  ProcessPacket(3);
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  writer_->Reset();
+  ProcessPacket(4);
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  writer_->Reset();
+  ProcessPacket(5);
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  // Now only set the timer on the 6th packet, instead of sending another ack.
+  writer_->Reset();
+  ProcessPacket(6);
+  EXPECT_EQ(0u, writer_->frame_count());
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
 }
 
 TEST_F(QuicConnectionTest, SendDelayedAckOnOutgoingPacket) {

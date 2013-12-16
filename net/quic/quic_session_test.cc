@@ -90,8 +90,8 @@ class StreamBlocker {
 
 class TestSession : public QuicSession {
  public:
-  TestSession(QuicConnection* connection, bool is_server)
-      : QuicSession(connection, DefaultQuicConfig(), is_server),
+  explicit TestSession(QuicConnection* connection)
+      : QuicSession(connection, DefaultQuicConfig()),
         crypto_stream_(this) {
   }
 
@@ -123,9 +123,8 @@ class TestSession : public QuicSession {
 class QuicSessionTest : public ::testing::Test {
  protected:
   QuicSessionTest()
-      : guid_(1),
-        connection_(new MockConnection(guid_, IPEndPoint(), false)),
-        session_(connection_, true) {
+      : connection_(new MockConnection(true)),
+        session_(connection_) {
     headers_[":host"] = "www.google.com";
     headers_[":path"] = "/index.hml";
     headers_[":scheme"] = "http";
@@ -170,7 +169,6 @@ class QuicSessionTest : public ::testing::Test {
     closed_streams_.insert(id);
   }
 
-  QuicGuid guid_;
   MockConnection* connection_;
   TestSession session_;
   set<QuicStreamId> closed_streams_;
@@ -178,7 +176,7 @@ class QuicSessionTest : public ::testing::Test {
 };
 
 TEST_F(QuicSessionTest, PeerAddress) {
-  EXPECT_EQ(IPEndPoint(), session_.peer_address());
+  EXPECT_EQ(IPEndPoint(Loopback4(), kTestPort), session_.peer_address());
 }
 
 TEST_F(QuicSessionTest, IsCryptoHandshakeConfirmed) {
@@ -248,6 +246,7 @@ TEST_F(QuicSessionTest, DecompressionError) {
   ReliableQuicStream* stream = session_.GetIncomingReliableStream(3);
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_DECOMPRESSION_FAILURE));
   const char data[] =
+      "\0\0\0\0"   // priority
       "\1\0\0\0"   // headers id
       "\0\0\0\4"   // length
       "abcd";      // invalid compressed data
@@ -395,8 +394,8 @@ TEST_F(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
 
 TEST_F(QuicSessionTest, ZombieStream) {
   StrictMock<MockConnection>* connection =
-      new StrictMock<MockConnection>(guid_, IPEndPoint(), false);
-  TestSession session(connection, /*is_server=*/ false);
+      new StrictMock<MockConnection>(false);
+  TestSession session(connection);
 
   TestStream* stream3 = session.CreateOutgoingDataStream();
   EXPECT_EQ(3u, stream3->id());
@@ -435,8 +434,8 @@ TEST_F(QuicSessionTest, ZombieStream) {
 
 TEST_F(QuicSessionTest, ZombieStreamConnectionClose) {
   StrictMock<MockConnection>* connection =
-      new StrictMock<MockConnection>(guid_, IPEndPoint(), false);
-  TestSession session(connection, /*is_server=*/ false);
+      new StrictMock<MockConnection>(false);
+  TestSession session(connection);
 
   TestStream* stream3 = session.CreateOutgoingDataStream();
   EXPECT_EQ(3u, stream3->id());

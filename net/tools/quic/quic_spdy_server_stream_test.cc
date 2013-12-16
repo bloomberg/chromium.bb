@@ -64,7 +64,7 @@ namespace {
 class QuicSpdyServerStreamTest : public ::testing::Test {
  public:
   QuicSpdyServerStreamTest()
-      : session_(new MockConnection(1, IPEndPoint(), true), true),
+      : session_(new MockConnection(true)),
         body_("hello world") {
     BalsaHeaders request_headers;
     request_headers.SetRequestFirstlineFromStringPieces(

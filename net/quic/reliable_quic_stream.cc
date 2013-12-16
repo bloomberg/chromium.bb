@@ -112,6 +112,10 @@ void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
   session()->connection()->SendConnectionCloseWithDetails(error, details);
 }
 
+QuicVersion ReliableQuicStream::version() {
+  return session()->connection()->version();
+}
+
 void ReliableQuicStream::WriteOrBufferData(StringPiece data, bool fin) {
   DCHECK(data.size() > 0 || fin);
   DCHECK(!fin_buffered_);

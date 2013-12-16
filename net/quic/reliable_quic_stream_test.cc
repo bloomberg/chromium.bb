@@ -30,7 +30,6 @@ namespace {
 const char kData1[] = "FooAndBar";
 const char kData2[] = "EepAndBaz";
 const size_t kDataLen = 9;
-const QuicGuid kGuid = 42;
 const QuicGuid kStreamId = 3;
 const bool kIsServer = true;
 const bool kShouldProcessData = true;
@@ -50,7 +49,9 @@ class TestStream : public ReliableQuicStream {
     return should_process_data_ ? data_len : 0;
   }
 
-  virtual QuicPriority EffectivePriority() const OVERRIDE { return 0; }
+  virtual QuicPriority EffectivePriority() const OVERRIDE {
+    return QuicUtils::HighestPriority();
+  }
 
   using ReliableQuicStream::WriteOrBufferData;
   using ReliableQuicStream::CloseReadSide;
@@ -96,10 +97,8 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   }
 
   void Initialize(bool stream_should_process_data) {
-    connection_ = new testing::StrictMock<MockConnection>(
-        kGuid, IPEndPoint(), kIsServer);
-    session_.reset(new testing::StrictMock<MockSession>(
-        connection_, kIsServer));
+    connection_ = new StrictMock<MockConnection>(kIsServer);
+    session_.reset(new StrictMock<MockSession>(connection_));
     stream_.reset(new TestStream(kStreamId, session_.get(),
                                  stream_should_process_data));
     stream2_.reset(new TestStream(kStreamId + 2, session_.get(),

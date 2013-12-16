@@ -5,6 +5,7 @@
 #include "net/quic/quic_received_packet_manager.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "net/base/linked_hash_map.h"
 
 using std::make_pair;
@@ -12,6 +13,17 @@ using std::max;
 using std::min;
 
 namespace net {
+
+namespace {
+
+// The maximum number of packets to ack immediately after a missing packet for
+// fast retransmission to kick in at the sender.  This limit is created to
+// reduce the number of acks sent that have no benefit for fast retransmission.
+// Set to the number of nacks needed for fast retransmit plus one for protection
+// against an ack loss
+const size_t kMaxPacketsAfterNewMissing = 4;
+
+}
 
 QuicReceivedPacketManager::QuicReceivedPacketManager(
     CongestionFeedbackType congestion_type)
@@ -58,6 +70,11 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     receive_algorithm_->RecordIncomingPacket(
         bytes, sequence_number, receipt_time, revived);
   }
+}
+
+bool QuicReceivedPacketManager::IsMissing(
+    QuicPacketSequenceNumber sequence_number) {
+  return ContainsKey(received_info_.missing_packets, sequence_number);
 }
 
 bool QuicReceivedPacketManager::IsAwaitingPacket(
@@ -211,6 +228,12 @@ void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
 
 bool QuicReceivedPacketManager::HasMissingPackets() {
   return !received_info_.missing_packets.empty();
+}
+
+bool QuicReceivedPacketManager::HasNewMissingPackets() {
+  return HasMissingPackets() &&
+      (received_info_.largest_observed -
+       *received_info_.missing_packets.rbegin()) <= kMaxPacketsAfterNewMissing;
 }
 
 }  // namespace net

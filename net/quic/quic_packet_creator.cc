@@ -17,10 +17,6 @@ using std::min;
 using std::pair;
 using std::vector;
 
-// If true, then QUIC handshake packets will be padded to the maximium packet
-// size.
-bool FLAGS_pad_quic_handshake_packets = true;
-
 namespace net {
 
 // A QuicRandom wrapper that gets a bucket of entropy and distributes it
@@ -320,9 +316,7 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, false, false, &header);
 
-  if (FLAGS_pad_quic_handshake_packets) {
-    MaybeAddPadding();
-  }
+  MaybeAddPadding();
 
   size_t max_plaintext_size =
       framer_->GetMaxPlaintextSize(options_.max_packet_length);

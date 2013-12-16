@@ -24,11 +24,8 @@ class IPEndPoint;
 namespace tools {
 namespace test {
 
-// Upper limit on versions we support.
-QuicVersion QuicVersionMax();
-
-// Lower limit on versions we support.
-QuicVersion QuicVersionMin();
+static const QuicGuid kTestGuid = 42;
+static const int kTestPort = 123;
 
 // Simple random number generator used to compute random numbers suitable
 // for pseudo-randomly dropping packets in tests.  It works by computing
@@ -49,19 +46,17 @@ class SimpleRandom {
 
 class MockConnection : public QuicConnection {
  public:
-  // Uses a QuicConnectionHelper created with fd and eps.
-  MockConnection(QuicGuid guid,
-                 IPEndPoint address,
-                 int fd,
-                 EpollServer* eps,
+  // Uses a MockHelper, GUID of 42, and 127.0.0.1:123.
+  explicit MockConnection(bool is_server);
+
+  // Uses a MockHelper, GUID of 42.
+  MockConnection(IPEndPoint address,
                  bool is_server);
-  // Uses a MockHelper.
-  MockConnection(QuicGuid guid, IPEndPoint address, bool is_server);
+
+  // Uses a MockHelper, and 127.0.0.1:123
   MockConnection(QuicGuid guid,
-                 IPEndPoint address,
-                 QuicConnectionHelperInterface* helper,
-                 QuicPacketWriter* writer,
                  bool is_server);
+
   virtual ~MockConnection();
 
   // If the constructor that uses a MockHelper has been used then this method
@@ -91,7 +86,6 @@ class MockConnection : public QuicConnection {
   virtual bool OnProtocolVersionMismatch(QuicVersion version) { return false; }
 
  private:
-  const bool has_mock_helper_;
   scoped_ptr<QuicPacketWriter> writer_;
   scoped_ptr<QuicConnectionHelperInterface> helper_;
 
@@ -100,9 +94,7 @@ class MockConnection : public QuicConnection {
 
 class TestSession : public QuicSession {
  public:
-  TestSession(QuicConnection* connection,
-              const QuicConfig& config,
-              bool is_server);
+  TestSession(QuicConnection* connection, const QuicConfig& config);
   virtual ~TestSession();
 
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));

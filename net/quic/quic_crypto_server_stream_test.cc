@@ -52,11 +52,8 @@ namespace {
 class QuicCryptoServerStreamTest : public testing::TestWithParam<bool> {
  public:
   QuicCryptoServerStreamTest()
-      : guid_(1),
-        addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
-              ip_ : IPAddressNumber(), 1),
-        connection_(new PacketSavingConnection(guid_, addr_, true)),
-        session_(connection_, DefaultQuicConfig(), true),
+      : connection_(new PacketSavingConnection(true)),
+        session_(connection_, DefaultQuicConfig()),
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
         stream_(crypto_config_, &session_),
@@ -104,9 +101,6 @@ class QuicCryptoServerStreamTest : public testing::TestWithParam<bool> {
   }
 
  protected:
-  IPAddressNumber ip_;
-  QuicGuid guid_;
-  IPEndPoint addr_;
   PacketSavingConnection* connection_;
   TestSession session_;
   QuicConfig config_;
@@ -136,21 +130,15 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
-  QuicGuid guid(1);
-  IPAddressNumber ip;
-  ParseIPLiteralToNumber("127.0.0.1", &ip);
-  IPEndPoint addr(ip, 0);
-  PacketSavingConnection* client_conn =
-      new PacketSavingConnection(guid, addr, false);
-  PacketSavingConnection* server_conn =
-      new PacketSavingConnection(guid, addr, false);
+  PacketSavingConnection* client_conn = new PacketSavingConnection(false);
+  PacketSavingConnection* server_conn = new PacketSavingConnection(false);
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
   server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
 
   QuicConfig client_config;
   client_config.SetDefaults();
   scoped_ptr<TestSession> client_session(
-      new TestSession(client_conn, client_config, false));
+      new TestSession(client_conn, client_config));
   QuicCryptoClientConfig client_crypto_config;
   client_crypto_config.SetDefaults();
 
@@ -163,8 +151,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   CHECK(client->CryptoConnect());
   CHECK_EQ(1u, client_conn->packets_.size());
 
-  scoped_ptr<TestSession> server_session(
-      new TestSession(server_conn, config_, true));
+  scoped_ptr<TestSession> server_session(new TestSession(server_conn, config_));
   scoped_ptr<QuicCryptoServerStream> server(
       new QuicCryptoServerStream(crypto_config_, server_session.get()));
   server_session->SetCryptoStream(server.get());
@@ -176,8 +163,8 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   // Now do another handshake, hopefully in 0-RTT.
   LOG(INFO) << "Resetting for 0-RTT handshake attempt";
 
-  client_conn = new PacketSavingConnection(guid, addr, false);
-  server_conn = new PacketSavingConnection(guid, addr, false);
+  client_conn = new PacketSavingConnection(false);
+  server_conn = new PacketSavingConnection(false);
   // We need to advance time past the strike-server window so that it's
   // authoritative in this time span.
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(102000));
@@ -186,8 +173,8 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   // This causes the client's nonce to be different and thus stops the
   // strike-register from rejecting the repeated nonce.
   reinterpret_cast<MockRandom*>(client_conn->random_generator())->ChangeValue();
-  client_session.reset(new TestSession(client_conn, client_config, false));
-  server_session.reset(new TestSession(server_conn, config_, true));
+  client_session.reset(new TestSession(client_conn, client_config));
+  server_session.reset(new TestSession(server_conn, config_));
   client.reset(new QuicCryptoClientStream(
         "test.example.com", client_session.get(), &client_crypto_config));
   client_session->SetCryptoStream(client.get());

@@ -64,9 +64,8 @@ class TestPacketWriter : public QuicDefaultPacketWriter {
 class QuicClientSessionTest : public ::testing::Test {
  protected:
   QuicClientSessionTest()
-      : guid_(1),
-        writer_(new TestPacketWriter()),
-        connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
+      : writer_(new TestPacketWriter()),
+        connection_(new PacketSavingConnection(false)),
         session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
                  kServerHostname, DefaultQuicConfig(), &crypto_config_,
                  &net_log_) {
@@ -93,7 +92,6 @@ class QuicClientSessionTest : public ::testing::Test {
     ASSERT_EQ(OK, callback_.WaitForResult());
   }
 
-  QuicGuid guid_;
   scoped_ptr<QuicDefaultPacketWriter> writer_;
   PacketSavingConnection* connection_;
   CapturingNetLog net_log_;

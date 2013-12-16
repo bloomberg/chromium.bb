@@ -231,40 +231,46 @@ void MockHelper::AdvanceTime(QuicTime::Delta delta) {
   clock_.AdvanceTime(delta);
 }
 
-MockConnection::MockConnection(QuicGuid guid,
-                               IPEndPoint address,
-                               bool is_server)
-    : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
+MockConnection::MockConnection(bool is_server)
+    : QuicConnection(kTestGuid,
+                     IPEndPoint(Loopback4(), kTestPort),
+                     new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),
-      has_mock_helper_(true),
+      writer_(QuicConnectionPeer::GetWriter(this)),
+      helper_(helper()) {
+}
+
+MockConnection::MockConnection(IPEndPoint address,
+                               bool is_server)
+    : QuicConnection(kTestGuid, address,
+                     new testing::NiceMock<MockHelper>(),
+                     new testing::NiceMock<MockPacketWriter>(),
+                     is_server, QuicSupportedVersions()),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,
-                               IPEndPoint address,
-                               QuicConnectionHelperInterface* helper,
-                               QuicPacketWriter* writer,
                                bool is_server)
-    : QuicConnection(guid, address, helper, writer, is_server,
-                     QuicSupportedVersions()),
-      has_mock_helper_(false) {
+    : QuicConnection(guid,
+                     IPEndPoint(Loopback4(), kTestPort),
+                     new testing::NiceMock<MockHelper>(),
+                     new testing::NiceMock<MockPacketWriter>(),
+                     is_server, QuicSupportedVersions()),
+      writer_(QuicConnectionPeer::GetWriter(this)),
+      helper_(helper()) {
 }
 
 MockConnection::~MockConnection() {
 }
 
 void MockConnection::AdvanceTime(QuicTime::Delta delta) {
-  CHECK(has_mock_helper_) << "Cannot advance time unless a MockClock is being"
-                             " used";
   static_cast<MockHelper*>(helper())->AdvanceTime(delta);
 }
 
-PacketSavingConnection::PacketSavingConnection(QuicGuid guid,
-                                               IPEndPoint address,
-                                               bool is_server)
-    : MockConnection(guid, address, is_server) {
+PacketSavingConnection::PacketSavingConnection(bool is_server)
+    : MockConnection(is_server) {
 }
 
 PacketSavingConnection::~PacketSavingConnection() {
@@ -283,8 +289,8 @@ bool PacketSavingConnection::SendOrQueuePacket(
   return true;
 }
 
-MockSession::MockSession(QuicConnection* connection, bool is_server)
-    : QuicSession(connection, DefaultQuicConfig(), is_server) {
+MockSession::MockSession(QuicConnection* connection)
+    : QuicSession(connection, DefaultQuicConfig()) {
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -293,9 +299,8 @@ MockSession::~MockSession() {
 }
 
 TestSession::TestSession(QuicConnection* connection,
-                         const QuicConfig& config,
-                         bool is_server)
-    : QuicSession(connection, config, is_server),
+                         const QuicConfig& config)
+    : QuicSession(connection, config),
       crypto_stream_(NULL) {
 }
 
@@ -371,6 +376,12 @@ string HexDumpWithMarks(const char* data, int length,
 QuicVersion QuicVersionMax() { return QuicSupportedVersions().front(); }
 
 QuicVersion QuicVersionMin() { return QuicSupportedVersions().back(); }
+
+IPAddressNumber Loopback4() {
+  net::IPAddressNumber addr;
+  CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &addr));
+  return addr;
+}
 
 void CompareCharArraysWithHexError(
     const string& description,

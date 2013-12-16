@@ -20,7 +20,7 @@ namespace net {
 const size_t kMaxPrematurelyClosedStreamsTracked = 20;
 const size_t kMaxZombieStreams = 20;
 
-#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
+#define ENDPOINT (is_server() ? "Server: " : " Client: ")
 
 // We want to make sure we delete any closed streams in a safe manner.
 // To avoid deleting a stream in mid-operation, we have a simple shim between
@@ -78,14 +78,12 @@ class VisitorShim : public QuicConnectionVisitorInterface {
 };
 
 QuicSession::QuicSession(QuicConnection* connection,
-                         const QuicConfig& config,
-                         bool is_server)
+                         const QuicConfig& config)
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
       config_(config),
       max_open_streams_(config_.max_streams_per_connection()),
-      next_stream_id_(is_server ? 2 : 3),
-      is_server_(is_server),
+      next_stream_id_(is_server() ? 2 : 3),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
       goaway_received_(false),
@@ -293,7 +291,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
     // a request before receiving the response) then we need to make sure that
     // we keep the stream alive long enough to process any response or
     // RST_STREAM frames.
-    if (locally_reset && !is_server_) {
+    if (locally_reset && !is_server()) {
       AddZombieStream(stream_id);
       return;
     }

@@ -48,7 +48,7 @@ uint32 QuicCryptoStream::ProcessRawData(const char* data,
 }
 
 QuicPriority QuicCryptoStream::EffectivePriority() const {
-  return 0;
+  return QuicUtils::HighestPriority();
 }
 
 void QuicCryptoStream::SendHandshakeMessage(
