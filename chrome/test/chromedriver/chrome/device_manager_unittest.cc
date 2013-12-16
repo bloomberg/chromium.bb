@@ -25,14 +25,9 @@ class FakeAdb : public Adb {
     return Status(kOk);
   }
 
-  virtual Status Forward(const std::string& device_serial,
-                         int host_port,
-                         const std::string& device_abstract) OVERRIDE {
-    return Status(kOk);
-  }
-
-  virtual Status KillForward(const std::string& device_serial,
-                             int host_port) OVERRIDE {
+  virtual Status ForwardPort(const std::string& device_serial,
+                             int local_port,
+                             const std::string& remote_abstract) OVERRIDE {
     return Status(kOk);
   }
 

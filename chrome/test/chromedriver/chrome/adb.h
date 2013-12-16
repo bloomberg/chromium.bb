@@ -15,11 +15,9 @@ class Adb {
   virtual ~Adb() {}
 
   virtual Status GetDevices(std::vector<std::string>* devices) = 0;
-  virtual Status Forward(const std::string& device_serial,
-                         int host_port,
-                         const std::string& device_abstract) = 0;
-  virtual Status KillForward(const std::string& device_serial,
-                             int host_port) = 0;
+  virtual Status ForwardPort(const std::string& device_serial,
+                             int local_port,
+                             const std::string& remote_abstract) = 0;
   virtual Status SetCommandLineFile(const std::string& device_serial,
                                     const std::string& command_line_file,
                                     const std::string& exec_name,

@@ -22,16 +22,14 @@ class AdbImpl : public Adb {
  public:
   explicit AdbImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_message_loop_proxy,
-      int server_port);
+      int port);
   virtual ~AdbImpl();
 
   // Overridden from Adb:
   virtual Status GetDevices(std::vector<std::string>* devices) OVERRIDE;
-  virtual Status Forward(const std::string& device_serial,
-                         int host_port,
-                         const std::string& device_abstract) OVERRIDE;
-  virtual Status KillForward(const std::string& device_serial,
-                             int host_port) OVERRIDE;
+  virtual Status ForwardPort(const std::string& device_serial,
+                             int local_port,
+                             const std::string& remote_abstract) OVERRIDE;
   virtual Status SetCommandLineFile(const std::string& device_serial,
                                     const std::string& command_line_file,
                                     const std::string& exec_name,
@@ -61,7 +59,7 @@ class AdbImpl : public Adb {
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  int server_port_;
+  int port_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_ADB_IMPL_H_
