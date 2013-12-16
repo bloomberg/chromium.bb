@@ -48,7 +48,7 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
                         const VideoFrameDecodedCallback& frame_decoded_cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));
   const int frame_id_int = static_cast<int>(encoded_frame->frame_id);
-  VLOG(2) << "VP8 decode frame:" << frame_id_int
+  VLOG(1) << "VP8 decode frame:" << frame_id_int
           << " sized:" << encoded_frame->data.size();
 
   if (encoded_frame->data.empty()) return false;
@@ -93,7 +93,7 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, base::Bind(
       LogFrameDecodedEvent, cast_environment_,encoded_frame->frame_id));
 
-  VLOG(2) << "Decoded frame " << frame_id_int;
+  VLOG(1) << "Decoded frame " << frame_id_int;
   // Frame decoded - return frame to the user via callback.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(frame_decoded_cb, decoded_frame, render_time));

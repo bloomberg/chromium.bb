@@ -197,7 +197,7 @@ void VideoSender::SendEncodedVideoFrame(const EncodedVideoFrame* encoded_frame,
     rtp_sender_->IncomingEncodedVideoFrame(encoded_frame, capture_time);
   }
   if (encoded_frame->key_frame) {
-    VLOG(2) << "Send encoded key frame; frame_id:"
+    VLOG(1) << "Send encoded key frame; frame_id:"
             << static_cast<int>(encoded_frame->frame_id);
   }
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
@@ -415,7 +415,7 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   cast_environment_->Logging()->InsertGenericEvent(kAckReceived,
                                                    acked_frame_id);
-  VLOG(2) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
+  VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;
   UpdateFramesInFlight();
 }
@@ -432,7 +432,7 @@ void VideoSender::UpdateFramesInFlight() {
     } else {
       frames_in_flight = static_cast<uint32>(last_sent_frame_id_) + 1;
     }
-    VLOG(2) << "Frames in flight; last sent: " << last_sent_frame_id_
+    VLOG(1) << "Frames in flight; last sent: " << last_sent_frame_id_
             << " last acked:" << last_acked_frame_id_;
     if (frames_in_flight >= max_unacked_frames_) {
       video_encoder_controller_->SkipNextFrame(true);
