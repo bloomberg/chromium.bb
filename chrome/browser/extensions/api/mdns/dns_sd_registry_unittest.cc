@@ -201,5 +201,38 @@ TEST_F(DnsSdRegistryTest, FlushCache) {
   registry_->GetDelegate()->ServicesFlushed(service_type);
 }
 
+// Tests receiving an update from the DnsSdDelegate that does not change the
+// service object does not notify the observer.
+TEST_F(DnsSdRegistryTest, UpdateOnlyIfChanged) {
+  const std::string service_type = "_testing._tcp.local";
+  const std::string ip_address = "192.168.0.100";
+
+  DnsSdService service;
+  service.service_name = "_myDevice." + service_type;
+  service.ip_address = ip_address;
+
+  DnsSdRegistry::DnsSdServiceList service_list;
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+
+  // Expect service_list with initial service.
+  service_list.push_back(service);
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+
+  // Expect service_list with updated service.
+  service_list.clear();
+  service.ip_address = "192.168.0.101";
+  service_list.push_back(service);
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+  // No more calls to observer_.
+
+  registry_->RegisterDnsSdListener(service_type);
+  service.ip_address = "192.168.0.100";
+  registry_->GetDelegate()->ServiceChanged(service_type, true, service);
+  // Update with changed ip address.
+  service.ip_address = "192.168.0.101";
+  registry_->GetDelegate()->ServiceChanged(service_type, false, service);
+  // Update with no changes to the service.
+  registry_->GetDelegate()->ServiceChanged(service_type, false, service);
+}
 
 }  // namespace extensions

@@ -51,15 +51,20 @@ bool DnsSdRegistry::ServiceTypeData::UpdateService(
       std::find_if(service_list_.begin(),
                    service_list_.end(),
                    IsSameServiceName(service));
+  // Set to true when a service is updated in or added to the registry.
+  bool updated_or_added = added;
   if (it != service_list_.end()) {
     // If added == true, but we still found the service in our cache, then just
     // update the existing entry, but this should not happen!
     DCHECK(!added);
-    *it = service;
+    if (*it != service) {
+      *it = service;
+      updated_or_added = true;
+    }
   } else if (added) {
     service_list_.push_back(service);
   }
-  return true;
+  return updated_or_added;
 };
 
 bool DnsSdRegistry::ServiceTypeData::RemoveService(
