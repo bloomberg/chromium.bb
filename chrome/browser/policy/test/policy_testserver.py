@@ -733,7 +733,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     if self.client_state_file is not None:
       try:
         file_contents = open(self.client_state_file).read()
-        self._registered_tokens = json.loads(file_contents)
+        self._registered_tokens = json.loads(file_contents, strict=False)
       except IOError:
         pass
 
@@ -746,7 +746,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       print 'No JSON module, cannot parse policy information'
     else :
       try:
-        policy = json.loads(open(self.policy_path).read())
+        policy = json.loads(open(self.policy_path).read(), strict=False)
       except IOError:
         print 'Failed to load policy from %s' % self.policy_path
     return policy
