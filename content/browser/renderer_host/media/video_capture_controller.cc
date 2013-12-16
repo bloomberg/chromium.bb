@@ -125,17 +125,13 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
  private:
   scoped_refptr<Buffer> DoReserveOutputBuffer(media::VideoFrame::Format format,
-                                              const gfx::Size& dimensions,
-                                              int rotation);
+                                              const gfx::Size& dimensions);
 
   // The controller to which we post events.
   const base::WeakPtr<VideoCaptureController> controller_;
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-
-  // The set of buffers that have been used for rotated capturing.
-  std::set<int> rotated_buffers_;
 };
 
 VideoCaptureController::VideoCaptureController()
@@ -265,7 +261,7 @@ scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureController::VideoCaptureDeviceClient::ReserveOutputBuffer(
     media::VideoFrame::Format format,
     const gfx::Size& size) {
-  return DoReserveOutputBuffer(format, size, 0);
+  return DoReserveOutputBuffer(format, size);
 }
 
 void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
@@ -283,21 +279,27 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   // numbers for width/height.
   int chopped_width = 0;
   int chopped_height = 0;
-  int new_width = frame_format.frame_size.width();
-  int new_height = frame_format.frame_size.height();
+  int new_unrotated_width = frame_format.frame_size.width();
+  int new_unrotated_height = frame_format.frame_size.height();
 
-  if (new_width & 1) {
-    --new_width;
+  if (new_unrotated_width & 1) {
+    --new_unrotated_width;
     chopped_width = 1;
   }
-  if (new_height & 1) {
-    --new_height;
+  if (new_unrotated_height & 1) {
+    --new_unrotated_height;
     chopped_height = 1;
   }
 
-  const gfx::Size dimensions(new_width, new_height);
+  int destination_width = new_unrotated_width;
+  int destination_height = new_unrotated_height;
+  if (rotation == 90 || rotation == 270) {
+    destination_width = new_unrotated_height;
+    destination_height = new_unrotated_width;
+  }
+  const gfx::Size dimensions(destination_width, destination_height);
   scoped_refptr<Buffer> buffer =
-      DoReserveOutputBuffer(media::VideoFrame::I420, dimensions, rotation);
+      DoReserveOutputBuffer(media::VideoFrame::I420, dimensions);
 
   if (!buffer)
     return;
@@ -311,12 +313,10 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       uplane +
       media::VideoFrame::PlaneAllocationSize(
           media::VideoFrame::I420, media::VideoFrame::kUPlane, dimensions);
-  int yplane_stride = new_width;
-  int uv_plane_stride = new_width / 2;
+  int yplane_stride = dimensions.width();
+  int uv_plane_stride = yplane_stride / 2;
   int crop_x = 0;
   int crop_y = 0;
-  int destination_width = new_width;
-  int destination_height = new_height;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
 
   libyuv::RotationMode rotation_mode = libyuv::kRotate0;
@@ -365,8 +365,8 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
 
   int need_convert_rgb24_on_win = false;
 #if defined(OS_WIN)
-  // kRGB24 on Windows start at the bottom line and has a negative stride. This
-  // is not supported by libyuv, so the media API is used instead.
+  // TODO(wjia): Use libyuv::ConvertToI420 since support for image inversion
+  // (vertical flipping) has been added. Use negative src_height as indicator.
   if (frame_format.pixel_format == media::PIXEL_FORMAT_RGB24) {
     // Rotation is not supported in kRGB24 and OS_WIN case.
     DCHECK(!rotation);
@@ -374,38 +374,20 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   }
 #endif
   if (need_convert_rgb24_on_win) {
-    int rgb_stride = -3 * (new_width + chopped_width);
-    const uint8* rgb_src = data + 3 * (new_width + chopped_width) *
-                                      (new_height - 1 + chopped_height);
+    int rgb_stride = -3 * (new_unrotated_width + chopped_width);
+    const uint8* rgb_src =
+        data + 3 * (new_unrotated_width + chopped_width) *
+                   (new_unrotated_height - 1 + chopped_height);
     media::ConvertRGB24ToYUV(rgb_src,
                              yplane,
                              uplane,
                              vplane,
-                             new_width,
-                             new_height,
+                             new_unrotated_width,
+                             new_unrotated_height,
                              rgb_stride,
                              yplane_stride,
                              uv_plane_stride);
   } else {
-    if (rotation==90 || rotation==270){
-      // To be compatible with non-libyuv code in RotatePlaneByPixels, when
-      // rotating by 90/270, only the maximum square portion located in the
-      // center of the image is rotated. F.i. 640x480 pixels, only the central
-      // 480 pixels would be rotated and the leftmost and rightmost 80 columns
-      // would be ignored. This process is called letterboxing.
-      int letterbox_thickness = abs(new_width - new_height) / 2;
-      if (destination_width > destination_height) {
-        yplane += letterbox_thickness;
-        uplane += letterbox_thickness / 2;
-        vplane += letterbox_thickness / 2;
-        destination_width = destination_height;
-      } else {
-        yplane += letterbox_thickness * destination_width;
-        uplane += (letterbox_thickness * destination_width) / 2;
-        vplane += (letterbox_thickness * destination_width) / 2;
-        destination_height = destination_width;
-      }
-    }
     libyuv::ConvertToI420(data,
                           length,
                           yplane,
@@ -416,10 +398,10 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
                           uv_plane_stride,
                           crop_x,
                           crop_y,
-                          new_width + chopped_width,
-                          new_height,
-                          destination_width,
-                          destination_height,
+                          new_unrotated_width + chopped_width,
+                          new_unrotated_height,
+                          new_unrotated_width,
+                          new_unrotated_height,
                           rotation_mode,
                           origin_colorspace);
   }
@@ -472,8 +454,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnError() {
 scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureController::VideoCaptureDeviceClient::DoReserveOutputBuffer(
     media::VideoFrame::Format format,
-    const gfx::Size& dimensions,
-    int rotation) {
+    const gfx::Size& dimensions) {
   // The capture pipeline expects I420 for now.
   DCHECK_EQ(format, media::VideoFrame::I420)
       << "Non-I420 output buffer requested";
@@ -498,29 +479,6 @@ VideoCaptureController::VideoCaptureDeviceClient::DoReserveOutputBuffer(
         FROM_HERE,
         base::Bind(&VideoCaptureController::DoBufferDestroyedOnIOThread,
                    controller_, buffer_id_to_drop));
-    rotated_buffers_.erase(buffer_id_to_drop);
-  }
-
-  // If a 90/270 rotation is required, letterboxing will be required.  If the
-  // returned frame has not been rotated before, then the letterbox borders will
-  // not yet have been cleared and we should clear them now.
-  if ((rotation % 180) == 0) {
-    rotated_buffers_.erase(buffer_id);
-  } else {
-    if (rotated_buffers_.insert(buffer_id).second) {
-      scoped_refptr<media::VideoFrame> frame =
-          media::VideoFrame::WrapExternalPackedMemory(
-              media::VideoFrame::I420,
-              dimensions,
-              gfx::Rect(dimensions),
-              dimensions,
-              static_cast<uint8*>(output_buffer->data()),
-              output_buffer->size(),
-              base::SharedMemory::NULLHandle(),
-              base::TimeDelta(),
-              base::Closure());
-      media::FillYUV(frame, 0, 128, 128);
-    }
   }
 
   return output_buffer;
