@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
+#include "base/json/json_reader.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/values.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
@@ -16,29 +19,6 @@ using enterprise_management::PolicyData;
 namespace {
 const char kDMServerURL[] = "http://server_url";
 const char kPolicyHeaderName[] = "Chrome-Policy-Posture";
-const char kExpectedPolicyHeader[] = "expected_header";
-
-// Test version of the PolicyHeaderService that allows the tests to inject
-// their own header values.
-// TODO(atwilson): Remove this once PolicyHeaderService extracts the header
-// directly from policy.
-class TestPolicyHeaderService : public PolicyHeaderService {
- public:
-  TestPolicyHeaderService(CloudPolicyStore* user_store,
-                          CloudPolicyStore* device_store)
-    : PolicyHeaderService(kDMServerURL, user_store, device_store) {
-  }
-
-  virtual ~TestPolicyHeaderService() {}
-
-  void set_header(const std::string& header) { header_ = header; }
-
- protected:
-  virtual std::string CreateHeaderValue() OVERRIDE { return header_; }
-
- private:
-  std::string header_;
-};
 
 class TestCloudPolicyStore : public MockCloudPolicyStore {
  public:
@@ -57,8 +37,8 @@ class PolicyHeaderServiceTest : public testing::Test {
   virtual ~PolicyHeaderServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    service_.reset(new TestPolicyHeaderService(&user_store_, &device_store_));
-    service_->set_header(kExpectedPolicyHeader);
+    service_.reset(new PolicyHeaderService(
+        kDMServerURL, &user_store_, &device_store_));
     helper_ = service_->CreatePolicyHeaderIOHelper(task_runner_).Pass();
   }
 
@@ -70,18 +50,30 @@ class PolicyHeaderServiceTest : public testing::Test {
   }
 
   void ValidateHeader(const net::HttpRequestHeaders& headers,
-                      bool should_exist) {
-    if (should_exist) {
+                      const std::string& expected_dmtoken) {
+    if (expected_dmtoken.empty()) {
+      EXPECT_TRUE(headers.IsEmpty());
+    } else {
+      // Read header.
       std::string header;
       EXPECT_TRUE(headers.GetHeader(kPolicyHeaderName, &header));
-      EXPECT_EQ(header, kExpectedPolicyHeader);
-    } else {
-      EXPECT_TRUE(headers.IsEmpty());
+      // Decode the base64 value into JSON.
+      std::string decoded;
+      base::Base64Decode(header, &decoded);
+      // Parse the JSON.
+      scoped_ptr<Value> value(base::JSONReader::Read(decoded));
+      ASSERT_TRUE(value);
+      DictionaryValue* dict;
+      EXPECT_TRUE(value->GetAsDictionary(&dict));
+      // Read the values and verify them vs the expected values.
+      std::string dm_token;
+      dict->GetString("user_dmtoken", &dm_token);
+      EXPECT_EQ(dm_token, expected_dmtoken);
     }
   }
 
   base::MessageLoop loop_;
-  scoped_ptr<TestPolicyHeaderService> service_;
+  scoped_ptr<PolicyHeaderService> service_;
   TestCloudPolicyStore user_store_;
   TestCloudPolicyStore device_store_;
   scoped_ptr<PolicyHeaderIOHelper> helper_;
@@ -99,6 +91,8 @@ TEST_F(PolicyHeaderServiceTest, TestCreationAndShutdown) {
 TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   // Set policy - this should push a header to the PolicyHeaderIOHelper.
   scoped_ptr<PolicyData> policy(new PolicyData());
+  std::string expected_token = "expected_token";
+  policy->set_request_token(expected_token);
   user_store_.SetPolicy(policy.Pass());
   task_runner_->RunUntilIdle();
 
@@ -106,17 +100,16 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   net::TestURLRequest request(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context);
   helper_->AddPolicyHeaders(&request);
-  ValidateHeader(request.extra_request_headers(), true);
+  ValidateHeader(request.extra_request_headers(), expected_token);
 
   // Now blow away the policy data.
-  service_->set_header("");
   user_store_.SetPolicy(scoped_ptr<PolicyData>());
   task_runner_->RunUntilIdle();
 
   net::TestURLRequest request2(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context);
   helper_->AddPolicyHeaders(&request2);
-  ValidateHeader(request2.extra_request_headers(), false);
+  ValidateHeader(request2.extra_request_headers(), "");
 }
 
 }  // namespace policy

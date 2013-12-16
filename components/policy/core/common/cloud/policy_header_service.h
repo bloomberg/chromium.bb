@@ -46,12 +46,10 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
   virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
 
- protected:
-  // Generate a policy header based on the currently loaded policy.
-  // Virtual to allow mocking in tests.
-  virtual std::string CreateHeaderValue();
-
  private:
+  // Generate a policy header based on the currently loaded policy.
+  std::string CreateHeaderValue();
+
   // Weak pointer to created PolicyHeaderIOHelper objects.
   std::vector<PolicyHeaderIOHelper*> helpers_;
 

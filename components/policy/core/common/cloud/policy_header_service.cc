@@ -4,8 +4,15 @@
 
 #include "components/policy/core/common/cloud/policy_header_service.h"
 
+#include "base/base64.h"
+#include "base/json/json_writer.h"
+#include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
+
+namespace {
+const char kUserDMTokenKey[] = "user_dmtoken";
+}
 
 namespace policy {
 
@@ -37,8 +44,30 @@ PolicyHeaderService::CreatePolicyHeaderIOHelper(
 }
 
 std::string PolicyHeaderService::CreateHeaderValue() {
-  // TODO(atwilson): Extract policy information and generate correct header.
-  return "";
+  // If we have no user policy or no token, return an empty header.
+  if (!user_policy_store_->has_policy() ||
+      !user_policy_store_->policy()->has_request_token()) {
+    return "";
+  }
+
+  // Generate a Base64-encoded header of the form:
+  // {
+  //   user_dmtoken: <dm_token>
+  //   user_policy_token: <policy_token>
+  // }
+  std::string user_dm_token = user_policy_store_->policy()->request_token();
+  base::DictionaryValue value;
+  value.SetString(kUserDMTokenKey, user_dm_token);
+  // TODO(atwilson): add user_policy_token once the server starts sending it
+  // down (http://crbug.com/326799).
+  std::string json;
+  base::JSONWriter::Write(&value, &json);
+  DCHECK(!json.empty());
+
+  // Base64-encode the result so we can include it in a header.
+  std::string encoded;
+  base::Base64Encode(json, &encoded);
+  return encoded;
 }
 
 void PolicyHeaderService::OnStoreLoaded(CloudPolicyStore* store) {
