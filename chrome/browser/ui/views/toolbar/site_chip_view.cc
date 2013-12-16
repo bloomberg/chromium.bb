@@ -172,7 +172,13 @@ int StringForChromeHost(const GURL& url) {
 
 }  // namespace
 
-string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
+string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
+  // First, strip view-source: if it appears.  Note that GetContent removes
+  // "view-source:" but leaves the http, https or ftp scheme.
+  GURL url(provided_url);
+  if (url.SchemeIs(content::kViewSourceScheme))
+    url = GURL(url.GetContent());
+
   // Chrome built-in pages.
   if (url.is_empty() ||
       url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -182,9 +188,6 @@ string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
       return base::UTF8ToUTF16("Chrome");
     return l10n_util::GetStringUTF16(string_ref);
   }
-
-  // TODO(gbillock): For view-source, strip the scheme and treat as
-  // if it was an ordinary url.
 
   Profile* profile = toolbar_view_->browser()->profile();
 
@@ -198,7 +201,7 @@ string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
         base::UTF8ToUTF16(extension->name()) : base::UTF8ToUTF16(url.host());
   }
 
-  if (url.SchemeIsHTTPOrHTTPS()) {
+  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(content::kFtpScheme)) {
     // See ToolbarModelImpl::GetText(). Does not pay attention to any user
     // edits, and uses GetURL/net::FormatUrl -- We don't really care about
     // length or the autocomplete parser.
@@ -214,18 +217,16 @@ string16 SiteChipView::SiteLabelFromURL(const GURL& url) {
     // Remove scheme, "www.", and trailing "/".
     if (StartsWith(formatted, ASCIIToUTF16("http://"), false))
       formatted = formatted.substr(7);
-    if (StartsWith(formatted, ASCIIToUTF16("https://"), false))
+    else if (StartsWith(formatted, ASCIIToUTF16("https://"), false))
       formatted = formatted.substr(8);
+    else if (StartsWith(formatted, ASCIIToUTF16("ftp://"), false))
+      formatted = formatted.substr(6);
     if (StartsWith(formatted, ASCIIToUTF16("www."), false))
       formatted = formatted.substr(4);
     if (EndsWith(formatted, ASCIIToUTF16("/"), false))
       formatted = formatted.substr(0, formatted.size()-1);
     return formatted;
   }
-
-  // For FTP, prepend "ftp:" to hostname.
-  if (url.SchemeIs(content::kFtpScheme))
-    return base::UTF8ToUTF16(std::string("ftp:") + url.host());
 
   // These internal-ish debugging-style schemes we don't expect users
   // to see. In these cases, the site chip will display the first
