@@ -239,7 +239,6 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       password_(password),
       oauth2_refesh_token_number_(0),
       profile_debug_name_(profile->GetDebugName()),
-      is_sync_disabled_(false),
       status_change_checker_(NULL) {
 }
 
@@ -277,10 +276,6 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Subscribe sync client to notifications from the profile sync service.
   if (!service()->HasObserver(this))
     service()->AddObserver(this);
-
-  // Set the boolean flag which indicates that sync is now being enabled.
-  if (is_sync_disabled_)
-    is_sync_disabled_ = false;
 
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
@@ -443,7 +438,7 @@ void ProfileSyncServiceHarness::OnMigrationStateChange() {
 
 bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
   DVLOG(1) << GetClientInfoString("AwaitPassphraseRequired");
-  if (is_sync_disabled_) {
+  if (IsSyncDisabled()) {
     LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
     return false;
   }
@@ -462,7 +457,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
 
 bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   DVLOG(1) << GetClientInfoString("AwaitPassphraseAccepted");
-  if (is_sync_disabled_) {
+  if (IsSyncDisabled()) {
     LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
     return false;
   }
@@ -503,7 +498,7 @@ bool ProfileSyncServiceHarness::AwaitDataSyncCompletion() {
   DVLOG(1) << GetClientInfoString("AwaitDataSyncCompletion");
 
   DCHECK(service()->sync_initialized());
-  DCHECK(!is_sync_disabled_);
+  DCHECK(!IsSyncDisabled());
 
   if (IsDataSynced()) {
     // Client is already synced; don't wait.
@@ -519,7 +514,7 @@ bool ProfileSyncServiceHarness::AwaitDataSyncCompletion() {
 
 bool ProfileSyncServiceHarness::AwaitFullSyncCompletion() {
   DVLOG(1) << GetClientInfoString("AwaitFullSyncCompletion");
-  if (is_sync_disabled_) {
+  if (IsSyncDisabled()) {
     LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
     return false;
   }
@@ -539,7 +534,7 @@ bool ProfileSyncServiceHarness::AwaitFullSyncCompletion() {
 
 bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
   DCHECK(service()->HasSyncSetupCompleted());
-  DCHECK(!is_sync_disabled_);
+  DCHECK(!IsSyncDisabled());
   StatusChangeChecker sync_disabled_checker(
       base::Bind(&ProfileSyncServiceHarness::IsSyncDisabled,
                  base::Unretained(this)),
@@ -634,7 +629,7 @@ bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
   bool return_value = true;
   for (std::vector<ProfileSyncServiceHarness*>::iterator it =
       partners.begin(); it != partners.end(); ++it) {
-    if ((this != *it) && (!(*it)->is_sync_disabled_)) {
+    if ((this != *it) && (!(*it)->IsSyncDisabled())) {
       return_value = return_value &&
           (*it)->WaitUntilProgressMarkersMatch(this);
     }
@@ -649,7 +644,7 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
   bool return_value = true;
   for (std::vector<ProfileSyncServiceHarness*>::iterator it =
       clients.begin(); it != clients.end(); ++it) {
-    if (!(*it)->is_sync_disabled_) {
+    if (!(*it)->IsSyncDisabled()) {
       return_value = return_value &&
           (*it)->AwaitGroupSyncCycleCompletion(clients);
     }
@@ -660,7 +655,7 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
 bool ProfileSyncServiceHarness::WaitUntilProgressMarkersMatch(
     ProfileSyncServiceHarness* partner) {
   DVLOG(1) << GetClientInfoString("WaitUntilProgressMarkersMatch");
-  if (is_sync_disabled_) {
+  if (IsSyncDisabled()) {
     LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
     return false;
   }
@@ -691,7 +686,7 @@ bool ProfileSyncServiceHarness::AwaitStatusChange(
     StatusChangeChecker* checker, const std::string& source) {
   DVLOG(1) << GetClientInfoString("AwaitStatusChange");
 
-  if (is_sync_disabled_) {
+  if (IsSyncDisabled()) {
     LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
     return false;
   }
@@ -874,7 +869,7 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
       "EnableSyncForDatatype("
       + std::string(syncer::ModelTypeToString(datatype)) + ")");
 
-  if (is_sync_disabled_)
+  if (IsSyncDisabled())
     return SetupSync(syncer::ModelTypeSet(datatype));
 
   if (service() == NULL) {
@@ -939,7 +934,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
 bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   DVLOG(1) << GetClientInfoString("EnableSyncForAllDatatypes");
 
-  if (is_sync_disabled_)
+  if (IsSyncDisabled())
     return SetupSync();
 
   if (service() == NULL) {
@@ -967,7 +962,6 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
   }
 
   service()->DisableForUser();
-  is_sync_disabled_ = true;
 
   DVLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all "
            << "datatypes on " << profile_debug_name_;

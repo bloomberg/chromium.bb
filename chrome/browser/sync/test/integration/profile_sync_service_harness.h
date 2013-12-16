@@ -299,11 +299,6 @@ class ProfileSyncServiceHarness
   // Used for logging.
   const std::string profile_debug_name_;
 
-  // Flag indicating if sync was disabled.
-  // TODO(rsimha): This is temporary, and must be replaced by a check of the
-  // actual disabled state of ProfileSyncService.
-  bool is_sync_disabled_;
-
   // Keeps track of the state change on which we are waiting. PSSHarness can
   // wait on only one status change at a time.
   StatusChangeChecker* status_change_checker_;
