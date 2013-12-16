@@ -17,6 +17,9 @@ env.Replace(LIBS=[],
             EXTRA_LIBS=[],
             LINKFLAGS=['-nostdlib'])
 
+# This can generate references to runtime code we won't link with.
+env.FilterOut(CCFLAGS=['-fasynchronous-unwind-tables'])
+
 # This setting will affect the barebones_regs.c test
 if env.Bit('build_arm'):
   env.Append(CPPDEFINES='SMALL_REGS_TEST')

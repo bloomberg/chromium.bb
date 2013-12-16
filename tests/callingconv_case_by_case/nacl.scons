@@ -65,6 +65,8 @@ def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
   cc2_env.Append(CCFLAGS=gcc_flags)
   # GCC's C++ EH support requires GCC's runtime, which we don't link with.
   cc2_env.Append(CXXFLAGS=['-fno-exceptions'])
+  # This can generate references to runtime code we won't link with.
+  cc2_env.FilterOut(CCFLAGS=['-fasynchronous-unwind-tables'])
   envlist.append(cc2_env)
 
   envlist.append(cc2_env.Clone()) # For module2

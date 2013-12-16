@@ -21,6 +21,8 @@ runner = trusted_env.ComponentProgram(
     'minimal_test_host', ['minimal_test_host.c'],
     EXTRA_LIBS=['sel'])
 
+# This can generate references to runtime code we won't link with.
+env.FilterOut(CCFLAGS=['-fasynchronous-unwind-tables'])
 
 test_prog = env.ComponentProgram(
     'minimal_test_guest',

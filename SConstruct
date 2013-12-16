@@ -2708,6 +2708,9 @@ nacl_env = nacl_env.Clone(
     CCFLAGS = ['-O2',
                '-g',
                '-fomit-frame-pointer',
+               # This makes sure unwind/backtrace info is available for
+               # all code locations.  Note build/untrusted.gypi uses it too.
+               '-fasynchronous-unwind-tables',
                '-Wall',
                '-Wundef',
                '-fdiagnostics-show-option',
@@ -3273,12 +3276,6 @@ elif nacl_irt_env.Bit('target_arm'):
   nacl_irt_env.Append(CCFLAGS=['-mtp=soft'])
 else:
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
-# A debugger should be able to unwind IRT call frames. As the IRT is compiled
-# with high level of optimizations and without debug info, compiler is requested
-# to generate unwind tables explicitly. This is the default behavior on x86-64
-# and when compiling C++ with exceptions enabled, the change is for the benefit
-# of x86-32 C.
-nacl_irt_env.Append(CCFLAGS=['-fasynchronous-unwind-tables'])
 
 # TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes):
