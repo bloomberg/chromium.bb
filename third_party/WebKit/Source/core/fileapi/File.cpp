@@ -113,18 +113,16 @@ File::File(const String& path, const String& name, ContentTypeLookupPolicy polic
     ScriptWrappable::init(this);
 }
 
-File::File(const String& path, PassRefPtr<BlobDataHandle> blobDataHandle)
+File::File(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     : Blob(blobDataHandle)
-    , m_hasBackingFile(true)
+    , m_hasBackingFile(!path.isEmpty() || !relativePath.isEmpty())
     , m_path(path)
-    , m_name(blink::Platform::current()->fileUtilities()->baseName(path))
-    , m_snapshotSize(-1)
-    , m_snapshotModificationTime(invalidFileTime())
+    , m_name(name)
+    , m_snapshotSize(hasSnaphotData ? static_cast<long long>(size) : -1)
+    , m_snapshotModificationTime(hasSnaphotData ? lastModified : invalidFileTime())
+    , m_relativePath(relativePath)
 {
     ScriptWrappable::init(this);
-    // FIXME: File object serialization/deserialization does not include
-    // newer file object data members: m_name and m_relativePath.
-    // See SerializedScriptValue.cpp.
 }
 
 File::File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle> blobDataHandle)

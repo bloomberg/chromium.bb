@@ -58,7 +58,8 @@ public:
     // Increment this for each incompatible change to the wire format.
     // Version 2: Added StringUCharTag for UChar v8 strings.
     // Version 3: Switched to using uuids as blob data identifiers.
-    static const uint32_t wireFormatVersion = 3;
+    // Version 4: Extended File serialization to be complete.
+    static const uint32_t wireFormatVersion = 4;
 
     ~SerializedScriptValue();
 

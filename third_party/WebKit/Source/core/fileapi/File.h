@@ -55,9 +55,9 @@ public:
     }
 
     // For deserialization.
-    static PassRefPtr<File> create(const String& path, PassRefPtr<BlobDataHandle> blobDataHandle)
+    static PassRefPtr<File> create(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRef(new File(path, blobDataHandle));
+        return adoptRef(new File(path, name, relativePath, hasSnaphotData, size, lastModified, blobDataHandle));
     }
 
     static PassRefPtr<File> createWithRelativePath(const String& path, const String& relativePath);
@@ -101,16 +101,16 @@ public:
     // Note that this involves synchronous file operation. Think twice before calling this function.
     void captureSnapshot(long long& snapshotSize, double& snapshotModificationTime) const;
 
+    // Returns true if this has a valid snapshot metadata (i.e. m_snapshotSize >= 0).
+    bool hasValidSnapshotMetadata() const { return m_snapshotSize >= 0; }
+
 private:
     File(const String& path, ContentTypeLookupPolicy);
     File(const String& path, const String& name, ContentTypeLookupPolicy);
-    File(const String& path, PassRefPtr<BlobDataHandle>);
+    File(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
     File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&);
     File(const KURL& fileSystemURL, const FileMetadata&);
-
-    // Returns true if this has a valid snapshot metadata (i.e. m_snapshotSize >= 0).
-    bool hasValidSnapshotMetadata() const { return m_snapshotSize >= 0; }
 
     bool m_hasBackingFile;
     String m_path;

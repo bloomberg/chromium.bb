@@ -1,3 +1,12 @@
+var kSerializedScriptValueVersion = 4;
+
+function forVersion(version, values) {
+    var versionTag = 0xff;
+    var versionPrefix = [ (version << 8) | versionTag ];
+
+    return versionPrefix.concat(values)
+}
+
 function expectBufferValue(bytesPerElement, expectedValues, buffer) {
     expectedBufferValues = expectedValues;
     var arrayClass;
@@ -60,6 +69,8 @@ function areValuesIdentical(a, b) {
 function _testSerialization(bytesPerElement, obj, values, oldFormat, serializeExceptionValue) {
     debug("");
 
+    values = forVersion(kSerializedScriptValueVersion, values);
+
     if (!serializeExceptionValue) {
         self.obj = obj;
         debug("Deserialize to " + JSON.stringify(obj) + ":");
@@ -113,4 +124,44 @@ function testBlobSerialization() {
     xhr2.send();
     self.blobContent2 = xhr2.response;
     shouldBe("self.blobContent1", "self.blobContent2");
+}
+
+function testFileSerialization() {
+    debug("");
+    window.jsTestIsAsync = true;
+
+    function checkIfSameContent(file1, file2, continuation) {
+        function step1()  {
+            var fileReader = new FileReader();
+            fileReader.onload = function () {
+                self.fileContents1 = fileReader.result;
+                step2();
+            };
+            fileReader.readAsText(file1);
+        }
+        function step2() {
+            var fileReader = new FileReader();
+            fileReader.onload = function () {
+                self.fileContents2 = fileReader.result;
+                finish();
+            };
+            fileReader.readAsText(file2);
+        }
+        function finish() {
+            shouldBe("self.fileContents1", "self.fileContents2");
+            continuation();
+        }
+        step1();
+    }
+
+    debug("Test deserialization of File objects");
+    self.fileObj1 = new File(['The', ' contents'], 'testfile.txt', {type: 'text/plain', lastModified: 0});
+    self.fileObj2 = internals.deserializeBuffer(internals.serializeObject(self.fileObj1));
+    shouldBeTrue("areValuesIdentical(fileObj1, fileObj2)");
+    self.dictionaryWithFile1 = {file: fileObj1, string: 'stringValue'};
+    self.dictionaryWithFile2 = internals.deserializeBuffer(internals.serializeObject(dictionaryWithFile1));
+    shouldBeTrue("areValuesIdentical(dictionaryWithFile1, dictionaryWithFile2)");
+
+    // Read and compare actual contents.
+    checkIfSameContent(self.fileObj1, self.fileObj2, finishJSTest);
 }

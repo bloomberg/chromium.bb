@@ -549,9 +549,24 @@ public:
 private:
     void doWriteFile(const File& file)
     {
-        doWriteWebCoreString(file.path());
+        doWriteWebCoreString(file.hasBackingFile() ? file.path() : "");
+        doWriteWebCoreString(file.name());
+        doWriteWebCoreString(file.webkitRelativePath());
         doWriteWebCoreString(file.uuid());
         doWriteWebCoreString(file.type());
+
+        // FIXME don't use 4 bytes to encode a flag.
+        if (file.hasValidSnapshotMetadata()) {
+            doWriteUint32(static_cast<uint8_t>(1));
+
+            long long size;
+            double lastModified;
+            file.captureSnapshot(size, lastModified);
+            doWriteUint64(static_cast<uint64_t>(size));
+            doWriteNumber(lastModified);
+        } else {
+            append(static_cast<uint8_t>(0));
+        }
     }
 
     void doWriteArrayBuffer(const ArrayBuffer& arrayBuffer)
@@ -1886,15 +1901,32 @@ private:
         if (m_version < 3)
             return 0;
         String path;
+        String name;
+        String relativePath;
         String uuid;
         String type;
+        uint32_t hasSnapshot = 0;
+        uint64_t size = 0;
+        double lastModified = 0;
         if (!readWebCoreString(&path))
+            return 0;
+        if (m_version >= 4 && !readWebCoreString(&name))
+            return 0;
+        if (m_version >= 4 && !readWebCoreString(&relativePath))
             return 0;
         if (!readWebCoreString(&uuid))
             return 0;
         if (!readWebCoreString(&type))
             return 0;
-        return File::create(path, getOrCreateBlobDataHandle(uuid, type));
+        if (m_version >= 4 && !doReadUint32(&hasSnapshot))
+            return 0;
+        if (hasSnapshot) {
+            if (!doReadUint64(&size))
+                return 0;
+            if (!doReadNumber(&lastModified))
+                return 0;
+        }
+        return File::create(path, name, relativePath, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
     }
 
     template<class T>
