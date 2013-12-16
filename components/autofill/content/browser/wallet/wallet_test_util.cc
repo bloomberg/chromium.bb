@@ -34,7 +34,7 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithDetails(
     scoped_ptr<Address> address,
     WalletItems::MaskedInstrument::Type type,
     WalletItems::MaskedInstrument::Status status) {
-  return scoped_ptr<WalletItems::MaskedInstrument>(
+  return make_scoped_ptr(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
                                         type,
                                         std::vector<base::string16>(),
@@ -66,20 +66,22 @@ GetTestMaskedInstrumentWithIdAndAddress(
 }
 
 scoped_ptr<GaiaAccount> GetTestGaiaAccount() {
-  return scoped_ptr<GaiaAccount>(GaiaAccount::CreateForTesting(
-      "user@chromium.org", "obfuscated_id", 0, true));
+  return GaiaAccount::CreateForTesting("user@chromium.org",
+                                       "obfuscated_id",
+                                       0,
+                                       true);
 }
 
 scoped_ptr<Address> GetTestAddress() {
-  return scoped_ptr<Address>(new Address("US",
-                                         ASCIIToUTF16("recipient_name"),
-                                         ASCIIToUTF16("address_line_1"),
-                                         ASCIIToUTF16("address_line_2"),
-                                         ASCIIToUTF16("locality_name"),
-                                         ASCIIToUTF16("admin_area_name"),
-                                         ASCIIToUTF16("postal_code_number"),
-                                         ASCIIToUTF16("phone_number"),
-                                         std::string()));
+  return make_scoped_ptr(new Address("US",
+                                     ASCIIToUTF16("recipient_name"),
+                                     ASCIIToUTF16("address_line_1"),
+                                     ASCIIToUTF16("address_line_2"),
+                                     ASCIIToUTF16("locality_name"),
+                                     ASCIIToUTF16("admin_area_name"),
+                                     ASCIIToUTF16("postal_code_number"),
+                                     ASCIIToUTF16("phone_number"),
+                                     std::string()));
 }
 
 scoped_ptr<Address> GetTestMinimalAddress() {
@@ -122,45 +124,39 @@ scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly() {
 }
 
 scoped_ptr<Instrument> GetTestInstrument() {
-  return scoped_ptr<Instrument>(new Instrument(ASCIIToUTF16("4444444444444448"),
-                                               ASCIIToUTF16("123"),
-                                               12,
-                                               FutureYear(),
-                                               Instrument::VISA,
-                                               GetTestAddress()));
+  return make_scoped_ptr(new Instrument(ASCIIToUTF16("4444444444444448"),
+                                        ASCIIToUTF16("123"),
+                                        12,
+                                        FutureYear(),
+                                        Instrument::VISA,
+                                        GetTestAddress()));
 }
 
 scoped_ptr<Instrument> GetTestAddressUpgradeInstrument() {
-  scoped_ptr<Instrument> instrument(new Instrument(base::string16(),
-                                                   base::string16(),
-                                                   0,
-                                                   0,
-                                                   Instrument::UNKNOWN,
-                                                   GetTestAddress()));
-  instrument->set_object_id("instrument_id");
-  return instrument.Pass();
+  return make_scoped_ptr(new Instrument(base::string16(),
+                                        base::string16(),
+                                        12,
+                                        FutureYear(),
+                                        Instrument::UNKNOWN,
+                                        GetTestAddress()));
 }
 
 scoped_ptr<Instrument> GetTestExpirationDateChangeInstrument() {
-  scoped_ptr<Instrument> instrument(new Instrument(base::string16(),
-                                                   ASCIIToUTF16("123"),
-                                                   12,
-                                                   FutureYear(),
-                                                   Instrument::UNKNOWN,
-                                                   scoped_ptr<Address>()));
-  instrument->set_object_id("instrument_id");
-  return instrument.Pass();
+  return make_scoped_ptr(new Instrument(base::string16(),
+                                        ASCIIToUTF16("123"),
+                                        12,
+                                        FutureYear() + 1,
+                                        Instrument::UNKNOWN,
+                                        scoped_ptr<Address>()));
 }
 
 scoped_ptr<Instrument> GetTestAddressNameChangeInstrument() {
-  scoped_ptr<Instrument> instrument(new Instrument(base::string16(),
-                                                   ASCIIToUTF16("123"),
-                                                   0,
-                                                   0,
-                                                   Instrument::UNKNOWN,
-                                                   GetTestAddress()));
-  instrument->set_object_id("instrument_id");
-  return instrument.Pass();
+  return make_scoped_ptr(new Instrument(base::string16(),
+                                        ASCIIToUTF16("123"),
+                                        12,
+                                        FutureYear(),
+                                        Instrument::UNKNOWN,
+                                        GetTestAddress()));
 }
 
 scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument() {
@@ -196,9 +192,9 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentAmex(
       "default_instrument_id",
       GetTestAddress(),
       WalletItems::MaskedInstrument::AMEX,
-      (amex_permission == AMEX_ALLOWED)
-         ? WalletItems::MaskedInstrument::VALID
-         : WalletItems::MaskedInstrument::AMEX_NOT_SUPPORTED);
+      amex_permission == AMEX_ALLOWED ?
+          WalletItems::MaskedInstrument::VALID :
+          WalletItems::MaskedInstrument::AMEX_NOT_SUPPORTED);
 }
 
 scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {
@@ -206,29 +202,27 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {
 }
 
 scoped_ptr<Address> GetTestSaveableAddress() {
-  return scoped_ptr<Address>(new Address(
-      "US",
-      ASCIIToUTF16("save_recipient_name"),
-      ASCIIToUTF16("save_address_line_1"),
-      ASCIIToUTF16("save_address_line_2"),
-      ASCIIToUTF16("save_locality_name"),
-      ASCIIToUTF16("save_admin_area_name"),
-      ASCIIToUTF16("save_postal_code_number"),
-      ASCIIToUTF16("save_phone_number"),
-      std::string()));
+  return make_scoped_ptr(new Address("US",
+                                     ASCIIToUTF16("save_recipient_name"),
+                                     ASCIIToUTF16("save_address_line_1"),
+                                     ASCIIToUTF16("save_address_line_2"),
+                                     ASCIIToUTF16("save_locality_name"),
+                                     ASCIIToUTF16("save_admin_area_name"),
+                                     ASCIIToUTF16("save_postal_code_number"),
+                                     ASCIIToUTF16("save_phone_number"),
+                                     std::string()));
 }
 
 scoped_ptr<Address> GetTestShippingAddress() {
-  return scoped_ptr<Address>(new Address(
-      "US",
-      ASCIIToUTF16("ship_recipient_name"),
-      ASCIIToUTF16("ship_address_line_1"),
-      ASCIIToUTF16("ship_address_line_2"),
-      ASCIIToUTF16("ship_locality_name"),
-      ASCIIToUTF16("ship_admin_area_name"),
-      ASCIIToUTF16("ship_postal_code_number"),
-      ASCIIToUTF16("ship_phone_number"),
-      "default_address_id"));
+  return make_scoped_ptr(new Address("US",
+                                     ASCIIToUTF16("ship_recipient_name"),
+                                     ASCIIToUTF16("ship_address_line_1"),
+                                     ASCIIToUTF16("ship_address_line_2"),
+                                     ASCIIToUTF16("ship_locality_name"),
+                                     ASCIIToUTF16("ship_admin_area_name"),
+                                     ASCIIToUTF16("ship_postal_code_number"),
+                                     ASCIIToUTF16("ship_phone_number"),
+                                     "default_address_id"));
 }
 
 scoped_ptr<Address> GetTestNonDefaultShippingAddress() {
@@ -242,12 +236,11 @@ scoped_ptr<WalletItems> GetTestWalletItemsWithDetails(
     const std::string& default_instrument_id,
     const std::string& default_address_id,
     AmexPermission amex_permission) {
-  return scoped_ptr<WalletItems>(
-      new wallet::WalletItems(required_actions,
-                              "google_transaction_id",
-                              default_instrument_id,
-                              default_address_id,
-                              amex_permission));
+  return make_scoped_ptr(new wallet::WalletItems(required_actions,
+                                                 "google_transaction_id",
+                                                 default_instrument_id,
+                                                 default_address_id,
+                                                 amex_permission));
 }
 
 scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(

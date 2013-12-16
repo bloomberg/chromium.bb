@@ -492,7 +492,7 @@ const char kUpdateAddressValidRequest[] =
         "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
-            "\"id\":\"shipping_address_id\","
+            "\"id\":\"address_id\","
             "\"phone_number\":\"ship_phone_number\","
             "\"postal_address\":"
             "{"
@@ -530,7 +530,7 @@ const char kUpdateInstrumentAddressValidRequest[] =
             "\"postal_code_number\":\"postal_code_number\","
             "\"recipient_name\":\"recipient_name\""
         "},"
-        "\"upgraded_instrument_id\":\"instrument_id\","
+        "\"upgraded_instrument_id\":\"default_instrument_id\","
         "\"use_minimal_addresses\":false"
     "}";
 
@@ -553,7 +553,7 @@ const char kUpdateInstrumentAddressWithNameChangeValidRequest[] =
             "\"postal_code_number\":\"postal_code_number\","
             "\"recipient_name\":\"recipient_name\""
         "},"
-        "\"upgraded_instrument_id\":\"instrument_id\","
+        "\"upgraded_instrument_id\":\"default_instrument_id\","
         "\"use_minimal_addresses\":false"
     "}";
 
@@ -564,7 +564,7 @@ const char kUpdateInstrumentExpirationDateValidRequest[] =
             "\"credit_card\":"
             "{"
                 "\"exp_month\":12,"
-                "\"exp_year\":3000"
+                "\"exp_year\":3001"
             "},"
             "\"type\":\"CREDIT_CARD\""
         "},"
@@ -1194,7 +1194,9 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               address.Pass(),
+                               NULL,
+                               NULL);
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressValidResponse);
@@ -1224,7 +1226,9 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               address.Pass(),
+                               NULL,
+                               NULL);
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressWithRequiredActionsValidResponse);
@@ -1240,7 +1244,9 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               address.Pass(),
+                               NULL,
+                               NULL);
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
@@ -1256,7 +1262,9 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               address.Pass(),
+                               NULL,
+                               NULL);
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveInvalidResponse);
@@ -1273,7 +1281,9 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               NULL,
+                               NULL);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentValidRequest,
@@ -1305,7 +1315,9 @@ TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               NULL,
+                               NULL);
 
   VerifyAndFinishFormEncodedRequest(
       net::HTTP_OK,
@@ -1325,7 +1337,9 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               NULL,
+                               NULL);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentValidRequest,
@@ -1343,7 +1357,9 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               NULL,
+                               NULL);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentValidRequest,
@@ -1364,8 +1380,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
-  wallet_client_->SaveToWallet(instrument.Pass(),
-                               address.Pass());
+  wallet_client_->SaveToWallet(instrument.Pass(), address.Pass(), NULL, NULL);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentAndAddressValidRequest,
@@ -1399,8 +1414,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
-  wallet_client_->SaveToWallet(instrument.Pass(),
-                               address.Pass());
+  wallet_client_->SaveToWallet(instrument.Pass(), address.Pass(), NULL, NULL);
 
   VerifyAndFinishFormEncodedRequest(
       net::HTTP_OK,
@@ -1421,8 +1435,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
-  wallet_client_->SaveToWallet(instrument.Pass(),
-                               address.Pass());
+  wallet_client_->SaveToWallet(instrument.Pass(), address.Pass(), NULL, NULL);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentAndAddressValidRequest,
@@ -1439,11 +1452,12 @@ TEST_F(WalletClientTest, UpdateAddressSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
-  address->set_object_id("shipping_address_id");
-
+  scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               GetTestShippingAddress(),
+                               NULL,
+                               reference_address.get());
+
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateAddressValidResponse);
@@ -1470,11 +1484,12 @@ TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
                                            required_actions,
                                            form_errors)).Times(1);
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
-  address->set_object_id("shipping_address_id");
-
+  scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               GetTestShippingAddress(),
+                               NULL,
+                               reference_address.get());
+
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
@@ -1488,11 +1503,12 @@ TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
   delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
-  address->set_object_id("shipping_address_id");
-
+  scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               GetTestShippingAddress(),
+                               NULL,
+                               reference_address.get());
+
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
@@ -1506,11 +1522,12 @@ TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
   delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
-  scoped_ptr<Address> address = GetTestShippingAddress();
-  address->set_object_id("shipping_address_id");
-
+  scoped_ptr<Address> reference_address = GetTestNonDefaultShippingAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass());
+                               GetTestShippingAddress(),
+                               NULL,
+                               reference_address.get());
+
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateMalformedResponse);
@@ -1526,8 +1543,12 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
+  scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
+      GetTestMaskedInstrument();
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               reference_instrument.get(),
+                               NULL);
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1544,8 +1565,19 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->SaveToWallet(GetTestExpirationDateChangeInstrument(),
-                               scoped_ptr<Address>());
+  scoped_ptr<Instrument> instrument = GetTestExpirationDateChangeInstrument();
+  scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
+      GetTestMaskedInstrumentWithId("instrument_id");
+
+  int new_month = instrument->expiration_month();
+  int new_year = instrument->expiration_year();
+  ASSERT_TRUE(new_month != reference_instrument->expiration_month() ||
+              new_year != reference_instrument->expiration_year());
+
+  wallet_client_->SaveToWallet(instrument.Pass(),
+                               scoped_ptr<Address>(),
+                               reference_instrument.get(),
+                               NULL);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kUpdateInstrumentExpirationDateValidRequest,
@@ -1563,8 +1595,12 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
+  scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
+      GetTestMaskedInstrument();
   wallet_client_->SaveToWallet(GetTestAddressNameChangeInstrument(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               reference_instrument.get(),
+                               NULL);
 
   VerifyAndFinishFormEncodedRequest(
       net::HTTP_OK,
@@ -1596,8 +1632,12 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
                                 required_actions,
                                 form_errors)).Times(1);
 
+  scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
+      GetTestMaskedInstrument();
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               reference_instrument.get(),
+                               NULL);
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1613,8 +1653,12 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
   delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
+  scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
+      GetTestMaskedInstrument();
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               reference_instrument.get(),
+                               NULL);
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1630,8 +1674,12 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
   delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
+  scoped_ptr<WalletItems::MaskedInstrument> reference_instrument =
+      GetTestMaskedInstrument();
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>());
+                               scoped_ptr<Address>(),
+                               reference_instrument.get(),
+                               NULL);
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,

@@ -165,10 +165,16 @@ class WalletClient : public net::URLFetcherDelegate {
   virtual void GetFullWallet(const FullWalletRequest& full_wallet_request);
 
   // Saves the data in |instrument| and/or |address| to Wallet. |instrument|
-  // does not have to be complete if its being used to update an existing
+  // does not have to be complete if it's being used to update an existing
   // instrument, like in the case of expiration date or address only updates.
-  virtual void SaveToWallet(scoped_ptr<Instrument> instrument,
-                            scoped_ptr<Address> address);
+  // |reference_instrument| and |reference_address| are the original instrument
+  // and address to be updated on the server (and should be NULL if |instrument|
+  // or |address| are new data).
+  virtual void SaveToWallet(
+      scoped_ptr<Instrument> instrument,
+      scoped_ptr<Address> address,
+      const WalletItems::MaskedInstrument* reference_instrument,
+      const Address* reference_address);
 
   bool HasRequestInProgress() const;
 
@@ -201,7 +207,8 @@ class WalletClient : public net::URLFetcherDelegate {
   // |delegate_| when the request is complete.
   void MakeWalletRequest(const GURL& url,
                          const std::string& post_body,
-                         const std::string& mime_type);
+                         const std::string& mime_type,
+                         RequestType request_type);
 
   // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse(RequestType request_type,

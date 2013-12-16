@@ -11,6 +11,7 @@
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
+#include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
@@ -40,11 +41,17 @@ class MockWalletClient : public WalletClient {
 
   // Methods with scoped_ptrs can't be mocked but by using the implementation
   // below the same effect can be achieved.
-  virtual void SaveToWallet(scoped_ptr<wallet::Instrument> instrument,
-                            scoped_ptr<wallet::Address> address) OVERRIDE;
+  virtual void SaveToWallet(
+      scoped_ptr<Instrument> instrument,
+      scoped_ptr<Address> address,
+      const WalletItems::MaskedInstrument* reference_instrument,
+      const Address* reference_address) OVERRIDE;
 
-  MOCK_METHOD2(SaveToWalletMock,
-               void(Instrument* instrument, Address* address));
+  MOCK_METHOD4(SaveToWalletMock,
+      void(Instrument* instrument,
+           Address* address,
+           const WalletItems::MaskedInstrument* reference_instrument,
+           const Address* reference_address));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWalletClient);

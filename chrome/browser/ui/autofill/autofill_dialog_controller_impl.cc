@@ -3188,10 +3188,6 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   scoped_ptr<wallet::Instrument> inputted_instrument =
       CreateTransientInstrument();
-  if (inputted_instrument && IsEditingExistingData(SECTION_CC_BILLING)) {
-    inputted_instrument->set_object_id(active_instrument->object_id());
-    DCHECK(!inputted_instrument->object_id().empty());
-  }
 
   scoped_ptr<wallet::Address> inputted_address;
   if (active_address_id_.empty() && IsShippingAddressRequired()) {
@@ -3211,10 +3207,6 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       }
     } else {
       inputted_address = CreateTransientAddress();
-      if (IsEditingExistingData(SECTION_SHIPPING)) {
-        inputted_address->set_object_id(active_address->object_id());
-        DCHECK(!inputted_address->object_id().empty());
-      }
     }
   }
 
@@ -3226,8 +3218,11 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     return;
   }
 
-  GetWalletClient()->SaveToWallet(inputted_instrument.Pass(),
-                                  inputted_address.Pass());
+  GetWalletClient()->SaveToWallet(
+      inputted_instrument.Pass(),
+      inputted_address.Pass(),
+      IsEditingExistingData(SECTION_CC_BILLING) ? active_instrument : NULL,
+      IsEditingExistingData(SECTION_SHIPPING) ? active_address : NULL);
 }
 
 scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::

@@ -67,7 +67,6 @@ class Instrument {
   FormOfPayment form_of_payment() const { return form_of_payment_; }
   const base::string16& last_four_digits() const { return last_four_digits_; }
   const std::string& object_id() const { return object_id_; }
-  void set_object_id(const std::string& object_id) { object_id_ = object_id; }
 
  private:
   void Init();

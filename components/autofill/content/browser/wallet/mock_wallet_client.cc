@@ -14,9 +14,15 @@ MockWalletClient::MockWalletClient(net::URLRequestContextGetter* context,
 
 MockWalletClient::~MockWalletClient() {}
 
-void MockWalletClient::SaveToWallet(scoped_ptr<wallet::Instrument> instrument,
-                                    scoped_ptr<wallet::Address> address) {
-  SaveToWalletMock(instrument.get(), address.get());
+void MockWalletClient::SaveToWallet(
+    scoped_ptr<Instrument> instrument,
+    scoped_ptr<Address> address,
+    const WalletItems::MaskedInstrument* reference_instrument,
+    const Address* reference_address) {
+  SaveToWalletMock(instrument.get(),
+                   address.get(),
+                   reference_instrument,
+                   reference_address);
 }
 
 }  // namespace wallet

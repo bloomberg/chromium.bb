@@ -1430,7 +1430,10 @@ TEST_F(AutofillDialogControllerTest, SelectInstrument) {
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged());
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(testing::IsNull(), testing::NotNull()));
+              SaveToWalletMock(testing::IsNull(),
+                               testing::NotNull(),
+                               testing::IsNull(),
+                               testing::IsNull()));
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -1452,7 +1455,10 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
 TEST_F(AutofillDialogControllerTest, SaveInstrument) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged());
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(testing::NotNull(), testing::IsNull()));
+              SaveToWalletMock(testing::NotNull(),
+                               testing::IsNull(),
+                               testing::IsNull(),
+                               testing::IsNull()));
 
   FillCCBillingInputs();
   scoped_ptr<wallet::WalletItems> wallet_items =
@@ -1464,7 +1470,10 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
 TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged());
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(testing::NotNull(), testing::IsNull()));
+              SaveToWalletMock(testing::NotNull(),
+                               testing::IsNull(),
+                               testing::IsNull(),
+                               testing::IsNull()));
 
   FillCCBillingInputs();
   scoped_ptr<wallet::WalletItems> wallet_items =
@@ -1476,7 +1485,10 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(testing::NotNull(), testing::NotNull()));
+              SaveToWalletMock(testing::NotNull(),
+                               testing::NotNull(),
+                               testing::IsNull(),
+                               testing::IsNull()));
 
   FillCCBillingInputs();
   scoped_ptr<wallet::WalletItems> wallet_items =
@@ -1496,7 +1508,10 @@ MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
 // matched shipping address, then a shipping address should be added.
 TEST_F(AutofillDialogControllerTest, BillingForShipping) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(testing::IsNull(), testing::NotNull()));
+              SaveToWalletMock(testing::IsNull(),
+                               testing::NotNull(),
+                               testing::IsNull(),
+                               testing::IsNull()));
 
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   // Select "Same as billing" in the address menu.
@@ -1509,7 +1524,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShipping) {
 // matched shipping address, then a shipping address should not be added.
 TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(_, _)).Times(0);
+              SaveToWalletMock(_, _, _, _)).Times(0);
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -1561,13 +1576,16 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
   controller()->OnAccept();
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(testing::NotNull(), UsesLocalBillingAddress()));
+              SaveToWalletMock(testing::NotNull(),
+                               UsesLocalBillingAddress(),
+                               testing::IsNull(),
+                               testing::IsNull()));
   AcceptAndLoadFakeFingerprint();
 }
 
 TEST_F(AutofillDialogControllerTest, CancelNoSave) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(_, _)).Times(0);
+              SaveToWalletMock(_, _, _, _)).Times(0);
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged());
 
