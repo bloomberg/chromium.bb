@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/iq_sender.h"
-#include "third_party/libjingle/source/talk/base/sigslot.h"
 
 namespace buzz {
 class XmlElement;
@@ -34,17 +33,14 @@ class SignalStrategy;
 //
 // This class is not threadsafe and should be used on the same thread it is
 // created on.
-//
-// TODO(ajwong): Add support for a timeout.
-class JingleInfoRequest : public sigslot::has_slots<> {
+class JingleInfoRequest {
  public:
-  // Callback to receive the Jingle configuration settings.  The arguments are
-  // passed by pointer so the receive may call swap on them.  The receiver does
-  // NOT own the arguments, which are guaranteed only to be alive for the
-  // duration of the callback.
-  typedef base::Callback<void (
-      const std::string&, const std::vector<std::string>&,
-      const std::vector<talk_base::SocketAddress>&)> OnJingleInfoCallback;
+  // Callback to receive the Jingle configuration settings. All fields are empty
+  // if the request has timed out.
+  typedef base::Callback<void(const std::string& relay_token,
+                              const std::vector<std::string>& relay_servers,
+                              const std::vector<talk_base::SocketAddress>&
+                                  stun_servers)> OnJingleInfoCallback;
 
   explicit JingleInfoRequest(SignalStrategy* signal_strategy);
   virtual ~JingleInfoRequest();

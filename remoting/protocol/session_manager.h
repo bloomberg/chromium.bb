@@ -59,7 +59,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
-#include "remoting/protocol/transport_config.h"
 
 namespace remoting {
 

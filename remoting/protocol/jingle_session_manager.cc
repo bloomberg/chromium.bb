@@ -6,14 +6,12 @@
 
 #include "base/bind.h"
 #include "remoting/jingle_glue/iq_sender.h"
-#include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/protocol/transport_config.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -23,10 +21,8 @@ namespace remoting {
 namespace protocol {
 
 JingleSessionManager::JingleSessionManager(
-    scoped_ptr<TransportFactory> transport_factory,
-    bool fetch_stun_relay_config)
+    scoped_ptr<TransportFactory> transport_factory)
     : transport_factory_(transport_factory.Pass()),
-      fetch_stun_relay_config_(fetch_stun_relay_config),
       signal_strategy_(NULL),
       listener_(NULL),
       ready_(false) {
@@ -48,35 +44,13 @@ void JingleSessionManager::Init(
   OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
-void JingleSessionManager::OnJingleInfo(
-    const std::string& relay_token,
-    const std::vector<std::string>& relay_hosts,
-    const std::vector<talk_base::SocketAddress>& stun_hosts) {
-  DCHECK(CalledOnValidThread());
-
-  // TODO(sergeyu): Add support for multiple STUN/relay servers when
-  // it's implemented in libjingle and P2P Transport API.
-  TransportConfig config;
-  config.stun_server = stun_hosts[0].ToString();
-  config.relay_server = relay_hosts[0];
-  config.relay_token = relay_token;
-  transport_factory_->SetTransportConfig(config);
-
-  VLOG(1) << "STUN server: " << config.stun_server
-          << " Relay server: " << config.relay_server
-          << " Relay token: " << config.relay_token;
-
-
-  if (!ready_) {
-    ready_ = true;
-    listener_->OnSessionManagerReady();
-  }
-}
-
 scoped_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
     scoped_ptr<Authenticator> authenticator,
     scoped_ptr<CandidateSessionConfig> config) {
+  // Notify |transport_factory_| that it may be used soon.
+  transport_factory_->PrepareTokens();
+
   scoped_ptr<JingleSession> session(new JingleSession(this));
   session->StartConnection(host_jid, authenticator.Pass(), config.Pass());
   sessions_[session->session_id_] = session.get();
@@ -90,7 +64,6 @@ void JingleSessionManager::Close() {
   DCHECK(sessions_.empty());
 
   listener_ = NULL;
-  jingle_info_request_.reset();
 
   if (signal_strategy_) {
     signal_strategy_->RemoveListener(this);
@@ -106,16 +79,9 @@ void JingleSessionManager::set_authenticator_factory(
 
 void JingleSessionManager::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
-  if (state == SignalStrategy::CONNECTED) {
-    // Request STUN/Relay info if necessary.
-    if (fetch_stun_relay_config_) {
-      jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
-      jingle_info_request_->Send(base::Bind(&JingleSessionManager::OnJingleInfo,
-                                            base::Unretained(this)));
-    } else if (!ready_) {
-      ready_ = true;
-      listener_->OnSessionManagerReady();
-    }
+  if (state == SignalStrategy::CONNECTED && !ready_) {
+    ready_ = true;
+    listener_->OnSessionManagerReady();
   }
 }
 
@@ -136,6 +102,9 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     DCHECK(message.description.get());
 
     SendReply(stanza, JingleMessageReply::NONE);
+
+    // Notify |transport_factory_| that it may be used soon.
+    transport_factory_->PrepareTokens();
 
     scoped_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(

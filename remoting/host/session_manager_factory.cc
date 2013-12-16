@@ -14,6 +14,7 @@
 namespace remoting {
 
 scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
+    SignalStrategy* signal_strategy,
     const NetworkSettings& network_settings,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
@@ -22,22 +23,14 @@ scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
       ChromiumPortAllocator::Create(url_request_context_getter,
           network_settings));
 
-  bool incoming_only = network_settings.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_DISABLED;
-
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
+          signal_strategy,
           port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          incoming_only));
-
-  // Use the Jingle protocol for channel-negotiation signalling between
-  // peer TransportFactories.
-  bool fetch_stun_relay_info = network_settings.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_ENABLED;
+          network_settings));
 
   scoped_ptr<protocol::JingleSessionManager> session_manager(
-      new protocol::JingleSessionManager(
-          transport_factory.Pass(), fetch_stun_relay_info));
+      new protocol::JingleSessionManager(transport_factory.Pass()));
   return session_manager.PassAs<protocol::SessionManager>();
 }
 

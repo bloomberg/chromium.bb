@@ -658,7 +658,9 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory(port_allocator.Pass(), false));
+      new protocol::LibjingleTransportFactory(
+          signal_strategy_.get(), port_allocator.Pass(),
+          NetworkSettings(NetworkSettings::NAT_TRAVERSAL_ENABLED)));
 
   // Kick off the connection.
   client_->Start(signal_strategy_.get(), transport_factory.Pass());
