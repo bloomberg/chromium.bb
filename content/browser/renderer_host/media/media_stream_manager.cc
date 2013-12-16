@@ -812,7 +812,9 @@ bool MediaStreamManager::TranslateSourceIdToDeviceId(
     std::string* device_id) const {
   DCHECK(stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          stream_type == MEDIA_DEVICE_VIDEO_CAPTURE);
-  DCHECK(!source_id.empty());
+  // The source_id can be empty if the constraint is set but empty.
+  if (source_id.empty())
+    return false;
 
   const EnumerationCache* cache =
       stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ?
