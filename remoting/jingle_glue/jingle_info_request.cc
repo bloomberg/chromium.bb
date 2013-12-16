@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "net/base/net_util.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
@@ -16,12 +17,13 @@
 
 namespace remoting {
 
+const int kRequestTimeoutSeconds = 5;
+
 JingleInfoRequest::JingleInfoRequest(SignalStrategy* signal_strategy)
     : iq_sender_(signal_strategy) {
 }
 
-JingleInfoRequest::~JingleInfoRequest() {
-}
+JingleInfoRequest::~JingleInfoRequest() {}
 
 void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   on_jingle_info_cb_ = callback;
@@ -30,19 +32,39 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   request_ = iq_sender_.SendIq(
       buzz::STR_GET, buzz::STR_EMPTY, iq_body.Pass(),
       base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this)));
+  if (!request_) {
+    // If we failed to send IqRequest it means that SignalStrategy is
+    // disconnected. Notify the caller.
+    std::vector<talk_base::SocketAddress> stun_hosts;
+    std::vector<std::string> relay_hosts;
+    std::string relay_token;
+    on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+    return;
+  }
+  request_->SetTimeout(base::TimeDelta::FromSeconds(kRequestTimeoutSeconds));
 }
 
 void JingleInfoRequest::OnResponse(IqRequest* request,
                                    const buzz::XmlElement* stanza) {
+  std::vector<talk_base::SocketAddress> stun_hosts;
+  std::vector<std::string> relay_hosts;
+  std::string relay_token;
+
+  if (!stanza) {
+    LOG(WARNING) << "Jingle info request has timed out.";
+    on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+    return;
+  }
+
   const buzz::XmlElement* query =
       stanza->FirstNamed(buzz::QN_JINGLE_INFO_QUERY);
   if (query == NULL) {
     LOG(WARNING) << "No Jingle info found in Jingle Info query response."
                  << stanza->Str();
+    on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
     return;
   }
 
-  std::vector<talk_base::SocketAddress> stun_hosts;
   const buzz::XmlElement* stun = query->FirstNamed(buzz::QN_JINGLE_INFO_STUN);
   if (stun) {
     for (const buzz::XmlElement* server =
@@ -63,8 +85,6 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
     }
   }
 
-  std::vector<std::string> relay_hosts;
-  std::string relay_token;
   const buzz::XmlElement* relay = query->FirstNamed(buzz::QN_JINGLE_INFO_RELAY);
   if (relay) {
     relay_token = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);

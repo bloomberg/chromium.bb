@@ -15,12 +15,14 @@ class URLRequestContextGetter;
 namespace remoting {
 
 struct NetworkSettings;
+class SignalStrategy;
 
 namespace protocol {
-  class SessionManager;
+class SessionManager;
 }  // namespace protocol
 
 scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
+    SignalStrategy* signal_strategy,
     const NetworkSettings& network_settings,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter);

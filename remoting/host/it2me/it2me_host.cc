@@ -195,7 +195,7 @@ void It2MeHost::FinishConnect() {
   host_.reset(new ChromotingHost(
       signal_strategy_.get(),
       desktop_environment_factory_.get(),
-      CreateHostSessionManager(network_settings,
+      CreateHostSessionManager(signal_strategy_.get(), network_settings,
                                host_context_->url_request_context_getter()),
       host_context_->audio_task_runner(),
       host_context_->input_task_runner(),

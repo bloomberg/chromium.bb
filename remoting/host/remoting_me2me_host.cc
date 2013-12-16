@@ -998,7 +998,7 @@ void HostProcess::StartHost() {
   host_.reset(new ChromotingHost(
       signal_strategy_.get(),
       desktop_environment_factory_.get(),
-      CreateHostSessionManager(network_settings,
+      CreateHostSessionManager(signal_strategy_.get(), network_settings,
                                context_->url_request_context_getter()),
       context_->audio_task_runner(),
       context_->input_task_runner(),

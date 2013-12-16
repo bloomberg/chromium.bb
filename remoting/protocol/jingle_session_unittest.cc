@@ -141,13 +141,14 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
 
-    NetworkSettings network_settings;
+    NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
 
     scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
+        NULL,
         ChromiumPortAllocator::Create(NULL, network_settings)
             .PassAs<cricket::HttpPortAllocatorBase>(),
-        false));
-    host_server_.reset(new JingleSessionManager(host_transport.Pass(), false));
+        network_settings));
+    host_server_.reset(new JingleSessionManager(host_transport.Pass()));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
 
     scoped_ptr<AuthenticatorFactory> factory(
@@ -157,11 +158,12 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
     scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
+        NULL,
         ChromiumPortAllocator::Create(NULL, network_settings)
             .PassAs<cricket::HttpPortAllocatorBase>(),
-        false));
+        network_settings));
     client_server_.reset(
-        new JingleSessionManager(client_transport.Pass(), false));
+        new JingleSessionManager(client_transport.Pass()));
     client_server_->Init(client_signal_strategy_.get(),
                          &client_server_listener_);
   }
