@@ -14,11 +14,13 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/protocol/sync.pb.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_RLZ)
@@ -70,6 +72,10 @@ std::string SearchTermsData::GetSearchClient() const {
 }
 
 std::string SearchTermsData::GetSuggestClient() const {
+  return std::string();
+}
+
+std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
@@ -148,7 +154,27 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
 std::string UIThreadSearchTermsData::GetSuggestClient() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(OS_ANDROID)
+  sync_pb::SyncEnums::DeviceType device_type =
+      browser_sync::DeviceInfo::GetLocalDeviceType();
+  return device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE ?
+    "chrome" : "chrome-omni";
+#else
   return chrome::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
+#endif
+}
+
+std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(OS_ANDROID)
+  sync_pb::SyncEnums::DeviceType device_type =
+      browser_sync::DeviceInfo::GetLocalDeviceType();
+  return device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE ?
+    "chrome-mobile-ext" : "chrome-ext";
+#else
+  return "chrome-ext";
+#endif
 }
 
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(

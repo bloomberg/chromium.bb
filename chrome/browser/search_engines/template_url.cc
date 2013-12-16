@@ -87,6 +87,7 @@ const char kGoogleSearchFieldtrialParameter[] =
 const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
 const char kGoogleSuggestClient[] = "google:suggestClient";
+const char kGoogleSuggestRequestId[] = "google:suggestRid";
 
 // Same as kSearchTermsParameter, with no escaping.
 const char kGoogleUnescapedSearchTermsParameter[] =
@@ -612,6 +613,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
                 net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
   } else if (parameter == kGoogleSuggestClient) {
     replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
+  } else if (parameter == kGoogleSuggestRequestId) {
+    replacements->push_back(Replacement(GOOGLE_SUGGEST_REQUEST_ID, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else if (parameter == kInputEncodingParameter) {
@@ -965,6 +968,12 @@ std::string TemplateURLRef::HandleReplacements(
       case GOOGLE_SUGGEST_CLIENT:
         HandleReplacement(
             std::string(), search_terms_data.GetSuggestClient(), *i, &url);
+        break;
+
+      case GOOGLE_SUGGEST_REQUEST_ID:
+        HandleReplacement(
+            std::string(), search_terms_data.GetSuggestRequestIdentifier(), *i,
+            &url);
         break;
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
