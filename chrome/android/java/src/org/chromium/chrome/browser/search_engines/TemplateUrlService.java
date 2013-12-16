@@ -29,6 +29,9 @@ public class TemplateUrlService {
         public abstract void onTemplateUrlServiceLoaded();
     }
 
+    /**
+     * Represents search engine with its index.
+     */
     public static class TemplateUrl {
         private final int mIndex;
         private final String mShortName;
@@ -130,7 +133,11 @@ public class TemplateUrlService {
         if (!isLoaded()) return null;
 
         int defaultSearchEngineIndex = getDefaultSearchEngineIndex();
+        if (defaultSearchEngineIndex == -1) return null;
+
         assert defaultSearchEngineIndex >= 0;
+        assert defaultSearchEngineIndex < nativeGetTemplateUrlCount(
+                mNativeTemplateUrlServiceAndroid);
 
         return nativeGetPrepopulatedTemplateUrlAt(
                 mNativeTemplateUrlServiceAndroid, defaultSearchEngineIndex);

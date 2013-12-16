@@ -72,14 +72,15 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
             }
 
-            final boolean templateServiceUsable = TemplateUrlService.getInstance().isLoaded();
-            final boolean searchByImageVisible = templateServiceUsable &&
+            final TemplateUrlService templateUrlServiceInstance = TemplateUrlService.getInstance();
+            final boolean isSearchByImageAvailable =
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()) &&
-                    TemplateUrlService.getInstance().isSearchByImageAvailable();
+                            templateUrlServiceInstance.isLoaded() &&
+                            templateUrlServiceInstance.isSearchByImageAvailable() &&
+                            templateUrlServiceInstance.getDefaultSearchEngineTemplateUrl() != null;
 
-            menu.findItem(R.id.contextmenu_search_by_image).setVisible(searchByImageVisible);
-
-            if (templateServiceUsable) {
+            menu.findItem(R.id.contextmenu_search_by_image).setVisible(isSearchByImageAvailable);
+            if (isSearchByImageAvailable) {
                 menu.findItem(R.id.contextmenu_search_by_image).setTitle(
                         context.getString(R.string.contextmenu_search_web_for_image,
                                 TemplateUrlService.getInstance().
