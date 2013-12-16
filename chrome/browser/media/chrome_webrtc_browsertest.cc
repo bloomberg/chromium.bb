@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
@@ -57,6 +58,10 @@ class WebrtcBrowserTest : public WebRtcTestBase {
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+#if defined(OS_MACOSX)
+    // TODO(mcasas): Remove this switch when http://crbug.com/327618 is solved.
+    command_line->AppendSwitch(switches::kDisableAVFoundation);
+#endif
   }
 
   void EstablishCall(content::WebContents* from_tab,
