@@ -180,8 +180,9 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
                                 Err* err) const {
   // Values.
   for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
+    const Value& new_value = i->second.value;
     const Value* existing_value = dest->GetValue(i->first);
-    if (existing_value) {
+    if (existing_value && new_value != *existing_value) {
       // Value present in both the source and the dest.
       std::string desc_string(desc_for_err);
       *err = Err(node_for_err, "Value collision.",
@@ -190,7 +191,7 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
           "Which would clobber the one in your current scope"));
       err->AppendSubErr(Err(*existing_value, "defined here.",
           "Executing " + desc_string + " should not conflict with anything "
-          "in the current\nscope."));
+          "in the current\nscope unless the values are identical."));
       return false;
     }
     dest->values_[i->first] = i->second;

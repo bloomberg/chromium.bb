@@ -372,10 +372,10 @@ const char kImport_Help[] =
     "\n"
     "  By convention, imported files are named with a .gni extension.\n"
     "\n"
-    "  It does not do an \"include\". The imported file is executed in a\n"
-    "  standalone environment from the caller of the import command. The\n"
-    "  results of this execution are cached for other files that import the\n"
-    "  same .gni file.\n"
+    "  An import is different than a C++ \"include\". The imported file is\n"
+    "  executed in a standalone environment from the caller of the import\n"
+    "  command. The results of this execution are cached for other files that\n"
+    "  import the same .gni file.\n"
     "\n"
     "  Note that you can not import a BUILD.gn file that's otherwise used\n"
     "  in the build. Files must either be imported or implicitly loaded as\n"
@@ -383,9 +383,9 @@ const char kImport_Help[] =
     "\n"
     "  The imported file's scope will be merged with the scope at the point\n"
     "  import was called. If there is a conflict (both the current scope and\n"
-    "  the imported file define some variable or rule with the same name)\n"
-    "  a runtime error will be thrown. Therefore, it's good practice to\n"
-    "  minimize the stuff that an imported file defines.\n"
+    "  the imported file define some variable or rule with the same name but\n"
+    "  different value), a runtime error will be thrown. Therefore, it's good\n"
+    "  practice to minimize the stuff that an imported file defines.\n"
     "\n"
     "Examples:\n"
     "\n"
@@ -398,8 +398,7 @@ Value RunImport(Scope* scope,
                 const FunctionCallNode* function,
                 const std::vector<Value>& args,
                 Err* err) {
-  if (!EnsureSingleStringArg(function, args, err) ||
-      !EnsureNotProcessingImport(function, scope, err))
+  if (!EnsureSingleStringArg(function, args, err))
     return Value();
 
   const SourceDir& input_dir = scope->GetSourceDir();
