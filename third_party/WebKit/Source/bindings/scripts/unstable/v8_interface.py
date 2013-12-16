@@ -99,6 +99,11 @@ def generate_interface(interface):
     if constructors:
         includes.add('bindings/v8/V8ObjectConstructor.h')
 
+    # [CustomConstructor]
+    has_custom_constructor = 'CustomConstructor' in extended_attributes
+    if has_custom_constructor:
+        includes.add('bindings/v8/V8ObjectConstructor.h')
+
     # [EventConstructor]
     has_event_constructor = 'EventConstructor' in extended_attributes
     any_type_attributes = [attribute for attribute in interface.attributes
@@ -115,6 +120,7 @@ def generate_interface(interface):
         'constructors': constructors,
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
+        'has_custom_constructor': has_custom_constructor,
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]

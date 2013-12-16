@@ -291,6 +291,8 @@ class IdlOperation(BaseIdl, TypedObject):
         self.extended_attributes = extended_attributes or {}
         self.specials = specials or []
         self.arguments = arguments or []
+        # FIXME: remove overloaded_index (only here for Perl compatibility),
+        # as overloading is handled in code generator (v8_interface.py).
         self.overloaded_index = overloaded_index
 
     def resolve_typedefs(self, typedefs):

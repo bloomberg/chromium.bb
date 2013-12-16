@@ -325,7 +325,7 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
 
 {##############################################################################}
 {% block constructor_callback %}
-{% if constructors or has_event_constructor %}
+{% if constructors or has_custom_constructor or has_event_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
@@ -342,7 +342,11 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
 
+    {% if has_custom_constructor %}
+    {{v8_class}}::constructorCustom(info);
+    {% else %}
     {{cpp_class}}V8Internal::constructor(info);
+    {% endif %}
 }
 
 {% endif %}
@@ -387,7 +391,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
         isolate, currentWorldType);
     {% endfilter %}
 
-    {% if constructors or has_event_constructor %}
+    {% if constructors or has_custom_constructor or has_event_constructor %}
     functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
     functionTemplate->SetLength({{interface_length}});
     {% endif %}

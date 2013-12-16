@@ -94,7 +94,7 @@ def interface_node_to_idl_interface(node):
     extended_attributes = None
     operations = []
     is_callback = node.GetProperty('CALLBACK') or False
-    # FIXME: uppercase 'Partial' in base IDL parser
+    # FIXME: uppercase 'Partial' => 'PARTIAL' in base IDL parser
     is_partial = node.GetProperty('Partial') or False
     name = node.GetName()
     parent = None
@@ -103,11 +103,7 @@ def interface_node_to_idl_interface(node):
     for child in children:
         child_class = child.GetClass()
         if child_class == 'Attribute':
-            attribute = attribute_node_to_idl_attribute(child)
-            # FIXME: This is a hack to support [CustomConstructor] for
-            # window.HTMLImageElement. Remove the hack.
-            clear_constructor_attributes(attribute.extended_attributes)
-            attributes.append(attribute)
+            attributes.append(attribute_node_to_idl_attribute(child))
         elif child_class == 'Const':
             constants.append(constant_node_to_idl_constant(child))
         elif child_class == 'ExtAttributes':
@@ -356,8 +352,8 @@ def ext_attributes_node_to_extended_attributes(node):
     # overloading, and thus are stored in temporary lists.
     # However, Named Constructors cannot be overloaded, and thus do not have
     # a list.
-    # FIXME: Add overloading for Named Constructors and remove custom bindings
-    # for HTMLImageElement
+    # FIXME: move Constructor logic into separate function, instead of modifying
+    #        extended attributes in-place.
     constructors = []
     custom_constructors = []
     extended_attributes = {}
