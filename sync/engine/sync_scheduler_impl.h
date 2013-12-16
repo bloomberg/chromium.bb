@@ -207,7 +207,10 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // priority.
   void TryCanaryJob();
 
+  // At the moment TrySyncSessionJob just posts call to TrySyncSessionJobImpl on
+  // current thread. In the future it will request access token here.
   void TrySyncSessionJob(JobPriority priority);
+  void TrySyncSessionJobImpl(JobPriority priority);
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
   void Unthrottle();

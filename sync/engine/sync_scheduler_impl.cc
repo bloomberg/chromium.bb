@@ -207,7 +207,7 @@ void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
   // 4. A nudge was scheduled + saved while in configuration mode.
   //
   // In all cases except (2), we want to retry contacting the server. We
-  // call DoCanaryJob to achieve this, and note that nothing -- not even a
+  // call TryCanaryJob to achieve this, and note that nothing -- not even a
   // canary job -- can bypass a THROTTLED WaitInterval. The only thing that
   // has the authority to do that is the Unthrottle timer.
   TryCanaryJob();
@@ -416,12 +416,6 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
 
   if (!CanRunNudgeJobNow(NORMAL_PRIORITY))
     return;
-
-  if (!started_) {
-    SDVLOG_LOC(nudge_location, 2)
-        << "Schedule not started; not running a nudge.";
-    return;
-  }
 
   TimeTicks incoming_run_time = TimeTicks::Now() + delay;
   if (!scheduled_nudge_time_.is_null() &&
@@ -667,11 +661,18 @@ void SyncSchedulerImpl::Stop() {
 // privileges.  Everyone else should use NORMAL_PRIORITY.
 void SyncSchedulerImpl::TryCanaryJob() {
   TrySyncSessionJob(CANARY_PRIORITY);
-  // Don't run poll job till the next time poll timer fires.
-  do_poll_after_credentials_updated_ = false;
 }
 
 void SyncSchedulerImpl::TrySyncSessionJob(JobPriority priority) {
+  // Post call to TrySyncSessionJobImpl on current thread. Later request for
+  // access token will be here.
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &SyncSchedulerImpl::TrySyncSessionJobImpl,
+      weak_ptr_factory_.GetWeakPtr(),
+      priority));
+}
+
+void SyncSchedulerImpl::TrySyncSessionJobImpl(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {
@@ -686,7 +687,33 @@ void SyncSchedulerImpl::TrySyncSessionJob(JobPriority priority) {
     } else if (do_poll_after_credentials_updated_ ||
         ((base::TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
       DoPollSyncSessionJob();
+      // Poll timer fires infrequently. Usually by this time access token is
+      // already expired and poll job will fail with auth error. Set flag to
+      // retry poll once ProfileSyncService gets new access token, TryCanaryJob
+      // will be called after access token is retrieved.
+      if (HttpResponse::SYNC_AUTH_ERROR ==
+          session_context_->connection_manager()->server_status()) {
+        do_poll_after_credentials_updated_ = true;
+      }
     }
+  }
+
+  if (priority == CANARY_PRIORITY) {
+    // If this is canary job then whatever result was don't run poll job till
+    // the next time poll timer fires.
+    do_poll_after_credentials_updated_ = false;
+  }
+
+  if (IsBackingOff() && !pending_wakeup_timer_.IsRunning()) {
+    // If we succeeded, our wait interval would have been cleared.  If it hasn't
+    // been cleared, then we should increase our backoff interval and schedule
+    // another retry.
+    TimeDelta length = delay_provider_->GetDelay(wait_interval_->length);
+    wait_interval_.reset(
+      new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
+    SDVLOG(2) << "Sync cycle failed.  Will back off for "
+        << wait_interval_->length.InMilliseconds() << "ms.";
+    RestartWaiting();
   }
 }
 
@@ -704,14 +731,6 @@ void SyncSchedulerImpl::PollTimerCallback() {
   }
 
   TrySyncSessionJob(NORMAL_PRIORITY);
-  // Poll timer fires infrequently. Usually by this time access token is already
-  // expired and poll job will fail with auth error. Set flag to retry poll once
-  // ProfileSyncService gets new access token, TryCanaryJob will be called in
-  // this case.
-  if (HttpResponse::SYNC_AUTH_ERROR ==
-      session_context_->connection_manager()->server_status()) {
-    do_poll_after_credentials_updated_ = true;
-  }
 }
 
 void SyncSchedulerImpl::Unthrottle() {
@@ -766,18 +785,6 @@ void SyncSchedulerImpl::PerformDelayedNudge() {
 
 void SyncSchedulerImpl::ExponentialBackoffRetry() {
   TryCanaryJob();
-
-  if (IsBackingOff()) {
-    // If we succeeded, our wait interval would have been cleared.  If it hasn't
-    // been cleared, then we should increase our backoff interval and schedule
-    // another retry.
-    TimeDelta length = delay_provider_->GetDelay(wait_interval_->length);
-    wait_interval_.reset(
-      new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
-    SDVLOG(2) << "Sync cycle failed.  Will back off for "
-        << wait_interval_->length.InMilliseconds() << "ms.";
-    RestartWaiting();
-  }
 }
 
 void SyncSchedulerImpl::Notify(SyncEngineEvent::EventCause cause) {

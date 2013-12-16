@@ -320,6 +320,7 @@ TEST_F(SyncSchedulerTest, Config) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
   ASSERT_EQ(1, ready_counter.times_called());
   ASSERT_EQ(0, retry_counter.times_called());
 }
@@ -349,6 +350,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(1, retry_counter.times_called());
 
@@ -395,6 +397,7 @@ TEST_F(SyncSchedulerTest, ConfigWithStop) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(0, retry_counter.times_called());
 }
@@ -423,6 +426,7 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(1, retry_counter.times_called());
   Mock::VerifyAndClearExpectations(syncer());
@@ -450,6 +454,7 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times)));
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  PumpLoop();
 }
 
 // Test that nudges are coalesced.
@@ -660,6 +665,7 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(1, retry_counter.times_called());
 
@@ -711,7 +717,8 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromNudge) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
 
-  PumpLoop();
+  PumpLoop(); // To get PerformDelayedNudge called.
+  PumpLoop(); // To get TrySyncSessionJob called
   EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
   RunLoop();
   EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
@@ -747,6 +754,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
   EXPECT_EQ(0, ready_counter.times_called());
   EXPECT_EQ(1, retry_counter.times_called());
   EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
@@ -778,7 +786,8 @@ TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
-  PumpLoop();
+  PumpLoop(); // To get PerformDelayedNudge called.
+  PumpLoop(); // To get TrySyncSessionJob called
   EXPECT_TRUE(GetThrottledTypes().HasAll(types));
 
   // This won't cause a sync cycle because the types are throttled.
@@ -812,7 +821,8 @@ TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   scheduler()->ScheduleLocalNudge(zero(), throttled_types, FROM_HERE);
-  PumpLoop();
+  PumpLoop(); // To get PerformDelayedNudge called.
+  PumpLoop(); // To get TrySyncSessionJob called
   EXPECT_TRUE(GetThrottledTypes().HasAll(throttled_types));
 
   // Ignore invalidations for throttled types.
@@ -865,6 +875,7 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  RunLoop();
   ASSERT_EQ(1, ready_counter.times_called());
   ASSERT_EQ(0, retry_counter.times_called());
 
@@ -882,7 +893,8 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   context()->set_routing_info(routing_info());
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  PumpLoop();
+  RunLoop();
+  Mock::VerifyAndClearExpectations(syncer());
 }
 
 class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
@@ -1021,6 +1033,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(1, retry_counter.times_called());
 
@@ -1181,8 +1194,8 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
                     Return(true)));
 
   scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
-
-  PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
+  PumpLoop(); // To get PerformDelayedNudge called.
+  PumpLoop(); // Run the nudge, that will fail and schedule a quick retry.
   ASSERT_TRUE(scheduler()->IsBackingOff());
 
   // Before we run the scheduled canary, trigger a server connection change.
@@ -1214,11 +1227,13 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
 
   scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
 
-  PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
+  PumpLoop(); // To get PerformDelayedNudge called.
+  PumpLoop(); // Run the nudge, that will fail and schedule a quick retry.
   ASSERT_TRUE(scheduler()->IsBackingOff());
 
   // Before we run the scheduled canary, trigger a server connection change.
   scheduler()->OnConnectionStatusChange();
+  PumpLoop();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
@@ -1277,6 +1292,7 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
                       RecordSyncShare(&times)));
   scheduler()->OnCredentialsUpdated();
   connection()->SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
+  RunLoop();
   StopSyncScheduler();
 }
 
