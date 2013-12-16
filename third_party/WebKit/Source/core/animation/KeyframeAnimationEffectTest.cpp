@@ -315,9 +315,9 @@ TEST(AnimationKeyframeAnimationEffectTest, MultipleProperties)
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
     OwnPtr<AnimationEffect::CompositableValueList> values = effect->sample(0, 0.6);
     ASSERT_EQ(2UL, values->size());
-    ASSERT_TRUE(values->at(0).first == CSSPropertyLeft);
+    EXPECT_TRUE(values->at(0).first == CSSPropertyLeft);
     expectDoubleValue(5.0, values->at(0).second->compositeOnto(unknownAnimatableValue(7.0)));
-    ASSERT_TRUE(values->at(1).first == CSSPropertyRight);
+    EXPECT_TRUE(values->at(1).first == CSSPropertyRight);
     expectDoubleValue(6.0, values->at(1).second->compositeOnto(unknownAnimatableValue(7.0)));
 }
 

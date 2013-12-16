@@ -355,10 +355,10 @@ TEST_F(AnimationPlayerTest, AttachedPlayers)
     Timing timing;
     RefPtr<Animation> animation = Animation::create(element, 0, timing);
     RefPtr<Player> player = Player::create(*timeline, animation.get());
-    ASSERT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
+    EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();
-    ASSERT_TRUE(element->activeAnimations()->players().isEmpty());
+    EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 
 }

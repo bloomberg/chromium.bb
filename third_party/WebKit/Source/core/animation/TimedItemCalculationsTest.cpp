@@ -46,43 +46,43 @@ TEST(AnimationTimedItemCalculationsTest, ActiveTime)
     // Before Phase
     timing.startDelay = 10;
     timing.fillMode = Timing::FillModeForwards;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
     timing.fillMode = Timing::FillModeNone;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing)));
     timing.fillMode = Timing::FillModeBackwards;
-    ASSERT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
+    EXPECT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
     timing.fillMode = Timing::FillModeBoth;
-    ASSERT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
+    EXPECT_EQ(0, calculateActiveTime(20, 0, TimedItem::PhaseActive, TimedItem::PhaseBefore, timing));
 
     // Active Phase
     timing.startDelay = 10;
     // Active, and parent Before
     timing.fillMode = Timing::FillModeNone;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
     timing.fillMode = Timing::FillModeForwards;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseBefore, TimedItem::PhaseActive, timing)));
     // Active, and parent After
     timing.fillMode = Timing::FillModeNone;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
     timing.fillMode = Timing::FillModeBackwards;
-    ASSERT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, 15, TimedItem::PhaseAfter, TimedItem::PhaseActive, timing)));
     // Active, and parent Active
     timing.fillMode = Timing::FillModeForwards;
-    ASSERT_EQ(5, calculateActiveTime(20, 15, TimedItem::PhaseActive, TimedItem::PhaseActive, timing));
+    EXPECT_EQ(5, calculateActiveTime(20, 15, TimedItem::PhaseActive, TimedItem::PhaseActive, timing));
 
     // After Phase
     timing.startDelay = 10;
     timing.fillMode = Timing::FillModeForwards;
-    ASSERT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
+    EXPECT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
     timing.fillMode = Timing::FillModeBoth;
-    ASSERT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
+    EXPECT_EQ(21, calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing));
     timing.fillMode = Timing::FillModeBackwards;
-    ASSERT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
     timing.fillMode = Timing::FillModeNone;
-    ASSERT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(21, 45, TimedItem::PhaseActive, TimedItem::PhaseAfter, timing)));
 
     // None
-    ASSERT_TRUE(isNull(calculateActiveTime(32, nullValue(), TimedItem::PhaseNone, TimedItem::PhaseNone, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(32, nullValue(), TimedItem::PhaseNone, TimedItem::PhaseNone, timing)));
 }
 
 TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)
@@ -92,23 +92,23 @@ TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)
     // calculateScaledActiveTime(activeDuration, activeTime, startOffset, timing)
 
     // if the active time is null
-    ASSERT_TRUE(isNull(calculateScaledActiveTime(4, nullValue(), 5, timing)));
+    EXPECT_TRUE(isNull(calculateScaledActiveTime(4, nullValue(), 5, timing)));
 
     // if the playback rate is negative
     timing.playbackRate = -1;
-    ASSERT_EQ(35, calculateScaledActiveTime(40, 10, 5, timing));
+    EXPECT_EQ(35, calculateScaledActiveTime(40, 10, 5, timing));
 
     // otherwise
     timing.playbackRate = 0;
-    ASSERT_EQ(5, calculateScaledActiveTime(40, 10, 5, timing));
+    EXPECT_EQ(5, calculateScaledActiveTime(40, 10, 5, timing));
     timing.playbackRate = 1;
-    ASSERT_EQ(15, calculateScaledActiveTime(40, 10, 5, timing));
+    EXPECT_EQ(15, calculateScaledActiveTime(40, 10, 5, timing));
 
     // infinte activeTime
     timing.playbackRate = 0;
-    ASSERT_EQ(0, calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
+    EXPECT_EQ(0, calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
     timing.playbackRate = 1;
-    ASSERT_EQ(std::numeric_limits<double>::infinity(), calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
 }
 
 TEST(AnimationTimedItemCalculationsTest, IterationTime)
@@ -118,17 +118,17 @@ TEST(AnimationTimedItemCalculationsTest, IterationTime)
     // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, timing)
 
     // if the scaled active time is null
-    ASSERT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, timing)));
+    EXPECT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, timing)));
 
     // if (complex-conditions)...
-    ASSERT_EQ(12, calculateIterationTime(12, 12, 12, 0, timing));
+    EXPECT_EQ(12, calculateIterationTime(12, 12, 12, 0, timing));
 
     // otherwise
     timing.iterationCount = 10;
-    ASSERT_EQ(5, calculateIterationTime(10, 100, 25, 4, timing));
-    ASSERT_EQ(7, calculateIterationTime(11, 110, 29, 1, timing));
+    EXPECT_EQ(5, calculateIterationTime(10, 100, 25, 4, timing));
+    EXPECT_EQ(7, calculateIterationTime(11, 110, 29, 1, timing));
     timing.iterationStart = 1.1;
-    ASSERT_EQ(8, calculateIterationTime(12, 120, 20, 7, timing));
+    EXPECT_EQ(8, calculateIterationTime(12, 120, 20, 7, timing));
 }
 
 TEST(AnimationTimedItemCalculationsTest, CurrentIteration)
@@ -138,18 +138,18 @@ TEST(AnimationTimedItemCalculationsTest, CurrentIteration)
     // calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, timing)
 
     // if the scaled active time is null
-    ASSERT_TRUE(isNull(calculateCurrentIteration(1, 1, nullValue(), timing)));
+    EXPECT_TRUE(isNull(calculateCurrentIteration(1, 1, nullValue(), timing)));
 
     // if the scaled active time is zero
-    ASSERT_EQ(0, calculateCurrentIteration(1, 1, 0, timing));
+    EXPECT_EQ(0, calculateCurrentIteration(1, 1, 0, timing));
 
     // if the iteration time equals the iteration duration
     timing.iterationStart = 4;
     timing.iterationCount = 7;
-    ASSERT_EQ(10, calculateCurrentIteration(5, 5, 9, timing));
+    EXPECT_EQ(10, calculateCurrentIteration(5, 5, 9, timing));
 
     // otherwise
-    ASSERT_EQ(3, calculateCurrentIteration(3.2, 3.1, 10, timing));
+    EXPECT_EQ(3, calculateCurrentIteration(3.2, 3.1, 10, timing));
 }
 
 TEST(AnimationTimedItemCalculationsTest, DirectedTime)
@@ -159,28 +159,28 @@ TEST(AnimationTimedItemCalculationsTest, DirectedTime)
     // calculateDirectedTime(currentIteration, iterationDuration, iterationTime, timing)
 
     // if the iteration time is null
-    ASSERT_TRUE(isNull(calculateDirectedTime(1, 2, nullValue(), timing)));
+    EXPECT_TRUE(isNull(calculateDirectedTime(1, 2, nullValue(), timing)));
 
     // forwards
-    ASSERT_EQ(17, calculateDirectedTime(0, 20, 17, timing));
-    ASSERT_EQ(17, calculateDirectedTime(1, 20, 17, timing));
+    EXPECT_EQ(17, calculateDirectedTime(0, 20, 17, timing));
+    EXPECT_EQ(17, calculateDirectedTime(1, 20, 17, timing));
     timing.direction = Timing::PlaybackDirectionAlternate;
-    ASSERT_EQ(17, calculateDirectedTime(0, 20, 17, timing));
-    ASSERT_EQ(17, calculateDirectedTime(2, 20, 17, timing));
+    EXPECT_EQ(17, calculateDirectedTime(0, 20, 17, timing));
+    EXPECT_EQ(17, calculateDirectedTime(2, 20, 17, timing));
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
-    ASSERT_EQ(17, calculateDirectedTime(1, 20, 17, timing));
-    ASSERT_EQ(17, calculateDirectedTime(3, 20, 17, timing));
+    EXPECT_EQ(17, calculateDirectedTime(1, 20, 17, timing));
+    EXPECT_EQ(17, calculateDirectedTime(3, 20, 17, timing));
 
     // reverse
     timing.direction = Timing::PlaybackDirectionReverse;
-    ASSERT_EQ(3, calculateDirectedTime(0, 20, 17, timing));
-    ASSERT_EQ(3, calculateDirectedTime(1, 20, 17, timing));
+    EXPECT_EQ(3, calculateDirectedTime(0, 20, 17, timing));
+    EXPECT_EQ(3, calculateDirectedTime(1, 20, 17, timing));
     timing.direction = Timing::PlaybackDirectionAlternate;
-    ASSERT_EQ(3, calculateDirectedTime(1, 20, 17, timing));
-    ASSERT_EQ(3, calculateDirectedTime(3, 20, 17, timing));
+    EXPECT_EQ(3, calculateDirectedTime(1, 20, 17, timing));
+    EXPECT_EQ(3, calculateDirectedTime(3, 20, 17, timing));
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
-    ASSERT_EQ(3, calculateDirectedTime(0, 20, 17, timing));
-    ASSERT_EQ(3, calculateDirectedTime(2, 20, 17, timing));
+    EXPECT_EQ(3, calculateDirectedTime(0, 20, 17, timing));
+    EXPECT_EQ(3, calculateDirectedTime(2, 20, 17, timing));
 }
 
 TEST(AnimationTimedItemCalculationsTest, TransformedTime)
@@ -190,38 +190,38 @@ TEST(AnimationTimedItemCalculationsTest, TransformedTime)
     // calculateTransformedTime(currentIteration, iterationDuration, iterationTime, timing)
 
     // Iteration time is null
-    ASSERT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
+    EXPECT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
 
     // PlaybackDirectionForwards
-    ASSERT_EQ(12, calculateTransformedTime(0, 20, 12, timing));
-    ASSERT_EQ(12, calculateTransformedTime(1, 20, 12, timing));
+    EXPECT_EQ(12, calculateTransformedTime(0, 20, 12, timing));
+    EXPECT_EQ(12, calculateTransformedTime(1, 20, 12, timing));
 
     // PlaybackDirectionForwards with timing function
     timing.timingFunction = StepsTimingFunction::create(4, false /* stepAtStart */);
-    ASSERT_EQ(10, calculateTransformedTime(0, 20, 12, timing));
-    ASSERT_EQ(10, calculateTransformedTime(1, 20, 12, timing));
+    EXPECT_EQ(10, calculateTransformedTime(0, 20, 12, timing));
+    EXPECT_EQ(10, calculateTransformedTime(1, 20, 12, timing));
 
     // PlaybackDirectionReverse
     timing.timingFunction = 0;
     timing.direction = Timing::PlaybackDirectionReverse;
-    ASSERT_EQ(8, calculateTransformedTime(0, 20, 12, timing));
-    ASSERT_EQ(8, calculateTransformedTime(1, 20, 12, timing));
+    EXPECT_EQ(8, calculateTransformedTime(0, 20, 12, timing));
+    EXPECT_EQ(8, calculateTransformedTime(1, 20, 12, timing));
 
     // PlaybackDirectionReverse with timing function
     timing.timingFunction = StepsTimingFunction::create(4, false /* stepAtStart */);
-    ASSERT_EQ(5, calculateTransformedTime(0, 20, 12, timing));
-    ASSERT_EQ(5, calculateTransformedTime(1, 20, 12, timing));
+    EXPECT_EQ(5, calculateTransformedTime(0, 20, 12, timing));
+    EXPECT_EQ(5, calculateTransformedTime(1, 20, 12, timing));
 
     // Timing function when directed time is null.
-    ASSERT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
+    EXPECT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
 
     // Timing function when iterationDuration is infinity
     timing.direction = Timing::PlaybackDirectionNormal;
-    ASSERT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
-    ASSERT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
+    EXPECT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
+    EXPECT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
     timing.direction = Timing::PlaybackDirectionReverse;
-    ASSERT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
-    ASSERT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
 }
 
 }
