@@ -888,6 +888,10 @@ BrowserAccessibilityWin
   // a hyperlink.
   std::vector<int32> hyperlinks_;
 
+  // The previous scroll position, so we can tell if this object scrolled.
+  int previous_scroll_x_;
+  int previous_scroll_y_;
+
   // The next unique id to use.
   static LONG next_unique_id_win_;
 

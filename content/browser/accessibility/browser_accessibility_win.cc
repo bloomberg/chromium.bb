@@ -195,7 +195,9 @@ BrowserAccessibilityWin::BrowserAccessibilityWin()
       ia2_role_(0),
       ia2_state_(0),
       first_time_(true),
-      old_ia_state_(0) {
+      old_ia_state_(0),
+      previous_scroll_x_(0),
+      previous_scroll_y_(0) {
   // Start unique IDs at -1 and decrement each time, because get_accChild
   // uses positive IDs to enumerate children, so we use negative IDs to
   // clearly distinguish between indices and unique IDs.
@@ -3112,11 +3114,11 @@ void BrowserAccessibilityWin::PostInitialize() {
     previous_text_ = text;
   }
 
+  BrowserAccessibilityManagerWin* manager =
+      this->manager()->ToBrowserAccessibilityManagerWin();
+
   // Fire events if the state has changed.
   if (!first_time_ && ia_state_ != old_ia_state_) {
-    BrowserAccessibilityManagerWin* manager =
-        this->manager()->ToBrowserAccessibilityManagerWin();
-
     // Normally focus events are handled elsewhere, however
     // focus for managed descendants is platform-specific.
     // Fire a focus event if the focused descendant in a multi-select
@@ -3140,6 +3142,20 @@ void BrowserAccessibilityWin::PostInitialize() {
     }
 
     old_ia_state_ = ia_state_;
+  }
+
+  // Fire an event if this container object has scrolled.
+  int sx = 0;
+  int sy = 0;
+  if (GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &sx) &&
+      GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_Y, &sy)) {
+    if (!first_time_ &&
+        (sx != previous_scroll_x_ || sy != previous_scroll_y_)) {
+      manager->MaybeCallNotifyWinEvent(EVENT_SYSTEM_SCROLLINGEND,
+                                       unique_id_win());
+    }
+    previous_scroll_x_ = sx;
+    previous_scroll_y_ = sy;
   }
 
   first_time_ = false;
