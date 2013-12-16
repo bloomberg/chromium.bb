@@ -164,11 +164,17 @@
 
   CrAVCaptureConnection* captureConnection = [captureVideoDataOutput_
       connectionWithMediaType:AVFoundationGlue::AVMediaTypeVideo()];
-  if ([captureConnection isVideoMinFrameDurationSupported]) {
+  // TODO(mcasas): Check selector existence, related to bugs
+  // http://crbug.com/327532 and http://crbug.com/328096.
+  if ([captureConnection
+           respondsToSelector:@selector(isVideoMinFrameDurationSupported)] &&
+      [captureConnection isVideoMinFrameDurationSupported]) {
     [captureConnection setVideoMinFrameDuration:
         CoreMediaGlue::CMTimeMake(1, frameRate)];
   }
-  if ([captureConnection isVideoMaxFrameDurationSupported]) {
+  if ([captureConnection
+           respondsToSelector:@selector(isVideoMaxFrameDurationSupported)] &&
+      [captureConnection isVideoMaxFrameDurationSupported]) {
     [captureConnection setVideoMaxFrameDuration:
         CoreMediaGlue::CMTimeMake(1, frameRate)];
   }
