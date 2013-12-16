@@ -273,10 +273,14 @@ enum ReservedVariationID {
   IOS_PHONE_NEW_NTP_FAKEBOX_HINT = 3312049,
   IOS_PHONE_NEW_NTP_CONTROL_2 = 3312050,
 
+  // ExtensionInstallPrompt field trial.
+  EXTENSION_INSTALL_PROMPT_EXPERIMENT_ID_MIN = 3312051,
+  EXTENSION_INSTALL_PROMPT_EXPERIMENT_ID_MAX = 3312099,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312051,
+  NEXT_ID = 3312100,
 
   // USABLE IDs END HERE.
   //
