@@ -50,7 +50,7 @@ evdev_led_update(struct evdev_device *device, enum weston_led leds)
 	struct input_event ev[ARRAY_LENGTH(map) + 1];
 	unsigned int i;
 
-	if (!device->caps & EVDEV_KEYBOARD)
+	if (!(device->seat_caps & EVDEV_SEAT_KEYBOARD))
 		return;
 
 	memset(ev, 0, sizeof(ev));
@@ -444,7 +444,7 @@ evdev_configure_device(struct evdev_device *device)
 	unsigned long abs_bits[NBITS(ABS_MAX)];
 	unsigned long rel_bits[NBITS(REL_MAX)];
 	unsigned long key_bits[NBITS(KEY_MAX)];
-	int has_key, has_abs, has_rel, has_mt, has_button;
+	int has_key, has_abs, has_rel, has_mt, has_button, has_keyboard;
 	unsigned int i;
 
 	has_key = 0;
@@ -452,6 +452,7 @@ evdev_configure_device(struct evdev_device *device)
 	has_abs = 0;
 	has_mt = 0;
 	has_button = 0;
+	has_keyboard = 0;
 	device->caps = 0;
 
 	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
@@ -534,7 +535,7 @@ evdev_configure_device(struct evdev_device *device)
 			if (i >= BTN_MISC && i < KEY_OK)
 				continue;
 			if (TEST_BIT(key_bits, i)) {
-				device->caps |= EVDEV_KEYBOARD;
+				has_keyboard = 1;
 				break;
 			}
 		}
@@ -549,9 +550,8 @@ evdev_configure_device(struct evdev_device *device)
 			}
 		}
 	}
-	if (TEST_BIT(ev_bits, EV_LED)) {
-		device->caps |= EVDEV_KEYBOARD;
-	}
+	if (TEST_BIT(ev_bits, EV_LED))
+		has_keyboard = 1;
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing
@@ -573,7 +573,7 @@ evdev_configure_device(struct evdev_device *device)
 			   has_rel ? " relative-motion": "",
 			   has_button ? " button" : "");
 	}
-	if ((device->caps & EVDEV_KEYBOARD)) {
+	if (has_keyboard) {
 		if (weston_seat_init_keyboard(device->seat, NULL) < 0)
 			return -1;
 		device->seat_caps |= EVDEV_SEAT_KEYBOARD;
