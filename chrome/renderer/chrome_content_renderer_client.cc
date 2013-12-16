@@ -816,23 +816,36 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   // Temporarily allow these whitelisted apps and WebUIs to use NaCl.
   std::string app_url_host = app_url.host();
   std::string manifest_url_path = manifest_url.path();
+
   bool is_whitelisted_web_ui =
       app_url.spec() == chrome::kChromeUIAppListStartPageURL;
-  bool is_whitelisted_app =
+
+  bool is_photo_app =
       // Whitelisted apps must be served over https.
       app_url.SchemeIs("https") &&
       manifest_url.SchemeIs("https") &&
-      // Photos app.
-      (((EndsWith(app_url_host, "plus.google.com", false) ||
-         EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
-       manifest_url.DomainIs("ssl.gstatic.com") &&
+      (EndsWith(app_url_host, "plus.google.com", false) ||
+       EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
+      manifest_url.DomainIs("ssl.gstatic.com") &&
       (manifest_url_path.find("s2/oz/nacl/") == 1 ||
-       manifest_url_path.find("photos/nacl/") == 1)) ||
-      // Chat app.
-      ((EndsWith(app_url_host, "talk.google.com", false) ||
-        EndsWith(app_url_host, "talkgadget.google.com", false)) &&
-       manifest_url.DomainIs("ssl.gstatic.com") &&
-       manifest_url_path.find("chat/apps/fx") == 1));
+       manifest_url_path.find("photos/nacl/") == 1);
+
+  std::string manifest_fs_host;
+  if (manifest_url.SchemeIsFileSystem() && manifest_url.inner_url()) {
+    manifest_fs_host = manifest_url.inner_url()->host();
+  }
+  bool is_hangouts_app =
+      // Whitelisted apps must be served over secure scheme.
+      app_url.SchemeIs("https") &&
+      manifest_url.SchemeIsSecure() &&
+      manifest_url.SchemeIsFileSystem() &&
+      (EndsWith(app_url_host, "talkgadget.google.com", false) ||
+       EndsWith(app_url_host, "plus.google.com", false) ||
+       EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
+      // The manifest must be loaded from the host's FileSystem.
+      (manifest_fs_host == app_url_host);
+
+  bool is_whitelisted_app = is_photo_app || is_hangouts_app;
 
   bool is_extension_from_webstore = extension &&
       extension->from_webstore();
@@ -1335,13 +1348,15 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
     const GURL& url) {
 #if !defined(OS_ANDROID)
-  // Allow only the Chat app to use the MediaStream APIs. It's OK to check
+  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
   // the whitelist in the renderer, since we're only preventing access until
   // these APIs are public and stable.
   std::string url_host = url.host();
   if (url.SchemeIs("https") &&
-      (EndsWith(url_host, "talk.google.com", false) ||
-       EndsWith(url_host, "talkgadget.google.com", false))) {
+      (EndsWith(url_host, "talkgadget.google.com", false) ||
+       EndsWith(url_host, "plus.google.com", false) ||
+       EndsWith(url_host, "plus.sandbox.google.com", false)) &&
+      StartsWithASCII(url.path(), "/hangouts/", false)) {
     return true;
   }
   // Allow access for tests.
