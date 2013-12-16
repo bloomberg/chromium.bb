@@ -319,8 +319,7 @@ void AutofillDialogControllerAndroid::Show() {
 }
 
 void AutofillDialogControllerAndroid::Hide() {
-  // TODO(aruslan): make the view actually hide. http://crbug.com/328205
-  NOTIMPLEMENTED();
+  delete this;
 }
 
 void AutofillDialogControllerAndroid::TabActivated() {}
