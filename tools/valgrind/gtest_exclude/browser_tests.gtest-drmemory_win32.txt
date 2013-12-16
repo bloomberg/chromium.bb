@@ -51,3 +51,6 @@ W*
 
 # http://crbug.com/302993
 InstantNTPURLRewriteTest.UberURLHandler_InstantExtendedNewTabPage
+
+# http://crbug.com/328936
+IEImporterBrowserTest.IEImporter
