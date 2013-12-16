@@ -73,6 +73,10 @@ leak:WebCore::v8StringToWebCoreString
 leak:WTF::StringImpl::createUninitialized
 leak:ResourceBundleSourceMap::GetSource
 
+# http://crbug.com/328987
+leak:MetricsNetworkObserver::ProbeWifiPHYLayerProtocol
+leak:MetricsLog::MetricsLog
+
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
 # introduce memory leaks should be reverted.
