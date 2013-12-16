@@ -70,6 +70,7 @@ private:
     virtual bool isNumberField() const OVERRIDE;
     virtual void minOrMaxAttributeChanged() OVERRIDE;
     virtual void stepAttributeChanged() OVERRIDE;
+    virtual bool supportsSelectionAPI() const OVERRIDE;
 };
 
 } // namespace WebCore

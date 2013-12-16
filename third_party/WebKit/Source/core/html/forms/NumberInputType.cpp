@@ -302,4 +302,9 @@ void NumberInputType::stepAttributeChanged()
         element().renderer()->setNeedsLayoutAndPrefWidthsRecalc();
 }
 
+bool NumberInputType::supportsSelectionAPI() const
+{
+    return false;
+}
+
 } // namespace WebCore

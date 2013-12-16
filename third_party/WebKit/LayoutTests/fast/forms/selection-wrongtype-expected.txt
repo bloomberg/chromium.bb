@@ -66,6 +66,20 @@ PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 
 PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('submit') does not support selection..
 PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('submit') does not support selection..
 PASS test.selectionRange() threw exception TypeError: Object #<HTMLInputElement> has no method 'selectionRange'.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('email') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('email') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('email') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('email') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('email') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('email') does not support selection..
+PASS test.selectionRange() threw exception TypeError: Object #<HTMLInputElement> has no method 'selectionRange'.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('number') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('number') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('number') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('number') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('number') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('number') does not support selection..
+PASS test.selectionRange() threw exception TypeError: Object #<HTMLInputElement> has no method 'selectionRange'.
 PASS successfullyParsed is true
 
 TEST COMPLETE
