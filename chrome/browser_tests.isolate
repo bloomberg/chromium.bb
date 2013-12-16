@@ -121,7 +121,6 @@
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
           '<(PRODUCT_DIR)/Chromium Helper.app/',
           '<(PRODUCT_DIR)/Chromium.app/',
-          '<(PRODUCT_DIR)/lib32/',
           '<(PRODUCT_DIR)/plugins/TestNetscapePlugIn.plugin/',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
         ],
