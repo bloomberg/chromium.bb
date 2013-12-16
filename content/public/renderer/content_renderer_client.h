@@ -208,10 +208,6 @@ class CONTENT_EXPORT ContentRendererClient {
                                const GURL& first_party_for_cookies,
                                GURL* new_url);
 
-  // Whether to pump events when sending sync cookie messages.  Needed if the
-  // embedder can potentiall put up a modal dialog on the UI thread as a result.
-  virtual bool ShouldPumpEventsDuringCookieMessage();
-
   // See the corresponding functions in blink::WebFrameClient.
   virtual void DidCreateScriptContext(blink::WebFrame* frame,
                                       v8::Handle<v8::Context> context,
@@ -229,20 +225,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool ShouldOverridePageVisibilityState(
       const RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state);
-
-  // Return true if the GetCookie request will be handled by the embedder.
-  // Cookies are returned in the cookie parameter.
-  virtual bool HandleGetCookieRequest(RenderView* sender,
-                                      const GURL& url,
-                                      const GURL& first_party_for_cookies,
-                                      std::string* cookies);
-
-  // Return true if the SetCookie request will be handled by the embedder.
-  // Cookies to be set are passed in the value parameter.
-  virtual bool HandleSetCookieRequest(RenderView* sender,
-                                      const GURL& url,
-                                      const GURL& first_party_for_cookies,
-                                      const std::string& value);
 
   // Allows an embedder to return custom PPAPI interfaces.
   virtual const void* CreatePPAPIInterface(

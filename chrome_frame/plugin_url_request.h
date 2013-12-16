@@ -36,9 +36,6 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
   virtual void AddPrivacyDataForUrl(const std::string& url,
                                     const std::string& policy_ref,
                                     int32 flags) {}
-  virtual void OnCookiesRetrieved(bool success, const GURL& url,
-                                  const std::string& cookie_string,
-                                  int cookie_id) = 0;
  protected:
   PluginUrlRequestDelegate() {}
   ~PluginUrlRequestDelegate() {}
@@ -92,14 +89,6 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     StopAll();
   }
 
-  void GetCookiesFromHost(const GURL& url, int cookie_id) {
-    GetCookiesForUrl(url, cookie_id);
-  }
-
-  void SetCookiesInHost(const GURL& url, const std::string& cookie) {
-    SetCookiesForUrl(url, cookie);
-  }
-
  protected:
   PluginUrlRequestDelegate* delegate_;
   bool enable_frame_busting_;
@@ -111,8 +100,6 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   virtual void EndRequest(int request_id) = 0;
   virtual void DownloadRequestInHost(int request_id) = 0;
   virtual void StopAll() = 0;
-  virtual void GetCookiesForUrl(const GURL& url, int cookie_id) = 0;
-  virtual void SetCookiesForUrl(const GURL& url, const std::string& cookie) = 0;
 };
 
 // Used as base class. Holds Url request properties (url, method, referrer..)

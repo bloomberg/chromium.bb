@@ -484,27 +484,18 @@ void RenderThreadImpl::Shutdown() {
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
   // Certain synchronous messages cannot always be processed synchronously by
-  // the browser, e.g., Chrome frame communicating with the embedding browser.
-  // This could cause a complete hang of Chrome if a windowed plug-in is trying
-  // to communicate with the renderer thread since the browser's UI thread
-  // could be stuck (within a Windows API call) trying to synchronously
-  // communicate with the plug-in.  The remedy is to pump messages on this
-  // thread while the browser is processing this request. This creates an
-  // opportunity for re-entrancy into WebKit, so we need to take care to disable
-  // callbacks, timers, and pending network loads that could trigger such
-  // callbacks.
+  // the browser, e.g., putting up UI and waiting for the user. This could cause
+  // a complete hang of Chrome if a windowed plug-in is trying to communicate
+  // with the renderer thread since the browser's UI thread could be stuck
+  // (within a Windows API call) trying to synchronously communicate with the
+  // plug-in.  The remedy is to pump messages on this thread while the browser
+  // is processing this request. This creates an opportunity for re-entrancy
+  // into WebKit, so we need to take care to disable callbacks, timers, and
+  // pending network loads that could trigger such callbacks.
   bool pumping_events = false;
   if (msg->is_sync()) {
     if (msg->is_caller_pumping_messages()) {
       pumping_events = true;
-    } else {
-      if ((msg->type() == ViewHostMsg_GetCookies::ID ||
-           msg->type() == ViewHostMsg_GetRawCookies::ID ||
-           msg->type() == ViewHostMsg_CookiesEnabled::ID) &&
-          GetContentClient()->renderer()->
-              ShouldPumpEventsDuringCookieMessage()) {
-        pumping_events = true;
-      }
     }
   }
 

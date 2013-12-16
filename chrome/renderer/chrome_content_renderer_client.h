@@ -104,7 +104,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                const GURL& url,
                                const GURL& first_party_for_cookies,
                                GURL* new_url) OVERRIDE;
-  virtual bool ShouldPumpEventsDuringCookieMessage() OVERRIDE;
   virtual void DidCreateScriptContext(blink::WebFrame* frame,
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
@@ -119,14 +118,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) OVERRIDE;
-  virtual bool HandleGetCookieRequest(content::RenderView* sender,
-                                      const GURL& url,
-                                      const GURL& first_party_for_cookies,
-                                      std::string* cookies) OVERRIDE;
-  virtual bool HandleSetCookieRequest(content::RenderView* sender,
-                                      const GURL& url,
-                                      const GURL& first_party_for_cookies,
-                                      const std::string& value) OVERRIDE;
   virtual bool AllowBrowserPlugin(
       blink::WebPluginContainer* container) OVERRIDE;
   virtual const void* CreatePPAPIInterface(

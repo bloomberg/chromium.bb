@@ -28,10 +28,6 @@ base::LazyInstance<AutomationResourceMessageFilter::RenderViewMap>
     AutomationResourceMessageFilter::filtered_render_views_ =
         LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<AutomationResourceMessageFilter::CompletionCallbackMap>
-    AutomationResourceMessageFilter::completion_callback_map_ =
-        LAZY_INSTANCE_INITIALIZER;
-
 int AutomationResourceMessageFilter::unique_request_id_ = 1;
 int AutomationResourceMessageFilter::next_completion_callback_id_ = 0;
 
@@ -51,18 +47,8 @@ AutomationResourceMessageFilter::AutomationDetails::AutomationDetails(
 
 AutomationResourceMessageFilter::AutomationDetails::~AutomationDetails() {}
 
-struct AutomationResourceMessageFilter::CookieCompletionInfo {
-  scoped_refptr<BrowserMessageFilter> filter;
-  net::URLRequestContext* context;
-  int render_process_id;
-  IPC::Message* reply_msg;
-  scoped_refptr<AutomationResourceMessageFilter> automation_message_filter;
-};
-
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
     : channel_(NULL) {
-  // Ensure that an instance of the callback map is created.
-  completion_callback_map_.Get();
   // Ensure that an instance of the render view map is created.
   filtered_render_views_.Get();
 
@@ -104,18 +90,6 @@ void AutomationResourceMessageFilter::OnChannelClosing() {
       index++;
     }
   }
-
-  CompletionCallbackMap::iterator callback_index =
-      completion_callback_map_.Get().begin();
-  while (callback_index != completion_callback_map_.Get().end()) {
-    const CookieCompletionInfo& cookie_completion_info =
-        (*callback_index).second;
-    if (cookie_completion_info.automation_message_filter.get() == this) {
-      completion_callback_map_.Get().erase(callback_index++);
-    } else {
-      callback_index++;
-    }
-  }
 }
 
 // Called on the IPC thread:
@@ -140,23 +114,7 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
     }
   }
 
-  bool handled = true;
-  bool deserialize_success = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AutomationResourceMessageFilter,
-                           message,
-                           deserialize_success)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesHostResponse,
-                        OnGetCookiesHostResponse)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-
-  if (!deserialize_success) {
-    LOG(ERROR) << "Failed to deserialize IPC message. "
-               << "Closing the automation channel.";
-    channel_->Close();
-  }
-
-  return handled;
+  return false;
 }
 
 // Called on the IPC thread:
@@ -373,87 +331,6 @@ bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
 
   return Send(new AutomationMsg_DownloadRequestInHost(tab_handle,
                                                       automation_request_id));
-}
-
-bool AutomationResourceMessageFilter::ShouldFilterCookieMessages(
-    int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  RendererId renderer_key(render_process_id, render_view_id);
-  RenderViewMap::iterator automation_details_iter(
-      filtered_render_views_.Get().find(renderer_key));
-  return automation_details_iter != filtered_render_views_.Get().end();
-}
-
-void AutomationResourceMessageFilter::GetCookiesForUrl(
-    BrowserMessageFilter* filter, net::URLRequestContext* context,
-    int render_process_id, IPC::Message* reply_msg, const GURL& url) {
-
-  RendererId renderer_key(render_process_id, reply_msg->routing_id());
-
-  RenderViewMap::iterator automation_details_iter(
-      filtered_render_views_.Get().find(renderer_key));
-
-  DCHECK(automation_details_iter != filtered_render_views_.Get().end());
-  DCHECK(automation_details_iter->second.filter.get() != NULL);
-
-  int completion_callback_id = GetNextCompletionCallbackId();
-  DCHECK(!ContainsKey(completion_callback_map_.Get(), completion_callback_id));
-
-  CookieCompletionInfo cookie_info;
-  cookie_info.filter = filter;
-  cookie_info.context = context;
-  cookie_info.render_process_id = render_process_id;
-  cookie_info.reply_msg = reply_msg;
-  cookie_info.automation_message_filter =
-      automation_details_iter->second.filter;
-
-  completion_callback_map_.Get()[completion_callback_id] = cookie_info;
-
-  DCHECK(automation_details_iter->second.filter.get() != NULL);
-
-  if (automation_details_iter->second.filter.get()) {
-    automation_details_iter->second.filter
-        ->Send(new AutomationMsg_GetCookiesFromHost(
-              automation_details_iter->second.tab_handle,
-              url,
-              completion_callback_id));
-  }
-}
-
-void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
-    int tab_handle, bool success, const GURL& url, const std::string& cookies,
-    int cookie_id) {
-  CompletionCallbackMap::iterator index =
-      completion_callback_map_.Get().find(cookie_id);
-  if (index == completion_callback_map_.Get().end()) {
-    NOTREACHED() << "Received invalid completion callback id:"
-                 << cookie_id;
-    return;
-  }
-
-  ChromeViewHostMsg_GetCookies::WriteReplyParams(index->second.reply_msg,
-                                                 cookies);
-  index->second.filter->Send(index->second.reply_msg);
-
-  completion_callback_map_.Get().erase(index);
-}
-
-void AutomationResourceMessageFilter::SetCookiesForUrl(
-    int render_process_id,
-    int render_view_id,
-    const GURL& url,
-    const std::string& cookie_line) {
-  RenderViewMap::iterator automation_details_iter(
-      filtered_render_views_.Get().find(RendererId(
-          render_process_id, render_view_id)));
-  DCHECK(automation_details_iter != filtered_render_views_.Get().end());
-  DCHECK(automation_details_iter->second.filter.get() != NULL);
-
-  if (automation_details_iter->second.filter.get()) {
-    automation_details_iter->second.filter
-        ->Send(new AutomationMsg_SetCookieAsync(
-              automation_details_iter->second.tab_handle, url, cookie_line));
-  }
 }
 
 // static

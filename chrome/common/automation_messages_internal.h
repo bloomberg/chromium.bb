@@ -636,7 +636,7 @@ IPC_MESSAGE_ROUTED2(AutomationMsg_RequestEnd,
 IPC_MESSAGE_CONTROL1(AutomationMsg_PrintAsync,
                      int /* tab_handle */)
 
-IPC_MESSAGE_ROUTED2(AutomationMsg_SetCookieAsync,
+IPC_MESSAGE_ROUTED2(AutomationMsg_DEPRECATED_SetCookieAsync,
                     GURL /* url */,
                     std::string /* cookie */)
 
@@ -789,11 +789,11 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_BrowserMove,
 #endif
 
 // Used to get cookies for the given URL.
-IPC_MESSAGE_ROUTED2(AutomationMsg_GetCookiesFromHost,
+IPC_MESSAGE_ROUTED2(AutomationMsg_DEPRECATED_GetCookiesFromHost,
                     GURL /* url */,
                     int /* opaque_cookie_id */)
 
-IPC_MESSAGE_CONTROL5(AutomationMsg_GetCookiesHostResponse,
+IPC_MESSAGE_CONTROL5(AutomationMsg_DEPRECATED_GetCookiesHostResponse,
                      int /* tab_handle */,
                      bool /* success */,
                      GURL /* url */,

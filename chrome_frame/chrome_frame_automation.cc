@@ -985,24 +985,6 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
         return true;
       }
       break;
-
-    case AutomationMsg_GetCookiesFromHost::ID:
-      if (ui_thread || (url_fetcher_flags_ &
-                          PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE)) {
-        AutomationMsg_GetCookiesFromHost::Dispatch(&msg, url_fetcher_, this,
-            &PluginUrlRequestManager::GetCookiesFromHost);
-        return true;
-      }
-      break;
-
-    case AutomationMsg_SetCookieAsync::ID:
-      if (ui_thread || (url_fetcher_flags_ &
-                          PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE)) {
-        AutomationMsg_SetCookieAsync::Dispatch(&msg, url_fetcher_, this,
-            &PluginUrlRequestManager::SetCookiesInHost);
-        return true;
-      }
-      break;
   }
 
   PostTask(
@@ -1286,10 +1268,4 @@ void ChromeFrameAutomationClient::OnResponseEnd(
     const net::URLRequestStatus& status) {
   automation_server_->Send(new AutomationMsg_RequestEnd(
       tab_->handle(), request_id, status));
-}
-
-void ChromeFrameAutomationClient::OnCookiesRetrieved(bool success,
-    const GURL& url, const std::string& cookie_string, int cookie_id) {
-  automation_server_->Send(new AutomationMsg_GetCookiesHostResponse(
-      tab_->handle(), success, url, cookie_string, cookie_id));
 }

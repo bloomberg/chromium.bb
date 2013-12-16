@@ -104,11 +104,6 @@ class AutomationResourceMessageFilter
   bool SendDownloadRequestToHost(int routing_id, int tab_handle,
                                  int request_id);
 
-  // If this returns true, then the get and set cookie IPCs should be sent to
-  // the following two functions.
-  static bool ShouldFilterCookieMessages(int render_process_id,
-                                         int render_view_id);
-
   // Retrieves cookies for the url passed in from the external host. The
   // callback passed in is notified on success or failure asynchronously.
   static void GetCookiesForUrl(content::BrowserMessageFilter* filter,
@@ -116,20 +111,6 @@ class AutomationResourceMessageFilter
                                int render_process_id,
                                IPC::Message* reply_msg,
                                const GURL& url);
-
-  // Sets cookies on the URL in the external host.
-  static void SetCookiesForUrl(int render_process_id,
-                               int render_view_id,
-                               const GURL& url,
-                               const std::string& cookie_line);
-
-  // This function gets invoked when we receive a response from the external
-  // host for the cookie request sent in GetCookiesForUrl above. It sets the
-  // cookie temporarily on the cookie store and executes the completion
-  // callback which reads the cookie from the store. The cookie value is reset
-  // after the callback finishes executing.
-  void OnGetCookiesHostResponse(int tab_handle, bool success, const GURL& url,
-                                const std::string& cookies, int cookie_id);
 
  protected:
   // Retrieves the automation request id for the passed in chrome request
@@ -191,18 +172,6 @@ class AutomationResourceMessageFilter
 
   // Map of render views interested in diverting url requests over automation.
   static base::LazyInstance<RenderViewMap> filtered_render_views_;
-
-  // Contains information used for completing the request to read cookies from
-  // the host coming in from the renderer.
-  struct CookieCompletionInfo;
-
-  // Map of completion callback id to CookieCompletionInfo, which contains the
-  // actual callback which is invoked on successful retrieval of cookies from
-  // host. The mapping is setup when GetCookiesForUrl is invoked to retrieve
-  // cookies from the host and is removed when we receive a response from the
-  // host. Please see the OnGetCookiesHostResponse function.
-  typedef std::map<int, CookieCompletionInfo> CompletionCallbackMap;
-  static base::LazyInstance<CompletionCallbackMap> completion_callback_map_;
 
   // Contains the id of the next completion callback. This is passed to the the
   // external host as a cookie referring to the completion callback.

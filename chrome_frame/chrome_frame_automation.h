@@ -453,8 +453,6 @@ class ChromeFrameAutomationClient
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id,
                              const net::URLRequestStatus& status);
-  virtual void OnCookiesRetrieved(bool success, const GURL& url,
-      const std::string& cookie_string, int cookie_id);
 
   bool is_initialized() const {
     return init_state_ == INITIALIZED;

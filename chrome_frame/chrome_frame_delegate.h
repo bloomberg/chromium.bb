@@ -113,12 +113,9 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnRequestEnd(int request_id,
                             const net::URLRequestStatus& status) {}
   virtual void OnDownloadRequestInHost(int request_id) {}
-  virtual void OnSetCookieAsync(const GURL& url, const std::string& cookie) {}
   virtual void OnAttachExternalTab(
       const AttachExternalTabParams& attach_params) {}
   virtual void OnGoToHistoryEntryOffset(int offset) {}
-
-  virtual void OnGetCookiesFromHost(const GURL& url, int cookie_id) {}
   virtual void OnCloseTab() {}
 };
 

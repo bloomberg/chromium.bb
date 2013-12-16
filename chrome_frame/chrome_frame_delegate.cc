@@ -28,11 +28,9 @@ bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestRead, NO_CODE)
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestEnd, NO_CODE)
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_DownloadRequestInHost, NO_CODE)
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_SetCookieAsync, NO_CODE)
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_AttachExternalTab, NO_CODE)
     IPC_MESSAGE_HANDLER_GENERIC(
         AutomationMsg_RequestGoToHistoryEntryOffset, NO_CODE)
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_GetCookiesFromHost, NO_CODE)
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_CloseExternalTab, NO_CODE)
     IPC_MESSAGE_UNHANDLED(is_tab_message = false);
   IPC_END_MESSAGE_MAP()
@@ -71,11 +69,9 @@ bool ChromeFrameDelegateImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestEnd, OnRequestEnd)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadRequestInHost,
                         OnDownloadRequestInHost)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetCookieAsync, OnSetCookieAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_AttachExternalTab, OnAttachExternalTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestGoToHistoryEntryOffset,
         OnGoToHistoryEntryOffset)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesFromHost, OnGetCookiesFromHost)
     IPC_MESSAGE_HANDLER(AutomationMsg_CloseExternalTab, OnCloseTab)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

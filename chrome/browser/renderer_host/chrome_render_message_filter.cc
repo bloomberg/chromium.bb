@@ -157,22 +157,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-#if defined(ENABLE_AUTOMATION)
-  if ((message.type() == ChromeViewHostMsg_GetCookies::ID ||
-       message.type() == ChromeViewHostMsg_SetCookie::ID) &&
-    AutomationResourceMessageFilter::ShouldFilterCookieMessages(
-        render_process_id_, message.routing_id())) {
-    // ChromeFrame then we need to get/set cookies from the external host.
-    IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message,
-                             *message_was_ok)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetCookies,
-                                      OnGetCookies)
-      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetCookie, OnSetCookie)
-    IPC_END_MESSAGE_MAP()
-    handled = true;
-  }
-#endif
-
   return handled;
 }
 
@@ -654,25 +638,4 @@ void ChromeRenderMessageFilter::OnIsWebGLDebugRendererInfoAllowed(
   *allowed = (base::FieldTrialList::FindFullName(
       kWebGLDebugRendererInfoFieldTrialName) ==
       kWebGLDebugRendererInfoFieldTrialEnabledName);
-}
-
-void ChromeRenderMessageFilter::OnGetCookies(
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    IPC::Message* reply_msg) {
-#if defined(ENABLE_AUTOMATION)
-  AutomationResourceMessageFilter::GetCookiesForUrl(
-      this, request_context_->GetURLRequestContext(), render_process_id_,
-      reply_msg, url);
-#endif
-}
-
-void ChromeRenderMessageFilter::OnSetCookie(const IPC::Message& message,
-                                            const GURL& url,
-                                            const GURL& first_party_for_cookies,
-                                            const std::string& cookie) {
-#if defined(ENABLE_AUTOMATION)
-  AutomationResourceMessageFilter::SetCookiesForUrl(
-      render_process_id_, message.routing_id(), url, cookie);
-#endif
 }

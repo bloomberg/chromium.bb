@@ -86,8 +86,6 @@ class UrlmonUrlRequestManager
   virtual void EndRequest(int request_id);
   virtual void DownloadRequestInHost(int request_id);
   virtual void StopAll();
-  virtual void GetCookiesForUrl(const GURL& url, int cookie_id);
-  virtual void SetCookiesForUrl(const GURL& url, const std::string& cookie);
 
   // PluginUrlRequestDelegate implementation
   virtual void OnResponseStarted(
@@ -98,9 +96,6 @@ class UrlmonUrlRequestManager
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id,
                              const net::URLRequestStatus& status);
-  virtual void OnCookiesRetrieved(bool success, const GURL& url,
-                                  const std::string& cookie_string,
-                                  int cookie_id);
 
   // This method is passed as a callback to UrlmonUrlRequest::TerminateBind.
   // We simply forward moniker and bind_ctx to host ActiveX/ActiveDocument,

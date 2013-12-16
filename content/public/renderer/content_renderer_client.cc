@@ -123,10 +123,6 @@ bool ContentRendererClient::WillSendRequest(
   return false;
 }
 
-bool ContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
-  return false;
-}
-
 unsigned long long ContentRendererClient::VisitedLinkHash(
     const char* canonical_url, size_t length) {
   return 0LL;
@@ -144,22 +140,6 @@ ContentRendererClient::GetPrescientNetworking() {
 bool ContentRendererClient::ShouldOverridePageVisibilityState(
     const RenderFrame* render_frame,
     blink::WebPageVisibilityState* override_state) {
-  return false;
-}
-
-bool ContentRendererClient::HandleGetCookieRequest(
-    RenderView* sender,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    std::string* cookies) {
-  return false;
-}
-
-bool ContentRendererClient::HandleSetCookieRequest(
-    RenderView* sender,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const std::string& value) {
   return false;
 }
 

@@ -1129,13 +1129,6 @@ bool ChromeContentRendererClient::WillSendRequest(
   return false;
 }
 
-bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
-  // We no longer pump messages, even under Chrome Frame. We rely on cookie
-  // read requests handled by CF not putting up UI or causing other actions
-  // that would require us to pump messages. This fixes http://crbug.com/110090.
-  return false;
-}
-
 void ChromeContentRendererClient::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> context, int extension_group,
     int world_id) {
@@ -1170,33 +1163,6 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
 
   *override_state = blink::WebPageVisibilityStatePrerender;
   return true;
-}
-
-bool ChromeContentRendererClient::HandleGetCookieRequest(
-    content::RenderView* sender,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    std::string* cookies) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
-    IPC::SyncMessage* msg = new ChromeViewHostMsg_GetCookies(
-        MSG_ROUTING_NONE, url, first_party_for_cookies, cookies);
-    sender->Send(msg);
-    return true;
-  }
-  return false;
-}
-
-bool ChromeContentRendererClient::HandleSetCookieRequest(
-    content::RenderView* sender,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    const std::string& value) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
-    sender->Send(new ChromeViewHostMsg_SetCookie(
-        MSG_ROUTING_NONE, url, first_party_for_cookies, value));
-    return true;
-  }
-  return false;
 }
 
 void ChromeContentRendererClient::SetExtensionDispatcher(

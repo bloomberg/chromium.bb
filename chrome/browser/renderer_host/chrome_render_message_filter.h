@@ -183,13 +183,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
   void OnIsWebGLDebugRendererInfoAllowed(const GURL& origin, bool* allowed);
-  void OnGetCookies(const GURL& url,
-                    const GURL& first_party_for_cookies,
-                    IPC::Message* reply_msg);
-  void OnSetCookie(const IPC::Message& message,
-                   const GURL& url,
-                   const GURL& first_party_for_cookies,
-                   const std::string& cookie);
 
   int render_process_id_;
 

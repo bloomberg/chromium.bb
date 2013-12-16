@@ -1206,60 +1206,6 @@ void UrlmonUrlRequestManager::BindTerminated(IMoniker* moniker,
         reinterpret_cast<WPARAM>(download_params), 0);
 }
 
-void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
-  DWORD cookie_size = 0;
-  bool success = true;
-  std::string cookie_string;
-
-  int32 cookie_action = COOKIEACTION_READ;
-  BOOL result = InternetGetCookieA(url.spec().c_str(), NULL, NULL,
-                                   &cookie_size);
-  DWORD error = 0;
-  if (cookie_size) {
-    scoped_ptr<char[]> cookies(new char[cookie_size + 1]);
-    if (!InternetGetCookieA(url.spec().c_str(), NULL, cookies.get(),
-                            &cookie_size)) {
-      success = false;
-      error = GetLastError();
-      NOTREACHED() << "InternetGetCookie failed. Error: " << error;
-    } else {
-      cookie_string = cookies.get();
-    }
-  } else {
-    success = false;
-    error = GetLastError();
-    DVLOG(1) << "InternetGetCookie failed. Error: " << error;
-  }
-
-  OnCookiesRetrieved(success, url, cookie_string, cookie_id);
-  if (!success && !error)
-    cookie_action = COOKIEACTION_SUPPRESS;
-
-  AddPrivacyDataForUrl(url.spec(), "", cookie_action);
-}
-
-void UrlmonUrlRequestManager::SetCookiesForUrl(const GURL& url,
-                                               const std::string& cookie) {
-  DCHECK(container_);
-  // Grab a reference on the container to ensure that we don't get destroyed in
-  // case the InternetSetCookie call below puts up a dialog box, which can
-  // happen if the cookie policy is set to prompt.
-  if (container_) {
-    container_->AddRef();
-  }
-
-  InternetCookieState cookie_state = static_cast<InternetCookieState>(
-      InternetSetCookieExA(url.spec().c_str(), NULL, cookie.c_str(),
-                           INTERNET_COOKIE_EVALUATE_P3P, NULL));
-
-  int32 cookie_action = MapCookieStateToCookieAction(cookie_state);
-  AddPrivacyDataForUrl(url.spec(), "", cookie_action);
-
-  if (container_) {
-    container_->Release();
-  }
-}
-
 void UrlmonUrlRequestManager::EndRequest(int request_id) {
   DVLOG(1) << __FUNCTION__ << " id: " << request_id;
   scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id,
@@ -1381,12 +1327,6 @@ void UrlmonUrlRequestManager::OnResponseEnd(
     }
   }
   delegate_->OnResponseEnd(request_id, status);
-}
-
-void UrlmonUrlRequestManager::OnCookiesRetrieved(bool success, const GURL& url,
-    const std::string& cookie_string, int cookie_id) {
-  DCHECK(url.is_valid());
-  delegate_->OnCookiesRetrieved(success, url, cookie_string, cookie_id);
 }
 
 scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(

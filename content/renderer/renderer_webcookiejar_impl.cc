@@ -22,23 +22,15 @@ void RendererWebCookieJarImpl::setCookie(
     const WebURL& url, const WebURL& first_party_for_cookies,
     const WebString& value) {
   std::string value_utf8 = UTF16ToUTF8(value);
-  if (!GetContentClient()->renderer()->HandleSetCookieRequest(
-          sender_, url, first_party_for_cookies, value_utf8)) {
-    sender_->Send(new ViewHostMsg_SetCookie(
-        MSG_ROUTING_NONE, url, first_party_for_cookies, value_utf8));
-  }
+  sender_->Send(new ViewHostMsg_SetCookie(
+      MSG_ROUTING_NONE, url, first_party_for_cookies, value_utf8));
 }
 
 WebString RendererWebCookieJarImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
   std::string value_utf8;
-
-  if (!GetContentClient()->renderer()->HandleGetCookieRequest(
-          sender_, url, first_party_for_cookies, &value_utf8)) {
-    // NOTE: This may pump events (see RenderThread::Send).
-    sender_->Send(new ViewHostMsg_GetCookies(
-        MSG_ROUTING_NONE, url, first_party_for_cookies, &value_utf8));
-  }
+  sender_->Send(new ViewHostMsg_GetCookies(
+      MSG_ROUTING_NONE, url, first_party_for_cookies, &value_utf8));
   return WebString::fromUTF8(value_utf8);
 }
 

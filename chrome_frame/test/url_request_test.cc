@@ -45,8 +45,6 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
   MOCK_METHOD2(OnReadComplete, void(int request_id, const std::string& data));
   MOCK_METHOD2(OnResponseEnd, void(int request_id,
                                    const net::URLRequestStatus& status));
-  MOCK_METHOD4(OnCookiesRetrieved, void(bool success, const GURL& url,
-      const std::string& cookie, int cookie_id));
 
   void PostponeReadRequest(chrome_frame_test::TimedMsgLoop* loop,
                    UrlmonUrlRequest* request, int bytes_to_read) {
