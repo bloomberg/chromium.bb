@@ -129,7 +129,39 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 
 
 {##############################################################################}
-{% block overloaded_constructor_callback %}
+{% from 'methods.cpp' import named_constructor_callback with context %}
+{% block named_constructor %}
+{% if named_constructor %}
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::derefObject, 0, 0, 0, {{v8_class}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+
+{{named_constructor_callback(named_constructor)}}
+v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey;
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    v8::Local<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
+    if (!result.IsEmpty())
+        return result;
+
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+    v8::EscapableHandleScope scope(isolate);
+    result = v8::FunctionTemplate::New(isolate, {{v8_class}}ConstructorCallback);
+
+    v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
+    result->SetClassName(v8::String::NewFromUtf8(isolate, "{{cpp_class}}", v8::String::kInternalizedString));
+    result->Inherit({{v8_class}}::domTemplate(isolate, currentWorldType));
+    data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
+
+    return scope.Escape(result);
+}
+
+{% endif %}
+{% endblock %}
+
+{##############################################################################}
+{% block overloaded_constructor %}
 {% if constructors|length > 1 %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {

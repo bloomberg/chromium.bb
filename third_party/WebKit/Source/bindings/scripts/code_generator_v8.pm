@@ -3072,7 +3072,6 @@ END
     $code .= $maybeObserveFeature if $maybeObserveFeature;
     $code .= $maybeDeprecateFeature if $maybeDeprecateFeature;
     $code .= GenerateConstructorHeader($function->extendedAttributes->{"NamedConstructor"});
-    AddToImplIncludes("V8Document.h");
     $code .= <<END;
     Document* document = currentDocument();
     ASSERT(document);
@@ -3112,7 +3111,6 @@ END
     }
 
     my $argumentString = join(", ", @beforeArgumentList, @argumentList, @afterArgumentList);
-    $code .= "\n";
     $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::createForJSConstructor(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
@@ -3140,7 +3138,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::domTemplate(v8::Isol
     if (!result.IsEmpty())
         return result;
 
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink\", \"BuildDOMTemplate");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope scope(isolate);
     result = v8::FunctionTemplate::New(isolate, ${v8ClassName}ConstructorCallback);
 

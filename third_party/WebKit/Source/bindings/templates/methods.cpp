@@ -292,7 +292,7 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
 
 
 {##############################################################################}
-{% macro constructor_callback(constructor) %}
+{% macro generate_constructor(constructor) %}
 static void constructor{{constructor.overload_index}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if interface_length and not constructor.overload_index %}
@@ -326,6 +326,38 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {# FIXME: Should probably be Independent unless [ActiveDOMObject]
               or [DependentLifetime]. #}
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
+}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro named_constructor_callback(constructor) %}
+static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("{{constructor.name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        return;
+    }
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+
+    Document* document = currentDocument();
+    ASSERT(document);
+
+    // Make sure the document is added to the DOM Node map. Otherwise, the {{cpp_class}} instance
+    // may end up being the only node in the map and get garbage-collected prematurely.
+    toV8(document, info.Holder(), info.GetIsolate());
+
+    {# FIXME: arguments #}
+    {% set argument_list = ['*document'] %}
+    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{argument_list | join(', ')}});
+    v8::Handle<v8::Object> wrapper = info.Holder();
+
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}Constructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
 }
 {% endmacro %}

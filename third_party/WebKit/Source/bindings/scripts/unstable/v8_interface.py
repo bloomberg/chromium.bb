@@ -94,25 +94,37 @@ def generate_interface(interface):
 
     # Constructors
     constructors = [generate_constructor(interface, constructor)
-                    for constructor in interface.constructors]
+                    for constructor in interface.constructors
+                    # FIXME: shouldn't put named constructors with constructors
+                    # (currently needed for Perl compatibility)
+                    # Handle named constructors separately
+                    if constructor.name == 'Constructor']
     generate_constructor_overloads(constructors)
-    if constructors:
-        includes.add('bindings/v8/V8ObjectConstructor.h')
 
     # [CustomConstructor]
     has_custom_constructor = 'CustomConstructor' in extended_attributes
-    if has_custom_constructor:
-        includes.add('bindings/v8/V8ObjectConstructor.h')
 
     # [EventConstructor]
     has_event_constructor = 'EventConstructor' in extended_attributes
     any_type_attributes = [attribute for attribute in interface.attributes
                            if attribute.idl_type == 'any']
     if has_event_constructor:
-        includes.update(['bindings/v8/Dictionary.h',
-                         'bindings/v8/V8ObjectConstructor.h'])
+        includes.add('bindings/v8/Dictionary.h')
         if any_type_attributes:
             includes.add('bindings/v8/SerializedScriptValue.h')
+
+    # [NamedConstructor]
+    if 'NamedConstructor' in extended_attributes:
+        # FIXME: parser should return named constructor separately;
+        # included in constructors (and only name stored in extended attribute)
+        # for Perl compatibility
+        named_constructor = {'name': extended_attributes['NamedConstructor']}
+    else:
+        named_constructor = None
+
+    if (constructors or has_custom_constructor or has_event_constructor or
+        named_constructor):
+        includes.add('bindings/v8/V8ObjectConstructor.h')
 
     template_contents = {
         'any_type_attributes': any_type_attributes,
@@ -143,6 +155,7 @@ def generate_interface(interface):
         'is_event_target': inherits_interface(interface, 'EventTarget'),
         'is_node': inherits_interface(interface, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
+        'named_constructor': named_constructor,
         'parent_interface': parent_interface,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'special_wrap_for': special_wrap_for,

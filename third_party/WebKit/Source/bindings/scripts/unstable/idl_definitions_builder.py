@@ -438,6 +438,7 @@ def extended_attributes_to_constructors(extended_attributes):
         arguments_node = children[0]
         arguments = arguments_node_to_arguments(arguments_node)
         named_constructor = IdlOperation(name=name, extended_attributes=extended_attributes, overloaded_index=overloaded_index, arguments=arguments)
+        # FIXME: should return named_constructor separately; appended for Perl
         constructors.append(named_constructor)
 
     return constructors, custom_constructors

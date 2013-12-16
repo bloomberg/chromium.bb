@@ -45,6 +45,14 @@ namespace WebCore {
 {% if has_event_constructor %}
 class Dictionary;
 {% endif %}
+{% if named_constructor %}
+class {{v8_class}}Constructor {
+public:
+    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
+    static const WrapperTypeInfo wrapperTypeInfo;
+};
+
+{% endif %}
 class {{v8_class}} {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
