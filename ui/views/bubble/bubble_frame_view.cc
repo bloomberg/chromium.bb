@@ -25,26 +25,27 @@ const int kTitleTopInset = 12;
 const int kTitleLeftInset = 19;
 const int kTitleBottomInset = 12;
 
-// Get the |vertical| or horizontal screen overflow of the |window_bounds|.
-int GetOffScreenLength(const gfx::Rect& monitor_bounds,
+// Get the |vertical| or horizontal amount that |available_bounds| overflows
+// |window_bounds|.
+int GetOffScreenLength(const gfx::Rect& available_bounds,
                        const gfx::Rect& window_bounds,
                        bool vertical) {
-  if (monitor_bounds.IsEmpty() || monitor_bounds.Contains(window_bounds))
+  if (available_bounds.IsEmpty() || available_bounds.Contains(window_bounds))
     return 0;
 
   //  window_bounds
-  //  +-------------------------------+
-  //  |             top               |
-  //  |      +----------------+       |
-  //  | left | monitor_bounds | right |
-  //  |      +----------------+       |
-  //  |            bottom             |
-  //  +-------------------------------+
+  //  +---------------------------------+
+  //  |             top                 |
+  //  |      +------------------+       |
+  //  | left | available_bounds | right |
+  //  |      +------------------+       |
+  //  |            bottom               |
+  //  +---------------------------------+
   if (vertical)
-    return std::max(0, monitor_bounds.y() - window_bounds.y()) +
-           std::max(0, window_bounds.bottom() - monitor_bounds.bottom());
-  return std::max(0, monitor_bounds.x() - window_bounds.x()) +
-         std::max(0, window_bounds.right() - monitor_bounds.right());
+    return std::max(0, available_bounds.y() - window_bounds.y()) +
+           std::max(0, window_bounds.bottom() - available_bounds.bottom());
+  return std::max(0, available_bounds.x() - window_bounds.x()) +
+         std::max(0, window_bounds.right() - available_bounds.right());
 }
 
 }  // namespace
@@ -265,7 +266,8 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
   return bubble_border_->GetBounds(anchor_rect, client_size);
 }
 
-gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
+gfx::Rect BubbleFrameView::GetAvailableScreenBounds(const gfx::Rect& rect) {
+  // The bubble attempts to fit within the current screen bounds.
   // TODO(scottmg): Native is wrong. http://crbug.com/133312
   return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
       rect.CenterPoint()).work_area();
@@ -276,9 +278,9 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
     const gfx::Rect& anchor_rect,
     const gfx::Size& client_size) {
   // Check if the bounds don't fit on screen.
-  gfx::Rect monitor_rect(GetMonitorBounds(anchor_rect));
+  gfx::Rect available_bounds(GetAvailableScreenBounds(anchor_rect));
   gfx::Rect window_bounds(bubble_border_->GetBounds(anchor_rect, client_size));
-  if (GetOffScreenLength(monitor_rect, window_bounds, vertical) > 0) {
+  if (GetOffScreenLength(available_bounds, window_bounds, vertical) > 0) {
     BubbleBorder::Arrow arrow = bubble_border()->arrow();
     // Mirror the arrow and get the new bounds.
     bubble_border_->set_arrow(
@@ -289,8 +291,8 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
     // Restore the original arrow if mirroring doesn't show more of the bubble.
     // Otherwise it should invoke parent's Layout() to layout the content based
     // on the new bubble border.
-    if (GetOffScreenLength(monitor_rect, mirror_bounds, vertical) >=
-        GetOffScreenLength(monitor_rect, window_bounds, vertical))
+    if (GetOffScreenLength(available_bounds, mirror_bounds, vertical) >=
+        GetOffScreenLength(available_bounds, window_bounds, vertical))
       bubble_border_->set_arrow(arrow);
     else if (parent())
       parent()->Layout();
@@ -306,23 +308,23 @@ void BubbleFrameView::OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
   bubble_border_->set_arrow_offset(0);
   gfx::Rect window_bounds(bubble_border_->GetBounds(anchor_rect, client_size));
 
-  gfx::Rect monitor_rect(GetMonitorBounds(anchor_rect));
-  if (monitor_rect.IsEmpty() || monitor_rect.Contains(window_bounds))
+  gfx::Rect available_bounds(GetAvailableScreenBounds(anchor_rect));
+  if (available_bounds.IsEmpty() || available_bounds.Contains(window_bounds))
     return;
 
   // Calculate off-screen adjustment.
   const bool is_horizontal = BubbleBorder::is_arrow_on_horizontal(arrow);
   int offscreen_adjust = 0;
   if (is_horizontal) {
-    if (window_bounds.x() < monitor_rect.x())
-      offscreen_adjust = monitor_rect.x() - window_bounds.x();
-    else if (window_bounds.right() > monitor_rect.right())
-      offscreen_adjust = monitor_rect.right() - window_bounds.right();
+    if (window_bounds.x() < available_bounds.x())
+      offscreen_adjust = available_bounds.x() - window_bounds.x();
+    else if (window_bounds.right() > available_bounds.right())
+      offscreen_adjust = available_bounds.right() - window_bounds.right();
   } else {
-    if (window_bounds.y() < monitor_rect.y())
-      offscreen_adjust = monitor_rect.y() - window_bounds.y();
-    else if (window_bounds.bottom() > monitor_rect.bottom())
-      offscreen_adjust = monitor_rect.bottom() - window_bounds.bottom();
+    if (window_bounds.y() < available_bounds.y())
+      offscreen_adjust = available_bounds.y() - window_bounds.y();
+    else if (window_bounds.bottom() > available_bounds.bottom())
+      offscreen_adjust = available_bounds.bottom() - window_bounds.bottom();
   }
 
   // For center arrows, arrows are moved in the opposite direction of

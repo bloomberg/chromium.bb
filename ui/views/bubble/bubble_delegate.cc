@@ -134,7 +134,7 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(margins());
   BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (ShouldFlipArrowForRtl() && base::i18n::IsRTL())
+  if (base::i18n::IsRTL())
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   frame->SetBubbleBorder(new BubbleBorder(adjusted_arrow, shadow(), color()));
   return frame;
@@ -275,10 +275,6 @@ void BubbleDelegateView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void BubbleDelegateView::Init() {}
-
-bool BubbleDelegateView::ShouldFlipArrowForRtl() const {
-  return true;
-}
 
 void BubbleDelegateView::SetAnchorView(View* anchor_view) {
   // When the anchor view gets set the associated anchor widget might

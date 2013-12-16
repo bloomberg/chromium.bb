@@ -30,9 +30,31 @@ const int kInfoBubbleVerticalMargin = 12;
 
 }  // namespace
 
+class InfoBubbleFrame : public views::BubbleFrameView {
+ public:
+  explicit InfoBubbleFrame(const gfx::Insets& content_margins)
+      : views::BubbleFrameView(content_margins) {}
+  virtual ~InfoBubbleFrame() {}
+
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) OVERRIDE {
+    return available_bounds_;
+  }
+
+  void set_available_bounds(const gfx::Rect& available_bounds) {
+    available_bounds_ = available_bounds;
+  }
+
+ private:
+  // Bounds that this frame should try to keep bubbles within (screen coords).
+  gfx::Rect available_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfoBubbleFrame);
+};
+
 InfoBubble::InfoBubble(views::View* anchor,
                        const base::string16& message)
     : anchor_(anchor),
+      frame_(NULL),
       align_to_anchor_edge_(false),
       preferred_width_(233),
       show_above_anchor_(false) {
@@ -60,15 +82,18 @@ void InfoBubble::Show() {
   // its menu will actually show upward and obscure the bubble. Figure out when
   // this might happen and adjust |show_above_anchor_| accordingly. This is not
   // that big of deal because it rarely happens in practice.
-  if (show_above_anchor_) {
-    set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::BOTTOM_RIGHT :
-                                          views::BubbleBorder::BOTTOM_LEFT);
-  } else {
-    set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::TOP_RIGHT :
-                                          views::BubbleBorder::TOP_LEFT);
-  }
+  if (show_above_anchor_)
+    set_arrow(views::BubbleBorder::vertical_mirror(arrow()));
 
   widget_ = views::BubbleDelegateView::CreateBubble(this);
+
+  if (align_to_anchor_edge_) {
+    // The frame adjusts its arrow before the bubble's alignment can be changed.
+    // Set the created bubble border back to the original arrow and re-adjust.
+    frame_->bubble_border()->set_arrow(arrow());
+    SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+  }
+
   UpdatePosition();
 }
 
@@ -92,30 +117,20 @@ void InfoBubble::UpdatePosition() {
   }
 }
 
-gfx::Size InfoBubble::GetPreferredSize() {
-  int pref_width = preferred_width_;
-  pref_width -= GetBubbleFrameView()->GetInsets().width();
-  pref_width -= 2 * kBubbleBorderVisibleWidth;
-  return gfx::Size(pref_width, GetHeightForWidth(pref_width));
+views::NonClientFrameView* InfoBubble::CreateNonClientFrameView(
+    views::Widget* widget) {
+  DCHECK(!frame_);
+  frame_ = new InfoBubbleFrame(margins());
+  frame_->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
+  frame_->SetBubbleBorder(new views::BubbleBorder(arrow(), shadow(), color()));
+  return frame_;
 }
 
-gfx::Rect InfoBubble::GetBubbleBounds() {
-  gfx::Rect bounds = views::BubbleDelegateView::GetBubbleBounds();
-  gfx::Rect anchor_rect = GetAnchorRect();
-
-  if (show_above_anchor_)
-    bounds.set_y(anchor_rect.y() - GetBubbleFrameView()->height());
-  else
-    bounds.set_y(anchor_rect.bottom());
-
-  if (align_to_anchor_edge_) {
-    anchor_rect.Inset(-GetBubbleFrameView()->bubble_border()->GetInsets());
-    bounds.set_x(ShouldArrowGoOnTheRight() ?
-        anchor_rect.right() - bounds.width() - kBubbleBorderVisibleWidth :
-        anchor_rect.x() + kBubbleBorderVisibleWidth);
-  }
-
-  return bounds;
+gfx::Size InfoBubble::GetPreferredSize() {
+  int pref_width = preferred_width_;
+  pref_width -= frame_->GetInsets().width();
+  pref_width -= 2 * kBubbleBorderVisibleWidth;
+  return gfx::Size(pref_width, GetHeightForWidth(pref_width));
 }
 
 void InfoBubble::OnWidgetClosing(views::Widget* widget) {
@@ -123,25 +138,11 @@ void InfoBubble::OnWidgetClosing(views::Widget* widget) {
     widget_ = NULL;
 }
 
-bool InfoBubble::ShouldFlipArrowForRtl() const {
-  return false;
-}
-
-bool InfoBubble::ShouldArrowGoOnTheRight() {
-  views::View* container = anchor_->GetWidget()->non_client_view();
-  DCHECK(container->Contains(anchor_));
-
-  gfx::Point anchor_offset;
-  views::View::ConvertPointToTarget(anchor_, container, &anchor_offset);
-  anchor_offset.Offset(-container_insets_.left(), 0);
-
-  if (base::i18n::IsRTL()) {
-    int anchor_right_x = anchor_offset.x() + anchor_->width();
-    return anchor_right_x >= preferred_width_;
-  }
-
-  int container_width = container->width() - container_insets_.width();
-  return anchor_offset.x() + preferred_width_ > container_width;
+void InfoBubble::OnWidgetBoundsChanged(views::Widget* widget,
+                                       const gfx::Rect& new_bounds) {
+  views::BubbleDelegateView::OnWidgetBoundsChanged(widget, new_bounds);
+  if (anchor_widget() == widget)
+    frame_->set_available_bounds(widget->GetWindowBoundsInScreen());
 }
 
 }  // namespace autofill

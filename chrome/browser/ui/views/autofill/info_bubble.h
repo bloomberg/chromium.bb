@@ -13,6 +13,8 @@
 
 namespace autofill {
 
+class InfoBubbleFrame;
+
 // Class to create and manage an information bubble for errors or tooltips.
 class InfoBubble : public views::BubbleDelegateView {
  public:
@@ -29,19 +31,17 @@ class InfoBubble : public views::BubbleDelegateView {
   void UpdatePosition();
 
   // views::BubbleDelegateView:
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Rect GetBubbleBounds() OVERRIDE;
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual bool ShouldFlipArrowForRtl() const OVERRIDE;
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   views::View* anchor() { return anchor_; }
 
   void set_align_to_anchor_edge(bool align_to_anchor_edge) {
     align_to_anchor_edge_ = align_to_anchor_edge;
-  }
-
-  void set_container_insets(const gfx::Insets& container_insets) {
-    container_insets_ = container_insets;
   }
 
   void set_preferred_width(int preferred_width) {
@@ -53,19 +53,13 @@ class InfoBubble : public views::BubbleDelegateView {
   }
 
  private:
-  // Whether the bubble should stick to the right edge of |anchor_|.
-  bool ShouldArrowGoOnTheRight();
-
   views::Widget* widget_;  // Weak, may be NULL.
   views::View* const anchor_;  // Weak.
+  InfoBubbleFrame* frame_;  // Weak, owned by widget.
 
   // Whether the bubble should align its border to the anchor's edge rather than
   // horizontally centering the arrow on |anchor_|'s midpoint. Default is false.
   bool align_to_anchor_edge_;
-
-  // Shrinks the container's size when calculating whether the arrow should be
-  // on the right or left side of the bubble.
-  gfx::Insets container_insets_;
 
   // The width this bubble prefers to be. Default is 0 (no preference).
   int preferred_width_;

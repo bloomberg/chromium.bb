@@ -22,18 +22,18 @@ class TestBubbleFrameView : public BubbleFrameView {
  public:
   TestBubbleFrameView()
       : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
-        monitor_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
+        available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
     SetBubbleBorder(new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor));
   }
   virtual ~TestBubbleFrameView() {}
 
   // BubbleFrameView overrides:
-  virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect) OVERRIDE {
-    return monitor_bounds_;
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) OVERRIDE {
+    return available_bounds_;
   }
 
  private:
-  gfx::Rect monitor_bounds_;
+  gfx::Rect available_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleFrameView);
 };
