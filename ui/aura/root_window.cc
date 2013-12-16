@@ -235,7 +235,7 @@ void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
             static_cast<const ui::MouseEvent&>(event),
             static_cast<aura::Window*>(event.target()),
             window()));
-    base::MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostNonNestableTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&RootWindow::DispatchHeldEvents),
                    repost_event_factory_.GetWeakPtr()));
@@ -459,7 +459,7 @@ void RootWindow::ReleasePointerMoves() {
     // called from a deep stack while another event, in which case dispatching
     // another one may not be safe/expected.  Instead we post a task, that we
     // may cancel if HoldPointerMoves is called again before it executes.
-    base::MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostNonNestableTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&RootWindow::DispatchHeldEvents),
                    held_event_factory_.GetWeakPtr()));
@@ -1116,7 +1116,7 @@ void RootWindow::PostMouseMoveEventAfterWindowChange() {
   if (synthesize_mouse_move_)
     return;
   synthesize_mouse_move_ = true;
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostNonNestableTask(
       FROM_HERE,
       base::Bind(&RootWindow::SynthesizeMouseMoveEventAsync,
                  held_event_factory_.GetWeakPtr()));

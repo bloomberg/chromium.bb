@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -1447,6 +1449,82 @@ TEST_F(RootWindowTest, EndingEventDoesntRetarget) {
             EventTypesToString(filter1->events()));
 
   EXPECT_TRUE(filter2->events().empty());
+}
+
+class ExitMessageLoopOnMousePress : public test::TestEventHandler {
+ public:
+  ExitMessageLoopOnMousePress() {}
+  virtual ~ExitMessageLoopOnMousePress() {}
+
+ protected:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    test::TestEventHandler::OnMouseEvent(event);
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      base::MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExitMessageLoopOnMousePress);
+};
+
+class RootWindowTestWithMessageLoop : public RootWindowTest {
+ public:
+  RootWindowTestWithMessageLoop() {}
+  virtual ~RootWindowTestWithMessageLoop() {}
+
+  void RunTest() {
+    // Start a nested message-loop, post an event to be dispatched, and then
+    // terminate the message-loop. When the message-loop unwinds and gets back,
+    // the reposted event should not have fired.
+    ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
+                         gfx::Point(10, 10), ui::EF_NONE);
+    message_loop()->PostTask(FROM_HERE,
+                             base::Bind(&RootWindow::RepostEvent,
+                                        base::Unretained(dispatcher()),
+                                        mouse));
+    message_loop()->PostTask(FROM_HERE,
+                             message_loop()->QuitClosure());
+
+    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop());
+    base::RunLoop loop;
+    loop.Run();
+    EXPECT_EQ(0, handler_.num_mouse_events());
+
+    // Let the current message-loop run. The event-handler will terminate the
+    // message-loop when it receives the reposted event.
+  }
+
+  base::MessageLoop* message_loop() {
+    return base::MessageLoopForUI::current();
+  }
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    RootWindowTest::SetUp();
+    window_.reset(CreateNormalWindow(1, root_window(), NULL));
+    window_->AddPreTargetHandler(&handler_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    window_.reset();
+    RootWindowTest::TearDown();
+  }
+
+ private:
+  scoped_ptr<Window> window_;
+  ExitMessageLoopOnMousePress handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowTestWithMessageLoop);
+};
+
+TEST_F(RootWindowTestWithMessageLoop, EventRepostedInNonNestedLoop) {
+  CHECK(!message_loop()->is_running());
+  // Perform the test in a callback, so that it runs after the message-loop
+  // starts.
+  message_loop()->PostTask(FROM_HERE,
+                           base::Bind(&RootWindowTestWithMessageLoop::RunTest,
+                                      base::Unretained(this)));
+  message_loop()->Run();
 }
 
 }  // namespace aura
