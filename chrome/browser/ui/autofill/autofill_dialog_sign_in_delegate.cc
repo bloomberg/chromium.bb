@@ -79,6 +79,8 @@ void AutofillDialogSignInDelegate::UpdateLimitsAndEnableAutoResize(
 }
 
 void AutofillDialogSignInDelegate::EnableAutoResize() {
+  DCHECK(!minimum_size_.IsEmpty());
+  DCHECK(!maximum_size_.IsEmpty());
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (host)
     host->EnableAutoResize(minimum_size_, maximum_size_);

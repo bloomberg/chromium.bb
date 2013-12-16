@@ -57,6 +57,12 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#endif
+
 namespace autofill {
 
 namespace {
@@ -284,6 +290,16 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     InitializeController();
   }
 
+  // A helper function that cycles the MessageLoop, and on Mac, the Cocoa run
+  // loop. It also drains the NSAutoreleasePool.
+  void CycleRunLoops() {
+    content::RunAllPendingInMessageLoop();
+#if defined(OS_MACOSX)
+    chrome::testing::NSRunLoopRunAllPending();
+    AutoreleasePool()->Recycle();
+#endif
+  }
+
   void InitializeController() {
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
@@ -308,6 +324,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
         metric_logger_,
         message_loop_runner_);
     controller_->Show();
+    CycleRunLoops();  // Ensures dialog is fully visible.
   }
 
   content::WebContents* GetActiveWebContents() {
