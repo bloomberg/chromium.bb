@@ -5,7 +5,7 @@
 #include "net/base/keygen_handler.h"
 
 #include "base/logging.h"
-#include "crypto/crypto_module_blocking_password_delegate.h"
+#include "crypto/nss_crypto_module_delegate.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
@@ -20,16 +20,22 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
   // Ensure NSS is initialized.
   crypto::EnsureNSSInit();
 
-  // TODO(mattm): allow choosing which slot to generate and store the key.
-  crypto::ScopedPK11Slot slot(crypto::GetPrivateNSSKeySlot());
+  crypto::ScopedPK11Slot slot;
+  if (crypto_module_delegate_)
+    slot = crypto_module_delegate_->RequestSlot().Pass();
+  else
+    slot.reset(crypto::GetPrivateNSSKeySlot());
   if (!slot.get()) {
     LOG(ERROR) << "Couldn't get private key slot from NSS!";
     return std::string();
   }
 
   // Authenticate to the token.
-  if (SECSuccess != PK11_Authenticate(slot.get(), PR_TRUE,
-                                      crypto_module_password_delegate_.get())) {
+  if (SECSuccess !=
+      PK11_Authenticate(
+          slot.get(),
+          PR_TRUE,
+          crypto_module_delegate_ ? crypto_module_delegate_->wincx() : NULL)) {
     LOG(ERROR) << "Couldn't authenticate to private key slot!";
     return std::string();
   }
@@ -38,9 +44,9 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
                                      slot.get(), stores_key_);
 }
 
-void KeygenHandler::set_crypto_module_password_delegate(
-    crypto::CryptoModuleBlockingPasswordDelegate* delegate) {
-  crypto_module_password_delegate_.reset(delegate);
+void KeygenHandler::set_crypto_module_delegate(
+      scoped_ptr<crypto::NSSCryptoModuleDelegate> delegate) {
+  crypto_module_delegate_ = delegate.Pass();
 }
 
 }  // namespace net

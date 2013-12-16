@@ -375,6 +375,12 @@ class ProfileIOData {
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
     virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() OVERRIDE;
+    virtual void CreateKeygenHandler(
+        uint32 key_size_in_bits,
+        const std::string& challenge_string,
+        const GURL& url,
+        const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback)
+        OVERRIDE;
     virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
     virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
     virtual std::string GetMediaDeviceIDSalt() OVERRIDE;

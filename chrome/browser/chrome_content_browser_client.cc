@@ -189,10 +189,6 @@
 #include "ui/gfx/android/device_display_info.h"
 #endif
 
-#if defined(USE_NSS)
-#include "chrome/browser/ui/crypto_module_password_dialog.h"
-#endif
-
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -2609,15 +2605,6 @@ void ChromeContentBrowserClient::PreSpawnRenderer(
     *success = false;
     return;
   }
-}
-#endif
-
-#if defined(USE_NSS)
-crypto::CryptoModuleBlockingPasswordDelegate*
-    ChromeContentBrowserClient::GetCryptoPasswordDelegate(
-        const GURL& url) {
-  return chrome::NewCryptoModuleBlockingDialogDelegate(
-      chrome::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
 

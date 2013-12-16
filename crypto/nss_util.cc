@@ -49,7 +49,7 @@
 // certificate and key databases.
 #if defined(USE_NSS)
 #include "base/synchronization/lock.h"
-#include "crypto/crypto_module_blocking_password_delegate.h"
+#include "crypto/nss_crypto_module_delegate.h"
 #endif  // defined(USE_NSS)
 
 namespace crypto {

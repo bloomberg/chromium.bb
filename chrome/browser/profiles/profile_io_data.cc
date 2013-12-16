@@ -62,6 +62,7 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
+#include "net/base/keygen_handler.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_transaction_factory.h"
@@ -110,7 +111,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS)
-#include "chrome/browser/ui/crypto_module_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_delegate_nss.h"
 #include "net/ssl/client_cert_store_nss.h"
 #endif
 
@@ -854,7 +855,7 @@ scoped_ptr<net::ClientCertStore>
 ProfileIOData::ResourceContext::CreateClientCertStore() {
 #if defined(USE_NSS)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
-      base::Bind(&chrome::NewCryptoModuleBlockingDialogDelegate,
+      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                  chrome::kCryptoModulePasswordClientAuth)));
 #elif defined(OS_WIN)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
@@ -867,6 +868,37 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
   return scoped_ptr<net::ClientCertStore>();
 #else
 #error Unknown platform.
+#endif
+}
+
+void ProfileIOData::ResourceContext::CreateKeygenHandler(
+    uint32 key_size_in_bits,
+    const std::string& challenge_string,
+    const GURL& url,
+    const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback) {
+  DCHECK(!callback.is_null());
+#if defined(USE_NSS)
+  scoped_ptr<net::KeygenHandler> keygen_handler(
+      new net::KeygenHandler(key_size_in_bits, challenge_string, url));
+
+  scoped_ptr<ChromeNSSCryptoModuleDelegate> delegate(
+      new ChromeNSSCryptoModuleDelegate(chrome::kCryptoModulePasswordKeygen,
+                                        url.host()));
+  ChromeNSSCryptoModuleDelegate* delegate_ptr = delegate.get();
+  keygen_handler->set_crypto_module_delegate(
+      delegate.PassAs<crypto::NSSCryptoModuleDelegate>());
+
+  base::Closure bound_callback =
+      base::Bind(callback, base::Passed(&keygen_handler));
+  if (delegate_ptr->InitializeSlot(this, bound_callback)) {
+    // Initialization complete, run the callback synchronously.
+    bound_callback.Run();
+    return;
+  }
+  // Otherwise, the InitializeSlot will run the callback asynchronously.
+#else
+  callback.Run(make_scoped_ptr(
+      new net::KeygenHandler(key_size_in_bits, challenge_string, url)));
 #endif
 }
 

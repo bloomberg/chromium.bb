@@ -62,6 +62,7 @@ struct MediaLogEvent;
 }
 
 namespace net {
+class KeygenHandler;
 class URLRequestContext;
 class URLRequestContextGetter;
 }
@@ -222,11 +223,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                     const std::vector<char>& data);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, IPC::Message* reply_msg);
-  void OnKeygenOnWorkerThread(
-      int key_size_in_bits,
-      const std::string& challenge_string,
-      const GURL& url,
-      IPC::Message* reply_msg);
+  void PostKeygenToWorkerThread(IPC::Message* reply_msg,
+                                scoped_ptr<net::KeygenHandler> keygen_handler);
+  void OnKeygenOnWorkerThread(scoped_ptr<net::KeygenHandler> keygen_handler,
+                              IPC::Message* reply_msg);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   // Check the policy for getting cookies. Gets the cookies if allowed.

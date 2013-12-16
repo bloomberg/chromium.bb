@@ -4,6 +4,10 @@
 
 #include "net/base/keygen_handler.h"
 
+#if defined(USE_NSS)
+#include "crypto/nss_crypto_module_delegate.h"
+#endif  // defined(USE_NSS)
+
 namespace net {
 
 // The constructor and destructor must be defined in a .cc file so that

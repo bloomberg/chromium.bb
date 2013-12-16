@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "crypto/crypto_module_blocking_password_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -137,7 +136,7 @@ void CryptoModulePasswordDialog::OnResponse(GtkWidget* dialog,
   if (response_id == GTK_RESPONSE_ACCEPT)
     callback_.Run(gtk_entry_get_text(GTK_ENTRY(password_entry_)));
   else
-    callback_.Run(static_cast<const char*>(NULL));
+    callback_.Run(std::string());
 
   // This will cause gtk to zero out the buffer.  (see
   // gtk_entry_buffer_normal_delete_text:

@@ -6,21 +6,9 @@
 #define CHROME_BROWSER_UI_CRYPTO_MODULE_PASSWORD_DIALOG_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace crypto {
-class CryptoModuleBlockingPasswordDelegate;
-}
-
-namespace net {
-class CryptoModule;
-typedef std::vector<scoped_refptr<CryptoModule> > CryptoModuleList;
-class X509Certificate;
-}
 
 namespace chrome {
 
@@ -34,7 +22,7 @@ enum CryptoModulePasswordReason {
   kCryptoModulePasswordCertExport,
 };
 
-typedef base::Callback<void(const char*)> CryptoModulePasswordCallback;
+typedef base::Callback<void(const std::string&)> CryptoModulePasswordCallback;
 
 // Display a dialog, prompting the user to authenticate to unlock
 // |module|. |reason| describes the purpose of the authentication and
@@ -47,30 +35,6 @@ void ShowCryptoModulePasswordDialog(
     const std::string& server,
     gfx::NativeWindow parent,
     const CryptoModulePasswordCallback& callback);
-
-// Returns a CryptoModuleBlockingPasswordDelegate to open a dialog and block
-// until returning. Should only be used on a worker thread.
-crypto::CryptoModuleBlockingPasswordDelegate*
-    NewCryptoModuleBlockingDialogDelegate(CryptoModulePasswordReason reason,
-                                          const std::string& server);
-
-// Asynchronously unlock |modules|, if necessary.  |callback| is called when
-// done (regardless if any modules were successfully unlocked or not).  Should
-// only be called on UI thread.
-void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
-                            CryptoModulePasswordReason reason,
-                            const std::string& server,
-                            gfx::NativeWindow parent,
-                            const base::Closure& callback);
-
-// Asynchronously unlock the |cert|'s module, if necessary.  |callback| is
-// called when done (regardless if module was successfully unlocked or not).
-// Should only be called on UI thread.
-void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
-                               CryptoModulePasswordReason reason,
-                               const std::string& server,
-                               gfx::NativeWindow parent,
-                               const base::Closure& callback);
 
 }  // namespace chrome
 

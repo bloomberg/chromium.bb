@@ -13,6 +13,7 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/keygen_handler.h"
 #include "net/ssl/client_cert_store.h"
 
 using base::UserDataAdapter;
@@ -61,6 +62,15 @@ std::string ResourceContext::GetMediaDeviceIDSalt() {
 
 scoped_ptr<net::ClientCertStore> ResourceContext::CreateClientCertStore() {
   return scoped_ptr<net::ClientCertStore>();
+}
+
+void ResourceContext::CreateKeygenHandler(
+    uint32 key_size_in_bits,
+    const std::string& challenge_string,
+    const GURL& url,
+    const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback) {
+  callback.Run(make_scoped_ptr(
+      new net::KeygenHandler(key_size_in_bits, challenge_string, url)));
 }
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(

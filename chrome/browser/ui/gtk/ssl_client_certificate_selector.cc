@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
-#include "chrome/browser/ui/crypto_module_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
@@ -350,14 +350,15 @@ void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
 }
 
 void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
-  net::X509Certificate* cert = GetSelectedCert();
-
   // Remove the observer before we try unlocking, otherwise we might act on a
   // notification while waiting for the unlock dialog, causing us to delete
   // ourself before the Unlocked callback gets called.
   StopObserving();
 
+#if defined(USE_NSS)
   GtkWidget* toplevel = gtk_widget_get_toplevel(root_widget_.get());
+  net::X509Certificate* cert = GetSelectedCert();
+
   chrome::UnlockCertSlotIfNecessary(
       cert,
       chrome::kCryptoModulePasswordClientAuth,
@@ -365,6 +366,9 @@ void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
       GTK_WINDOW(toplevel),
       base::Bind(&SSLClientCertificateSelector::Unlocked,
                  base::Unretained(this)));
+#else
+  Unlocked();
+#endif
 }
 
 void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,

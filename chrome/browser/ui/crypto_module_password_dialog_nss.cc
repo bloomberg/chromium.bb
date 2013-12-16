@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/crypto_module_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 
 #include <pk11pub.h>
 
@@ -36,7 +36,7 @@ class SlotUnlocker {
   void Start();
 
  private:
-  void GotPassword(const char* password);
+  void GotPassword(const std::string& password);
   void Done();
 
   size_t current_;
@@ -81,12 +81,12 @@ void SlotUnlocker::Start() {
   Done();
 }
 
-void SlotUnlocker::GotPassword(const char* password) {
+void SlotUnlocker::GotPassword(const std::string& password) {
   // TODO(mattm): PK11_DoPassword has something about PK11_Global.verifyPass.
   // Do we need it?
   // http://mxr.mozilla.org/mozilla/source/security/nss/lib/pk11wrap/pk11auth.c#577
 
-  if (!password) {
+  if (password.empty()) {
     // User cancelled entering password.  Oh well.
     ++current_;
     Start();
@@ -95,7 +95,7 @@ void SlotUnlocker::GotPassword(const char* password) {
 
   // TODO(mattm): handle protectedAuthPath
   SECStatus rv = PK11_CheckUserPassword(modules_[current_]->os_module_handle(),
-                                        password);
+                                        password.c_str());
   if (rv == SECWouldBlock) {
     // Incorrect password.  Try again.
     retry_ = PR_TRUE;

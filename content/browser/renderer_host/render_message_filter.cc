@@ -989,40 +989,41 @@ void RenderMessageFilter::OnKeygen(uint32 key_size_index,
       return;
   }
 
+  resource_context_->CreateKeygenHandler(
+      key_size_in_bits,
+      challenge_string,
+      url,
+      base::Bind(
+          &RenderMessageFilter::PostKeygenToWorkerThread, this, reply_msg));
+}
+
+void RenderMessageFilter::PostKeygenToWorkerThread(
+    IPC::Message* reply_msg,
+    scoped_ptr<net::KeygenHandler> keygen_handler) {
   VLOG(1) << "Dispatching keygen task to worker pool.";
   // Dispatch to worker pool, so we do not block the IO thread.
   if (!base::WorkerPool::PostTask(
            FROM_HERE,
-           base::Bind(
-               &RenderMessageFilter::OnKeygenOnWorkerThread, this,
-               key_size_in_bits, challenge_string, url, reply_msg),
+           base::Bind(&RenderMessageFilter::OnKeygenOnWorkerThread,
+                      this,
+                      base::Passed(&keygen_handler),
+                      reply_msg),
            true)) {
     NOTREACHED() << "Failed to dispatch keygen task to worker pool";
     ViewHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
     Send(reply_msg);
-    return;
   }
 }
 
 void RenderMessageFilter::OnKeygenOnWorkerThread(
-    int key_size_in_bits,
-    const std::string& challenge_string,
-    const GURL& url,
+    scoped_ptr<net::KeygenHandler> keygen_handler,
     IPC::Message* reply_msg) {
   DCHECK(reply_msg);
 
   // Generate a signed public key and challenge, then send it back.
-  net::KeygenHandler keygen_handler(key_size_in_bits, challenge_string, url);
-
-#if defined(USE_NSS)
-  // Attach a password delegate so we can authenticate.
-  keygen_handler.set_crypto_module_password_delegate(
-      GetContentClient()->browser()->GetCryptoPasswordDelegate(url));
-#endif  // defined(USE_NSS)
-
   ViewHostMsg_Keygen::WriteReplyParams(
       reply_msg,
-      keygen_handler.GenKeyAndSignChallenge());
+      keygen_handler->GenKeyAndSignChallenge());
   Send(reply_msg);
 }
 

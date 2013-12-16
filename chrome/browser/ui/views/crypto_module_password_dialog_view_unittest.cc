@@ -19,7 +19,7 @@ class CryptoModulePasswordDialogViewTest : public testing::Test {
   CryptoModulePasswordDialogViewTest() {}
   virtual ~CryptoModulePasswordDialogViewTest() {}
 
-  void Capture(const char* text) {
+  void Capture(const std::string& text) {
     text_ = text;
   }
 

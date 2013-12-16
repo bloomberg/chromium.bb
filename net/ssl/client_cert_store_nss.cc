@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/worker_pool.h"
-#include "crypto/crypto_module_blocking_password_delegate.h"
+#include "crypto/nss_crypto_module_delegate.h"
 #include "net/cert/x509_util.h"
 
 namespace net {

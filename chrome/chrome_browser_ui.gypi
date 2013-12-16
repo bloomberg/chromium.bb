@@ -1086,10 +1086,11 @@
         'browser/ui/content_settings/content_setting_media_menu_model.h',
         'browser/ui/content_settings/media_setting_changed_infobar_delegate.cc',
         'browser/ui/content_settings/media_setting_changed_infobar_delegate.h',
-        'browser/ui/crypto_module_password_dialog.cc',
+        'browser/ui/crypto_module_delegate_nss.cc',
+        'browser/ui/crypto_module_delegate_nss.h',
         'browser/ui/crypto_module_password_dialog.h',
         'browser/ui/crypto_module_password_dialog_nss.cc',
-        'browser/ui/crypto_module_password_dialog_openssl.cc',
+        'browser/ui/crypto_module_password_dialog_nss.h',
         'browser/ui/extensions/application_launch.cc',
         'browser/ui/extensions/application_launch.h',
         'browser/ui/extensions/extension_installed_bubble.cc',
@@ -2958,6 +2959,10 @@
           'sources!': [
             'browser/ui/webui/options/certificate_manager_handler.cc',
             'browser/ui/webui/options/certificate_manager_handler.h',
+            'browser/ui/crypto_module_delegate_nss.cc',
+            'browser/ui/crypto_module_delegate_nss.h',
+            'browser/ui/crypto_module_password_dialog_nss.cc',
+            'browser/ui/crypto_module_password_dialog_nss.h',
           ],
         }],
         ['use_nss==0 and use_openssl==0', {
@@ -3161,8 +3166,6 @@
           'sources!': [
             'browser/ui/certificate_dialogs.cc',
             'browser/ui/certificate_dialogs.h',
-            'browser/ui/crypto_module_password_dialog.cc',
-            'browser/ui/crypto_module_password_dialog_nss.cc',
             'browser/ui/screen_capture_notification_ui_stub.cc',
             'browser/ui/tabs/dock_info.cc',
             'browser/ui/tabs/tab_resources.cc',
@@ -3239,8 +3242,6 @@
           'sources!': [
             'browser/ui/certificate_dialogs.cc',
             'browser/ui/certificate_dialogs.h',
-            'browser/ui/crypto_module_password_dialog.cc',
-            'browser/ui/crypto_module_password_dialog_nss.cc',
             'browser/ui/screen_capture_notification_ui_stub.cc',
             'browser/ui/startup/autolaunch_prompt.cc',
             'browser/ui/views/frame/taskbar_decorator.cc',
@@ -3305,14 +3306,6 @@
             }],
           ],
         }],
-        [ 'use_openssl==1', {
-          'sources!': [
-            'browser/ui/crypto_module_password_dialog_nss.cc',
-          ]}, {
-           'sources!': [
-             'browser/ui/crypto_module_password_dialog_openssl.cc',
-          ]},
-        ],
         # File manager extension replaces the native OS file open/save dialog.
         ['file_manager_extension==1', {
           'sources/': [

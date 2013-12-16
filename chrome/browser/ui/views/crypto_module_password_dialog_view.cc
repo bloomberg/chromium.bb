@@ -54,14 +54,14 @@ base::string16 CryptoModulePasswordDialogView::GetDialogButtonLabel(
 }
 
 bool CryptoModulePasswordDialogView::Cancel() {
-  callback_.Run(static_cast<const char*>(NULL));
+  callback_.Run(std::string());
   const base::string16 empty;
   password_entry_->SetText(empty);
   return true;
 }
 
 bool CryptoModulePasswordDialogView::Accept() {
-  callback_.Run(UTF16ToUTF8(password_entry_->text()).c_str());
+  callback_.Run(UTF16ToUTF8(password_entry_->text()));
   const base::string16 empty;
   password_entry_->SetText(empty);
   return true;
