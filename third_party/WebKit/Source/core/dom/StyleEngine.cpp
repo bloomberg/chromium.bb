@@ -60,7 +60,7 @@ StyleEngine::StyleEngine(Document& document)
     , m_injectedStyleSheetCacheValid(false)
     , m_needsUpdateActiveStylesheetsOnStyleRecalc(false)
     , m_documentStyleSheetCollection(document)
-    , m_dirtyTreeScopes(document)
+    , m_documentScopeDirty(true)
     , m_usesSiblingRules(false)
     , m_usesSiblingRulesOverride(false)
     , m_usesFirstLineRules(false)
@@ -219,7 +219,7 @@ void StyleEngine::updateInjectedStyleSheetCache() const
 void StyleEngine::invalidateInjectedStyleSheetCache()
 {
     m_injectedStyleSheetCacheValid = false;
-    m_dirtyTreeScopes.markDocument();
+    markDocumentDirty();
     // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
     // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
     m_document.styleResolverChanged(RecalcStyleDeferred);
@@ -229,7 +229,7 @@ void StyleEngine::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)
 {
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, &m_document));
     m_document.addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
-    m_dirtyTreeScopes.markDocument();
+    markDocumentDirty();
 }
 
 void StyleEngine::addPendingSheet()
@@ -241,7 +241,7 @@ void StyleEngine::addPendingSheet()
 void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
 {
     TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
-    m_dirtyTreeScopes.mark(*treeScope);
+    markTreeScopeDirty(*treeScope);
     master()->styleEngine()->notifyPendingStyleSheetRemoved(notification);
 }
 
@@ -283,8 +283,7 @@ void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
     TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
     ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
 
-
-    m_dirtyTreeScopes.mark(treeScope);
+    markTreeScopeDirty(treeScope);
 }
 
 void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
@@ -299,7 +298,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
     ASSERT(collection);
     collection->addStyleSheetCandidateNode(node, createdByParser);
 
-    m_dirtyTreeScopes.mark(treeScope);
+    markTreeScopeDirty(treeScope);
     if (treeScope != m_document)
         insertTreeScopeInDocumentOrder(m_activeTreeScopes, &treeScope);
 }
@@ -313,7 +312,7 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopi
     ASSERT(collection);
     collection->removeStyleSheetCandidateNode(node, scopingNode);
 
-    m_dirtyTreeScopes.mark(treeScope);
+    markTreeScopeDirty(treeScope);
     m_activeTreeScopes.remove(&treeScope);
 }
 
@@ -324,12 +323,12 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
 
     TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
     ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
-    m_dirtyTreeScopes.mark(treeScope);
+    markTreeScopeDirty(treeScope);
 }
 
 bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
 {
-    return !m_dirtyTreeScopes.isSubscopeMarked() || updateMode == FullStyleUpdate;
+    return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
 }
 
 void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(TreeScopeSet treeScopes)
@@ -347,7 +346,7 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
 {
     m_documentStyleSheetCollection.clearMediaQueryRuleSetStyleSheets();
     clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
-    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes.subscope());
+    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes);
 }
 
 void StyleEngine::collectDocumentActiveStyleSheets(StyleSheetCollectionBase& collection)
@@ -385,11 +384,11 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
         return false;
 
     bool requiresFullStyleRecalc = false;
-    if (m_dirtyTreeScopes.isDocumentMarked() || updateMode == FullStyleUpdate)
+    if (m_documentScopeDirty || updateMode == FullStyleUpdate)
         requiresFullStyleRecalc = m_documentStyleSheetCollection.updateActiveStyleSheets(this, updateMode);
 
     if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
-        TreeScopeSet treeScopes = updateMode == FullStyleUpdate ? m_activeTreeScopes : m_dirtyTreeScopes.subscope();
+        TreeScopeSet treeScopes = updateMode == FullStyleUpdate ? m_activeTreeScopes : m_dirtyTreeScopes;
         HashSet<TreeScope*> treeScopesRemoved;
 
         for (TreeScopeSet::iterator it = treeScopes.begin(); it != treeScopes.end(); ++it) {
@@ -409,10 +408,11 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     activeStyleSheetsUpdatedForInspector();
     m_usesRemUnits = m_documentStyleSheetCollection.usesRemUnits();
 
-    if (m_dirtyTreeScopes.isDocumentMarked() || updateMode == FullStyleUpdate)
+    if (m_documentScopeDirty || updateMode == FullStyleUpdate)
         m_document.notifySeamlessChildDocumentsOfStylesheetUpdate();
 
     m_dirtyTreeScopes.clear();
+    m_documentScopeDirty = false;
 
     return requiresFullStyleRecalc;
 }
@@ -570,6 +570,23 @@ void StyleEngine::resetFontSelector()
     } else {
         m_fontSelector = 0;
     }
+}
+
+void StyleEngine::markTreeScopeDirty(TreeScope& scope)
+{
+    if (scope == m_document) {
+        markDocumentDirty();
+        return;
+    }
+
+    m_dirtyTreeScopes.add(&scope);
+}
+
+void StyleEngine::markDocumentDirty()
+{
+    m_documentScopeDirty = true;
+    if (!HTMLImport::isMaster(&m_document))
+        m_document.import()->master()->styleEngine()->markDocumentDirty();
 }
 
 }

@@ -32,7 +32,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
-#include "core/dom/StyleTreeScopeTracker.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -139,7 +138,7 @@ public:
     void combineCSSFeatureFlags(const RuleFeatureSet&);
     void resetCSSFeatureFlags(const RuleFeatureSet&);
 
-    void didModifySeamlessParentStyleSheet() { m_dirtyTreeScopes.markDocument(); }
+    void didModifySeamlessParentStyleSheet() { markDocumentDirty(); }
     void didRemoveShadowRoot(ShadowRoot*);
     void appendActiveAuthorStyleSheets();
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
@@ -173,7 +172,7 @@ public:
     unsigned resolverAccessCount() const;
 
     void collectDocumentActiveStyleSheets(StyleSheetCollectionBase&);
-    void markDocumentDirty() { m_dirtyTreeScopes.markDocument(); }
+    void markDocumentDirty();
 
 private:
     StyleEngine(Document&);
@@ -183,6 +182,8 @@ private:
     void activeStyleSheetsUpdatedForInspector();
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
     void resolverThrowawayTimerFired(Timer<StyleEngine>*);
+
+    void markTreeScopeDirty(TreeScope&);
 
     bool isMaster() const { return m_isMaster; }
     Document* master();
@@ -215,7 +216,8 @@ private:
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> > m_styleSheetCollectionMap;
 
-    StyleTreeScopeTracker m_dirtyTreeScopes;
+    bool m_documentScopeDirty;
+    TreeScopeSet m_dirtyTreeScopes;
     TreeScopeSet m_activeTreeScopes;
 
     String m_preferredStylesheetSetName;
