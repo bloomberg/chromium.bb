@@ -19,6 +19,8 @@ class AutofillDialogViewDelegate;
 
 @class AutofillSectionView;
 @class AutofillSuggestionContainer;
+@class AutofillTextField;
+@class AutofillTooltipController;
 @class LayoutView;
 @class MenuButton;
 @class MenuController;
@@ -48,6 +50,14 @@ class AutofillDialogViewDelegate;
 
   // The view for the container.
   base::scoped_nsobject<AutofillSectionView> view_;
+
+  // Some sections need to show an icon with an associated tooltip. This is the
+  // controller for such an icon. There is at most one such icon per section.
+  base::scoped_nsobject<AutofillTooltipController> tooltipController_;
+
+  // The logical superview for the tooltip icon. Weak pointer, owned by
+  // |inputs_|.
+  AutofillTextField* tooltipField_;
 
   // List of weak pointers, which constitute unique field IDs.
   std::vector<const autofill::DetailInput*> detailInputs_;

@@ -19,7 +19,6 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
 
 @interface AutofillTextFieldCell (Internal)
 
-- (NSRect)iconFrameForFrame:(NSRect)frame;
 - (NSRect)textFrameForFrame:(NSRect)frame;
 
 @end
@@ -52,6 +51,10 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
   // status, swallow those.
   if (!handlingFirstClick_)
     [inputDelegate_ onMouseDown: self];
+}
+
+- (NSRect)decorationFrame {
+  return [[self cell] decorationFrameForFrame:[self frame]];
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -114,6 +117,7 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
 
 @synthesize invalid = invalid_;
 @synthesize defaultValue = defaultValue_;
+@synthesize decorationSize = decorationSize_;
 
 - (void)setInvalid:(BOOL)invalid {
   invalid_ = invalid;
@@ -124,8 +128,9 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
   return icon_;
 }
 
-- (void)setIcon:(NSImage*) icon {
+- (void)setIcon:(NSImage*)icon {
   icon_.reset([icon retain]);
+  [self setDecorationSize:[icon_ size]];
   [[self controlView] setNeedsDisplay:YES];
 }
 
@@ -148,32 +153,34 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
   }
   DCHECK_EQ(originalSize.height, NSHeight(frame));
 
-  if (icon_) {
-    NSRect textFrame, iconFrame;
-    NSDivideRect(frame, &iconFrame, &textFrame,
-                 kGap + [icon_ size].width, NSMaxXEdge);
+  if (decorationSize_.width > 0) {
+    NSRect textFrame, decorationFrame;
+    NSDivideRect(frame, &decorationFrame, &textFrame,
+                 kGap + decorationSize_.width, NSMaxXEdge);
     return textFrame;
   }
   return frame;
 }
 
-- (NSRect)iconFrameForFrame:(NSRect)frame {
-  NSRect iconFrame;
-  if (icon_) {
+- (NSRect)decorationFrameForFrame:(NSRect)frame {
+  NSRect decorationFrame;
+  if (decorationSize_.width > 0) {
     NSRect textFrame;
-    NSDivideRect(frame, &iconFrame, &textFrame,
-                 kGap + [icon_ size].width, NSMaxXEdge);
+    NSDivideRect(frame, &decorationFrame, &textFrame,
+                 kGap + decorationSize_.width, NSMaxXEdge);
+    decorationFrame.size = decorationSize_;
+    decorationFrame.origin.y +=
+        roundf((NSHeight(frame) - NSHeight(decorationFrame)) / 2.0);
   }
-  return iconFrame;
+  return decorationFrame;
 }
 
 - (NSSize)cellSize {
   NSSize cellSize = [super cellSize];
 
-  if (icon_) {
-    NSSize iconSize = [icon_ size];
-    cellSize.width += kGap + iconSize.width;
-    cellSize.height = std::max(cellSize.height, iconSize.height);
+  if (decorationSize_.width > 0) {
+    cellSize.width += kGap + decorationSize_.width;
+    cellSize.height = std::max(cellSize.height, decorationSize_.height);
   }
   cellSize.height = std::max(cellSize.height, kMinimumHeight);
   return cellSize;
@@ -214,10 +221,7 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
   [super drawWithFrame:cellFrame inView:controlView];
 
   if (icon_) {
-    NSRect iconFrame = [self iconFrameForFrame:cellFrame];
-    iconFrame.size = [icon_ size];
-    iconFrame.origin.y +=
-        roundf((NSHeight(cellFrame) - NSHeight(iconFrame)) / 2.0);
+    NSRect iconFrame = [self decorationFrameForFrame:cellFrame];
     [icon_ drawInRect:iconFrame
              fromRect:NSZeroRect
             operation:NSCompositeSourceOver

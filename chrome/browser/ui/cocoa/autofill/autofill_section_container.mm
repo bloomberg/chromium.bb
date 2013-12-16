@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_suggestion_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
@@ -191,6 +192,11 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   [self setView:view_];
   [[self view] setSubviews:
       @[label_, inputs_, [suggestContainer_ view], suggestButton_]];
+  if (tooltipController_) {
+    [[self view] addSubview:[tooltipController_ view]
+                 positioned:NSWindowAbove
+                 relativeTo:inputs_];
+  }
 
   if ([self isCreditCardSection]) {
     // Credit card sections *MUST* have a CREDIT_CARD_VERIFICATION_CODE input.
@@ -258,6 +264,14 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   [inputs_ setHidden:showSuggestions_];
   [[suggestContainer_ view] setHidden:!showSuggestions_];
   [view_ setFrameSize:viewFrame.size];
+  if (tooltipController_) {
+    [[tooltipController_ view] setHidden:showSuggestions_];
+    NSRect tooltipIconFrame = [tooltipField_ decorationFrame];
+    tooltipIconFrame.origin =
+        [[self view] convertPoint:tooltipIconFrame.origin
+                         fromView:[tooltipField_ superview]];
+    [[tooltipController_ view] setFrame:tooltipIconFrame];
+  }
 }
 
 - (KeyEventHandled)keyEvent:(NSEvent*)event forInput:(id)sender {
@@ -598,6 +612,20 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
           [[AutofillTextField alloc] init]);
       [[field cell] setPlaceholderString:
           l10n_util::GetNSStringWithFixup(input.placeholder_text_rid)];
+      NSString* tooltipText =
+          base::SysUTF16ToNSString(delegate_->TooltipForField(input.type));
+      if ([tooltipText length] > 0) {
+        DCHECK(!tooltipController_);
+        DCHECK(!tooltipField_);
+        tooltipController_.reset([[AutofillTooltipController alloc] init]);
+        tooltipField_ = field.get();
+        NSImage* icon =
+            ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+                IDR_AUTOFILL_TOOLTIP_ICON).ToNSImage();
+        [tooltipController_ setImage:icon];
+        [tooltipController_ setMessage:tooltipText];
+        [[field cell] setDecorationSize:[icon size]];
+      }
       [field setDefaultValue:@""];
       control.reset(field.release());
     }

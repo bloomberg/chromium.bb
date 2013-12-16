@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 
 // Text field used for text inputs inside Autofill.
-// Provide both dog ear and red outline when the contents are marked invalid.
+// Provides a red outline when the contents are marked invalid.
 @interface AutofillTextField : NSTextField<AutofillInputField,
                                            NSTextFieldDelegate> {
  @private
@@ -31,6 +31,9 @@
 // editor to the AutofillTextField.
 - (void)onEditorMouseDown:(id)sender;
 
+// Returns the frame reserved for the decoration set on the cell.
+- (NSRect)decorationFrame;
+
 @end
 
 @interface AutofillTextFieldCell : NSTextFieldCell<AutofillInputCell> {
@@ -38,9 +41,18 @@
   BOOL invalid_;
   NSString* defaultValue_;
   base::scoped_nsobject<NSImage> icon_;
+
+  // The size of the decoration for the field. This is most commonly the
+  // |icon_|'s size, but can also be used to reserve space for a decoration that
+  // is not drawn by this cell.
+  NSSize decorationSize_;
 }
 
 @property(nonatomic, retain) NSImage* icon;
+@property(nonatomic, assign) NSSize decorationSize;
+
+// Returns the frame reserved for a decoration of size |decorationSize|.
+- (NSRect)decorationFrameForFrame:(NSRect)frame;
 
 @end
 
