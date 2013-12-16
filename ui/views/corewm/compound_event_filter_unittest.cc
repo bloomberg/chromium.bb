@@ -18,11 +18,11 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 base::TimeDelta GetTime() {
   return ui::EventTimeForNow();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
 
 }
 
@@ -97,7 +97,10 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
+#endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Touch only hides the cursor on ChromeOS and Windows (crbug.com/322250).
 TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
@@ -145,7 +148,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
 
 // Tests that if an event filter consumes a gesture, then it doesn't focus the
 // window.

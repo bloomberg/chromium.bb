@@ -704,10 +704,10 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   env_filter->RemoveHandler(f2.get());
 }
 
-// A keypress and/or touch only hides the cursor on ChromeOS (crbug.com/304296).
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 // We should show and hide the cursor in response to mouse and touch events as
-// requested.
+// requested. ChromeOS and Windows are the only platforms which hide the cursor
+// in response to touch (crbug.com/322250).
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   aura::test::EventGenerator& generator = GetEventGenerator();
   views::corewm::CursorManager* cursor_manager =
@@ -726,7 +726,11 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+// ChromeOS is the only platform for which the cursor is hidden on both
+// touch and keypress (crbug.com/304296).
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   aura::test::EventGenerator& generator = GetEventGenerator();
   views::corewm::CursorManager* cursor_manager =
@@ -810,6 +814,6 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_TRUE(observer_a.is_cursor_visible());
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash
