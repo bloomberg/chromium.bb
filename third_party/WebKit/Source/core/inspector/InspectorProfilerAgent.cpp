@@ -157,6 +157,11 @@ void InspectorProfilerAgent::doEnable()
 
 void InspectorProfilerAgent::disable(ErrorString*)
 {
+    for (Vector<ProfileDescriptor>::const_reverse_iterator it = m_startedProfiles.rbegin(); it != m_startedProfiles.rend(); ++it)
+        m_keepAliveProfile = ScriptProfiler::stop(it->m_id);
+    m_startedProfiles.clear();
+    stop(0, 0);
+
     m_keepAliveProfile.clear();
     m_instrumentingAgents->setInspectorProfilerAgent(0);
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
@@ -185,10 +190,9 @@ void InspectorProfilerAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorProfilerAgent::clearFrontend()
 {
     m_frontend = 0;
-    stop(0, 0);
-    m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
     ErrorString error;
     disable(&error);
+    m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
 void InspectorProfilerAgent::restore()
@@ -208,8 +212,8 @@ void InspectorProfilerAgent::start(ErrorString* error)
     if (m_recordingCPUProfile)
         return;
     if (!enabled()) {
-        ErrorString error;
-        enable(&error);
+        *error = "Profiler is not enabled";
+        return;
     }
     m_recordingCPUProfile = true;
     if (m_overlay)
