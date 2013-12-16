@@ -572,8 +572,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // Account for the 2 optional arguments, start_x and start_y.
     if (args[6]->IsUndefined() || args[7]->IsUndefined()) {
       blink::WebRect rect = context.render_view_impl()->windowRect();
-      gesture_params->anchor.SetPoint(rect.x + rect.width / 2,
-                                      rect.y + rect.height / 2);
+      gesture_params->anchor.SetPoint(rect.width / 2, rect.height / 2);
     } else if (args[6]->IsNumber() && args[7]->IsNumber()) {
       gesture_params->anchor.SetPoint(
           args[6]->IntegerValue() * page_scale_factor,
