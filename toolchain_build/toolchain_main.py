@@ -81,7 +81,6 @@ class PackageBuilder(object):
                 # given by their 'inputs' member
             'dependencies':  # optional
               [<list of package depdenencies>],
-            REPO_SRC_INFO, # optional, legacy (use source targets instead)
             'inputs': # optional
               {<mapping whose keys are names, and whose values are files or
                 directories (e.g. checked-in tarballs) used as input>},
@@ -90,20 +89,8 @@ class PackageBuilder(object):
               # Objects that have a 'skip_for_incremental' attribute that
               # evaluates to True will not be run on incremental builds unless
               # the working directory is empty.
-            'unpack_commands':  # optional, legacy (use source targets instead)
-              [<list of command.Command objects for unpacking inputs
-                before they are hashed>'],
-            'hashed_inputs':  # optional,
-              {<mapping whose keys are names, and whose values are paths of
-                files or directories (relative to the working directory) to use
-                for the build signature>},
           },
         }
-        REPO_SRC_INFO is either:
-         'git_url': '<git repo url>',
-         'git_revision': '<git hex digest to sync>',
-        OR:
-         'tar_src': '<root relative path to source tarball>',
       args: sys.argv[1:] or equivalent.
     """
     self._packages = packages
@@ -135,26 +122,6 @@ class PackageBuilder(object):
       logging.getLogger().setLevel(logging.INFO)
     logging.basicConfig(format='%(levelname)s: %(message)s')
 
-  def SyncPackageGitRepo(self, package):
-    """Sync the git repo specified by a package.
-
-    Args:
-      package: Package name to sync.
-    """
-
-    print >>sys.stderr, '@@@BUILD_STEP sync %s@@@' % package
-    package_info = self._packages[package]
-    url = package_info['git_url']
-    revision = package_info['git_revision']
-    destination = os.path.join(self._options.source, package)
-    logging.info('Syncing %s...' % package)
-    repo_tools.SyncGitRepo(url,
-                           destination,
-                           revision if self._options.pinned else None,
-                           reclone=self._options.clobber_source,
-                           clean=self._options.clobber)
-    logging.info('Done syncing %s.' % package)
-
   def GetOutputDir(self, package):
     # The output dir of source packages is in the source directory, and can be
     # overridden.
@@ -184,16 +151,11 @@ class PackageBuilder(object):
 
     if 'commands' not in package_info:
       raise Exception('package %s does not have any commands' % package)
-    if is_source_target:
-      for key in ('hashed_inputs', 'tar_src', 'git_url',
-                  'git_revision', 'unpack_commands'):
-        if key in package_info:
-          raise Exception('Source package %s must not have %s keys.' %
-                          (package, key))
-      # Source targets do not run when skipping sync.
-      if not self._options.sync_sources:
-        logging.debug('Sync skipped: not running commands for %s' % package)
-        return
+
+    # Source targets do not run when skipping sync.
+    if is_source_target and not self._options.sync_sources:
+      logging.debug('Sync skipped: not running commands for %s' % package)
+      return
 
     print >>sys.stderr, '@@@BUILD_STEP %s (%s)@@@' % (package, type_text)
 
@@ -201,15 +163,13 @@ class PackageBuilder(object):
 
     # Collect a dict of all the inputs.
     inputs = {}
-    # Add in explicit inputs or a tar source or a git source.
+    # Add in explicit inputs.
     if 'inputs' in package_info:
       for key, value in package_info['inputs'].iteritems():
         if key in dependencies:
           raise Exception('key "%s" found in both dependencies and inputs of '
                           'package "%s"' % (key, package))
         inputs[key] = value
-    elif 'tar_src' in package_info:
-      inputs['src'] = os.path.join(ROOT_DIR, package_info['tar_src'])
     else:
       inputs['src'] = os.path.join(self._options.source, package)
     # Add in each dependency by package name.
@@ -231,14 +191,6 @@ class PackageBuilder(object):
       file_tools.RemoveDirectoryIfPresent(output)
       os.mkdir(output)
 
-    # A package may define an alternate set of inputs to be used for
-    # computing the build signature. These are assumed to be in the working
-    # directory.
-    hashed_inputs = package_info.get('hashed_inputs')
-    if hashed_inputs is not None:
-      for key, value in hashed_inputs.iteritems():
-        hashed_inputs[key] = os.path.join(work_dir, value)
-
     commands = package_info.get('commands', [])
     if not self._options.clobber and len(os.listdir(work_dir)) > 0:
       commands = [cmd for cmd in commands if
@@ -248,8 +200,6 @@ class PackageBuilder(object):
     self._build_once.Run(
         package, inputs, output,
         commands=commands,
-        unpack_commands=package_info.get('unpack_commands', []),
-        hashed_inputs=hashed_inputs,
         working_dir=work_dir,
         memoize=not is_source_target,
         signature_file=self._signature_file)
@@ -284,10 +234,6 @@ class PackageBuilder(object):
   def SyncAll(self):
     """Sync all packages selected and their dependencies."""
     file_tools.MakeDirectoryIfAbsent(self._options.source)
-    for target in self._targets:
-      # Only packages using git repos need to be synced.
-      if 'git_url' in self._packages[target]:
-        self.SyncPackageGitRepo(target)
 
   def BuildAll(self):
     """Build all packages selected and their dependencies."""
@@ -359,7 +305,7 @@ class PackageBuilder(object):
     parser.add_option(
         '-y', '--sync', dest='sync_sources',
         default=False, action='store_true',
-        help='Sync git sources and run source target commands')
+        help='Run source target commands')
     parser.add_option(
         '--emit-signatures', dest='emit_signatures',
         help='Write human readable build signature for each step to FILE.',

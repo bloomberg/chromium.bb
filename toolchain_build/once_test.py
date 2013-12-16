@@ -206,37 +206,6 @@ class TestOnce(unittest.TestCase):
                 '%(output)s/out'])])
       self.assertEquals('hello', file_tools.ReadFile(self._output_files[0]))
 
-  def test_UnpackCommands(self):
-    # Test that unpack commnds get run first and hashed_inputs get
-    # used when present.
-    with working_directory.TemporaryWorkingDirectory() as work_dir:
-      self.GenerateTestData('UnpackCommands', work_dir)
-      self._tally = 0
-      def Copy(subst, src, dst):
-        self._tally += 1
-        shutil.copyfile(subst.SubstituteAbsPaths(src),
-                        subst.SubstituteAbsPaths(dst))
-      o = once.Once(
-          storage=fake_storage.FakeStorage(),
-          system_summary='test')
-      alt_inputs = {'input0': os.path.join(work_dir, 'alt_input')}
-      unpack_commands = [command.Runnable(
-          Copy, '%(input0)s/in0', alt_inputs['input0'])]
-      commands = [command.Runnable(
-          Copy, '%(input0)s', '%(output)s/out')]
-      o.Run('test', self._input_dirs, self._output_dirs[0],
-            commands=commands,
-            unpack_commands=unpack_commands,
-            hashed_inputs=alt_inputs)
-      o.Run('test', self._input_dirs, self._output_dirs[1], commands=commands,
-            unpack_commands=unpack_commands,
-            hashed_inputs=alt_inputs)
-      self.assertEquals(file_tools.ReadFile(self._input_files[0]),
-                        file_tools.ReadFile(self._output_files[0]))
-      self.assertEquals(file_tools.ReadFile(self._input_files[0]),
-                        file_tools.ReadFile(self._output_files[1]))
-      self.assertEquals(3, self._tally)
-
   def test_NumCores(self):
     # Test that the core count is substituted. Since we don't know how many
     # cores the test machine will have, just check that it's an integer.

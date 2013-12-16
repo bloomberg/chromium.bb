@@ -186,9 +186,8 @@ class Once(object):
           return True
     return False
 
-  def Run(self, package, inputs, output, commands, unpack_commands=None,
-          hashed_inputs=None, working_dir=None, memoize=True,
-          signature_file=None):
+  def Run(self, package, inputs, output, commands,
+          working_dir=None, memoize=True, signature_file=None):
     """Run an operation once, possibly hitting cache.
 
     Args:
@@ -196,10 +195,6 @@ class Once(object):
       inputs: A dict of names mapped to files that are inputs.
       output: An output directory.
       commands: A list of command.Command objects to run.
-      unpack_commands: A list of command.Command object to run before computing
-                       the build hash. Or None.
-      hashed_inputs: An alternate dict of inputs to use for hashing and after
-                     the packing stage (or None).
       working_dir: Working directory to use, or None for a temp dir.
       memoize: Boolean indicating the the result should be memoized.
       signature_file: File to write human readable build signatures to or None.
@@ -214,18 +209,6 @@ class Once(object):
     nonpath_subst = { 'package': package }
 
     with wdm as work_dir:
-      # Optionally unpack before hashing.
-      if unpack_commands is not None:
-        for command in unpack_commands:
-          paths = inputs.copy()
-          paths['output'] = output
-          subst = substituter.Substituter(work_dir, paths, nonpath_subst)
-          command.Invoke(subst)
-
-      # Use an alternate input set from here on.
-      if hashed_inputs is not None:
-        inputs = hashed_inputs
-
       # Compute the build signature with modified inputs.
       build_signature = self.BuildSignature(
           package, inputs=inputs, commands=commands)
