@@ -365,11 +365,7 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "GenerateStream()";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeDeviceForMediaStream)) {
-    UseFakeDevice();
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeUIForMediaStream)) {
+          switches::kUseFakeUIForMediaStream)) {
     UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy>());
   }
 
@@ -1262,6 +1258,12 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   // and the device managers.
   io_loop_ = base::MessageLoop::current();
   io_loop_->AddDestructionObserver(this);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeDeviceForMediaStream)) {
+    DVLOG(1) << "Using fake device";
+    UseFakeDevice();
+  }
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,
