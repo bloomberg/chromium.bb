@@ -47,7 +47,7 @@ class WTF_EXPORT Partitions {
 public:
     static void initialize();
     static void shutdown();
-    static ALWAYS_INLINE PartitionRoot* getBufferPartition()
+    static ALWAYS_INLINE PartitionRootGeneric* getBufferPartition()
     {
         if (UNLIKELY(!s_initialized))
             initialize();
@@ -56,7 +56,7 @@ public:
 
 private:
     static bool s_initialized;
-    static PartitionAllocator<4096> m_bufferAllocator;
+    static PartitionAllocatorGeneric m_bufferAllocator;
 };
 
 } // namespace WTF

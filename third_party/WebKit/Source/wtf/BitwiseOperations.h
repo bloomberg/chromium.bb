@@ -52,7 +52,7 @@ namespace WTF {
 
 ALWAYS_INLINE uint32_t countLeadingZeros32(uint32_t x)
 {
-    DWORD index;
+    unsigned long index;
     return LIKELY(_BitScanReverse(&index, x)) ? (31 - index) : 32;
 }
 
@@ -61,7 +61,7 @@ ALWAYS_INLINE uint32_t countLeadingZeros32(uint32_t x)
 // MSVC only supplies _BitScanForward64 when building for a 64-bit target.
 ALWAYS_INLINE uint64_t countLeadingZeros64(uint64_t x)
 {
-    DWORD index;
+    unsigned long index;
     return LIKELY(_BitScanReverse64(&index, x)) ? (63 - index) : 64;
 }
 

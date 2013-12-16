@@ -44,7 +44,7 @@ extern void initializeThreading();
 bool s_initialized;
 bool s_shutdown;
 bool Partitions::s_initialized;
-PartitionAllocator<4096> Partitions::m_bufferAllocator;
+PartitionAllocatorGeneric Partitions::m_bufferAllocator;
 
 void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
 {
