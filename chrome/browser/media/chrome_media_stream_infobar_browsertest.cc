@@ -205,27 +205,3 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
                                                kAudioOnlyCallConstraints);
 }
-
-
-// Times out on windows, http://crbug.com/295723 .
-#if defined(OS_WIN)
-#define MAYBE_DenyingMicStillSucceedsWithCameraForAudioVideoCalls \
-        DISABLED_DenyingMicStillSucceedsWithCameraForAudioVideoCalls
-#else
-#define MAYBE_DenyingMicStillSucceedsWithCameraForAudioVideoCalls \
-        DenyingMicStillSucceedsWithCameraForAudioVideoCalls
-#endif
-IN_PROC_BROWSER_TEST_F(
-    MediaStreamInfoBarTest,
-    MAYBE_DenyingMicStillSucceedsWithCameraForAudioVideoCalls) {
-  content::WebContents* tab_contents = LoadTestPageInTab();
-
-  // If microphone blocking also blocked a AV call, the second call here
-  // would hang. The requester should only be granted access to the cam though.
-  GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
-                                             kAudioOnlyCallConstraints);
-  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
-                                               kAudioVideoCallConstraints);
-
-  // TODO(phoglund): verify the requester actually only gets video tracks.
-}

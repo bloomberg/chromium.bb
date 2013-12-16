@@ -84,7 +84,7 @@ function sendToTest(message) {
  */
 function failTest(reason) {
   console.error(reason);
-  sentToTest('Test failed: ' + reason);
+  sendToTest('Test failed: ' + reason);
   return new Error(reason);
 }
 
