@@ -63,6 +63,8 @@ void SVGGElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     if (!isSupportedAttribute(name)) {
         SVGGraphicsElement::parseAttribute(name, value);
         return;
+    } else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
+        return;
     }
 
     ASSERT_NOT_REACHED();
