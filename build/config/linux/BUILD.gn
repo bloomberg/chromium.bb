@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("pkg_config.gni")
+
 # Sets up the dynamic library search path to include our "lib" directory.
 config("executable_ldconfig") {
   ldflags = [
@@ -13,58 +15,31 @@ config("executable_ldconfig") {
   ]
 }
 
-# This script returns a list consisting of two nested lists: the first is the
-# list of cflags, the second are the linker flags.
-pkg_script = "pkg-config.py"
-
 config("fontconfig") {
   libs = [ "fontconfig" ]
 }
 
-config("freetype2") {
-  pkgresult = exec_script(pkg_script, [ "freetype2" ], "value")
-  include_dirs = pkgresult[0]
-  cflags = pkgresult[1]
-  libs = pkgresult[2]
-  lib_dirs = pkgresult[3]
+pkg_config("freetype2") {
+  packages = [ "freetype2" ]
 }
 
-config("glib") {
-  pkgresult = exec_script(pkg_script,
-    [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ], "value" )
-  include_dirs = pkgresult[0]
-  cflags = pkgresult[1]
-  libs = pkgresult[2]
-  lib_dirs = pkgresult[3]
+pkg_config("glib") {
+  packages = [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ]
 }
 
-config("gtk") {
+pkg_config("gtk") {
   # Gtk requires gmodule, but it does not list it as a dependency in some
   # misconfigured systems.
-  pkgresult = exec_script(pkg_script,
-    [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ], "value" )
-  include_dirs = pkgresult[0]
-  cflags = pkgresult[1]
-  libs = pkgresult[2]
-  lib_dirs = pkgresult[3]
-
+  packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
   defines = [ "TOOLKIT_GTK" ]
 }
 
-config("pangocairo") {
-  pkgresult = exec_script(pkg_script, [ "pangocairo" ], "value" )
-  include_dirs = pkgresult[0]
-  cflags = pkgresult[1]
-  libs = pkgresult[2]
-  lib_dirs = pkgresult[3]
+pkg_config("pangocairo") {
+  packages = [ "pangocairo" ]
 }
 
-config("udev") {
-  pkgresult = exec_script(pkg_script, [ "libudev" ], "value" )
-  include_dirs = pkgresult[0]
-  cflags = pkgresult[1]
-  libs = pkgresult[2]
-  lib_dirs = pkgresult[3]
+pkg_config("udev") {
+  packages = [ "libudev" ]
 }
 
 config("x11") {

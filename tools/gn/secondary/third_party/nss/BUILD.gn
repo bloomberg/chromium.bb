@@ -2,15 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pkg_config.gni")
+
 # On Linux we always use the system NSS except for SSL.
 if (is_linux) {
-  pkg_script = "//build/config/linux/pkg-config.py"
-
-  config("nss_linux_config") {
-    pkgresult = exec_script(pkg_script, [ "nss" ], "value")
-    include_dirs = pkgresult[0]
-    cflags = pkgresult[1]
-    libs = pkgresult[2]
-    lib_dirs = pkgresult[3]
+  pkg_config("nss_linux_config") {
+    packages = [ "nss" ]
   }
 }

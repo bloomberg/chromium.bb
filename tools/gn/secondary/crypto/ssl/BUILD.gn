@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("flags.gni")
+import("//build/config/linux/pkg_config.gni")
 
 config("ssl_preprocessor_flags") {
   if (use_openssl) {
@@ -14,14 +15,9 @@ config("ssl_preprocessor_flags") {
 
 # Config for system SSL on Linux.
 if (is_linux && use_system_ssl) {
-  pkg_script = "//build/config/linux/pkg-config.py"
-  config("system_ssl_config") {
+  pkg_config("system_ssl_config") {
+    packages = [ "nss" ]
     defines = [ "USE_SYSTEM_SSL" ]
-    pkgresult = exec_script(pkg_script, [ "nss" ], "value")
-    include_dirs = pkgresult[0]
-    cflags = pkgresult[1]
-    libs = pkgresult[2]
-    lib_dirs = pkgresult[3]
   }
 }
 
