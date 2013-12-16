@@ -25,7 +25,6 @@ const char kFlashPluginSplDescription[] = "FutureSplash Player";
 const size_t kMaxRendererProcessCount = 82;
 const int kMaxSessionHistoryEntries = 50;
 const size_t kMaxTitleChars = 4 * 1024;
-const size_t kMaxURLChars = 2 * 1024 * 1024;
 const size_t kMaxURLDisplayChars = 32 * 1024;
 
 #if defined(GOOGLE_CHROME_BUILD)

@@ -13,6 +13,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_utils.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -59,6 +60,9 @@ int AwBrowserMainParts::PreCreateThreads() {
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_->PreMainMessageLoopRun();
+  // This is needed for WebView Classic backwards compatibility
+  // See crbug.com/298495
+  content::SetMaxURLChars(20 * 1024 * 1024);
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
