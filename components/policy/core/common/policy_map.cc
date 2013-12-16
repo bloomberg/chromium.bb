@@ -11,6 +11,12 @@
 
 namespace policy {
 
+PolicyMap::Entry::Entry()
+    : level(POLICY_LEVEL_RECOMMENDED),
+      scope(POLICY_SCOPE_USER),
+      value(NULL),
+      external_data_fetcher(NULL) {}
+
 void PolicyMap::Entry::DeleteOwnedMembers() {
   delete value;
   value = NULL;

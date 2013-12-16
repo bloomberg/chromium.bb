@@ -23,7 +23,6 @@
       'dependencies': [
         # TODO(tbarzic): Cleanup this list.
         'attestation_proto',
-        'app/policy/cloud_policy_codegen.gyp:policy',
         'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
         'browser_extensions',
         'cert_logger_proto',
@@ -52,6 +51,7 @@
         '../chromeos/ime/input_method.gyp:gencode',
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:onc_component',
+        '../components/components.gyp:policy',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.

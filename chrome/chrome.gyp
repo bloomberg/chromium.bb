@@ -101,7 +101,6 @@
   'conditions': [
     ['OS!="ios"', {
       'includes': [
-        'app/policy/policy_templates.gypi',
         'chrome_browser_extensions.gypi',
         'chrome_dll.gypi',
         'chrome_exe.gypi',
@@ -109,6 +108,7 @@
         'chrome_renderer.gypi',
         'chrome_tests.gypi',
         'chrome_tests_unit.gypi',
+        'policy_templates.gypi',
         '../apps/apps.gypi',
       ],
       'targets': [

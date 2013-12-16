@@ -241,7 +241,7 @@
     ['mac_breakpad_compiled_in==1', {
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad',
-        'app/policy/cloud_policy_codegen.gyp:policy',
+        '../components/components.gyp:policy',
       ],
       'copies': [
         {

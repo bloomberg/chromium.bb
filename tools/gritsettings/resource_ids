@@ -125,7 +125,7 @@
     "structures": [19500],
   },
 
-  "chrome/app/policy/policy_templates.grd": {
+  "components/policy/resources/policy_templates.grd": {
     "structures": [20500],
     "messages": [20510],
   },

@@ -949,7 +949,7 @@
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
-                '../chrome/chrome.gyp:policy_templates',
+                '../chrome/chrome.gyp:pack_policy_templates',
                 '../courgette/courgette.gyp:courgette64',
                 '../chrome/installer/mini_installer.gyp:mini_installer',
                 '../courgette/courgette.gyp:courgette',

@@ -19,7 +19,8 @@ from diffutil import PromptUserToAcceptDiff
 from pretty_print import PrettyPrintNode
 
 HISTOGRAMS_PATH = 'histograms.xml'
-POLICY_TEMPLATES_PATH = '../../../chrome/app/policy/policy_templates.json'
+POLICY_TEMPLATES_PATH =
+    '../../../components/policy/resources/policy_templates.json'
 ENUM_NAME = 'EnterprisePolicies'
 
 class UserError(Exception):

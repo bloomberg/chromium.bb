@@ -97,9 +97,6 @@
             # Dependencies of json_schema
             'components.gyp:json_schema',
 
-            # Dependencies of policy
-            'components.gyp:policy_component',
-
             # Dependencies of precache
             'components.gyp:precache_core',
 
@@ -203,10 +200,9 @@
             }],
             ['configuration_policy==1', {
               'dependencies': [
-                # TODO(joaodasilva): remove this dependency. This is needed to
-                # get the include path for policy_constants.h.
-                '../chrome/app/policy/cloud_policy_codegen.gyp:policy_test_support',
+                'components.gyp:policy_component',
                 'components.gyp:policy_component_test_support',
+                'components.gyp:policy_test_support',
               ],
               'sources': [
                 'policy/core/common/async_policy_provider_unittest.cc',

@@ -253,10 +253,10 @@
             'CHROMIUM_SHORT_NAME': '<(branding)',
           },
           'dependencies': [
+            '../components/components.gyp:chrome_manifest_bundle',
             'helper_app',
             'infoplist_strings_tool',
             'interpose_dependency_shim',
-            'chrome_manifest_bundle',
             # On Mac, make sure we've built chrome_dll, which contains all of
             # the library code with Chromium functionality.
             'chrome_dll',
@@ -476,8 +476,8 @@
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../components/components.gyp:breakpad_component',
+            '../components/components.gyp:policy',
             '../sandbox/sandbox.gyp:sandbox',
-            'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'sources': [
             'app/chrome_breakpad_client.cc',
@@ -584,7 +584,6 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_exe_version.rc',
               ],
               'dependencies': [
-                'app/policy/cloud_policy_codegen.gyp:policy_win64',
                 'chrome_version_resources',
                 'installer_util_nacl_win64',
                 '../base/base.gyp:base_i18n_nacl_win64',
@@ -595,6 +594,7 @@
                 '../breakpad/breakpad.gyp:breakpad_sender_win64',
                 '../components/components.gyp:breakpad_win64',
                 '../chrome/common_constants.gyp:common_constants_win64',
+                '../components/components.gyp:policy_win64',
                 '../components/nacl.gyp:nacl_win64',
                 '../crypto/crypto.gyp:crypto_nacl_win64',
                 '../ipc/ipc.gyp:ipc_win64',

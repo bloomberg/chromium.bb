@@ -433,8 +433,8 @@ void VerifyControlledSettingIndicators(Browser* browser,
 TEST(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   // Verifies that all known policies have a test case in the JSON file.
   // This test fails when a policy is added to
-  // chrome/app/policy/policy_templates.json but a test case is not added to
-  // chrome/test/data/policy/policy_test_cases.json.
+  // components/policy/resources/policy_templates.json but a test case is not
+  // added to chrome/test/data/policy/policy_test_cases.json.
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
 

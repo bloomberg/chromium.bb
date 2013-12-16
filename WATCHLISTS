@@ -447,7 +447,7 @@
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
     },
     'policy_templates': {
-      'filepath': 'chrome/app/policy/policy_templates.json',
+      'filepath': 'components/policy/resources/policy_templates.json',
     },
     'predictors': {
       'filepath': 'predictors',

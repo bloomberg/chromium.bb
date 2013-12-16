@@ -101,7 +101,7 @@
       'type': 'executable',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
-        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
+        '../components/components.gyp:policy',
         '../google_update/google_update.gyp:google_update',
         'chrome_frame.gyp:chrome_frame_utils',
         'chrome_frame_launcher_version_resources',

@@ -10,7 +10,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../chrome/common_constants.gyp:common_constants',
-        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
+        '../components/components.gyp:policy',
       ],
       'include_dirs': [
         '..',

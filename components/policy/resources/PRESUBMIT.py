@@ -26,13 +26,15 @@ def _GetPolicyTemplates(template_path):
   return list(itertools.chain(policies, subpolicies))
 
 def _CheckPolicyTemplatesSyntax(input_api, output_api):
-  filepath = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                    'policy_templates.json')
+  local_path = input_api.PresubmitLocalPath()
+  filepath = input_api.os_path.join(local_path, 'policy_templates.json')
   if any(f.AbsoluteLocalPath() == filepath
          for f in input_api.AffectedFiles()):
     old_sys_path = sys.path
     try:
-      sys.path = [input_api.PresubmitLocalPath()] + sys.path
+      tools_path = input_api.os_path.normpath(
+          input_api.os_path.join(local_path, input_api.os_path.pardir, 'tools'))
+      sys.path = [ tools_path ] + sys.path
       # Optimization: only load this when it's needed.
       import syntax_check_policy_template_json
       checker = syntax_check_policy_template_json.PolicyTemplateChecker()

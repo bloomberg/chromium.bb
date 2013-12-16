@@ -4,10 +4,10 @@ include_rules = [
   "+google_apis",
   "+net",
 
-  # These are generated from components/policy/proto.
+  # These are generated from components/policy/proto and
+  # components/policy/resources/policy_templates.json.
+  "+policy/policy_constants.h",
   "+policy/proto/chrome_extension_policy.pb.h",
-  "+policy/proto/device_management_backend.pb.h",
-
-  # TODO(joaodasilva): move the generation of this protobuf into the component.
   "+policy/proto/cloud_policy.pb.h",
+  "+policy/proto/device_management_backend.pb.h",
 ]

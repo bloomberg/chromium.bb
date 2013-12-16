@@ -28,11 +28,7 @@ class POLICY_EXPORT PolicyMap {
     base::Value* value;
     ExternalDataFetcher* external_data_fetcher;
 
-    Entry()
-        : level(POLICY_LEVEL_RECOMMENDED),
-          scope(POLICY_SCOPE_USER),
-          value(NULL),
-          external_data_fetcher(NULL) {}
+    Entry();
 
     // Deletes all members owned by |this|.
     void DeleteOwnedMembers();

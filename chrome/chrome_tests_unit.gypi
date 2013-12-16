@@ -337,12 +337,12 @@
         }],
         ['configuration_policy==1', {
           'dependencies': [
-            'app/policy/cloud_policy_codegen.gyp:policy_test_support',
             '../components/components.gyp:policy_component_test_support',
+            '../components/components.gyp:policy_test_support',
           ],
           'export_dependent_settings': [
-            'app/policy/cloud_policy_codegen.gyp:policy_test_support',
             '../components/components.gyp:policy_component_test_support',
+            '../components/components.gyp:policy_test_support',
           ],
         }],
         ['safe_browsing!=1', {

@@ -1,7 +1,0 @@
-# TODO(joaodasilva): remove this DEPS exception after moving chrome/app/policy
-# into the component.
-specific_include_rules = {
-  'user_cloud_policy_store_unittest\.cc': [
-    "+policy/policy_constants.h",
-  ],
-}

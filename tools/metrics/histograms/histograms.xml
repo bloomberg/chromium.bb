@@ -23076,7 +23076,8 @@ other types of suffix sets.
 </enum>
 
 <enum name="EnterprisePolicies" type="int">
-<!-- Generated from ../../../chrome/app/policy/policy_templates.json -->
+<!-- Generated from
+     ../../../components/policy/resources/policy_templates.json -->
 
   <int value="1" label="Configure the home page URL"/>
   <int value="2" label="Use New Tab Page as homepage"/>

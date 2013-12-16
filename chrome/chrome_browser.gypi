@@ -2782,8 +2782,8 @@
             'browser/policy/profile_policy_connector_stub.cc',
           ],
           'dependencies': [
-            'app/policy/cloud_policy_codegen.gyp:policy',
             '../components/components.gyp:cloud_policy_proto',
+            '../components/components.gyp:policy',
           ],
           'conditions': [
             ['OS!="android"', {

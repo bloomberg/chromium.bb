@@ -423,7 +423,6 @@
         }],
         ['OS != "ios"', {
           'dependencies': [
-            '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/components.gyp:autofill_content_common',
@@ -496,9 +495,6 @@
             'common/importer/importer_url_row.cc',
             'common/net/url_util.cc',
             'common/spellcheck_common.cc',
-          ],
-          'dependencies!': [
-            '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
           ],
         }],
         ['OS=="win"', {
@@ -576,6 +572,11 @@
             'common/print_messages.cc',
             'common/print_messages.h',
           ]
+        }],
+        ['configuration_policy==1', {
+          'dependencies': [
+            '<(DEPTH)/components/components.gyp:policy',
+          ],
         }],
       ],
       'target_conditions': [

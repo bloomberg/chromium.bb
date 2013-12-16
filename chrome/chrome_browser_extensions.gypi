@@ -1050,7 +1050,7 @@
         }],
         ['configuration_policy==1', {
           'dependencies': [
-            'app/policy/cloud_policy_codegen.gyp:policy',
+            '../components/components.gyp:policy',
           ],
         }, {  # configuration_policy==0
           'sources!': [

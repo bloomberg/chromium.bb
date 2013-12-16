@@ -104,8 +104,8 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../chrome/chrome.gyp:test_support_common',
+        '../components/components.gyp:policy',
         '../net/net.gyp:net',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -667,9 +667,9 @@
       'target_name': 'chrome_frame_ie',
       'type': 'static_library',
       'dependencies': [
-        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
+        '../components/components.gyp:policy',
         '../content/content.gyp:content_common',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
