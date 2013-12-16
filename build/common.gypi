@@ -1862,8 +1862,8 @@
       ['arm_version==6 and android_webview_build==0', {
         'arm_arch%': 'armv6',
         'arm_tune%': '',
-        'arm_fpu%': '',
-        'arm_float_abi%': 'soft',
+        'arm_fpu%': 'vfp',
+        'arm_float_abi%': 'softfp',
         'arm_thumb%': 0,
       }],
       ['arm_version==7 and android_webview_build==0', {
