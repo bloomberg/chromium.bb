@@ -4,20 +4,20 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
 
-#include <set>
-#include <string>
-#include <vector>
-
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
+#include "content/public/browser/render_view_host.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+using extensions::app_file_handler_util::PathAndMimeTypeSet;
+using extensions::Extension;
 using fileapi::FileSystemURL;
 
 namespace extensions {
@@ -122,7 +122,7 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
-  extensions::app_file_handler_util::PathAndMimeTypeSet path_mime_set;
+  PathAndMimeTypeSet path_mime_set;
   std::vector<GURL> file_urls;
   for (size_t i = 0; i < params->file_urls.size(); ++i) {
     std::string mime_type;

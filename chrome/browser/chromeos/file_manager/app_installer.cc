@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
-
-class Profile;
 
 namespace file_manager {
 

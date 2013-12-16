@@ -9,6 +9,9 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "url/gurl.h"
+
 namespace base {
 class FilePath;
 }

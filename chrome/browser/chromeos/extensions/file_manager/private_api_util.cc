@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -14,12 +13,20 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+using content::BrowserThread;
 namespace file_browser_private = extensions::api::file_browser_private;
 
 namespace file_manager {
@@ -206,14 +213,34 @@ void VolumeInfoToVolumeMetadata(
   }
 }
 
-base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,
-                                   Profile* profile,
-                                   const GURL& url) {
+content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher) {
+  if (!dispatcher) {
+    LOG(WARNING) << "No dispatcher";
+    return NULL;
+  }
+  if (!dispatcher->delegate()) {
+    LOG(WARNING) << "No delegate";
+    return NULL;
+  }
+  content::WebContents* web_contents =
+      dispatcher->delegate()->GetAssociatedWebContents();
+  if (!web_contents) {
+    LOG(WARNING) << "No associated tab contents";
+    return NULL;
+  }
+  return web_contents;
+}
+
+base::FilePath GetLocalPathFromURL(
+    content::RenderViewHost* render_view_host,
+    Profile* profile,
+    const GURL& url) {
   DCHECK(render_view_host);
   DCHECK(profile);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(profile, render_view_host);
+      util::GetFileSystemContextForRenderViewHost(
+          profile, render_view_host);
 
   const fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(url));
@@ -245,9 +272,11 @@ void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
     }
   }
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&GetSelectedFileInfoInternal, profile, base::Passed(&params)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetSelectedFileInfoInternal,
+                 profile,
+                 base::Passed(&params)));
 }
 
 }  // namespace util

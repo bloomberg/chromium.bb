@@ -7,7 +7,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_TASKS_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_TASKS_H_
 
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+
+class PrefService;
+
+namespace drive {
+class DriveAppRegistry;
+}
 
 namespace extensions {
 

@@ -6,7 +6,7 @@
 //
 // WHAT ARE FILE TASKS?
 //
-// File tasks are representation of actions that can be performed over the
+// File tasks are representatiosn of actions that can be performed over the
 // currently selected files from Files.app. A task can be either of:
 //
 // 1) Chrome extension or app, registered via "file_handlers" or
@@ -59,7 +59,7 @@
 // WHAT ARE TASK IDS?
 //
 // You may have noticed that "taskId" fields in the above example look
-// awkward. Apparently "taskId" encodes three types of information delimited
+// awakard. Apparently "taskId" encodes three types of information delimited
 // by "|". This is a weird format for something called as an ID.
 //
 // 1) Why are the three types information encoded in this way?
@@ -70,13 +70,13 @@
 //
 // 2) OK, then what are the three types of information encoded here?
 //
-// The task ID encodes the following structure:
+// The task ID encodes the folloing structure:
 //
 //     <app-id>|<task-type>|<task-action-id>
 //
 // <app-id> is either of Chrome Extension/App ID or Drive App ID. For some
 // reason, Chrome Extension/App IDs and Drive App IDs look differently. As of
-// writing, the former looks like "hhaomjibdihmijegdhdafkllkbggdgoj"
+// writing, the fomer looks like "hhaomjibdihmijegdhdafkllkbggdgoj"
 // (Files.app) and the latter looks like "419782477519" (Pixlr Editor).
 //
 // <task-type> is either of

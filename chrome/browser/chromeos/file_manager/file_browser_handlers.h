@@ -17,6 +17,7 @@
 
 class FileBrowserHandler;
 class GURL;
+class PrefService;
 class Profile;
 
 namespace base {
