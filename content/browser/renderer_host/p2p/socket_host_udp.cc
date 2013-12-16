@@ -172,7 +172,8 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
       }
     }
 
-    message_sender_->Send(new P2PMsg_OnDataReceived(id_, recv_address_, data));
+    message_sender_->Send(new P2PMsg_OnDataReceived(
+        id_, recv_address_, data, base::TimeTicks::Now()));
   } else if (result < 0 && !IsTransientError(result)) {
     LOG(ERROR) << "Error when reading from UDP socket: " << result;
     OnError();

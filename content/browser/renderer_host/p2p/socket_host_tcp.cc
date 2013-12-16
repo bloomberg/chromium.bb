@@ -281,7 +281,8 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
     }
   }
 
-  message_sender_->Send(new P2PMsg_OnDataReceived(id_, remote_address_, data));
+  message_sender_->Send(new P2PMsg_OnDataReceived(
+      id_, remote_address_, data, base::TimeTicks::Now()));
 }
 
 // Note: dscp is not actually used on TCP sockets as this point,

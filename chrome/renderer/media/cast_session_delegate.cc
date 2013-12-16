@@ -149,7 +149,8 @@ void CastSessionDelegate::OnError() {
 }
 
 void CastSessionDelegate::OnDataReceived(const net::IPEndPoint& address,
-                                         const std::vector<char>& data) {
+                                         const std::vector<char>& data,
+                                         const base::TimeTicks& timestamp) {
   uint8 *packet_copy = new uint8[data.size()];
   memcpy(packet_copy, &data[0], data.size());
   cast_sender_->packet_receiver()->ReceivedPacket(

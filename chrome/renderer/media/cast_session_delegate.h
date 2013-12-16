@@ -77,7 +77,8 @@ class CastSessionDelegate
   virtual void OnSendComplete() OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnDataReceived(const net::IPEndPoint& address,
-                              const std::vector<char>& data) OVERRIDE;
+                              const std::vector<char>& data,
+                              const base::TimeTicks& timestamp) OVERRIDE;
  private:
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;

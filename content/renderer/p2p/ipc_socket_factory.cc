@@ -70,7 +70,8 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   virtual void OnSendComplete() OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnDataReceived(const net::IPEndPoint& address,
-                              const std::vector<char>& data) OVERRIDE;
+                              const std::vector<char>& data,
+                              const base::TimeTicks& timestamp) OVERRIDE;
 
  private:
   enum InternalState {
@@ -381,7 +382,8 @@ void IpcPacketSocket::OnError() {
 }
 
 void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
-                                     const std::vector<char>& data) {
+                                     const std::vector<char>& data,
+                                     const base::TimeTicks& timestamp) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   talk_base::SocketAddress address_lj;
@@ -392,6 +394,8 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
     return;
   }
 
+  // TODO(mallinath) - Pass timestamp after updating the libjingle.
+  // talk_base::PacketTime packet_time(timestamp.ToInternalValue(), 0);
   SignalReadPacket(this, &data[0], data.size(), address_lj);
 }
 

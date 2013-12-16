@@ -213,7 +213,8 @@ void P2PSocketClientImpl::DeliverOnError() {
 }
 
 void P2PSocketClientImpl::OnDataReceived(const net::IPEndPoint& address,
-                                         const std::vector<char>& data) {
+                                         const std::vector<char>& data,
+                                         const base::TimeTicks& timestamp) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(STATE_OPEN, state_);
   delegate_message_loop_->PostTask(
@@ -221,14 +222,16 @@ void P2PSocketClientImpl::OnDataReceived(const net::IPEndPoint& address,
       base::Bind(&P2PSocketClientImpl::DeliverOnDataReceived,
                  this,
                  address,
-                 data));
+                 data,
+                 timestamp));
 }
 
-void P2PSocketClientImpl::DeliverOnDataReceived(const net::IPEndPoint& address,
-                                                const std::vector<char>& data) {
+void P2PSocketClientImpl::DeliverOnDataReceived(
+  const net::IPEndPoint& address, const std::vector<char>& data,
+  const base::TimeTicks& timestamp) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_)
-    delegate_->OnDataReceived(address, data);
+    delegate_->OnDataReceived(address, data, timestamp);
 }
 
 void P2PSocketClientImpl::Detach() {

@@ -100,7 +100,8 @@ class CONTENT_EXPORT P2PSocketDispatcher
   void OnSendComplete(int socket_id);
   void OnError(int socket_id);
   void OnDataReceived(int socket_id, const net::IPEndPoint& address,
-                      const std::vector<char>& data);
+                      const std::vector<char>& data,
+                      const base::TimeTicks& timestamp);
 
   P2PSocketClientImpl* GetClient(int socket_id);
 

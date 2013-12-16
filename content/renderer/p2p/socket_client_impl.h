@@ -76,7 +76,8 @@ class P2PSocketClientImpl : public P2PSocketClient {
   void OnSendComplete();
   void OnError();
   void OnDataReceived(const net::IPEndPoint& address,
-                      const std::vector<char>& data);
+                      const std::vector<char>& data,
+                      const base::TimeTicks& timestamp);
 
   // Proxy methods that deliver messages to the delegate thread.
   void DeliverOnSocketCreated(const net::IPEndPoint& address);
@@ -86,7 +87,8 @@ class P2PSocketClientImpl : public P2PSocketClient {
   void DeliverOnSendComplete();
   void DeliverOnError();
   void DeliverOnDataReceived(const net::IPEndPoint& address,
-                             const std::vector<char>& data);
+                             const std::vector<char>& data,
+                             const base::TimeTicks& timestamp);
 
   // Scheduled on the IPC thread to finish initialization.
   void DoInit(P2PSocketType type,

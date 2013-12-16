@@ -169,10 +169,11 @@ void P2PSocketDispatcher::OnError(int socket_id) {
 
 void P2PSocketDispatcher::OnDataReceived(
     int socket_id, const net::IPEndPoint& address,
-    const std::vector<char>& data) {
+    const std::vector<char>& data,
+    const base::TimeTicks& timestamp) {
   P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
-    client->OnDataReceived(address, data);
+    client->OnDataReceived(address, data, timestamp);
   }
 }
 
