@@ -39,6 +39,68 @@ const base::char16 kForwardSlash = '/';
 
 namespace {
 
+// Helper class to split + elide text, while respecting UTF16 surrogate pairs.
+class StringSlicer {
+ public:
+  StringSlicer(const base::string16& text,
+               const base::string16& ellipsis,
+               bool elide_in_middle)
+      : text_(text),
+        ellipsis_(ellipsis),
+        elide_in_middle_(elide_in_middle) {
+  }
+
+  // Cuts |text_| to be |length| characters long. If |elide_in_middle_| is true,
+  // the middle of the string is removed to leave equal-length pieces from the
+  // beginning and end of the string; otherwise, the end of the string is
+  // removed and only the beginning remains. If |insert_ellipsis| is true,
+  // then an ellipsis character will be inserted at the cut point.
+  base::string16 CutString(size_t length, bool insert_ellipsis) {
+    const base::string16 ellipsis_text = insert_ellipsis ? ellipsis_
+                                                         : base::string16();
+
+    if (!elide_in_middle_)
+      return text_.substr(0, FindValidBoundaryBefore(length)) + ellipsis_text;
+
+    // We put the extra character, if any, before the cut.
+    const size_t half_length = length / 2;
+    const size_t prefix_length = FindValidBoundaryBefore(length - half_length);
+    const size_t suffix_start_guess = text_.length() - half_length;
+    const size_t suffix_start = FindValidBoundaryAfter(suffix_start_guess);
+    const size_t suffix_length =
+        half_length - (suffix_start_guess - suffix_start);
+    return text_.substr(0, prefix_length) + ellipsis_text +
+           text_.substr(suffix_start, suffix_length);
+  }
+
+ private:
+  // Returns a valid cut boundary at or before |index|.
+  size_t FindValidBoundaryBefore(size_t index) const {
+    DCHECK_LE(index, text_.length());
+    if (index != text_.length())
+      U16_SET_CP_START(text_.data(), 0, index);
+    return index;
+  }
+
+  // Returns a valid cut boundary at or after |index|.
+  size_t FindValidBoundaryAfter(size_t index) const {
+    DCHECK_LE(index, text_.length());
+    if (index != text_.length())
+      U16_SET_CP_LIMIT(text_.data(), 0, index, text_.length());
+    return index;
+  }
+
+  // The text to be sliced.
+  const base::string16& text_;
+
+  // Ellipsis string to use.
+  const base::string16& ellipsis_;
+
+  // If true, the middle of the string will be elided.
+  bool elide_in_middle_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringSlicer);
+};
 
 // Build a path from the first |num_components| elements in |path_elements|.
 // Prepends |path_prefix|, appends |filename|, inserts ellipsis if appropriate.
@@ -87,46 +149,6 @@ base::string16 ElideComponentizedPath(
 }
 
 }  // namespace
-
-StringSlicer::StringSlicer(const base::string16& text,
-             const base::string16& ellipsis,
-             bool elide_in_middle)
-    : text_(text),
-      ellipsis_(ellipsis),
-      elide_in_middle_(elide_in_middle) {
-}
-
-base::string16 StringSlicer::CutString(size_t length, bool insert_ellipsis) {
-  const base::string16 ellipsis_text = insert_ellipsis ? ellipsis_
-                                                       : base::string16();
-
-  if (!elide_in_middle_)
-    return text_.substr(0, FindValidBoundaryBefore(length)) + ellipsis_text;
-
-  // We put the extra character, if any, before the cut.
-  const size_t half_length = length / 2;
-  const size_t prefix_length = FindValidBoundaryBefore(length - half_length);
-  const size_t suffix_start_guess = text_.length() - half_length;
-  const size_t suffix_start = FindValidBoundaryAfter(suffix_start_guess);
-  const size_t suffix_length =
-      half_length - (suffix_start_guess - suffix_start);
-  return text_.substr(0, prefix_length) + ellipsis_text +
-         text_.substr(suffix_start, suffix_length);
-}
-
-size_t StringSlicer::FindValidBoundaryBefore(size_t index) const {
-  DCHECK_LE(index, text_.length());
-  if (index != text_.length())
-    U16_SET_CP_START(text_.data(), 0, index);
-  return index;
-}
-
-size_t StringSlicer::FindValidBoundaryAfter(size_t index) const {
-  DCHECK_LE(index, text_.length());
-  if (index != text_.length())
-    U16_SET_CP_LIMIT(text_.data(), 0, index, text_.length());
-  return index;
-}
 
 base::string16 ElideEmail(const base::string16& email,
                           const FontList& font_list,
@@ -455,8 +477,7 @@ base::string16 ElideText(const base::string16& text,
   // (eliding way too much from a ridiculous string is probably still
   // ridiculous), but we should check other widths for bogus values as well.
   if (current_text_pixel_width <= 0 && !text.empty()) {
-    const base::string16 cut =
-      slicer.CutString(text.length() / 2, insert_ellipsis);
+    const base::string16 cut = slicer.CutString(text.length() / 2, false);
     return ElideText(cut, font_list, available_pixel_width, elide_behavior);
   }
 
@@ -472,23 +493,20 @@ base::string16 ElideText(const base::string16& text,
   size_t hi = text.length() - 1;
   size_t guess;
   for (guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
-    // We check the width of the whole desired string at once to ensure we
+    // We check the length of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
-    // TODO(skanuj) : Handle directionality of ellipsis based on adjacent
-    // characters.  See crbug.com/327963.
     const base::string16 cut = slicer.CutString(guess, insert_ellipsis);
-    const float guess_width = GetStringWidthF(cut, font_list);
-    if (guess_width == available_pixel_width)
-      break;
-    if (guess_width > available_pixel_width) {
-      hi = guess - 1;
-      // Move back if we are on loop terminating condition, and guess is wider
-      // than available.
-      if (hi < lo)
-        lo = hi;
-    } else {
-      lo = guess + 1;
+    const float guess_length = GetStringWidthF(cut, font_list);
+    // Check again that we didn't hit a Pango width overflow. If so, cut the
+    // current string in half and start over.
+    if (guess_length <= 0) {
+      return ElideText(slicer.CutString(guess / 2, false),
+                       font_list, available_pixel_width, elide_behavior);
     }
+    if (guess_length > available_pixel_width)
+      hi = guess - 1;
+    else
+      lo = guess + 1;
   }
 
   return slicer.CutString(guess, insert_ellipsis);
