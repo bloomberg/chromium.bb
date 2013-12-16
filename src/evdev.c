@@ -444,10 +444,11 @@ evdev_configure_device(struct evdev_device *device)
 	unsigned long abs_bits[NBITS(ABS_MAX)];
 	unsigned long rel_bits[NBITS(REL_MAX)];
 	unsigned long key_bits[NBITS(KEY_MAX)];
-	int has_key, has_abs;
+	int has_key, has_abs, has_rel;
 	unsigned int i;
 
 	has_key = 0;
+	has_rel = 0;
 	has_abs = 0;
 	device->caps = 0;
 
@@ -515,7 +516,7 @@ evdev_configure_device(struct evdev_device *device)
 		ioctl(device->fd, EVIOCGBIT(EV_REL, sizeof(rel_bits)),
 		      rel_bits);
 		if (TEST_BIT(rel_bits, REL_X) || TEST_BIT(rel_bits, REL_Y))
-			device->caps |= EVDEV_MOTION_REL;
+			has_rel = 1;
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
 		has_key = 1;
@@ -562,14 +563,14 @@ evdev_configure_device(struct evdev_device *device)
 		return 0;
 	}
 
-	if ((device->caps & (EVDEV_MOTION_ABS | EVDEV_MOTION_REL)) &&
+	if (((device->caps & EVDEV_MOTION_ABS) || has_rel) &&
 	    (device->caps & EVDEV_BUTTON)) {
 		weston_seat_init_pointer(device->seat);
 		device->seat_caps |= EVDEV_SEAT_POINTER;
 		weston_log("input device %s, %s is a pointer caps =%s%s%s\n",
 			   device->devname, device->devnode,
 			   device->caps & EVDEV_MOTION_ABS ? " absolute-motion" : "",
-			   device->caps & EVDEV_MOTION_REL ? " relative-motion": "",
+			   has_rel ? " relative-motion": "",
 			   device->caps & EVDEV_BUTTON ? " button" : "");
 	}
 	if ((device->caps & EVDEV_KEYBOARD)) {
