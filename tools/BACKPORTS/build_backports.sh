@@ -313,6 +313,24 @@ while read name id comment ; do
 	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. LC_ALL=C \$(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
 	END
       fi
+      # The buildbot has become strict in enforcing tag names.
+      # We used to emit STEP_SUCCESS, but it never got added to the annotator.
+      # Dropping the tag in old versions.
+      if [[ "$name" = ppapi1[0-9] ]] || [[ "$name" = ppapi2[0-9] ]] || \
+         [[ "$name" = ppapi30 ]]; then
+          patch -p0 <<-END
+	--- a/buildbot/buildbot_lib.py
+	+++ b/buildbot/buildbot_lib.py
+	@@ -378,7 +378,6 @@ class Step(object):
+	         raise StopBuild()
+	     else:
+	       self.status.ReportPass(self.name)
+	-      print '@@@STEP_SUCCESS@@@'
+
+	     # Suppress any exception that occurred.
+	     return True
+	END
+      fi
       if [[ "$name" = ppapi19 ]] || [[ "$name" = ppapi20 ]]; then
 	  patch -p0 <<-END
 	--- native_client/tools/Makefile
