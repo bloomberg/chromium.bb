@@ -22,7 +22,7 @@ class SharedWorkerRepository : public RenderViewObserver,
   virtual ~SharedWorkerRepository();
 
   // WebSharedWorkerRepositoryClient overrides.
-  virtual blink::WebSharedWorker* createSharedWorker(
+  virtual blink::WebSharedWorkerConnector* createSharedWorkerConnector(
       const blink::WebURL& url,
       const blink::WebString& name,
       DocumentID document_id) OVERRIDE;

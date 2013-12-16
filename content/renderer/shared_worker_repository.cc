@@ -19,7 +19,8 @@ SharedWorkerRepository::SharedWorkerRepository(RenderViewImpl* render_view)
 
 SharedWorkerRepository::~SharedWorkerRepository() {}
 
-blink::WebSharedWorker* SharedWorkerRepository::createSharedWorker(
+blink::WebSharedWorkerConnector*
+SharedWorkerRepository::createSharedWorkerConnector(
     const blink::WebURL& url,
     const blink::WebString& name,
     DocumentID document_id) {

@@ -134,16 +134,6 @@ void WebSharedWorkerProxy::startWorkerContext(
       policy_type, pending_route_id_, script_resource_appcache_id);
 }
 
-void WebSharedWorkerProxy::terminateWorkerContext() {
-  // This API should only be invoked from worker context.
-  NOTREACHED();
-}
-
-void WebSharedWorkerProxy::clientDestroyed() {
-  // This API should only be invoked from worker context.
-  NOTREACHED();
-}
-
 void WebSharedWorkerProxy::connect(blink::WebMessagePortChannel* channel,
                                    ConnectListener* listener) {
   WebMessagePortChannelImpl* webchannel =

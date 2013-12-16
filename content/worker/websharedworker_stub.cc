@@ -110,7 +110,7 @@ void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
         new WebMessagePortChannelImpl(routing_id,
                                       sent_message_port_id,
                                       base::MessageLoopProxy::current().get());
-    impl_->connect(channel, NULL);
+    impl_->connect(channel);
   } else {
     // If two documents try to load a SharedWorker at the same time, the
     // WorkerMsg_Connect for one of the documents can come in before the
