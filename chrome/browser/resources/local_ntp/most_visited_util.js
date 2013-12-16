@@ -84,9 +84,12 @@ function parseQueryParams(location) {
  * @param {string|undefined} ping If specified, a location relative to the
  *     referrer of this iframe, to ping when the link is clicked. Only works if
  *     the referrer is HTTPS.
+ * @param {string|undefined} provider A provider name (max 8 alphanumeric
+ *     characters) used for logging. Undefined if suggestion is not coming from
+ *     the server.
  * @return {HTMLAnchorElement} A new link element.
  */
-function createMostVisitedLink(params, href, title, text, ping) {
+function createMostVisitedLink(params, href, title, text, ping, provider) {
   var styles = getMostVisitedStyles(params, !!text);
   var link = document.createElement('a');
   link.style.color = styles.color;
@@ -96,6 +99,8 @@ function createMostVisitedLink(params, href, title, text, ping) {
   link.href = href;
   if ('pos' in params && isFinite(params.pos)) {
     link.ping = '/log.html?pos=' + params.pos;
+    if (provider)
+      link.ping += '&pr=' + provider;
     // If a ping parameter was specified, add it to the list of pings, relative
     // to the referrer of this iframe, which is the default search provider.
     if (ping) {
@@ -192,7 +197,7 @@ function fillMostVisited(location, fill) {
   if (/^javascript:/i.test(data.url) ||
       /^javascript:/i.test(data.thumbnailUrl) ||
       /^javascript:/i.test(data.thumbnailUrl2) ||
-      (data.provider && !/^[a-z0-9]{0,8}$/i.test(data.provider)))
+      !/^[a-z0-9]{0,8}$/i.test(data.provider))
     return;
   if (data.direction)
     document.body.dir = data.direction;

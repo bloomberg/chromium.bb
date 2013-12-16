@@ -32923,6 +32923,7 @@ other types of suffix sets.
   <group name="server2" label="Suggestions coming from server source 2."/>
   <group name="server3" label="Suggestions coming from server source 3."/>
   <group name="server4" label="Suggestions coming from server source 4."/>
+  <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
 </fieldtrial>
 

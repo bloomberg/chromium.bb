@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/search/iframe_source.h"
 
 // Serves HTML for displaying suggestions using iframes, e.g.
@@ -33,6 +34,19 @@ class MostVisitedIframeSource : public IframeSource {
   virtual std::string GetSource() const OVERRIDE;
 
   virtual bool ServesPath(const std::string& path) const OVERRIDE;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedIframeSourceTest,
+                           LogEndpointIsValidWithProvider);
+
+  // Logs the click on a Most Visited tile for a specific |provider|. Note that
+  // the UMA_HISTOGRAM_ENUMERATION macro cannot be used since it caches the
+  // histogram object at the call site, which will not work in this case.
+  void LogMostVisitedProviderClick(int position, const std::string& provider);
+
+  // Returns the name of the histogram that should be logged for a click to a
+  // specified Most Visited |provider|.
+  static std::string GetHistogramNameForProvider(const std::string& provider);
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedIframeSource);
 };

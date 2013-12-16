@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', function() {
     function showDomainElement() {
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ERROR);
       var link = createMostVisitedLink(
-          params, data.url, data.title, undefined, data.ping);
+          params, data.url, data.title, undefined, data.ping, data.provider);
       var domain = document.createElement('div');
       domain.textContent = data.domain;
       link.appendChild(domain);
@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', function() {
     // externally by the page itself.
     function showEmptyTile() {
       var link = createMostVisitedLink(
-          params, data.url, data.title, undefined, data.ping);
+          params, data.url, data.title, undefined, data.ping, data.provider);
       document.body.appendChild(link);
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
     }
@@ -40,7 +40,7 @@ window.addEventListener('DOMContentLoaded', function() {
         var shadow = document.createElement('span');
         shadow.classList.add('shadow');
         var link = createMostVisitedLink(
-            params, data.url, data.title, undefined, data.ping);
+            params, data.url, data.title, undefined, data.ping, data.provider);
         link.appendChild(shadow);
         link.appendChild(image);
         // We add 'position: absolute' in anticipation that there could be more
