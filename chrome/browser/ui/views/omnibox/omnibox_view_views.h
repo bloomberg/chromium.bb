@@ -109,7 +109,6 @@ class OmniboxViewViews
   virtual int TextWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
   virtual bool IsImeShowingPopup() const OVERRIDE;
-  virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
   // views::TextfieldController:

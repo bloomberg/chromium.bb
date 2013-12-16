@@ -683,10 +683,6 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #endif
 }
 
-int OmniboxViewViews::GetMaxEditWidth(int entry_width) const {
-  return entry_width;
-}
-
 int OmniboxViewViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_NONE;

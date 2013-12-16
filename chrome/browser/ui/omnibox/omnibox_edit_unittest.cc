@@ -81,9 +81,6 @@ class TestingOmniboxView : public OmniboxView {
   virtual int TextWidth() const OVERRIDE { return 0; }
   virtual bool IsImeComposing() const OVERRIDE { return false; }
 #if defined(TOOLKIT_VIEWS)
-  virtual int GetMaxEditWidth(int entry_width) const OVERRIDE {
-    return entry_width;
-  }
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     return 0;
   }

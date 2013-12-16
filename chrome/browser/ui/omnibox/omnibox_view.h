@@ -229,8 +229,6 @@ class OmniboxView {
   virtual bool IsIndicatingQueryRefinement() const;
 
 #if defined(TOOLKIT_VIEWS)
-  virtual int GetMaxEditWidth(int entry_width) const = 0;
-
   // Performs the drop of a drag and drop operation on the view.
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) = 0;
 #endif
