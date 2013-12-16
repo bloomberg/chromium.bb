@@ -809,6 +809,12 @@ void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, bli
     case blink::WebAXEventChildrenChanged:
         eventName = "ChildrenChanged";
         break;
+    case blink::WebAXEventDialogModalHide:
+        eventName = "DialogModalHide";
+        break;
+    case blink::WebAXEventDialogModalShow:
+        eventName = "DialogModalShow";
+        break;
     case blink::WebAXEventFocus:
         eventName = "Focus";
         break;

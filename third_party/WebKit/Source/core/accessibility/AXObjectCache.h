@@ -39,6 +39,7 @@ namespace WebCore {
 class AbstractInlineTextBox;
 class Document;
 class HTMLAreaElement;
+class HTMLDialogElement;
 class Node;
 class Page;
 class RenderObject;
@@ -160,6 +161,8 @@ public:
         AXBlur,
         AXCheckedStateChanged,
         AXChildrenChanged,
+        AXDialogModalHide,
+        AXDialogModalShow,
         AXFocusedUIElementChanged,
         AXHide,
         AXInvalidStatusChanged,
@@ -192,6 +195,9 @@ public:
     void stopCachingComputedObjectAttributes();
 
     AXComputedObjectAttributeCache* computedObjectAttributeCache() { return m_computedObjectAttributeCache.get(); }
+
+    void showModalDialog(HTMLDialogElement*);
+    void hideModalDialog(HTMLDialogElement*);
 
 protected:
     void postPlatformNotification(AXObject*, AXNotification);
