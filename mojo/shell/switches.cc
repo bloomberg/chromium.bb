@@ -7,5 +7,8 @@
 namespace switches {
 
 const char kApp[] = "app";
+// Force dynamically loaded apps / services to be loaded irrespective of cache
+// instructions.
+const char kDisableCache[] = "disable-cache";
 
 }  // namespace switches

@@ -4,7 +4,10 @@
 
 #include "mojo/shell/loader.h"
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/shell/switches.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_delegate.h"
 
 namespace mojo {
@@ -48,6 +51,8 @@ scoped_ptr<Loader::Job> Loader::Load(const GURL& app_url, Delegate* delegate) {
   scoped_ptr<Job> job(new Job(app_url, delegate));
   job->fetcher_->SetRequestContext(url_request_context_getter_.get());
   job->fetcher_->SaveResponseToTemporaryFile(file_runner_.get());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableCache))
+    job->fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   job->fetcher_->Start();
   return job.Pass();
 }

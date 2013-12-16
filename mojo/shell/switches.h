@@ -8,6 +8,7 @@
 namespace switches {
 
 extern const char kApp[];
+extern const char kDisableCache[];
 
 }  // namespace switches
 
