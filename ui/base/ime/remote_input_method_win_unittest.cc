@@ -192,8 +192,8 @@ class MockRemoteInputMethodDelegateWin
 class MockInputMethodObserver : public InputMethodObserver {
  public:
   MockInputMethodObserver()
-    : on_text_input_state_changed_(0),
-      on_input_method_destroyed_changed_(0) {
+      : on_text_input_state_changed_(0),
+        on_input_method_destroyed_changed_(0) {
   }
   virtual ~MockInputMethodObserver() {
   }
