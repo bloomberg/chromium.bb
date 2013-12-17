@@ -143,11 +143,20 @@ class ThreadTimesTimelineMetric(TimelineMetric):
       if thread_category == None:
         thread_category = "other"
 
-      # Sum and add top-level slice durations
-      clock = sum([event.duration for event in thread.toplevel_slices])
-      category_clock_times[thread_category] += clock
-      cpu = sum([event.thread_duration for event in thread.toplevel_slices])
-      category_cpu_times[thread_category] += cpu
+      # Sum top-level durations and thread-durations
+      have_thread_durations = True
+      for event in thread.toplevel_slices:
+        if not event.duration:
+          continue
+        category_clock_times[thread_category] += event.duration
+        if not event.thread_duration == None:
+          category_cpu_times[thread_category] += event.thread_duration
+        else:
+          have_thread_durations = False
+
+      # Only report thread-duration if we have it for all events.
+      if not have_thread_durations:
+        category_cpu_times[thread_category] = 0
 
     # Now report each category. We report the percentage of time that
     # the thread is running rather than absolute time, to represent how
