@@ -582,9 +582,6 @@ TEST(PermissionsTest, CreateDifference) {
 }
 
 TEST(PermissionsTest, IsPrivilegeIncrease) {
-  // Dev channel required by "sockets" feature.
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
-
   const struct {
     const char* base_name;
     bool expect_increase;

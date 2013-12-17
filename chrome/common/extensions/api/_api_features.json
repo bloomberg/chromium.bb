@@ -571,17 +571,14 @@
   },
   "sockets.tcp": {
     "dependencies": ["manifest:sockets"],
-    "channel": "dev",
     "contexts": ["blessed_extension"]
   },
   "sockets.tcpServer": {
     "dependencies": ["manifest:sockets"],
-    "channel": "dev",
     "contexts": ["blessed_extension"]
   },
   "sockets.udp": {
     "dependencies": ["manifest:sockets"],
-    "channel": "dev",
     "contexts": ["blessed_extension"]
   },
   "storage": {
@@ -614,7 +611,6 @@
   },
   "system.network": {
     "dependencies": ["permission:system.network"],
-    "channel": "dev",
     "contexts": ["blessed_extension"]
   },
   "system.storage": {
