@@ -1431,13 +1431,6 @@ void BrowserPluginGuest::OnNavigateGuest(
     int instance_id,
     const std::string& src) {
   GURL url = delegate_ ? delegate_->ResolveURL(src) : GURL(src);
-  // We do not load empty urls in web_contents.
-  // If a guest sets empty src attribute after it has navigated to some
-  // non-empty page, the action is considered no-op. This empty src navigation
-  // should never be sent to BrowserPluginGuest (browser process).
-  DCHECK(!src.empty());
-  if (src.empty())
-    return;
 
   // Do not allow navigating a guest to schemes other than known safe schemes.
   // This will block the embedder trying to load unwanted schemes, e.g.
