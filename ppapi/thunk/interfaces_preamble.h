@@ -21,11 +21,11 @@
 #endif
 
 #ifndef PROXIED_IFACE
-#define PROXIED_IFACE(api_name, iface_str, iface_struct)
+#define PROXIED_IFACE(iface_str, iface_struct)
 #define UNDEFINE_PROXIED_IFACE
 #endif
 
 #ifndef UNPROXIED_IFACE
-#define UNPROXIED_IFACE(api_name, iface_str, iface_struct)
+#define UNPROXIED_IFACE(iface_str, iface_struct)
 #define UNDEFINE_UNPROXIED_IFACE
 #endif

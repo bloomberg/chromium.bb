@@ -113,11 +113,11 @@
 
 bool IsSupportedPepperInterface(const char* name) {
   // TODO(brettw) put these in a hash map for better performance.
-  #define UNPROXIED_IFACE(api_name, iface_str, iface_struct) \
+  #define UNPROXIED_IFACE(iface_str, iface_struct) \
       if (strcmp(name, iface_str) == 0) \
         return true;
-  #define PROXIED_IFACE(api_name, iface_str, iface_struct) \
-      UNPROXIED_IFACE(api_name, iface_str, iface_struct)
+  #define PROXIED_IFACE(iface_str, iface_struct) \
+      UNPROXIED_IFACE(iface_str, iface_struct)
 
   #include "ppapi/thunk/interfaces_ppb_private.h"
   #include "ppapi/thunk/interfaces_ppb_private_flash.h"

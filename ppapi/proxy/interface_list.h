@@ -38,11 +38,6 @@ class InterfaceList {
   static PPAPI_PROXY_EXPORT void SetSupportsDevChannel(
       bool supports_dev_channel);
 
-  // Looks up the ID for the given interface name. Returns API_ID_NONE if
-  // the interface string is not found.
-  ApiID GetIDForPPBInterface(const std::string& name) const;
-  ApiID GetIDForPPPInterface(const std::string& name) const;
-
   // Looks up the factory function for the given ID. Returns NULL if not
   // supported.
   InterfaceProxy::Factory GetFactoryForID(ApiID id) const;
@@ -55,17 +50,14 @@ class InterfaceList {
  private:
   struct InterfaceInfo {
     InterfaceInfo()
-        : id(API_ID_NONE),
-          iface(NULL),
+        : iface(NULL),
           required_permission(PERMISSION_NONE) {
     }
-    InterfaceInfo(ApiID in_id, const void* in_interface, Permission in_perm)
-        : id(in_id),
-          iface(in_interface),
+    InterfaceInfo(const void* in_interface, Permission in_perm)
+        : iface(in_interface),
           required_permission(in_perm) {
     }
 
-    ApiID id;
     const void* iface;
 
     // Permission required to return non-null for this interface. This will
@@ -81,9 +73,8 @@ class InterfaceList {
   // Permissions is the type of permission required to access the corresponding
   // interface. Currently this must be just one unique permission (rather than
   // a bitfield).
-  void AddPPB(const char* name, ApiID id, const void* iface,
-              Permission permission);
-  void AddPPP(const char* name, ApiID id, const void* iface);
+  void AddPPB(const char* name, const void* iface, Permission permission);
+  void AddPPP(const char* name, const void* iface);
 
   // Old-style add functions. These should be removed when the rest of the
   // proxies are converted over to using the new system.

@@ -12,7 +12,7 @@
 //
 //   const PPB_Foo* ppapi::thunk::GetPPB_Foo_Thunk();
 //
-#define IFACE(api_name, interface_name, InterfaceType) \
+#define IFACE(interface_name, InterfaceType) \
   struct InterfaceType; \
   namespace ppapi { namespace thunk { \
   PPAPI_THUNK_EXPORT const InterfaceType* Get##InterfaceType##_Thunk(); \
