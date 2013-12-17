@@ -437,10 +437,10 @@ bool MinidumpGenerator::WriteMinidump(
     breakpad_info.requesting_thread_id = requesting_thread_id;
   }
 
+  int additional_streams_count = additional_streams ?
+      additional_streams->UserStreamCount : 0;
   scoped_array<MINIDUMP_USER_STREAM> user_stream_array(
-      new MINIDUMP_USER_STREAM[3 + additional_streams ?
-                                   additional_streams->UserStreamCount :
-                                   0]);
+      new MINIDUMP_USER_STREAM[3 + additional_streams_count]);
   user_stream_array[0].Type = MD_BREAKPAD_INFO_STREAM;
   user_stream_array[0].BufferSize = sizeof(breakpad_info);
   user_stream_array[0].Buffer = &breakpad_info;
@@ -484,15 +484,17 @@ bool MinidumpGenerator::WriteMinidump(
     ++user_streams.UserStreamCount;
   }
 
-  for (size_t i = 0;
-       additional_streams != NULL, i < additional_streams->UserStreamCount;
-       i++, user_streams.UserStreamCount++) {
-    user_stream_array[user_streams.UserStreamCount].Type =
-        additional_streams->UserStreamArray[i].Type;
-    user_stream_array[user_streams.UserStreamCount].BufferSize =
-        additional_streams->UserStreamArray[i].BufferSize;
-    user_stream_array[user_streams.UserStreamCount].Buffer =
-        additional_streams->UserStreamArray[i].Buffer;
+  if (additional_streams) {
+    for (size_t i = 0;
+         i < additional_streams->UserStreamCount;
+         i++, user_streams.UserStreamCount++) {
+      user_stream_array[user_streams.UserStreamCount].Type =
+          additional_streams->UserStreamArray[i].Type;
+      user_stream_array[user_streams.UserStreamCount].BufferSize =
+          additional_streams->UserStreamArray[i].BufferSize;
+      user_stream_array[user_streams.UserStreamCount].Buffer =
+          additional_streams->UserStreamArray[i].Buffer;
+    }
   }
 
   // If the process is terminated by STATUS_INVALID_HANDLE exception store
