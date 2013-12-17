@@ -139,6 +139,9 @@ message OmniboxEventProto {
     CONTACT = 9;           // The user's contacts
     BOOKMARK = 10;         // The user's bookmarks
     ZERO_SUGGEST = 11;     // Suggestions based on the current page
+    // This enum value is currently only used by Android GSA. It represents
+    // a suggestion from the phone.
+    ON_DEVICE = 12;
   }
 
   // The result set displayed on the completion popup
@@ -149,7 +152,8 @@ message OmniboxEventProto {
 
     // What kind of result this is.
     // This corresponds to the AutocompleteMatch::Type enumeration in
-    // chrome/browser/autocomplete/autocomplete_match.h
+    // chrome/browser/autocomplete/autocomplete_match.h (except for Android
+    // GSA result types).
     enum ResultType {
       UNKNOWN_RESULT_TYPE = 0;    // Unknown type (should not reach here)
       URL_WHAT_YOU_TYPED = 1;     // The input as a URL
@@ -178,6 +182,13 @@ message OmniboxEventProto {
       SEARCH_SUGGEST_PERSONALIZED = 16; // A personalized suggested search.
       SEARCH_SUGGEST_PROFILE = 17; // A personalized suggested search for a
                                    // Google+ profile.      
+      APP_RESULT = 18;             // Result from an installed app
+                                   // (eg: a gmail email).
+                                   // Used by Android GSA for on-device
+                                   // suggestion logging.
+      APP = 19;                    // An app result (eg: the gmail app).
+                                   // Used by Android GSA for on-device
+                                   // suggestion logging.
     }
     optional ResultType result_type = 2;
 
