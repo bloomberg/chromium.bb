@@ -131,6 +131,8 @@ class BuilderRunMock(partial_mock.PartialMock):
 # pylint: disable=E1111,E1120,W0212,R0901,R0904
 class StageTest(cros_test_lib.MoxTempDirTestCase,
                 cros_test_lib.MockTestCase):
+  """Test running a single stage in isolation."""
+
   TARGET_MANIFEST_BRANCH = 'ooga_booga'
   BUILDROOT = 'buildroot'
 
@@ -293,6 +295,7 @@ def patches(*args):
 
 
 class BuilderStageTest(AbstractStageTest):
+  """Tests for BuilderStage class."""
 
   def setUp(self):
     self._Prepare()
@@ -551,13 +554,15 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
 
 
 # pylint: disable=W0223
-class AbstractBuildTest(AbstractStageTest,
-                        cros_build_lib_unittest.RunCommandTestCase):
+class RunCommandAbstractStageTest(AbstractStageTest,
+                                  cros_build_lib_unittest.RunCommandTestCase):
+  """Base test class for testing a stage and mocking RunCommand."""
+
   FULL_BOT_ID = 'x86-generic-full'
   BIN_BOT_ID = 'x86-generic-paladin'
 
   def _Prepare(self, bot_id, **kwargs):
-    super(AbstractBuildTest, self)._Prepare(bot_id, **kwargs)
+    super(RunCommandAbstractStageTest, self)._Prepare(bot_id, **kwargs)
 
   def _PrepareFull(self, **kwargs):
     self._Prepare(self.FULL_BOT_ID, **kwargs)
@@ -571,7 +576,7 @@ class AbstractBuildTest(AbstractStageTest,
       self.RunStage()
 
 
-class InitSDKTest(AbstractBuildTest):
+class InitSDKTest(RunCommandAbstractStageTest):
   """Test building the SDK"""
 
   def ConstructStage(self):
@@ -608,7 +613,7 @@ class InitSDKTest(AbstractBuildTest):
     self.assertCommandContains(['cros_sdk'], expected=False)
 
 
-class SetupBoardTest(AbstractBuildTest):
+class SetupBoardTest(RunCommandAbstractStageTest):
   """Test building the board"""
 
   def ConstructStage(self):
@@ -735,6 +740,8 @@ class SDKStageTest(AbstractStageTest):
 
 
 class VMTestStageTest(AbstractStageTest):
+  """Tests for the VMTest stage."""
+
   BOT_ID = 'x86-generic-full'
   RELEASE_TAG = ''
 
@@ -765,6 +772,8 @@ class VMTestStageTest(AbstractStageTest):
 
 
 class UnitTestStageTest(AbstractStageTest):
+  """Tests for the UnitTest stage."""
+
   BOT_ID = 'x86-generic-full'
 
   def setUp(self):
@@ -823,6 +832,8 @@ class UnitTestStageTest(AbstractStageTest):
 
 
 class HWTestStageTest(AbstractStageTest):
+  """Tests for the HWTest stage."""
+
   BOT_ID = 'x86-mario-release'
   RELEASE_TAG = ''
 
@@ -999,6 +1010,7 @@ class AUTestStageTest(AbstractStageTest,
 
 
 class UprevStageTest(AbstractStageTest):
+  """Tests for the UprevStage class."""
 
   def setUp(self):
     self.mox.StubOutWithMock(commands, 'UprevPackages')
@@ -1327,8 +1339,9 @@ class ArchiveStageTest(AbstractStageTest):
     self.assertFalse(stage._upload_queue.put.called)
 
 
-class UploadPrebuiltsStageTest(AbstractStageTest,
-                               cros_build_lib_unittest.RunCommandTestCase):
+class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
+  """Tests for the UploadPrebuilts stage."""
+
   CMD = './upload_prebuilts'
   RELEASE_TAG = ''
 
@@ -1404,6 +1417,8 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
 
 
 class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
+  """Tests for the UploadDevInstallerPrebuilts stage."""
+
   RELEASE_TAG = 'RT'
 
   def setUp(self):
@@ -1450,6 +1465,7 @@ class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
 
 
 class PublishUprevChangesStageTest(AbstractStageTest):
+  """Tests for the PublishUprevChanges stage."""
 
   def setUp(self):
     self.mox.StubOutWithMock(stages.PublishUprevChangesStage,
@@ -1573,6 +1589,7 @@ class SuicideStage(bs.BuilderStage):
 
 
 class BuildStagesResultsTest(cros_test_lib.TestCase):
+  """Tests for stage results and reporting."""
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
@@ -1582,7 +1599,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
     # Create a class to hold
     class Options(object):
-      pass
+      """Dummy class to hold option values."""
 
     options = Options()
     options.archive_base = 'gs://dontcare'
@@ -1866,6 +1883,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
 
 class ReportStageTest(AbstractStageTest):
+  """Test the Report stage."""
+
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -1926,6 +1945,7 @@ class ReportStageTest(AbstractStageTest):
                        'CQ health alerts emails were not sent.')
 
 class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
+  """Tests option/config settings on board-specific stages."""
 
   def testCheckOptions(self):
     """Makes sure options/config settings are setup correctly."""
@@ -1948,6 +1968,8 @@ class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
 
 
 class MockPatch(mock.MagicMock):
+  """MagicMock for a GerritPatch-like object."""
+
   gerrit_number = '1234'
   patch_number = '1'
   project = 'chromiumos/chromite'
