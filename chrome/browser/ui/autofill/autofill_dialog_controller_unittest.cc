@@ -2625,7 +2625,8 @@ TEST_F(AutofillDialogControllerTest, InputEditability) {
 
 // When the default country is something besides US, wallet is not selected
 // and the account chooser shouldn't be visible.
-TEST_F(AutofillDialogControllerTest, HideWalletInOtherCountries) {
+// TODO(estade): this is disabled until http://crbug.com/323641 is fixed.
+TEST_F(AutofillDialogControllerTest, DISABLED_HideWalletInOtherCountries) {
   ResetControllerWithFormData(DefaultFormData());
   controller()->GetTestingManager()->set_default_country_code("US");
   controller()->Show();
