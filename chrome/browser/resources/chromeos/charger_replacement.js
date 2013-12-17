@@ -129,7 +129,6 @@ cr.define('chargerReplacement', function() {
         break;
       case PAGES.CHARGER_UPDATE:
         setWindowSizeAndCenter(510, 505);
-        $('not-order-charger-checkbox-strip').style.visibility = 'hidden';
         break;
       case PAGES.ORDER_CHARGER_ONLINE:
         $('charger-order-form').src = ORDER_CHARGER_IFRAME_URL;
@@ -314,6 +313,7 @@ cr.define('chargerReplacement', function() {
       chrome.send('confirmSafeCharger');
       chrome.send('DialogClose');
     };
+    $('not-order-charger-checkbox-strip').style.visibility = 'hidden';
     $('back-to-check-charger-from-charger-update').onclick = function() {
       showPage(PAGES.CHECK_CHARGER);
     };
