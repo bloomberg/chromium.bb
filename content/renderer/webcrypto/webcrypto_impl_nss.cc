@@ -202,7 +202,8 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
   }
 }
 
-unsigned int WebCryptoHmacAlgorithmToBlockSize(
+// TODO(eroman): This is duplicated in OpenSSL version.
+unsigned int WebCryptoHmacAlgorithmToBlockSizeBits(
     const blink::WebCryptoAlgorithm& algorithm) {
   DCHECK_EQ(algorithm.id(), blink::WebCryptoAlgorithmIdHmac);
   const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
@@ -668,17 +669,19 @@ bool WebCryptoImpl::GenerateKeyInternal(
       const blink::WebCryptoAesKeyGenParams* params =
           algorithm.aesKeyGenParams();
       DCHECK(params);
-      keylen_bytes = params->length() / 8;
-      if (params->length() % 8)
+      if (params->lengthBits() % 8)
         return false;
+      keylen_bytes = params->lengthBits() / 8;
       key_type = blink::WebCryptoKeyTypeSecret;
       break;
     }
     case blink::WebCryptoAlgorithmIdHmac: {
       const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
       DCHECK(params);
-      if (!params->getLength(keylen_bytes)) {
-        keylen_bytes = WebCryptoHmacAlgorithmToBlockSize(algorithm) / 8;
+      if (params->hasLengthBytes()) {
+        keylen_bytes = params->optionalLengthBytes();
+      } else {
+        keylen_bytes = WebCryptoHmacAlgorithmToBlockSizeBits(algorithm) / 8;
       }
 
       key_type = blink::WebCryptoKeyTypeSecret;
@@ -730,7 +733,7 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
 
       crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
       unsigned long public_exponent;
-      if (!slot || !params->modulusLength() ||
+      if (!slot || !params->modulusLengthBits() ||
           !BigIntegerToLong(params->publicExponent().data(),
                             params->publicExponent().size(),
                             &public_exponent) ||
@@ -739,7 +742,7 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
       }
 
       PK11RSAGenParams rsa_gen_params;
-      rsa_gen_params.keySizeInBits = params->modulusLength();
+      rsa_gen_params.keySizeInBits = params->modulusLengthBits();
       rsa_gen_params.pe = public_exponent;
 
       // Flags are verified at the Blink layer; here the flags are set to all

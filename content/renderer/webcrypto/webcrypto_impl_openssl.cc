@@ -51,7 +51,9 @@ const EVP_CIPHER* GetAESCipherByKeyLength(unsigned key_length_bytes) {
   }
 }
 
-unsigned WebCryptoHmacParamsToBlockSize(
+// TODO(eroman): This is wrong. These constants are bytes not bits. Moreover
+//               this doesn't match the NSS version.
+unsigned WebCryptoHmacParamsToBlockSizeBytes(
     const blink::WebCryptoHmacKeyParams* params) {
   DCHECK(params);
   switch (params->hash().id()) {
@@ -278,9 +280,9 @@ bool WebCryptoImpl::GenerateKeyInternal(
       const blink::WebCryptoAesKeyGenParams* params =
           algorithm.aesKeyGenParams();
       DCHECK(params);
-      if (params->length() % 8)
+      if (params->lengthBits() % 8)
         return false;
-      keylen_bytes = params->length() / 8;
+      keylen_bytes = params->lengthBits() / 8;
       if (!GetAESCipherByKeyLength(keylen_bytes)) {
         return false;
       }
@@ -290,8 +292,10 @@ bool WebCryptoImpl::GenerateKeyInternal(
     case blink::WebCryptoAlgorithmIdHmac: {
       const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
       DCHECK(params);
-      if (!params->getLength(keylen_bytes)) {
-        keylen_bytes = WebCryptoHmacParamsToBlockSize(params);
+      if (params->hasLengthBytes()) {
+        keylen_bytes = params->optionalLengthBytes();
+      } else {
+        keylen_bytes = WebCryptoHmacParamsToBlockSizeBytes(params);
       }
       key_type = blink::WebCryptoKeyTypeSecret;
       break;
