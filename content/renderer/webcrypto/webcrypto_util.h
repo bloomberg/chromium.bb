@@ -45,12 +45,6 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAlgorithm(
     blink::WebCryptoAlgorithmId id);
 
 // Creates an HMAC algorithm whose inner hash algorithm is determined by the
-// specified hash output length. It is an error to call this method with an
-// unsupported hash output length.
-blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashOutputLen(
-    unsigned short hash_output_length_bits);
-
-// Creates an HMAC algorithm whose inner hash algorithm is determined by the
 // specified algorithm ID. It is an error to call this method with a hash
 // algorithm that is not SHA*.
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashId(

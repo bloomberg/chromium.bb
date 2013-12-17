@@ -88,34 +88,6 @@ blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(id, NULL);
 }
 
-blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashOutputLen(
-    unsigned short hash_output_length_bits) {
-  blink::WebCryptoAlgorithmId hash_id;
-  switch (hash_output_length_bits) {
-    case 160:
-      hash_id = blink::WebCryptoAlgorithmIdSha1;
-      break;
-    case 224:
-      hash_id = blink::WebCryptoAlgorithmIdSha224;
-      break;
-    case 256:
-      hash_id = blink::WebCryptoAlgorithmIdSha256;
-      break;
-    case 384:
-      hash_id = blink::WebCryptoAlgorithmIdSha384;
-      break;
-    case 512:
-      hash_id = blink::WebCryptoAlgorithmIdSha512;
-      break;
-    default:
-      NOTREACHED();
-      return blink::WebCryptoAlgorithm::createNull();
-  }
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdHmac,
-      new blink::WebCryptoHmacParams(CreateAlgorithm(hash_id)));
-}
-
 blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashId(
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(IsHashAlgorithm(hash_id));

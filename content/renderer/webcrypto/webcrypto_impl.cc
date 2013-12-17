@@ -56,14 +56,14 @@ class JwkAlgorithmFactoryMap {
  public:
   JwkAlgorithmFactoryMap() {
     map_["HS256"] =
-        &BindAlgFactoryWithKeyLen<webcrypto::CreateHmacAlgorithmByHashOutputLen,
-                                  256>;
+        &BindAlgFactoryAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
+                                   blink::WebCryptoAlgorithmIdSha256>;
     map_["HS384"] =
-        &BindAlgFactoryWithKeyLen<webcrypto::CreateHmacAlgorithmByHashOutputLen,
-                                  384>;
+        &BindAlgFactoryAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
+                                   blink::WebCryptoAlgorithmIdSha384>;
     map_["HS512"] =
-        &BindAlgFactoryWithKeyLen<webcrypto::CreateHmacAlgorithmByHashOutputLen,
-                                  512>;
+        &BindAlgFactoryAlgorithmId<webcrypto::CreateHmacAlgorithmByHashId,
+                                   blink::WebCryptoAlgorithmIdSha512>;
     map_["RS256"] =
         &BindAlgFactoryAlgorithmId<webcrypto::CreateRsaSsaAlgorithm,
                                    blink::WebCryptoAlgorithmIdSha256>;
