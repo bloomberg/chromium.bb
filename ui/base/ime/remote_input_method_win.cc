@@ -313,6 +313,14 @@ class RemoteInputMethodWin : public InputMethod,
 
   virtual void OnCandidatePopupChanged(bool visible) OVERRIDE {
     is_candidate_popup_open_ = visible;
+    if (!text_input_client_)
+      return;
+    // TODO(kochi): Support 'update' case, in addition to show/hide.
+    // http://crbug.com/238585
+    if (visible)
+      text_input_client_->OnCandidateWindowShown();
+    else
+      text_input_client_->OnCandidateWindowHidden();
   }
 
   virtual void OnInputSourceChanged(LANGID langid, bool /*is_ime*/) OVERRIDE {
