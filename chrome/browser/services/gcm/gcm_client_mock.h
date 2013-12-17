@@ -19,8 +19,9 @@ class GCMClientMock : public GCMClient {
 
   // Overridden from GCMClient:
   // Called on IO thread.
-  virtual void CheckIn(const std::string& username,
-                       Delegate* delegate) OVERRIDE;
+  virtual void SetUserDelegate(const std::string& username,
+                               Delegate* delegate) OVERRIDE;
+  virtual void CheckIn(const std::string& username) OVERRIDE;
   virtual void Register(const std::string& username,
                         const std::string& app_id,
                         const std::string& cert,
@@ -40,13 +41,15 @@ class GCMClientMock : public GCMClient {
                       const IncomingMessage& message);
   void DeleteMessages(const std::string& username, const std::string& app_id);
 
-  void set_checkin_failure_enabled(bool checkin_failure_enabled) {
-    checkin_failure_enabled_ = checkin_failure_enabled;
+  void set_simulate_server_error(bool simulate_server_error) {
+    simulate_server_error_ = simulate_server_error;
   }
 
-  CheckInInfo GetCheckInInfoFromUsername(const std::string& username) const;
-  std::string GetRegistrationIdFromSenderIds(
-      const std::vector<std::string>& sender_ids) const;
+  void SetIsLoading(bool is_loading);
+
+  static CheckInInfo GetCheckInInfoFromUsername(const std::string& username);
+  static std::string GetRegistrationIdFromSenderIds(
+      const std::vector<std::string>& sender_ids);
 
  private:
   Delegate* GetDelegate(const std::string& username) const;
@@ -66,12 +69,15 @@ class GCMClientMock : public GCMClient {
   void MessageSendError(std::string username,
                         std::string app_id,
                         std::string message_id);
+  void LoadingCompleted();
 
   std::map<std::string, Delegate*> delegates_;
 
-  // The testing code could set this to force the check-in failure in order to
+  bool is_loading_;
+
+  // The testing code could set this to simulate the server error in order to
   // test the error scenario.
-  bool checkin_failure_enabled_;
+  bool simulate_server_error_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientMock);
 };

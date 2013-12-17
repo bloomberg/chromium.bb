@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/state_store.h"
@@ -89,6 +90,11 @@ class GCMProfileServiceTest : public testing::Test,
         static_cast<Profile*>(profile), gps_testing_delegate_);
   }
 
+  static GCMClient* BuildGCMClient() {
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    return new GCMClientMock();
+  }
+
   GCMProfileServiceTest() : extension_service_(NULL) {
   }
 
@@ -128,8 +134,7 @@ class GCMProfileServiceTest : public testing::Test,
 #endif
 
     // Mock a GCMClient.
-    gcm_client_mock_.reset(new GCMClientMock());
-    GCMClient::SetForTesting(gcm_client_mock_.get());
+    GCMClient::SetTestingFactory(&GCMProfileServiceTest::BuildGCMClient);
 
     // Mock a GCMEventRouter.
     gcm_event_router_mock_.reset(new GCMEventRouterMock(this));
@@ -148,8 +153,6 @@ class GCMProfileServiceTest : public testing::Test,
   }
 
   virtual void TearDown() OVERRIDE {
-    GCMClient::SetForTesting(NULL);
-
 #if defined(OS_CHROMEOS)
     test_user_manager_.reset();
 #endif
@@ -167,10 +170,6 @@ class GCMProfileServiceTest : public testing::Test,
   virtual void CheckInFinished(const GCMClient::CheckInInfo& checkin_info,
                                GCMClient::Result result) OVERRIDE {
     checkin_info_ = checkin_info;
-    SignalCompleted();
-  }
-
-  virtual void LoadingFromPersistentStoreFinished() OVERRIDE {
     SignalCompleted();
   }
 
@@ -224,7 +223,6 @@ class GCMProfileServiceTest : public testing::Test,
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   ExtensionService* extension_service_;  // Not owned.
-  scoped_ptr<GCMClientMock> gcm_client_mock_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<GCMEventRouterMock> gcm_event_router_mock_;
   GCMClient::CheckInInfo checkin_info_;
@@ -239,6 +237,24 @@ class GCMProfileServiceTest : public testing::Test,
   static GCMProfileService::TestingDelegate* gps_testing_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
+};
+
+static GCMClientMock* GetGCMClientMock() {
+  return static_cast<GCMClientMock*>(GCMClient::Get());
+}
+
+class ScopedGCMClientMockSimulateServerError {
+ public:
+  ScopedGCMClientMockSimulateServerError() {
+    GetGCMClientMock()->set_simulate_server_error(true);
+  }
+
+  ~ScopedGCMClientMockSimulateServerError() {
+    GetGCMClientMock()->set_simulate_server_error(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedGCMClientMockSimulateServerError);
 };
 
 GCMProfileService::TestingDelegate*
@@ -281,7 +297,7 @@ TEST_F(GCMProfileServiceTest, CheckIn) {
   EXPECT_TRUE(checkin_info_.IsValid());
 
   GCMClient::CheckInInfo expected_checkin_info =
-      gcm_client_mock_->GetCheckInInfoFromUsername(kTestingUsername);
+      GCMClientMock::GetCheckInInfoFromUsername(kTestingUsername);
   EXPECT_EQ(expected_checkin_info.android_id, checkin_info_.android_id);
   EXPECT_EQ(expected_checkin_info.secret, checkin_info_.secret);
 }
@@ -292,7 +308,9 @@ TEST_F(GCMProfileServiceTest, CheckInFromPrefsStore) {
   GCMClient::CheckInInfo saved_checkin_info = checkin_info_;
   checkin_info_.Reset();
 
-  gcm_client_mock_->set_checkin_failure_enabled(true);
+  // Check-in should not reach the server. Forcing GCMClient server error should
+  // help catch this.
+  ScopedGCMClientMockSimulateServerError gcm_client_simulate_server_error;
 
   // Recreate GCMProfileService to test reading the check-in info from the
   // prefs store.
@@ -374,7 +392,7 @@ TEST_F(GCMProfileServiceRegisterTest, Register) {
   sender_ids.push_back("sender1");
   Register(kTestingAppId, sender_ids);
   std::string expected_registration_id =
-      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
 
   WaitForCompleted();
   EXPECT_FALSE(registration_id_.empty());
@@ -387,7 +405,7 @@ TEST_F(GCMProfileServiceRegisterTest, DoubleRegister) {
   sender_ids.push_back("sender1");
   Register(kTestingAppId, sender_ids);
   std::string expected_registration_id =
-      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
 
   // Calling regsiter 2nd time without waiting 1st one to finish will fail
   // immediately.
@@ -419,7 +437,7 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithSameSenderIDs) {
   sender_ids.push_back("sender2");
   Register(kTestingAppId, sender_ids);
   std::string expected_registration_id =
-      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
 
   WaitForCompleted();
   EXPECT_EQ(expected_registration_id, registration_id_);
@@ -446,7 +464,7 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
   sender_ids.push_back("sender1");
   Register(kTestingAppId, sender_ids);
   std::string expected_registration_id =
-      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
 
   WaitForCompleted();
   EXPECT_EQ(expected_registration_id, registration_id_);
@@ -455,7 +473,7 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
   // Make sender IDs different.
   sender_ids.push_back("sender2");
   std::string expected_registration_id2 =
-      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
 
   // Calling register 2nd time with the different sender IDs will get back a new
   // registration ID.
@@ -467,11 +485,12 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
 
 // http://crbug.com/326321
 #if defined(OS_WIN)
-#define MAYBE_RegisterFromStateStore DISABLED_RegisterFromStateStore
+#define MAYBE_ReadRegistrationFromStateStore \
+    DISABLED_ReadRegistrationFromStateStore
 #else
-#define MAYBE_RegisterFromStateStore RegisterFromStateStore
+#define MAYBE_ReadRegistrationFromStateStore ReadRegistrationFromStateStore
 #endif
-TEST_F(GCMProfileServiceRegisterTest, MAYBE_RegisterFromStateStore) {
+TEST_F(GCMProfileServiceRegisterTest, ReadRegistrationFromStateStore) {
   scoped_refptr<Extension> extension(CreateExtension());
 
   std::vector<std::string> sender_ids;
@@ -483,8 +502,8 @@ TEST_F(GCMProfileServiceRegisterTest, MAYBE_RegisterFromStateStore) {
   EXPECT_EQ(GCMClient::SUCCESS, result_);
   std::string old_registration_id = registration_id_;
 
-  // Clears the results the would be set by the Register callback in preparation
-  // to call register 2nd time.
+  // Clears the results that would be set by the Register callback in
+  // preparation to call register 2nd time.
   registration_id_.clear();
   result_ = GCMClient::UNKNOWN_ERROR;
 
@@ -497,14 +516,59 @@ TEST_F(GCMProfileServiceRegisterTest, MAYBE_RegisterFromStateStore) {
                                       UnloadedExtensionInfo::REASON_TERMINATE);
   extension_service_->AddExtension(extension.get());
 
-  // TODO(jianli): The waiting would be removed once we support delaying running
-  // register operation until the persistent loading completes.
-  WaitForCompleted();
+  // Register should not reach the server. Forcing GCMClient server error should
+  // help catch this.
+  ScopedGCMClientMockSimulateServerError gcm_client_simulate_server_error;
 
   // This should read the registration info from the extension's state store.
-  // There is no need to wait since register returns the registration ID being
-  // read.
+  // We still need to wait since the reading from state store might happen at
+  // the same time.
   Register(extension->id(), sender_ids);
+  WaitForCompleted();
+  EXPECT_EQ(old_registration_id, registration_id_);
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+}
+
+TEST_F(GCMProfileServiceRegisterTest,
+       GCMClientLoadingCompletedAfterReadingRegistration) {
+  scoped_refptr<Extension> extension(CreateExtension());
+
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  Register(extension->id(), sender_ids);
+
+  WaitForCompleted();
+  EXPECT_FALSE(registration_id_.empty());
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+  std::string old_registration_id = registration_id_;
+
+  // Clears the results that would be set by the Register callback in
+  // preparation to call register 2nd time.
+  registration_id_.clear();
+  result_ = GCMClient::UNKNOWN_ERROR;
+
+  // Mark that GCMClient is in loading state.
+  GetGCMClientMock()->SetIsLoading(true);
+
+  // Simulate start-up by recreating GCMProfileService.
+  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+
+  // Simulate start-up by reloading extension.
+  extension_service_->UnloadExtension(extension->id(),
+                                      UnloadedExtensionInfo::REASON_TERMINATE);
+  extension_service_->AddExtension(extension.get());
+
+  // Read the registration info from the extension's state store.
+  // This would hold up because GCMClient is in loading state.
+  Register(extension->id(), sender_ids);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(registration_id_.empty());
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, result_);
+
+  // Register operation will be invoked after GCMClient finishes the loading.
+  GetGCMClientMock()->SetIsLoading(false);
+  WaitForCompleted();
   EXPECT_EQ(old_registration_id, registration_id_);
   EXPECT_EQ(GCMClient::SUCCESS, result_);
 }
@@ -608,7 +672,7 @@ TEST_F(GCMProfileServiceTest, MessageReceived) {
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
-  gcm_client_mock_->ReceiveMessage(kTestingUsername, kTestingAppId, message);
+  GetGCMClientMock()->ReceiveMessage(kTestingUsername, kTestingAppId, message);
   WaitForCompleted();
   EXPECT_EQ(GCMEventRouterMock::MESSAGE_EVENT,
             gcm_event_router_mock_->received_event());
@@ -624,7 +688,7 @@ TEST_F(GCMProfileServiceTest, MessageReceived) {
 }
 
 TEST_F(GCMProfileServiceTest, MessagesDeleted) {
-  gcm_client_mock_->DeleteMessages(kTestingUsername, kTestingAppId);
+  GetGCMClientMock()->DeleteMessages(kTestingUsername, kTestingAppId);
   WaitForCompleted();
   EXPECT_EQ(GCMEventRouterMock::MESSAGES_DELETED_EVENT,
             gcm_event_router_mock_->received_event());

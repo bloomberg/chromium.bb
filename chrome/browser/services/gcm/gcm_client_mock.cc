@@ -25,21 +25,30 @@ uint64 HashToUInt64(const std::string& hash) {
 
 }  // namespace
 
-GCMClientMock::GCMClientMock() : checkin_failure_enabled_(false) {
+GCMClientMock::GCMClientMock()
+    : is_loading_(false),
+      simulate_server_error_(false) {
 }
 
 GCMClientMock::~GCMClientMock() {
 }
 
-void GCMClientMock::CheckIn(const std::string& username, Delegate* delegate) {
+void GCMClientMock::SetUserDelegate(const std::string& username,
+                                    Delegate* delegate) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  DCHECK(delegates_.find(username) == delegates_.end());
-  delegates_[username] = delegate;
+  if (delegate)
+    delegates_[username] = delegate;
+  else
+    delegates_.erase(username);
+}
+
+void GCMClientMock::CheckIn(const std::string& username) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   // Simulate the android_id and secret by some sort of hashing.
   CheckInInfo checkin_info;
-  if (!checkin_failure_enabled_)
+  if (!simulate_server_error_)
     checkin_info = GetCheckInInfoFromUsername(username);
 
   base::MessageLoop::current()->PostTask(
@@ -56,7 +65,9 @@ void GCMClientMock::Register(const std::string& username,
                              const std::vector<std::string>& sender_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  std::string registration_id = GetRegistrationIdFromSenderIds(sender_ids);
+  std::string registration_id;
+  if (!simulate_server_error_)
+    registration_id = GetRegistrationIdFromSenderIds(sender_ids);
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -87,7 +98,7 @@ void GCMClientMock::Send(const std::string& username,
 }
 
 bool GCMClientMock::IsLoading() const {
-  return false;
+  return is_loading_;
 }
 
 void GCMClientMock::ReceiveMessage(const std::string& username,
@@ -118,16 +129,34 @@ void GCMClientMock::DeleteMessages(const std::string& username,
                  app_id));
 }
 
+void GCMClientMock::SetIsLoading(bool is_loading) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (is_loading == is_loading_)
+    return;
+  is_loading_ = is_loading;
+
+  if (is_loading_)
+    return;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GCMClientMock::LoadingCompleted,
+                 base::Unretained(this)));
+}
+
+// static
 GCMClient::CheckInInfo GCMClientMock::GetCheckInInfoFromUsername(
-    const std::string& username) const {
+    const std::string& username) {
   CheckInInfo checkin_info;
   checkin_info.android_id = HashToUInt64(username);
   checkin_info.secret = checkin_info.android_id / 10;
   return checkin_info;
 }
 
+// static
 std::string GCMClientMock::GetRegistrationIdFromSenderIds(
-    const std::vector<std::string>& sender_ids) const {
+    const std::vector<std::string>& sender_ids) {
   // Simulate the registration_id by concaternating all sender IDs.
   // Set registration_id to empty to denote an error if sender_ids contains a
   // hint.
@@ -196,6 +225,14 @@ void GCMClientMock::MessageSendError(std::string username,
                                      std::string app_id,
                                      std::string message_id) {
   GetDelegate(username)->OnMessageSendError(app_id, message_id, NETWORK_ERROR);
+}
+
+void GCMClientMock::LoadingCompleted() {
+  for (std::map<std::string, Delegate*>::const_iterator iter =
+           delegates_.begin();
+       iter != delegates_.end(); ++iter) {
+    iter->second->OnLoadingCompleted();
+  }
 }
 
 }  // namespace gcm

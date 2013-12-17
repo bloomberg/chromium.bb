@@ -13,6 +13,7 @@ namespace {
 
 static base::LazyInstance<GCMClientImpl>::Leaky g_gcm_client =
     LAZY_INSTANCE_INITIALIZER;
+static GCMClient::TestingFactoryFunction g_gcm_client_factory = NULL;
 static GCMClient* g_gcm_client_override = NULL;
 
 }  // namespace
@@ -34,12 +35,20 @@ GCMClient::IncomingMessage::~IncomingMessage() {
 GCMClient* GCMClient::Get() {
   if (g_gcm_client_override)
     return g_gcm_client_override;
+  if (g_gcm_client_factory) {
+    g_gcm_client_override = g_gcm_client_factory();
+    return g_gcm_client_override;
+  }
   return g_gcm_client.Pointer();
 }
 
 // static
-void GCMClient::SetForTesting(GCMClient* client) {
-  g_gcm_client_override = client;
+void GCMClient::SetTestingFactory(TestingFactoryFunction factory) {
+  if (g_gcm_client_override) {
+    delete g_gcm_client_override;
+    g_gcm_client_override = NULL;
+  }
+  g_gcm_client_factory = factory;
 }
 
 }  // namespace gcm

@@ -16,8 +16,9 @@ class GCMClientImpl : public GCMClient {
   virtual ~GCMClientImpl();
 
   // Overridden from GCMClient:
-  virtual void CheckIn(const std::string& username,
-                       Delegate* delegate) OVERRIDE;
+  virtual void SetUserDelegate(const std::string& username,
+                               Delegate* delegate) OVERRIDE;
+  virtual void CheckIn(const std::string& username) OVERRIDE;
   virtual void Register(const std::string& username,
                         const std::string& app_id,
                         const std::string& cert,
