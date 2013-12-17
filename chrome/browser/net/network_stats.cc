@@ -885,10 +885,6 @@ void CollectNetworkStats(const std::string& network_stats_server,
       probability_per_group = kDivisor / 100;
     }
 
-    // TODO(rtenneti): Enable the experiment after fixing
-    // issue http://crbug.com/273917.
-    probability_per_group = 0;
-
     // After July 31, 2014 builds, it will always be in default group
     // (disable_network_stats).
     trial = base::FieldTrialList::FactoryGetFieldTrial(
