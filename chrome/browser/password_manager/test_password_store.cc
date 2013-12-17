@@ -70,6 +70,7 @@ void TestPasswordStore::RemoveLoginImpl(const autofill::PasswordForm& form) {
 
 void TestPasswordStore::GetLoginsImpl(
     const autofill::PasswordForm& form,
+    PasswordStore::AuthorizationPromptPolicy prompt_policy,
     const PasswordStore::ConsumerCallbackRunner& runner) {
   std::vector<autofill::PasswordForm*> matched_forms;
   std::vector<autofill::PasswordForm> forms =

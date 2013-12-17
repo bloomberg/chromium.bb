@@ -38,6 +38,7 @@ class PasswordStoreWin : public PasswordStoreDefault {
 
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
+      AuthorizationPromptPolicy prompt_policy,
       const ConsumerCallbackRunner& callback_runner) OVERRIDE;
 
   void GetIE7LoginIfNecessary(

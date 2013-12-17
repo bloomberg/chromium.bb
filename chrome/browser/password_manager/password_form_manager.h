@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -19,7 +20,6 @@ class WebContents;
 }  // namespace content
 
 class PasswordManager;
-class PasswordStore;
 class Profile;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
@@ -55,7 +55,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
                   ActionMatch action_match) const;
 
   // Retrieves potential matching logins from the database.
-  void FetchMatchingLoginsFromPasswordStore();
+  // |prompt_policy| indicates whether it's permissible to prompt the user to
+  // authorize access to locked passwords. This argument is only used on
+  // platforms that support prompting the user for access (such as Mac OS).
+  void FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::AuthorizationPromptPolicy prompt_policy);
 
   // Simple state-check to verify whether this object as received a callback
   // from the PasswordStore and completed its matching phase. Note that the

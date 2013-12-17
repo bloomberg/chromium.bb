@@ -49,8 +49,10 @@ class TestPasswordStore : public PasswordStore {
   virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void UpdateLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
-  virtual void GetLoginsImpl(const autofill::PasswordForm& form,
-                             const ConsumerCallbackRunner& runner) OVERRIDE;
+  virtual void GetLoginsImpl(
+      const autofill::PasswordForm& form,
+      PasswordStore::AuthorizationPromptPolicy prompt_policy,
+      const ConsumerCallbackRunner& runner) OVERRIDE;
   virtual bool ScheduleTask(const base::Closure& task) OVERRIDE;
   virtual void WrapModificationTask(base::Closure task) OVERRIDE;
 

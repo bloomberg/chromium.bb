@@ -196,9 +196,10 @@ void PasswordStoreWin::GetIE7LoginIfNecessary(
 
 void PasswordStoreWin::GetLoginsImpl(
     const PasswordForm& form,
+    AuthorizationPromptPolicy prompt_policy,
     const ConsumerCallbackRunner& callback_runner) {
   ConsumerCallbackRunner get_ie7_login =
       base::Bind(&PasswordStoreWin::GetIE7LoginIfNecessary,
                  this, form, callback_runner);
-  PasswordStoreDefault::GetLoginsImpl(form, get_ie7_login);
+  PasswordStoreDefault::GetLoginsImpl(form, prompt_policy, get_ie7_login);
 }

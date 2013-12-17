@@ -326,7 +326,14 @@ void PasswordManager::OnPasswordFormsParsed(
                                 *iter,
                                 ssl_valid);
     pending_login_managers_.push_back(manager);
-    manager->FetchMatchingLoginsFromPasswordStore();
+
+    // Avoid prompting the user for access to a password if they don't have
+    // password saving enabled.
+    PasswordStore::AuthorizationPromptPolicy prompt_policy =
+        *password_manager_enabled_ ? PasswordStore::ALLOW_PROMPT
+                                   : PasswordStore::DISALLOW_PROMPT;
+
+    manager->FetchMatchingLoginsFromPasswordStore(prompt_policy);
   }
 }
 

@@ -361,7 +361,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
       profile(), &password_manager, *observed_form(), false));
 
   password_store->AddLogin(*saved_match());
-  manager->FetchMatchingLoginsFromPasswordStore();
+  manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
   content::RunAllPendingInMessageLoop();
 
   // The saved match has the right username already.
@@ -394,7 +394,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
       profile(), &password_manager, *observed_form(), false));
   password_store->Clear();
   password_store->AddLogin(*saved_match());
-  manager->FetchMatchingLoginsFromPasswordStore();
+  manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
   content::RunAllPendingInMessageLoop();
 
   base::string16 new_username = saved_match()->other_possible_usernames[0];

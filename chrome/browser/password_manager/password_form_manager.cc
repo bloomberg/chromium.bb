@@ -254,7 +254,8 @@ void PasswordFormManager::Save() {
     UpdateLogin();
 }
 
-void PasswordFormManager::FetchMatchingLoginsFromPasswordStore() {
+void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
+    PasswordStore::AuthorizationPromptPolicy prompt_policy) {
   DCHECK_EQ(state_, PRE_MATCHING_PHASE);
   state_ = MATCHING_PHASE;
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
@@ -263,7 +264,7 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore() {
     NOTREACHED();
     return;
   }
-  password_store->GetLogins(observed_form_, this);
+  password_store->GetLogins(observed_form_, prompt_policy, this);
 }
 
 bool PasswordFormManager::HasCompletedMatching() {

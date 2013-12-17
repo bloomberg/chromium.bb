@@ -49,6 +49,13 @@ class PasswordStore
       void(Handle, const std::vector<autofill::PasswordForm*>&)>
       GetLoginsCallback;
 
+  // Whether or not it's acceptable for Chrome to request access to locked
+  // passwords, which requires prompting the user for permission.
+  enum AuthorizationPromptPolicy {
+    ALLOW_PROMPT,
+    DISALLOW_PROMPT
+  };
+
   // PasswordForm vector elements are meant to be owned by the
   // PasswordStoreConsumer. However, if the request is canceled after the
   // allocation, then the request must take care of the deletion.
@@ -107,9 +114,14 @@ class PasswordStore
 
   // Searches for a matching PasswordForm and returns a ID so the async request
   // can be tracked. Implement the PasswordStoreConsumer interface to be
-  // notified on completion.
+  // notified on completion. |prompt_policy| indicates whether it's permissible
+  // to prompt the user to authorize access to locked passwords. This argument
+  // is only used on platforms that support prompting the user for access (such
+  // as Mac OS). NOTE: This means that this method can return different results
+  // depending on the value of |prompt_policy|.
   virtual CancelableTaskTracker::TaskId GetLogins(
       const autofill::PasswordForm& form,
+      AuthorizationPromptPolicy prompt_policy,
       PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
@@ -183,6 +195,7 @@ class PasswordStore
   // (or not), the consumer should be notified.
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
+      AuthorizationPromptPolicy prompt_policy,
       const ConsumerCallbackRunner& callback_runner) = 0;
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.

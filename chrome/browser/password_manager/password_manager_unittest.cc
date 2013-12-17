@@ -200,8 +200,8 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   // Test that observing a newly submitted form shows the save password bar.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -232,8 +232,8 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // user generating the password through the browser.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -266,8 +266,8 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   existing_different->username_value = ASCIIToUTF16("google2");
   result.push_back(existing_different);
   EXPECT_CALL(delegate_, FillPasswordForm(_));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
 
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
@@ -296,8 +296,8 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
 TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -317,8 +317,8 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
   // password infobar.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -353,8 +353,8 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
 TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   PasswordForm first_form(MakeSimpleForm());
   first_form.origin = GURL("http://www.nytimes.com/");
   first_form.action = GURL("https://myaccount.nytimes.com/auth/login");
@@ -405,8 +405,8 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
 TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -426,8 +426,8 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   // page, but is invisible, it shouldn't count as a failed login.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -459,8 +459,8 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   PasswordForm* existing = new PasswordForm(MakeSimpleForm());
   result.push_back(existing);
   EXPECT_CALL(delegate_, FillPasswordForm(_));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -494,8 +494,9 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
                            Value::CreateBooleanValue(false));
   EXPECT_CALL(delegate_, FillPasswordForm(_));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(),
+              GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))
+      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -507,8 +508,8 @@ TEST_F(PasswordManagerTest, FormNotSavedAutocompleteOff) {
   // autocomplete=off.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   form.password_autocomplete_set = false;
@@ -535,8 +536,8 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   // autocomplete=off.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   form.password_autocomplete_set = false;
@@ -575,8 +576,8 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   // means that our previous login attempt failed.
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(0);
-  EXPECT_CALL(*store_.get(), GetLogins(_, _))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm login_form(MakeTwitterLoginForm());
   observed.push_back(login_form);

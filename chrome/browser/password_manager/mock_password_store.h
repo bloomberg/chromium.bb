@@ -21,9 +21,11 @@ class MockPasswordStore : public PasswordStore {
       content::BrowserContext* profile);
 
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
-  MOCK_METHOD2(GetLogins,
-               CancelableTaskTracker::TaskId(const autofill::PasswordForm&,
-                                             PasswordStoreConsumer*));
+  MOCK_METHOD3(GetLogins,
+      CancelableTaskTracker::TaskId(
+          const autofill::PasswordForm&,
+          PasswordStore::AuthorizationPromptPolicy prompt_policy,
+          PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD0(ReportMetrics, void());
@@ -33,8 +35,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(RemoveLoginImpl, void(const autofill::PasswordForm&));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl, void(const base::Time&,
                const base::Time&));
-  MOCK_METHOD2(GetLoginsImpl,
+  MOCK_METHOD3(GetLoginsImpl,
                void(const autofill::PasswordForm& form,
+                    PasswordStore::AuthorizationPromptPolicy prompt_policy,
                     const ConsumerCallbackRunner& callback_runner));
   MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));

@@ -1117,7 +1117,7 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
       QuitUIMessageLoop());
   EXPECT_CALL(consumer, OnGetPasswordStoreResults(_)).WillOnce(
       DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
-  store_->GetLogins(*joint_form, &consumer);
+  store_->GetLogins(*joint_form, PasswordStore::ALLOW_PROMPT, &consumer);
   base::MessageLoop::current()->Run();
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);

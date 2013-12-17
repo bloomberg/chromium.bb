@@ -53,6 +53,7 @@ class PasswordStoreMac : public PasswordStore {
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
+      AuthorizationPromptPolicy prompt_policy,
       const ConsumerCallbackRunner& callback_runner) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;

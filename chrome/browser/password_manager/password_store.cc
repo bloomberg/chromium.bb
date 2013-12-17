@@ -120,6 +120,7 @@ void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
 
 CancelableTaskTracker::TaskId PasswordStore::GetLogins(
     const PasswordForm& form,
+    AuthorizationPromptPolicy prompt_policy,
     PasswordStoreConsumer* consumer) {
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
@@ -149,8 +150,8 @@ CancelableTaskTracker::TaskId PasswordStore::GetLogins(
                  is_canceled_cb,
                  consumer,
                  ignore_logins_cutoff);
-  ScheduleTask(
-      base::Bind(&PasswordStore::GetLoginsImpl, this, form, callback_runner));
+  ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl,
+                          this, form, prompt_policy, callback_runner));
   return id;
 }
 

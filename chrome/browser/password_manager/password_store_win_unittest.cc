@@ -236,7 +236,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
               OnGetPasswordStoreResults(ContainsAllPasswordForms(forms)))
       .WillOnce(QuitUIMessageLoop());
 
-  store_->GetLogins(*form, &consumer);
+  store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &consumer);
   base::MessageLoop::current()->Run();
 
   STLDeleteElements(&forms);
@@ -263,7 +263,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
   MockPasswordStoreConsumer consumer;
-  store_->GetLogins(*form, &consumer);
+  store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &consumer);
 
   // Release the PSW and the WDS before the query can return.
   store_->ShutdownOnUIThread();
@@ -331,7 +331,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
               OnGetPasswordStoreResults(ContainsAllPasswordForms(forms)))
       .WillOnce(QuitUIMessageLoop());
 
-  store_->GetLogins(*form, &password_consumer);
+  store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &password_consumer);
 
   MockWebDataServiceConsumer wds_consumer;
 
@@ -381,7 +381,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
               OnGetPasswordStoreResults(ContainsAllPasswordForms(expect_none)))
       .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
 
-  store_->GetLogins(*form, &consumer);
+  store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &consumer);
   base::MessageLoop::current()->Run();
 }
 
