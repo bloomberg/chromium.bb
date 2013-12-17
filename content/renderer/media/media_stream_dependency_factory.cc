@@ -1017,7 +1017,8 @@ bool MediaStreamDependencyFactory::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MediaStreamDependencyFactory, message)
-    IPC_MESSAGE_HANDLER(MediaStreamMsg_AecDumpFile, OnAecDumpFile)
+    IPC_MESSAGE_HANDLER(MediaStreamMsg_EnableAecDump, OnAecDumpFile)
+    IPC_MESSAGE_HANDLER(MediaStreamMsg_DisableAecDump, OnDisableAecDump)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1028,6 +1029,12 @@ void MediaStreamDependencyFactory::OnAecDumpFile(
   DCHECK_EQ(aec_dump_file_, base::kInvalidPlatformFileValue);
   aec_dump_file_ = IPC::PlatformFileForTransitToPlatformFile(file_handle);
   DCHECK_NE(aec_dump_file_, base::kInvalidPlatformFileValue);
+}
+
+void MediaStreamDependencyFactory::OnDisableAecDump() {
+  if (aec_dump_file_ != base::kInvalidPlatformFileValue)
+    base::ClosePlatformFile(aec_dump_file_);
+  aec_dump_file_ = base::kInvalidPlatformFileValue;
 }
 
 }  // namespace content

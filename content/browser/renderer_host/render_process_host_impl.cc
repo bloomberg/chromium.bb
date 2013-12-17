@@ -148,6 +148,7 @@
 #endif
 
 #if defined(ENABLE_WEBRTC)
+#include "content/browser/media/webrtc_internals.h"
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
 #include "content/common/media/media_stream_messages.h"
 #endif
@@ -198,11 +199,9 @@ void GetContexts(
 // Creates a file used for diagnostic echo canceller recordings for handing
 // over to the renderer.
 IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
+    base::FilePath file_path,
     base::ProcessHandle process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath file_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kEnableWebRtcAecRecordings);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::PlatformFile aec_dump_file = base::CreatePlatformFile(
       file_path,
@@ -1506,6 +1505,20 @@ void RenderProcessHostImpl::ResumeRequestsForView(int route_id) {
   widget_helper_->ResumeRequestsForView(route_id);
 }
 
+#if defined(ENABLE_WEBRTC)
+void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateAecDumpFileForProcess, file, GetHandle()),
+      base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void RenderProcessHostImpl::DisableAecDump() {
+  Send(new MediaStreamMsg_DisableAecDump());
+}
+#endif
+
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
 }
@@ -1899,14 +1912,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   }
 
 #if defined(ENABLE_WEBRTC)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebRtcAecRecordings)) {
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CreateAecDumpFileForProcess, GetHandle()),
-        base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
-                   weak_factory_.GetWeakPtr()));
-  }
+  if (WebRTCInternals::GetInstance()->aec_dump_enabled())
+    EnableAecDump(WebRTCInternals::GetInstance()->aec_dump_file_path());
 #endif
 }
 
@@ -1957,7 +1964,7 @@ void RenderProcessHostImpl::SendAecDumpFileToRenderer(
     IPC::PlatformFileForTransit file_for_transit) {
   if (file_for_transit == IPC::InvalidPlatformFileForTransit())
     return;
-  Send(new MediaStreamMsg_AecDumpFile(file_for_transit));
+  Send(new MediaStreamMsg_EnableAecDump(file_for_transit));
 }
 #endif
 

@@ -4,12 +4,16 @@
 
 #include "content/browser/media/webrtc_internals.h"
 
+#include "base/command_line.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
+#include "content/public/common/content_switches.h"
 
 using base::ProcessId;
 using std::string;
@@ -30,11 +34,32 @@ static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 
 }  // namespace
 
-WebRTCInternals::WebRTCInternals() : is_recording_rtp_(false) {
+WebRTCInternals::WebRTCInternals()
+    : is_recording_rtp_(false),
+      aec_dump_enabled_(false) {
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
-
   BrowserChildProcessObserver::Add(this);
+// TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
+// build if WebRTC is disabled?
+#if defined(ENABLE_WEBRTC)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcAecRecordings)) {
+    aec_dump_enabled_ = true;
+    aec_dump_file_path_ = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        switches::kEnableWebRtcAecRecordings);
+  } else {
+#if defined(OS_CHROMEOS)
+    aec_dump_file_path_ =
+        base::FilePath(FILE_PATH_LITERAL("/tmp/audio.aecdump"));
+#elif defined(OS_ANDROID)
+    aec_dump_file_path_ =
+        base::FilePath(FILE_PATH_LITERAL("/sdcard/audio.aecdump"));
+#else
+    aec_dump_file_path_ = base::FilePath(FILE_PATH_LITERAL("audio.aecdump"));
+#endif
+  }
+#endif  // defined(ENABLE_WEBRTC)
 }
 
 WebRTCInternals::~WebRTCInternals() {
@@ -162,6 +187,11 @@ void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver *observer) {
 void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
+
+  // Disables the AEC recording if it is enabled and the last webrtc-internals
+  // page is going away.
+  if (aec_dump_enabled_ && !observers_.might_have_observers())
+    DisableAecDump();
 }
 
 void WebRTCInternals::SendAllUpdates() {
@@ -181,6 +211,32 @@ void WebRTCInternals::StopRtpRecording() {
     is_recording_rtp_ = false;
     // TODO(justinlin): stop RTP recording.
   }
+}
+
+void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
+#if defined(ENABLE_WEBRTC)
+  select_file_dialog_ = ui::SelectFileDialog::Create(this, NULL);
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+      base::string16(),
+      aec_dump_file_path_,
+      NULL,
+      0,
+      FILE_PATH_LITERAL(""),
+      web_contents->GetView()->GetTopLevelNativeWindow(),
+      NULL);
+#endif
+}
+
+void WebRTCInternals::DisableAecDump() {
+#if defined(ENABLE_WEBRTC)
+  aec_dump_enabled_ = false;
+  for (RenderProcessHost::iterator i(
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->DisableAecDump();
+  }
+#endif
 }
 
 void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
@@ -203,6 +259,20 @@ void WebRTCInternals::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   OnRendererExit(Source<RenderProcessHost>(source)->GetID());
+}
+
+void WebRTCInternals::FileSelected(const base::FilePath& path,
+                                   int /* unused_index */,
+                                   void* /*unused_params */) {
+#if defined(ENABLE_WEBRTC)
+  aec_dump_enabled_ = true;
+  aec_dump_file_path_ = path;
+  for (RenderProcessHost::iterator i(
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->EnableAecDump(aec_dump_file_path_);
+  }
+#endif
 }
 
 void WebRTCInternals::OnRendererExit(int render_process_id) {

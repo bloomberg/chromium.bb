@@ -75,6 +75,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
   virtual void ResumeRequestsForView(int route_id) OVERRIDE;
+#if defined(ENABLE_WEBRTC)
+  virtual void EnableAecDump(const base::FilePath& file) OVERRIDE;
+  virtual void DisableAecDump() OVERRIDE;
+#endif
 
   // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

@@ -94,7 +94,7 @@ function initialize() {
   peerConnectionUpdateTable = new PeerConnectionUpdateTable();
   statsTable = new StatsTable(ssrcInfoManager);
 
-  chrome.send('getAllUpdates');
+  chrome.send('finishedDOMLoad');
 
   // Requests stats from all peer connections every second.
   window.setInterval(function() {
@@ -251,4 +251,11 @@ function addStats(data) {
  */
 function updateDumpStatus(update) {
   dumpCreator.onUpdate(update);
+}
+
+/**
+ * Set
+ */
+function enableAecRecording() {
+  dumpCreator.enableAecRecording();
 }

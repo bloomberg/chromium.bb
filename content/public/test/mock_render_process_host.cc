@@ -255,6 +255,13 @@ void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
 void MockRenderProcessHost::ResumeRequestsForView(int route_id) {
 }
 
+#if defined(ENABLE_WEBRTC)
+void MockRenderProcessHost::EnableAecDump(const base::FilePath& file) {
+}
+
+void MockRenderProcessHost::DisableAecDump() {
+}
+#endif
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC::Listener* listener = listeners_.Lookup(msg.routing_id());

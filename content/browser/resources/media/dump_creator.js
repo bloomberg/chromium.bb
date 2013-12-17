@@ -51,22 +51,38 @@ var DumpCreator = (function() {
     var summary = document.createElement('summary');
     this.root_.appendChild(summary);
     summary.textContent = 'Create Dump';
-    var content = document.createElement('pre');
+    var content = document.createElement('div');
     this.root_.appendChild(content);
 
     content.innerHTML = '<button disabled></button> Status: <span></span>' +
         '<div><a><button>' +
         'Download the PeerConnection updates and stats data' +
-        '</button></a></div>';
+        '</button></a></div>' +
+        '<p><label><input type=checkbox>' +
+        'Enable diagnostic audio recordings.</label></p>' +
+        '<p>A diagnostic audio recording is used for analyzing audio' +
+        ' problems. It contains the audio played out from the speaker and' +
+        ' recorded from the microphone and is saved to the local disk.' +
+        ' Checking this box will enable the recording for future WebRTC' +
+        ' calls. When the box is unchecked or this page is closed, this' +
+        ' recording functionality will be disabled.</p>';
+
     content.getElementsByTagName('button')[0].addEventListener(
         'click', this.onRtpToggled_.bind(this));
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
+    content.getElementsByTagName('input')[0].addEventListener(
+        'click', this.onAecRecordingChanged_.bind(this));
 
     this.updateDisplay_();
   }
 
   DumpCreator.prototype = {
+    /** Mark the AEC recording checkbox checked.*/
+    enableAecRecording: function() {
+      this.root_.getElementsByTagName('input')[0].checked = true;
+    },
+
     /**
      * Downloads the PeerConnection updates and stats data as a file.
      *
@@ -97,6 +113,20 @@ var DumpCreator = (function() {
         chrome.send('startRtpRecording');
       }
       this.updateDisplay_();
+    },
+
+    /**
+     * Handles the event of toggling the AEC recording state.
+     *
+     * @private
+     */
+    onAecRecordingChanged_: function() {
+      var enabled = this.root_.getElementsByTagName('input')[0].checked;
+      if (enabled) {
+        chrome.send('enableAecRecording');
+      } else {
+        chrome.send('disableAecRecording');
+      }
     },
 
     /**

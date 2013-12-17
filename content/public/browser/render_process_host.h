@@ -210,6 +210,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // were initially blocked.
   virtual void ResumeRequestsForView(int route_id) = 0;
 
+#if defined(ENABLE_WEBRTC)
+  virtual void EnableAecDump(const base::FilePath& file) = 0;
+  virtual void DisableAecDump() = 0;
+#endif
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily

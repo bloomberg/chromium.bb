@@ -13,8 +13,10 @@
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace content {
+class WebContents;
 class WebRTCInternalsUIObserver;
 
 // This is a singleton class running in the browser UI thread.
@@ -22,7 +24,8 @@ class WebRTCInternalsUIObserver;
 // forwards the data to WebRTCInternalsUIObserver and
 // sends data collecting commands to the renderers.
 class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
-                                       public NotificationObserver {
+                                       public NotificationObserver,
+                                       public ui::SelectFileDialog::Listener {
  public:
   static WebRTCInternals* GetInstance();
 
@@ -69,6 +72,18 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   void StartRtpRecording();
   void StopRtpRecording();
 
+  // Enables or disables AEC dump (diagnostic echo canceller recording).
+  void EnableAecDump(content::WebContents* web_contents);
+  void DisableAecDump();
+
+  bool aec_dump_enabled() {
+    return aec_dump_enabled_;
+  }
+
+  base::FilePath aec_dump_file_path() {
+    return aec_dump_file_path_;
+  }
+
  private:
   friend struct DefaultSingletonTraits<WebRTCInternals>;
 
@@ -85,6 +100,11 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  // ui::SelectFileDialog::Listener implementation.
+  virtual void FileSelected(const base::FilePath& path,
+                            int index,
+                            void* unused_params) OVERRIDE;
 
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);
@@ -110,6 +130,13 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   NotificationRegistrar registrar_;
 
   bool is_recording_rtp_;
+
+  // For managing select file dialog.
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+
+  // AEC dump (diagnostic echo canceller recording) state.
+  bool aec_dump_enabled_;
+  base::FilePath aec_dump_file_path_;
 };
 
 }  // namespace content

@@ -100,8 +100,11 @@ IPC_MESSAGE_CONTROL2(MediaStreamMsg_GetSourcesACK,
 // The browser hands over a file handle to the renderer to use for AEC dump.
 // TODO(grunell): This should not belong to media stream. Change when
 // refactoring MediaStreamDependencyFactory.
-IPC_MESSAGE_CONTROL1(MediaStreamMsg_AecDumpFile,
+IPC_MESSAGE_CONTROL1(MediaStreamMsg_EnableAecDump,
                      IPC::PlatformFileForTransit /* file_handle */)
+
+// Tell the renderer to disable AEC dump.
+IPC_MESSAGE_CONTROL0(MediaStreamMsg_DisableAecDump)
 
 // Messages sent from the renderer to the browser.
 

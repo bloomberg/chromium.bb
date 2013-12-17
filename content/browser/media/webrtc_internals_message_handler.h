@@ -30,13 +30,14 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
   virtual void OnUpdate(const std::string& command,
                         const base::Value* args) OVERRIDE;
 
+ private:
   // Javascript message handler.
-  void OnGetAllUpdates(const base::ListValue* list);
   void OnGetAllStats(const base::ListValue* list);
   void OnStartRtpRecording(const base::ListValue* list);
   void OnStopRtpRecording(const base::ListValue* list);
+  void OnSetAecRecordingEnabled(bool enable, const base::ListValue* list);
+  void OnDOMLoadDone(const base::ListValue* list);
 
- private:
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);
 };
 

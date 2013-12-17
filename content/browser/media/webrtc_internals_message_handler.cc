@@ -23,10 +23,6 @@ WebRTCInternalsMessageHandler::~WebRTCInternalsMessageHandler() {
 }
 
 void WebRTCInternalsMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getAllUpdates",
-      base::Bind(&WebRTCInternalsMessageHandler::OnGetAllUpdates,
-                 base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback("getAllStats",
       base::Bind(&WebRTCInternalsMessageHandler::OnGetAllStats,
                  base::Unretained(this)));
@@ -38,14 +34,22 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("stopRtpRecording",
       base::Bind(&WebRTCInternalsMessageHandler::OnStopRtpRecording,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback("enableAecRecording",
+      base::Bind(&WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled,
+                 base::Unretained(this), true));
+
+  web_ui()->RegisterMessageCallback("disableAecRecording",
+      base::Bind(&WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled,
+                 base::Unretained(this), false));
+
+  web_ui()->RegisterMessageCallback("finishedDOMLoad",
+      base::Bind(&WebRTCInternalsMessageHandler::OnDOMLoadDone,
+                 base::Unretained(this)));
 }
 
-void WebRTCInternalsMessageHandler::OnGetAllUpdates(
-    const base::ListValue* list) {
-  WebRTCInternals::GetInstance()->SendAllUpdates();
-}
-
-void WebRTCInternalsMessageHandler::OnGetAllStats(const base::ListValue* list) {
+void WebRTCInternalsMessageHandler::OnGetAllStats(
+    const base::ListValue* /* unused_list */) {
   for (RenderProcessHost::iterator i(
        content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
@@ -54,17 +58,39 @@ void WebRTCInternalsMessageHandler::OnGetAllStats(const base::ListValue* list) {
 }
 
 void WebRTCInternalsMessageHandler::OnStartRtpRecording(
-    const base::ListValue* list) {
+    const base::ListValue* /* unused_list */) {
   WebRTCInternals::GetInstance()->StartRtpRecording();
 }
 
 void WebRTCInternalsMessageHandler::OnStopRtpRecording(
-    const base::ListValue* list) {
+    const base::ListValue* /* unused_list */) {
   WebRTCInternals::GetInstance()->StopRtpRecording();
 }
 
+void WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled(
+    bool enable, const base::ListValue* /* unused_list */) {
+  if (enable)
+    WebRTCInternals::GetInstance()->EnableAecDump(web_ui()->GetWebContents());
+  else
+    WebRTCInternals::GetInstance()->DisableAecDump();
+}
+
+void WebRTCInternalsMessageHandler::OnDOMLoadDone(
+    const base::ListValue* /* unused_list */) {
+  WebRTCInternals::GetInstance()->SendAllUpdates();
+
+  if (WebRTCInternals::GetInstance()->aec_dump_enabled()) {
+    std::vector<const base::Value*> args_vector;
+    string16 script = WebUI::GetJavascriptCall("setAecRecordingEnabled",
+                                               args_vector);
+    RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
+    if (host)
+      host->ExecuteJavascriptInWebFrame(string16(), script);
+  }
+}
+
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
-                                            const base::Value* args) {
+                                             const base::Value* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<const base::Value*> args_vector;
   args_vector.push_back(args);

@@ -238,6 +238,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnAecDumpFile(IPC::PlatformFileForTransit file_handle);
+  void OnDisableAecDump();
 
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
