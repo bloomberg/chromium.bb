@@ -45,13 +45,17 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // validating the stored signature.
   void Init();
 
+  // Do we need to be bootstrapped? (i.e. do we have a signature already). If
+  // this is true, then consumers of this class should use Add/AddMany to get
+  // an initial one so that MustRemainDisabled can actually check against it.
+  bool NeedsBootstrap();
+
   // A callback for indicating success/failure of adding new ids.
   typedef base::Callback<void(bool)> AddResultCallback;
 
   // Try adding a new |id| (or set of ids) to the list of verified ids. When
-  // this process is finished |callback| will be run with success/failure. In
-  // case of success, subsequent calls to IsVerified will begin returning true
-  // for |id|.
+  // this process is finished |callback| will be run with success/failure of
+  // the signature request (not necessarily whether the ids were verified).
   void Add(const std::string& id, const AddResultCallback& callback);
   void AddMany(const ExtensionIdSet& ids,
                const AddResultCallback& callback);

@@ -127,9 +127,9 @@ class ExtensionService
       public content::NotificationObserver,
       public extensions::Blacklist::Observer {
  public:
-  // Returns the Extension of an extension from a given url or NULL if the url
-  // doesn't belong to an installed extension. This may be a hosted app extent
-  // or a chrome-extension:// url.
+  // Returns the Extension for a given url or NULL if the url doesn't belong to
+  // an installed extension. This may be a hosted app extent or a
+  // chrome-extension:// url.
   const extensions::Extension* GetInstalledExtensionByUrl(
       const GURL& url) const;
 
@@ -208,6 +208,13 @@ class ExtensionService
 
   // Initialize and start all installed extensions.
   void Init();
+
+  // Attempts to verify all extensions using the InstallVerifier.
+  void VerifyAllExtensions();
+
+  // Once the verifier work is finished, we may want to re-check management
+  // policy if |success| indicates the verifier got a new signature back.
+  void FinishVerifyAllExtensions(bool success);
 
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();

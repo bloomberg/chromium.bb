@@ -573,6 +573,11 @@ void ExtensionService::Init() {
     // rather than running immediately at startup.
     CheckForExternalUpdates();
 
+    InstallVerifier* verifier =
+        extensions::ExtensionSystem::Get(profile_)->install_verifier();
+    if (verifier->NeedsBootstrap())
+      VerifyAllExtensions();
+
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
@@ -588,6 +593,55 @@ void ExtensionService::Init() {
 
   UMA_HISTOGRAM_TIMES("Extensions.ExtensionServiceInitTime",
                       base::Time::Now() - begin_time);
+}
+
+void ExtensionService::VerifyAllExtensions() {
+  ExtensionIdSet to_add;
+  scoped_ptr<ExtensionSet> all_extensions = GenerateInstalledExtensionsSet();
+
+  for (ExtensionSet::const_iterator i = all_extensions->begin();
+       i != all_extensions->end(); ++i) {
+    const Extension& extension = **i;
+
+    if (extensions::ManifestURL::UpdatesFromGallery(&extension) &&
+        extension.is_extension())
+      to_add.insert(extension.id());
+  }
+  extensions::ExtensionSystem::Get(profile_)->install_verifier()->AddMany(
+      to_add, base::Bind(&ExtensionService::FinishVerifyAllExtensions,
+                         AsWeakPtr()));
+}
+
+void ExtensionService::FinishVerifyAllExtensions(bool success) {
+  if (success) {
+    // Check to see if any currently unverified extensions became verified.
+    InstallVerifier* verifier =
+        extensions::ExtensionSystem::Get(profile_)->install_verifier();
+    for (ExtensionSet::const_iterator i = disabled_extensions_.begin();
+         i != disabled_extensions_.end(); ++i) {
+      const Extension& extension = **i;
+      int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
+      if (disable_reasons & Extension::DISABLE_NOT_VERIFIED &&
+          !verifier->MustRemainDisabled(&extension, NULL, NULL)) {
+        extension_prefs_->RemoveDisableReason(extension.id(),
+                                              Extension::DISABLE_NOT_VERIFIED);
+        // Notify interested observers (eg the extensions settings page) by
+        // sending an UNLOADED notification.
+        //
+        // TODO(asargent) - this is a slight hack because it's already
+        // disabled; the right solution might be to add a separate listener
+        // interface for DisableReason's changing. http://crbug.com/328916
+        UnloadedExtensionInfo details(&extension,
+                                      UnloadedExtensionInfo::REASON_DISABLE);
+        content::NotificationService::current()->Notify(
+            chrome::NOTIFICATION_EXTENSION_UNLOADED,
+            content::Source<Profile>(profile_),
+            content::Details<UnloadedExtensionInfo>(&details));
+      }
+    }
+    // Might disable some extensions.
+    CheckManagementPolicy();
+  }
 }
 
 bool ExtensionService::UpdateExtension(const std::string& id,

@@ -26,9 +26,9 @@
 namespace {
 
 enum VerifyStatus {
-  NONE = 0,       // Do not request install signatures, and do not enforce them.
-  BOOTSTRAP = 1,  // Request install signatures, but do not enforce them.
-  ENFORCE = 2     // Request install signatures, and enforce them.
+  NONE = 0,   // Do not request install signatures, and do not enforce them.
+  BOOTSTRAP,  // Request install signatures, but do not enforce them.
+  ENFORCE,    // Request install signatures, and enforce them.
 };
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -123,35 +123,10 @@ void InstallVerifier::Init() {
   } else {
     UMA_HISTOGRAM_BOOLEAN("InstallVerifier.InitNoSignature", true);
   }
+}
 
-  if (!signature_.get() && ShouldFetchSignature()) {
-    // We didn't have any signature but are in fetch mode, so do a request for
-    // a signature if needed.
-    scoped_ptr<ExtensionPrefs::ExtensionsInfo> all_info =
-        prefs_->GetInstalledExtensionsInfo();
-    ExtensionIdSet to_add;
-    if (all_info.get()) {
-      for (ExtensionPrefs::ExtensionsInfo::const_iterator i = all_info->begin();
-           i != all_info->end(); ++i) {
-        const ExtensionInfo& info = **i;
-        const base::DictionaryValue* dictionary = info.extension_manifest.get();
-        if (dictionary && ManifestURL::UpdatesFromGallery(dictionary)) {
-          Manifest manifest(info.extension_location,
-                            scoped_ptr<DictionaryValue>(
-                                dictionary->DeepCopy()));
-          if (manifest.is_extension())
-            to_add.insert(info.extension_id);
-        }
-      }
-    }
-    if (to_add.empty()) {
-      // Write an empty signature so we don't have to redo this at next Init.
-      signature_.reset(new InstallSignature());
-      SaveToPrefs();
-    } else {
-      AddMany(to_add, AddResultCallback());
-    }
-  }
+bool InstallVerifier::NeedsBootstrap() {
+  return signature_.get() == NULL && ShouldFetchSignature();
 }
 
 void InstallVerifier::Add(const std::string& id,
@@ -163,8 +138,11 @@ void InstallVerifier::Add(const std::string& id,
 
 void InstallVerifier::AddMany(const ExtensionIdSet& ids,
                               const AddResultCallback& callback) {
-  if (!ShouldFetchSignature())
+  if (!ShouldFetchSignature()) {
+    if (!callback.is_null())
+      callback.Run(true);
     return;
+  }
 
   if (signature_.get()) {
     ExtensionIdSet not_allowed_yet =
@@ -241,9 +219,14 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
       AllowedByEnterprisePolicy(extension->id()))
     return false;
 
+  // If we don't have a signature yet, we'll temporarily consider every
+  // extension from the webstore verified to avoid false positives on existing
+  // profiles hitting this code for the first time, and rely on consumers of
+  // this class to check NeedsBootstrap() and schedule a first check so we can
+  // get a signature.
   bool verified =
       FromStore(extension) &&
-      IsVerified(extension->id()) &&
+      (signature_.get() == NULL || IsVerified(extension->id())) &&
       !ContainsKey(InstallSigner::GetForcedNotFromWebstore(), extension->id());
 
   if (!verified && !ShouldEnforce()) {
@@ -395,16 +378,8 @@ void InstallVerifier::SignatureCallback(
           provisional_, signature_->ids);
     }
 
-    // See if we were able to sign all of |ids|.
-    ExtensionIdSet not_allowed =
-        base::STLSetDifference<ExtensionIdSet>(operation->ids,
-                                               signature_->ids);
-
-    UMA_HISTOGRAM_COUNTS_100("InstallVerifier.CallbackNotAllowed",
-                             not_allowed.size());
-
     if (!operation->callback.is_null())
-      operation->callback.Run(not_allowed.empty());
+      operation->callback.Run(success);
   }
 
   if (!operation_queue_.empty())

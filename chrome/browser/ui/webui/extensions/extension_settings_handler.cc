@@ -172,7 +172,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       deleting_rph_id_(-1),
       registered_for_notifications_(false),
       warning_service_observer_(this),
-      error_console_observer_(this) {
+      error_console_observer_(this),
+      should_do_verification_check_(false) {
 }
 
 // static
@@ -198,6 +199,8 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   bool suspicious_install =
       (disable_reasons & Extension::DISABLE_NOT_VERIFIED) != 0;
   extension_data->SetBoolean("suspiciousInstall", suspicious_install);
+  if (suspicious_install)
+    should_do_verification_check_ = true;
 
   bool managed_install =
       !management_policy_->UserMayModifySettings(extension, NULL);
@@ -731,6 +734,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       "extensions.ExtensionSettings.returnExtensionsData", results);
 
   MaybeRegisterForNotifications();
+  if (should_do_verification_check_) {
+    should_do_verification_check_ = false;
+    extension_service_->VerifyAllExtensions();
+  }
 }
 
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
