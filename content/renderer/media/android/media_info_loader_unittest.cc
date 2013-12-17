@@ -28,6 +28,7 @@ static const char* kHttpUrl = "http://test";
 static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
 static const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
 static const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
+static const char kHttpDataUrl[] = "data:audio/wav;base64,UklGRhwMAABXQVZFZm10";
 
 static const int kHttpOK = 200;
 static const int kHttpNotFound = 404;
@@ -125,6 +126,12 @@ TEST_F(MediaInfoLoaderTest, LoadFailure) {
   Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   FailLoad();
+}
+
+TEST_F(MediaInfoLoaderTest, DataUri) {
+  Initialize(kHttpDataUrl, blink::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  SendResponse(0, MediaInfoLoader::kOk);
 }
 
 TEST_F(MediaInfoLoaderTest, HasSingleOriginNoRedirect) {
