@@ -76,6 +76,13 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       }
     },
 
+    /* Cancel user adding if ESC was pressed.
+     */
+    cancel: function() {
+      if (Oobe.getInstance().displayType() == DISPLAY_TYPE.USER_ADDING)
+        chrome.send('cancelUserAdding');
+    },
+
     /**
      * Event handler that is invoked just after the frame is shown.
      * @param {string} data Screen init payload.
