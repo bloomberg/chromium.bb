@@ -46,8 +46,9 @@
 
   signInDelegate_.reset(
       new autofill::AutofillDialogSignInDelegate(
-          dialog_, webContents_.get(),
-          dialog_->delegate()->GetWebContents()->GetDelegate(),
+          dialog_,
+          webContents_.get(),
+          dialog_->delegate()->GetWebContents(),
           gfx::Size(NSSizeToCGSize(initialMinSize)),
           gfx::Size(NSSizeToCGSize(maxSize_))));
   webContents_->GetController().LoadURL(

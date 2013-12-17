@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
 
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -13,22 +15,51 @@
 
 namespace autofill {
 
+namespace {
+
+using content::OpenURLParams;
+
+// Signals if |params| require opening inside the current WebContents.
+bool IsInPageTransition(const OpenURLParams& params) {
+  return params.transition == content::PAGE_TRANSITION_LINK &&
+      params.disposition == CURRENT_TAB;
+}
+
+// Indicates if the open action specified by |params| should happen in the
+// Autofill dialog (when true) or in the browser (when false).
+bool ShouldOpenInBrowser(const OpenURLParams& params) {
+  return !IsInPageTransition(params) || !wallet::IsSignInRelatedUrl(params.url);
+}
+
+// Adjusts |params| to account for the fact that the open request originated in
+// the dialog, but will be executed in the browser.
+OpenURLParams AdjustToOpenInBrowser(const OpenURLParams& params) {
+  if (!IsInPageTransition(params) || wallet::IsSignInRelatedUrl(params.url))
+    return params;
+
+  content::OpenURLParams new_params = params;
+  new_params.disposition = NEW_FOREGROUND_TAB;
+  return new_params;
+}
+
+}  // namespace
+
 AutofillDialogSignInDelegate::AutofillDialogSignInDelegate(
     AutofillDialogView* dialog_view,
-    content::WebContents* web_contents,
-    content::WebContentsDelegate* wrapped_delegate,
+    content::WebContents* dialog_web_contents,
+    content::WebContents* originating_web_contents,
     const gfx::Size& minimum_size,
     const gfx::Size& maximum_size)
-    : WebContentsObserver(web_contents),
+    : WebContentsObserver(dialog_web_contents),
       dialog_view_(dialog_view),
-      wrapped_delegate_(wrapped_delegate) {
+      originating_web_contents_(originating_web_contents) {
   DCHECK(dialog_view_);
-  DCHECK(wrapped_delegate_);
-  web_contents->SetDelegate(this);
+  dialog_web_contents->SetDelegate(this);
 
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
-  prefs->browser_handles_all_top_level_link_clicks = true;
-  web_contents->GetRenderViewHost()->SyncRendererPrefs();
+  content::RendererPreferences* prefs =
+      dialog_web_contents->GetMutableRendererPrefs();
+  prefs->browser_handles_non_local_top_level_requests = true;
+  dialog_web_contents->GetRenderViewHost()->SyncRendererPrefs();
 
   UpdateLimitsAndEnableAutoResize(minimum_size, maximum_size);
 }
@@ -42,15 +73,18 @@ void AutofillDialogSignInDelegate::ResizeDueToAutoResize(
 content::WebContents* AutofillDialogSignInDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  content::OpenURLParams new_params = params;
-  if (params.transition == content::PAGE_TRANSITION_LINK &&
-      params.disposition == CURRENT_TAB &&
-      !wallet::IsSignInRelatedUrl(params.url)) {
-    new_params.disposition = NEW_FOREGROUND_TAB;
-  }
-  return wrapped_delegate_->OpenURLFromTab(source, new_params);
+  if (ShouldOpenInBrowser(params))
+    return originating_web_contents_->OpenURL(AdjustToOpenInBrowser(params));
+
+  source->GetController().LoadURL(params.url,
+                                  params.referrer,
+                                  params.transition,
+                                  std::string());
+  return source;
 }
 
+// This gets invoked whenever there is an attempt to open a new window/tab.
+// Reroute to the original browser.
 void AutofillDialogSignInDelegate::AddNewContents(
     content::WebContents* source,
     content::WebContents* new_contents,
@@ -58,8 +92,10 @@ void AutofillDialogSignInDelegate::AddNewContents(
     const gfx::Rect& initial_pos,
     bool user_gesture,
     bool* was_blocked) {
-  wrapped_delegate_->AddNewContents(source, new_contents, disposition,
-                                    initial_pos, user_gesture, was_blocked);
+  chrome::AddWebContents(
+      chrome::FindBrowserWithWebContents(originating_web_contents_),
+      source, new_contents, disposition, initial_pos, user_gesture,
+      was_blocked);
 }
 
 void AutofillDialogSignInDelegate::RenderViewCreated(

@@ -1265,6 +1265,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                                 CURRENT_TAB,
                                 content::PAGE_TRANSITION_LINK,
                                 true);
+  params.user_gesture = true;
+
   int num_tabs = browser()->tab_strip_model()->count();
   sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
   EXPECT_EQ(num_tabs + 1, browser()->tab_strip_model()->count());

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_SIGN_IN_DELEGATE_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_SIGN_IN_DELEGATE_H_
 
+#include "base/basictypes.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/size.h"
@@ -23,8 +24,8 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
                                     public content::WebContentsObserver {
  public:
   AutofillDialogSignInDelegate(AutofillDialogView* dialog_view,
-                               content::WebContents* web_contents,
-                               content::WebContentsDelegate* wrapped_delegate,
+                               content::WebContents* dialog_web_contents,
+                               content::WebContents* originating_web_contents,
                                const gfx::Size& minimum_size,
                                const gfx::Size& maximum_size);
 
@@ -57,12 +58,16 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
   // The dialog view hosting this sign in page.
   AutofillDialogView* const dialog_view_;
 
-  // The delegate for the WebContents hosting this dialog.
-  content::WebContentsDelegate* const wrapped_delegate_;
+  // The WebContents of the page that originated the dialog. Weak ptr, but
+  // guaranteed to outlive the dialog, since the dialog is tab-modal to those
+  // contents.
+  content::WebContents* const originating_web_contents_;
 
   // The minimum and maximum sizes that the sign-in view may have.
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillDialogSignInDelegate);
 };
 
 }  // namespace autofill

@@ -1389,8 +1389,9 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   // to navigate instead of LoadInitialURL. Figure out why it doesn't work.
   sign_in_delegate_.reset(
       new AutofillDialogSignInDelegate(
-          this, sign_in_web_view_->GetWebContents(),
-          delegate_->GetWebContents()->GetDelegate(),
+          this,
+          sign_in_web_view_->GetWebContents(),
+          delegate_->GetWebContents(),
           gfx::Size(min_width, min_height), GetMaximumSignInViewSize()));
   sign_in_web_view_->LoadInitialURL(delegate_->SignInUrl());
 
