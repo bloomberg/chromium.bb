@@ -14,9 +14,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/cursor/cursors_aura.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
@@ -25,6 +29,61 @@
 namespace content {
 
 namespace {
+
+int clip_byte(int x) {
+  return std::max(0, std::min(x, 255));
+}
+
+int alpha_blend(int alpha, int src, int dst) {
+  return (src * alpha + dst * (255 - alpha)) / 255;
+}
+
+// Helper function to composite a cursor bitmap on a YUV420 video frame.
+void RenderCursorOnVideoFrame(
+    const scoped_refptr<media::VideoFrame>& target,
+    const SkBitmap& cursor_bitmap,
+    const gfx::Point& cursor_position) {
+  DCHECK(target);
+  DCHECK(!cursor_bitmap.isNull());
+
+  gfx::Rect rect = gfx::IntersectRects(
+      gfx::Rect(cursor_bitmap.width(), cursor_bitmap.height()) +
+          gfx::Vector2d(cursor_position.x(), cursor_position.y()),
+      target->visible_rect());
+
+  cursor_bitmap.lockPixels();
+  for (int y = rect.y(); y < rect.bottom(); ++y) {
+    int cursor_y = y - cursor_position.y();
+    uint8* yplane = target->data(media::VideoFrame::kYPlane) +
+        y * target->row_bytes(media::VideoFrame::kYPlane);
+    uint8* uplane = target->data(media::VideoFrame::kUPlane) +
+        (y / 2) * target->row_bytes(media::VideoFrame::kUPlane);
+    uint8* vplane = target->data(media::VideoFrame::kVPlane) +
+        (y / 2) * target->row_bytes(media::VideoFrame::kVPlane);
+    for (int x = rect.x(); x < rect.right(); ++x) {
+      int cursor_x = x - cursor_position.x();
+      SkColor color = cursor_bitmap.getColor(cursor_x, cursor_y);
+      int alpha = SkColorGetA(color);
+      int color_r = SkColorGetR(color);
+      int color_g = SkColorGetG(color);
+      int color_b = SkColorGetB(color);
+      int color_y = clip_byte(((color_r * 66 + color_g * 129 + color_b * 25 +
+                                128) >> 8) + 16);
+      yplane[x] = alpha_blend(alpha, color_y, yplane[x]);
+
+      // Only sample U and V at even coordinates.
+      if ((x % 2 == 0) && (y % 2 == 0)) {
+        int color_u = clip_byte(((color_r * -38 + color_g * -74 +
+                                  color_b * 112 + 128) >> 8) + 128);
+        int color_v = clip_byte(((color_r * 112 + color_g * -94 +
+                                  color_b * -18 + 128) >> 8) + 128);
+        uplane[x / 2] = alpha_blend(alpha, color_u, uplane[x / 2]);
+        vplane[x / 2] = alpha_blend(alpha, color_v, vplane[x / 2]);
+      }
+    }
+  }
+  cursor_bitmap.unlockPixels();
+}
 
 class DesktopVideoCaptureMachine
     : public VideoCaptureMachine,
@@ -73,6 +132,14 @@ class DesktopVideoCaptureMachine
       const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
       scoped_ptr<cc::CopyOutputResult> result);
 
+  // Helper function to update cursor state.
+  // |region_in_frame| defines the desktop bound in the captured frame.
+  // Returns the current cursor position in captured frame.
+  gfx::Point UpdateCursorState(const gfx::Rect& region_in_frame);
+
+  // Clears cursor state.
+  void ClearCursorState();
+
   // The window associated with the desktop.
   aura::Window* desktop_window_;
 
@@ -90,6 +157,11 @@ class DesktopVideoCaptureMachine
 
   // YUV readback pipeline.
   scoped_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
+
+  // Cursor state.
+  ui::Cursor last_cursor_;
+  gfx::Point cursor_hot_point_;
+  SkBitmap scaled_cursor_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopVideoCaptureMachine);
 };
@@ -167,6 +239,7 @@ void DesktopVideoCaptureMachine::UpdateCaptureSize() {
     oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
         desktop_layer_, desktop_layer_->bounds().size()));
   }
+  ClearCursorState();
 }
 
 void DesktopVideoCaptureMachine::Capture(bool dirty) {
@@ -198,11 +271,16 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
   }
 }
 
-static void CopyOutputFinishedForVideo(
+void CopyOutputFinishedForVideo(
     base::Time start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+    const scoped_refptr<media::VideoFrame>& target,
+    const SkBitmap& cursor_bitmap,
+    const gfx::Point& cursor_position,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     bool result) {
+  if (!cursor_bitmap.isNull())
+    RenderCursorOnVideoFrame(target, cursor_bitmap, cursor_position);
   release_callback->Run(0, false);
   capture_frame_cb.Run(start_time, result);
 }
@@ -257,10 +335,53 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
                                              true,
                                              true));
   }
+
+  gfx::Point cursor_position_in_frame = UpdateCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
       texture_mailbox.name(), texture_mailbox.sync_point(), video_frame.get(),
       base::Bind(&CopyOutputFinishedForVideo, start_time, capture_frame_cb,
+                 video_frame, scaled_cursor_bitmap_, cursor_position_in_frame,
                  base::Passed(&release_callback)));
+}
+
+gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
+    const gfx::Rect& region_in_frame) {
+  const gfx::Rect desktop_bounds = desktop_layer_->bounds();
+  gfx::NativeCursor cursor = desktop_window_->GetDispatcher()->last_cursor();
+  if (last_cursor_ != cursor) {
+    SkBitmap cursor_bitmap;
+    if (ui::GetCursorBitmap(cursor, &cursor_bitmap, &cursor_hot_point_)) {
+      scaled_cursor_bitmap_ = skia::ImageOperations::Resize(
+          cursor_bitmap,
+          skia::ImageOperations::RESIZE_BEST,
+          cursor_bitmap.width() * region_in_frame.width() /
+              desktop_bounds.width(),
+          cursor_bitmap.height() * region_in_frame.height() /
+              desktop_bounds.height());
+      last_cursor_ = cursor;
+    } else {
+      // Clear cursor state if ui::GetCursorBitmap failed so that we do not
+      // render cursor on the captured frame.
+      ClearCursorState();
+    }
+  }
+
+  gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
+  const gfx::Point hot_point_in_dip = ui::ConvertPointToDIP(
+      desktop_layer_, cursor_hot_point_);
+  cursor_position.Offset(-desktop_bounds.x() - hot_point_in_dip.x(),
+                         -desktop_bounds.y() - hot_point_in_dip.y());
+  return gfx::Point(
+      region_in_frame.x() + cursor_position.x() * region_in_frame.width() /
+          desktop_bounds.width(),
+      region_in_frame.y() + cursor_position.y() * region_in_frame.height() /
+          desktop_bounds.height());
+}
+
+void DesktopVideoCaptureMachine::ClearCursorState() {
+  last_cursor_ = ui::Cursor();
+  cursor_hot_point_ = gfx::Point();
+  scaled_cursor_bitmap_.reset();
 }
 
 void DesktopVideoCaptureMachine::OnWindowBoundsChanged(

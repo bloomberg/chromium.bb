@@ -5,7 +5,9 @@
 #include "ui/base/cursor/cursors_aura.h"
 
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -217,6 +219,27 @@ bool GetAnimatedCursorDataFor(CursorSetType cursor_set_id,
   return SearchTable(cursor_set->animated_cursors,
                      cursor_set->animated_length,
                      id, scale_factor, resource_id, point);
+}
+
+bool GetCursorBitmap(const Cursor& cursor,
+                     SkBitmap* bitmap,
+                     gfx::Point* point) {
+  DCHECK(bitmap && point);
+  int resource_id;
+  if (!GetCursorDataFor(ui::CURSOR_SET_NORMAL,
+                        cursor.native_type(),
+                        cursor.device_scale_factor(),
+                        &resource_id,
+                        point)) {
+    return false;
+  }
+
+  const SkBitmap* cursor_bitmap = ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(resource_id)->bitmap();
+  if (!cursor_bitmap)
+    return false;
+  *bitmap = *cursor_bitmap;
+  return true;
 }
 
 }  // namespace ui
