@@ -42,7 +42,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/brotli/src':
-        Var('git_url') + '/external/font-compression-reference.git@fe79fac8da1ec850d94679705a6f3405153f51dd',
+        Var('git_url') + '/external/font-compression-reference.git@931479d735e1121548c3b07aec866fd772cc4932',
     'src/third_party/cacheinvalidation/src':
         Var('git_url') + '/external/google-cache-invalidation-api/src.git@7a4a97d5e92504bdd68c5d8cb1a4e9355516e558',
     'src/third_party/cld_2/src':
@@ -90,7 +90,7 @@ deps = {
     'src/third_party/opus/src':
         Var('git_url') + '/chromium/deps/opus.git@dd52457296df1ef41bae8e28dc321d6798509172',
     'src/third_party/ots':
-        Var('git_url') + '/external/ots.git@e78f18717608d5f4db643abdc561b754ff8c2442',
+        Var('git_url') + '/external/ots.git@b613a30b0b86e1d4ea40a83b678fbe48edac8515',
     'src/third_party/pyftpdlib/src':
         Var('git_url') + '/external/pyftpdlib.git@2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
     'src/third_party/pywebsocket/src':
