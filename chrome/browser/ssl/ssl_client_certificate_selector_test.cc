@@ -44,7 +44,7 @@ void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(foaf_me_chromium_test_cert_.get());
 
   cert_request_info_ = new net::SSLCertRequestInfo;
-  cert_request_info_->host_and_port = "foo:123";
+  cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
   cert_request_info_->client_certs.push_back(mit_davidben_cert_);
   cert_request_info_->client_certs.push_back(foaf_me_chromium_test_cert_);
 }

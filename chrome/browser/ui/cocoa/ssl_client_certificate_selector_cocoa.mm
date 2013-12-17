@@ -143,7 +143,7 @@ void ShowSSLClientCertificateSelector(
   // Get the message to display:
   NSString* message = l10n_util::GetNSStringF(
       IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToUTF16(observer_->cert_request_info()->host_and_port));
+      ASCIIToUTF16(observer_->cert_request_info()->host_and_port.ToString()));
 
   // Create and set up a system choose-identity panel.
   panel_.reset([[SFChooseIdentityPanel alloc] init]);

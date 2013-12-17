@@ -1338,7 +1338,7 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
 
   if (proxy_info_.is_https() && proxy_ssl_config_.send_client_cert) {
     session_->ssl_client_auth_cache()->Remove(
-        proxy_info_.proxy_server().host_port_pair().ToString());
+        proxy_info_.proxy_server().host_port_pair());
   }
 
   int rv = session_->proxy_service()->ReconsiderProxyAfterError(

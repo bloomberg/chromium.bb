@@ -32,7 +32,7 @@ void CertificateManagerModel::Refresh() {
   chrome::UnlockSlotsIfNecessary(
       modules,
       chrome::kCryptoModulePasswordListCerts,
-      std::string(),  // unused.
+      net::HostPortPair(),  // unused.
       NULL, // TODO(mattm): supply parent window.
       base::Bind(&CertificateManagerModel::RefreshSlotsUnlocked,
                  base::Unretained(this)));

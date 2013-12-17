@@ -60,7 +60,8 @@ void SSLClientAuthObserver::Observe(
   DCHECK(type == chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED);
 
   CertDetails* cert_details = content::Details<CertDetails>(details).ptr();
-  if (cert_details->first->host_and_port != cert_request_info_->host_and_port)
+  if (!cert_details->first->host_and_port.Equals(
+           cert_request_info_->host_and_port))
     return;
 
   VLOG(1) << this << " got matching notification and selecting cert "

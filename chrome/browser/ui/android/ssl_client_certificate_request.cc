@@ -91,16 +91,9 @@ void StartClientCertificateRequest(
 
   // Build the |host_name| and |port| JNI parameters, as a String and
   // a jint.
-  net::HostPortPair host_and_port =
-      net::HostPortPair::FromString(cert_request_info->host_and_port);
-
   ScopedJavaLocalRef<jstring> host_name_ref =
-      base::android::ConvertUTF8ToJavaString(env, host_and_port.host());
-  if (host_name_ref.is_null()) {
-    LOG(ERROR) << "Could not extract host name from: '"
-               << cert_request_info->host_and_port << "'";
-    return;
-  }
+      base::android::ConvertUTF8ToJavaString(
+          env, cert_request_info->host_and_port.host());
 
   // Create a copy of the callback on the heap so that its address
   // and ownership can be passed through and returned from Java via JNI.
@@ -112,7 +105,7 @@ void StartClientCertificateRequest(
   if (!chrome::android::
       Java_SSLClientCertificateRequest_selectClientCertificate(
           env, request_id, key_types_ref.obj(), principals_ref.obj(),
-          host_name_ref.obj(), host_and_port.port())) {
+          host_name_ref.obj(), cert_request_info->host_and_port.port())) {
     return;
   }
 

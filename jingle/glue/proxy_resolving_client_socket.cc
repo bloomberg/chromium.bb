@@ -266,7 +266,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
 
   if (proxy_info_.is_https() && ssl_config_.send_client_cert) {
     network_session_->ssl_client_auth_cache()->Remove(
-        proxy_info_.proxy_server().host_port_pair().ToString());
+        proxy_info_.proxy_server().host_port_pair());
   }
 
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(

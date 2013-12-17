@@ -23,7 +23,7 @@ namespace net {
 class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
  public:
   typedef base::Callback<crypto::CryptoModuleBlockingPasswordDelegate*(
-      const std::string& /* server */)> PasswordDelegateFactory;
+      const HostPortPair& /* server */)> PasswordDelegateFactory;
 
   explicit ClientCertStoreNSS(
       const PasswordDelegateFactory& password_delegate_factory);

@@ -26,13 +26,13 @@ typedef base::Callback<void(const std::string&)> CryptoModulePasswordCallback;
 
 // Display a dialog, prompting the user to authenticate to unlock
 // |module|. |reason| describes the purpose of the authentication and
-// affects the message displayed in the dialog. |server| is the name
+// affects the message displayed in the dialog. |hostname| is the hostname
 // of the server which requested the access.
 void ShowCryptoModulePasswordDialog(
     const std::string& module_name,
     bool retry,
     CryptoModulePasswordReason reason,
-    const std::string& server,
+    const std::string& hostname,
     gfx::NativeWindow parent,
     const CryptoModulePasswordCallback& callback);
 

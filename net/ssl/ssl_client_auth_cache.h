@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_database.h"
 
@@ -34,23 +35,23 @@ class NET_EXPORT_PRIVATE SSLClientAuthCache : public CertDatabase::Observer {
   // desired client certificate. The desired certificate may be NULL, which
   // indicates a preference to not send any certificate to |server|.
   // If a certificate preference is not found, returns false.
-  bool Lookup(const std::string& server,
+  bool Lookup(const HostPortPair& server,
               scoped_refptr<X509Certificate>* certificate);
 
   // Add a client certificate for |server| to the cache. If there is already
   // a client certificate for |server|, it will be overwritten. A NULL
   // |client_cert| indicates a preference that no client certificate should
   // be sent to |server|.
-  void Add(const std::string& server, X509Certificate* client_cert);
+  void Add(const HostPortPair& server, X509Certificate* client_cert);
 
   // Remove the client certificate for |server| from the cache, if one exists.
-  void Remove(const std::string& server);
+  void Remove(const HostPortPair& server);
 
   // CertDatabase::Observer methods:
   virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
 
  private:
-  typedef std::string AuthCacheKey;
+  typedef HostPortPair AuthCacheKey;
   typedef scoped_refptr<X509Certificate> AuthCacheValue;
   typedef std::map<AuthCacheKey, AuthCacheValue> AuthCacheMap;
 

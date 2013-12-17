@@ -18,7 +18,7 @@ SSLClientAuthCache::~SSLClientAuthCache() {
 }
 
 bool SSLClientAuthCache::Lookup(
-    const std::string& server,
+    const HostPortPair& server,
     scoped_refptr<X509Certificate>* certificate) {
   DCHECK(certificate);
 
@@ -30,14 +30,14 @@ bool SSLClientAuthCache::Lookup(
   return true;
 }
 
-void SSLClientAuthCache::Add(const std::string& server,
+void SSLClientAuthCache::Add(const HostPortPair& server,
                              X509Certificate* value) {
   cache_[server] = value;
 
   // TODO(wtc): enforce a maximum number of entries.
 }
 
-void SSLClientAuthCache::Remove(const std::string& server) {
+void SSLClientAuthCache::Remove(const HostPortPair& server) {
   cache_.erase(server);
 }
 

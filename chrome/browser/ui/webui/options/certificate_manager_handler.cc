@@ -642,7 +642,7 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
   chrome::UnlockCertSlotIfNecessary(
       selected_cert_list_[0].get(),
       chrome::kCryptoModulePasswordCertExport,
-      std::string(),  // unused.
+      net::HostPortPair(),  // unused.
       GetParentWindow(),
       base::Bind(&CertificateManagerHandler::ExportPersonalSlotsUnlocked,
                  base::Unretained(this)));
@@ -751,7 +751,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   chrome::UnlockSlotsIfNecessary(
       modules,
       chrome::kCryptoModulePasswordCertImport,
-      std::string(),  // unused.
+      net::HostPortPair(),  // unused.
       GetParentWindow(),
       base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
                  base::Unretained(this)));

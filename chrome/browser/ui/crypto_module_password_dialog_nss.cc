@@ -29,7 +29,7 @@ class SlotUnlocker {
  public:
   SlotUnlocker(const net::CryptoModuleList& modules,
                chrome::CryptoModulePasswordReason reason,
-               const std::string& host,
+               const net::HostPortPair& server,
                gfx::NativeWindow parent,
                const base::Closure& callback);
 
@@ -42,7 +42,7 @@ class SlotUnlocker {
   size_t current_;
   net::CryptoModuleList modules_;
   chrome::CryptoModulePasswordReason reason_;
-  std::string host_;
+  net::HostPortPair server_;
   gfx::NativeWindow parent_;
   base::Closure callback_;
   PRBool retry_;
@@ -50,13 +50,13 @@ class SlotUnlocker {
 
 SlotUnlocker::SlotUnlocker(const net::CryptoModuleList& modules,
                            chrome::CryptoModulePasswordReason reason,
-                           const std::string& host,
+                           const net::HostPortPair& server,
                            gfx::NativeWindow parent,
                            const base::Closure& callback)
     : current_(0),
       modules_(modules),
       reason_(reason),
-      host_(host),
+      server_(server),
       parent_(parent),
       callback_(callback),
       retry_(PR_FALSE) {
@@ -72,7 +72,7 @@ void SlotUnlocker::Start() {
           modules_[current_]->GetTokenName(),
           retry_,
           reason_,
-          host_,
+          server_.host(),
           parent_,
           base::Bind(&SlotUnlocker::GotPassword, base::Unretained(this)));
       return;
@@ -124,13 +124,13 @@ namespace chrome {
 
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             chrome::CryptoModulePasswordReason reason,
-                            const std::string& host,
+                            const net::HostPortPair& server,
                             gfx::NativeWindow parent,
                             const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (size_t i = 0; i < modules.size(); ++i) {
     if (ShouldShowDialog(modules[i].get())) {
-      (new SlotUnlocker(modules, reason, host, parent, callback))->Start();
+      (new SlotUnlocker(modules, reason, server, parent, callback))->Start();
       return;
     }
   }
@@ -139,13 +139,13 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                chrome::CryptoModulePasswordReason reason,
-                               const std::string& host,
+                               const net::HostPortPair& server,
                                gfx::NativeWindow parent,
                                const base::Closure& callback) {
   net::CryptoModuleList modules;
   modules.push_back(net::CryptoModule::CreateFromHandle(
       cert->os_cert_handle()->slot));
-  UnlockSlotsIfNecessary(modules, reason, host, parent, callback);
+  UnlockSlotsIfNecessary(modules, reason, server, parent, callback);
 }
 
 }  // namespace chrome

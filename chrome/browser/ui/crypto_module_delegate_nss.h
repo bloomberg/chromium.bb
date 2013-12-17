@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "crypto/nss_crypto_module_delegate.h"
+#include "net/base/host_port_pair.h"
 
 namespace content {
 class ResourceContext;
@@ -26,7 +27,7 @@ class ChromeNSSCryptoModuleDelegate
   // string to show the user, |server| is displayed to indicate which connection
   // is causing the dialog to appear.
   ChromeNSSCryptoModuleDelegate(chrome::CryptoModulePasswordReason reason,
-                                const std::string& server);
+                                const net::HostPortPair& server);
 
   virtual ~ChromeNSSCryptoModuleDelegate();
 
@@ -56,7 +57,7 @@ class ChromeNSSCryptoModuleDelegate
 
   // Parameters displayed in the dialog.
   const chrome::CryptoModulePasswordReason reason_;
-  const std::string server_;
+  net::HostPortPair server_;
 
   // Event to block worker thread while waiting for dialog on UI thread.
   base::WaitableEvent event_;
@@ -75,6 +76,6 @@ class ChromeNSSCryptoModuleDelegate
 crypto::CryptoModuleBlockingPasswordDelegate*
     CreateCryptoModuleBlockingPasswordDelegate(
         chrome::CryptoModulePasswordReason reason,
-        const std::string& server);
+        const net::HostPortPair& server);
 
 #endif  // CHROME_BROWSER_UI_CRYPTO_MODULE_DELEGATE_NSS_H_

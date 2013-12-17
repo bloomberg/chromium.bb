@@ -16,15 +16,15 @@ TEST(SSLClientAuthCacheTest, LookupAddRemove) {
   base::Time start_date = base::Time::Now();
   base::Time expiration_date = start_date + base::TimeDelta::FromDays(1);
 
-  std::string server1("foo1:443");
+  HostPortPair server1("foo1", 443);
   scoped_refptr<X509Certificate> cert1(
       new X509Certificate("foo1", "CA", start_date, expiration_date));
 
-  std::string server2("foo2:443");
+  HostPortPair server2("foo2", 443);
   scoped_refptr<X509Certificate> cert2(
       new X509Certificate("foo2", "CA", start_date, expiration_date));
 
-  std::string server3("foo3:443");
+  HostPortPair server3("foo3", 443);
   scoped_refptr<X509Certificate> cert3(
     new X509Certificate("foo3", "CA", start_date, expiration_date));
 
@@ -82,11 +82,11 @@ TEST(SSLClientAuthCacheTest, LookupWithPort) {
   base::Time start_date = base::Time::Now();
   base::Time expiration_date = start_date + base::TimeDelta::FromDays(1);
 
-  std::string server1("foo:443");
+  HostPortPair server1("foo", 443);
   scoped_refptr<X509Certificate> cert1(
       new X509Certificate("foo", "CA", start_date, expiration_date));
 
-  std::string server2("foo:8443");
+  HostPortPair server2("foo", 8443);
   scoped_refptr<X509Certificate> cert2(
       new X509Certificate("foo", "CA", start_date, expiration_date));
 
@@ -107,7 +107,7 @@ TEST(SSLClientAuthCacheTest, LookupNullPreference) {
   base::Time start_date = base::Time::Now();
   base::Time expiration_date = start_date + base::TimeDelta::FromDays(1);
 
-  std::string server1("foo:443");
+  HostPortPair server1("foo", 443);
   scoped_refptr<X509Certificate> cert1(
       new X509Certificate("foo", "CA", start_date, expiration_date));
 
@@ -143,13 +143,13 @@ TEST(SSLClientAuthCacheTest, OnCertAdded) {
   base::Time start_date = base::Time::Now();
   base::Time expiration_date = start_date + base::TimeDelta::FromDays(1);
 
-  std::string server1("foo:443");
+  HostPortPair server1("foo", 443);
   scoped_refptr<X509Certificate> cert1(
       new X509Certificate("foo", "CA", start_date, expiration_date));
 
   cache.Add(server1, cert1.get());
 
-  std::string server2("foo2:443");
+  HostPortPair server2("foo2", 443);
   cache.Add(server2, NULL);
 
   scoped_refptr<X509Certificate> cached_cert;

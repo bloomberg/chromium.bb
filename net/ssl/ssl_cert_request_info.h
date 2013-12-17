@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/ssl/ssl_client_cert_type.h"
 
@@ -41,7 +42,7 @@ class NET_EXPORT SSLCertRequestInfo
   void Reset();
 
   // The host and port of the SSL server that requested client authentication.
-  std::string host_and_port;
+  HostPortPair host_and_port;
 
   // True if the server that issues this request was the HTTPS proxy used in
   // the request.  False, if the server was the origin server.

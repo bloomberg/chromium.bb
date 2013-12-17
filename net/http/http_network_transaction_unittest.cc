@@ -10130,7 +10130,7 @@ TEST_P(HttpNetworkTransactionTest,
   request_info.load_flags = net::LOAD_NORMAL;
 
   scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
-  cert_request->host_and_port = "www.example.com:443";
+  cert_request->host_and_port = HostPortPair("www.example.com", 443);
 
   // [ssl_]data1 contains the data for the first SSL handshake. When a
   // CertificateRequest is received for the first time, the handshake will
@@ -10210,8 +10210,8 @@ TEST_P(HttpNetworkTransactionTest,
   // Ensure the certificate was added to the client auth cache before
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup("www.example.com:443",
-                                                       &client_cert));
+  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+      HostPortPair("www.example.com", 443), &client_cert));
   ASSERT_EQ(NULL, client_cert.get());
 
   // Restart the handshake. This will consume ssl_data2, which fails, and
@@ -10222,8 +10222,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
-  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup("www.example.com:443",
-                                                        &client_cert));
+  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+      HostPortPair("www.example.com", 443), &client_cert));
 }
 
 // Ensure that a client certificate is removed from the SSL client auth
@@ -10240,7 +10240,7 @@ TEST_P(HttpNetworkTransactionTest,
   request_info.load_flags = net::LOAD_NORMAL;
 
   scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
-  cert_request->host_and_port = "www.example.com:443";
+  cert_request->host_and_port = HostPortPair("www.example.com", 443);
 
   // When TLS False Start is used, SSLClientSocket::Connect() calls will
   // return successfully after reading up to the peer's Certificate message.
@@ -10331,8 +10331,8 @@ TEST_P(HttpNetworkTransactionTest,
   // Ensure the certificate was added to the client auth cache before
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup("www.example.com:443",
-                                                       &client_cert));
+  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+      HostPortPair("www.example.com", 443), &client_cert));
   ASSERT_EQ(NULL, client_cert.get());
 
   // Restart the handshake. This will consume ssl_data2, which fails, and
@@ -10343,8 +10343,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
-  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup("www.example.com:443",
-                                                        &client_cert));
+  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+      HostPortPair("www.example.com", 443), &client_cert));
 }
 
 // Ensure that a client certificate is removed from the SSL client auth
@@ -10362,7 +10362,7 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   session_deps_.net_log = log.bound().net_log();
 
   scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
-  cert_request->host_and_port = "proxy:70";
+  cert_request->host_and_port = HostPortPair("proxy", 70);
 
   // See ClientAuthCertCache_Direct_NoFalseStart for the explanation of
   // [ssl_]data[1-3]. Rather than represending the endpoint
@@ -10425,13 +10425,13 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
     // Ensure the certificate was added to the client auth cache before
     // allowing the connection to continue restarting.
     scoped_refptr<X509Certificate> client_cert;
-    ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup("proxy:70",
-                                                         &client_cert));
+    ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+        HostPortPair("proxy", 70), &client_cert));
     ASSERT_EQ(NULL, client_cert.get());
     // Ensure the certificate was NOT cached for the endpoint. This only
     // applies to HTTPS requests, but is fine to check for HTTP requests.
-    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup("www.example.com:443",
-                                                          &client_cert));
+    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        HostPortPair("www.example.com", 443), &client_cert));
 
     // Restart the handshake. This will consume ssl_data2, which fails, and
     // then consume ssl_data3, which should also fail. The result code is
@@ -10441,10 +10441,10 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 
     // Now that the new handshake has failed, ensure that the client
     // certificate was removed from the client auth cache.
-    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup("proxy:70",
-                                                          &client_cert));
-    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup("www.example.com:443",
-                                                          &client_cert));
+    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        HostPortPair("proxy", 70), &client_cert));
+    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        HostPortPair("www.example.com", 443), &client_cert));
   }
 }
 

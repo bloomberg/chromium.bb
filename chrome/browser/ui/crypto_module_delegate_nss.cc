@@ -13,7 +13,7 @@ using content::BrowserThread;
 
 ChromeNSSCryptoModuleDelegate::ChromeNSSCryptoModuleDelegate(
     chrome::CryptoModulePasswordReason reason,
-    const std::string& server)
+    const net::HostPortPair& server)
     : reason_(reason),
       server_(server),
       event_(false, false),
@@ -71,7 +71,7 @@ void ChromeNSSCryptoModuleDelegate::ShowDialog(const std::string& slot_name,
       slot_name,
       retry,
       reason_,
-      server_,
+      server_.host(),
       NULL,  // TODO(mattm): Supply parent window.
       base::Bind(&ChromeNSSCryptoModuleDelegate::GotPassword,
                  // RequestPassword is blocked on |event_| until GotPassword is
@@ -96,7 +96,7 @@ void ChromeNSSCryptoModuleDelegate::DidGetSlot(const base::Closure& callback,
 crypto::CryptoModuleBlockingPasswordDelegate*
 CreateCryptoModuleBlockingPasswordDelegate(
     chrome::CryptoModulePasswordReason reason,
-    const std::string& server) {
+    const net::HostPortPair& server) {
   // Returns a ChromeNSSCryptoModuleDelegate without calling InitializeSlot.
   // Since it is only being used as a CreateCryptoModuleBlockingDialogDelegate,
   // initializing the slot handle is unnecessary.

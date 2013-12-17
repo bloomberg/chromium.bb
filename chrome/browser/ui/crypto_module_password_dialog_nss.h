@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
+#include "net/base/host_port_pair.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace net {
@@ -26,7 +27,7 @@ namespace chrome {
 // only be called on UI thread.
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             CryptoModulePasswordReason reason,
-                            const std::string& server,
+                            const net::HostPortPair& server,
                             gfx::NativeWindow parent,
                             const base::Closure& callback);
 
@@ -35,7 +36,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 // Should only be called on UI thread.
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                CryptoModulePasswordReason reason,
-                               const std::string& server,
+                               const net::HostPortPair& server,
                                gfx::NativeWindow parent,
                                const base::Closure& callback);
 

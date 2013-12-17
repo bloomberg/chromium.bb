@@ -54,7 +54,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
               foaf_me_chromium_test_cert_);
 
     cert_request_info_ = new net::SSLCertRequestInfo;
-    cert_request_info_->host_and_port = "foo:123";
+    cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
     cert_request_info_->client_certs.push_back(mit_davidben_cert_);
     cert_request_info_->client_certs.push_back(foaf_me_chromium_test_cert_);
   }
@@ -136,12 +136,12 @@ class SSLClientCertificateSelectorMultiTabTest
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
     cert_request_info_1_ = new net::SSLCertRequestInfo;
-    cert_request_info_1_->host_and_port = "bar:123";
+    cert_request_info_1_->host_and_port = net::HostPortPair("bar", 123);
     cert_request_info_1_->client_certs.push_back(mit_davidben_cert_);
     cert_request_info_1_->client_certs.push_back(foaf_me_chromium_test_cert_);
 
     cert_request_info_2_ = new net::SSLCertRequestInfo;
-    cert_request_info_2_->host_and_port = "bar:123";
+    cert_request_info_2_->host_and_port = net::HostPortPair("bar", 123);
     cert_request_info_2_->client_certs.push_back(mit_davidben_cert_);
     cert_request_info_2_->client_certs.push_back(foaf_me_chromium_test_cert_);
   }
@@ -222,7 +222,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
     cert_request_info_1_ = new net::SSLCertRequestInfo;
-    cert_request_info_1_->host_and_port = "foo:123";
+    cert_request_info_1_->host_and_port = net::HostPortPair("foo", 123);
     cert_request_info_1_->client_certs.push_back(mit_davidben_cert_);
     cert_request_info_1_->client_certs.push_back(foaf_me_chromium_test_cert_);
   }

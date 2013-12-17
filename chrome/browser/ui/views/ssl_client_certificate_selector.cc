@@ -130,7 +130,7 @@ void SSLClientCertificateSelector::Init() {
   layout->StartRow(0, column_set_id);
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToUTF16(cert_request_info()->host_and_port));
+      ASCIIToUTF16(cert_request_info()->host_and_port.ToString()));
   views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

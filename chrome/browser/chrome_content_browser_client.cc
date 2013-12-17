@@ -1815,9 +1815,10 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     return;
   }
 
-  GURL requesting_url("https://" + cert_request_info->host_and_port);
-  DCHECK(requesting_url.is_valid()) << "Invalid URL string: https://"
-                                    << cert_request_info->host_and_port;
+  GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
+  DCHECK(requesting_url.is_valid())
+      << "Invalid URL string: https://"
+      << cert_request_info->host_and_port.ToString();
 
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   scoped_ptr<Value> filter(

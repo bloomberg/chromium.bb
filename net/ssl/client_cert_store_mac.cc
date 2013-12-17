@@ -179,8 +179,7 @@ ClientCertStoreMac::~ClientCertStoreMac() {}
 void ClientCertStoreMac::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {
-  std::string server_domain =
-      HostPortPair::FromString(request.host_and_port).host();
+  std::string server_domain = request.host_and_port.host();
 
   ScopedCFTypeRef<SecIdentityRef> preferred_identity;
   if (!server_domain.empty()) {

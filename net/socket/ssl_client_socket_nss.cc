@@ -2875,8 +2875,7 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
 void SSLClientSocketNSS::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   EnterFunction("");
-  // TODO(rch): switch SSLCertRequestInfo.host_and_port to a HostPortPair
-  cert_request_info->host_and_port = host_and_port_.ToString();
+  cert_request_info->host_and_port = host_and_port_;
   cert_request_info->cert_authorities = core_->state().cert_authorities;
   LeaveFunction("");
 }

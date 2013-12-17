@@ -24,7 +24,7 @@ class CryptoModulePasswordDialog {
       const std::string& slot_name,
       bool retry,
       chrome::CryptoModulePasswordReason reason,
-      const std::string& server,
+      const std::string& hostname,
       gfx::NativeWindow parent,
       const chrome::CryptoModulePasswordCallback& callback);
 
@@ -48,7 +48,7 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
     const std::string& slot_name,
     bool retry,
     chrome::CryptoModulePasswordReason reason,
-    const std::string& server,
+    const std::string& hostname,
     gfx::NativeWindow parent,
     const chrome::CryptoModulePasswordCallback& callback)
     : callback_(callback) {
@@ -70,20 +70,22 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
 
   // Select an appropriate text for the reason.
   std::string text;
-  const base::string16& server16 = UTF8ToUTF16(server);
+  const base::string16& hostname16 = UTF8ToUTF16(hostname);
   const base::string16& slot16 = UTF8ToUTF16(slot_name);
   switch (reason) {
     case chrome::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(
-          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN, slot16, server16);
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN, slot16, hostname16);
       break;
     case chrome::kCryptoModulePasswordCertEnrollment:
       text = l10n_util::GetStringFUTF8(
-          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT, slot16, server16);
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT,
+          slot16,
+          hostname16);
       break;
     case chrome::kCryptoModulePasswordClientAuth:
       text = l10n_util::GetStringFUTF8(
-          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH, slot16, server16);
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH, slot16, hostname16);
       break;
     case chrome::kCryptoModulePasswordListCerts:
       text = l10n_util::GetStringFUTF8(
@@ -157,11 +159,11 @@ void ShowCryptoModulePasswordDialog(
     const std::string& slot_name,
     bool retry,
     CryptoModulePasswordReason reason,
-    const std::string& server,
+    const std::string& hostname,
     gfx::NativeWindow parent,
     const CryptoModulePasswordCallback& callback) {
   (new CryptoModulePasswordDialog(
-       slot_name, retry, reason, server, parent, callback))->Show();
+       slot_name, retry, reason, hostname, parent, callback))->Show();
 }
 
 }  // namespace chrome

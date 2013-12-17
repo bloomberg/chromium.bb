@@ -1291,7 +1291,7 @@ void HttpNetworkTransaction::HandleClientAuthError(int error) {
   if (server_ssl_config_.send_client_cert &&
       (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error))) {
     session_->ssl_client_auth_cache()->Remove(
-        GetHostAndPort(request_->url));
+        HostPortPair::FromURL(request_->url));
   }
 }
 

@@ -348,7 +348,7 @@ void AwContentBrowserClient::SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) {
   LOG(WARNING) << "Client certificate request from "
-        << cert_request_info->host_and_port
+        << cert_request_info->host_and_port.ToString()
         << " rejected. (Client certificates not supported in WebView)";
   callback.Run(NULL);
 }

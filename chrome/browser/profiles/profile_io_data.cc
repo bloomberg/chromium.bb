@@ -889,7 +889,7 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
 
   scoped_ptr<ChromeNSSCryptoModuleDelegate> delegate(
       new ChromeNSSCryptoModuleDelegate(chrome::kCryptoModulePasswordKeygen,
-                                        url.host()));
+                                        net::HostPortPair::FromURL(url)));
   ChromeNSSCryptoModuleDelegate* delegate_ptr = delegate.get();
   keygen_handler->set_crypto_module_delegate(
       delegate.PassAs<crypto::NSSCryptoModuleDelegate>());

@@ -120,7 +120,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
                      FALSE, FALSE, 0);
 
   GtkWidget* site_label = gtk_label_new(
-      cert_request_info->host_and_port.c_str());
+      cert_request_info->host_and_port.ToString().c_str());
   gtk_util::LeftAlignMisc(site_label);
   gtk_box_pack_start(GTK_BOX(site_vbox), site_label, FALSE, FALSE, 0);
 
