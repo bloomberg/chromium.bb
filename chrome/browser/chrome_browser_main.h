@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
-class ActiveTabTracker;
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
@@ -183,10 +182,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // PreMainMessageLoopRunThreadsCreated.
   PrefService* local_state_;
   base::FilePath user_data_dir_;
-
-#if !defined(OS_ANDROID)
-  scoped_ptr<ActiveTabTracker> active_tab_tracker_;
-#endif
 
   // Members needed across shutdown methods.
   bool restart_last_session_;
