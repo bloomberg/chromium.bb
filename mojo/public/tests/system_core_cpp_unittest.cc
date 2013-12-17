@@ -374,5 +374,7 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   }
 }
 
+// TODO(vtl): Write data pipe tests.
+
 }  // namespace
 }  // namespace mojo
