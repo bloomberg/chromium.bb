@@ -349,6 +349,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 void ChromeContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new ChromeRenderFrameObserver(render_frame);
+
+  ContentSettingsObserver* content_settings =
+      new ContentSettingsObserver(render_frame, extension_dispatcher_.get());
+  if (chrome_observer_.get()) {
+    content_settings->SetContentSettingRules(
+        chrome_observer_->content_setting_rules());
+  }
+
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_frame);
 #endif
@@ -356,12 +364,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
-  ContentSettingsObserver* content_settings =
-      new ContentSettingsObserver(render_view, extension_dispatcher_.get());
-  if (chrome_observer_.get()) {
-    content_settings->SetContentSettingRules(
-        chrome_observer_->content_setting_rules());
-  }
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
@@ -538,9 +540,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       params.mimeType = WebString::fromUTF8(actual_mime_type.c_str());
     }
 
-    // TODO(jam): switch ContentSettingsObserver to RenderFrameObserver.
     ContentSettingsObserver* observer =
-        ContentSettingsObserver::Get(render_frame->GetRenderView());
+        ContentSettingsObserver::Get(render_frame);
 
     const ContentSettingsType content_type =
         ShouldUseJavaScriptSettingForPlugin(plugin) ?
@@ -1357,7 +1358,7 @@ bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
 
 blink::WebWorkerPermissionClientProxy*
 ChromeContentRendererClient::CreateWorkerPermissionClientProxy(
-    content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     blink::WebFrame* frame) {
-  return new WorkerPermissionClientProxy(render_view, frame);
+  return new WorkerPermissionClientProxy(render_frame, frame);
 }

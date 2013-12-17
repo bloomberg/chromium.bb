@@ -279,7 +279,7 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_WebUIJavaScript,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
                      RendererContentSettingRules /* rules */)
 
-// Tells the render view to load all blocked plugins with the given identifier.
+// Tells the render frame to load all blocked plugins with the given identifier.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
                     std::string /* identifier */)
 
@@ -372,6 +372,8 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowDisplayingInsecureContent,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)
 
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_ReloadFrame)
+
 // Sent when the profile changes the kSafeBrowsingEnabled preference.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
                     bool /* enable_phishing_detection */)
@@ -432,7 +434,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
 // Asks the renderer to send back FPS.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
 
-// Tells the view it is displaying an interstitial page.
+// Tells the frame it is displaying an interstitial page.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
 // Provides the renderer with the results of the browser's investigation into
@@ -462,7 +464,7 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_ContentBlocked,
 // Sent by the renderer process to check whether access to web databases is
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL5_1(ChromeViewHostMsg_AllowDatabase,
-                            int /* render_view_id */,
+                            int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
                             base::string16 /* database name */,
@@ -472,7 +474,7 @@ IPC_SYNC_MESSAGE_CONTROL5_1(ChromeViewHostMsg_AllowDatabase,
 // Sent by the renderer process to check whether access to DOM Storage is
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowDOMStorage,
-                            int /* render_view_id */,
+                            int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
                             bool /* if true local storage, otherwise session */,
@@ -481,7 +483,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowDOMStorage,
 // Sent by the renderer process to check whether access to FileSystem is
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowFileSystem,
-                            int /* render_view_id */,
+                            int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
                             bool /* allowed */)
@@ -489,7 +491,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowFileSystem,
 // Sent by the renderer process to check whether access to Indexed DBis
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
-                            int /* render_view_id */,
+                            int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
                             base::string16 /* database name */,
@@ -638,18 +640,18 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
 
 // Sent by the renderer to check if a URL has permission to trigger a clipboard
 // read/write operation from the DOM.
-IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
-                           GURL /* origin */,
-                           bool /* allowed */)
-IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
-                           GURL /* origin */,
-                           bool /* allowed */)
+IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
+                            GURL /* origin */,
+                            bool /* allowed */)
+IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
+                            GURL /* origin */,
+                            bool /* allowed */)
 
 // Sent by the renderer to check if a URL has permission to access WebGL
 // extension WEBGL_debug_renderer_info.
-IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed,
-                           GURL /* origin */,
-                           bool /* allowed */)
+IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed,
+                            GURL /* origin */,
+                            bool /* allowed */)
 
 // Sent when the renderer was prevented from displaying insecure content in
 // a secure page by a security policy.  The page may appear incomplete.

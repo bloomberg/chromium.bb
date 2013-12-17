@@ -103,6 +103,7 @@ class CONTENT_EXPORT InterstitialPageImpl
       const LoadCommittedDetails& load_details) OVERRIDE;
 
   // RenderFrameHostDelegate implementation:
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

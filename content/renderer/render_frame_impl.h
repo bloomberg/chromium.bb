@@ -62,6 +62,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
 
+  // Called by RenderView right after creating this object when the
+  // blink::WebFrame has been created.
+  void MainWebFrameCreated(blink::WebFrame* frame);
+
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.
   void PepperPluginCreated(RendererPpapiHost* host);

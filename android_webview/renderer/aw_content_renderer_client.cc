@@ -8,6 +8,7 @@
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_key_systems.h"
+#include "android_webview/renderer/aw_permission_client.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/print_web_view_helper.h"
 #include "base/message_loop/message_loop.h"
@@ -110,6 +111,11 @@ bool AwContentRendererClient::HandleNavigation(
   RenderThread::Get()->Send(new AwViewHostMsg_ShouldOverrideUrlLoading(
       routing_id, url, &ignore_navigation));
   return ignore_navigation;
+}
+
+void AwContentRendererClient::RenderFrameCreated(
+    content::RenderFrame* render_frame) {
+  new AwPermissionClient(render_frame);
 }
 
 void AwContentRendererClient::RenderViewCreated(

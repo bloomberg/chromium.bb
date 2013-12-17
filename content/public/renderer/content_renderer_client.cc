@@ -177,7 +177,7 @@ bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
 
 blink::WebWorkerPermissionClientProxy*
 ContentRendererClient::CreateWorkerPermissionClientProxy(
-    RenderView* render_view, blink::WebFrame* frame) {
+    RenderFrame* render_frame, blink::WebFrame* frame) {
   return NULL;
 }
 

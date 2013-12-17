@@ -26,9 +26,15 @@ typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
 static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
+RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
+                                         int render_frame_id) {
+  return RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+}
+
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(
     int process_id, int routing_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
   RoutingIDFrameMap::iterator it = frames->find(
       RenderFrameHostID(process_id, routing_id));
@@ -60,6 +66,12 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
   if (delegate_)
     delegate_->RenderFrameDeleted(this);
+}
+
+RenderProcessHost* RenderFrameHostImpl::GetProcess() {
+  // TODO(nasko): This should return its own process, once we have working
+  // cross-process navigation for subframes.
+  return render_view_host_->GetProcess();
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -94,12 +106,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
 void RenderFrameHostImpl::Init() {
   GetProcess()->ResumeRequestsForView(routing_id());
-}
-
-RenderProcessHost* RenderFrameHostImpl::GetProcess() const {
-  // TODO(nasko): This should return its own process, once we have working
-  // cross-process navigation for subframes.
-  return render_view_host_->GetProcess();
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(int new_frame_routing_id,

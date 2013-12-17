@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -215,8 +214,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // content::WebContentsObserver implementation.
   virtual void RenderFrameCreated(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -439,9 +436,6 @@ class PrerenderContents : public content::NotificationObserver,
   // The alias session storage namespace for this prerender.
   scoped_refptr<content::SessionStorageNamespace>
       alias_session_storage_namespace;
-
-  // The RenderFrameHosts for prerender_contents_.
-  std::set<content::RenderFrameHost*> render_frame_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

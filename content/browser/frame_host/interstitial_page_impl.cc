@@ -365,6 +365,14 @@ void InterstitialPageImpl::WebContentsDestroyed(WebContents* web_contents) {
   OnNavigatingAwayOrTabClosing();
 }
 
+void InterstitialPageImpl::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  // Note this is only for subframes in the interstitial, the notification for
+  // the main frame happens in RenderViewCreated.
+  controller_->delegate()->RenderFrameForInterstitialPageCreated(
+      render_frame_host);
+}
+
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
   return rvh_delegate_view_.get();
 }
@@ -550,8 +558,8 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   render_view_host_->CreateRenderView(base::string16(),
                                       MSG_ROUTING_NONE,
                                       max_page_id);
-  controller_->delegate()->RenderViewForInterstitialPageCreated(
-      render_view_host_);
+  controller_->delegate()->RenderFrameForInterstitialPageCreated(
+      frame_tree_.root()->render_frame_host());
   view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

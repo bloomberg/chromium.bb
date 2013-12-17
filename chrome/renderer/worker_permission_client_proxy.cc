@@ -4,17 +4,17 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/worker_permission_client_proxy.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 WorkerPermissionClientProxy::WorkerPermissionClientProxy(
-    content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     blink::WebFrame* frame)
-    : routing_id_(render_view->GetRoutingID()),
+    : routing_id_(render_frame->GetRoutingID()),
       is_unique_origin_(false) {
   if (frame->document().securityOrigin().isUnique() ||
       frame->top()->document().securityOrigin().isUnique())

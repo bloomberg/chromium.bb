@@ -37,15 +37,6 @@ namespace android_webview {
 
 namespace {
 
-bool AllowMixedContent(const blink::WebURL& url) {
-  // We treat non-standard schemes as "secure" in the WebView to allow them to
-  // be used for request interception.
-  // TODO(benm): Tighten this restriction by requiring embedders to register
-  // their custom schemes? See b/9420953.
-  GURL gurl(url);
-  return !gurl.IsStandard();
-}
-
 GURL GetAbsoluteUrl(const blink::WebNode& node, const string16& url_fragment) {
   return GURL(node.document().completeURL(url_fragment));
 }
@@ -145,7 +136,6 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
     : content::RenderViewObserver(render_view), page_scale_factor_(0.0f) {
-  render_view->GetWebView()->setPermissionClient(this);
 }
 
 AwRenderViewExt::~AwRenderViewExt() {
@@ -184,22 +174,6 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
   }
   Send(new AwViewHostMsg_DocumentHasImagesResponse(routing_id(), id,
                                                    hasImages));
-}
-
-bool AwRenderViewExt::allowDisplayingInsecureContent(
-      blink::WebFrame* frame,
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) {
-  return enabled_per_settings ? true : AllowMixedContent(url);
-}
-
-bool AwRenderViewExt::allowRunningInsecureContent(
-      blink::WebFrame* frame,
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) {
-  return enabled_per_settings ? true : AllowMixedContent(url);
 }
 
 void AwRenderViewExt::DidCommitProvisionalLoad(blink::WebFrame* frame,

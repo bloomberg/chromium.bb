@@ -12,6 +12,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/renderer/shell_render_frame_observer.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/webkit_test_runner.h"
@@ -73,6 +74,10 @@ void ShellContentRendererClient::RenderThreadStarted() {
 #endif
 }
 
+void ShellContentRendererClient::RenderFrameCreated(RenderFrame* render_frame) {
+  new ShellRenderFrameObserver(render_frame);
+}
+
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
 
@@ -84,9 +89,6 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
       test_runner->proxy()->spellCheckClient());
   render_view->GetWebView()->setValidationMessageClient(
       test_runner->proxy()->validationMessageClient());
-  render_view->GetWebView()->setPermissionClient(
-      ShellRenderProcessObserver::GetInstance()->test_interfaces()->testRunner()
-          ->webPermissions());
   WebTestDelegate* delegate =
       ShellRenderProcessObserver::GetInstance()->test_delegate();
   if (delegate == static_cast<WebTestDelegate*>(test_runner))

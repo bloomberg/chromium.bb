@@ -129,7 +129,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const base::string16& source) const OVERRIDE;
   virtual bool ShouldEnableSiteIsolationPolicy() const OVERRIDE;
   virtual blink::WebWorkerPermissionClientProxy*
-      CreateWorkerPermissionClientProxy(content::RenderView* render_view,
+      CreateWorkerPermissionClientProxy(content::RenderFrame* render_frame,
                                         blink::WebFrame* frame) OVERRIDE;
   virtual bool AllowPepperMediaStreamAPI(const GURL& url) OVERRIDE;
   virtual void AddKeySystems(

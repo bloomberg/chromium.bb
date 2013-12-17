@@ -279,6 +279,19 @@ bool CollectSites(BrowserContext* context,
   return true;
 }
 
+bool ForEachFrameInternal(
+    const base::Callback<void(RenderFrameHost*)>& on_frame,
+    FrameTreeNode* node) {
+  on_frame.Run(node->render_frame_host());
+  return true;
+}
+
+void SendToAllFramesInternal(IPC::Message* message, RenderFrameHost* rfh) {
+  IPC::Message* message_copy = new IPC::Message(*message);
+  message_copy->set_routing_id(rfh->GetRoutingID());
+  rfh->Send(message_copy);
+}
+
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -319,6 +332,13 @@ void WebContentsImpl::RemoveCreatedCallback(const CreatedCallback& callback) {
 
 WebContents* WebContents::FromRenderViewHost(const RenderViewHost* rvh) {
   return rvh->GetDelegate()->GetAsWebContents();
+}
+
+WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
+  RenderFrameHostImpl* rfh_impl = static_cast<RenderFrameHostImpl*>(rfh);
+  if (!rfh_impl)
+    return NULL;
+  return rfh_impl->delegate()->GetAsWebContents();
 }
 
 // WebContentsImpl::DestructionObserver ----------------------------------------
@@ -634,6 +654,16 @@ RenderFrameHost* WebContentsImpl::GetMainFrame() {
   return frame_tree_.root()->render_frame_host();
 }
 
+void WebContentsImpl::ForEachFrame(
+    const base::Callback<void(RenderFrameHost*)>& on_frame) {
+  frame_tree_.ForEach(base::Bind(&ForEachFrameInternal, on_frame));
+}
+
+void WebContentsImpl::SendToAllFrames(IPC::Message* message) {
+  ForEachFrame(base::Bind(&SendToAllFramesInternal, message));
+  delete message;
+}
+
 RenderViewHost* WebContentsImpl::GetRenderViewHost() const {
   return GetRenderManager()->current_host();
 }
@@ -874,9 +904,9 @@ uint64 WebContentsImpl::GetUploadPosition() const {
 
 std::set<GURL> WebContentsImpl::GetSitesInTab() const {
   std::set<GURL> sites;
-  frame_tree_.ForEach(Bind(&CollectSites,
-                           base::Unretained(GetBrowserContext()),
-                           base::Unretained(&sites)));
+  frame_tree_.ForEach(base::Bind(&CollectSites,
+                                 base::Unretained(GetBrowserContext()),
+                                 base::Unretained(&sites)));
   return sites;
 }
 
@@ -1668,10 +1698,10 @@ bool WebContentsImpl::NavigateToPendingEntry(
       reload_type);
 }
 
-void WebContentsImpl::RenderViewForInterstitialPageCreated(
-    RenderViewHost* render_view_host) {
+void WebContentsImpl::RenderFrameForInterstitialPageCreated(
+    RenderFrameHost* render_frame_host) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    RenderViewForInterstitialPageCreated(render_view_host));
+                    RenderFrameForInterstitialPageCreated(render_frame_host));
 }
 
 void WebContentsImpl::AttachInterstitialPage(
@@ -2779,6 +2809,10 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
                     RenderFrameDeleted(render_frame_host));
 }
 
+WebContents* WebContentsImpl::GetAsWebContents() {
+  return this;
+}
+
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
   return render_view_host_delegate_view_;
 }
@@ -2791,10 +2825,6 @@ WebContentsImpl::GetRendererManagementDelegate() {
 RendererPreferences WebContentsImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   return renderer_preferences_;
-}
-
-WebContents* WebContentsImpl::GetAsWebContents() {
-  return this;
 }
 
 gfx::Rect WebContentsImpl::GetRootWindowResizerRect() const {

@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/public/web/WebPermissionClient.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 
@@ -25,8 +24,7 @@ namespace android_webview {
 // Render process side of AwRenderViewHostExt, this provides cross-process
 // implementation of miscellaneous WebView functions that we need to poke
 // WebKit directly to implement (and that aren't needed in the chrome app).
-class AwRenderViewExt : public content::RenderViewObserver,
-                        public blink::WebPermissionClient {
+class AwRenderViewExt : public content::RenderViewObserver {
  public:
   static void RenderViewCreated(content::RenderView* render_view);
 
@@ -60,18 +58,6 @@ class AwRenderViewExt : public content::RenderViewObserver,
   void UpdatePageScaleFactor();
 
   void CheckContentsSize();
-
-  // blink::WebPermissionClient implementation.
-  virtual bool allowDisplayingInsecureContent(
-      blink::WebFrame* frame,
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) OVERRIDE;
-  virtual bool allowRunningInsecureContent(
-      blink::WebFrame* frame,
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) OVERRIDE;
 
   bool capture_picture_enabled_;
 

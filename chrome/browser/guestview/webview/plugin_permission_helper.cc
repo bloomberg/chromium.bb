@@ -102,10 +102,7 @@ void PluginPermissionHelper::OnPermissionResponse(const std::string& identifier,
                                                   bool allow,
                                                   const std::string& input) {
   if (allow) {
-    RenderViewHost* host = web_contents()->GetRenderViewHost();
     ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-        host->GetProcess()->GetID());
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-        host->GetRoutingID(), identifier));
+        web_contents(), true, identifier);
   }
 }

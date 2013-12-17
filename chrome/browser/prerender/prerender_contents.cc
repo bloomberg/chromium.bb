@@ -163,11 +163,10 @@ void PrerenderContents::AddPendingPrerender(
 }
 
 void PrerenderContents::PrepareForUse() {
-  for (std::set<content::RenderFrameHost*>::iterator i =
-           render_frame_hosts_.begin(); i != render_frame_hosts_.end(); ++i) {
-    (*i)->Send(new PrerenderMsg_SetIsPrerendering((*i)->GetRoutingID(), false));
+  if (prerender_contents_.get()) {
+    prerender_contents_->SendToAllFrames(
+        new PrerenderMsg_SetIsPrerendering(MSG_ROUTING_NONE, false));
   }
-  render_frame_hosts_.clear();
 
   NotifyPrerenderStop();
 
@@ -547,18 +546,12 @@ void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
 
 void PrerenderContents::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  render_frame_hosts_.insert(render_frame_host);
   // When a new RenderFrame is created for a prerendering WebContents, tell the
   // new RenderFrame it's being used for prerendering before any navigations
   // occur.  Note that this is always triggered before the first navigation, so
   // there's no need to send the message just after the WebContents is created.
   render_frame_host->Send(new PrerenderMsg_SetIsPrerendering(
       render_frame_host->GetRoutingID(), true));
-}
-
-void PrerenderContents::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  render_frame_hosts_.erase(render_frame_host);
 }
 
 void PrerenderContents::DidStopLoading(

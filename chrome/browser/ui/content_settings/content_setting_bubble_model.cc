@@ -465,14 +465,11 @@ ContentSettingPluginBubbleModel::~ContentSettingPluginBubbleModel() {
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
   DCHECK(web_contents());
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
 #if defined(ENABLE_PLUGINS)
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
-#endif
   // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
-  host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
-                                                  std::string()));
+  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
+      web_contents(), true, std::string());
+#endif
   set_custom_link_enabled(false);
   TabSpecificContentSettings::FromWebContents(web_contents())->
       set_load_plugins_link_enabled(false);

@@ -86,6 +86,10 @@ class TabSpecificContentSettings
   static TabSpecificContentSettings* Get(int render_process_id,
                                          int render_view_id);
 
+  // Returns the object given a render frame's id.
+  static TabSpecificContentSettings* GetForFrame(int render_process_id,
+                                                 int render_view_id);
+
   // Static methods called on the UI threads.
   // Called when cookies for the given URL were read either from within the
   // current page or while loading it. |blocked_by_policy| should be true, if
@@ -115,7 +119,7 @@ class TabSpecificContentSettings
   // |blocked_by_policy| should be true, and this function should invoke
   // OnContentBlocked.
   static void WebDatabaseAccessed(int render_process_id,
-                                  int render_view_id,
+                                  int render_frame_id,
                                   const GURL& url,
                                   const base::string16& name,
                                   const base::string16& display_name,
@@ -126,7 +130,7 @@ class TabSpecificContentSettings
   // |blocked_by_policy| should be true, and this function should invoke
   // OnContentBlocked.
   static void DOMStorageAccessed(int render_process_id,
-                                 int render_view_id,
+                                 int render_frame_id,
                                  const GURL& url,
                                  bool local,
                                  bool blocked_by_policy);
@@ -136,7 +140,7 @@ class TabSpecificContentSettings
   // |blocked_by_policy| should be true, and this function should invoke
   // OnContentBlocked.
   static void IndexedDBAccessed(int render_process_id,
-                                int render_view_id,
+                                int render_frame_id,
                                 const GURL& url,
                                 const base::string16& description,
                                 bool blocked_by_policy);
@@ -146,7 +150,7 @@ class TabSpecificContentSettings
   // |blocked_by_policy| should be true, and this function should invoke
   // OnContentBlocked.
   static void FileSystemAccessed(int render_process_id,
-                                 int render_view_id,
+                                 int render_frame_id,
                                  const GURL& url,
                                  bool blocked_by_policy);
 
@@ -272,8 +276,8 @@ class TabSpecificContentSettings
   void SetPepperBrokerAllowed(bool allowed);
 
   // content::WebContentsObserver overrides.
-  virtual void RenderViewForInterstitialPageCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderFrameForInterstitialPageCreated(
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,

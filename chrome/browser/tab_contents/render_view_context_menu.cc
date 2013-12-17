@@ -1524,7 +1524,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 #if defined(ENABLE_PLUGINS)
     if (context.request_id && !context.is_pepper_menu) {
       ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-        rvh->GetProcess()->GetID());
+        source_web_contents_, false, std::string());
     }
 #endif
     rvh->ExecuteCustomContextMenuCommand(action, context);

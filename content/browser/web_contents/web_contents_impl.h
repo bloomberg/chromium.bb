@@ -174,6 +174,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderFrameHost* GetMainFrame() OVERRIDE;
+  virtual void ForEachFrame(
+      const base::Callback<void(RenderFrameHost*)>& on_frame) OVERRIDE;
+  virtual void SendToAllFrames(IPC::Message* message) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual void GetRenderViewHostAtPosition(
       int x,
@@ -284,6 +287,7 @@ class CONTENT_EXPORT WebContentsImpl
                                  const IPC::Message& message) OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual WebContents* GetAsWebContents() OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
@@ -294,7 +298,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const GURL& GetVisibleURL() const OVERRIDE;
   virtual const GURL& GetLastCommittedURL() const OVERRIDE;
-  virtual WebContents* GetAsWebContents() OVERRIDE;
+  // RenderFrameHostDelegate has the same method, so list it there because this
+  // interface is going away.
+  // virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
@@ -544,9 +550,9 @@ class CONTENT_EXPORT WebContentsImpl
       int merge_history_length,
       int32 minimum_page_id) OVERRIDE;
 
-  // Called by InterstitialPageImpl when it creates a RenderViewHost.
-  virtual void RenderViewForInterstitialPageCreated(
-      RenderViewHost* render_view_host) OVERRIDE;
+  // Called by InterstitialPageImpl when it creates a RenderFrameHost.
+  virtual void RenderFrameForInterstitialPageCreated(
+      RenderFrameHost* render_frame_host) OVERRIDE;
 
   // Sets the passed interstitial as the currently showing interstitial.
   // No interstitial page should already be attached.

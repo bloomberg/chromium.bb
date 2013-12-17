@@ -34,6 +34,7 @@ class ShellContentRendererClient : public ContentRendererClient {
 
   // ContentRendererClient implementation.
   virtual void RenderThreadStarted() OVERRIDE;
+  virtual void RenderFrameCreated(RenderFrame* render_frame) OVERRIDE;
   virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
   virtual bool OverrideCreatePlugin(
       RenderFrame* render_frame,

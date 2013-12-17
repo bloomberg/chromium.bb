@@ -34,8 +34,8 @@ class PluginObserver : public content::WebContentsObserver,
   virtual ~PluginObserver();
 
   // content::WebContentsObserver implementation.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderFrameCreated(
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

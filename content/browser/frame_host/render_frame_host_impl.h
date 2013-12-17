@@ -32,6 +32,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual ~RenderFrameHostImpl();
 
   // RenderFrameHost
+  virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
 
   // IPC::Sender
@@ -41,7 +42,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void Init();
-  RenderProcessHost* GetProcess() const;
   int routing_id() const { return routing_id_; }
   void OnCreateChildFrame(int new_frame_routing_id,
                           int64 parent_frame_id,

@@ -140,6 +140,11 @@ RenderFrameImpl::~RenderFrameImpl() {
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
+void RenderFrameImpl::MainWebFrameCreated(blink::WebFrame* frame) {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    WebFrameCreated(frame));
+}
+
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
   return render_view_;
 }
@@ -574,7 +579,7 @@ RenderFrameImpl::createWorkerPermissionClientProxy(WebFrame* frame) {
   if (!frame || !frame->view())
     return NULL;
   return GetContentClient()->renderer()->CreateWorkerPermissionClientProxy(
-      RenderViewImpl::FromWebView(frame->view()), frame);
+      this, frame);
 }
 
 blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebFrame* frame) {
@@ -616,6 +621,9 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
     g_child_frame_map.Get().insert(
         std::make_pair(web_frame, child_render_frame));
+  } else {
+    FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                      WebFrameCreated(web_frame));
   }
 
   return web_frame;
@@ -863,6 +871,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,
   // * UpdateSessionHistory
   // * GetLoadingUrl
   render_view_->didCommitProvisionalLoad(frame, is_new_navigation);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidCommitProvisionalLoad(frame, is_new_navigation));
 }
 
 void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame) {

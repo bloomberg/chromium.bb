@@ -160,22 +160,22 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnAddEventToExtensionActivityLog(
       const std::string& extension_id,
       const ExtensionHostMsg_APIActionOrEvent_Params& params);
-  void OnAllowDatabase(int render_view_id,
+  void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,
                        const GURL& top_origin_url,
                        const base::string16& name,
                        const base::string16& display_name,
                        bool* allowed);
-  void OnAllowDOMStorage(int render_view_id,
+  void OnAllowDOMStorage(int render_frame_id,
                          const GURL& origin_url,
                          const GURL& top_origin_url,
                          bool local,
                          bool* allowed);
-  void OnAllowFileSystem(int render_view_id,
+  void OnAllowFileSystem(int render_frame_id,
                          const GURL& origin_url,
                          const GURL& top_origin_url,
                          bool* allowed);
-  void OnAllowIndexedDB(int render_view_id,
+  void OnAllowIndexedDB(int render_frame_id,
                         const GURL& origin_url,
                         const GURL& top_origin_url,
                         const base::string16& name,

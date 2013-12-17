@@ -210,6 +210,8 @@
         'renderer/aw_content_renderer_client.h',
         'renderer/aw_key_systems.cc',
         'renderer/aw_key_systems.h',
+        'renderer/aw_permission_client.cc',
+        'renderer/aw_permission_client.h',
         'renderer/aw_render_process_observer.cc',
         'renderer/aw_render_process_observer.h',
         'renderer/aw_render_view_ext.cc',

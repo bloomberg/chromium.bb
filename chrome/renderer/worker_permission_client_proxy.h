@@ -15,7 +15,7 @@ class SyncMessageFilter;
 }
 
 namespace content {
-class RenderView;
+class RenderFrame;
 }
 
 namespace blink {
@@ -27,7 +27,7 @@ class WebFrame;
 class WorkerPermissionClientProxy
     : public blink::WebWorkerPermissionClientProxy {
  public:
-  WorkerPermissionClientProxy(content::RenderView* render_view,
+  WorkerPermissionClientProxy(content::RenderFrame* render_frame,
                               blink::WebFrame* frame);
   virtual ~WorkerPermissionClientProxy();
 

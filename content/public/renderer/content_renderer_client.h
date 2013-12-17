@@ -258,7 +258,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Creates a permission client proxy for in-renderer worker.
   virtual blink::WebWorkerPermissionClientProxy*
-      CreateWorkerPermissionClientProxy(RenderView* render_view,
+      CreateWorkerPermissionClientProxy(RenderFrame* render_frame,
                                         blink::WebFrame* frame);
 };
 

@@ -14,7 +14,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view_observer.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "grit/webkit_strings.h"
@@ -47,30 +46,6 @@ const plugins::PluginPlaceholder* g_last_active_menu = NULL;
 const char ChromePluginPlaceholder::kPluginPlaceholderDataURL[] =
     "chrome://pluginplaceholderdata/";
 
-class ChromePluginPlaceholder::RenderViewObserver
-    : public content::RenderViewObserver {
- public:
-  explicit RenderViewObserver(ChromePluginPlaceholder* placeholder)
-      : content::RenderViewObserver(
-            placeholder->render_frame()->GetRenderView()),
-        placeholder_(placeholder) {}
-
-  // content::RenderViewObserver implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    // We don't swallow these messages because multiple blocked plugins and
-    // other objects have an interest in them.
-    IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-      IPC_MESSAGE_FORWARD(ChromeViewMsg_LoadBlockedPlugins, placeholder_,
-                          ChromePluginPlaceholder::OnLoadBlockedPlugins)
-    IPC_END_MESSAGE_MAP()
-
-    return false;
-  }
-
- private:
-  ChromePluginPlaceholder* placeholder_;
-};
-
 ChromePluginPlaceholder::ChromePluginPlaceholder(
     content::RenderFrame* render_frame,
     blink::WebFrame* frame,
@@ -90,8 +65,6 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
       has_host_(false),
       context_menu_request_id_(0) {
   RenderThread::Get()->AddObserver(this);
-
-  view_observer_.reset(new RenderViewObserver(this));
 }
 
 ChromePluginPlaceholder::~ChromePluginPlaceholder() {
@@ -212,18 +185,19 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_FoundMissingPlugin, OnFoundMissingPlugin)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_DidNotFindMissingPlugin,
-                      OnDidNotFindMissingPlugin)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_StartedDownloadingPlugin,
-                      OnStartedDownloadingPlugin)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_FinishedDownloadingPlugin,
-                      OnFinishedDownloadingPlugin)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_ErrorDownloadingPlugin,
-                      OnErrorDownloadingPlugin)
-  IPC_MESSAGE_HANDLER(ChromeViewMsg_CancelledDownloadingPlugin,
-                      OnCancelledDownloadingPlugin)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_FoundMissingPlugin, OnFoundMissingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_DidNotFindMissingPlugin,
+                        OnDidNotFindMissingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_StartedDownloadingPlugin,
+                        OnStartedDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_FinishedDownloadingPlugin,
+                        OnFinishedDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_ErrorDownloadingPlugin,
+                        OnErrorDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_CancelledDownloadingPlugin,
+                        OnCancelledDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   if (handled)

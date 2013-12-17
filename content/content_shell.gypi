@@ -158,6 +158,8 @@
         'shell/renderer/gc_extension.h',
         'shell/renderer/shell_content_renderer_client.cc',
         'shell/renderer/shell_content_renderer_client.h',
+        'shell/renderer/shell_render_frame_observer.cc',
+        'shell/renderer/shell_render_frame_observer.h',
         'shell/renderer/shell_render_process_observer.cc',
         'shell/renderer/shell_render_process_observer.h',
         'shell/renderer/shell_render_view_observer.cc',

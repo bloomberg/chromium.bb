@@ -23,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -319,16 +320,14 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
-  content::RenderViewHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  int process_id = host->GetProcess()->GetID();
+  int process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
   base::FilePath path(FILE_PATH_LITERAL("blah"));
   EXPECT_FALSE(filter->CanLoadPlugin(process_id, path));
-  filter->AuthorizeAllPlugins(process_id);
+  filter->AuthorizeAllPlugins(web_contents, true, std::string());
   EXPECT_TRUE(filter->CanLoadPlugin(process_id, path));
-  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-      host->GetRoutingID(), std::string()));
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -395,12 +394,9 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, MAYBE_LoadAllBlockedPlugins) {
   content::TitleWatcher title_watcher1(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
 
-  content::RenderViewHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
-  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-      host->GetRoutingID(), std::string()));
+      browser()->tab_strip_model()->GetActiveWebContents(), true,
+      std::string());
   EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
 
   base::string16 expected_title2(ASCIIToUTF16("2"));
@@ -432,12 +428,9 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
-  content::RenderViewHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
-  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-      host->GetRoutingID(), std::string()));
+      browser()->tab_strip_model()->GetActiveWebContents(), true,
+      std::string());
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -456,12 +449,9 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
-  content::RenderViewHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
-  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-      host->GetRoutingID(), std::string()));
+      browser()->tab_strip_model()->GetActiveWebContents(), true,
+      std::string());
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }

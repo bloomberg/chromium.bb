@@ -28,6 +28,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -97,6 +98,22 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   return TabSpecificContentSettings::FromWebContents(web_contents);
 }
 
+TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
+    int render_process_id, int render_frame_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
+      render_process_id, render_frame_id);
+  if (!frame)
+    return NULL;
+
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+  if (!web_contents)
+    return NULL;
+
+  return TabSpecificContentSettings::FromWebContents(web_contents);
+}
+
 // static
 void TabSpecificContentSettings::CookiesRead(int render_process_id,
                                              int render_view_id,
@@ -131,48 +148,71 @@ void TabSpecificContentSettings::CookieChanged(
 // static
 void TabSpecificContentSettings::WebDatabaseAccessed(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const GURL& url,
     const base::string16& name,
     const base::string16& display_name,
     bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  TabSpecificContentSettings* settings = GetForFrame(
+      render_process_id, render_frame_id);
+
+  // TODO(jam): remove this once WorkerProcessHost knows the RenderFrame IDs for
+  // a shared worker, which needs SharedWorkerRepository to be per frame.
+  if (!settings)
+    settings = Get(render_process_id, render_frame_id);
+
   if (settings)
     settings->OnWebDatabaseAccessed(url, name, display_name, blocked_by_policy);
 }
 
 // static
 void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
-                                                    int render_view_id,
+                                                    int render_frame_id,
                                                     const GURL& url,
                                                     bool local,
                                                     bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  TabSpecificContentSettings* settings = GetForFrame(
+      render_process_id, render_frame_id);
   if (settings)
     settings->OnLocalStorageAccessed(url, local, blocked_by_policy);
 }
 
 // static
-void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
-                                                   int render_view_id,
-                                                   const GURL& url,
-                                                   const base::string16& description,
-                                                   bool blocked_by_policy) {
+void TabSpecificContentSettings::IndexedDBAccessed(
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    const base::string16& description,
+    bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  TabSpecificContentSettings* settings = GetForFrame(
+      render_process_id, render_frame_id);
+
+  // TODO(jam): remove this once WorkerProcessHost knows the RenderFrame IDs for
+  // a shared worker, which needs SharedWorkerRepository to be per frame.
+  if (!settings)
+    settings = Get(render_process_id, render_frame_id);
+
   if (settings)
     settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
 }
 
 // static
 void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
-                                                    int render_view_id,
+                                                    int render_frame_id,
                                                     const GURL& url,
                                                     bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  TabSpecificContentSettings* settings = GetForFrame(
+      render_process_id, render_frame_id);
+
+  // TODO(jam): remove this once WorkerProcessHost knows the RenderFrame IDs for
+  // a shared worker, which needs SharedWorkerRepository to be per frame.
+  if (!settings)
+    settings = Get(render_process_id, render_frame_id);
+
   if (settings)
     settings->OnFileSystemAccessed(url, blocked_by_policy);
 }
@@ -591,12 +631,12 @@ void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
   }
 }
 
-void TabSpecificContentSettings::RenderViewForInterstitialPageCreated(
-    RenderViewHost* render_view_host) {
+void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
+    content::RenderFrameHost* render_frame_host) {
   // We want to tell the renderer-side code to ignore content settings for this
   // page.
-  render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
-      render_view_host->GetRoutingID()));
+  render_frame_host->Send(new ChromeViewMsg_SetAsInterstitial(
+      render_frame_host->GetRoutingID()));
 }
 
 bool TabSpecificContentSettings::OnMessageReceived(

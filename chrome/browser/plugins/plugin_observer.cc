@@ -24,6 +24,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -182,8 +183,8 @@ PluginObserver::~PluginObserver() {
 #endif
 }
 
-void PluginObserver::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
+void PluginObserver::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
 #if defined(USE_AURA) && defined(OS_WIN)
   // If the window belongs to the Ash desktop, before we navigate we need
   // to tell the renderview that NPAPI plugins are not supported so it does
@@ -208,8 +209,8 @@ void PluginObserver::RenderViewCreated(
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH ||
       chrome::GetHostDesktopTypeForNativeView(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH) {
-    int routing_id = render_view_host->GetRoutingID();
-    render_view_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
+    int routing_id = render_frame_host->GetRoutingID();
+    render_frame_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
   }
 #endif
 }

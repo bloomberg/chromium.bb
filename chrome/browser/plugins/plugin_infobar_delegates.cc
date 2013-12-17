@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -66,11 +66,8 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 }
 
 void PluginInfoBarDelegate::LoadBlockedPlugins() {
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
-  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-      host->GetRoutingID(), identifier_));
+      web_contents(), true, identifier_);
 }
 
 int PluginInfoBarDelegate::GetIconID() const {

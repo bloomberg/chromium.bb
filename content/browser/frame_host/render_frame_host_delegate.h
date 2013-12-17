@@ -13,6 +13,7 @@ class Message;
 
 namespace content {
 class RenderFrameHost;
+class WebContents;
 
 // An interface implemented by an object interested in knowing about the state
 // of the RenderFrameHost.
@@ -27,6 +28,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Informs the delegate whenever a RenderFrameHost is deleted.
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
+
+  // Return this object cast to a WebContents, if it is one. If the object is
+  // not a WebContents, returns NULL.
+  virtual WebContents* GetAsWebContents();
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

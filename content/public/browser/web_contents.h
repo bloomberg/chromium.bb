@@ -127,6 +127,8 @@ class WebContents : public PageNavigator,
   CONTENT_EXPORT static WebContents* FromRenderViewHost(
       const RenderViewHost* rvh);
 
+  CONTENT_EXPORT static WebContents* FromRenderFrameHost(RenderFrameHost* rfh);
+
   virtual ~WebContents() {}
 
   // Intrinsic tab state -------------------------------------------------------
@@ -166,6 +168,14 @@ class WebContents : public PageNavigator,
 
   // Returns the main frame for the currently active view.
   virtual RenderFrameHost* GetMainFrame() = 0;
+
+  // Calls |on_frame| for each frame in the currently active view.
+  virtual void ForEachFrame(
+      const base::Callback<void(RenderFrameHost*)>& on_frame) = 0;
+
+  // Sends the given IPC to all frames in the currently active view. This is a
+  // convenience method instead of calling ForEach.
+  virtual void SendToAllFrames(IPC::Message* message) = 0;
 
   // Gets the current RenderViewHost for this tab.
   virtual RenderViewHost* GetRenderViewHost() const = 0;

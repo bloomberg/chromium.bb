@@ -12,6 +12,7 @@
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -142,10 +143,11 @@ ContentSetting GetContentSettingFromRules(
 }  // namespace
 
 ContentSettingsObserver::ContentSettingsObserver(
-    content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     extensions::Dispatcher* extension_dispatcher)
-    : content::RenderViewObserver(render_view),
-      content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
+    : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<ContentSettingsObserver>(
+          render_frame),
       extension_dispatcher_(extension_dispatcher),
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
@@ -153,7 +155,6 @@ ContentSettingsObserver::ContentSettingsObserver(
       is_interstitial_page_(false),
       npapi_plugins_blocked_(false) {
   ClearBlockedContentSettings();
-  render_view->GetWebView()->setPermissionClient(this);
 }
 
 ContentSettingsObserver::~ContentSettingsObserver() {
@@ -182,6 +183,10 @@ void ContentSettingsObserver::DidBlockContentType(
   }
 }
 
+void ContentSettingsObserver::WebFrameCreated(blink::WebFrame* frame) {
+  frame->setPermissionClient(this);
+}
+
 bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserver, message)
@@ -191,6 +196,7 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetAllowDisplayingInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
                         OnSetAllowRunningInsecureContent)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_ReloadFrame, OnReloadFrame);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   if (handled)
@@ -375,8 +381,7 @@ bool ContentSettingsObserver::allowReadFromClipboard(WebFrame* frame,
   bool allowed = false;
   // TODO(dcheng): Should we consider a toURL() method on WebSecurityOrigin?
   Send(new ChromeViewHostMsg_CanTriggerClipboardRead(
-      routing_id(), GURL(frame->document().securityOrigin().toString().utf8()),
-      &allowed));
+      GURL(frame->document().securityOrigin().toString().utf8()), &allowed));
   return allowed;
 }
 
@@ -384,8 +389,7 @@ bool ContentSettingsObserver::allowWriteToClipboard(WebFrame* frame,
                                                     bool default_value) {
   bool allowed = false;
   Send(new ChromeViewHostMsg_CanTriggerClipboardWrite(
-      routing_id(), GURL(frame->document().securityOrigin().toString().utf8()),
-      &allowed));
+      GURL(frame->document().securityOrigin().toString().utf8()), &allowed));
   return allowed;
 }
 
@@ -551,7 +555,6 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
 bool ContentSettingsObserver::allowWebGLDebugRendererInfo(WebFrame* frame) {
   bool allowed = false;
   Send(new ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed(
-      routing_id(),
       GURL(frame->top()->document().securityOrigin().toString().utf8()),
       &allowed));
   return allowed;
@@ -584,9 +587,6 @@ void ContentSettingsObserver::OnNPAPINotSupported() {
 
 void ContentSettingsObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
   allow_displaying_insecure_content_ = allow;
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  if (main_frame)
-    main_frame->reload();
 }
 
 void ContentSettingsObserver::OnSetAllowRunningInsecureContent(bool allow) {
@@ -594,6 +594,14 @@ void ContentSettingsObserver::OnSetAllowRunningInsecureContent(bool allow) {
   OnSetAllowDisplayingInsecureContent(allow);
 }
 
+void ContentSettingsObserver::OnReloadFrame() {
+  // TODO(jam): once --site-per-process is default this will just be
+  // render_frame()->GetWebFrame()->reload().
+  WebFrame* main_frame =
+      render_frame()->GetRenderView()->GetWebView()->mainFrame();
+  if (main_frame)
+    main_frame->reload();
+}
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i)
@@ -649,7 +657,7 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
     return true;
 
   // TODO(creis, fsamuel): Remove this once the concept of swapped out
-  // RenderViews goes away.
+  // RenderFrames goes away.
   if (document_url == GURL(content::kSwappedOutURL))
     return true;
 
