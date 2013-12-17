@@ -422,6 +422,10 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
                                           const UserImage& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // There is no visible background in  kiosk mode.
+  if (UserManager::Get()->IsLoggedInAsKioskApp())
+    return;
+
   base::FilePath wallpaper_path =
       GetCustomWallpaperPath(kOriginalWallpaperSubDir, user_id_hash, file);
 
@@ -476,6 +480,9 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
 }
 
 void WallpaperManager::SetDefaultWallpaper() {
+  // There is no visible background in  kiosk mode.
+  if (UserManager::Get()->IsLoggedInAsKioskApp())
+    return;
   current_wallpaper_path_.clear();
   if (ash::Shell::GetInstance()->desktop_background_controller()->
           SetDefaultWallpaper(UserManager::Get()->IsLoggedInAsGuest()))
@@ -528,6 +535,9 @@ void WallpaperManager::SetLastSelectedUser(
 
 void WallpaperManager::SetUserWallpaper(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // There is no visible background in  kiosk mode.
+  if (UserManager::Get()->IsLoggedInAsKioskApp())
+    return;
   if (email == UserManager::kGuestUserName) {
     SetDefaultWallpaper();
     return;
@@ -589,6 +599,9 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
 void WallpaperManager::SetWallpaperFromImageSkia(
     const gfx::ImageSkia& wallpaper,
     ash::WallpaperLayout layout) {
+  // There is no visible background in  kiosk mode.
+  if (UserManager::Get()->IsLoggedInAsKioskApp())
+    return;
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper, layout);
 }
