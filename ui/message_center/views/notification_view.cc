@@ -599,10 +599,14 @@ gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
 
 void NotificationView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
+  // Certain operations can cause |this| to be destructed, so copy the members
+  // we send to other parts of the code.
+  // TODO(dewittj): Remove this hack.
+  std::string id(notification_id());
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
-      controller_->ClickOnNotificationButton(notification_id(), i);
+      controller_->ClickOnNotificationButton(id, i);
       return;
     }
   }
@@ -617,7 +621,8 @@ void NotificationView::ButtonPressed(views::Button* sender,
       image_view_->SetVisible(true);
 
     is_expanded_ = true;
-    controller_->ExpandNotification(notification_id());
+    // ExpandNotification can cause destruction of |this|.
+    controller_->ExpandNotification(id);
     return;
   }
 
