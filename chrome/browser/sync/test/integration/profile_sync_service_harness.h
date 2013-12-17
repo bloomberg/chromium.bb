@@ -98,10 +98,6 @@ class ProfileSyncServiceHarness
   // true if sync is disabled.
   bool AwaitSyncDisabled();
 
-  // Blocks the caller until the syncer receives an actionable error.
-  // Returns true if the sync client received an actionable error.
-  bool AwaitActionableError();
-
   // Blocks until the given set of data types are migrated.
   bool AwaitMigration(syncer::ModelTypeSet expected_migrated_types);
 

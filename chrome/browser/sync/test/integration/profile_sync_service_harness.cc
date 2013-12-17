@@ -210,15 +210,6 @@ bool NoPendingBackendMigration(const ProfileSyncServiceHarness* harness) {
   return !harness->HasPendingBackendMigration();
 }
 
-// Helper function which returns true if the client has detected an actionable
-// error.
-bool HasActionableError(const ProfileSyncServiceHarness* harness) {
-  DCHECK(harness);
-  ProfileSyncService::Status status = harness->GetStatus();
-  return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
-          harness->service()->HasUnrecoverableError() == true);
-}
-
 }  // namespace
 
 // static
@@ -555,15 +546,6 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
                  base::Unretained(this)),
       "IsSyncDisabled");
   return AwaitStatusChange(&sync_disabled_checker, "AwaitSyncDisabled");
-}
-
-bool ProfileSyncServiceHarness::AwaitActionableError() {
-  ProfileSyncService::Status status = GetStatus();
-  CHECK(status.sync_protocol_error.action == syncer::UNKNOWN_ACTION);
-  CallbackStatusChecker actionable_error_checker(
-      base::Bind(&HasActionableError, base::Unretained(this)),
-      "HasActionableError");
-  return AwaitStatusChange(&actionable_error_checker, "AwaitActionableError");
 }
 
 bool ProfileSyncServiceHarness::AwaitMigration(
