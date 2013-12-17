@@ -16,11 +16,13 @@ import android.view.MotionEvent.PointerProperties;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.third_party.GestureDetector;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test suite for ContentViewGestureHandler.
@@ -39,18 +41,28 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
     static class MockListener extends GestureDetector.SimpleOnGestureListener {
         MotionEvent mLastLongPress;
+        MotionEvent mLastShowPress;
         MotionEvent mLastSingleTap;
         MotionEvent mLastFling1;
         CountDownLatch mLongPressCalled;
+        CountDownLatch mShowPressCalled;
 
         public MockListener() {
             mLongPressCalled = new CountDownLatch(1);
+            mShowPressCalled = new CountDownLatch(1);
         }
 
         @Override
         public void onLongPress(MotionEvent e) {
             mLastLongPress = MotionEvent.obtain(e);
             mLongPressCalled.countDown();
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+            mLastShowPress = MotionEvent.obtain(e);
+            mShowPressCalled.countDown();
+            Log.e("Overscroll", "OnShowPress");
         }
 
         @Override
@@ -2191,5 +2203,50 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         mGestureHandler.onTouchEvent(event);
         assertEquals("A down event should be offered to Javascript with a registered touch handler",
                 1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+    }
+
+    /**
+     * Verify that no timeout-based gestures are triggered after a touch event
+     * is consumed.  In particular, LONG_PRESS and SHOW_PRESS should not fire
+     * if TouchStart went unconsumed, but subsequent TouchMoves are consumed.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testNoTimeoutGestureAfterTouchConsumed() throws Exception {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                setUp();
+
+                final long downTime = SystemClock.uptimeMillis();
+                final long eventTime = SystemClock.uptimeMillis();
+
+                mGestureHandler.hasTouchEventHandlers(true);
+
+                MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, eventTime);
+                assertTrue(mGestureHandler.onTouchEvent(event));
+                mGestureHandler.confirmTouchEvent(
+                    ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+                assertTrue("Should have a pending LONG_PRESS",
+                        mLongPressDetector.hasPendingMessage());
+
+                event = MotionEvent.obtain(
+                    downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                    FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
+                assertTrue(mGestureHandler.onTouchEvent(event));
+                mGestureHandler.confirmTouchEvent(
+                    ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+                assertFalse("Should not have a pending LONG_PRESS",
+                        mLongPressDetector.hasPendingMessage());
+            }
+        });
+        assertFalse(mMockListener.mShowPressCalled.await(
+                ScalableTimeout.ScaleTimeout(ViewConfiguration.getTapTimeout() + 10),
+                TimeUnit.MILLISECONDS));
+        assertFalse(mMockListener.mLongPressCalled.await(
+                ScalableTimeout.ScaleTimeout(ViewConfiguration.getLongPressTimeout() + 10),
+                TimeUnit.MILLISECONDS));
     }
 }

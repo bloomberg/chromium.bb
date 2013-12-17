@@ -899,6 +899,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // should always be offered to Javascript (when there is any touch handler).
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             mTouchHandlingState = HAS_TOUCH_HANDLER;
+            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
+            mCurrentDownEvent = null;
         }
 
         mLongPressDetector.onOfferTouchEventToJavaScript(event);
@@ -916,15 +918,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
             }
         }
 
+        if (mTouchScrolling || mPinchInProgress) return EVENT_NOT_FORWARDED;
+
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
         int type = TouchPoint.createTouchPoints(event, pts);
 
         if (type == TouchPoint.CONVERSION_ERROR) return EVENT_NOT_FORWARDED;
 
-        if (!mTouchScrolling && !mPinchInProgress) {
-            if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
-                return EVENT_FORWARDED_TO_NATIVE;
-            }
+        if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
+            return EVENT_FORWARDED_TO_NATIVE;
         }
         return EVENT_NOT_FORWARDED;
     }
@@ -990,8 +992,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     break;
                 case INPUT_EVENT_ACK_STATE_CONSUMED:
                 case INPUT_EVENT_ACK_STATE_IGNORED:
+                    if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
+                            && ackedEvent.getActionMasked() != MotionEvent.ACTION_DOWN) {
+                        resetGestureHandlers();
+                    } else {
+                        mZoomManager.passTouchEventThrough(ackedEvent);
+                    }
                     mTouchHandlingState = JAVASCRIPT_CONSUMING_GESTURE;
-                    mZoomManager.passTouchEventThrough(ackedEvent);
                     trySendPendingEventsToNative();
                     break;
                 case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
