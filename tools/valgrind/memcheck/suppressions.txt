@@ -6357,3 +6357,13 @@
    fun:_ZN22MetricsNetworkObserverC1Ev
    fun:_ZN10MetricsLogC1ERKSsi
 }
+{
+   bug_329104
+   Memcheck:Leak
+   fun:malloc
+   fun:PORT_Alloc_Util
+   fun:PK11_AddSlotToList
+   fun:PK11_GetAllSlotsForCert
+   fun:_ZNK3net24NSSProfileFilterChromeOS13IsCertAllowedERK13scoped_refptrINS_15X509CertificateEE
+   fun:_ZNK3net24NSSProfileFilterChromeOS33CertNotAllowedForProfilePredicateclERK13scoped_refptrINS_15X509CertificateEE
+}
