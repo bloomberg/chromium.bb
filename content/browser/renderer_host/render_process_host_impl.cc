@@ -129,7 +129,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
-#include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -150,6 +149,7 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
+#include "content/common/media/media_stream_messages.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -193,6 +193,29 @@ void GetContexts(
       GetRequestContext(request_context, media_request_context,
                         request.resource_type);
 }
+
+#if defined(ENABLE_WEBRTC)
+// Creates a file used for diagnostic echo canceller recordings for handing
+// over to the renderer.
+IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
+    base::ProcessHandle process) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath file_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kEnableWebRtcAecRecordings);
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::PlatformFile aec_dump_file = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+      NULL,
+      &error);
+  if (error != base::PLATFORM_FILE_OK) {
+    VLOG(1) << "Could not open AEC dump file, error=" << error;
+    return IPC::InvalidPlatformFileForTransit();
+  }
+  return IPC::GetFileHandleForProcess(aec_dump_file, process, true);
+}
+#endif
 
 // the global list of all renderer processes
 base::LazyInstance<IDMap<RenderProcessHost> >::Leaky
@@ -374,7 +397,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           is_guest_(is_guest),
           gpu_observer_registered_(false),
           power_monitor_broadcaster_(this),
-          geolocation_dispatcher_host_(NULL) {
+          geolocation_dispatcher_host_(NULL),
+          weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -1873,6 +1897,17 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     Send(queued_messages_.front());
     queued_messages_.pop();
   }
+
+#if defined(ENABLE_WEBRTC)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcAecRecordings)) {
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CreateAecDumpFileForProcess, GetHandle()),
+        base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
+                   weak_factory_.GetWeakPtr()));
+  }
+#endif
 }
 
 scoped_refptr<AudioRendererHost>
@@ -1916,5 +1951,14 @@ void RenderProcessHostImpl::OnGpuSwitching() {
     rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
   }
 }
+
+#if defined(ENABLE_WEBRTC)
+void RenderProcessHostImpl::SendAecDumpFileToRenderer(
+    IPC::PlatformFileForTransit file_for_transit) {
+  if (file_for_transit == IPC::InvalidPlatformFileForTransit())
+    return;
+  Send(new MediaStreamMsg_AecDumpFile(file_for_transit));
+}
+#endif
 
 }  // namespace content

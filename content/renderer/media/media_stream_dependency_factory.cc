@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/media_stream_track_extra_data.h"
@@ -250,11 +251,14 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
       worker_thread_(NULL),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
+      chrome_worker_thread_("Chrome_libJingle_WorkerThread"),
+      aec_dump_file_(base::kInvalidPlatformFileValue) {
 }
 
 MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {
   CleanupPeerConnectionFactory();
+  if (aec_dump_file_ != base::kInvalidPlatformFileValue)
+    base::ClosePlatformFile(aec_dump_file_);
 }
 
 blink::WebRTCPeerConnectionHandler*
@@ -665,6 +669,20 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   factory_options.disable_encryption =
       cmd_line->HasSwitch(switches::kDisableWebRtcEncryption);
   pc_factory_->SetOptions(factory_options);
+
+  // |aec_dump_file| will be invalid when dump is not enabled.
+  if (aec_dump_file_ != base::kInvalidPlatformFileValue) {
+    FILE* aec_dump_file_stream = base::FdopenPlatformFile(aec_dump_file_, "w");
+    if (!aec_dump_file_stream) {
+      VLOG(1) << "Could not open AEC dump file.";
+      base::ClosePlatformFile(aec_dump_file_);
+    } else {
+      // |pc_factory_| takes ownership of |aec_dump_file_stream|.
+      pc_factory_->StartAecDump(aec_dump_file_stream);
+    }
+    aec_dump_file_ = base::kInvalidPlatformFileValue;
+  }
+
   return true;
 }
 
@@ -993,6 +1011,23 @@ MediaStreamDependencyFactory::GetNativeMediaStreamTrack(
   MediaStreamTrackExtraData* extra_data =
       static_cast<MediaStreamTrackExtraData*>(track.extraData());
   return extra_data ? extra_data->track().get() : NULL;
+}
+
+bool MediaStreamDependencyFactory::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MediaStreamDependencyFactory, message)
+    IPC_MESSAGE_HANDLER(MediaStreamMsg_AecDumpFile, OnAecDumpFile)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void MediaStreamDependencyFactory::OnAecDumpFile(
+    IPC::PlatformFileForTransit file_handle) {
+  DCHECK_EQ(aec_dump_file_, base::kInvalidPlatformFileValue);
+  aec_dump_file_ = IPC::PlatformFileForTransitToPlatformFile(file_handle);
+  DCHECK_NE(aec_dump_file_, base::kInvalidPlatformFileValue);
 }
 
 }  // namespace content

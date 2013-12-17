@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -95,6 +96,12 @@ IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
 IPC_MESSAGE_CONTROL2(MediaStreamMsg_GetSourcesACK,
                      int /* request id */,
                      content::StreamDeviceInfoArray /* device_list */)
+
+// The browser hands over a file handle to the renderer to use for AEC dump.
+// TODO(grunell): This should not belong to media stream. Change when
+// refactoring MediaStreamDependencyFactory.
+IPC_MESSAGE_CONTROL1(MediaStreamMsg_AecDumpFile,
+                     IPC::PlatformFileForTransit /* file_handle */)
 
 // Messages sent from the renderer to the browser.
 

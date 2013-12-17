@@ -21,6 +21,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_platform_file.h"
 #include "ui/surface/transport_dib.h"
 
 class CommandLine;
@@ -262,6 +263,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   virtual void OnGpuSwitching() OVERRIDE;
 
+#if defined(ENABLE_WEBRTC)
+  // Sends |file_for_transit| to the render process.
+  void SendAecDumpFileToRenderer(IPC::PlatformFileForTransit file_for_transit);
+#endif
+
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
   IDMap<IPC::Listener> listeners_;
@@ -370,6 +376,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Message filter for geolocation messages.
   GeolocationDispatcherHost* geolocation_dispatcher_host_;
+
+  // Lives on the browser's ChildThread.
+  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

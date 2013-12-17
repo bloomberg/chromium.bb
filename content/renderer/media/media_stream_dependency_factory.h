@@ -9,10 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/render_process_observer.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
+#include "ipc/ipc_platform_file.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 
@@ -57,7 +60,8 @@ class RTCVideoDecoderFactoryTv;
 
 // Object factory for RTC MediaStreams and RTC PeerConnections.
 class CONTENT_EXPORT MediaStreamDependencyFactory
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(public base::NonThreadSafe),
+      public RenderProcessObserver {
  public:
   // MediaSourcesCreatedCallback is used in CreateNativeMediaSources.
   typedef base::Callback<void(blink::WebMediaStream* web_stream,
@@ -230,6 +234,11 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   scoped_refptr<webrtc::VideoTrackInterface>
   CreateNativeVideoMediaStreamTrack(const blink::WebMediaStreamTrack& track);
 
+  // RenderProcessObserver implementation.
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnAecDumpFile(IPC::PlatformFileForTransit file_handle);
+
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
   IpcNetworkManager* network_manager_;
@@ -252,6 +261,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   talk_base::Thread* signaling_thread_;
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
+
+  base::PlatformFile aec_dump_file_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

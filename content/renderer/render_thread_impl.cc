@@ -353,6 +353,9 @@ void RenderThreadImpl::Init() {
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
 
+  vc_manager_ = new VideoCaptureImplManager();
+  AddFilter(vc_manager_->video_capture_message_filter());
+
 #if defined(ENABLE_WEBRTC)
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());
@@ -362,9 +365,11 @@ void RenderThreadImpl::Init() {
   AddFilter(p2p_socket_dispatcher_.get());
 
   webrtc_identity_service_.reset(new WebRTCIdentityService());
+
+  media_stream_factory_.reset(new MediaStreamDependencyFactory(
+      vc_manager_.get(), p2p_socket_dispatcher_.get()));
+  AddObserver(media_stream_factory_.get());
 #endif  // defined(ENABLE_WEBRTC)
-  vc_manager_ = new VideoCaptureImplManager();
-  AddFilter(vc_manager_->video_capture_message_filter());
 
   audio_input_message_filter_ =
       new AudioInputMessageFilter(GetIOMessageLoopProxy());
@@ -1238,12 +1243,6 @@ blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
 
 MediaStreamDependencyFactory*
 RenderThreadImpl::GetMediaStreamDependencyFactory() {
-#if defined(ENABLE_WEBRTC)
-  if (!media_stream_factory_) {
-    media_stream_factory_.reset(new MediaStreamDependencyFactory(
-        vc_manager_.get(), p2p_socket_dispatcher_.get()));
-  }
-#endif
   return media_stream_factory_.get();
 }
 
