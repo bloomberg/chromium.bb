@@ -6311,3 +6311,11 @@
    fun:_ZNK3net24NSSProfileFilterChromeOS13IsCertAllowedERK13scoped_refptrINS_15X509CertificateEE
    fun:_ZNK3net24NSSProfileFilterChromeOS33CertNotAllowedForProfilePredicateclERK13scoped_refptrINS_15X509CertificateEE
 }
+{
+   bug_329339
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN3net18ProxyScriptDecider*
+   fun:_ZN3net18ProxyScriptDecider6DoLoopEi
+   fun:_ZN3net18ProxyScriptDecider*
+}
