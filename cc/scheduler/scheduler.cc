@@ -163,6 +163,7 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
     last_set_needs_begin_impl_frame_ = needs_begin_impl_frame;
   }
 
+  bool needs_advance_commit_state_timer = false;
   // Setup PollForAnticipatedDrawTriggers if we need to monitor state but
   // aren't expecting any more BeginImplFrames. This should only be needed by
   // the synchronous compositor when BeginImplFrameNeeded is false.
@@ -185,16 +186,24 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
     // drawing a frame, however it's possible that the frame rate controller
     // will not give us a BeginImplFrame until the commit completes.  See
     // crbug.com/317430 for an example of a swap ack being held on commit. Thus
-    // we set this repeating timer to poll on ProcessScheduledActions until we
-    // successfully reach BeginImplFrame. Since we'd rather get a BeginImplFrame
-    // by the normally mechanism, we set the interval to twice the interval from
-    // the previous frame.
-    if (state_machine_.IsCommitStateWaiting()) {
+    // we set a repeating timer to poll on ProcessScheduledActions until we
+    // successfully reach BeginImplFrame.
+    if (state_machine_.IsCommitStateWaiting())
+      needs_advance_commit_state_timer = true;
+  }
+  if (needs_advance_commit_state_timer !=
+      advance_commit_state_timer_.IsRunning()) {
+    if (needs_advance_commit_state_timer &&
+        last_begin_impl_frame_args_.IsValid()) {
+    // Since we'd rather get a BeginImplFrame by the normally mechanism, we set
+    // the interval to twice the interval from the previous frame.
       advance_commit_state_timer_.Start(
           FROM_HERE,
           last_begin_impl_frame_args_.interval * 2,
           base::Bind(&Scheduler::ProcessScheduledActions,
                      base::Unretained(this)));
+    } else {
+      advance_commit_state_timer_.Stop();
     }
   }
 }
@@ -206,7 +215,6 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(state_machine_.HasInitializedOutputSurface());
   last_begin_impl_frame_args_ = args;
   last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
-  advance_commit_state_timer_.Stop();
   state_machine_.OnBeginImplFrame(last_begin_impl_frame_args_);
 
   if (settings_.switch_to_low_latency_if_possible) {
