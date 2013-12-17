@@ -80,10 +80,6 @@ deps = {
     Var("chromium_git") +
     "/angle/angle.git@95fa672f26db492aee2076b0acb524149d52c68f",
 
-  "src/third_party/angle_dx11":
-    Var("chromium_git") +
-    "/external/angle.git@af640efbfdbe80909016fc623bb65f010a2e551f",
-
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@1069",
 
@@ -366,7 +362,6 @@ deps_os = {
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
     "src/third_party/angle": None,
-    "src/third_party/angle_dx11": None,
     "src/third_party/bidichecker": None,
     "src/third_party/cld_2/src": None,
     "src/third_party/ffmpeg": None,

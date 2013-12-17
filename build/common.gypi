@@ -2044,10 +2044,6 @@
       ],
     },
     'defines': [
-      # Set this to use the new DX11 version of ANGLE.
-      # TODO(apatrick): Remove this when the transition is complete.
-      'ANGLE_DX11',
-
       # Don't use deprecated V8 APIs anywhere.
       'V8_DEPRECATION_WARNINGS',
     ],
