@@ -25,14 +25,18 @@ namespace component_updater {
 // <?xml version="1.0" encoding="UTF-8"?>
 // <request protocol="3.0" version="chrome-32.0.1.0"  prodversion="32.0.1.0"
 //        requestid="{7383396D-B4DD-46E1-9104-AAC6B918E792}"
-//        updaterchannel="canary" arch="x86" nacl_arch="x86-64">
+//        updaterchannel="canary" arch="x86" nacl_arch="x86-64"
+//        ADDITIONAL ATTRIBUTES>
 //   <os platform="win" version="6.1" arch="x86"/>
 //   ... REQUEST BODY ...
 // </request>
 
 // Builds a protocol request string by creating the outer envelope for
 // the request and including the request body specified as a parameter.
-std::string BuildProtocolRequest(const std::string& request_body);
+// If specified, |additional_attributes| are appended as attributes of the
+// request element.
+std::string BuildProtocolRequest(const std::string& request_body,
+                                 const std::string& additional_attributes);
 
 // Sends a protocol request to the the service endpoint specified by |url|.
 // The body of the request is provided by |protocol_request| and it is

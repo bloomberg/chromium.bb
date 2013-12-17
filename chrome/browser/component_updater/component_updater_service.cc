@@ -767,7 +767,7 @@ void CrxUpdateService::DoUpdateCheck(const std::string& update_check_items) {
   using component_updater::BuildProtocolRequest;
   url_fetcher_.reset(component_updater::SendProtocolRequest(
       config_->UpdateUrl(),
-      BuildProtocolRequest(update_check_items),
+      BuildProtocolRequest(update_check_items, config_->ExtraRequestParams()),
       MakeContextDelegate(this, new UpdateContext()),
       config_->RequestContext()));
 }

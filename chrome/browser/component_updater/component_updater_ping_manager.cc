@@ -83,7 +83,7 @@ std::string PingSender::BuildPing(const CrxUpdateItem* item) {
       item->next_version.GetString().c_str(),         // "nextversion"
       BuildPingEventElement(item).c_str()));
 
-  return BuildProtocolRequest(app_element);
+  return BuildProtocolRequest(app_element, "");
 }
 
 // Returns a string representing one ping event xml element for an update item.

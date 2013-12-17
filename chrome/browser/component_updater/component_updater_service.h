@@ -168,7 +168,7 @@ class ComponentUpdateService {
     // pings are disabled.
     virtual GURL PingUrl() = 0;
     // Parameters added to each url request. It can be null if none are needed.
-    virtual const char* ExtraRequestParams() = 0;
+    virtual std::string ExtraRequestParams() = 0;
     // How big each update request can be. Don't go above 2000.
     virtual size_t UrlSizeLimit() = 0;
     // The source of contexts for all the url requests.

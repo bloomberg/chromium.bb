@@ -76,7 +76,7 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   virtual int OnDemandDelay() OVERRIDE;
   virtual GURL UpdateUrl() OVERRIDE;
   virtual GURL PingUrl() OVERRIDE;
-  virtual const char* ExtraRequestParams() OVERRIDE;
+  virtual std::string ExtraRequestParams() OVERRIDE;
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool InProcess() OVERRIDE;

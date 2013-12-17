@@ -91,7 +91,7 @@ GURL TestConfigurator::PingUrl() {
   return UpdateUrl();
 }
 
-const char* TestConfigurator::ExtraRequestParams() { return "extra=foo"; }
+std::string TestConfigurator::ExtraRequestParams() { return "extra=\"foo\""; }
 
 size_t TestConfigurator::UrlSizeLimit() { return 256; }
 
@@ -471,6 +471,12 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
       "<app appid=\"abagagagagagagagagagagagagagagag\" version=\"2.2\">"
       "<updatecheck /></app>"))
+      << post_interceptor_->GetRequestsAsString();
+
+  // Test the protocol version is correct and the extra request attributes
+  // are included in the request.
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
+      "request protocol=\"3.0\" extra=\"foo\""))
       << post_interceptor_->GetRequestsAsString();
 
   component_updater()->Stop();
