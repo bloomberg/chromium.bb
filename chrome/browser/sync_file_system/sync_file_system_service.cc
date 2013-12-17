@@ -505,6 +505,11 @@ void SyncFileSystemService::DidInitializeFileSystemForDump(
 
   base::ListValue* files =
       GetRemoteService(origin)->DumpFiles(origin).release();
+  if (!files) {
+    callback.Run(new base::ListValue);
+    return;
+  }
+
   if (!files->GetSize()) {
     callback.Run(files);
     return;
