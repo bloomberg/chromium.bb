@@ -551,15 +551,17 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
 
 #if defined(ENABLE_MDNS)
-values->SetBoolean("cloudPrintHideNotificationsCheckbox",
-                   !local_discovery::PrivetNotificationService::IsEnabled());
+  values->SetBoolean("cloudPrintHideNotificationsCheckbox",
+                     !local_discovery::PrivetNotificationService::IsEnabled());
 #endif
 
-values->SetBoolean("cloudPrintShowMDnsOptions",
-                   cloud_print_mdns_ui_enabled_);
+  values->SetBoolean("cloudPrintShowMDnsOptions",
+                     cloud_print_mdns_ui_enabled_);
 
-values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
+  values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
 
+  values->SetString("languagesLearnMoreURL",
+                    chrome::kLanguageSettingsLearnMoreUrl);
 }
 
 #if defined(ENABLE_FULL_PRINTING)

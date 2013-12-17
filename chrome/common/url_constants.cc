@@ -663,4 +663,11 @@ const char kSafeSearchSsuiParameter[] = "ssui=on";
 const char kMediaAccessLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=ib_access_cam_mic";
 
+const char kLanguageSettingsLearnMoreUrl[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromebook/answer/1059490";
+#else
+    "https://support.google.com/chrome/topic/1678461";
+#endif
+
 }  // namespace chrome

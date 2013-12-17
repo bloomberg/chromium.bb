@@ -7,10 +7,14 @@
       <span class="link"><span class="link-color"></span></span>
     </div>
     <div class="language-options-header">
-      <div i18n-content="addLanguageInstructions"></div>
+      <div>
+        <span i18n-content="addLanguageInstructions"></span>
 <if expr="pp_ifdef('chromeos')">
-      <div i18n-content="inputMethodInstructions"></div>
+        <span i18n-content="inputMethodInstructions"></span>
 </if>
+        <a target="_blank" i18n-content="learnMore"
+            i18n-values="href:languagesLearnMoreURL"></a>
+      </div>
     </div>
     <div class="language-options">
       <div id="language-options-languages">

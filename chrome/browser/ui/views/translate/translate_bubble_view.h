@@ -82,7 +82,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
  private:
   enum LinkID {
     LINK_ID_ADVANCED,
-    LINK_ID_LEARN_MORE,
+    LINK_ID_LANGUAGE_SETTINGS,
   };
 
   enum ButtonID {

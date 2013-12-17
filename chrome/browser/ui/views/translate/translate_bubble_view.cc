@@ -429,9 +429,11 @@ void TranslateBubbleView::HandleLinkClicked(
       SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
       break;
     }
-    case LINK_ID_LEARN_MORE: {
+    case LINK_ID_LANGUAGE_SETTINGS: {
+      std::string url = std::string(chrome::kChromeUISettingsURL) +
+          chrome::kLanguageOptionsSubPage;
       browser_->OpenURL(content::OpenURLParams(
-          GURL(chrome::kAboutGoogleTranslateURL),
+          GURL(url),
           content::Referrer(),
           NEW_FOREGROUND_TAB,
           content::PAGE_TRANSITION_LINK,
@@ -752,8 +754,8 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
   layout->AddView(CreateLink(this,
-                             IDS_TRANSLATE_BUBBLE_LEARN_MORE,
-                             LINK_ID_LEARN_MORE));
+                             IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS,
+                             LINK_ID_LANGUAGE_SETTINGS));
   advanced_cancel_button_ = CreateLabelButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL), BUTTON_ID_CANCEL);
   layout->AddView(advanced_cancel_button_);
