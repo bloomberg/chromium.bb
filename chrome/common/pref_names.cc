@@ -2670,4 +2670,7 @@ const char kOsPasswordBlank[] = "password_manager.os_password_blank";
 const char kOsPasswordLastChanged[] =
     "password_manager.os_password_last_changed";
 #endif
+
+// Whether DNS Quick Check is disabled in proxy resolution.
+const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
 }  // namespace prefs

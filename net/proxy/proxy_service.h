@@ -263,6 +263,12 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // of the default internal PacPollPolicy used by ProxyService.
   static scoped_ptr<PacPollPolicy> CreateDefaultPacPollPolicy();
 
+  void set_quick_check_enabled(bool value) {
+    quick_check_enabled_ = value;
+  }
+
+  bool quick_check_enabled() const { return quick_check_enabled_; }
+
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   // Values of the UMA DataReductionProxy.BypassInfo{Primary|Fallback}
   // histograms. This enum must remain synchronized with the enum of the same
@@ -434,6 +440,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   // The amount of time to stall requests following IP address changes.
   base::TimeDelta stall_proxy_auto_config_delay_;
+
+  // Whether child ProxyScriptDeciders should use QuickCheck
+  bool quick_check_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyService);
 };

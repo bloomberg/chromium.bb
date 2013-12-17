@@ -480,6 +480,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     signin_allowed_.MoveToThread(io_message_loop_proxy);
   }
 
+  quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
+                            local_state_pref_service);
+  quick_check_enabled_.MoveToThread(io_message_loop_proxy);
+
   media_device_id_salt_.reset(new MediaDeviceIDSalt(pref_service,
                                                     is_incognito()));
 
@@ -1011,7 +1015,8 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
           io_thread_globals->proxy_script_fetcher_context.get(),
           io_thread_globals->system_network_delegate.get(),
           profile_params_->proxy_config_service.release(),
-          command_line));
+          command_line,
+          quick_check_enabled_.GetValue()));
 
   transport_security_state_.reset(new net::TransportSecurityState());
   transport_security_persister_.reset(
@@ -1151,6 +1156,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
+  quick_check_enabled_.Destroy();
   if (media_device_id_salt_)
     media_device_id_salt_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();

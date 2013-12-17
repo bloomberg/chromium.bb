@@ -79,6 +79,12 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   // TODO(eroman): Return a const-pointer.
   ProxyResolverScriptData* script_data() const;
 
+  void set_quick_check_enabled(bool enabled) {
+    quick_check_enabled_ = enabled;
+  }
+
+  bool quick_check_enabled() const { return quick_check_enabled_; }
+
  private:
   // Represents the sources from which we can get PAC files; two types of
   // auto-detect or a custom URL.
@@ -181,6 +187,9 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
 
   base::TimeDelta wait_delay_;
   base::OneShotTimer<ProxyScriptDecider> wait_timer_;
+
+  // Whether to do DNS quick check
+  bool quick_check_enabled_;
 
   // Results.
   ProxyConfig effective_config_;

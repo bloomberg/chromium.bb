@@ -86,7 +86,8 @@ ProxyScriptDecider::ProxyScriptDecider(
       next_state_(STATE_NONE),
       net_log_(BoundNetLog::Make(
           net_log, NetLog::SOURCE_PROXY_SCRIPT_DECIDER)),
-      fetch_pac_bytes_(false) {
+      fetch_pac_bytes_(false),
+      quick_check_enabled_(true) {
   if (proxy_script_fetcher &&
       proxy_script_fetcher->GetRequestContext() &&
       proxy_script_fetcher->GetRequestContext()->host_resolver()) {
@@ -240,7 +241,7 @@ int ProxyScriptDecider::DoWaitComplete(int result) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_PROXY_SCRIPT_DECIDER_WAIT,
                                       result);
   }
-  if (current_pac_source().type == PacSource::WPAD_DNS)
+  if (quick_check_enabled_ && current_pac_source().type == PacSource::WPAD_DNS)
     next_state_ = STATE_QUICK_CHECK;
   else
     next_state_ = GetStartState();
@@ -248,6 +249,7 @@ int ProxyScriptDecider::DoWaitComplete(int result) {
 }
 
 int ProxyScriptDecider::DoQuickCheck() {
+  DCHECK(quick_check_enabled_);
   if (host_resolver_.get() == NULL) {
     // If we have no resolver, skip QuickCheck altogether.
     next_state_ = GetStartState();
@@ -274,6 +276,7 @@ int ProxyScriptDecider::DoQuickCheck() {
 }
 
 int ProxyScriptDecider::DoQuickCheckComplete(int result) {
+  DCHECK(quick_check_enabled_);
   base::TimeDelta delta = base::Time::Now() - quick_check_start_time_;
   if (result == OK)
     UMA_HISTOGRAM_TIMES("Net.WpadQuickCheckSuccess", delta);
@@ -409,7 +412,7 @@ int ProxyScriptDecider::TryToFallbackPacSource(int error) {
 
   net_log_.AddEvent(
       NetLog::TYPE_PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE);
-  if (current_pac_source().type == PacSource::WPAD_DNS)
+  if (quick_check_enabled_ && current_pac_source().type == PacSource::WPAD_DNS)
     next_state_ = STATE_QUICK_CHECK;
   else
     next_state_ = GetStartState();

@@ -950,6 +950,8 @@ extern const char kOsPasswordBlank[];
 extern const char kOsPasswordLastChanged[];
 #endif
 
+extern const char kQuickCheckEnabled[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

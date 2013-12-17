@@ -307,6 +307,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   BooleanPrefMember dns_client_enabled_;
 
+  BooleanPrefMember quick_check_enabled_;
+
   // Store HTTP Auth-related policies in this thread.
   std::string auth_schemes_;
   bool negotiate_disable_cname_lookup_;

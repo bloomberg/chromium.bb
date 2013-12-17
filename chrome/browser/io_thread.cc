@@ -449,6 +449,11 @@ IOThread::IOThread(
   dns_client_enabled_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
+  quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
+                            local_state);
+  quick_check_enabled_.MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
   is_spdy_disabled_by_policy_ = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())).Get(
@@ -894,6 +899,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
 #endif
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
+  registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
@@ -1025,7 +1031,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
           globals_->proxy_script_fetcher_context.get(),
           globals_->system_network_delegate.get(),
           system_proxy_config_service_.release(),
-          command_line));
+          command_line,
+          quick_check_enabled_.GetValue()));
 
   net::HttpNetworkSession::Params system_params;
   InitializeNetworkSessionParams(&system_params);
