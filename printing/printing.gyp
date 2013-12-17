@@ -232,11 +232,8 @@
             'printing_context_android.cc',
             'printing_context_android.h',
           ],
-	  'dependencies': [
-	    'printing_jni_headers',
-	  ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/printing',
+          'dependencies': [
+            'printing_jni_headers',
           ],
         }],
       ],

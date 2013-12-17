@@ -40,13 +40,6 @@
             'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../../build/jni_generator.gypi' ],
-          # So generated jni headers can be found by targets that
-          # depend on this.
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)',
-            ],
-          },
         },
         {
           'target_name': 'native_test_util',

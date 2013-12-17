@@ -1422,11 +1422,6 @@
           'sources': [
             'shell/android/linker_test_apk/src/org/chromium/content_linker_test_apk/LinkerTests.java',
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/content/shell',
-            ],
-          },
           'variables': {
             'jni_gen_package': 'content/shell',
           },
@@ -1454,11 +1449,6 @@
           'sources': [
             'public/test/android/javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java',
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/content/public/test',
-            ],
-          },
           'variables': {
             'jni_gen_package': 'content/public/test',
           },

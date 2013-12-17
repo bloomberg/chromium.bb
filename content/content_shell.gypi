@@ -716,11 +716,6 @@
             'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
             'shell/android/java/src/org/chromium/content_shell/Shell.java',
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/content/shell',
-            ],
-          },
           'variables': {
             'jni_gen_package': 'content/shell',
           },

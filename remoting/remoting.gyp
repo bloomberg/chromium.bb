@@ -1843,9 +1843,6 @@
             'remoting_protocol',
             '../google_apis/google_apis.gyp:google_apis',
           ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting',
-          ],
           'sources': [
             'client/jni/android_keymap.cc',
             'client/jni/android_keymap.h',

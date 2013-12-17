@@ -24,7 +24,6 @@
           'include_dirs': [
             '..',
             '../skia/config',
-            '<(SHARED_INTERMEDIATE_DIR)/web_contents_delegate_android',
           ],
           'sources': [
             'web_contents_delegate_android/color_chooser_android.cc',

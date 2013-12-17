@@ -419,11 +419,6 @@
          'dependencies': [
            'gfx_view_jni_headers'
          ],
-         'direct_dependent_settings': {
-           'include_dirs': [
-             '<(SHARED_INTERMEDIATE_DIR)/ui/gfx',
-           ],
-         },
          'sources': [
            '../android/java/src/org/chromium/ui/gfx/BitmapHelper.java',
            '../android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java',

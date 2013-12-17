@@ -570,9 +570,6 @@
           'dependencies': [
             'ui_base_jni_headers',
           ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/ui',
-          ],
           'link_settings': {
             'libraries': [
               '-ljnigraphics',
@@ -618,11 +615,6 @@
          {
            'target_name': 'ui_base_jni_headers',
            'type': 'none',
-           'direct_dependent_settings': {
-             'include_dirs': [
-               '<(SHARED_INTERMEDIATE_DIR)/ui',
-             ],
-           },
            'sources': [
              'android/java/src/org/chromium/ui/base/Clipboard.java',
              'android/java/src/org/chromium/ui/base/LocalizationUtils.java',

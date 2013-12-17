@@ -56,9 +56,6 @@
         'jni_sample_header',
         'jni_sample_java',
       ],
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/example',
-      ],
       'sources': [
         'sample_for_tests.cc',
       ],

@@ -41,7 +41,6 @@
       ],
       'include_dirs': [
         '..',
-        '<(SHARED_INTERMEDIATE_DIR)/autofill'
       ],
       'sources': [
         'autofill/core/browser/android/auxiliary_profile_loader_android.cc',

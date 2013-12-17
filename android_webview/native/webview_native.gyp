@@ -28,7 +28,6 @@
       'include_dirs': [
         '../..',
         '../../skia/config',
-        '<(SHARED_INTERMEDIATE_DIR)/android_webview',
       ],
       'sources': [
         'android_protocol_handler.cc',

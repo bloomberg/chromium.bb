@@ -2937,11 +2937,6 @@
             'jni_gen_package': 'net',
             'jni_generator_ptr_type': 'long',
           },
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/net',
-            ],
-          },
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
@@ -2953,11 +2948,6 @@
           'variables': {
             'jni_gen_package': 'net',
             'jni_generator_ptr_type': 'long',
-          },
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/net',
-            ],
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

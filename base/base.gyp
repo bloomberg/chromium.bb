@@ -146,9 +146,6 @@
             'base_jni_headers',
             '../third_party/ashmem/ashmem.gyp:ashmem',
           ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/base',
-          ],
           'link_settings': {
             'libraries': [
               '-llog',
@@ -899,9 +896,6 @@
           'dependencies': [
             'base_unittests_jni_headers',
             'base_java_unittest_support',
-          ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/base',
           ],
         }],
       ],

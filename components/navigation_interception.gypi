@@ -20,8 +20,6 @@
           'include_dirs': [
             '..',
             '../skia/config',
-            '<(SHARED_INTERMEDIATE_DIR)/navigation_interception',
-
           ],
           'sources': [
             'navigation_interception/intercept_navigation_resource_throttle.cc',

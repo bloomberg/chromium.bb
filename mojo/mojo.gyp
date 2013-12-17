@@ -338,11 +338,6 @@
           'dependencies': [
             'mojo_java_set_jni_headers',
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/mojo',
-            ],
-          },
           'sources': [
             'services/native_viewport/android/src/org/chromium/mojo/NativeViewportAndroid.java',
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',

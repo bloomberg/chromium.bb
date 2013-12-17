@@ -547,9 +547,6 @@
           ],
         }],
         ['OS=="android"', {
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/media',
-          ],
           'dependencies': [
             'media_android_jni_headers',
             'player_android',
@@ -1543,9 +1540,6 @@
           ],
           'defines': [
             'MEDIA_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/media',
           ],
         },
         {

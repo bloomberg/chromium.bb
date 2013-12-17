@@ -32,7 +32,6 @@
         'android/testshell/testshell_tab.h',
       ],
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/chromium_testshell',
         '../skia/config',
       ],
       'conditions': [
@@ -110,8 +109,6 @@
       ],
       'include_dirs': [
         '..',
-        '<(SHARED_INTERMEDIATE_DIR)/android',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome',
         '<(android_ndk_include)',
       ],
       'sources': [

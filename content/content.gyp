@@ -495,11 +495,6 @@
           'dependencies': [
             'java_set_jni_headers'
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/content',
-            ],
-          },
           'includes': [ 'content_jni.gypi' ],
         },
         {
