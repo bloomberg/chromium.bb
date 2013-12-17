@@ -48,9 +48,11 @@ using content::RenderViewHostTester;
 using content::WebContents;
 
 namespace {
+
 const bool kFalse = false;
 const bool kTrue = true;
-}
+
+}  // namespace
 
 namespace safe_browsing {
 namespace {
@@ -370,6 +372,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
 
+    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
+
     // LoadURL created a navigation entry, now simulate the RenderView sending
     // a notification that it actually navigated.
     content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
@@ -377,6 +381,25 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     TestUnsafeResourceCopied(resource);
+  }
+
+  void NavigateWithoutSBHitAndCommit(const GURL& safe_url) {
+    controller().LoadURL(
+        safe_url, content::Referrer(), content::PAGE_TRANSITION_LINK,
+        std::string());
+
+    ASSERT_TRUE(pending_rvh());
+    if (web_contents()->GetRenderViewHost()->GetProcess()->GetID() ==
+        pending_rvh()->GetProcess()->GetID()) {
+      EXPECT_NE(web_contents()->GetRenderViewHost()->GetRoutingID(),
+                pending_rvh()->GetRoutingID());
+    }
+    ASSERT_FALSE(csd_host_->DidPageReceiveSafeBrowsingMatch());
+    ASSERT_FALSE(csd_host_->DidShowSBInterstitial());
+
+    content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+    ASSERT_FALSE(csd_host_->DidPageReceiveSafeBrowsingMatch());
+    ASSERT_FALSE(csd_host_->DidShowSBInterstitial());
   }
 
   void CheckIPUrlEqual(const std::vector<IPUrlInfo>& expect,
@@ -731,6 +754,11 @@ TEST_F(ClientSideDetectionHostTest,
   OnPhishingDetectionDone(verdict.SerializeAsString());
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
+
+  ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse);
+  NavigateWithoutSBHitAndCommit(start_url);
+  WaitAndCheckPreClassificationChecks();
 }
 
 TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {

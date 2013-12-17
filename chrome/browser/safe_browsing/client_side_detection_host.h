@@ -173,10 +173,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // This should be accessed from UI thread.
   bool malware_report_enabled_;
 
-  // Set to true if we got a match on malware or phishing for the current
-  // page load. Is reset to false when DidNavigateMainFrame is received.
-  bool malware_or_phishing_match_;
-
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };
 
