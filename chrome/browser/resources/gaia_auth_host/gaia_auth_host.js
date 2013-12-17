@@ -310,11 +310,17 @@ cr.define('cr.login', function() {
       }
 
       if (/^complete(Login|Authentication)$|^offlineLogin$/.test(msg.method)) {
+        if (!msg.email && !this.email_ && !msg.skipForNow) {
+          var msg = {method: 'redirectToSignin'};
+          this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
+          return;
+        }
         this.onAuthSuccess_({email: msg.email || this.email_,
                              password: msg.password || this.password_,
                              authCode: msg.authCode,
                              useOffline: msg.method == 'offlineLogin',
-                             chooseWhatToSync: this.chooseWhatToSync_});
+                             chooseWhatToSync: this.chooseWhatToSync_,
+                             skipForNow: msg.skipForNow || false });
         return;
       }
 

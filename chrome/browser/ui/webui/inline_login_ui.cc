@@ -18,7 +18,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
-#include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/signin/signin_oauth_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -35,6 +34,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/browser_resources.h"
@@ -96,7 +98,8 @@ class InlineLoginUIOAuth2Delegate
 base::StaticAtomicSequenceNumber next_partition_id;
 #endif // OS_CHROMEOS
 
-class InlineLoginUIHandler : public content::WebUIMessageHandler {
+class InlineLoginUIHandler : public GaiaAuthConsumer,
+                             public content::WebUIMessageHandler {
  public:
   explicit InlineLoginUIHandler(Profile* profile)
       : profile_(profile), weak_factory_(this), choose_what_to_sync_(false),
@@ -142,15 +145,6 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     // Set parameters specific for inline signin flow.
 #if !defined(OS_CHROMEOS)
     if (enable_inline) {
-      // Set continueUrl param for the inline sign in flow. It should point to
-      // the oauth2 auth code URL so that later we can grab the auth code from
-      // the cookie jar of the embedded webview.
-      std::string scope = net::EscapeUrlEncodedData(
-          gaiaUrls->oauth1_login_scope(), true);
-      std::string client_id = net::EscapeUrlEncodedData(
-          gaiaUrls->oauth2_chrome_client_id(), true);
-      std::string encoded_continue_params = base::StringPrintf(
-          "?scope=%s&client_id=%s", scope.c_str(), client_id.c_str());
 
       const GURL& current_url = web_ui()->GetWebContents()->GetURL();
       signin::Source source = signin::GetSourceForPromoURL(current_url);
@@ -163,13 +157,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       }
 
       params.SetString("service", "chromiumsync");
-      base::StringAppendF(
-          &encoded_continue_params, "&%s=%d", "source",
-          static_cast<int>(source));
-
       params.SetString("continueUrl",
-          gaiaUrls->client_login_to_oauth2_url().Resolve(
-              encoded_continue_params).spec());
+          signin::GetLandingURL("source", static_cast<int>(source)).spec());
 
       std::string email;
       net::GetValueForKeyInQuery(current_url, "Email", &email);
@@ -226,6 +215,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
   void HandleCompleteLogin(const base::ListValue* args) {
     // TODO(guohui, xiyuan): we should investigate if it is possible to unify
     // the signin-with-cookies flow across ChromeOS and Chrome.
+    DCHECK(email_.empty() && password_.empty());
+
 #if defined(OS_CHROMEOS)
     oauth2_delegate_.reset(new InlineLoginUIOAuth2Delegate(web_ui()));
     oauth2_token_fetcher_.reset(new chromeos::OAuth2TokenFetcher(
@@ -234,13 +225,22 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
 #else
     const base::DictionaryValue* dict = NULL;
     base::string16 email;
-    base::string16 password;
     if (!args->GetDictionary(0, &dict) || !dict ||
         !dict->GetString("email", &email)) {
-      NOTREACHED();
+      // User cancelled the signin by clicking 'skip for now'.
+      bool skip_for_now = false;
+      DCHECK(dict->GetBoolean("skipForNow", &skip_for_now) && skip_for_now);
+
+      signin::SetUserSkippedPromo(profile_);
+      SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
       return;
     }
+
+    email_ = UTF16ToASCII(email);
+    base::string16 password;
     dict->GetString("password", &password);
+    password_ = UTF16ToASCII(password);
+
     dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
     content::WebContents* contents = web_ui()->GetWebContents();
@@ -251,17 +251,9 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         OneClickSigninHelper::CAN_OFFER_FOR_ALL;
     std::string error_msg;
     OneClickSigninHelper::CanOffer(
-        contents, can_offer, UTF16ToASCII(email), &error_msg);
+        contents, can_offer, email_, &error_msg);
     if (!error_msg.empty()) {
-      SyncStarterCallback(
-          OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-      Browser* browser = chrome::FindBrowserWithWebContents(contents);
-      if (!browser) {
-        browser = chrome::FindLastActiveWithProfile(
-            profile_, chrome::GetActiveDesktop());
-      }
-      if (browser)
-        OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
+      HandleLoginError(error_msg);
       return;
     }
 
@@ -271,29 +263,19 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
             GURL("chrome-guest://mfffpogegjflfpflabcdkioaeobkgjik/?" +
                  partition_id_));
 
-    scoped_refptr<SigninManagerCookieHelper> cookie_helper(
-        new SigninManagerCookieHelper(partition->GetURLRequestContext()));
-    cookie_helper->StartFetchingCookiesOnUIThread(
-        GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
-        base::Bind(&InlineLoginUIHandler::OnGaiaCookiesFetched,
-                   weak_factory_.GetWeakPtr(), email, password));
+    auth_fetcher_.reset(new GaiaAuthFetcher(this,
+                                            GaiaConstants::kChromeSource,
+                                            partition->GetURLRequestContext()));
+    auth_fetcher_->StartCookieForOAuthCodeExchange("0");
 #endif // OS_CHROMEOS
   }
 
-  void OnGaiaCookiesFetched(
-      const base::string16 email,
-      const base::string16 password,
-      const net::CookieList& cookie_list) {
-    net::CookieList::const_iterator it;
-    std::string oauth_code;
-    for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
-      if (it->Name() == "oauth_code") {
-        oauth_code = it->Value();
-        break;
-      }
-    }
-
+  // GaiaAuthConsumer override.
+  virtual void OnClientOAuthCodeSuccess(
+      const std::string& oauth_code) OVERRIDE {
+#if !defined(OS_CHROMEOS)
     DCHECK(!oauth_code.empty());
+
     content::WebContents* contents = web_ui()->GetWebContents();
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -322,7 +304,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       // OneClickSigninSyncStarter will delete itself once the job is done.
       new OneClickSigninSyncStarter(
           profile_, NULL, "" /* session_index, not used */,
-          UTF16ToASCII(email), UTF16ToASCII(password), oauth_code,
+          email_, password_, oauth_code,
           start_mode,
           contents,
           confirmation_required,
@@ -330,7 +312,36 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
                       weak_factory_.GetWeakPtr()));
     }
 
+    email_.clear();
+    password_.clear();
     web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+#endif // OS_CHROMEOS
+  }
+
+  // GaiaAuthConsumer override.
+  virtual void OnClientOAuthCodeFailure(const GoogleServiceAuthError& error)
+      OVERRIDE {
+#if !defined(OS_CHROMEOS)
+    LOG(ERROR) << "InlineLoginUI::OnClientOAuthCodeFailure";
+    HandleLoginError(error.ToString());
+#endif // OS_CHROMEOS
+  }
+
+  void HandleLoginError(const std::string& error_msg) {
+    SyncStarterCallback(
+        OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+
+    Browser* browser = chrome::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
+    if (!browser) {
+      browser = chrome::FindLastActiveWithProfile(
+          profile_, chrome::GetActiveDesktop());
+    }
+    if (browser)
+      OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
+
+    email_.clear();
+    password_.clear();
   }
 
   void SyncStarterCallback(OneClickSigninSyncStarter::SyncSetupResult result) {
@@ -366,6 +377,9 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
 
   Profile* profile_;
   base::WeakPtrFactory<InlineLoginUIHandler> weak_factory_;
+  scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
+  std::string email_;
+  std::string password_;
   bool choose_what_to_sync_;
   // Partition id for the gaia webview;
   std::string partition_id_;

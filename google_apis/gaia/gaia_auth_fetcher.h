@@ -107,6 +107,15 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void StartRevokeOAuth2Token(const std::string& auth_token);
 
   // Start a request to exchange the cookies of a signed-in user session
+  // for an OAuth2 authorization code. In the case of a session with
+  // multiple accounts signed in, |session_index| indicate the which of accounts
+  // within the session.
+  //
+  // Either OnClientOAuthCodeSuccess or OnClientOAuthCodeFailure will be
+  // called on the consumer on the original thread.
+  void StartCookieForOAuthCodeExchange(const std::string& session_index);
+
+  // Start a request to exchange the cookies of a signed-in user session
   // for an OAuthLogin-scoped oauth2 token.  In the case of a session with
   // multiple accounts signed in, |session_index| indicate the which of accounts
   // within the session.
@@ -374,6 +383,9 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   std::string request_body_;
   std::string requested_service_; // Currently tracked for IssueAuthToken only.
   bool fetch_pending_;
+  // This is to distinguish between the fetch for oauth login token and that for
+  // oauth code.
+  bool fetch_code_only_;
 
   friend class GaiaAuthFetcherTest;
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CaptchaParse);

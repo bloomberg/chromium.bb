@@ -107,8 +107,14 @@ Authenticator.prototype = {
       // Detect when login is finished by the load stop event of the continue
       // URL. Cannot reuse the login complete flow in success.html, because
       // webview does not support extension pages yet.
-      gaiaFrame.hidden = true;
-      msg = {'method': 'completeLogin'};
+      var skipForNow = false;
+      if (this.inlineMode_ && gaiaFrame.src.indexOf('ntp=1') >= 0) {
+        skipForNow = true;
+      }
+      msg = {
+        'method': 'completeLogin',
+        'skipForNow': skipForNow
+      };
       window.parent.postMessage(msg, this.parentPage_);
       return;
     }
@@ -287,9 +293,12 @@ Authenticator.prototype = {
       this.onVerifyConfirmedPassword_(msg.password);
     } else if (msg.method == 'navigate' &&
                this.isParentMessage_(e)) {
-       $('gaia-frame').src = msg.src;
+      $('gaia-frame').src = msg.src;
+    } else if (msg.method == 'redirectToSignin' &&
+               this.isParentMessage_(e)) {
+      $('gaia-frame').src = this.constructInitialFrameUrl_();
     } else {
-      console.error('Authenticator.onMessage: unknown message + origin!?');
+       console.error('Authenticator.onMessage: unknown message + origin!?');
     }
   }
 };
