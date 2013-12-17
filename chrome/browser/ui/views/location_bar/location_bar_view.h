@@ -356,6 +356,7 @@ class LocationBarView : public LocationBar,
 
   friend class PageActionImageView;
   friend class PageActionWithBadgeView;
+  typedef std::vector<ExtensionAction*> PageActions;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
   // Returns the number of pixels of built-in padding to the left and right for
@@ -489,7 +490,7 @@ class LocationBarView : public LocationBar,
   ManagePasswordsIconView* manage_passwords_icon_view_;
 
   // The current page actions.
-  std::vector<ExtensionAction*> page_actions_;
+  PageActions page_actions_;
 
   // The page action icon views.
   PageActionViews page_action_views_;

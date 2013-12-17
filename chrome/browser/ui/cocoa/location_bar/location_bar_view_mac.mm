@@ -63,6 +63,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -79,6 +80,28 @@ namespace {
 // Vertical space between the bottom edge of the location_bar and the first run
 // bubble arrow point.
 const static int kFirstRunBubbleYOffset = 1;
+
+// Functor for moving BookmarkManagerPrivate page actions to the right via
+// stable_partition.
+class IsPageActionViewRightAligned {
+ public:
+  explicit IsPageActionViewRightAligned(ExtensionService* extension_service)
+      : extension_service_(extension_service) {}
+
+  bool operator()(PageActionDecoration* page_action_decoration) {
+    const extensions::Extension* extension =
+        extension_service_->GetExtensionById(
+            page_action_decoration->page_action()->extension_id(),
+            false);
+
+    return extensions::PermissionsData::HasAPIPermission(
+        extension,
+        extensions::APIPermission::kBookmarkManagerPrivate);
+  }
+
+ private:
+  ExtensionService* extension_service_;
+};
 
 }
 
@@ -658,6 +681,13 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
       page_action_decorations_.push_back(
           new PageActionDecoration(this, browser_, page_actions_[i]));
     }
+
+    // Move rightmost extensions to the start.
+    std::stable_partition(
+        page_action_decorations_.begin(),
+        page_action_decorations_.end(),
+        IsPageActionViewRightAligned(
+            extensions::ExtensionSystem::Get(profile_)->extension_service()));
   }
 
   GURL url = GetToolbarModel()->GetURL();
@@ -728,20 +758,32 @@ bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
 }
 
 bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() {
-  if (!extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::GetForBrowserContext(profile_)
+          ->extension_service();
+  // Extension service may be NULL during unit test execution.
+  if (!extension_service)
     return false;
 
   const extensions::ExtensionSet* extension_set =
-      extensions::ExtensionSystem::GetForBrowserContext(profile_)
-          ->extension_service()->extensions();
+      extension_service->extensions();
   for (extensions::ExtensionSet::const_iterator i = extension_set->begin();
        i != extension_set->end(); ++i) {
     const extensions::SettingsOverrides* settings_overrides =
         extensions::SettingsOverrides::Get(i->get());
-    if (settings_overrides &&
-        settings_overrides->RequiresHideBookmarkButtonPermission()) {
+    const bool manifest_hides_bookmark_button = settings_overrides &&
+        settings_overrides->RequiresHideBookmarkButtonPermission();
+
+    if (!manifest_hides_bookmark_button)
+      continue;
+
+    if (extensions::PermissionsData::HasAPIPermission(
+            *i,
+            extensions::APIPermission::kBookmarkManagerPrivate))
       return true;
-    }
+
+    if (extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
+      return true;
   }
 
   return false;
