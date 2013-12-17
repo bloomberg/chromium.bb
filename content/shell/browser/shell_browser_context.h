@@ -78,7 +78,7 @@ class ShellBrowserContext : public BrowserContext {
   bool ignore_certificate_errors_;
   base::FilePath path_;
   scoped_ptr<ShellResourceContext> resource_context_;
-  scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
+  scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);

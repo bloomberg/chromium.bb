@@ -5,19 +5,19 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_DOWNLOAD_MANAGER_DELEGATE_H_
 #define CONTENT_SHELL_BROWSER_SHELL_DOWNLOAD_MANAGER_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/download_manager_delegate.h"
 
 namespace content {
 
 class DownloadManager;
 
-class ShellDownloadManagerDelegate
-    : public DownloadManagerDelegate,
-      public base::RefCountedThreadSafe<ShellDownloadManagerDelegate> {
+class ShellDownloadManagerDelegate : public DownloadManagerDelegate {
  public:
   ShellDownloadManagerDelegate();
+  virtual ~ShellDownloadManagerDelegate();
 
   void SetDownloadManager(DownloadManager* manager);
 
@@ -34,18 +34,18 @@ class ShellDownloadManagerDelegate
   void SetDownloadBehaviorForTesting(
       const base::FilePath& default_download_path);
 
- protected:
-  // To allow subclasses for testing.
-  virtual ~ShellDownloadManagerDelegate();
-
  private:
   friend class base::RefCountedThreadSafe<ShellDownloadManagerDelegate>;
 
+  typedef base::Callback<void(const base::FilePath&)>
+      FilenameDeterminedCallback;
 
-  void GenerateFilename(uint32 download_id,
-                        const DownloadTargetCallback& callback,
-                        const base::FilePath& generated_name,
-                        const base::FilePath& suggested_directory);
+  static void GenerateFilename(const GURL& url,
+                               const std::string& content_disposition,
+                               const std::string& suggested_filename,
+                               const std::string& mime_type,
+                               const base::FilePath& suggested_directory,
+                               const FilenameDeterminedCallback& callback);
   void OnDownloadPathGenerated(uint32 download_id,
                                const DownloadTargetCallback& callback,
                                const base::FilePath& suggested_path);
@@ -56,6 +56,7 @@ class ShellDownloadManagerDelegate
   DownloadManager* download_manager_;
   base::FilePath default_download_path_;
   bool suppress_prompting_;
+  base::WeakPtrFactory<ShellDownloadManagerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDownloadManagerDelegate);
 };
