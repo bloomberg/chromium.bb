@@ -11,6 +11,16 @@ class UndoOperation {
   virtual ~UndoOperation() {}
 
   virtual void Undo() = 0;
+
+  // Returns the resource string id describing the undo/redo of this operation
+  // for use as labels in the UI.
+  // Note: The labels describe the original user action, this may result in
+  // the meaning of the redo label being reversed. For example, an
+  // UndoOperation representing a deletion would have been created in order to
+  // redo an addition by the user. In this case, the redo label string for the
+  // UndoOperation of delete would be "Redo add".
+  virtual int GetUndoLabelId() const = 0;
+  virtual int GetRedoLabelId() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UNDO_UNDO_OPERATION_H_

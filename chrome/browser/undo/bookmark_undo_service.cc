@@ -13,6 +13,8 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/undo/undo_manager_utils.h"
 #include "chrome/browser/undo/undo_operation.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -56,6 +58,8 @@ class BookmarkAddOperation : public BookmarkUndoOperation {
 
   // UndoOperation:
   virtual void Undo() OVERRIDE;
+  virtual int GetUndoLabelId() const OVERRIDE;
+  virtual int GetRedoLabelId() const OVERRIDE;
 
   // BookmarkRenumberObserver:
   virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
@@ -83,6 +87,14 @@ void BookmarkAddOperation::Undo() {
   model->Remove(parent, index_);
 }
 
+int BookmarkAddOperation::GetUndoLabelId() const {
+  return IDS_BOOKMARK_BAR_UNDO_ADD;
+}
+
+int BookmarkAddOperation::GetRedoLabelId() const {
+  return IDS_BOOKMARK_BAR_REDO_DELETE;
+}
+
 void BookmarkAddOperation::OnBookmarkRenumbered(int64 old_id, int64 new_id) {
   if (parent_id_ == old_id)
     parent_id_ = new_id;
@@ -104,6 +116,8 @@ class BookmarkRemoveOperation : public BookmarkUndoOperation {
 
   // UndoOperation:
   virtual void Undo() OVERRIDE;
+  virtual int GetUndoLabelId() const OVERRIDE;
+  virtual int GetRedoLabelId() const OVERRIDE;
 
   // BookmarkRenumberObserver:
   virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
@@ -141,6 +155,14 @@ void BookmarkRemoveOperation::Undo() {
   UpdateBookmarkIds(removed_node_.elements[0], parent, old_index_);
 }
 
+int BookmarkRemoveOperation::GetUndoLabelId() const {
+  return IDS_BOOKMARK_BAR_UNDO_DELETE;
+}
+
+int BookmarkRemoveOperation::GetRedoLabelId() const {
+  return IDS_BOOKMARK_BAR_REDO_ADD;
+}
+
 void BookmarkRemoveOperation::UpdateBookmarkIds(
     const BookmarkNodeData::Element& element,
     const BookmarkNode* parent,
@@ -170,6 +192,8 @@ class BookmarkEditOperation : public BookmarkUndoOperation {
 
   // UndoOperation:
   virtual void Undo() OVERRIDE;
+  virtual int GetUndoLabelId() const OVERRIDE;
+  virtual int GetRedoLabelId() const OVERRIDE;
 
   // BookmarkRenumberObserver:
   virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
@@ -199,6 +223,14 @@ void BookmarkEditOperation::Undo() {
     model->SetURL(node, original_bookmark_.elements[0].url);
 }
 
+int BookmarkEditOperation::GetUndoLabelId() const {
+  return IDS_BOOKMARK_BAR_UNDO_EDIT;
+}
+
+int BookmarkEditOperation::GetRedoLabelId() const {
+  return IDS_BOOKMARK_BAR_REDO_EDIT;
+}
+
 void BookmarkEditOperation::OnBookmarkRenumbered(int64 old_id, int64 new_id) {
   if (node_id_ == old_id)
     node_id_ = new_id;
@@ -215,6 +247,8 @@ class BookmarkMoveOperation : public BookmarkUndoOperation {
                         const BookmarkNode* new_parent,
                         int new_index);
   virtual ~BookmarkMoveOperation() {}
+  virtual int GetUndoLabelId() const OVERRIDE;
+  virtual int GetRedoLabelId() const OVERRIDE;
 
   // UndoOperation:
   virtual void Undo() OVERRIDE;
@@ -262,6 +296,14 @@ void BookmarkMoveOperation::Undo() {
   model->Move(node, old_parent, destination_index);
 }
 
+int BookmarkMoveOperation::GetUndoLabelId() const {
+  return IDS_BOOKMARK_BAR_UNDO_MOVE;
+}
+
+int BookmarkMoveOperation::GetRedoLabelId() const {
+  return IDS_BOOKMARK_BAR_REDO_MOVE;
+}
+
 void BookmarkMoveOperation::OnBookmarkRenumbered(int64 old_id, int64 new_id) {
   if (old_parent_id_ == old_id)
     old_parent_id_ = new_id;
@@ -283,6 +325,8 @@ class BookmarkReorderOperation : public BookmarkUndoOperation {
 
   // UndoOperation:
   virtual void Undo() OVERRIDE;
+  virtual int GetUndoLabelId() const OVERRIDE;
+  virtual int GetRedoLabelId() const OVERRIDE;
 
   // BookmarkRenumberObserver:
   virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
@@ -316,6 +360,14 @@ void BookmarkReorderOperation::Undo() {
     ordered_nodes.push_back(model->GetNodeByID(ordered_bookmarks_[i]));
 
   model->ReorderChildren(parent, ordered_nodes);
+}
+
+int BookmarkReorderOperation::GetUndoLabelId() const {
+  return IDS_BOOKMARK_BAR_UNDO_REORDER;
+}
+
+int BookmarkReorderOperation::GetRedoLabelId() const {
+  return IDS_BOOKMARK_BAR_REDO_REORDER;
 }
 
 void BookmarkReorderOperation::OnBookmarkRenumbered(int64 old_id,

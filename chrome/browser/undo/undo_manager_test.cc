@@ -39,6 +39,8 @@ class TestUndoOperation : public UndoOperation {
 
   // UndoOperation:
   virtual void Undo() OVERRIDE;
+  virtual int GetUndoLabelId() const OVERRIDE;
+  virtual int GetRedoLabelId() const OVERRIDE;
 
  private:
   TestUndoService* undo_service_;
@@ -56,6 +58,14 @@ TestUndoOperation::~TestUndoOperation() {
 void TestUndoOperation::Undo() {
   undo_service_->TriggerOperation();
   undo_service_->RecordUndoCall();
+}
+
+int TestUndoOperation::GetUndoLabelId() const {
+  return 0;
+}
+
+int TestUndoOperation::GetRedoLabelId() const {
+  return 0;
 }
 
 // TestUndoService -------------------------------------------------------------

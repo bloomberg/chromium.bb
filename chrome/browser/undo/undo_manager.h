@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/string16.h"
 
 class UndoOperation;
 
@@ -26,8 +27,19 @@ class UndoGroup {
   }
   void Undo();
 
+  // The resource string id describing the undo and redo action.
+  int get_undo_label_id() const { return undo_label_id_; }
+  void set_undo_label_id(int label_id) { undo_label_id_ = label_id; }
+
+  int get_redo_label_id() const { return redo_label_id_; }
+  void set_redo_label_id(int label_id) { redo_label_id_ = label_id; }
+
  private:
   ScopedVector<UndoOperation> operations_;
+
+  // The resource string id describing the undo and redo action.
+  int undo_label_id_;
+  int redo_label_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UndoGroup);
 };
@@ -47,6 +59,9 @@ class UndoManager {
 
   size_t undo_count() const { return undo_actions_.size(); }
   size_t redo_count() const { return redo_actions_.size(); }
+
+  base::string16 GetUndoLabel() const;
+  base::string16 GetRedoLabel() const;
 
   void AddUndoOperation(scoped_ptr<UndoOperation> operation);
 

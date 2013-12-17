@@ -7,6 +7,8 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "chrome/browser/undo/undo_operation.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -17,13 +19,19 @@ const size_t kMaxUndoGroups = 100;
 
 // UndoGroup ------------------------------------------------------------------
 
-UndoGroup::UndoGroup() {
+UndoGroup::UndoGroup()
+    : undo_label_id_(IDS_BOOKMARK_BAR_UNDO),
+      redo_label_id_(IDS_BOOKMARK_BAR_REDO) {
 }
 
 UndoGroup::~UndoGroup() {
 }
 
 void UndoGroup::AddOperation(scoped_ptr<UndoOperation> operation) {
+  if (operations_.empty()) {
+    set_undo_label_id(operation->GetUndoLabelId());
+    set_redo_label_id(operation->GetRedoLabelId());
+  }
   operations_.push_back(operation.release());
 }
 
@@ -56,6 +64,18 @@ void UndoManager::Undo() {
 
 void UndoManager::Redo() {
   Undo(&performing_redo_, &redo_actions_);
+}
+
+base::string16 UndoManager::GetUndoLabel() const {
+  return l10n_util::GetStringUTF16(
+      undo_actions_.empty() ? IDS_BOOKMARK_BAR_UNDO
+                            : undo_actions_.back()->get_undo_label_id());
+}
+
+base::string16 UndoManager::GetRedoLabel() const {
+  return l10n_util::GetStringUTF16(
+      redo_actions_.empty() ? IDS_BOOKMARK_BAR_REDO
+                            : redo_actions_.back()->get_redo_label_id());
 }
 
 void UndoManager::AddUndoOperation(scoped_ptr<UndoOperation> operation) {
