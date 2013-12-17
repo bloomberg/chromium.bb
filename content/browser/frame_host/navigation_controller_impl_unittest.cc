@@ -1194,6 +1194,37 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
+// This test ensures that when a guest renderer reloads, the reload goes through
+// without ending up in the "we have a wrong process for the URL" branch in
+// NavigationControllerImpl::ReloadInternal.
+TEST_F(NavigationControllerTest, ReloadWithGuest) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL url1("http://foo1");
+  controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  test_rvh()->SendNavigate(0, url1);
+  ASSERT_TRUE(controller.GetVisibleEntry());
+
+  // Make the entry believe its RenderProcessHost is a guest.
+  NavigationEntryImpl* entry1 =
+      NavigationEntryImpl::FromNavigationEntry(controller.GetVisibleEntry());
+  reinterpret_cast<MockRenderProcessHost*>(
+      entry1->site_instance()->GetProcess())->SetIsGuest(true);
+
+  // And reload.
+  controller.Reload(true);
+
+  // The reload is pending. Check that the NavigationEntry didn't get replaced
+  // because of having the wrong process.
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
+
+  NavigationEntryImpl* entry2 =
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry());
+  EXPECT_EQ(entry1, entry2);
+}
+
 #if !defined(OS_ANDROID)  // http://crbug.com/157428
 TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   NavigationControllerImpl& controller = controller_impl();

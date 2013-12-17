@@ -449,6 +449,7 @@
         'browser/renderer_host/pepper/pepper_gamepad_host_unittest.cc',
         'browser/renderer_host/pepper/pepper_printing_host_unittest.cc',
         'browser/renderer_host/pepper/quota_reservation_unittest.cc',
+        'browser/renderer_host/render_process_host_unittest.cc',
         'browser/renderer_host/render_view_host_unittest.cc',
         'browser/renderer_host/render_widget_host_unittest.cc',
         'browser/renderer_host/render_widget_host_view_aura_unittest.cc',

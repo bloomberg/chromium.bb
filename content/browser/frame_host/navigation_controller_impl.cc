@@ -331,7 +331,10 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     // Tabs that are discarded due to low memory conditions may not have a site
     // instance, and should not be treated as a cross-site reload.
     SiteInstanceImpl* site_instance = entry->site_instance();
-    if (site_instance &&
+    // Permit reloading guests without further checks.
+    bool is_guest = site_instance && site_instance->GetProcess() &&
+                    site_instance->GetProcess()->IsGuest();
+    if (!is_guest && site_instance &&
         site_instance->HasWrongProcessForURL(entry->GetURL())) {
       // Create a navigation entry that resembles the current one, but do not
       // copy page id, site instance, content state, or timestamp.

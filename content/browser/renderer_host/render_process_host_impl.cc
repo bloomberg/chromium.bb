@@ -1569,14 +1569,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
   if (host->GetBrowserContext() != browser_context)
     return false;
 
-  // All URLs are suitable if this is associated with a guest renderer process.
-  // TODO(fsamuel, creis): Further validation is needed to ensure that only
-  // normal web URLs are permitted in guest processes. We need to investigate
-  // where this validation should happen.
   if (host->IsGuest())
-    return true;
-
-  if (!host->IsGuest() && site_url.SchemeIs(kGuestScheme))
     return false;
 
   // Check whether the given host and the intended site_url will be using the

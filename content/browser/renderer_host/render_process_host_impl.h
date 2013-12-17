@@ -211,6 +211,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return message_port_message_filter_;
   }
 
+  void SetIsGuestForTesting(bool is_guest) {
+    is_guest_ = is_guest;
+  }
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

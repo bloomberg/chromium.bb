@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -15,6 +16,18 @@
 
 namespace content {
 namespace {
+
+int RenderProcessHostCount() {
+  content::RenderProcessHost::iterator hosts =
+      content::RenderProcessHost::AllHostsIterator();
+  int count = 0;
+  while (!hosts.IsAtEnd()) {
+    if (hosts.GetCurrentValue()->HasConnection())
+      count++;
+    hosts.Advance();
+  }
+  return count;
+}
 
 class RenderProcessHostTest : public ContentBrowserTest {};
 
@@ -44,6 +57,33 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   NavigateToURL(CreateBrowser(), test_url);
 
   EXPECT_EQ(0U, termination_watcher.size());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       GuestsAreNotSuitableHosts) {
+  // Set max renderers to 1 to force running out of processes.
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  NavigateToURL(shell(), test_url);
+  RenderProcessHost* rph =
+      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+  // Make it believe it's a guest.
+  reinterpret_cast<RenderProcessHostImpl*>(rph)->SetIsGuestForTesting(true);
+  EXPECT_EQ(1, RenderProcessHostCount());
+
+  // Navigate to a different page.
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  GURL another_url = embedded_test_server()->GetURL("/simple_page.html");
+  another_url = another_url.ReplaceComponents(replace_host);
+  NavigateToURL(CreateBrowser(), another_url);
+
+  // Expect that we got another process (the guest renderer was not reused).
+  EXPECT_EQ(2, RenderProcessHostCount());
 }
 
 }  // namespace

@@ -95,6 +95,10 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   int GetActiveViewCount();
 
+  void SetIsGuest(bool is_guest) {
+    is_guest_ = is_guest;
+  }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -110,6 +114,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   IDMap<IPC::Listener> listeners_;
   bool fast_shutdown_started_;
   bool deletion_callback_called_;
+  bool is_guest_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };
