@@ -1333,27 +1333,6 @@ LOAD_BUILDBOT_DATA({
         }, 
         {
             "groups": [
-                "@ToT Chromium"
-            ], 
-            "name": "ChromiumPerfAv", 
-            "tests": {
-                "layout-tests": {
-                    "builders": [
-                        "AV Linux", 
-                        "AV Win7"
-                    ]
-                }, 
-                "media_tests_av_perf": {
-                    "builders": [
-                        "AV Linux", 
-                        "AV Win7"
-                    ]
-                }
-            }, 
-            "url": "http://build.chromium.org/p/chromium.perf_av"
-        }, 
-        {
-            "groups": [
                 "@ToT Chromium", 
                 "@ToT Blink"
             ], 
