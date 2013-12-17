@@ -696,7 +696,7 @@ cr.define('options', function() {
 
     updateAdvancedSettingsExpander_: function() {
       var expander = $('advanced-settings-expander');
-      if ($('advanced-settings').style.height == '')
+      if ($('advanced-settings').style.height == '0px')
         expander.textContent = loadTimeData.getString('showAdvancedSettings');
       else
         expander.textContent = loadTimeData.getString('hideAdvancedSettings');
