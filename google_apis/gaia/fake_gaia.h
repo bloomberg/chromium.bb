@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -61,8 +62,20 @@ class FakeGaia {
   void IssueOAuthToken(const std::string& auth_token,
                        const AccessTokenInfo& token_info);
 
+  // Associates an account id with a SAML IdP redirect endpoint. When a
+  // /ServiceLoginAuth request comes in for that user, it will be redirected
+  // to the associated redirect endpoint.
+  void RegisterSamlUser(const std::string& account_id, const GURL& saml_idp);
+
+  // Extracts the parameter named |key| from |query| and places it in |value|.
+  // Returns false if no parameter is found.
+  static bool GetQueryParameter(const std::string& query,
+                                const std::string& key,
+                                std::string* value);
+
  private:
   typedef std::multimap<std::string, AccessTokenInfo> AccessTokenInfoMap;
+  typedef std::map<std::string, GURL> SamlAccountIdpMap;
 
   // Formats a JSON response with the data in |response_dict|.
   void FormatJSONResponse(const base::DictionaryValue& response_dict,
@@ -77,14 +90,9 @@ class FakeGaia {
                                             const std::string& scope_string)
       const;
 
-  // Extracts the parameter named |key| from |query| and places it in |value|.
-  // Returns false if no parameter is found.
-  static bool GetQueryParameter(const std::string& query,
-                                const std::string& key,
-                                std::string* value);
-
   AccessTokenInfoMap access_token_info_map_;
   std::string service_login_response_;
+  SamlAccountIdpMap saml_account_idp_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGaia);
 };

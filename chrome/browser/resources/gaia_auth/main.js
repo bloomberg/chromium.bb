@@ -35,7 +35,7 @@ Authenticator.prototype = {
   inputLang_: undefined,
   intputEmail_: undefined,
 
-  samlPageLoaded_: false,
+  isSAMLFlow_: false,
   samlSupportChannel_: null,
 
   GAIA_URL: 'https://accounts.google.com/',
@@ -194,7 +194,7 @@ Authenticator.prototype = {
    * Invoked when 'enableSAML' event is received to initialize SAML support.
    */
   onEnableSAML_: function() {
-    this.samlPageLoaded_ = false;
+    this.isSAMLFlow_ = false;
 
     this.samlSupportChannel_ = new Channel();
     this.samlSupportChannel_.connect('authMain');
@@ -211,10 +211,16 @@ Authenticator.prototype = {
    * @param {!Object} msg Details sent with the message.
    */
   onAuthPageLoaded_: function(msg) {
-    this.samlPageLoaded_ = msg.url.indexOf(this.gaiaUrl_) != 0;
+    var isSAMLPage = msg.url.indexOf(this.gaiaUrl_) != 0;
+
+    // Set isSAMLFlow_ flag when a SAML page is loaded. The flag is sticky.
+    if (isSAMLPage)
+      this.isSAMLFlow_ = true;
+
     window.parent.postMessage({
       'method': 'authPageLoaded',
-      'isSAML': this.samlPageLoaded_
+      'isSAML': this.isSAMLFlow_,
+      'domain': extractDomain(msg.url)
     }, this.parentPage_);
   },
 
@@ -230,7 +236,7 @@ Authenticator.prototype = {
   },
 
   onConfirmLogin_: function() {
-    if (!this.samlPageLoaded_) {
+    if (!this.isSAMLFlow_) {
       this.completeLogin(this.email_, this.password_);
       return;
     }
@@ -272,14 +278,14 @@ Authenticator.prototype = {
       this.email_ = msg.email;
       this.password_ = msg.password;
       this.attemptToken_ = msg.attemptToken;
-      this.samlPageLoaded_ = false;
+      this.isSAMLFlow_ = false;
       if (this.samlSupportChannel_)
         this.samlSupportChannel_.send({name: 'startAuth'});
     } else if (msg.method == 'clearOldAttempts' && this.isGaiaMessage_(e)) {
       this.email_ = null;
       this.password_ = null;
       this.attemptToken_ = null;
-      this.samlPageLoaded_ = false;
+      this.isSAMLFlow_ = false;
       this.onLoginUILoaded();
       if (this.samlSupportChannel_)
         this.samlSupportChannel_.send({name: 'resetAuth'});

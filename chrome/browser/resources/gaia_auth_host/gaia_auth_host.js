@@ -91,6 +91,15 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Enum for the auth flow.
+   * @enum {number}
+   */
+  var AuthFlow = {
+    GAIA: 0,
+    SAML: 1
+  };
+
+  /**
    * Creates a new gaia auth extension host.
    * @param {HTMLIFrameElement|string} container The iframe element or its id
    *     to host the auth extension.
@@ -115,6 +124,12 @@ cr.define('cr.login', function() {
      * @private
      */
     reloadUrl_: null,
+
+    /**
+     * The domain name of the current auth page.
+     * @type {string}
+     */
+    authDomain: '',
 
     /**
      * Invoked when authentication is completed successfully with credential
@@ -155,14 +170,6 @@ cr.define('cr.login', function() {
     noPasswordCallback_: null,
 
     /**
-     * Invoked when the auth page hosted inside the extension is loaded.
-     * Param {@code saml} is true when the auth page is a SAML page (out of
-     * Gaia domain.
-     * @type {function{boolean)}
-     */
-    authPageLoadedCallback_: null,
-
-    /**
      * The iframe container.
      * @type {HTMLIFrameElement}
      */
@@ -184,14 +191,6 @@ cr.define('cr.login', function() {
      */
     set noPasswordCallback(callback) {
       this.noPasswordCallback_ = callback;
-    },
-
-    /**
-     * Sets authPageLoadedCallback_.
-     * @type {function(boolean)}
-     */
-    set authPageLoadedCallback(callback) {
-      this.authPageLoadedCallback_ = callback;
     },
 
     /**
@@ -238,6 +237,7 @@ cr.define('cr.login', function() {
       this.frame_.src = url;
       this.reloadUrl_ = url;
       this.successCallback_ = successCallback;
+      this.authFlow = AuthFlow.GAIA;
     },
 
     /**
@@ -245,6 +245,7 @@ cr.define('cr.login', function() {
      */
     reload: function() {
       this.frame_.src = this.reloadUrl_;
+      this.authFlow = AuthFlow.GAIA;
     },
 
     /**
@@ -341,8 +342,8 @@ cr.define('cr.login', function() {
       }
 
       if (msg.method == 'authPageLoaded') {
-        if (this.authPageLoadedCallback_)
-          this.authPageLoadedCallback_(msg.isSAML);
+        this.authDomain = msg.domain;
+        this.authFlow = msg.isSAML ? AuthFlow.SAML : AuthFlow.GAIA;
         return;
       }
 
@@ -382,9 +383,16 @@ cr.define('cr.login', function() {
     }
   };
 
+  /**
+   * The current auth flow of the hosted gaia_auth extension.
+   * @type {AuthFlow}
+   */
+  cr.defineProperty(GaiaAuthHost, 'authFlow');
+
   GaiaAuthHost.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
   GaiaAuthHost.LOCALIZED_STRING_PARAMS = LOCALIZED_STRING_PARAMS;
   GaiaAuthHost.AuthMode = AuthMode;
+  GaiaAuthHost.AuthFlow = AuthFlow;
 
   return {
     GaiaAuthHost: GaiaAuthHost

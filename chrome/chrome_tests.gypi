@@ -1021,6 +1021,7 @@
         'browser/chromeos/login/managed/supervised_user_creation_browsertest.cc',
         'browser/chromeos/login/mock_authenticator.cc',
         'browser/chromeos/login/mock_authenticator.h',
+        'browser/chromeos/login/saml_browsertest.cc',
         'browser/chromeos/login/session_login_browsertest.cc',
         'browser/chromeos/login/screen_locker_tester.cc',
         'browser/chromeos/login/screen_locker_tester.h',

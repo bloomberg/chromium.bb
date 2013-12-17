@@ -2,10 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Alias for document.getElementById.
+ * @param {string} id The ID of the element to find.
+ * @return {HTMLElement} The found element or null if not found.
+ */
 function $(id) {
   return document.getElementById(id);
 }
 
+/**
+ * Extract query params from given search string of an URL.
+ * @param {string} search The search portion of an URL to extract params.
+ * @return {Object} The key value pairs of the extracted params.
+ */
 function getUrlSearchParams(search) {
   var params = {};
 
@@ -50,4 +60,15 @@ function appendParam(url, key, value) {
  */
 function stripParams(url) {
   return url.substring(0, url.indexOf('?')) || url;
+}
+
+/**
+ * Extract domain name from an URL.
+ * @param {string} url An URL string.
+ * @return {string} The host name of the URL.
+ */
+function extractDomain(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  return a.hostname;
 }

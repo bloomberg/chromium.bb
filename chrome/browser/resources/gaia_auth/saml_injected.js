@@ -51,11 +51,7 @@
 
       for (var i = 0; i < this.passwordFields_.length; ++i) {
         this.passwordFields_[i].addEventListener(
-            'change', this.onPasswordChanged_.bind(this, i));
-        // 'keydown' event is needed for the case that the form is submitted
-        // on enter key, in which case no 'change' event is dispatched.
-        this.passwordFields_[i].addEventListener(
-            'keydown', this.onPasswordKeyDown_.bind(this, i));
+            'input', this.onPasswordChanged_.bind(this, i));
 
         this.passwordValues_[i] = this.passwordFields_[i].value;
       }
@@ -89,18 +85,6 @@
      */
     onPasswordChanged_: function(index) {
       this.maybeSendUpdatedPassword(index);
-    },
-
-    /**
-     * Handles 'keydown' event to trigger password change detection and
-     * updates on enter key.
-     * @param {number} index The index of the password fields in
-     *     |passwordFields_|.
-     * @param {Event} e The keydown event.
-     */
-    onPasswordKeyDown_: function(index, e) {
-      if (e.keyIdentifier == 'Enter')
-        this.maybeSendUpdatedPassword(index);
     }
   };
 

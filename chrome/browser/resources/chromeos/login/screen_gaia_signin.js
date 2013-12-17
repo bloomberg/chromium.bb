@@ -76,8 +76,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
           this.onAuthNoPassword_.bind(this);
-      this.gaiaAuthHost_.authPageLoadedCallback =
-          this.onAuthPageLoaded_.bind(this);
+      this.gaiaAuthHost_.addEventListener('authFlowChange',
+          this.onAuthFlowChange_.bind(this));
 
       $('enterprise-info-hint-link').addEventListener('click', function(e) {
         chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
@@ -296,13 +296,33 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host notifies about an auth page is loaded.
-     * @param {boolean} isSAML True if the loaded auth page is SAML.
+     * Whether the current auth flow is SAML.
      */
-    onAuthPageLoaded_: function(isSAML) {
+    isSAML: function() {
+       return this.gaiaAuthHost_.authFlow ==
+           cr.login.GaiaAuthHost.AuthFlow.SAML;
+    },
+
+    /**
+     * Invoked when the authFlow property is changed no the gaia host.
+     * @param {Event} e Property change event.
+     */
+    onAuthFlowChange_: function(e) {
+      var isSAML = this.isSAML();
+
+      if (isSAML) {
+        $('saml-notice-message').textContent = loadTimeData.getStringF(
+            'samlNotice',
+            this.gaiaAuthHost_.authDomain);
+      }
+
       this.classList.toggle('saml', isSAML);
-      if (Oobe.getInstance().currentScreen === this)
+      $('saml-notice-container').hidden = !isSAML;
+
+      if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
+        $('login-header-bar').allowCancel = isSAML || this.cancelAllowed_;
+      }
     },
 
     /**
@@ -482,8 +502,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Called when user canceled signin.
      */
     cancel: function() {
-      if (!this.cancelAllowed_)
+      if (!this.cancelAllowed_) {
+        // In OOBE signin screen, cancel is not allowed because there is
+        // no other screen to show. If user is in middle of a saml flow,
+        // reset signin screen to get out of the saml flow.
+        if (this.isSAML())
+          Oobe.resetSigninUI(true);
+
         return;
+      }
+
       $('pod-row').loadLastWallpaper();
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       Oobe.resetSigninUI(true);

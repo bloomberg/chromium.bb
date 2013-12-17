@@ -447,6 +447,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);
 
+  builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
+
   // Strings used by confirm password dialog.
   builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
   builder->Add("confirmPasswordHint", IDS_LOGIN_CONFIRM_PASSWORD_HINT);

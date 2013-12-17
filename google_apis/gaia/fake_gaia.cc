@@ -4,6 +4,8 @@
 
 #include "google_apis/gaia/fake_gaia.h"
 
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -59,12 +61,19 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
   } else if (request_path == gaia_urls->service_login_auth_url().path()) {
     std::string continue_url = gaia_urls->service_login_url().spec();
     GetQueryParameter(request.content, "continue", &continue_url);
-    http_response->set_code(net::HTTP_OK);
-    const std::string redirect_js =
-        "document.location.href = '" + continue_url + "'";
-    http_response->set_content(
-        "<HTML><HEAD><SCRIPT>\n" + redirect_js + "\n</SCRIPT></HEAD></HTML>");
-    http_response->set_content_type("text/html");
+    std::string redirect_url = continue_url;
+
+    std::string email;
+    if (GetQueryParameter(request.content, "Email", &email) &&
+        saml_account_idp_map_.find(email) != saml_account_idp_map_.end()) {
+      GURL url(saml_account_idp_map_[email]);
+      url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
+      url = net::AppendQueryParameter(url, "RelayState", continue_url);
+      redirect_url = url.spec();
+    }
+
+    http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+    http_response->AddCustomHeader("Location", redirect_url);
   } else if (request_path == gaia_urls->oauth2_token_url().path()) {
     std::string refresh_token;
     std::string client_id;
@@ -134,6 +143,12 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
     } else {
       http_response->set_code(net::HTTP_BAD_REQUEST);
     }
+  } else if (request_path == "/SSO") {
+    std::string relay_state;
+    GetQueryParameter(request.content, "RelayState", &relay_state);
+    std::string redirect_url = relay_state;
+    http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+    http_response->AddCustomHeader("Location", redirect_url);
   } else {
     // Request not understood.
     return scoped_ptr<HttpResponse>();
@@ -145,6 +160,21 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
 void FakeGaia::IssueOAuthToken(const std::string& auth_token,
                                const AccessTokenInfo& token_info) {
   access_token_info_map_.insert(std::make_pair(auth_token, token_info));
+}
+
+void FakeGaia::RegisterSamlUser(const std::string& account_id,
+                                const GURL& saml_idp) {
+  saml_account_idp_map_[account_id] = saml_idp;
+}
+
+// static
+bool FakeGaia::GetQueryParameter(const std::string& query,
+                                 const std::string& key,
+                                 std::string* value) {
+  // Name and scheme actually don't matter, but are required to get a valid URL
+  // for parsing.
+  GURL query_url("http://localhost?" + query);
+  return net::GetValueForKeyInQuery(query_url, key, value);
 }
 
 void FakeGaia::FormatJSONResponse(const base::DictionaryValue& response_dict,
@@ -177,14 +207,4 @@ const FakeGaia::AccessTokenInfo* FakeGaia::GetAccessTokenInfo(
   }
 
   return NULL;
-}
-
-// static
-bool FakeGaia::GetQueryParameter(const std::string& query,
-                                 const std::string& key,
-                                 std::string* value) {
-  // Name and scheme actually don't matter, but are required to get a valid URL
-  // for parsing.
-  GURL query_url("http://localhost?" + query);
-  return net::GetValueForKeyInQuery(query_url, key, value);
 }

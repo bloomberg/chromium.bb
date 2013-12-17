@@ -14,8 +14,7 @@
 }
 
 #gaia-signin.saml {
-  padding: 70px 10px 10px;
-  width: 1000px;
+  padding: 75px 10px 10px;
 }
 
 #signin-right {
@@ -26,7 +25,8 @@
 }
 
 #signin-right,
-#enterprise-info-container {
+#enterprise-info-container,
+#saml-info-container {
   font-size: 12px;
 }
 
@@ -136,3 +136,18 @@
   margin-top: 10px;
 }
 
+#saml-notice-container {
+  left: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 50px;
+}
+
+#saml-notice-message {
+  background-color: rgb(250, 245, 202);
+  border: 2px solid rgb(250, 245, 202);
+  border-radius: 2px;
+  margin-left: auto;
+  margin-right: auto;
+}
