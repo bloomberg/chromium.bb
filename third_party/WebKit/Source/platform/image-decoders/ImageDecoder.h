@@ -36,6 +36,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
 
@@ -170,13 +171,11 @@ public:
     }
 
 #if USE(QCMSLIB)
-    static qcms_profile* qcmsOutputDeviceProfile()
-    {
-        static qcms_profile* outputDeviceProfile = 0;
-
-        static bool qcmsInitialized = false;
-        if (!qcmsInitialized) {
-            qcmsInitialized = true;
+    class OutputDeviceProfile {
+    public:
+        OutputDeviceProfile()
+            : m_outputDeviceProfile(0)
+        {
             // FIXME: Add optional ICCv4 support.
 #if OS(MACOSX)
             RetainPtr<CGColorSpaceRef> monitorColorSpace(AdoptCF, CGDisplayCopyColorSpace(CGMainDisplayID()));
@@ -184,25 +183,36 @@ public:
             if (iccProfile) {
                 size_t length = CFDataGetLength(iccProfile);
                 const unsigned char* systemProfile = CFDataGetBytePtr(iccProfile);
-                outputDeviceProfile = qcms_profile_from_memory(systemProfile, length);
+                m_outputDeviceProfile = qcms_profile_from_memory(systemProfile, length);
             }
 #else
             // FIXME: add support for multiple monitors.
             ColorProfile profile;
             screenColorProfile(profile);
             if (!profile.isEmpty())
-                outputDeviceProfile = qcms_profile_from_memory(profile.data(), profile.size());
+                m_outputDeviceProfile = qcms_profile_from_memory(profile.data(), profile.size());
 #endif
-            if (outputDeviceProfile && qcms_profile_is_bogus(outputDeviceProfile)) {
-                qcms_profile_release(outputDeviceProfile);
-                outputDeviceProfile = 0;
+            if (m_outputDeviceProfile && qcms_profile_is_bogus(m_outputDeviceProfile)) {
+                qcms_profile_release(m_outputDeviceProfile);
+                m_outputDeviceProfile = 0;
             }
-            if (!outputDeviceProfile)
-                outputDeviceProfile = qcms_profile_sRGB();
-            if (outputDeviceProfile)
-                qcms_profile_precache_output_transform(outputDeviceProfile);
+            if (!m_outputDeviceProfile)
+                m_outputDeviceProfile = qcms_profile_sRGB();
+            if (m_outputDeviceProfile)
+                qcms_profile_precache_output_transform(m_outputDeviceProfile);
         }
-        return outputDeviceProfile;
+
+        qcms_profile* profile() const { return m_outputDeviceProfile; }
+
+    private:
+        qcms_profile* m_outputDeviceProfile;
+    };
+
+    static qcms_profile* qcmsOutputDeviceProfile()
+    {
+        AtomicallyInitializedStatic(OutputDeviceProfile*, outputDeviceProfile = new OutputDeviceProfile());
+
+        return outputDeviceProfile->profile();
     }
 #endif
 
