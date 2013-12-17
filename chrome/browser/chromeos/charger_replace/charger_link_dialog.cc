@@ -47,7 +47,7 @@ ui::ModalType ChargerLinkDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 ChargerLinkDialog::GetDialogTitle() const {
+base::string16 ChargerLinkDialog::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_CHARGER_REPLACEMENT_DIALOG_TITLE);
 }
 
