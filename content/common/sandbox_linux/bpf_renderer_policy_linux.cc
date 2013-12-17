@@ -43,6 +43,9 @@ ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_prctl:
       return sandbox::RestrictPrctl(sandbox);
     // Allow the system calls below.
+    // The baseline policy allows __NR_clock_gettime. Allow
+    // clock_getres() for V8. crbug.com/329053.
+    case __NR_clock_getres:
     case __NR_fdatasync:
     case __NR_fsync:
     case __NR_getpriority:
