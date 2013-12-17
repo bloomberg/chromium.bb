@@ -32,9 +32,11 @@
 #define Heap_h
 
 #include "heap/HeapExport.h"
+#include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/OwnPtr.h"
 
 #include <stdint.h>
 
@@ -106,9 +108,26 @@ const uint8_t finalizedZapValue = 24;
 
 typedef uint8_t* Address;
 
+class HeapStats;
 class PageMemory;
+template <typename Header> class ThreadHeap;
 
 size_t osPageSize();
+
+// Blink heap pages are set up with a guard page before and after the
+// payload.
+inline size_t blinkPagePayloadSize()
+{
+    return blinkPageSize - 2 * osPageSize();
+}
+
+// Blink heap pages are aligned to the Blink heap page size.
+// Therefore, the start of a Blink page can be obtained by
+// rounding down to the Blink page size.
+inline Address roundToBlinkPageStart(Address address)
+{
+    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
+}
 
 #ifndef NDEBUG
 // Sanity check for a page header address: the address of the page
@@ -213,15 +232,13 @@ public:
 
     bool isMarked();
     void unmark();
-    // FIXME: Add back when HeapStats have been added.
-    // void getStats(HeapStats&);
+    void getStats(HeapStats&);
     void mark(Visitor*);
     void finalize();
 
 private:
     friend class Heap;
-    // FIXME: Add back when ThreadHeap has been added.
-    // friend class ThreadHeap<Header>;
+    friend class ThreadHeap<Header>;
 
     LargeHeapObject<Header>* m_next;
 };
@@ -398,6 +415,376 @@ Address FinalizedHeapObjectHeader::payload()
 size_t FinalizedHeapObjectHeader::payloadSize()
 {
     return size() - finalizedHeaderSize;
+}
+
+class FreeListEntry : public HeapObjectHeader {
+public:
+    NO_SANITIZE_ADDRESS
+    explicit FreeListEntry(size_t size)
+        : HeapObjectHeader(freeListEncodedSize(size))
+        , m_next(0)
+    {
+#if !defined(NDEBUG) && !ASAN
+        // Zap free area with asterisks, aka 0x2a2a2a2a.
+        // For ASAN don't zap since we keep accounting in the freelist entry.
+        for (size_t i = sizeof(*this); i < size; i++)
+            reinterpret_cast<Address>(this)[i] = freelistZapValue;
+        ASSERT(size >= objectHeaderSize);
+        zapMagic();
+#endif
+    }
+
+    Address address() { return reinterpret_cast<Address>(this); }
+
+    NO_SANITIZE_ADDRESS
+    void unlink(FreeListEntry** prevNext)
+    {
+        *prevNext = m_next;
+        m_next = 0;
+    }
+
+    NO_SANITIZE_ADDRESS
+    void link(FreeListEntry** prevNext)
+    {
+        m_next = *prevNext;
+        *prevNext = this;
+    }
+
+#if USE_ASAN
+    NO_SANITIZE_ADDRESS
+    bool shouldAddToFreeList()
+    {
+        // Init if not already magic.
+        if ((m_asanMagic & ~asanDeferMemoryReuseMask) != asanMagic) {
+            m_asanMagic = asanMagic | asanDeferMemoryReuseCount;
+            return false;
+        }
+        // Decrement if count part of asanMagic > 0.
+        if (m_asanMagic & asanDeferMemoryReuseMask)
+            m_asanMagic--;
+        return !(m_asanMagic & asanDeferMemoryReuseMask);
+    }
+#endif
+
+private:
+    FreeListEntry* m_next;
+#if USE_ASAN
+    unsigned m_asanMagic;
+#endif
+};
+
+#if defined(_MSC_VER)
+#pragma pack(push, 1)
+#endif
+
+// Representation of Blink heap pages.
+//
+// Pages are specialized on the type of header on the object they
+// contain. If a heap page only contains a certain type of object all
+// of the objects will have the same GCInfo pointer and therefore that
+// pointer can be stored in the HeapPage instead of in the header of
+// each object. In that case objects have only a HeapObjectHeader and
+// not a FinalizedHeapObjectHeader saving a word per object.
+template<typename Header>
+class HeapPage : public BaseHeapPage {
+public:
+    HeapPage(PageMemory* storage, ThreadHeap<Header>*, const GCInfo*);
+
+    void link(HeapPage**);
+    static void unlink(HeapPage*, HeapPage**);
+
+    bool isEmpty();
+
+    bool contains(Address addr)
+    {
+        Address blinkPageStart = roundToBlinkPageStart(address());
+        return blinkPageStart <= addr && (blinkPageStart + blinkPageSize) > addr;
+    }
+
+    HeapPage* next() { return m_next; }
+    Address payload() { return address() + sizeof(*this); }
+    static size_t payloadSize() { return (blinkPagePayloadSize() - sizeof(HeapPage)) & ~allocationMask; }
+    Address end() { return payload() + payloadSize(); }
+
+    void getStats(HeapStats&);
+    void clearMarks();
+    void sweep();
+    void clearObjectStartBitMap();
+    void finalize(Header*);
+    virtual bool checkAndMarkPointer(Visitor*, Address);
+    ThreadHeap<Header>* heap() { return m_heap; }
+#if USE_ASAN
+    void poisonUnmarkedObjects();
+#endif
+
+protected:
+    void populateObjectStartBitMap();
+    bool isObjectStartBitMapComputed() { return m_union.m_objectStartBitMapComputed; }
+    TraceCallback traceCallback(Header*);
+
+    HeapPage<Header>* m_next;
+    ThreadHeap<Header>* m_heap;
+    union {
+        bool m_objectStartBitMapComputed;
+        uint64_t m_padding; // Ensure 8 byte alignment.
+    } m_union;
+    uint8_t m_objectStartBitMap[reservedForObjectBitMap];
+    // Ensure that the allocation area starts on an address that is
+    // aligned in such a way that the allocation point + the header
+    // size falls on an aligned address.
+    uint8_t m_padding[allocationGranularity + (static_cast<size_t>(-static_cast<int>(sizeof(Header))) & allocationMask)];
+
+    friend class ThreadHeap<Header>;
+};
+
+#if defined(_MSC_VER)
+#pragma pack(pop)
+#endif
+
+// A HeapContainsCache provides a fast way of taking an arbitrary
+// pointer-sized word, and determining whether it can be interpreted
+// as a pointer to an area that is managed by the garbage collected
+// Blink heap. There is a cache of 'pages' that have previously been
+// determined to be either wholly inside or wholly outside the
+// heap. The size of these pages must be smaller than the allocation
+// alignment of the heap pages. We determine on-heap-ness by rounding
+// down the pointer to the nearest page and looking up the page in the
+// cache. If there is a miss in the cache we ask the heap to determine
+// the status of the pointer by iterating over all of the heap. The
+// result is then cached in the two-way associative page cache.
+//
+// A HeapContainsCache is both a positive and negative
+// cache. Therefore, it must be flushed both when new memory is added
+// and when memory is removed from the Blink heap.
+class HeapContainsCache {
+public:
+    HeapContainsCache();
+
+    void flush();
+    bool contains(Address);
+
+    // Perform a lookup in the cache.
+    //
+    // If lookup returns false the argument address was not found in
+    // the cache and it is unknown if the address is in the Blink
+    // heap.
+    //
+    // If lookup returns true the argument address was found in the
+    // cache. In that case, the address is in the heap if the base
+    // heap page out parameter is non-NULL and is not in the heap if
+    // the base heap page out parameter is NULL.
+    bool lookup(Address, BaseHeapPage**);
+
+    // Add an entry to the cache. Use a NULL base heap page pointer to
+    // add a negative entry.
+    void addEntry(Address, BaseHeapPage*);
+
+private:
+    class Entry {
+    public:
+        Entry()
+            : m_address(0)
+            , m_containingPage(0)
+        {
+        }
+
+        Entry(Address address, BaseHeapPage* containingPage)
+            : m_address(address)
+            , m_containingPage(containingPage)
+        {
+        }
+
+        BaseHeapPage* containingPage() { return m_containingPage; }
+        Address address() { return m_address; }
+
+    private:
+        Address m_address;
+        BaseHeapPage* m_containingPage;
+    };
+
+    static const int numberOfEntriesLog2 = 12;
+    static const int numberOfEntries = 1 << numberOfEntriesLog2;
+
+    static int hash(Address);
+
+    WTF::OwnPtr<HeapContainsCache::Entry[]> m_entries;
+
+    friend class ThreadState;
+};
+
+// Non-template super class used to pass a heap around to other classes.
+class BaseHeap {
+public:
+    virtual ~BaseHeap() { }
+
+    // Find the page in this thread heap containing the given
+    // address. Returns NULL if the address is not contained in any
+    // page in this thread heap.
+    virtual BaseHeapPage* heapPageFromAddress(Address) = 0;
+
+    // Find the large object in this thread heap containing the given
+    // address. Returns NULL if the address is not contained in any
+    // page in this thread heap.
+    virtual BaseHeapPage* largeHeapObjectFromAddress(Address) = 0;
+
+    // Check if the given address could point to an object in this
+    // heap. If so, find the start of that object and mark it using
+    // the given Visitor.
+    //
+    // Returns true if the object was found and marked, returns false
+    // otherwise.
+    //
+    // This is used during conservative stack scanning to
+    // conservatively mark all objects that could be referenced from
+    // the stack.
+    virtual bool checkAndMarkLargeHeapObject(Visitor*, Address) = 0;
+
+    // Sweep this part of the Blink heap. This finalizes dead objects
+    // and builds freelists for all the unused memory.
+    virtual void sweep() = 0;
+
+    // Forcefully finalize all objects in this part of the Blink heap
+    // (potentially with the exception of one object). This is used
+    // during thread termination to make sure that all objects for the
+    // dying thread are finalized.
+    virtual void finalizeAll(const void* except = 0) = 0;
+    virtual bool inFinalizeAll() = 0;
+
+    virtual void clearFreeLists() = 0;
+    virtual void clearMarks() = 0;
+#ifndef NDEBUG
+    virtual void getScannedStats(HeapStats&) = 0;
+#endif
+
+    virtual void makeConsistentForGC() = 0;
+    virtual bool isConsistentForGC() = 0;
+
+    // Returns a bucket number for inserting a FreeListEntry of a
+    // given size. All FreeListEntries in the given bucket, n, have
+    // size >= 2^n.
+    static int bucketIndexForSize(size_t);
+};
+
+// Thread heaps represent a part of the per-thread Blink heap.
+//
+// Each Blink thread has a number of thread heaps: one general heap
+// that contains any type of object and a number of heaps specialized
+// for specific object types (such as Node).
+//
+// Each thread heap contains the functionality to allocate new objects
+// (potentially adding new pages to the heap), to find and mark
+// objects during conservative stack scanning and to sweep the set of
+// pages after a GC.
+template<typename Header>
+class ThreadHeap : public BaseHeap {
+public:
+    ThreadHeap(ThreadState*);
+    virtual ~ThreadHeap();
+
+    virtual BaseHeapPage* heapPageFromAddress(Address);
+    virtual BaseHeapPage* largeHeapObjectFromAddress(Address);
+    virtual bool checkAndMarkLargeHeapObject(Visitor*, Address);
+    virtual void sweep();
+    virtual void finalizeAll(const void* except = 0);
+    virtual bool inFinalizeAll() { return m_inFinalizeAll; }
+    virtual void clearFreeLists();
+    virtual void clearMarks();
+#ifndef NDEBUG
+    virtual void getScannedStats(HeapStats&);
+#endif
+
+    virtual void makeConsistentForGC();
+    virtual bool isConsistentForGC();
+
+    ThreadState* threadState() { return m_threadState; }
+    HeapStats& stats() { return m_threadState->stats(); }
+    HeapContainsCache* heapContainsCache() { return m_threadState->heapContainsCache(); }
+
+    inline Address allocate(size_t, const GCInfo*);
+    void addToFreeList(Address, size_t);
+    void addPageToPool(HeapPage<Header>*);
+
+private:
+    // Once pages have been used for one thread heap they will never
+    // be reused for another thread heap. Instead of unmapping, we add
+    // the pages to a pool of pages to be reused later by this thread
+    // heap. This is done as a security feature to avoid type
+    // confusion. The heap is type segregated by having separate
+    // thread heaps for various types of objects. Holding on to pages
+    // ensures that the same virtual address space cannot be used for
+    // objects of another type than the type contained in this thread
+    // heap.
+    class PagePoolEntry {
+    public:
+        PagePoolEntry(PageMemory* storage, PagePoolEntry* next)
+            : m_storage(storage)
+            , m_next(next)
+        { }
+
+        PageMemory* storage() { return m_storage; }
+        PagePoolEntry* next() { return m_next; }
+
+    private:
+        PageMemory* m_storage;
+        PagePoolEntry* m_next;
+    };
+
+    Address outOfLineAllocate(size_t, const GCInfo*);
+    void addPageToHeap(const GCInfo*);
+    Address allocateLargeObject(size_t, const GCInfo*);
+    Address currentAllocationPoint() const { return m_currentAllocationPoint; }
+    size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
+    bool ownsNonEmptyAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
+    void setAllocationPoint(Address point, size_t size)
+    {
+        ASSERT(!point || heapPageFromAddress(point));
+        ASSERT(!size || size <= HeapPage<Header>::payloadSize());
+        m_currentAllocationPoint = point;
+        m_remainingAllocationSize = size;
+    }
+    void ensureCurrentAllocation(size_t, const GCInfo*);
+    bool allocateFromFreeList(size_t);
+
+    void setFinalizeAll(bool finalizingAll) { m_inFinalizeAll = finalizingAll; }
+    void freeLargeObject(LargeHeapObject<Header>*, LargeHeapObject<Header>**);
+
+    void allocatePage(const GCInfo*);
+    PageMemory* takePageFromPool();
+    void clearPagePool();
+    void deletePages();
+
+    Address m_currentAllocationPoint;
+    size_t m_remainingAllocationSize;
+
+    HeapPage<Header>* m_firstPage;
+    LargeHeapObject<Header>* m_firstLargeHeapObject;
+
+    int m_biggestFreeListIndex;
+    bool m_inFinalizeAll;
+    ThreadState* m_threadState;
+
+    // All FreeListEntries in the nth list have size >= 2^n.
+    FreeListEntry* m_freeLists[blinkPageSizeLog2];
+
+    // List of pages that have been previously allocated, but are now
+    // unused.
+    PagePoolEntry* m_pagePool;
+};
+
+template<typename Header>
+Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
+{
+    // FIXME: Implement.
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+template<typename Header>
+Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
+{
+    // FIXME: Implement.
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 class HEAP_EXPORT Heap {
