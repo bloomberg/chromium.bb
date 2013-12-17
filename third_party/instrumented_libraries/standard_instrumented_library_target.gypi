@@ -24,6 +24,8 @@
         '--sanitizer-type=<(_sanitizer_type)',
         '--custom-configure-flags=<(_custom_configure_flags)',
         '<(_verbose_libraries_build_flag)',
+        '--c-compiler=<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang',
+        '--cxx-compiler=<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang++',
       ],
     },
   ],

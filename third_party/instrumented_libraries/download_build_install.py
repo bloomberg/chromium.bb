@@ -91,6 +91,12 @@ def download_build_install(parsed_arguments):
   sanitizer_params = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
   
   environment = os.environ.copy()
+  # Usage of environment variables CC and CXX prefers usage flags --c-compiler
+  # and --cxx-compiler
+  if 'CC' not in environment and parsed_arguments.c_compiler:
+    environment['CC'] = parsed_arguments.c_compiler
+  if 'CXX' not in environment and parsed_arguments.cxx_compiler:
+    environment['CXX'] = parsed_arguments.cxx_compiler
   environment['CFLAGS'] = sanitizer_params['compiler_flags']
   environment['CXXFLAGS'] = sanitizer_params['compiler_flags']
   # We use XORIGIN as RPATH and after building library replace it to $ORIGIN
@@ -159,6 +165,8 @@ def main():
       choices=SUPPORTED_SANITIZERS.keys()) 
   argument_parser.add_argument('-v', '--verbose', action='store_true')
   argument_parser.add_argument('--check-build-deps', action='store_true')
+  argument_parser.add_argument('--c-compiler')
+  argument_parser.add_argument('--cxx-compiler')
 
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of
