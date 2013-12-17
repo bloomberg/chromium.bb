@@ -135,3 +135,12 @@ race:net::ProxyResolverV8Tracing::Job::~Job
 
 # http://crbug.com/313726
 race:CallbackWasCalled
+
+# http://crbug.com/328804
+race:v8::internal::Heap::SetStackLimits
+race:ScavengePointer
+
+# http://crbug.com/328826
+race:gLCDOrder
+race:gLCDOrientation
+
