@@ -1892,8 +1892,9 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 
 void Browser::ScheduleUIUpdate(const WebContents* source,
                                unsigned changed_flags) {
-  if (!source)
-    return;
+  DCHECK(source);
+  int index = tab_strip_model_->GetIndexOfWebContents(source);
+  DCHECK_NE(TabStripModel::kNoTab, index);
 
   // Do some synchronous updates.
   if (changed_flags & content::INVALIDATE_TYPE_URL &&
