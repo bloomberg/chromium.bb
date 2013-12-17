@@ -272,18 +272,18 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   // Log in.
   UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
   UserManager::Get()->SessionStarted();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(
-      ProfileHelper::GetSigninProfile()->IsSameProfile(
-          ProfileManager::GetDefaultProfile()))
+      ProfileHelper::GetSigninProfile()->IsSameProfile(profile))
       << ProfileHelper::GetSigninProfile()->GetDebugName() << " vs. "
-      << ProfileManager::GetDefaultProfile()->GetDebugName();
+      << profile->GetDebugName();
 
   // Create API and event delegate for sign in profile.
   BrailleDisplayPrivateAPI signin_api(ProfileHelper::GetSigninProfile());
   MockEventDelegate* signin_delegate = SetMockEventDelegate(&signin_api);
   EXPECT_EQ(0, signin_delegate->GetEventCount());
   // Create api and delegate for the logged in user.
-  BrailleDisplayPrivateAPI user_api(ProfileManager::GetDefaultProfile());
+  BrailleDisplayPrivateAPI user_api(profile);
   MockEventDelegate* user_delegate = SetMockEventDelegate(&user_api);
 
   // Send key event to both profiles.
