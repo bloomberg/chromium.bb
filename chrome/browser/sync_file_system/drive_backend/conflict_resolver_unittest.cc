@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "chrome/browser/drive/drive_uploader.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
+#include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
@@ -29,9 +31,21 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+namespace {
+
+fileapi::FileSystemURL URL(const GURL& origin,
+                           const std::string& path) {
+  return CreateSyncableFileSystemURL(
+      origin, base::FilePath::FromUTF8Unsafe(path));
+}
+
+}  // namespace
+
 class ConflictResolverTest : public testing::Test,
                              public SyncEngineContext {
  public:
+  typedef FakeRemoteChangeProcessor::URLToFileChangesMap URLToFileChangesMap;
+
   ConflictResolverTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   virtual ~ConflictResolverTest() {}
@@ -133,6 +147,12 @@ class ConflictResolverTest : public testing::Test,
     return file_id;
   }
 
+  void CreateLocalFile(const fileapi::FileSystemURL& url) {
+    fake_remote_change_processor_->UpdateLocalFileMetadata(
+        url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                        SYNC_FILE_TYPE_FILE));
+  }
+
   google_apis::GDataErrorCode AddFileToFolder(
       const std::string& parent_folder_id,
       const std::string& file_id) {
@@ -158,7 +178,7 @@ class ConflictResolverTest : public testing::Test,
     return count;
   }
 
-  SyncStatusCode RunSyncer() {
+  SyncStatusCode RunRemoteToLocalSyncer() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<RemoteToLocalSyncer> syncer(new RemoteToLocalSyncer(this));
     syncer->Run(CreateResultReceiver(&status));
@@ -166,10 +186,27 @@ class ConflictResolverTest : public testing::Test,
     return status;
   }
 
-  void RunSyncerUntilIdle() {
+  SyncStatusCode RunLocalToRemoteSyncer(
+      const fileapi::FileSystemURL& url,
+      const FileChange& file_change) {
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    base::FilePath local_path = base::FilePath(FILE_PATH_LITERAL("dummy"));
+    if (file_change.IsAddOrUpdate())
+      CreateTemporaryFileInDir(database_dir_.path(), &local_path);
+    scoped_ptr<LocalToRemoteSyncer> syncer(new LocalToRemoteSyncer(
+        this, SyncFileMetadata(file_change.file_type(), 0, base::Time()),
+        file_change, local_path, url));
+    syncer->Run(CreateResultReceiver(&status));
+    base::RunLoop().RunUntilIdle();
+    if (status == SYNC_STATUS_OK)
+      fake_remote_change_processor_->ClearLocalChanges(url);
+    return status;
+  }
+
+  void RunRemoteToLocalSyncerUntilIdle() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
-      status = RunSyncer();
+      status = RunRemoteToLocalSyncer();
   }
 
   SyncStatusCode RunConflictResolver() {
@@ -211,6 +248,11 @@ class ConflictResolverTest : public testing::Test,
     EXPECT_EQ(kind, entries[0]->kind());
   }
 
+  void VerifyLocalChangeConsistency(
+      const URLToFileChangesMap& expected_changes) {
+    fake_remote_change_processor_->VerifyConsistency(expected_changes);
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir database_dir_;
@@ -230,7 +272,7 @@ TEST_F(ConflictResolverTest, NoFileToBeResolved) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   EXPECT_EQ(SYNC_STATUS_NO_CONFLICT, RunConflictResolver());
 }
@@ -241,7 +283,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_Files) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   const std::string kTitle = "foo";
   const std::string primary = CreateRemoteFile(app_root, kTitle, "data1");
@@ -249,7 +291,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_Files) {
   CreateRemoteFile(app_root, kTitle, "data3");
   CreateRemoteFile(app_root, kTitle, "data4");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   ScopedVector<google_apis::ResourceEntry> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
@@ -267,7 +309,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_Folders) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   const std::string kTitle = "foo";
   const std::string primary = CreateRemoteFolder(app_root, kTitle);
@@ -275,7 +317,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_Folders) {
   CreateRemoteFolder(app_root, kTitle);
   CreateRemoteFolder(app_root, kTitle);
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   ScopedVector<google_apis::ResourceEntry> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
@@ -293,7 +335,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   const std::string kTitle = "foo";
   CreateRemoteFile(app_root, kTitle, "data");
@@ -301,7 +343,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
   CreateRemoteFile(app_root, kTitle, "data2");
   CreateRemoteFolder(app_root, kTitle);
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   ScopedVector<google_apis::ResourceEntry> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
@@ -313,13 +355,111 @@ TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
                            google_apis::ENTRY_KIND_FOLDER);
 }
 
+TEST_F(ConflictResolverTest, ResolveConflict_RemoteFolderOnLocalFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+  RunRemoteToLocalSyncerUntilIdle();
+
+  const std::string kTitle = "foo";
+  fileapi::FileSystemURL kURL = URL(kOrigin, kTitle);
+
+  // Create a file on local and sync it.
+  CreateLocalFile(kURL);
+  RunLocalToRemoteSyncer(
+      kURL,
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE));
+
+  // Create a folder on remote and sync it.
+  const std::string primary = CreateRemoteFolder(app_root, kTitle);
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunRemoteToLocalSyncerUntilIdle();
+
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, kTitle);
+  ASSERT_EQ(2u, entries.size());
+
+  // Run conflict resolver. Only primary file should survive.
+  EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
+  VerifyConflictResolution(app_root, kTitle, primary,
+                           google_apis::ENTRY_KIND_FOLDER);
+
+  // Continue to run remote-to-local sync.
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunRemoteToLocalSyncerUntilIdle();
+
+  // Verify that the local side has been synced to the same state
+  // (i.e. file deletion and folder creation).
+  URLToFileChangesMap expected_changes;
+  expected_changes[kURL].push_back(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_UNKNOWN));
+  expected_changes[kURL].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  VerifyLocalChangeConsistency(expected_changes);
+}
+
+TEST_F(ConflictResolverTest, ResolveConflict_RemoteNestedFolderOnLocalFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+  RunRemoteToLocalSyncerUntilIdle();
+
+  const std::string kTitle = "foo";
+  fileapi::FileSystemURL kURL = URL(kOrigin, kTitle);
+
+  // Create a file on local and sync it.
+  CreateLocalFile(kURL);
+  RunLocalToRemoteSyncer(
+      kURL,
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE));
+
+  // Create a folder and subfolder in it on remote, and sync it.
+  const std::string primary = CreateRemoteFolder(app_root, kTitle);
+  CreateRemoteFolder(primary, "nested");
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunRemoteToLocalSyncerUntilIdle();
+
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, kTitle);
+  ASSERT_EQ(2u, entries.size());
+
+  // Run conflict resolver. Only primary file should survive.
+  EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
+  VerifyConflictResolution(app_root, kTitle, primary,
+                           google_apis::ENTRY_KIND_FOLDER);
+
+  // Continue to run remote-to-local sync.
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunRemoteToLocalSyncerUntilIdle();
+
+  // Verify that the local side has been synced to the same state
+  // (i.e. file deletion and folders creation).
+  URLToFileChangesMap expected_changes;
+  expected_changes[kURL].push_back(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_UNKNOWN));
+  expected_changes[kURL].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  expected_changes[URL(kOrigin, "foo/nested")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  VerifyLocalChangeConsistency(expected_changes);
+}
+
 TEST_F(ConflictResolverTest, ResolveMultiParents_File) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   const std::string primary = CreateRemoteFolder(app_root, "primary");
   const std::string file = CreateRemoteFile(primary, "file", "data");
@@ -331,7 +471,7 @@ TEST_F(ConflictResolverTest, ResolveMultiParents_File) {
             AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary3"), file));
 
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   EXPECT_EQ(4, CountParents(file));
 
@@ -346,7 +486,7 @@ TEST_F(ConflictResolverTest, ResolveMultiParents_Folder) {
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   const std::string primary = CreateRemoteFolder(app_root, "primary");
   const std::string file = CreateRemoteFolder(primary, "folder");
@@ -358,7 +498,7 @@ TEST_F(ConflictResolverTest, ResolveMultiParents_Folder) {
             AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary3"), file));
 
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  RunSyncerUntilIdle();
+  RunRemoteToLocalSyncerUntilIdle();
 
   EXPECT_EQ(4, CountParents(file));
 
