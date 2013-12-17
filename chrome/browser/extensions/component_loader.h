@@ -116,6 +116,9 @@ class ComponentLoader {
   void AddImageLoaderExtension();
   void AddBookmarksExtensions();
   void AddNetworkSpeechSynthesisExtension();
+#if defined(OS_CHROMEOS)
+  void AddChromeOsSpeechSynthesisExtension();
+#endif
 
   void AddWithName(int manifest_resource_id,
                    const base::FilePath& root_directory,

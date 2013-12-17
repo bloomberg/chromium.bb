@@ -865,6 +865,11 @@ const char kMultiProfileNotificationDismissed[] =
 // in a multiprofile session. See ChromeOsMultiProfileUserBehavior policy
 // for more details of the valid values.
 const char kMultiProfileUserBehavior[] = "settings.multiprofile_user_behavior";
+
+// List of the set of language codes for which high quality local speech
+// synthesis has been enabled.
+const char kHighQualitySpeechSynthesisLanguages[] =
+    "settings.speech_synthesis.high_quality_languages";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

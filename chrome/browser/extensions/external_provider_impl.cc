@@ -519,7 +519,7 @@ void ExternalProviderImpl::CreateExternalProviders(
       linked_ptr<ExternalProviderInterface>(
         new ExternalProviderImpl(
             service,
-            new ExternalComponentLoader(),
+            new ExternalComponentLoader(profile),
             profile,
             Manifest::INVALID_LOCATION,
             Manifest::EXTERNAL_COMPONENT,

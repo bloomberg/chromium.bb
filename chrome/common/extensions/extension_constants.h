@@ -257,6 +257,9 @@ namespace extension_misc {
   extern const char kSpeechSynthesisExtensionPath[];
   // The extension id of the speech synthesis extension.
   extern const char kSpeechSynthesisExtensionId[];
+  // The extension id of the high quality speech synthesis extension for
+  // en-US, which can be installed automatically from the web store.
+  extern const char kHighQuality_en_US_ExtensionId[];
   // The extension id of the wallpaper manager application.
   extern const char kWallpaperManagerId[];
   // The extension id of the first run dialog application.

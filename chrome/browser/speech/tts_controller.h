@@ -101,7 +101,7 @@ class Utterance {
   // when the utterance is done speaking. Before speaking this utterance,
   // its other parameters like text, rate, pitch, etc. should all be set.
   explicit Utterance(Profile* profile);
-  ~Utterance();
+  virtual ~Utterance();
 
   // Sends an event to the delegate. If the event type is TTS_EVENT_END
   // or TTS_EVENT_ERROR, deletes the utterance. If |char_index| is -1,
@@ -184,6 +184,9 @@ class Utterance {
   Profile* profile() const { return profile_; }
   int id() const { return id_; }
   bool finished() const { return finished_; }
+
+ protected:
+  void set_finished_for_testing(bool finished) { finished_ = finished; }
 
  private:
   // The profile that initiated this utterance.
@@ -280,10 +283,6 @@ class TtsController {
   // Return a list of all available voices, including the native voice,
   // if supported, and all voices registered by extensions.
   void GetVoices(Profile* profile, std::vector<VoiceData>* out_voices);
-
-  // Called by TtsExtensionLoaderChromeOs::LoadTtsExtension when it
-  // finishes loading the built-in TTS component extension.
-  void RetrySpeakingQueuedUtterances();
 
   // Called by the extension system or platform implementation when the
   // list of voices may have changed and should be re-queried.

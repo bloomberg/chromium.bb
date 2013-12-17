@@ -322,6 +322,13 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
       base::FilePath(FILE_PATH_LITERAL("network_speech_synthesis")));
 }
 
+#if defined(OS_CHROMEOS)
+void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
+  Add(IDR_SPEECH_SYNTHESIS_MANIFEST,
+      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath));
+}
+#endif
+
 void ComponentLoader::AddWithName(int manifest_resource_id,
                                   const base::FilePath& root_directory,
                                   const std::string& name) {
@@ -561,6 +568,10 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   AddNetworkSpeechSynthesisExtension();
 #endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+#if defined(OS_CHROMEOS)
+  AddChromeOsSpeechSynthesisExtension();
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_PLUGINS)
   base::FilePath pdf_path;

@@ -1,7 +1,7 @@
 {
-  "name": "Chrome OS built-in text-to-speech extension",
-  "version": "0.0.2",
-  "description": "Text-to-speech (TTS) voice extension using Native Client technology.",
+  "name": "Chrome OS text-to-speech component extension",
+  "version": "1.0.2",
+  "description": "Chrome OS native text-to-speech implemented using native client.",
   "manifest_version": 2,
   "background": {
     "scripts": [
@@ -13,7 +13,8 @@
       "voice_data_hmm_it-IT.js",
       "tts_controller.js",
       "tts_main.js"
-    ]
+    ],
+    "persistent": false
   },
   "permissions": [
     "ttsEngine",
@@ -41,13 +42,13 @@
         "event_types": [ "start", "word", "end", "error" ]
       },
       {
-        "voice_name": "Chrome OS US English",
+        "voice_name": "Chrome OS US English Female",
         "lang": "en-US",
         "gender": "female",
         "event_types": [ "start", "word", "end", "error" ]
       },
       {
-        "voice_name": "Chrome OS British English",
+        "voice_name": "Chrome OS British English Female",
         "lang": "en-GB",
         "gender": "female",
         "event_types": [ "start", "word", "end", "error" ]
