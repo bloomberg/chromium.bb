@@ -1101,18 +1101,6 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   var clientHeight = document.documentElement.clientHeight;
   var parentNode = this.plugin_.element().parentNode;
 
-  if (pluginWidth < clientWidth) {
-    parentNode.style.left = (clientWidth - pluginWidth) / 2 + 'px';
-  } else {
-    parentNode.style.left = '0';
-  }
-
-  if (pluginHeight < clientHeight) {
-    parentNode.style.top = (clientHeight - pluginHeight) / 2 + 'px';
-  } else {
-    parentNode.style.top = '0';
-  }
-
   console.log('plugin dimensions: ' +
               parentNode.style.left + ',' +
               parentNode.style.top + '-' +
@@ -1168,15 +1156,18 @@ remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
  * @private
  */
 remoting.ClientSession.prototype.toggleFullScreen_ = function() {
+  var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
   if (document.webkitIsFullScreen) {
     document.webkitCancelFullScreen();
     this.enableBumpScroll_(false);
+    htmlNode.classList.remove('full-screen');
   } else {
     document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
     // Don't enable bump scrolling immediately because it can result in
     // onMouseMove firing before the webkitIsFullScreen property can be
     // read safely (crbug.com/132180).
     window.setTimeout(this.enableBumpScroll_.bind(this, true), 0);
+    htmlNode.classList.add('full-screen');
   }
 };
 
@@ -1328,4 +1319,3 @@ remoting.ClientSession.prototype.sendClipboardItem = function(mimeType, item) {
     return;
   this.plugin_.sendClipboardItem(mimeType, item)
 };
-

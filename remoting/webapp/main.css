@@ -18,12 +18,15 @@ tfoot, thead, tr, th, td, button {
   vertical-align: baseline;
 }
 
+.inset {
+  padding: 20px 20px 0 20px;
+}
+
 body {
   font-family: "Arial", "Helvetica", sans-serif;
   color: #222;
   font-size: 13px;
   margin: 0;
-  padding: 20px 20px 0 20px;
   direction: __MSG_@@bidi_dir__;
 }
 
@@ -282,7 +285,6 @@ header {
 html {
   -webkit-user-select: none;
   cursor: default;
-  height: 100%; /* Remove phantom pixels at the bottom of the body. */
 }
 
 section {
@@ -666,8 +668,7 @@ html.apps-v2.scrollable {
   width: 315px;
 }
 
-#session-mode {
-  position: absolute;
+#session-client-plugin {
   box-shadow: 0 0 8px 0 black;
   -webkit-user-select: none;
 }
@@ -703,4 +704,38 @@ html.apps-v2.scrollable {
  */
 [hidden] {
   display: none !important;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.horizontally-centered {
+  display: -webkit-flex;
+}
+
+.vertically-centered {
+  display: -webkit-flex;
+  flex-direction: column;
+  height: 100%
+}
+
+.horizontally-centered::before,
+.horizontally-centered::after,
+.vertically-centered::before,
+.vertically-centered::after {
+  content: "";
+  -webkit-flex: 1;
+}
+
+/* Bump-scrolling is currently implemented by adjusting the margins, which is
+ * easier to implement with "position: fixed". In full-screen mode there are
+ * no scroll-bars, so the advantages of flex-box layout to achieve centering
+ * (ie, the DOM is easier to measure to determine when scroll-bars are needed)
+ * don't apply */
+.full-screen #session-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
 }

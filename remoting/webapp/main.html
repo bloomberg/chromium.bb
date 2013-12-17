@@ -5,7 +5,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<html class="scrollable">
+<html class="scrollable full-height">
   <head>
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="chromoting16.webp">
@@ -57,7 +57,7 @@ found in the LICENSE file.
     <title i18n-content="PRODUCT_NAME"></title>
   </head>
 
-  <body>
+  <body class="full-height">
 
     <!-- loading-mode is initially visible, but becomes hidden as soon as an
          AppMode is selected by remoting.init. All other divs are initially
@@ -71,7 +71,9 @@ found in the LICENSE file.
 
     <iframe id="wcs-sandbox" src="wcs_sandbox.html" hidden></iframe>
 
-    <header data-ui-mode="home" hidden>
+    <div class="inset" data-ui-mode="home" hidden>
+
+    <header>
       <div>
         <img src="chromoting48.webp">
         <h1 class="icon-label" i18n-content="PRODUCT_NAME"></h1>
@@ -102,7 +104,7 @@ found in the LICENSE file.
       </div>
     </div>
 
-    <div data-ui-mode="home" hidden>
+    <div>
 
       <section>
         <h2 i18n-content="MODE_IT2ME"></h2>
@@ -247,7 +249,8 @@ found in the LICENSE file.
           </div>
         </div> <!-- me2me-content -->
       </section> <!-- host-list-div -->
-    </div> <!-- home -->
+    </div>
+    </div> <!-- inset -->
 
     <div id="auth-dialog" hidden>
       <div class="dialog-screen"></div>
@@ -733,7 +736,10 @@ found in the LICENSE file.
 
     </div> <!-- dialog-container -->
 
-    <div id="session-mode" data-ui-mode="in-session home.client" hidden>
+    <div id="session-mode"
+         data-ui-mode="in-session home.client"
+         class="full-height"
+         hidden>
       <div id="session-toolbar"
            data-ui-mode="in-session"
            class="toolbar-container"
@@ -780,6 +786,11 @@ found in the LICENSE file.
           <div class="arrow-down"></div>
         </div>
       </div> <!-- session-toolbar -->
+      <div class="vertically-centered">
+        <div class="horizontally-centered">
+          <div id="client-plugin-container"></div>
+        </div>
+      </div>
     </div> <!-- session-mode -->
 
     <div id="statistics" dir="ltr" class="selectable" hidden>
