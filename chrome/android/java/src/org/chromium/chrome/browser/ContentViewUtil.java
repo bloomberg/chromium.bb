@@ -18,7 +18,15 @@ public abstract class ContentViewUtil {
      *         (java) ContentViewCore instance.
      */
     public static long createNativeWebContents(boolean incognito) {
-        return nativeCreateNativeWebContents(incognito);
+        return nativeCreateNativeWebContents(incognito, false);
+    }
+
+    /**
+     * @return pointer to native WebContents instance, suitable for using with a
+     *         (java) ContentViewCore instance.
+     */
+    public static long createNativeWebContents(boolean incognito, boolean initiallyHidden) {
+        return nativeCreateNativeWebContents(incognito, initiallyHidden);
     }
 
     /**
@@ -28,6 +36,7 @@ public abstract class ContentViewUtil {
         nativeDestroyNativeWebContents(webContentsPtr);
     }
 
-    private static native long nativeCreateNativeWebContents(boolean incognito);
+    private static native long nativeCreateNativeWebContents(boolean incognito,
+            boolean initiallyHidden);
     private static native void nativeDestroyNativeWebContents(long webContentsPtr);
 }

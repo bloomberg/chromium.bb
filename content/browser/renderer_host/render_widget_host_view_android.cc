@@ -109,7 +109,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
       needs_begin_frame_(false),
-      are_layers_attached_(true),
+      are_layers_attached_(!widget_host->is_hidden()),
       content_view_core_(NULL),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
