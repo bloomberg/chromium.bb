@@ -10,6 +10,7 @@ group("root") {
     "//base(//build/toolchain/nacl:x86_newlib)",
     "//chrome",
     "//components/onc:onc_component",
+    "//components/startup_metric_utils",
     "//crypto",
     "//device/usb:device_usb",
     "//ipc",
