@@ -134,7 +134,7 @@ void TooltipWin::Show() {
 }
 
 void TooltipWin::Hide() {
-  if (!EnsureTooltipWindow())
+  if (!tooltip_hwnd_)
     return;
 
   SendMessage(tooltip_hwnd_, TTM_TRACKACTIVATE, FALSE,
