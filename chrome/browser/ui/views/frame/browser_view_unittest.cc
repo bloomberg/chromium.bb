@@ -67,10 +67,12 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   TopContainerView* top_container = browser_view()->top_container();
   TabStrip* tabstrip = browser_view()->tabstrip();
   ToolbarView* toolbar = browser_view()->toolbar();
-  views::SingleSplitView* contents_split =
-      browser_view()->GetContentsSplitForTest();
+  views::View* contents_container =
+      browser_view()->GetContentsContainerForTest();
   views::WebView* contents_web_view =
       browser_view()->GetContentsWebViewForTest();
+  views::WebView* devtools_web_view =
+      browser_view()->GetDevToolsWebViewForTest();
 
   // Start with a single tab open to a normal page.
   AddTab(browser, GURL("about:blank"));
@@ -101,8 +103,10 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
       tabstrip->bounds().bottom() -
           BrowserViewLayout::kToolbarTabStripVerticalOverlap,
       toolbar->y());
-  EXPECT_EQ(0, contents_split->x());
-  EXPECT_EQ(toolbar->bounds().bottom(), contents_split->y());
+  EXPECT_EQ(0, contents_container->x());
+  EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
+  EXPECT_EQ(0, devtools_web_view->x());
+  EXPECT_EQ(0, devtools_web_view->y());
   EXPECT_EQ(0, contents_web_view->x());
   EXPECT_EQ(0, contents_web_view->y());
 
@@ -139,8 +143,11 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
           BrowserViewLayout::kToolbarTabStripVerticalOverlap -
           views::NonClientFrameView::kClientEdgeThickness,
       bookmark_bar->y());
-  EXPECT_EQ(toolbar->bounds().bottom(), contents_split->y());
+  EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   // Contents view has a "top margin" pushing it below the bookmark bar.
+  EXPECT_EQ(bookmark_bar->height() -
+                views::NonClientFrameView::kClientEdgeThickness,
+            devtools_web_view->y());
   EXPECT_EQ(bookmark_bar->height() -
                 views::NonClientFrameView::kClientEdgeThickness,
             contents_web_view->y());

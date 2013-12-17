@@ -592,7 +592,6 @@ extern const char kDevToolsDiscoverUsbDevicesEnabled[];
 extern const char kDevToolsDockSide[];
 extern const char kDevToolsEditedFiles[];
 extern const char kDevToolsFileSystemPaths[];
-extern const char kDevToolsHSplitLocation[];
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsPortForwardingEnabled[];
 extern const char kDevToolsPortForwardingDefaultSet[];
@@ -600,7 +599,6 @@ extern const char kDevToolsPortForwardingConfig[];
 #if defined(OS_ANDROID)
 extern const char kDevToolsRemoteEnabled[];
 #endif
-extern const char kDevToolsVSplitLocation[];
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // Used by Chrome Mobile.
 extern const char kSpdyProxyAuthEnabled[];

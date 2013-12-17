@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include <Cocoa/Cocoa.h>
 
@@ -16,39 +17,85 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
+#include "ui/gfx/size_conversions.h"
 
 using content::WebContents;
 
-@interface GraySplitView : NSSplitView {
-  BOOL dividerHidden_;
+@interface DevToolsContainerView : NSView {
+  gfx::Insets contentsInsets_;
+
+  // Weak references. Ownership via -subviews.
+  NSView* devToolsView_;
+  NSView* contentsView_;
 }
 
-@property(assign, nonatomic) BOOL dividerHidden;
-
-- (NSColor*)dividerColor;
-- (CGFloat)dividerThickness;
+- (void)setContentsInsets:(const gfx::Insets&)insets;
+- (void)adjustSubviews;
+- (void)showDevTools:(NSView*)devToolsView;
+- (void)hideDevTools;
 
 @end
 
 
-@implementation GraySplitView
+@implementation DevToolsContainerView
 
-@synthesize dividerHidden = dividerHidden_;
-
-- (NSColor*)dividerColor {
-  return [NSColor darkGrayColor];
+- (void)setContentsInsets:(const gfx::Insets&)insets {
+  contentsInsets_ = insets;
 }
 
-- (CGFloat)dividerThickness {
-  return dividerHidden_ ? 0 : [super dividerThickness];
+- (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
+  [self adjustSubviews];
+}
+
+- (void)showDevTools:(NSView*)devToolsView {
+  NSArray* subviews = [self subviews];
+  DCHECK_EQ(1u, [subviews count]);
+  contentsView_ = [subviews objectAtIndex:0];
+  devToolsView_ = devToolsView;
+  // Place DevTools under contents.
+  [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
+}
+
+- (void)hideDevTools {
+  DCHECK_EQ(2u, [[self subviews] count]);
+  [devToolsView_ removeFromSuperview];
+  contentsView_ = nil;
+  devToolsView_ = nil;
+}
+
+- (void)adjustSubviews {
+  if (![[self subviews] count])
+    return;
+
+  if (!devToolsView_) {
+    DCHECK_EQ(1u, [[self subviews] count]);
+    NSView* contents = [[self subviews] objectAtIndex:0];
+    [contents setFrame:[self bounds]];
+    return;
+  }
+
+  DCHECK_EQ(2u, [[self subviews] count]);
+  NSRect bounds = [self bounds];
+
+  [devToolsView_ setFrame:bounds];
+
+  CGFloat width = std::max(static_cast<CGFloat>(0),
+                           NSWidth(bounds) - contentsInsets_.width());
+  CGFloat height = std::max(static_cast<CGFloat>(0),
+                            NSHeight(bounds) - contentsInsets_.height());
+  CGFloat left = std::min(static_cast<CGFloat>(contentsInsets_.left()),
+                          NSWidth(bounds));
+  // Flip top and bottom for NSView geometry.
+  CGFloat top = std::min(static_cast<CGFloat>(contentsInsets_.bottom()),
+                         NSHeight(bounds));
+  [contentsView_ setFrame:NSMakeRect(left, top, width, height)];
 }
 
 @end
 
 @interface DevToolsController (Private)
-- (void)showDevToolsContainer;
-- (void)hideDevToolsContainer;
-- (void)updateDevToolsSplitPosition;
+- (void)showDevToolsView;
+- (void)hideDevToolsView;
 @end
 
 
@@ -56,29 +103,16 @@ using content::WebContents;
 
 - (id)init {
   if ((self = [super init])) {
-    splitView_.reset([[GraySplitView alloc] initWithFrame:NSZeroRect]);
-    [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
-    [splitView_ setVertical:NO];
-    [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    [splitView_ setDelegate:self];
-    [splitView_ setDividerHidden:NO];
-
-    dockSide_ = DEVTOOLS_DOCK_SIDE_BOTTOM;
+    devToolsContainerView_.reset(
+        [[DevToolsContainerView alloc] initWithFrame:NSZeroRect]);
+    [devToolsContainerView_
+        setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
   }
   return self;
 }
 
-- (void)dealloc {
-  [splitView_ setDelegate:nil];
-  [super dealloc];
-}
-
 - (NSView*)view {
-  return splitView_.get();
-}
-
-- (NSSplitView*)splitView {
-  return splitView_.get();
+  return devToolsContainerView_.get();
 }
 
 - (void)updateDevToolsForWebContents:(WebContents*)contents
@@ -86,145 +120,50 @@ using content::WebContents;
   DevToolsWindow* newDevToolsWindow = contents ?
       DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
 
-  // Fast return in case of the same window having same orientation.
-  if (devToolsWindow_ == newDevToolsWindow) {
-    if (!newDevToolsWindow ||
-        (newDevToolsWindow->dock_side() == dockSide_)) {
-      return;
-    }
-  }
+  bool shouldHide = devToolsWindow_ && devToolsWindow_ != newDevToolsWindow;
+  bool shouldShow = newDevToolsWindow && devToolsWindow_ != newDevToolsWindow;
 
-  // Store last used position.
-  if (devToolsWindow_) {
-    NSArray* subviews = [splitView_ subviews];
-    DCHECK_EQ([subviews count], 2u);
-    NSView* devToolsView = [subviews objectAtIndex:1];
-    if (dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT)
-      devToolsWindow_->SetWidth(NSWidth([devToolsView frame]));
-    else if (dockSide_ == DEVTOOLS_DOCK_SIDE_BOTTOM)
-      devToolsWindow_->SetHeight(NSHeight([devToolsView frame]));
-  }
-
-  if (devToolsWindow_)
-    [self hideDevToolsContainer];
+  if (shouldHide)
+    [self hideDevToolsView];
 
   devToolsWindow_ = newDevToolsWindow;
-
   if (devToolsWindow_) {
-    dockSide_ = devToolsWindow_->dock_side();
-    [self showDevToolsContainer];
+    gfx::Insets insets = devToolsWindow_->GetContentsInsets();
+    devToolsWindow_->web_contents()->GetView()->SetOverlayView(
+        contents->GetView(), gfx::Point(insets.left(), insets.top()));
+    [devToolsContainerView_ setContentsInsets:insets];
+  } else {
+    gfx::Insets zeroInsets;
+    [devToolsContainerView_ setContentsInsets:zeroInsets];
   }
+
+  if (shouldShow)
+    [self showDevToolsView];
+
+  [devToolsContainerView_ adjustSubviews];
+  if (shouldHide || shouldShow)
+    [[devToolsContainerView_ window] disableScreenUpdatesUntilFlush];
 }
 
-- (void)showDevToolsContainer {
-  NSArray* subviews = [splitView_ subviews];
-  DCHECK_EQ([subviews count], 1u);
-  WebContents* devToolsContents = devToolsWindow_->web_contents();
+- (void)showDevToolsView {
   focusTracker_.reset(
-      [[FocusTracker alloc] initWithWindow:[splitView_ window]]);
+      [[FocusTracker alloc] initWithWindow:[devToolsContainerView_ window]]);
 
-  // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
+  // |devToolsView| is a WebContentsViewCocoa object, whose ViewID was
   // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
   // VIEW_ID_DEV_TOOLS_DOCKED here.
-  NSView* devToolsView = devToolsContents->GetView()->GetNativeView();
+  NSView* devToolsView =
+      devToolsWindow_->web_contents()->GetView()->GetNativeView();
   view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
-  [splitView_ addSubview:devToolsView];
 
-  BOOL isVertical = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT;
-  [splitView_ setVertical:isVertical];
-  [self updateDevToolsSplitPosition];
+  [devToolsContainerView_ showDevTools:devToolsView];
 }
 
-- (void)hideDevToolsContainer {
-  NSArray* subviews = [splitView_ subviews];
-  DCHECK_EQ([subviews count], 2u);
-  NSView* oldDevToolsContentsView = [subviews objectAtIndex:1];
-  [oldDevToolsContentsView removeFromSuperview];
-  [splitView_ adjustSubviews];
-  [focusTracker_ restoreFocusInWindow:[splitView_ window]];
+- (void)hideDevToolsView {
+  devToolsWindow_->web_contents()->GetView()->RemoveOverlayView();
+  [devToolsContainerView_ hideDevTools];
+  [focusTracker_ restoreFocusInWindow:[devToolsContainerView_ window]];
   focusTracker_.reset();
-}
-
-- (void)updateDevToolsSplitPosition {
-  NSArray* subviews = [splitView_ subviews];
-
-  // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
-  // but I can't figure out how to use it. Manually resize web and devtools.
-  // TODO(alekseys): either make setPosition:ofDividerAtIndex: work or to add a
-  // category on NSSplitView to handle manual resizing.
-  NSView* webView = [subviews objectAtIndex:0];
-  NSRect webFrame = [webView frame];
-  NSView* devToolsView = [subviews objectAtIndex:1];
-  NSRect devToolsFrame = [devToolsView frame];
-
-  BOOL noDivider = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED;
-  [splitView_ setDividerHidden:noDivider];
-
-  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
-    CGFloat size = devToolsWindow_->GetWidth(NSWidth([splitView_ frame]));
-    devToolsFrame.size.width = size;
-    webFrame.size.width =
-        NSWidth([splitView_ frame]) - ([splitView_ dividerThickness] + size);
-  } else {
-    CGFloat size =
-        devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED ?
-            devToolsWindow_->GetMinimizedHeight() :
-            devToolsWindow_->GetHeight(NSHeight([splitView_ frame]));
-    devToolsFrame.size.height = size;
-    webFrame.size.height =
-        NSHeight([splitView_ frame]) - ([splitView_ dividerThickness] + size);
-  }
-
-  [[splitView_ window] disableScreenUpdatesUntilFlush];
-  [webView setFrame:webFrame];
-  [devToolsView setFrame:devToolsFrame];
-
-  [splitView_ adjustSubviews];
-}
-
-// NSSplitViewDelegate protocol.
-- (BOOL)splitView:(NSSplitView *)splitView
-    shouldAdjustSizeOfSubview:(NSView *)subview {
-  // Return NO for the devTools view to indicate that it should not be resized
-  // automatically. It preserves the height set by the user and also keeps
-  // view height the same while changing tabs when one of the tabs shows infobar
-  // and others are not.
-  if ([[splitView_ subviews] indexOfObject:subview] == 1)
-    return NO;
-  return YES;
-}
-
-- (NSRect)splitView:(NSSplitView*)splitView
-      effectiveRect:(NSRect)proposedEffectiveRect
-       forDrawnRect:(NSRect)drawnRect
-   ofDividerAtIndex:(NSInteger)dividerIndex {
-  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_MINIMIZED) {
-    return NSZeroRect;
-  } else {
-    return proposedEffectiveRect;
-  }
-}
-
-- (CGFloat)splitView:(NSSplitView*)splitView
-    constrainMaxCoordinate:(CGFloat)proposedMax
-               ofSubviewAt:(NSInteger)dividerIndex {
-  if ([splitView_ isVertical]) {
-    return NSWidth([splitView_ frame]) - [splitView_ dividerThickness] -
-        devToolsWindow_->GetMinimumWidth();
-  } else {
-    return NSHeight([splitView_ frame]) - [splitView_ dividerThickness] -
-        devToolsWindow_->GetMinimumHeight();
-  }
-}
-
-- (CGFloat)splitView:(NSSplitView *)splitView
-    constrainSplitPosition:(CGFloat)proposedPosition
-               ofSubviewAt:(NSInteger)dividerIndex {
-  return round(proposedPosition);
-}
-
--(void)splitViewWillResizeSubviews:(NSNotification *)notification {
-  [[splitView_ window] disableScreenUpdatesUntilFlush];
 }
 
 @end
