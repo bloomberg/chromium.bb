@@ -5,16 +5,14 @@
 #include "components/precache/core/precache_database.h"
 
 #include <map>
-#include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/time/time.h"
-#include "components/precache/core/precache_url_table.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -86,13 +84,16 @@ class PrecacheDatabaseTest : public testing::Test {
   }
 
   std::map<GURL, base::Time> GetActualURLTableMap() {
+    // Flush any buffered writes so that the URL table will be up to date.
+    precache_database_->Flush();
+
     std::map<GURL, base::Time> url_table_map;
     precache_url_table()->GetAllDataForTesting(&url_table_map);
     return url_table_map;
   }
 
   PrecacheURLTable* precache_url_table() {
-    return precache_database_->precache_url_table_.get();
+    return &precache_database_->precache_url_table_;
   }
 
   scoped_ptr<base::HistogramSamples> GetHistogramSamplesDelta(
@@ -133,10 +134,12 @@ class PrecacheDatabaseTest : public testing::Test {
   void RecordFetchFromCacheCellular(const GURL& url,
                                     const base::Time& fetch_time, int64 size);
 
+  // Having this MessageLoop member variable causes base::MessageLoop::current()
+  // to be set properly.
+  base::MessageLoopForUI loop_;
+
   scoped_refptr<PrecacheDatabase> precache_database_;
-
   base::ScopedTempDir scoped_temp_dir_;
-
   scoped_ptr<base::HistogramSamples> initial_histogram_samples_
       [arraysize(kHistogramNames)];
   std::map<std::string, base::HistogramSamples*> initial_histogram_samples_map_;

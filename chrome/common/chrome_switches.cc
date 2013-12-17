@@ -701,10 +701,6 @@ const char kEnableOriginChip[]              = "enable-origin-chip";
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 
-// Enables the proactive populating of the disk cache with Web resources that
-// are likely to be needed in future page fetches.
-const char kEnablePrecache[]                = "enable-precache";
-
 // Enables showing unregistered printers in print preview
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";

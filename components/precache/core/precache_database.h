@@ -5,10 +5,16 @@
 #ifndef COMPONENTS_PRECACHE_CORE_PRECACHE_DATABASE_H_
 #define COMPONENTS_PRECACHE_CORE_PRECACHE_DATABASE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/precache/core/precache_url_table.h"
 
 class GURL;
 
@@ -22,8 +28,6 @@ class Connection;
 }
 
 namespace precache {
-
-class PrecacheURLTable;
 
 // Class that tracks information related to precaching. This class can be
 // constructed or destroyed on any threads, but all other methods must be called
@@ -61,11 +65,37 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
 
   bool IsDatabaseAccessible() const;
 
+  // Flushes any buffered write operations. |buffered_writes_| will be empty
+  // after calling this function. To maximize performance, all the buffered
+  // writes are run in a single database transaction.
+  void Flush();
+
+  // Same as Flush(), but also updates the flag |is_flush_posted_| to indicate
+  // that a flush is no longer posted.
+  void PostedFlush();
+
+  // Post a call to PostedFlush() on the current thread's MessageLoop, if
+  // |buffered_writes_| is non-empty and there isn't already a flush call
+  // posted.
+  void MaybePostFlush();
+
   scoped_ptr<sql::Connection> db_;
 
   // Table that keeps track of URLs that are in the cache because of precaching,
-  // and wouldn't be in the cache otherwise.
-  scoped_ptr<PrecacheURLTable> precache_url_table_;
+  // and wouldn't be in the cache otherwise. If |buffered_writes_| is non-empty,
+  // then this table will not be up to date until the next call to Flush().
+  PrecacheURLTable precache_url_table_;
+
+  // A vector of write operations to be run on the database.
+  std::vector<base::Closure> buffered_writes_;
+
+  // Set of URLs that have been modified in |buffered_writes_|. It's a hash set
+  // of strings, and not GURLs, because there is no hash function on GURL.
+  base::hash_set<std::string> buffered_urls_;
+
+  // Flag indicating whether or not a call to Flush() has been posted to run in
+  // the future.
+  bool is_flush_posted_;
 
   // ThreadChecker used to ensure that all methods other than the constructor
   // or destructor are called on the same thread.

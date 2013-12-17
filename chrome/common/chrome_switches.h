@@ -201,7 +201,6 @@ extern const char kEnableOriginChip[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnableQueryExtraction[];
-extern const char kEnablePrecache[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];

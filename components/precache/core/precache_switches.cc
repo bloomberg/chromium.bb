@@ -7,6 +7,10 @@
 namespace precache {
 namespace switches {
 
+// Enables the proactive populating of the disk cache with Web resources that
+// are likely to be needed in future page fetches.
+const char kEnablePrecache[]            = "enable-precache";
+
 // The URL that provides the PrecacheConfigurationSettings proto.
 const char kPrecacheConfigSettingsURL[] = "precache-config-settings-url";
 

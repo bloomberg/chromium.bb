@@ -42,6 +42,7 @@
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+            'precache/content/precache_manager_unittest.cc',
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
@@ -97,7 +98,7 @@
             # Dependencies of json_schema
             'components.gyp:json_schema',
 
-            # Dependencies of precache
+            # Dependencies of precache/core
             'components.gyp:precache_core',
 
             # Dependencies of translate.
@@ -117,6 +118,9 @@
                 # intercept_navigation_resource_throttle_unittest.cc
                 '../skia/skia.gyp:skia',
                 'components.gyp:navigation_interception',
+                
+                # Dependencies of precache/content
+                'components.gyp:precache_content',
 
                 # Dependencies of sessions
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -146,7 +150,7 @@
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
-                ['include', '^precache/'],
+                ['include', '^precache/core/'],
                 ['include', '^translate/'],
               ],
             }],
