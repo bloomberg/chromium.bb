@@ -373,18 +373,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   chrome::EndKeepAlive();
 
   default_host_ = NULL;
-  // TODO(dzhioev): find better place for starting tutorial.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kOobeSkipPostLogin) &&
-      !command_line->HasSwitch(switches::kDisableFirstRunUI) &&
-      ((chromeos::UserManager::Get()->IsCurrentUserNew() &&
-        !command_line->HasSwitch(::switches::kTestType)) ||
-       command_line->HasSwitch(switches::kForceFirstRunUI))) {
-    LaunchFirstRunDialog();
-  }
-
-  // TODO(tengs): This should be refactored together with the first run UI.
-  // See crbug.com/314934.
+  // TODO(tengs): This should be refactored. See crbug.com/314934.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDriveOfflineFirstRun)) {
     if (UserManager::Get()->IsCurrentUserNew()) {

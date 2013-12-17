@@ -5,14 +5,25 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FIRST_RUN_FIRST_RUN_H_
 #define CHROME_BROWSER_CHROMEOS_FIRST_RUN_FIRST_RUN_H_
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace chromeos {
+namespace first_run {
 
-// Launches app suggesting to participate in tutorial.
-void LaunchFirstRunDialog();
+// Registers preferences related to ChromeOS first-run tutorial.
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-// Launches overlay tutorial.
-void LaunchFirstRunTutorial();
+// Probably launches first-run dialog after session start depending on synced
+// user prefs. This method should be called after user already logged in but
+// session didn't started yet.
+void MaybeLaunchDialogAfterSessionStart();
 
+// Launches overlay tutorial for current user.
+void LaunchTutorial();
+
+}  // namespace first_run
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_FIRST_RUN_FIRST_RUN_H_

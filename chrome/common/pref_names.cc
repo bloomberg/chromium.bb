@@ -864,6 +864,10 @@ const char kMultiProfileUserBehavior[] = "settings.multiprofile_user_behavior";
 // synthesis has been enabled.
 const char kHighQualitySpeechSynthesisLanguages[] =
     "settings.speech_synthesis.high_quality_languages";
+
+// A boolean preference indicating whether user has seen first-run tutorial
+// already.
+const char kFirstRunTutorialShown[] = "settings.first_run_tutorial_shown";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

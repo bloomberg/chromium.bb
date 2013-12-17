@@ -44,6 +44,6 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
 }
 
 bool FirstRunPrivateLaunchTutorialFunction::RunImpl() {
-  chromeos::LaunchFirstRunTutorial();
+  chromeos::first_run::LaunchTutorial();
   return true;
 }

@@ -162,11 +162,14 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown())
         .Times(1);
+    EXPECT_CALL(*mock_user_manager_, GetProfileByUser(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(testing_profile_.get()));
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    SetUpUserManager();
     testing_profile_.reset(new TestingProfile());
+    SetUpUserManager();
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
     ASSERT_EQ(existing_user_controller(), existing_user_controller_.get());
