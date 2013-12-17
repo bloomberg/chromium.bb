@@ -244,7 +244,7 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
       "      Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
       "      SmallLogo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
       "      ForegroundText='light'\r\n"
-      "      BackgroundColor='white'>\r\n"
+      "      BackgroundColor='#323232'>\r\n"
       "    <DefaultTile ShowName='allLogos'/>\r\n"
       "    <SplashScreen Image='0.0.0.0\\VisualElements\\splash-620x300.png'/>"
       "\r\n"
