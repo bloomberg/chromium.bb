@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/info_bubble_view.h"
 
 @class AutofillBubbleController;
 @class AutofillTooltip;
@@ -26,13 +25,12 @@
   base::scoped_nsobject<AutofillTooltip> view_;
   AutofillBubbleController* bubbleController_;
   NSString* message_;
-  info_bubble::BubbleArrowLocation arrowLocation_;
 }
 
 // |message| to display in the tooltip.
 @property(copy, nonatomic) NSString* message;
 
-- (id)initWithArrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation;
+- (id)init;
 - (void)setImage:(NSImage*)image;
 
 @end;

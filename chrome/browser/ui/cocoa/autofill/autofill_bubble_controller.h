@@ -9,7 +9,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/info_bubble_view.h"
 
 // Bubble controller for field validation error bubbles.
 @interface AutofillBubbleController : BaseBubbleController {
@@ -25,11 +24,10 @@
                    message:(NSString*)message;
 
 // Designated initializer. Creates a bubble with given |message| and insets the
-// text content by |inset|, with the arrow positioned at |arrowLocation|.
+// text content by |inset|.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message
-                     inset:(NSSize)inset
-             arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation;
+                     inset:(NSSize)inset;
 
 // Maximum width that the bubble will occupy, regardless of message size.
 - (CGFloat)maxWidth;

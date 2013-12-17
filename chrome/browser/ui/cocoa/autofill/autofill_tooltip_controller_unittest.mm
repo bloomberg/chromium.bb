@@ -14,8 +14,7 @@ class AutofillTooltipControllerTest: public ui::CocoaTest {
  public:
   virtual void SetUp() OVERRIDE {
     CocoaTest::SetUp();
-    controller_.reset([[AutofillTooltipController alloc]
-                           initWithArrowLocation:info_bubble::kTopCenter]);
+    controller_.reset([[AutofillTooltipController alloc] init]);
     [[test_window() contentView] addSubview:[controller_ view]];
   }
 
