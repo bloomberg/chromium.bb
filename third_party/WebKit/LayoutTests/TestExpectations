@@ -814,3 +814,17 @@ crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video
 crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
+
+crbug.com/320743 compositing/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ NeedsRebaseline ]
+crbug.com/320743 compositing/overflow/opt-in-all-layers-after-unclipped-descendant.html [ NeedsRebaseline ]
+crbug.com/320743 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
+crbug.com/320743 fast/borders/border-image-scale-transform.html [ NeedsRebaseline ]
+crbug.com/320743 fast/forms/form-hides-table.html [ NeedsRebaseline ]
+crbug.com/320743 svg/custom/altglyph.svg [ NeedsRebaseline ]
+crbug.com/320743 svg/text/multichar-glyph.svg [ NeedsRebaseline ]
+crbug.com/320743 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
+crbug.com/320743 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
+crbug.com/320743 tables/mozilla_expected_failures/bugs/bug2479-5.html [ NeedsRebaseline ]
+crbug.com/320743 virtual/gpu/compositedscrolling/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ NeedsRebaseline ]
+crbug.com/320743 virtual/gpu/compositedscrolling/overflow/opt-in-all-layers-after-unclipped-descendant.html [ NeedsRebaseline ]
+
