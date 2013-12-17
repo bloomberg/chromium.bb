@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/signin_account_id_helper.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
 }
@@ -19,9 +20,11 @@ BrowserContextKeyedService* FakeProfileOAuth2TokenService::Build(
 }
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService() {
+  SigninAccountIdHelper::SetDisableForTest(true);
 }
 
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
+  SigninAccountIdHelper::SetDisableForTest(false);
 }
 
 bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(

@@ -6,6 +6,7 @@
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/webdata/token_web_data.h"
@@ -46,6 +47,9 @@ class MutableProfileOAuth2TokenServiceTest :
 
     profile_.reset(new TestingProfile);
     profile_->CreateWebDataService();
+
+    SigninAccountIdHelper::SetDisableForTest(true);
+
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(),
                              "", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_service_ =
@@ -59,6 +63,7 @@ class MutableProfileOAuth2TokenServiceTest :
   virtual void TearDown() OVERRIDE {
     oauth2_service_->RemoveObserver(this);
     profile_.reset();
+    SigninAccountIdHelper::SetDisableForTest(false);
   }
 
   TestingProfile* profile() { return profile_.get(); }

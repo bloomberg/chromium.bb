@@ -365,10 +365,7 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
     SignOut();
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNewProfileManagement)) {
-    account_id_helper_.reset(new SigninAccountIdHelper(profile));
-  }
+  account_id_helper_.reset(new SigninAccountIdHelper(profile));
 }
 
 void SigninManager::Shutdown() {

@@ -4,14 +4,11 @@
 
 #include "chrome/browser/signin/signin_account_id_helper.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -85,26 +82,20 @@ void SigninAccountIdHelper::AccountIdFetcher::OnGetTokenFailure(
   VLOG(1) << "OnGetTokenFailure: " << error.error_message();
   DCHECK_EQ(request, login_token_request_.get());
   signin_account_id_helper_->OnPrimaryAccountIdFetched("");
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void SigninAccountIdHelper::AccountIdFetcher::OnGetUserIdResponse(
     const std::string& account_id) {
   signin_account_id_helper_->OnPrimaryAccountIdFetched(account_id);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void SigninAccountIdHelper::AccountIdFetcher::OnOAuthError() {
   VLOG(1) << "OnOAuthError";
-  signin_account_id_helper_->OnPrimaryAccountIdFetched("");
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void SigninAccountIdHelper::AccountIdFetcher::OnNetworkError(
     int response_code) {
   VLOG(1) << "OnNetworkError " << response_code;
-  signin_account_id_helper_->OnPrimaryAccountIdFetched("");
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 SigninAccountIdHelper::SigninAccountIdHelper(Profile* profile)
@@ -116,9 +107,9 @@ SigninAccountIdHelper::SigninAccountIdHelper(Profile* profile)
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   std::string primary_email = token_service->GetPrimaryAccountId();
   if (!primary_email.empty() &&
-      token_service->RefreshTokenIsAvailable(primary_email)) {
-    // AccountIdFetcher will delete itself.
-    new AccountIdFetcher(profile_, this);
+      token_service->RefreshTokenIsAvailable(primary_email) &&
+      !disable_for_test_) {
+    id_fetcher_.reset(new AccountIdFetcher(profile_, this));
   }
   token_service->AddObserver(this);
 }
@@ -137,14 +128,13 @@ void SigninAccountIdHelper::Observe(
 }
 
 void SigninAccountIdHelper::OnRefreshTokenAvailable(const std::string& email) {
-  SigninManagerBase* manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  if (email == manager->GetAuthenticatedUsername()) {
+ ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  if (email == service->GetPrimaryAccountId()) {
     std::string current_account_id =
       profile_->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
-    if (current_account_id.empty()) {
-      // AccountIdFetcher will delete itself.
-      new AccountIdFetcher(profile_, this);
+    if (current_account_id.empty() && !disable_for_test_) {
+      id_fetcher_.reset(new AccountIdFetcher(profile_, this));
     }
   }
 }
@@ -155,5 +145,13 @@ void SigninAccountIdHelper::OnPrimaryAccountIdFetched(
     profile_->GetPrefs()->SetString(
         prefs::kGoogleServicesUserAccountId, account_id);
   }
+}
+
+// static
+bool SigninAccountIdHelper::disable_for_test_ = false;
+
+// static
+void SigninAccountIdHelper::SetDisableForTest(bool disable_for_test) {
+  disable_for_test_ = disable_for_test;
 }
 

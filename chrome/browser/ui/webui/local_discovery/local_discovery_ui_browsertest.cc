@@ -21,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browsertest.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -228,6 +229,10 @@ const char kResponseGaiaToken[] = "{"
     "  \"token_type\": \"Bearer\""
     "}";
 
+const char kResponseGaiaId[] = "{"
+    "  \"id\": \"12345\""
+    "}";
+
 const char kURLInfo[] = "http://1.2.3.4:8888/privet/info";
 
 const char kURLRegisterStart[] =
@@ -375,6 +380,16 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         kURLGaiaToken))
+        .Times(AnyNumber());
+
+    fake_fetcher_factory().SetFakeResponse(
+        GaiaUrls::GetInstance()->oauth_user_info_url(),
+        kResponseGaiaId,
+        net::HTTP_OK,
+        net::URLRequestStatus::SUCCESS);
+
+    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
+        GaiaUrls::GetInstance()->oauth_user_info_url().spec()))
         .Times(AnyNumber());
 
     ProfileOAuth2TokenService* token_service =

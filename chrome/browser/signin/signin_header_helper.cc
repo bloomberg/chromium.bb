@@ -62,6 +62,11 @@ void AppendMirrorRequestHeaderIfPossible(
     int route_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
+   if (io_data->is_incognito() ||
+       io_data->google_services_username()->GetValue().empty()) {
+     return;
+   }
+
   // Only set the header for Gaia (in the mirror world) and Drive. Gaia needs
   // the header to redirect certain user actions to Chrome native UI. Drive
   // needs the header to tell if the current user is connected. The drive path
@@ -71,14 +76,11 @@ void AppendMirrorRequestHeaderIfPossible(
   GURL origin(url.GetOrigin());
   bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableInlineSignin);
-  if (!enable_inline ||
-      !profiles::IsNewProfileManagementEnabled() ||
-      io_data->is_incognito() ||
-      io_data->google_services_username()->GetValue().empty() ||
-      (!IsDriveOrigin(origin) &&
-       !gaia::IsGaiaSignonRealm(origin))) {
+  bool is_gaia_signin = enable_inline &&
+      profiles::IsNewProfileManagementEnabled() &&
+      gaia::IsGaiaSignonRealm(origin);
+  if (!is_gaia_signin && !IsDriveOrigin(origin))
     return;
-  }
 
   ExtensionRendererState* renderer_state =
       ExtensionRendererState::GetInstance();
