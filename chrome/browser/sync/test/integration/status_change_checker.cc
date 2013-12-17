@@ -4,16 +4,9 @@
 
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
-StatusChangeChecker::StatusChangeChecker(
-    StatusChangeCallback callback,
-    const std::string& callback_name)
-    : callback_(callback),
-      callback_name_(callback_name) {
+StatusChangeChecker::StatusChangeChecker(const std::string& source)
+    : source_(source) {
 }
 
 StatusChangeChecker::~StatusChangeChecker() {
-}
-
-bool StatusChangeChecker::IsExitConditionSatisfied() {
-  return callback_.Run();
 }

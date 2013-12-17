@@ -109,6 +109,31 @@ bool StateChangeTimeoutEvent::Abort() {
 
 namespace {
 
+// Checks if a desired change in the state of the sync engine has taken place by
+// running the callback passed to it.
+class CallbackStatusChecker : public StatusChangeChecker {
+ public:
+  CallbackStatusChecker(base::Callback<bool()> callback,
+                        const std::string& source)
+      : StatusChangeChecker(source),
+        callback_(callback) {
+  }
+
+  virtual ~CallbackStatusChecker() {
+  }
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE {
+    return callback_.Run();
+  }
+
+ private:
+  // Callback that evaluates whether the condition we are waiting on has been
+  // satisfied.
+  base::Callback<bool()> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CallbackStatusChecker);
+};
+
 // Helper function which returns true if the sync backend has been initialized,
 // or if backend initialization was blocked for some reason.
 bool DoneWaitingForBackendInitialization(
@@ -341,7 +366,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Wait for initial sync cycle to be completed.
   DCHECK(service()->sync_initialized());
-  StatusChangeChecker initial_sync_checker(
+  CallbackStatusChecker initial_sync_checker(
       base::Bind(&DoneWaitingForInitialSync, base::Unretained(this)),
       "DoneWaitingForInitialSync");
   if (!AwaitStatusChange(&initial_sync_checker, "SetupSync")) {
@@ -386,7 +411,7 @@ void ProfileSyncServiceHarness::OnStateChanged() {
   if (!status_change_checker_)
     return;
 
-  DVLOG(1) << GetClientInfoString(status_change_checker_->callback_name());
+  DVLOG(1) << GetClientInfoString(status_change_checker_->source());
   if (status_change_checker_->IsExitConditionSatisfied())
     base::MessageLoop::current()->QuitWhenIdle();
 }
@@ -438,7 +463,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
     return true;
   }
 
-  StatusChangeChecker passphrase_required_checker(
+  CallbackStatusChecker passphrase_required_checker(
       base::Bind(&::IsPassphraseRequired, base::Unretained(this)),
       "IsPassphraseRequired");
   return AwaitStatusChange(&passphrase_required_checker,
@@ -459,7 +484,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
     return true;
   }
 
-  StatusChangeChecker passphrase_accepted_checker(
+  CallbackStatusChecker passphrase_accepted_checker(
       base::Bind(&::IsPassphraseAccepted, base::Unretained(this)),
       "IsPassphraseAccepted");
   bool return_value = AwaitStatusChange(&passphrase_accepted_checker,
@@ -476,7 +501,7 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
     return true;
   }
 
-  StatusChangeChecker backend_initialized_checker(
+  CallbackStatusChecker backend_initialized_checker(
       base::Bind(&DoneWaitingForBackendInitialization,
                  base::Unretained(this)),
       "DoneWaitingForBackendInitialization");
@@ -495,7 +520,7 @@ bool ProfileSyncServiceHarness::AwaitDataSyncCompletion() {
     return true;
   }
 
-  StatusChangeChecker data_synced_checker(
+  CallbackStatusChecker data_synced_checker(
       base::Bind(&ProfileSyncServiceHarness::IsDataSynced,
                  base::Unretained(this)),
       "IsDataSynced");
@@ -515,7 +540,7 @@ bool ProfileSyncServiceHarness::AwaitFullSyncCompletion() {
   }
 
   DCHECK(service()->sync_initialized());
-  StatusChangeChecker fully_synced_checker(
+  CallbackStatusChecker fully_synced_checker(
       base::Bind(&DoneWaitingForFullSync, base::Unretained(this)),
       "DoneWaitingForFullSync");
   AwaitStatusChange(&fully_synced_checker, "AwaitFullSyncCompletion");
@@ -525,31 +550,17 @@ bool ProfileSyncServiceHarness::AwaitFullSyncCompletion() {
 bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
   DCHECK(service()->HasSyncSetupCompleted());
   DCHECK(!IsSyncDisabled());
-  StatusChangeChecker sync_disabled_checker(
+  CallbackStatusChecker sync_disabled_checker(
       base::Bind(&ProfileSyncServiceHarness::IsSyncDisabled,
                  base::Unretained(this)),
       "IsSyncDisabled");
   return AwaitStatusChange(&sync_disabled_checker, "AwaitSyncDisabled");
 }
 
-// TODO(rsimha): Move this method from PSSHarness to the class that uses it.
-bool ProfileSyncServiceHarness::AwaitExponentialBackoffVerification() {
-  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  retry_verifier_.reset(new RetryVerifier());
-  retry_verifier_->Initialize(snap);
-  StatusChangeChecker exponential_backoff_checker(
-      base::Bind(&ProfileSyncServiceHarness::IsExponentialBackoffDone,
-                 base::Unretained(this)),
-      "IsExponentialBackoffDone");
-  AwaitStatusChange(&exponential_backoff_checker,
-                    "AwaitExponentialBackoffVerification");
-  return retry_verifier_->Succeeded();
-}
-
 bool ProfileSyncServiceHarness::AwaitActionableError() {
   ProfileSyncService::Status status = GetStatus();
   CHECK(status.sync_protocol_error.action == syncer::UNKNOWN_ACTION);
-  StatusChangeChecker actionable_error_checker(
+  CallbackStatusChecker actionable_error_checker(
       base::Bind(&HasActionableError, base::Unretained(this)),
       "HasActionableError");
   return AwaitStatusChange(&actionable_error_checker, "AwaitActionableError");
@@ -571,7 +582,7 @@ bool ProfileSyncServiceHarness::AwaitMigration(
     }
 
     if (!HasPendingBackendMigration()) {
-      StatusChangeChecker pending_migration_checker(
+      CallbackStatusChecker pending_migration_checker(
           base::Bind(&ProfileSyncServiceHarness::HasPendingBackendMigration,
                      base::Unretained(this)),
           "HasPendingBackendMigration");
@@ -582,7 +593,7 @@ bool ProfileSyncServiceHarness::AwaitMigration(
       }
     }
 
-    StatusChangeChecker migration_finished_checker(
+    CallbackStatusChecker migration_finished_checker(
         base::Bind(&::NoPendingBackendMigration, base::Unretained(this)),
         "NoPendingBackendMigration");
     if (!AwaitStatusChange(&migration_finished_checker,
@@ -660,7 +671,7 @@ bool ProfileSyncServiceHarness::WaitUntilProgressMarkersMatch(
     return_value = true;
   } else {
     partner->service()->AddObserver(this);
-    StatusChangeChecker matches_other_client_checker(
+    CallbackStatusChecker matches_other_client_checker(
         base::Bind(&ProfileSyncServiceHarness::MatchesPartnerClient,
                    base::Unretained(this)),
         "MatchesPartnerClient");
@@ -719,12 +730,6 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() const {
   ProfileSyncService::Status result;
   service()->QueryDetailedSyncStatus(&result);
   return result;
-}
-
-bool ProfileSyncServiceHarness::IsExponentialBackoffDone() const {
-  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  retry_verifier_->VerifyRetryInterval(snap);
-  return (retry_verifier_->done());
 }
 
 bool ProfileSyncServiceHarness::IsSyncDisabled() const {
@@ -1030,7 +1035,7 @@ bool ProfileSyncServiceHarness::WaitForEncryption() {
     return true;
   }
 
-  StatusChangeChecker encryption_complete_checker(
+  CallbackStatusChecker encryption_complete_checker(
       base::Bind(&ProfileSyncServiceHarness::IsEncryptionComplete,
                  base::Unretained(this)),
       "IsEncryptionComplete");

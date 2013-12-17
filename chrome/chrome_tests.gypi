@@ -2441,6 +2441,7 @@
         'browser/sync/test/integration/single_client_typed_urls_sync_test.cc',
         'browser/sync/test/integration/sync_auth_test.cc',
         'browser/sync/test/integration/sync_errors_test.cc',
+        'browser/sync/test/integration/sync_exponential_backoff_test.cc',
         'browser/sync/test/integration/two_client_apps_sync_test.cc',
         'browser/sync/test/integration/two_client_autofill_sync_test.cc',
         'browser/sync/test/integration/two_client_bookmarks_sync_test.cc',

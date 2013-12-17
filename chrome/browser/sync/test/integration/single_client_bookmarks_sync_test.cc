@@ -30,22 +30,6 @@ class SingleClientBookmarksSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  DisableNetwork(GetProfile(0));
-  const BookmarkNode* node = AddFolder(0, L"title");
-  SetTitle(0, node, L"new_title");
-  // Expect that we backoff exponentially while we are unable to contact the
-  // server.
-  ASSERT_TRUE(GetClient(0)->AwaitExponentialBackoffVerification());
-
-  // Go online, wait for sync to complete, and verify that it did.
-  EnableNetwork(GetProfile(0));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
-  ASSERT_TRUE(ModelMatchesVerifier(0));
-}
-
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 

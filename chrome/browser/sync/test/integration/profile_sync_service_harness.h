@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/sync/test/integration/retry_verifier.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class Profile;
@@ -53,9 +52,6 @@ class ProfileSyncServiceHarness
 
   // Sets the GAIA credentials with which to sign in to sync.
   void SetCredentials(const std::string& username, const std::string& password);
-
-  // Returns true if exponential backoff is complete.
-  bool IsExponentialBackoffDone() const;
 
   // Returns true if sync is disabled for this client.
   bool IsSyncDisabled() const;
@@ -101,9 +97,6 @@ class ProfileSyncServiceHarness
   // Blocks the caller until sync has been disabled for this client. Returns
   // true if sync is disabled.
   bool AwaitSyncDisabled();
-
-  // Blocks the caller until exponential backoff has been verified to happen.
-  bool AwaitExponentialBackoffVerification();
 
   // Blocks the caller until the syncer receives an actionable error.
   // Returns true if the sync client received an actionable error.
@@ -302,10 +295,6 @@ class ProfileSyncServiceHarness
   // Keeps track of the state change on which we are waiting. PSSHarness can
   // wait on only one status change at a time.
   StatusChangeChecker* status_change_checker_;
-
-  // Keeps track of the number of attempts at exponential backoff and its
-  // related bookkeeping information for verification.
-  scoped_ptr<RetryVerifier> retry_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };
