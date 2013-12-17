@@ -95,6 +95,9 @@ bool PruneInvisibleFolders(const BookmarkNode* node) {
 
 namespace bookmark_utils {
 
+QueryFields::QueryFields() {}
+QueryFields::~QueryFields() {}
+
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
@@ -216,25 +219,41 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2) {
   return n1->date_added() > n2->date_added();
 }
 
-void GetBookmarksContainingText(BookmarkModel* model,
-                                const base::string16& text,
-                                size_t max_count,
-                                const std::string& languages,
-                                std::vector<const BookmarkNode*>* nodes) {
-  std::vector<base::string16> words;
+void GetBookmarksMatchingProperties(BookmarkModel* model,
+                                    const QueryFields& query,
+                                    size_t max_count,
+                                    const std::string& languages,
+                                    std::vector<const BookmarkNode*>* nodes) {
+  std::vector<base::string16> query_words;
   QueryParser parser;
-  parser.ParseQueryWords(base::i18n::ToLower(text), &words);
-  if (words.empty())
-    return;
+  if (query.word_phrase_query) {
+    parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
+                           &query_words);
+  }
 
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    if (DoesBookmarkContainWords(node, words, languages)) {
-      nodes->push_back(node);
-      if (nodes->size() == max_count)
-        return;
+    if (!query_words.empty() &&
+        !DoesBookmarkContainWords(node, query_words, languages)) {
+      continue;
     }
+    if (query.url) {
+      // Check against bare url spec and IDN-decoded url.
+      if (!node->is_url() ||
+          !(UTF8ToUTF16(node->url().spec()) == *query.url ||
+            net::FormatUrl(
+                node->url(), languages, net::kFormatUrlOmitNothing,
+                net::UnescapeRule::NORMAL, NULL, NULL, NULL) == *query.url)) {
+        continue;
+      }
+    }
+    if (query.title && node->GetTitle() != *query.title)
+      continue;
+
+    nodes->push_back(node);
+    if (nodes->size() == max_count)
+      return;
   }
 }
 

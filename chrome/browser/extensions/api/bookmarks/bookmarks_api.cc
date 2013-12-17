@@ -438,12 +438,34 @@ bool BookmarksSearchFunction::RunImpl() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   std::string lang = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetBookmarksContainingText(
-      BookmarkModelFactory::GetForProfile(GetProfile()),
-      UTF8ToUTF16(params->query),
-      std::numeric_limits<int>::max(),
-      lang,
-      &nodes);
+  if (params->query.as_string) {
+    bookmark_utils::QueryFields query;
+    query.word_phrase_query.reset(
+        new string16(UTF8ToUTF16(*params->query.as_string)));
+    bookmark_utils::GetBookmarksMatchingProperties(
+        BookmarkModelFactory::GetForProfile(GetProfile()),
+        query,
+        std::numeric_limits<int>::max(),
+        lang,
+        &nodes);
+  } else {
+    DCHECK(params->query.as_object);
+    const bookmarks::Search::Params::Query::Object& object =
+        *params->query.as_object;
+    bookmark_utils::QueryFields query;
+    if (object.query)
+      query.word_phrase_query.reset(new string16(UTF8ToUTF16(*object.query)));
+    if (object.url)
+      query.url.reset(new string16(UTF8ToUTF16(*object.url)));
+    if (object.title)
+      query.title.reset(new string16(UTF8ToUTF16(*object.title)));
+    bookmark_utils::GetBookmarksMatchingProperties(
+        BookmarkModelFactory::GetForProfile(GetProfile()),
+        query,
+        std::numeric_limits<int>::max(),
+        lang,
+        &nodes);
+  }
 
   std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
   for (std::vector<const BookmarkNode*>::iterator node_iter = nodes.begin();
