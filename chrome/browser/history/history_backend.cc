@@ -1201,7 +1201,7 @@ void HistoryBackend::DeleteMatchingURLsForKeyword(TemplateURLID keyword_id,
     URLRow row;
     for (std::vector<KeywordSearchTermRow>::iterator it = rows.begin();
          it != rows.end(); ++it) {
-      if (it->keyword_id == keyword_id && db_->GetURLRow(it->url_id, &row))
+      if ((it->keyword_id == keyword_id) && db_->GetURLRow(it->url_id, &row))
         items_to_delete.push_back(row.url());
     }
     DeleteURLs(items_to_delete);
