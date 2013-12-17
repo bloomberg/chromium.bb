@@ -141,7 +141,12 @@ bool IsV2EnabledForOrigin(const GURL& origin) {
   if (IsV2Enabled())
     return true;
 
-  // TODO: Support static whitelisting as well.
+  // Spark release channel.
+  if (origin.host() == "kcjgcakhgelcejampmijgkjkadfcncjl")
+    return true;
+  // Spark dev channel.
+  if (origin.host() == "pnoffddplpippgcfjdhbmhkofpnaalpg")
+    return true;
 
   CommandLine command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kSyncFileSystemV2Whitelist)) {
