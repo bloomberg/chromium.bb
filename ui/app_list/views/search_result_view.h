@@ -54,6 +54,9 @@ class SearchResultView : public views::CustomButton,
   // Clears reference to SearchResult but don't schedule repaint.
   void ClearResultNoRepaint();
 
+  // Clears the selected action.
+  void ClearSelectedAction();
+
  private:
   void UpdateTitleText();
   void UpdateDetailsText();
@@ -62,6 +65,7 @@ class SearchResultView : public views::CustomButton,
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 

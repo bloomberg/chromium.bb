@@ -24,15 +24,24 @@ class SearchResultActionsView : public views::View,
 
   void SetActions(const SearchResult::Actions& actions);
 
+  void SetSelectedAction(int action_index);
+  int selected_action() const { return selected_action_; }
+
+  bool IsValidActionIndex(int action_index) const;
+
  private:
   void CreateImageButton(const SearchResult::Action& action);
   void CreateBlueButton(const SearchResult::Action& action);
+
+  // views::View overrides:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
   SearchResultActionsViewDelegate* delegate_;  // Not owned.
+  int selected_action_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultActionsView);
 };

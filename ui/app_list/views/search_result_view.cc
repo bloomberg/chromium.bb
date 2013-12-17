@@ -108,12 +108,18 @@ void SearchResultView::ClearResultNoRepaint() {
   result_ = NULL;
 }
 
+void SearchResultView::ClearSelectedAction() {
+  actions_view_->SetSelectedAction(-1);
+}
+
 void SearchResultView::UpdateTitleText() {
   if (!result_ || result_->title().empty()) {
     title_text_.reset();
+    SetAccessibleName(base::string16());
   } else {
     title_text_.reset(CreateRenderText(result_->title(),
                                        result_->title_tags()));
+    SetAccessibleName(result_->title());
   }
 }
 
@@ -163,6 +169,32 @@ void SearchResultView::Layout() {
       progress_width,
       progress_height);
   progress_bar_->SetBoundsRect(progress_bounds);
+}
+
+bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
+  DCHECK(result_);
+
+  switch (event.key_code()) {
+    case ui::VKEY_TAB: {
+      int new_selected = actions_view_->selected_action()
+          + (event.IsShiftDown() ? -1 : 1);
+      actions_view_->SetSelectedAction(new_selected);
+      return actions_view_->IsValidActionIndex(new_selected);
+    }
+    case ui::VKEY_RETURN: {
+      int selected = actions_view_->selected_action();
+      if (actions_view_->IsValidActionIndex(selected)) {
+        OnSearchResultActionActivated(selected, event.flags());
+      } else {
+        delegate_->SearchResultActivated(this, event.flags());
+      }
+      return true;
+    }
+    default:
+      break;
+  }
+
+  return false;
 }
 
 void SearchResultView::ChildPreferredSizeChanged(views::View* child) {

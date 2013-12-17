@@ -55,13 +55,21 @@ void SearchResultListView::SetSelectedIndex(int selected_index) {
   if (selected_index_ == selected_index)
     return;
 
-  if (selected_index_ >= 0)
-    GetResultViewAt(selected_index_)->SchedulePaint();
+  if (selected_index_ >= 0) {
+    SearchResultView* selected_view  = GetResultViewAt(selected_index_);
+    selected_view->ClearSelectedAction();
+    selected_view->SchedulePaint();
+  }
 
   selected_index_ = selected_index;
 
-  if (selected_index_ >= 0)
-    GetResultViewAt(selected_index_)->SchedulePaint();
+  if (selected_index_ >= 0) {
+    SearchResultView* selected_view  = GetResultViewAt(selected_index_);
+    selected_view->ClearSelectedAction();
+    selected_view->SchedulePaint();
+    selected_view->NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS,
+                                            true);
+  }
 }
 
 bool SearchResultListView::IsResultViewSelected(
@@ -74,6 +82,9 @@ bool SearchResultListView::IsResultViewSelected(
 }
 
 bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (selected_index_ >= 0 && child_at(selected_index_)->OnKeyPressed(event))
+    return true;
+
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       if (event.IsShiftDown())
@@ -86,10 +97,6 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
     case ui::VKEY_DOWN:
       SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
-      return true;
-    case ui::VKEY_RETURN:
-      if (selected_index_ >= 0)
-        SearchResultActivated(GetResultViewAt(selected_index_), event.flags());
       return true;
     default:
       break;
