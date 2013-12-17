@@ -739,6 +739,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // When the last ShouldClose message was sent.
   base::TimeTicks send_should_close_start_time_;
 
+  // Set to true if we requested the on screen keyboard to be displayed.
+  bool virtual_keyboard_requested_;
+
 #if defined(OS_ANDROID)
   // Manages all the android mediaplayer objects and handling IPCs for video.
   scoped_ptr<BrowserMediaPlayerManager> media_player_manager_;

@@ -118,6 +118,29 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
   }
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+
+const int kVirtualKeyboardDisplayWaitTimeoutMs = 100;
+const int kMaxVirtualKeyboardDisplayRetries = 5;
+
+void DismissVirtualKeyboardTask() {
+  static int virtual_keyboard_display_retries = 0;
+  // If the virtual keyboard is not yet visible, then we execute the task again
+  // waiting for it to show up.
+  if (!base::win::DismissVirtualKeyboard()) {
+    if (virtual_keyboard_display_retries < kMaxVirtualKeyboardDisplayRetries) {
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(base::IgnoreResult(&DismissVirtualKeyboardTask)),
+          TimeDelta::FromMilliseconds(kVirtualKeyboardDisplayWaitTimeoutMs));
+      ++virtual_keyboard_display_retries;
+    } else {
+      virtual_keyboard_display_retries = 0;
+    }
+  }
+}
+#endif
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,7 +209,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
-      render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
+      render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
+      virtual_keyboard_requested_(false) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
 
@@ -1789,6 +1813,15 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (!is_editable_node && virtual_keyboard_requested_) {
+    virtual_keyboard_requested_ = false;
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(base::IgnoreResult(&DismissVirtualKeyboardTask)),
+        TimeDelta::FromMilliseconds(kVirtualKeyboardDisplayWaitTimeoutMs));
+  }
+#endif
   NotificationService::current()->Notify(
       NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
       Source<RenderViewHost>(this),
@@ -2241,8 +2274,9 @@ void RenderViewHostImpl::OnDomOperationResponse(
 void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
 #if defined(OS_WIN) && defined(USE_AURA)
   if (editable) {
-    base::win::DisplayVirtualKeyboard();
+    virtual_keyboard_requested_ = base::win::DisplayVirtualKeyboard();
   } else {
+    virtual_keyboard_requested_ = false;
     base::win::DismissVirtualKeyboard();
   }
 #endif
