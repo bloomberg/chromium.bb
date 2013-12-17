@@ -688,10 +688,6 @@ DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
 DELEGATE_TO_GL_5(framebufferTexture2D, FramebufferTexture2D,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint)
 
-DELEGATE_TO_GL_6(framebufferTexture2DMultisampleEXT,
-                 FramebufferTexture2DMultisampleEXT,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint, WGC3Dsizei)
-
 DELEGATE_TO_GL_1(frontFace, FrontFace, WGC3Denum)
 
 DELEGATE_TO_GL_1(generateMipmap, GenerateMipmap, WGC3Denum)
@@ -1329,6 +1325,14 @@ DELEGATE_TO_GL_2R(mapImageCHROMIUM, MapImageCHROMIUM,
                   WGC3Duint, WGC3Denum, void*);
 
 DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
+
+DELEGATE_TO_GL_6(framebufferTexture2DMultisampleEXT,
+                 FramebufferTexture2DMultisampleEXT,
+                 WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint, WGC3Dsizei)
+
+DELEGATE_TO_GL_5(renderbufferStorageMultisampleEXT,
+                 RenderbufferStorageMultisampleEXT, WGC3Denum, WGC3Dsizei,
+                 WGC3Denum, WGC3Dsizei, WGC3Dsizei)
 
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::createGrGLInterface() {
   return skia_bindings::CreateCommandBufferSkiaGLBinding();

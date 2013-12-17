@@ -228,12 +228,6 @@ class WebGraphicsContext3DCommandBufferImpl
                                     WGC3Denum textarget,
                                     WebGLId texture,
                                     WGC3Dint level);
-  virtual void framebufferTexture2DMultisampleEXT(WGC3Denum target,
-                                    WGC3Denum attachment,
-                                    WGC3Denum textarget,
-                                    WebGLId texture,
-                                    WGC3Dint level,
-                                    WGC3Dsizei samples);
   virtual void frontFace(WGC3Denum mode);
   virtual void generateMipmap(WGC3Denum target);
 
@@ -626,6 +620,17 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Duint image_id, WGC3Denum pname, WGC3Dint* params);
   virtual void* mapImageCHROMIUM(WGC3Duint image_id, WGC3Denum access);
   virtual void unmapImageCHROMIUM(WGC3Duint image_id);
+
+  // GL_EXT_multisampled_render_to_texture
+  virtual void framebufferTexture2DMultisampleEXT(WGC3Denum target,
+                                    WGC3Denum attachment,
+                                    WGC3Denum textarget,
+                                    WebGLId texture,
+                                    WGC3Dint level,
+                                    WGC3Dsizei samples);
+  virtual void renderbufferStorageMultisampleEXT(
+      WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
+      WGC3Dsizei width, WGC3Dsizei height);
 
   virtual GrGLInterface* createGrGLInterface();
 
