@@ -438,6 +438,13 @@ public:
         } twoFingerTap;
 
         struct {
+            // Initial motion that triggered the scroll.
+            // May be redundant with deltaX/deltaY in the first scrollUpdate.
+            float deltaXHint;
+            float deltaYHint;
+        } scrollBegin;
+
+        struct {
             float deltaX;
             float deltaY;
             float velocityX;
