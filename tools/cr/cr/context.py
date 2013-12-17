@@ -123,6 +123,8 @@ class Context(cr.config.Config, cr.loader.AutoExport):
     # Add the global arguments
     self.AddCommonArguments(self._parser)
     self._gclient = {}
+    # Try to detect the current client information
+    cr.base.client.DetectClient(self)
 
   def AddSubParser(self, source):
     parser = source.AddArguments(self._subparsers)

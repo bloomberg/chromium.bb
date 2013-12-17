@@ -42,56 +42,34 @@ GCLIENT_FILENAME = '.gclient'
 # The default config values installed by this module.
 DEFAULT = cr.Config.From(
     CR_ROOT_PATH=os.path.join('{GOOGLE_CODE}'),
+    CR_CLIENT_NAME='chromium',
     CR_CLIENT_PATH=os.path.join('{CR_ROOT_PATH}', '{CR_CLIENT_NAME}'),
     CR_SRC=os.path.join('{CR_CLIENT_PATH}', 'src'),
     CR_BUILD_DIR=os.path.join('{CR_SRC}', '{CR_OUT_FULL}'),
 )
 
-# Config values determined at run time by this module.
-DETECTED = cr.Config.From(
-    CR_CLIENT_PATH=lambda context: _DetectPath(),
-    # _DetectName not declared yet so pylint: disable=unnecessary-lambda
-    CR_CLIENT_NAME=lambda context: _DetectName(context),
-)
 
-_cached_path = None
-_cached_name = None
-
-
-def _DetectPath():
-  """A dynamic value function that tries to detect the current client."""
-  global _cached_path
-  if _cached_path is not None:
-    return _cached_path
+def DetectClient(context):
+  # Attempt to detect the current client from the cwd
   # See if we can detect the source tree root
-  _cached_path = os.getcwd()
-  while (_cached_path and
-         not os.path.exists(os.path.join(_cached_path, GCLIENT_FILENAME))):
-    old = _cached_path
-    _cached_path = os.path.dirname(_cached_path)
-    if _cached_path == old:
-      _cached_path = None
-  if _cached_path is not None:
-    dirname, basename = os.path.split(_cached_path)
+  client_path = os.getcwd()
+  while (client_path and
+         not os.path.exists(os.path.join(client_path, GCLIENT_FILENAME))):
+    old = client_path
+    client_path = os.path.dirname(client_path)
+    if client_path == old:
+      client_path = None
+  if client_path is not None:
+    dirname, basename = os.path.split(client_path)
     if basename == 'src':
       # we have the src path, base is one level up
-      _cached_path = dirname
-  if _cached_path is None:
-    _cached_path = cr.visitor.HIDDEN
-  return _cached_path
-
-
-def _DetectName(context):
-  """A dynamic value function that works out the name of the current client."""
-  global _cached_name
-  if _cached_name is not None:
-    return _cached_name
-  _cached_name = 'chromium'
-  path = context.Get('CR_CLIENT_PATH')
-  if path is None:
-    return
-  _cached_name = os.path.basename(path)
-  return _cached_name
+      client_path = dirname
+  if client_path is not None:
+    context.derived['CR_CLIENT_PATH'] = client_path
+  # now get the value from context, it may be different
+  client_path = context.Get('CR_CLIENT_PATH')
+  if client_path is not None:
+    context.derived['CR_CLIENT_NAME'] = os.path.basename(client_path)
 
 
 def _GetConfigFilename(path):
