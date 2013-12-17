@@ -192,11 +192,11 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   void ExitTest();
 
   // Each test creates two unidirectional pipes: "input" and "output".
-  // NativeMessagingHost reads from input_read_handle and writes to
+  // It2MeNativeMessagingHost reads from input_read_handle and writes to
   // output_write_handle. The unittest supplies data to input_write_handle, and
   // verifies output from output_read_handle.
   //
-  // unittest -> [input] -> NativeMessagingHost -> [output] -> unittest
+  // unittest -> [input] -> It2MeNativeMessagingHost -> [output] -> unittest
   base::PlatformFile input_write_handle_;
   base::PlatformFile output_read_handle_;
 

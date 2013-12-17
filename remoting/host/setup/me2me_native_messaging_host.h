@@ -29,16 +29,16 @@ class PairingRegistry;
 }  // namespace protocol
 
 // Implementation of the me2me native messaging host.
-class NativeMessagingHost {
+class Me2MeNativeMessagingHost {
  public:
   typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
 
-  NativeMessagingHost(
+  Me2MeNativeMessagingHost(
       scoped_ptr<NativeMessagingChannel> channel,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
       scoped_ptr<OAuthClient> oauth_client);
-  virtual ~NativeMessagingHost();
+  virtual ~Me2MeNativeMessagingHost();
 
   void Start(const base::Closure& quit_closure);
 
@@ -124,15 +124,15 @@ class NativeMessagingHost {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtr<NativeMessagingHost> weak_ptr_;
-  base::WeakPtrFactory<NativeMessagingHost> weak_factory_;
+  base::WeakPtr<Me2MeNativeMessagingHost> weak_ptr_;
+  base::WeakPtrFactory<Me2MeNativeMessagingHost> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeMessagingHost);
+  DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHost);
 };
 
-// Creates a NativeMessagingHost instance, attaches it to stdin/stdout and runs
-// the message loop until NativeMessagingHost signals shutdown.
-int NativeMessagingHostMain();
+// Creates a Me2MeNativeMessagingHost instance, attaches it to stdin/stdout and
+// runs the message loop until Me2MeNativeMessagingHost signals shutdown.
+int Me2MeNativeMessagingHostMain();
 
 }  // namespace remoting
 

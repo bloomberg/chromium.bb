@@ -21,7 +21,7 @@ const char kParentWindowSwitchName[] = "parent-window";
 
 namespace remoting {
 
-int NativeMessagingHostMain() {
+int Me2MeNativeMessagingHostMain() {
 #if defined(OS_WIN)
   // GetStdHandle() returns pseudo-handles for stdin and stdout even if
   // the hosting executable specifies "Windows" subsystem. However the returned
@@ -80,8 +80,8 @@ int NativeMessagingHostMain() {
   scoped_ptr<NativeMessagingChannel> channel(
       new NativeMessagingChannel(read_file, write_file));
 
-  scoped_ptr<NativeMessagingHost> host(
-      new NativeMessagingHost(channel.Pass(),
+  scoped_ptr<Me2MeNativeMessagingHost> host(
+      new Me2MeNativeMessagingHost(channel.Pass(),
                               daemon_controller,
                               pairing_registry,
                               oauth_client.Pass()));
@@ -101,5 +101,5 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
 
-  return remoting::NativeMessagingHostMain();
+  return remoting::Me2MeNativeMessagingHostMain();
 }

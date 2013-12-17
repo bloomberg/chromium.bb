@@ -146,7 +146,7 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
   } else if (process_type == kProcessTypeNativeMessagingHost) {
-    main_routine = &NativeMessagingHostMain;
+    main_routine = &Me2MeNativeMessagingHostMain;
 #endif  // defined(OS_WIN)
   }
 

@@ -199,7 +199,7 @@ void MockDaemonControllerDelegate::Stop(
 void MockDaemonControllerDelegate::SetWindow(void* window_handle) {}
 
 std::string MockDaemonControllerDelegate::GetVersion() {
-  // Unused - NativeMessagingHost returns the compiled-in version string
+  // Unused - Me2MeNativeMessagingHost returns the compiled-in version string
   // instead of calling this method.
   NOTREACHED();
   return std::string();
@@ -214,10 +214,10 @@ MockDaemonControllerDelegate::GetUsageStatsConsent() {
   return consent;
 }
 
-class NativeMessagingHostTest : public testing::Test {
+class Me2MeNativeMessagingHostTest : public testing::Test {
  public:
-  NativeMessagingHostTest();
-  virtual ~NativeMessagingHostTest();
+  Me2MeNativeMessagingHostTest();
+  virtual ~Me2MeNativeMessagingHostTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -243,11 +243,11 @@ class NativeMessagingHostTest : public testing::Test {
   void ExitTest();
 
   // Each test creates two unidirectional pipes: "input" and "output".
-  // NativeMessagingHost reads from input_read_handle and writes to
+  // Me2MeNativeMessagingHost reads from input_read_handle and writes to
   // output_write_handle. The unittest supplies data to input_write_handle, and
   // verifies output from output_read_handle.
   //
-  // unittest -> [input] -> NativeMessagingHost -> [output] -> unittest
+  // unittest -> [input] -> Me2MeNativeMessagingHost -> [output] -> unittest
   base::PlatformFile input_write_handle_;
   base::PlatformFile output_read_handle_;
 
@@ -260,16 +260,16 @@ class NativeMessagingHostTest : public testing::Test {
 
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
-  scoped_ptr<remoting::NativeMessagingHost> host_;
+  scoped_ptr<remoting::Me2MeNativeMessagingHost> host_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeMessagingHostTest);
+  DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHostTest);
 };
 
-NativeMessagingHostTest::NativeMessagingHostTest() {}
+Me2MeNativeMessagingHostTest::Me2MeNativeMessagingHostTest() {}
 
-NativeMessagingHostTest::~NativeMessagingHostTest() {}
+Me2MeNativeMessagingHostTest::~Me2MeNativeMessagingHostTest() {}
 
-void NativeMessagingHostTest::SetUp() {
+void Me2MeNativeMessagingHostTest::SetUp() {
   base::PlatformFile input_read_handle;
   base::PlatformFile output_write_handle;
 
@@ -286,18 +286,19 @@ void NativeMessagingHostTest::SetUp() {
   // Arrange to run |test_message_loop_| until no components depend on it.
   host_task_runner_ = new AutoThreadTaskRunner(
       host_thread_->message_loop_proxy(),
-      base::Bind(&NativeMessagingHostTest::ExitTest,
+      base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,
                  base::Unretained(this)));
 
   host_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NativeMessagingHostTest::StartHost, base::Unretained(this)));
+      base::Bind(&Me2MeNativeMessagingHostTest::StartHost,
+                 base::Unretained(this)));
 
   // Wait until the host finishes starting.
   test_run_loop_->Run();
 }
 
-void NativeMessagingHostTest::StartHost() {
+void Me2MeNativeMessagingHostTest::StartHost() {
   DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
 
   base::PlatformFile input_read_handle;
@@ -318,11 +319,11 @@ void NativeMessagingHostTest::StartHost() {
   scoped_ptr<NativeMessagingChannel> channel(
       new NativeMessagingChannel(input_read_handle, output_write_handle));
 
-  host_.reset(new NativeMessagingHost(channel.Pass(),
+  host_.reset(new Me2MeNativeMessagingHost(channel.Pass(),
                                       daemon_controller,
                                       pairing_registry,
                                       scoped_ptr<remoting::OAuthClient>()));
-  host_->Start(base::Bind(&NativeMessagingHostTest::StopHost,
+  host_->Start(base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
                           base::Unretained(this)));
 
   // Notify the test that the host has finished starting up.
@@ -330,7 +331,7 @@ void NativeMessagingHostTest::StartHost() {
       FROM_HERE, test_run_loop_->QuitClosure());
 }
 
-void NativeMessagingHostTest::StopHost() {
+void Me2MeNativeMessagingHostTest::StopHost() {
   DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
 
   host_.reset();
@@ -342,18 +343,18 @@ void NativeMessagingHostTest::StopHost() {
   host_task_runner_ = NULL;
 }
 
-void NativeMessagingHostTest::ExitTest() {
+void Me2MeNativeMessagingHostTest::ExitTest() {
   if (!test_message_loop_->message_loop_proxy()->RunsTasksOnCurrentThread()) {
     test_message_loop_->message_loop_proxy()->PostTask(
         FROM_HERE,
-        base::Bind(&NativeMessagingHostTest::ExitTest,
+        base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,
                    base::Unretained(this)));
     return;
   }
   test_run_loop_->Quit();
 }
 
-void NativeMessagingHostTest::TearDown() {
+void Me2MeNativeMessagingHostTest::TearDown() {
   // Closing the write-end of the input will send an EOF to the native
   // messaging reader. This will trigger a host shutdown.
   base::ClosePlatformFile(input_write_handle_);
@@ -366,13 +367,13 @@ void NativeMessagingHostTest::TearDown() {
   scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
 
-  // The It2MeNativeMessagingHost dtor closes the handles that are passed to it.
-  // So the only handle left to close is |output_read_handle_|.
+  // The It2MeMe2MeNativeMessagingHost dtor closes the handles that are passed
+  // to it. So the only handle left to close is |output_read_handle_|.
   base::ClosePlatformFile(output_read_handle_);
 }
 
 scoped_ptr<base::DictionaryValue>
-NativeMessagingHostTest::ReadMessageFromOutputPipe() {
+Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   uint32 length;
   int read_result = base::ReadPlatformFileAtCurrentPos(
       output_read_handle_, reinterpret_cast<char*>(&length), sizeof(length));
@@ -396,7 +397,7 @@ NativeMessagingHostTest::ReadMessageFromOutputPipe() {
       static_cast<base::DictionaryValue*>(message.release()));
 }
 
-void NativeMessagingHostTest::WriteMessageToInputPipe(
+void Me2MeNativeMessagingHostTest::WriteMessageToInputPipe(
     const base::Value& message) {
   std::string message_json;
   base::JSONWriter::Write(&message, &message_json);
@@ -409,7 +410,7 @@ void NativeMessagingHostTest::WriteMessageToInputPipe(
                                       length);
 }
 
-void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
+void Me2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   base::DictionaryValue good_message;
   good_message.SetString("type", "hello");
 
@@ -430,7 +431,7 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
 
 // TODO (weitaosu): crbug.com/323306. Re-enable these tests.
 // Test all valid request-types.
-TEST_F(NativeMessagingHostTest, All) {
+TEST_F(Me2MeNativeMessagingHostTest, All) {
   int next_id = 0;
   base::DictionaryValue message;
   message.SetInteger("id", next_id++);
@@ -517,7 +518,7 @@ TEST_F(NativeMessagingHostTest, All) {
 }
 
 // Verify that response ID matches request ID.
-TEST_F(NativeMessagingHostTest, Id) {
+TEST_F(Me2MeNativeMessagingHostTest, Id) {
   base::DictionaryValue message;
   message.SetString("type", "hello");
   WriteMessageToInputPipe(message);
@@ -537,26 +538,26 @@ TEST_F(NativeMessagingHostTest, Id) {
 }
 
 // Verify non-Dictionary requests are rejected.
-TEST_F(NativeMessagingHostTest, WrongFormat) {
+TEST_F(Me2MeNativeMessagingHostTest, WrongFormat) {
   base::ListValue message;
   TestBadRequest(message);
 }
 
 // Verify requests with no type are rejected.
-TEST_F(NativeMessagingHostTest, MissingType) {
+TEST_F(Me2MeNativeMessagingHostTest, MissingType) {
   base::DictionaryValue message;
   TestBadRequest(message);
 }
 
 // Verify rejection if type is unrecognized.
-TEST_F(NativeMessagingHostTest, InvalidType) {
+TEST_F(Me2MeNativeMessagingHostTest, InvalidType) {
   base::DictionaryValue message;
   message.SetString("type", "xxx");
   TestBadRequest(message);
 }
 
 // Verify rejection if getPinHash request has no hostId.
-TEST_F(NativeMessagingHostTest, GetPinHashNoHostId) {
+TEST_F(Me2MeNativeMessagingHostTest, GetPinHashNoHostId) {
   base::DictionaryValue message;
   message.SetString("type", "getPinHash");
   message.SetString("pin", "1234");
@@ -564,7 +565,7 @@ TEST_F(NativeMessagingHostTest, GetPinHashNoHostId) {
 }
 
 // Verify rejection if getPinHash request has no pin.
-TEST_F(NativeMessagingHostTest, GetPinHashNoPin) {
+TEST_F(Me2MeNativeMessagingHostTest, GetPinHashNoPin) {
   base::DictionaryValue message;
   message.SetString("type", "getPinHash");
   message.SetString("hostId", "my_host");
@@ -572,7 +573,7 @@ TEST_F(NativeMessagingHostTest, GetPinHashNoPin) {
 }
 
 // Verify rejection if updateDaemonConfig request has invalid config.
-TEST_F(NativeMessagingHostTest, UpdateDaemonConfigInvalidConfig) {
+TEST_F(Me2MeNativeMessagingHostTest, UpdateDaemonConfigInvalidConfig) {
   base::DictionaryValue message;
   message.SetString("type", "updateDaemonConfig");
   message.SetString("config", "xxx");
@@ -580,7 +581,7 @@ TEST_F(NativeMessagingHostTest, UpdateDaemonConfigInvalidConfig) {
 }
 
 // Verify rejection if startDaemon request has invalid config.
-TEST_F(NativeMessagingHostTest, StartDaemonInvalidConfig) {
+TEST_F(Me2MeNativeMessagingHostTest, StartDaemonInvalidConfig) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.SetString("config", "xxx");
@@ -589,7 +590,7 @@ TEST_F(NativeMessagingHostTest, StartDaemonInvalidConfig) {
 }
 
 // Verify rejection if startDaemon request has no "consent" parameter.
-TEST_F(NativeMessagingHostTest, StartDaemonNoConsent) {
+TEST_F(Me2MeNativeMessagingHostTest, StartDaemonNoConsent) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.Set("config", base::DictionaryValue().DeepCopy());
