@@ -62,7 +62,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void setSamplingInterval(ErrorString*, int);
-    virtual void start(ErrorString* = 0);
+    virtual void start(ErrorString*);
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
 
     virtual void setFrontend(InspectorFrontend*);
@@ -79,6 +79,7 @@ private:
     bool enabled();
     void doEnable();
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
+    String nextProfileId();
 
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
@@ -86,7 +87,6 @@ private:
     // last finished profile is deleted (we keep at least one finished profile alive).
     RefPtr<ScriptProfile> m_keepAliveProfile;
     bool m_recordingCPUProfile;
-    int m_nextProfileId;
     class ProfileDescriptor;
     Vector<ProfileDescriptor> m_startedProfiles;
     String m_frontendInitiatedProfileId;

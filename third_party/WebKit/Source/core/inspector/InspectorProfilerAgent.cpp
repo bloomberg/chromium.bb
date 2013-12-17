@@ -49,6 +49,7 @@ namespace ProfilerAgentState {
 static const char samplingInterval[] = "samplingInterval";
 static const char userInitiatedProfiling[] = "userInitiatedProfiling";
 static const char profilerEnabled[] = "profilerEnabled";
+static const char nextProfileId[] = "nextProfileId";
 }
 
 static PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(const ScriptProfile& scriptProfile)
@@ -91,7 +92,6 @@ InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentin
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
     , m_recordingCPUProfile(false)
-    , m_nextProfileId(1)
     , m_profileNameIdleTimeMap(ScriptProfiler::currentProfileNameIdleTimeMap())
     , m_idleStartTime(0.0)
     , m_overlay(overlay)
@@ -105,7 +105,7 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 void InspectorProfilerAgent::consoleProfile(const String& title, ScriptState* state)
 {
     ASSERT(m_frontend && enabled());
-    String id = String::number(m_nextProfileId++);
+    String id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     ScriptProfiler::start(id);
     m_frontend->consoleProfileStarted(id, currentDebugLocation(), title.isNull() ? 0 : &title);
@@ -197,14 +197,14 @@ void InspectorProfilerAgent::clearFrontend()
 
 void InspectorProfilerAgent::restore()
 {
-    if (m_state->getBoolean(ProfilerAgentState::profilerEnabled)) {
+    if (m_state->getBoolean(ProfilerAgentState::profilerEnabled))
         doEnable();
-        m_frontend->resetProfiles();
-    }
     if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, 0))
         ScriptProfiler::setSamplingInterval(interval);
-    if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling))
-        start();
+    if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling)) {
+        ErrorString error;
+        start(&error);
+    }
 }
 
 void InspectorProfilerAgent::start(ErrorString* error)
@@ -218,7 +218,7 @@ void InspectorProfilerAgent::start(ErrorString* error)
     m_recordingCPUProfile = true;
     if (m_overlay)
         m_overlay->startedRecordingProfile();
-    m_frontendInitiatedProfileId = String::number(m_nextProfileId++);
+    m_frontendInitiatedProfileId = nextProfileId();
     ScriptProfiler::start(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
@@ -248,6 +248,13 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
         *errorString = "Profile wasn't found";
     }
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
+}
+
+String InspectorProfilerAgent::nextProfileId()
+{
+    long nextId = m_state->getLong(ProfilerAgentState::nextProfileId, 1);
+    m_state->setLong(ProfilerAgentState::nextProfileId, nextId + 1);
+    return String::number(nextId);
 }
 
 void InspectorProfilerAgent::idleFinished()
