@@ -55,6 +55,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
     virtual const extensions::Extension* GetAppExtension(
         Profile* profile, const std::string& extension_id);
+    virtual void EnableExtension(Profile* profile,
+                                 const std::string& extension_id,
+                                 const base::Callback<void()>& callback);
     virtual void LaunchApp(Profile* profile,
                            const extensions::Extension* extension,
                            const std::vector<base::FilePath>& files);
@@ -120,6 +123,12 @@ class ExtensionAppShimHandler : public AppShimHandler,
                        AppShimLaunchType launch_type,
                        const std::vector<base::FilePath>& files,
                        Profile* profile);
+
+  // This is passed to Delegate::EnableViaPrompt for shim-initiated launches
+  // where the extension is disabled.
+  void OnExtensionEnabled(const base::FilePath& profile_path,
+                          const std::string& app_id,
+                          const std::vector<base::FilePath>& files);
 
   scoped_ptr<Delegate> delegate_;
 

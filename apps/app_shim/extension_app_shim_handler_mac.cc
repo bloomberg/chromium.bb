@@ -20,6 +20,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
@@ -73,6 +75,48 @@ bool FocusWindows(const ShellWindowList& windows) {
   return true;
 }
 
+// Attempts to launch a packaged app, prompting the user to enable it if
+// necessary. The prompt is shown in its own window.
+// This class manages its own lifetime.
+class EnableViaPrompt : public ExtensionEnableFlowDelegate {
+ public:
+  EnableViaPrompt(Profile* profile,
+                  const std::string& extension_id,
+                  const base::Callback<void()>& callback)
+      : profile_(profile),
+        extension_id_(extension_id),
+        callback_(callback) {
+  }
+
+  virtual ~EnableViaPrompt() {
+  }
+
+  void Run() {
+    flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
+    flow_->StartForCurrentlyNonexistentWindow(
+        base::Callback<gfx::NativeWindow(void)>());
+  }
+
+ private:
+  // ExtensionEnableFlowDelegate overrides.
+  virtual void ExtensionEnableFlowFinished() OVERRIDE {
+    callback_.Run();
+    delete this;
+  }
+
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE {
+    callback_.Run();
+    delete this;
+  }
+
+  Profile* profile_;
+  std::string extension_id_;
+  base::Callback<void()> callback_;
+  scoped_ptr<ExtensionEnableFlow> flow_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnableViaPrompt);
+};
+
 }  // namespace
 
 namespace apps {
@@ -124,6 +168,13 @@ ExtensionAppShimHandler::Delegate::GetAppExtension(
   const extensions::Extension* extension =
       extension_service->GetExtensionById(extension_id, false);
   return extension && extension->is_platform_app() ? extension : NULL;
+}
+
+void ExtensionAppShimHandler::Delegate::EnableExtension(
+    Profile* profile,
+    const std::string& extension_id,
+    const base::Callback<void()>& callback) {
+  (new EnableViaPrompt(profile, extension_id, callback))->Run();
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchApp(
@@ -286,15 +337,6 @@ void ExtensionAppShimHandler::OnProfileLoaded(
     const std::vector<base::FilePath>& files,
     Profile* profile) {
   const std::string& app_id = host->GetAppId();
-  // TODO(jackhou): Add some UI for this case and remove the LOG.
-  const extensions::Extension* extension =
-      delegate_->GetAppExtension(profile, app_id);
-  if (!extension) {
-    LOG(ERROR) << "Attempted to launch nonexistent app with id '"
-               << app_id << "'.";
-    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND);
-    return;
-  }
 
   // The first host to claim this (profile, app_id) becomes the main host.
   // For any others, focus or relaunch the app.
@@ -307,15 +349,53 @@ void ExtensionAppShimHandler::OnProfileLoaded(
     return;
   }
 
+  if (launch_type != APP_SHIM_LAUNCH_NORMAL) {
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
+    return;
+  }
+
   // TODO(jeremya): Handle the case that launching the app fails. Probably we
   // need to watch for 'app successfully launched' or at least 'background page
   // exists/was created' and time out with failure if we don't see that sign of
   // life within a certain window.
-  if (launch_type == APP_SHIM_LAUNCH_NORMAL)
+  const extensions::Extension* extension =
+      delegate_->GetAppExtension(profile, app_id);
+  if (extension) {
     delegate_->LaunchApp(profile, extension, files);
-  else
-    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
+    return;
+  }
+
+  delegate_->EnableExtension(
+      profile, app_id,
+      base::Bind(&ExtensionAppShimHandler::OnExtensionEnabled,
+                 weak_factory_.GetWeakPtr(),
+                 host->GetProfilePath(), app_id, files));
 }
+
+void ExtensionAppShimHandler::OnExtensionEnabled(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    const std::vector<base::FilePath>& files) {
+  Profile* profile = delegate_->ProfileForPath(profile_path);
+  if (!profile)
+    return;
+
+  const extensions::Extension* extension =
+      delegate_->GetAppExtension(profile, app_id);
+  if (!extension || !delegate_->ProfileExistsForPath(profile_path)) {
+    // If !extension, the extension doesn't exist, or was not re-enabled.
+    // If the profile doesn't exist, it may have been deleted during the enable
+    // prompt. In this case, NOTIFICATION_PROFILE_DESTROYED may not be fired
+    // until later, so respond to the host now.
+    Host* host = FindHost(profile, app_id);
+    if (host)
+      host->OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND);
+    return;
+  }
+
+  delegate_->LaunchApp(profile, extension, files);
+}
+
 
 void ExtensionAppShimHandler::OnShimClose(Host* host) {
   // This might be called when shutting down. Don't try to look up the profile
@@ -400,8 +480,10 @@ void ExtensionAppShimHandler::Observe(
         // Increment the iterator first as OnAppClosed may call back to
         // OnShimClose and invalidate the iterator.
         HostMap::iterator current = it++;
-        if (profile->IsSameProfile(current->first.first))
-          current->second->OnAppClosed();
+        if (profile->IsSameProfile(current->first.first)) {
+          Host* host = current->second;
+          host->OnAppClosed();
+        }
       }
       break;
     }

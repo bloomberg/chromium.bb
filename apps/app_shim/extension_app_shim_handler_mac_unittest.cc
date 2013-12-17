@@ -23,6 +23,7 @@ typedef ShellWindowRegistry::ShellWindowList ShellWindowList;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::WithArgs;
 
 class MockDelegate : public ExtensionAppShimHandler::Delegate {
  public:
@@ -37,6 +38,9 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(GetWindows, ShellWindowList(Profile*, const std::string&));
 
   MOCK_METHOD2(GetAppExtension, const Extension*(Profile*, const std::string&));
+  MOCK_METHOD3(EnableExtension, void(Profile*,
+                                     const std::string&,
+                                     const base::Callback<void()>&));
   MOCK_METHOD3(LaunchApp,
                void(Profile*,
                     const Extension*,
@@ -56,6 +60,10 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
       Profile* profile) {
     callbacks_[path].Run(profile);
     return callbacks_.erase(path);
+  }
+
+  void RunCallback(const base::Callback<void()>& callback) {
+    callback.Run();
   }
 
  private:
@@ -209,19 +217,32 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTest);
 };
 
-TEST_F(ExtensionAppShimHandlerTest, LaunchFailure) {
+TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
   // Bad profile path.
   EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND));
   NormalLaunch(&host_aa_);
+}
 
+TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
+  // App not found.
+  EXPECT_CALL(*delegate_, GetAppExtension(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
+  EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
+      .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND));
+  NormalLaunch(&host_aa_);
+}
+
+TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
   // App not found.
   EXPECT_CALL(*delegate_, GetAppExtension(&profile_a_, kTestAppIdA))
       .WillOnce(Return(static_cast<const Extension*>(NULL)))
       .WillRepeatedly(Return(extension_a_.get()));
-  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND));
+  EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
+      .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
   NormalLaunch(&host_aa_);
 }
 
