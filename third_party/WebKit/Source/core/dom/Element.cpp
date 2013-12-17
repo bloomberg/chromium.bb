@@ -414,6 +414,9 @@ void Element::synchronizeAllAttributes() const
 {
     if (!elementData())
         return;
+    // NOTE: anyAttributeMatches in SelectorChecker.cpp
+    // currently assumes that all lazy attributes have a null namespace.
+    // If that ever changes we'll need to fix that code.
     if (elementData()->m_styleAttributeIsDirty) {
         ASSERT(isStyledElement());
         synchronizeStyleAttributeInternal();
@@ -435,6 +438,8 @@ inline void Element::synchronizeAttribute(const QualifiedName& name) const
     }
     if (UNLIKELY(elementData()->m_animatedSVGAttributesAreDirty)) {
         ASSERT(isSVGElement());
+        // See comment in the AtomicString version of synchronizeAttribute()
+        // also.
         toSVGElement(this)->synchronizeAnimatedSVGAttribute(name);
     }
 }
@@ -452,6 +457,16 @@ void Element::synchronizeAttribute(const AtomicString& localName) const
     }
     if (elementData()->m_animatedSVGAttributesAreDirty) {
         // We're not passing a namespace argument on purpose. SVGNames::*Attr are defined w/o namespaces as well.
+
+        // FIXME: this code is called regardless of whether name is an
+        // animated SVG Attribute. It would seem we should only call this method
+        // if SVGElement::isAnimatableAttribute is true, but the list of
+        // animatable attributes in isAnimatableAttribute does not suffice to
+        // pass all layout tests. Also, m_animatedSVGAttributesAreDirty stays
+        // dirty unless synchronizeAnimatedSVGAttribute is called with
+        // anyQName(). This means that even if Element::synchronizeAttribute()
+        // is called on all attributes, m_animatedSVGAttributesAreDirty remains
+        // true.
         toSVGElement(this)->synchronizeAnimatedSVGAttribute(QualifiedName(nullAtom, localName, nullAtom));
     }
 }
