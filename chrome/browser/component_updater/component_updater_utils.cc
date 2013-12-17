@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/component_updater_utils.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -117,9 +119,19 @@ int GetFetchError(const net::URLFetcher& fetcher) {
   }
 }
 
-
 bool IsHttpServerError(int status_code) {
   return 500 <= status_code && status_code < 600;
+}
+
+bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
+  if (!base::DeleteFile(filepath, false))
+    return false;
+
+  const base::FilePath dirname(filepath.DirName());
+  if (!base::IsDirectoryEmpty(dirname))
+    return true;
+
+  return base::DeleteFile(dirname, false);
 }
 
 }  // namespace component_updater

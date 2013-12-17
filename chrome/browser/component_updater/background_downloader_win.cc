@@ -310,6 +310,18 @@ HRESULT GetBitsManager(IBackgroundCopyManager** bits_manager) {
   return S_OK;
 }
 
+void CleanupJobFiles(IBackgroundCopyJob* job) {
+  std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
+  if (FAILED(GetFilesInJob(job, &files)))
+    return;
+  for (size_t i = 0; i != files.size(); ++i) {
+    base::string16 local_name;
+    HRESULT hr(GetJobFileProperties(files[i], &local_name, NULL, NULL));
+    if (SUCCEEDED(hr))
+      DeleteFileAndEmptyParentDirectory(base::FilePath(local_name));
+  }
+}
+
 }  // namespace
 
 BackgroundDownloader::BackgroundDownloader(
@@ -444,8 +456,10 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     }
   }
 
-  if (FAILED(error) && job_)
+  if (FAILED(error) && job_) {
     job_->Cancel();
+    CleanupJobFiles(job_);
+  }
 
   job_ = NULL;
 
@@ -658,6 +672,7 @@ HRESULT BackgroundDownloader::CleanupStaleJobs(
 
   for (size_t i = 0; i != jobs.size(); ++i) {
     jobs[i]->Cancel();
+    CleanupJobFiles(jobs[i]);
   }
 
   return S_OK;

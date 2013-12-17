@@ -9,6 +9,10 @@
 
 class GURL;
 
+namespace base {
+class FilePath;
+}
+
 namespace net {
 class URLFetcher;
 class URLFetcherDelegate;
@@ -58,6 +62,11 @@ int GetFetchError(const net::URLFetcher& fetcher);
 
 // Returns true if the |status_code| represents a server error 5xx.
 bool IsHttpServerError(int status_code);
+
+// Deletes the file and its directory, if the directory is empty. If the
+// parent directory is not empty, the function ignores deleting the directory.
+// Returns true if the file and the empty directory are deleted.
+bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath);
 
 }  // namespace component_updater
 

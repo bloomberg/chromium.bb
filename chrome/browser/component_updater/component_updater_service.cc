@@ -954,8 +954,9 @@ void CrxUpdateService::Install(scoped_ptr<CRXContext> context,
                              context->fingerprint,
                              component_patcher_.get(),
                              context->installer);
-  if (!base::DeleteFile(crx_path, false))
+  if (!component_updater::DeleteFileAndEmptyParentDirectory(crx_path))
     NOTREACHED() << crx_path.value();
+
   // Why unretained? See comment at top of file.
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
