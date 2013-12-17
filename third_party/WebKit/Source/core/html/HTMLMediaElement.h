@@ -469,7 +469,6 @@ private:
     double m_volume;
     double m_lastSeekTime;
 
-    unsigned m_previousProgress;
     double m_previousProgressTime;
 
     // Cached duration to suppress duplicate events if duration unchanged.

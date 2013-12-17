@@ -179,7 +179,6 @@ private:
 
     bool m_inPruneResources;
     bool m_prunePending;
-    bool m_prePainting;
     double m_maxPruneDeferralDelay;
     double m_pruneTimeStamp;
     double m_pruneFrameTimeStamp;
@@ -189,7 +188,6 @@ private:
     size_t m_maxDeadCapacity;
     size_t m_maxDeferredPruneDeadCapacity;
     double m_delayBeforeLiveDecodedPrune;
-    double m_deadDecodedDataDeletionInterval;
 
     size_t m_liveSize; // The number of bytes currently consumed by "live" resources in the cache.
     size_t m_deadSize; // The number of bytes currently consumed by "dead" resources in the cache.

@@ -1173,7 +1173,6 @@ private:
     TextLinkColors m_textLinkColors;
     const OwnPtr<VisitedLinkState> m_visitedLinkState;
 
-    bool m_loadingSheet;
     bool m_visuallyOrdered;
     ReadyState m_readyState;
     bool m_bParsing;

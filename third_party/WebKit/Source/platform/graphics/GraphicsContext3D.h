@@ -526,13 +526,6 @@ private:
     bool m_preserveDrawingBuffer;
     int m_packAlignment;
 
-    enum ResourceSafety {
-        ResourceSafetyUnknown,
-        ResourceSafe,
-        ResourceUnsafe
-    };
-    ResourceSafety m_resourceSafety;
-
     // If the width and height of the Canvas's backing store don't
     // match those that we were given in the most recent call to
     // reshape(), then we need an intermediate bitmap to read back the

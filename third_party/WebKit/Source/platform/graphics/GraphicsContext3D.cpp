@@ -66,7 +66,6 @@ GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D> web
     , m_layerComposited(false)
     , m_preserveDrawingBuffer(preserveDrawingBuffer)
     , m_packAlignment(4)
-    , m_resourceSafety(ResourceSafetyUnknown)
     , m_grContext(0)
 {
 }
@@ -78,7 +77,6 @@ GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvi
     , m_layerComposited(false)
     , m_preserveDrawingBuffer(preserveDrawingBuffer)
     , m_packAlignment(4)
-    , m_resourceSafety(ResourceSafetyUnknown)
     , m_grContext(m_provider->grContext())
 {
 }

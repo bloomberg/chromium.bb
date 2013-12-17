@@ -932,7 +932,7 @@ void ReplaceSelectionCommand::doApply()
         bool mergeBlocksAfterDelete = startIsInsideMailBlockquote || isEndOfParagraph(visibleEnd) || isStartOfBlock(visibleStart);
         // FIXME: We should only expand to include fully selected special elements if we are copying a
         // selection and pasting it on top of itself.
-        deleteSelection(false, mergeBlocksAfterDelete, true, false);
+        deleteSelection(false, mergeBlocksAfterDelete, false);
         visibleStart = endingSelection().visibleStart();
         if (fragment.hasInterchangeNewlineAtStart()) {
             if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart)) {

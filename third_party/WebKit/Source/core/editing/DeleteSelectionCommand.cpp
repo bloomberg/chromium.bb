@@ -67,13 +67,12 @@ static bool isTableRowEmpty(Node* row)
     return true;
 }
 
-DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDelete, bool mergeBlocksAfterDelete, bool replace, bool expandForSpecialElements, bool sanitizeMarkup)
+DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
     : CompositeEditCommand(document)
     , m_hasSelectionToDelete(false)
     , m_smartDelete(smartDelete)
     , m_mergeBlocksAfterDelete(mergeBlocksAfterDelete)
     , m_needPlaceholder(false)
-    , m_replace(replace)
     , m_expandForSpecialElements(expandForSpecialElements)
     , m_pruneStartBlockIfNecessary(false)
     , m_startsAtEmptyLine(false)
@@ -85,13 +84,12 @@ DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDel
 {
 }
 
-DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection, bool smartDelete, bool mergeBlocksAfterDelete, bool replace, bool expandForSpecialElements, bool sanitizeMarkup)
+DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
     : CompositeEditCommand(*selection.start().document())
     , m_hasSelectionToDelete(true)
     , m_smartDelete(smartDelete)
     , m_mergeBlocksAfterDelete(mergeBlocksAfterDelete)
     , m_needPlaceholder(false)
-    , m_replace(replace)
     , m_expandForSpecialElements(expandForSpecialElements)
     , m_pruneStartBlockIfNecessary(false)
     , m_startsAtEmptyLine(false)

@@ -126,7 +126,6 @@ public:
         State state;
         UChar additionalAllowedCharacter;
         bool skipNextNewLine;
-        bool forceNullCharacterReplacement;
         bool shouldAllowCDATA;
 
         Checkpoint()
@@ -134,7 +133,6 @@ public:
             , state()
             , additionalAllowedCharacter('\0')
             , skipNextNewLine(false)
-            , forceNullCharacterReplacement(false)
             , shouldAllowCDATA(false)
         {
         }

@@ -309,8 +309,6 @@ private:
 
     LayoutPoint m_dragStartPos;
 
-    bool m_panScrollButtonPressed;
-
     Timer<EventHandler> m_hoverTimer;
     Timer<EventHandler> m_cursorUpdateTimer;
 
