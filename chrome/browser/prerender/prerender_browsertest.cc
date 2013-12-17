@@ -3023,14 +3023,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
   }
 };
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_WebNavigation DISABLED_WebNavigation
-#else
-#define MAYBE_WebNavigation WebNavigation
-#endif  // defined(OS_WIN) && !defined(NDEBUG)
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
-                       MAYBE_WebNavigation) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   ASSERT_TRUE(StartSpawnedTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
@@ -3038,8 +3031,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
       extensions::switches::kAllowLegacyExtensionManifests);
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(
-      RunExtensionSubtest("webnavigation", "test_prerender.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/prerender")) << message_;
 
   ResultCatcher catcher;
 
