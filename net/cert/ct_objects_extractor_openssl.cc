@@ -28,6 +28,14 @@ bool GetX509LogEntry(X509Certificate::OSCertHandle leaf, LogEntry* result) {
   return false;
 }
 
+bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
+                                    const std::string& cert_serial_number,
+                                    const std::string& ocsp_response,
+                                    std::string* sct_list) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace ct
 
 }  // namespace net

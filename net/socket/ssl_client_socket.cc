@@ -17,7 +17,8 @@ SSLClientSocket::SSLClientSocket()
       was_spdy_negotiated_(false),
       protocol_negotiated_(kProtoUnknown),
       channel_id_sent_(false),
-      signed_cert_timestamps_received_(false) {
+      signed_cert_timestamps_received_(false),
+      stapled_ocsp_response_received_(false) {
 }
 
 // static
@@ -145,13 +146,14 @@ void SSLClientSocket::set_channel_id_sent(bool channel_id_sent) {
   channel_id_sent_ = channel_id_sent;
 }
 
-bool SSLClientSocket::WereSignedCertTimestampsReceived() const {
-  return signed_cert_timestamps_received_;
-}
-
 void SSLClientSocket::set_signed_cert_timestamps_received(
     bool signed_cert_timestamps_received) {
   signed_cert_timestamps_received_ = signed_cert_timestamps_received;
+}
+
+void SSLClientSocket::set_stapled_ocsp_response_received(
+    bool stapled_ocsp_response_received) {
+  stapled_ocsp_response_received_ = stapled_ocsp_response_received;
 }
 
 // static

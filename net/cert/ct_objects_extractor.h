@@ -45,6 +45,18 @@ NET_EXPORT_PRIVATE bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
 NET_EXPORT_PRIVATE bool GetX509LogEntry(X509Certificate::OSCertHandle leaf,
                                         LogEntry* result);
 
+// Extracts a SignedCertificateTimestampList that has been embedded within
+// an OCSP response as an extension with the OID 1.3.6.1.4.1.11129.2.4.5.
+// If the extension is present, and the response matches the issuer and
+// serial number, returns true, updating |*sct_list| to contain
+// the encoded list, minus the DER encoding necessary for the extension.
+// |*sct_list| can then be further decoded with ct::DecodeSCTList.
+NET_EXPORT_PRIVATE bool ExtractSCTListFromOCSPResponse(
+    X509Certificate::OSCertHandle issuer,
+    const std::string& cert_serial_number,
+    const std::string& ocsp_response,
+    std::string* sct_list);
+
 }  // namespace ct
 
 }  // namespace net

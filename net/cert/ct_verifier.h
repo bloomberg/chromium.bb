@@ -21,12 +21,18 @@ class NET_EXPORT CTVerifier {
  public:
   virtual ~CTVerifier() {}
 
-  // Verifies either embedded SCTs or SCTs obtained via the
-  // signed_certificate_timestamp TLS extension or OCSP on  the given |cert|
-  // |result| will be filled with these SCTs, divided into categories based on
-  // the verification result.
+  // Verifies SCTs embedded in the certificate itself, SCTs embedded in a
+  // stapled OCSP response, and SCTs obtained via the
+  // signed_certificate_timestamp TLS extension on the given |cert|.
+  // A certificate is permitted but not required to use multiple sources for
+  // SCTs. It is expected that most certificates will use only one source
+  // (embedding, TLS extension or OCSP stapling). If no stapled OCSP response
+  // is available, |stapled_ocsp_response| should be an empty string. If no SCT
+  // TLS extension was negotiated, |sct_list_from_tls_extension| should be an
+  // empty string. |result| will be filled with the SCTs present, divided into
+  // categories based on the verification result.
   virtual int Verify(X509Certificate* cert,
-                     const std::string& sct_list_from_ocsp,
+                     const std::string& stapled_ocsp_response,
                      const std::string& sct_list_from_tls_extension,
                      ct::CTVerifyResult* result,
                      const BoundNetLog& net_log) = 0;

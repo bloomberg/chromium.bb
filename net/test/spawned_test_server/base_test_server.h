@@ -155,13 +155,16 @@ class BaseTestServer {
     // connections.
     bool fallback_scsv_enabled;
 
-    // (Fake) SignedCertificateTimestampList (as a raw binary string) to send in
-    // a TLS extension.
     // Temporary glue for testing: validation of SCTs is application-controlled
     // and can be appropriately mocked out, so sending fake data here does not
     // affect handshaking behaviour.
     // TODO(ekasper): replace with valid SCT files for test certs.
-    std::string signed_cert_timestamps;
+    // (Fake) SignedCertificateTimestampList (as a raw binary string) to send in
+    // a TLS extension.
+    std::string signed_cert_timestamps_tls_ext;
+
+    // Whether to staple the OCSP response.
+    bool staple_ocsp_response;
   };
 
   // Pass as the 'host' parameter during construction to server on 127.0.0.1
