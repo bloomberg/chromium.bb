@@ -24,6 +24,12 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "url/gurl.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -102,6 +108,7 @@ std::string BuildRequest() {
   return request;
 }
 
+#if !defined(OS_CHROMEOS)
 void GetNetworkListOnFileThread(
     const scoped_refptr<base::MessageLoopProxy>& loop,
     const base::Callback<void(const NetworkInterfaceList& networks)>& cb) {
@@ -113,37 +120,137 @@ void GetNetworkListOnFileThread(
   loop->PostTask(FROM_HERE, base::Bind(cb, list));
 }
 
-} // namespace
+#else
 
-DialServiceImpl::DialSocket::DialSocket(
-    const base::Closure& discovery_request_cb,
-    const base::Callback<void(const DialDeviceData&)>& device_discovered_cb,
-    const base::Closure& on_error_cb)
-  : discovery_request_cb_(discovery_request_cb),
-    device_discovered_cb_(device_discovered_cb),
-    on_error_cb_(on_error_cb),
-    is_writing_(false),
-    is_reading_(false) { }
+IPAddressNumber GetBestBindAddressByType(
+    const chromeos::NetworkTypePattern& type) {
+  const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
+      ->network_state_handler()->ConnectedNetworkByType(type);
+  IPAddressNumber bind_ip_address;
+  if (!state ||
+      !net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)) {
+    return IPAddressNumber();
+  }
+  if (bind_ip_address.size() != net::kIPv4AddressSize) {
+    LOG(ERROR) << "Default network is not using IPv4.";
+    return IPAddressNumber();
+  }
 
-DialServiceImpl::DialSocket::~DialSocket() {
+  DVLOG(1) << "Found " << state->type() << ", " << state->name() << ":"
+           << state->ip_address();
+  return bind_ip_address;
+}
+
+// Returns the IP address of the preferred interface to bind the socket. This
+// ChromeOS version can prioritize wifi and ethernet interfaces.
+IPAddressNumber GetBestBindAddressChromeOS() {
+  IPAddressNumber bind_ip_address =
+      GetBestBindAddressByType(chromeos::NetworkTypePattern::Ethernet());
+  if (bind_ip_address.empty()) {
+    bind_ip_address =
+        GetBestBindAddressByType(chromeos::NetworkTypePattern::WiFi());
+  }
+  return bind_ip_address;
+}
+#endif  // !defined(OS_CHROMEOS)
+
+}  // namespace
+
+DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
+  : is_writing_(false),
+    is_reading_(false),
+    discovery_active_(false),
+    num_requests_sent_(0),
+    max_requests_(kDialMaxRequests),
+    finish_delay_(TimeDelta::FromMilliseconds((kDialMaxRequests - 1) *
+                                              kDialRequestIntervalMillis) +
+                  TimeDelta::FromSeconds(kDialResponseTimeoutSecs)),
+    request_interval_(TimeDelta::FromMilliseconds(kDialRequestIntervalMillis)) {
+  IPAddressNumber address;
+  bool result = net::ParseIPLiteralToNumber(kDialRequestAddress, &address);
+  DCHECK(result);
+  send_address_ = IPEndPoint(address, kDialRequestPort);
+  send_buffer_ = new StringIOBuffer(BuildRequest());
+  net_log_ = net_log;
+  net_log_source_.type = net::NetLog::SOURCE_UDP_SOCKET;
+  net_log_source_.id = net_log_->NextID();
+}
+
+DialServiceImpl::~DialServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool DialServiceImpl::DialSocket::CreateAndBindSocket(
-    const IPAddressNumber& bind_ip_address,
-    net::NetLog* net_log,
-    net::NetLog::Source net_log_source) {
+void DialServiceImpl::AddObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_list_.AddObserver(observer);
+}
+
+void DialServiceImpl::RemoveObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_list_.RemoveObserver(observer);
+}
+
+bool DialServiceImpl::HasObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return observer_list_.HasObserver(observer);
+}
+
+bool DialServiceImpl::Discover() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (discovery_active_)
+    return false;
+  discovery_active_ = true;
+
+  VLOG(2) << "Discovery started.";
+
+  StartDiscovery();
+  return true;
+}
+
+void DialServiceImpl::StartDiscovery() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(discovery_active_);
+  if (socket_.get())
+    return;
+
+#if defined(OS_CHROMEOS)
+  // The ChromeOS specific version of getting network interfaces does not
+  // require trampolining to another thread, and contains additional interface
+  // information such as interface types (i.e. wifi vs cellular).
+  BindSocketAndSendRequest(GetBestBindAddressChromeOS());
+#else
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &GetNetworkListOnFileThread,
+      base::MessageLoopProxy::current(), base::Bind(
+          &DialServiceImpl::SendNetworkList, AsWeakPtr())));
+#endif
+}
+
+bool DialServiceImpl::BindSocketAndSendRequest(
+      const IPAddressNumber& bind_ip_address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!socket_.get());
-  DCHECK(bind_ip_address.size() == net::kIPv4AddressSize ||
-         bind_ip_address.size() == net::kIPv6AddressSize);
+
+  if (bind_ip_address.size() == 0) {
+    DVLOG(1) << "Could not find a valid interface to bind.";
+    FinishDiscovery();
+    return false;
+  }
 
   net::RandIntCallback rand_cb = base::Bind(&base::RandInt);
   socket_.reset(new UDPSocket(net::DatagramSocket::RANDOM_BIND,
                               rand_cb,
-                              net_log,
-                              net_log_source));
+                              net_log_,
+                              net_log_source_));
   socket_->AllowBroadcast();
+
+  // Schedule a timer to finish the discovery process (and close the socket).
+  if (finish_delay_ > TimeDelta::FromSeconds(0)) {
+    finish_timer_.Start(FROM_HERE,
+                        finish_delay_,
+                        this,
+                        &DialServiceImpl::FinishDiscovery);
+  }
 
   // 0 means bind a random port
   IPEndPoint address(bind_ip_address, 0);
@@ -154,12 +261,18 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
   DCHECK(socket_.get());
 
   recv_buffer_ = new IOBufferWithSize(kDialRecvBufferSize);
-  return ReadSocket();
+  if (!ReadSocket())
+    return false;
+  SendOneRequest();
+  return true;
 }
 
-void DialServiceImpl::DialSocket::SendOneRequest(
-    const net::IPEndPoint& send_address,
-    const scoped_refptr<net::StringIOBuffer>& send_buffer) {
+void DialServiceImpl::SendOneRequest() {
+  if (num_requests_sent_ == max_requests_) {
+    request_timer_.Stop();
+    return;
+  }
+  num_requests_sent_++;
   if (!socket_.get()) {
     DLOG(WARNING) << "Socket not connected.";
     return;
@@ -169,60 +282,45 @@ void DialServiceImpl::DialSocket::SendOneRequest(
     VLOG(2) << "Already writing.";
     return;
   }
-
+  VLOG(2) << "Sending request " << num_requests_sent_ << "/"
+          << max_requests_;
   is_writing_ = true;
   int result = socket_->SendTo(
-      send_buffer.get(), send_buffer->size(), send_address,
-      base::Bind(&DialServiceImpl::DialSocket::OnSocketWrite,
-                 base::Unretained(this),
-                 send_buffer->size()));
+      send_buffer_.get(), send_buffer_->size(), send_address_,
+      base::Bind(&DialServiceImpl::OnSocketWrite, AsWeakPtr()));
   bool result_ok = CheckResult("SendTo", result);
   if (result_ok && result > 0) {
     // Synchronous write.
-    OnSocketWrite(send_buffer->size(), result);
+    OnSocketWrite(result);
   }
 }
 
-bool DialServiceImpl::DialSocket::IsClosed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return !socket_.get();
-}
-
-bool DialServiceImpl::DialSocket::CheckResult(const char* operation,
-                                              int result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(2) << "Operation " << operation << " result " << result;
-  if (result < net::OK && result != net::ERR_IO_PENDING) {
-    Close();
-    std::string error_str(net::ErrorToString(result));
-    DVLOG(0) << "dial socket error: " << error_str;
-    on_error_cb_.Run();
-    return false;
-  }
-  return true;
-}
-
-void DialServiceImpl::DialSocket::Close() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  is_reading_ = false;
-  is_writing_ = false;
-  socket_.reset();
-}
-
-void DialServiceImpl::DialSocket::OnSocketWrite(int send_buffer_size,
-                                                int result) {
+void DialServiceImpl::OnSocketWrite(int result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   is_writing_ = false;
   if (!CheckResult("OnSocketWrite", result))
     return;
-  if (result != send_buffer_size) {
+
+  if (result != send_buffer_->size()) {
     DLOG(ERROR) << "Sent " << result << " chars, expected "
-                << send_buffer_size << " chars";
+               << send_buffer_->size() << " chars";
   }
-  discovery_request_cb_.Run();
+  // If discovery is inactive, no reason to notify observers.
+  if (!discovery_active_) {
+    VLOG(2) << "Request sent after discovery finished.  Ignoring.";
+    return;
+  }
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDiscoveryRequest(this));
+  // If we need to send additional requests, schedule a timer to do so.
+  if (num_requests_sent_ < max_requests_ && num_requests_sent_ == 1) {
+    request_timer_.Start(FROM_HERE,
+                         request_interval_,
+                         this,
+                         &DialServiceImpl::SendOneRequest);
+  }
 }
 
-bool DialServiceImpl::DialSocket::ReadSocket() {
+bool DialServiceImpl::ReadSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!socket_.get()) {
     DLOG(WARNING) << "Socket not connected.";
@@ -241,8 +339,7 @@ bool DialServiceImpl::DialSocket::ReadSocket() {
     result = socket_->RecvFrom(
         recv_buffer_.get(),
         kDialRecvBufferSize, &recv_address_,
-        base::Bind(&DialServiceImpl::DialSocket::OnSocketRead,
-                   base::Unretained(this)));
+        base::Bind(&DialServiceImpl::OnSocketRead, AsWeakPtr()));
     result_ok = CheckResult("RecvFrom", result);
     if (result != net::ERR_IO_PENDING)
       is_reading_ = false;
@@ -254,7 +351,7 @@ bool DialServiceImpl::DialSocket::ReadSocket() {
   return result_ok;
 }
 
-void DialServiceImpl::DialSocket::OnSocketRead(int result) {
+void DialServiceImpl::OnSocketRead(int result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   is_reading_ = false;
   if (!CheckResult("OnSocketRead", result))
@@ -266,7 +363,7 @@ void DialServiceImpl::DialSocket::OnSocketRead(int result) {
   ReadSocket();
 }
 
-void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
+void DialServiceImpl::HandleResponse(int bytes_read) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(bytes_read, 0);
   if (bytes_read > kDialRecvBufferSize) {
@@ -276,20 +373,26 @@ void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
   VLOG(2) << "Read " << bytes_read << " bytes from "
           << recv_address_.ToString();
 
+  // If discovery is inactive, no reason to handle response.
+  if (!discovery_active_) {
+    VLOG(2) << "Got response after discovery finished.  Ignoring.";
+    return;
+  }
+
   std::string response(recv_buffer_->data(), bytes_read);
   Time response_time = Time::Now();
 
   // Attempt to parse response, notify observers if successful.
   DialDeviceData parsed_device;
   if (ParseResponse(response, response_time, &parsed_device))
-    device_discovered_cb_.Run(parsed_device);
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnDeviceDiscovered(this, parsed_device));
 }
 
 // static
-bool DialServiceImpl::DialSocket::ParseResponse(
-    const std::string& response,
-    const base::Time& response_time,
-    DialDeviceData* device) {
+bool DialServiceImpl::ParseResponse(const std::string& response,
+                                    const base::Time& response_time,
+                                    DialDeviceData* device) {
   int headers_end = HttpUtil::LocateEndOfHeaders(response.c_str(),
                                                  response.size());
   if (headers_end < 1) {
@@ -344,66 +447,6 @@ bool DialServiceImpl::DialSocket::ParseResponse(
   return true;
 }
 
-DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
-  : num_requests_sent_(0),
-    max_requests_(kDialMaxRequests),
-    finish_delay_(TimeDelta::FromMilliseconds((kDialMaxRequests - 1) *
-                                              kDialRequestIntervalMillis) +
-                  TimeDelta::FromSeconds(kDialResponseTimeoutSecs)),
-    request_interval_(TimeDelta::FromMilliseconds(kDialRequestIntervalMillis)) {
-  IPAddressNumber address;
-  bool success = net::ParseIPLiteralToNumber(kDialRequestAddress, &address);
-  DCHECK(success);
-  send_address_ = IPEndPoint(address, kDialRequestPort);
-  send_buffer_ = new StringIOBuffer(BuildRequest());
-  net_log_ = net_log;
-  net_log_source_.type = net::NetLog::SOURCE_UDP_SOCKET;
-  net_log_source_.id = net_log_->NextID();
-}
-
-DialServiceImpl::~DialServiceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void DialServiceImpl::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observer_list_.AddObserver(observer);
-}
-
-void DialServiceImpl::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observer_list_.RemoveObserver(observer);
-}
-
-bool DialServiceImpl::HasObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return observer_list_.HasObserver(observer);
-}
-
-bool DialServiceImpl::Discover() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (discovery_active_)
-    return false;
-  discovery_active_ = true;
-
-  VLOG(2) << "Discovery started.";
-
-  StartDiscovery();
-  return true;
-}
-
-void DialServiceImpl::StartDiscovery() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(discovery_active_);
-  if (!dial_sockets_.empty())
-    return;
-
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &GetNetworkListOnFileThread,
-      base::MessageLoopProxy::current(), base::Bind(
-          &DialServiceImpl::SendNetworkList, AsWeakPtr())));
-}
-
 void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   IPAddressNumber bind_ip_address;
@@ -421,106 +464,41 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
     }
   }
 
-  if (bind_ip_address.size() == 0) {
-    DVLOG(1) << "Could not find a valid interface to bind.";
-    return;
-  }
-
-  BindAndAddSocket(bind_ip_address);
-  SendOneRequest();
-
-  // Schedule a timer to finish the discovery process (and close the sockets).
-  if (finish_delay_ > TimeDelta::FromSeconds(0)) {
-    finish_timer_.Start(FROM_HERE,
-                        finish_delay_,
-                        this,
-                        &DialServiceImpl::FinishDiscovery);
-  }
-}
-
-void DialServiceImpl::BindAndAddSocket(
-    const IPAddressNumber& bind_ip_address) {
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket(
-      CreateDialSocket());
-  if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
-                                       net_log_source_))
-    dial_sockets_.push_back(dial_socket.release());
-}
-
-scoped_ptr<DialServiceImpl::DialSocket>
-    DialServiceImpl::CreateDialSocket() {
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket(
-      new DialServiceImpl::DialSocket(
-          base::Bind(&DialServiceImpl::NotifyOnDiscoveryRequest, AsWeakPtr()),
-          base::Bind(&DialServiceImpl::NotifyOnDeviceDiscovered, AsWeakPtr()),
-          base::Bind(&DialServiceImpl::NotifyOnError, AsWeakPtr())));
-  return dial_socket.Pass();
-}
-
-void DialServiceImpl::SendOneRequest() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (num_requests_sent_ == max_requests_) {
-    request_timer_.Stop();
-    return;
-  }
-  num_requests_sent_++;
-  VLOG(2) << "Sending request " << num_requests_sent_ << "/"
-          << max_requests_;
-  for (ScopedVector<DialServiceImpl::DialSocket>::iterator iter =
-           dial_sockets_.begin();
-       iter != dial_sockets_.end();
-       ++iter) {
-    if (!(*iter)->IsClosed()) {
-      (*iter)->SendOneRequest(send_address_, send_buffer_);
-    }
-  }
-}
-
-void DialServiceImpl::NotifyOnDiscoveryRequest() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // If discovery is inactive, no reason to notify observers.
-  if (!discovery_active_) {
-    VLOG(2) << "Request sent after discovery finished.  Ignoring.";
-    return;
-  }
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDiscoveryRequest(this));
-  // If we need to send additional requests, schedule a timer to do so.
-  if (num_requests_sent_ < max_requests_ && num_requests_sent_ == 1) {
-    request_timer_.Start(FROM_HERE,
-                         request_interval_,
-                         this,
-                         &DialServiceImpl::SendOneRequest);
-  }
-}
-
-void DialServiceImpl::NotifyOnDeviceDiscovered(
-    const DialDeviceData& device_data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!discovery_active_) {
-    VLOG(2) << "Got response after discovery finished.  Ignoring.";
-    return;
-  }
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnDeviceDiscovered(this, device_data));
-}
-
-void DialServiceImpl::NotifyOnError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnError(this, DIAL_SERVICE_SOCKET_ERROR));
+  BindSocketAndSendRequest(bind_ip_address);
 }
 
 void DialServiceImpl::FinishDiscovery() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(discovery_active_);
   VLOG(2) << "Discovery finished.";
-  // Close all open sockets.
-  dial_sockets_.clear();
+  CloseSocket();
   finish_timer_.Stop();
   request_timer_.Stop();
   discovery_active_ = false;
   num_requests_sent_ = 0;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDiscoveryFinished(this));
+}
+
+void DialServiceImpl::CloseSocket() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  is_reading_ = false;
+  is_writing_ = false;
+  socket_.reset();
+}
+
+bool DialServiceImpl::CheckResult(const char* operation, int result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(2) << "Operation " << operation << " result " << result;
+  if (result < net::OK && result != net::ERR_IO_PENDING) {
+    CloseSocket();
+    std::string error_str(net::ErrorToString(result));
+    DVLOG(0) << "dial socket error: " << error_str;
+    // TODO(justinlin): More granular socket errors.
+    FOR_EACH_OBSERVER(
+        Observer, observer_list_, OnError(this, DIAL_SERVICE_SOCKET_ERROR));
+    return false;
+  }
+  return true;
 }
 
 }  // namespace extensions

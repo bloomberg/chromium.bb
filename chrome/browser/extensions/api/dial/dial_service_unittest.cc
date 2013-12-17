@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
@@ -42,17 +41,14 @@ class MockObserver : public DialService::Observer {
 
 class DialServiceTest : public testing::Test {
  public:
-  DialServiceTest()
-    : dial_service_(&capturing_net_log_) {
+  DialServiceTest() : dial_service_(&capturing_net_log_) {
     CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &mock_ip_));
     dial_service_.AddObserver(&mock_observer_);
-    dial_socket_ = dial_service_.CreateDialSocket();
   }
  protected:
   net::CapturingNetLog capturing_net_log_;
   net::IPAddressNumber mock_ip_;
   DialServiceImpl dial_service_;
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket_;
   MockObserver mock_observer_;
 };
 
@@ -66,8 +62,7 @@ TEST_F(DialServiceTest, TestSendMultipleRequests) {
   dial_service_.discovery_active_ = true;
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(4);
   EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
-  dial_service_.BindAndAddSocket(mock_ip_);
-  dial_service_.SendOneRequest();
+  dial_service_.BindSocketAndSendRequest(mock_ip_);
   loop.RunUntilIdle();
   dial_service_.FinishDiscovery();
 }
@@ -78,18 +73,15 @@ TEST_F(DialServiceTest, TestOnDiscoveryRequest) {
   dial_service_.max_requests_ = 1;
   size_t num_bytes = dial_service_.send_buffer_->size();
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(1);
-  dial_socket_->OnSocketWrite(num_bytes, num_bytes);
+  dial_service_.OnSocketWrite(num_bytes);
 }
 
 TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
   dial_service_.discovery_active_ = true;
   int response_size = arraysize(kValidResponse) - 1;
-  dial_socket_->recv_buffer_ =
-      new net::IOBufferWithSize(response_size);
-  strncpy(dial_socket_->recv_buffer_->data(),
-          kValidResponse,
-          response_size);
-  dial_socket_->recv_address_ = net::IPEndPoint(mock_ip_, 12345);
+  dial_service_.recv_buffer_ = new net::IOBufferWithSize(response_size);
+  strncpy(dial_service_.recv_buffer_->data(), kValidResponse, response_size);
+  dial_service_.recv_address_ = net::IPEndPoint(mock_ip_, 12345);
 
   DialDeviceData expected_device;
   expected_device.set_device_id("some_id");
@@ -97,7 +89,7 @@ TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
   EXPECT_CALL(mock_observer_,
               OnDeviceDiscovered(A<DialService*>(), expected_device))
       .Times(1);
-  dial_socket_->OnSocketRead(response_size);
+  dial_service_.OnSocketRead(response_size);
 };
 
 TEST_F(DialServiceTest, TestOnDiscoveryFinished) {
@@ -113,8 +105,8 @@ TEST_F(DialServiceTest, TestResponseParsing) {
 
   // Successful case
   DialDeviceData parsed;
-  EXPECT_TRUE(DialServiceImpl::DialSocket::ParseResponse(
-      kValidResponse, now, &parsed));
+  EXPECT_TRUE(DialServiceImpl::ParseResponse(kValidResponse,
+                                             now, &parsed));
   EXPECT_EQ("some_id", parsed.device_id());
   EXPECT_EQ("http://127.0.0.1/dd.xml", parsed.device_description_url().spec());
   EXPECT_EQ(1, parsed.config_id());
@@ -124,45 +116,44 @@ TEST_F(DialServiceTest, TestResponseParsing) {
   DialDeviceData not_parsed;
 
   // Empty, garbage
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      std::string(), now, &not_parsed));
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "\r\n\r\n",
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(std::string(), now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "\r\n\r\n",
     now, &not_parsed));
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "xyzzy",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "xyzzy",
+    now, &not_parsed));
 
   // No headers
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "HTTP/1.1 OK\r\n\r\n",
+    now, &not_parsed));
 
   // Missing LOCATION
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n"
-      "USN: some_id\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "HTTP/1.1 OK\r\n"
+    "USN: some_id\r\n\r\n",
+    now, &not_parsed));
 
   // Empty LOCATION
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n"
-      "LOCATION:\r\n"
-      "USN: some_id\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "HTTP/1.1 OK\r\n"
+    "LOCATION:\r\n"
+    "USN: some_id\r\n\r\n",
+    now, &not_parsed));
 
   // Missing USN
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n"
-      "LOCATION: http://127.0.0.1/dd.xml\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "HTTP/1.1 OK\r\n"
+    "LOCATION: http://127.0.0.1/dd.xml\r\n\r\n",
+    now, &not_parsed));
 
   // Empty USN
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n"
-      "LOCATION: http://127.0.0.1/dd.xml\r\n"
-      "USN:\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(
+    "HTTP/1.1 OK\r\n"
+    "LOCATION: http://127.0.0.1/dd.xml\r\n"
+    "USN:\r\n\r\n",
+    now, &not_parsed));
 }
 
 }  // namespace extensions
