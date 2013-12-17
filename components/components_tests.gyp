@@ -283,7 +283,6 @@
             '../base/base.gyp:test_support_perf',
             '../content/content_shell_and_tests.gyp:test_support_content',
             '../testing/gtest.gyp:gtest',
-            '../ui/compositor/compositor.gyp:compositor',
             'components.gyp:visitedlink_browser',
           ],
          'include_dirs': [
