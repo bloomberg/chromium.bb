@@ -1348,7 +1348,6 @@ internal_paladin.add_config('link-tot-paladin',
   boards=['link'],
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
-  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
   prebuilts=False,
 )
 
