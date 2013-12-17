@@ -136,6 +136,9 @@ TtsExtension.prototype = {
         gender = this.voiceNameToLangAndGender_[options.voiceName].gender;
       }
 
+      if (!lang)
+        lang = navigator.language;
+
       // Look up the specific voice name for this language and gender.
       // If it's not in the map, it doesn't matter - the language will
       // be used directly. This is only used for languages where more
