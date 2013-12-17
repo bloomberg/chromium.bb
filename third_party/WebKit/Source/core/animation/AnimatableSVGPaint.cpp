@@ -33,6 +33,12 @@
 
 namespace WebCore {
 
+bool AnimatableSVGPaint::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
+    return paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR;
+}
+
 PassRefPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);

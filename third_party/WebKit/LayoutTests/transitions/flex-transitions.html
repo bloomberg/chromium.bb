@@ -58,13 +58,13 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [0.2, 'row1',      '-webkit-flex', [140, 0,     0], 10],
-      [0.2, 'column1',   '-webkit-flex', [100, 0,    40], 10], // grow steps to zero
+      [0.2, 'column1',   '-webkit-flex', [0,   0,    40], 10], // grow/shrink do not transition to/from zero
       [0.2, 'negative1', '-webkit-flex', [100, 100,  60], 10],
-      [0.2, 'no-flex1',  '-webkit-flex', [100, 0,     0], 10], // grow steps to zero
+      [0.2, 'no-flex1',  '-webkit-flex', [0,   0,     0], 10], // grow/shrink do not transition to/from zero
       [0.8, 'row1',      '-webkit-flex', [260, 0,     0], 10],
-      [0.8, 'column1',   '-webkit-flex', [0,   0,   160], 10], // grow steps to zero
+      [0.8, 'column1',   '-webkit-flex', [0,   0,   160], 10], // grow/shrink do not transition to/from zero
       [0.8, 'negative1', '-webkit-flex', [100, 100,  90], 10],
-      [0.8, 'no-flex1',  '-webkit-flex', [0,   0,     0], 10], // grow steps to zero
+      [0.8, 'no-flex1',  '-webkit-flex', [0,   0,     0], 10], // grow/shrink do not transition to/from zero
     ];
 
     function setupTest()

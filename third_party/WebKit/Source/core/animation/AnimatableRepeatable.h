@@ -62,6 +62,8 @@ protected:
 
     static bool interpolateLists(const Vector<RefPtr<AnimatableValue> >& fromValues, const Vector<RefPtr<AnimatableValue> >& toValues, double fraction, Vector<RefPtr<AnimatableValue> >& interpolatedValues);
 
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
     Vector<RefPtr<AnimatableValue> > m_values;
 
 private:

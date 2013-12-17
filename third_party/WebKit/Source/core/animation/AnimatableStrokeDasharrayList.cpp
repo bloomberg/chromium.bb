@@ -53,6 +53,11 @@ Vector<SVGLength> AnimatableStrokeDasharrayList::toSVGLengthVector() const
     return lengths;
 }
 
+bool AnimatableStrokeDasharrayList::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    return false;
+}
+
 PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     Vector<RefPtr<AnimatableValue> > from = m_values;
@@ -66,12 +71,7 @@ PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const A
     if (from.isEmpty() && to.isEmpty())
         return takeConstRef(this);
     if (from.isEmpty() || to.isEmpty()) {
-        DEFINE_STATIC_REF(AnimatableSVGLength, zeroPixels, 0);
-        if (!zeroPixels) {
-            SVGLength length;
-            length.newValueSpecifiedUnits(LengthTypePX, 0, IGNORE_EXCEPTION);
-            zeroPixels = AnimatableSVGLength::create(length).leakRef();
-        }
+        DEFINE_STATIC_REF(AnimatableSVGLength, zeroPixels, AnimatableSVGLength::create(SVGLength()).leakRef());
         if (from.isEmpty()) {
             from.append(zeroPixels);
             from.append(zeroPixels);

@@ -59,6 +59,8 @@ protected:
         return defaultInterpolateTo(this, value, fraction);
     }
 
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const { return true; }
+
 private:
     explicit AnimatableUnknown(PassRefPtr<CSSValue> value)
         : m_value(value)

@@ -33,19 +33,27 @@
 
 namespace WebCore {
 
-PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const AnimatableValue* value, double fraction) const
+bool AnimatableShapeValue::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
     const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
 
     if (m_shape->type() != ShapeValue::Shape || shapeValue->m_shape->type() != ShapeValue::Shape)
-        return defaultInterpolateTo(this, value, fraction);
+        return true;
 
     const BasicShape* fromShape = this->m_shape->shape();
     const BasicShape* toShape = shapeValue->m_shape->shape();
 
-    if (!fromShape->canBlend(toShape))
+    return !fromShape->canBlend(toShape);
+}
+
+PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
 
+    const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
+    const BasicShape* fromShape = this->m_shape->shape();
+    const BasicShape* toShape = shapeValue->m_shape->shape();
     return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction)).get());
 }
 

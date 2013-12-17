@@ -90,6 +90,13 @@ Length AnimatableLength::toLength(const CSSToLengthConversionData& conversionDat
     return toCSSPrimitiveValue(range)->convertToLength<AnyConversion>(conversionData);
 }
 
+bool AnimatableLength::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableLength* length = toAnimatableLength(value);
+    NumberUnitType type = commonUnitType(length);
+    return type == UnitTypeCalc && (isViewportUnit() || length->isViewportUnit());
+}
+
 PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLength* length = toAnimatableLength(value);

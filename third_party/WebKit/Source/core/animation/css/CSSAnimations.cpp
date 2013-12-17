@@ -539,7 +539,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
     // If we have multiple transitions on the same property, we will use the
     // last one since we iterate over them in order.
-    if (!from->usesNonDefaultInterpolationWith(to.get()))
+    if (AnimatableValue::usesDefaultInterpolation(to.get(), from.get()))
         return;
 
     KeyframeAnimationEffect::KeyframeVector keyframes;

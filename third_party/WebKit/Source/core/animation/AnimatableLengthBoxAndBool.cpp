@@ -33,6 +33,14 @@
 
 namespace WebCore {
 
+bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
+    if (lengthBox->flag() != flag())
+        return true;
+    return AnimatableValue::usesDefaultInterpolation(lengthBox->box(), box());
+}
+
 PassRefPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);

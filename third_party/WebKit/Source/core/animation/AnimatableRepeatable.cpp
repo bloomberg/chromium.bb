@@ -48,6 +48,22 @@ size_t lowestCommonMultiple(size_t a, size_t b)
 
 namespace WebCore {
 
+bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const Vector<RefPtr<AnimatableValue> >& fromValues = m_values;
+    const Vector<RefPtr<AnimatableValue> >& toValues = toAnimatableRepeatable(value)->m_values;
+    ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
+    size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
+    for (size_t i = 0; i < size; ++i) {
+        const AnimatableValue* from = fromValues[i % fromValues.size()].get();
+        const AnimatableValue* to = toValues[i % toValues.size()].get();
+        // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
+        if (AnimatableValue::usesDefaultInterpolation(from, to))
+            return true;
+    }
+    return false;
+}
+
 bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue> >& fromValues, const Vector<RefPtr<AnimatableValue> >& toValues, double fraction, Vector<RefPtr<AnimatableValue> >& interpolatedValues)
 {
     // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
@@ -58,7 +74,7 @@ bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue>
         const AnimatableValue* from = fromValues[i % fromValues.size()].get();
         const AnimatableValue* to = toValues[i % toValues.size()].get();
         // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
-        if (!from->usesNonDefaultInterpolationWith(to))
+        if (AnimatableValue::usesDefaultInterpolation(from, to))
             return false;
         interpolatedValues.append(interpolate(from, to, fraction));
     }

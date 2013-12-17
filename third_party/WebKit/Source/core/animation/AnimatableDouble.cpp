@@ -42,6 +42,12 @@ PassRefPtr<CSSValue> AnimatableDouble::toCSSValue() const
     return cssValuePool().createValue(m_number, CSSPrimitiveValue::CSS_NUMBER);
 }
 
+bool AnimatableDouble::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableDouble* other = toAnimatableDouble(value);
+    return (m_constraint == InterpolationIsNonContinuousWithZero) && (!m_number || !other->m_number);
+}
+
 PassRefPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableDouble* other = toAnimatableDouble(value);

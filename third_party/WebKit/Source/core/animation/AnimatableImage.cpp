@@ -37,11 +37,28 @@
 
 namespace WebCore {
 
+// FIXME: Once cross-fade works on generated image types, remove this method.
+bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    RefPtr<CSSValue> fromValue = toCSSValue();
+    if (fromValue->isImageGeneratorValue())
+        return true;
+    if (!fromValue->isImageValue() && !m_image->isImageResource())
+        return true;
+    const AnimatableImage* image = toAnimatableImage(value);
+    RefPtr<CSSValue> toValue = image->toCSSValue();
+    if (toValue->isImageGeneratorValue())
+        return true;
+    if (!toValue->isImageValue() && !image->m_image->isImageResource())
+        return true;
+    return false;
+}
+
 PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     if (fraction <= 0 || fraction >= 1)
         return defaultInterpolateTo(this, value, fraction);
-    RefPtr<CSSValue> fromValue = this->toCSSValue();
+    RefPtr<CSSValue> fromValue = toCSSValue();
     // FIXME: Once cross-fade works on generated image types, remove this check.
     if (fromValue->isImageGeneratorValue())
         return defaultInterpolateTo(this, value, fraction);

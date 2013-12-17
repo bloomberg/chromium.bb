@@ -35,12 +35,18 @@
 
 namespace WebCore {
 
-PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
+bool AnimatableFilterOperations::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
     const AnimatableFilterOperations* target = toAnimatableFilterOperations(value);
-    if (!operations().canInterpolateWith(target->operations()))
+    return !operations().canInterpolateWith(target->operations());
+}
+
+PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
 
+    const AnimatableFilterOperations* target = toAnimatableFilterOperations(value);
     FilterOperations result;
     size_t fromSize = operations().size();
     size_t toSize = target->operations().size();
