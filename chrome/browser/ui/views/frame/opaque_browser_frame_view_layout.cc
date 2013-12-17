@@ -234,8 +234,9 @@ int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {
 }
 
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(bool restored) const {
-  // Maximized buttons start at window top so that even if their images aren't
-  // drawn flush with the screen edge, they still obey Fitts' Law.
+  // Maximized buttons start at window top, since the window has no border. This
+  // offset is for the image (the actual clickable bounds extend all the way to
+  // the top to take Fitts' Law into account).
   return ((!restored && delegate_->IsMaximized()) ?
       FrameBorderThickness(false) :
           views::NonClientFrameView::kFrameShadowThickness) + extra_caption_y_;
@@ -508,8 +509,9 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       views::ImageButton::ALIGN_BOTTOM);
 
   // There should always be the same number of non-shadow pixels visible to the
-  // side of the caption buttons.  In maximized mode we extend the rightmost
-  // button to the screen corner to obey Fitts' Law.
+  // side of the caption buttons.  In maximized mode we extend buttons to the
+  // screen top and the rightmost button to the screen right (or leftmost button
+  // to the screen left, for left-aligned buttons) to obey Fitts' Law.
   bool is_maximized = delegate_->IsMaximized();
 
   // When we are the first button on the leading side and are the close
@@ -518,13 +520,15 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
   button->SetDrawImageMirrored(alignment == ALIGN_LEADING &&
                                !has_leading_buttons_ &&
                                button == close_button_);
+  // If the window is maximized, align the buttons to its upper edge.
+  int extra_height = is_maximized ? extra_caption_y_ : 0;
 
   switch (alignment) {
     case ALIGN_LEADING: {
       if (has_leading_buttons_)
         leading_button_start_ += window_caption_spacing_;
 
-      // If we're the first button on the left and maximized, add with to the
+      // If we're the first button on the left and maximized, add width to the
       // right hand side of the screen.
       int extra_width = (is_maximized && !has_leading_buttons_) ?
         (kFrameBorderThickness -
@@ -532,9 +536,9 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
 
       button->SetBounds(
           leading_button_start_,
-          caption_y,
+          caption_y - extra_height,
           button_size.width() + extra_width,
-          button_size.height());
+          button_size.height() + extra_height);
 
       leading_button_start_ += extra_width + button_size.width();
       minimum_size_for_buttons_ += extra_width + button_size.width();
@@ -545,7 +549,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       if (has_trailing_buttons_)
         trailing_button_start_ += window_caption_spacing_;
 
-      // If we're the first button on the right and maximized, add with to the
+      // If we're the first button on the right and maximized, add width to the
       // right hand side of the screen.
       int extra_width = (is_maximized && !has_trailing_buttons_) ?
         (kFrameBorderThickness -
@@ -554,9 +558,9 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       button->SetBounds(
           host->width() - trailing_button_start_ - extra_width -
               button_size.width(),
-          caption_y,
+          caption_y - extra_height,
           button_size.width() + extra_width,
-          button_size.height());
+          button_size.height() + extra_height);
 
       trailing_button_start_ += extra_width + button_size.width();
       minimum_size_for_buttons_ += extra_width + button_size.width();

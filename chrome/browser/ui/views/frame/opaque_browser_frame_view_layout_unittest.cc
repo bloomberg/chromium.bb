@@ -295,12 +295,38 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindowMaximized) {
   delegate_->SetWindowState(TestLayoutDelegate::STATE_MAXIMIZED);
   root_view_->Layout();
 
-  // Note how the bonds start at the exact top of the window while maximized
+  // Note how the bounds start at the exact top of the window while maximized
   // while they start 1 pixel below when unmaximized.
   EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
   EXPECT_EQ("403,0 26x18", minimize_button_->bounds().ToString());
   EXPECT_EQ("429,0 25x18", restore_button_->bounds().ToString());
   EXPECT_EQ("454,0 46x18", close_button_->bounds().ToString());
+
+  EXPECT_EQ("-5,-3 392x29",
+            layout_manager_->GetBoundsForTabStrip(
+                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
+  EXPECT_EQ("262x61", layout_manager_->GetMinimumSize(kWidth).ToString());
+
+  // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
+  // this rect, extended to the top left corner of the window.
+  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
+}
+
+TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithYOffset) {
+  // Tests the layout of a basic chrome window with the caption buttons slightly
+  // offset from the top of the screen (as they are on Linux).
+  layout_manager_->set_extra_caption_y(2);
+  delegate_->SetWindowState(TestLayoutDelegate::STATE_MAXIMIZED);
+  root_view_->Layout();
+
+  // Note how the bounds start at the exact top of the window, DESPITE the
+  // caption Y offset of 2. This ensures that we obey Fitts' Law (the buttons
+  // are clickable on the top edge of the screen). However, the buttons are 2
+  // pixels taller, so the images appear to be offset by 2 pixels.
+  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
+  EXPECT_EQ("403,0 26x20", minimize_button_->bounds().ToString());
+  EXPECT_EQ("429,0 25x20", restore_button_->bounds().ToString());
+  EXPECT_EQ("454,0 46x20", close_button_->bounds().ToString());
 
   EXPECT_EQ("-5,-3 392x29",
             layout_manager_->GetBoundsForTabStrip(
