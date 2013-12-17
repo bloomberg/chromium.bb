@@ -105,17 +105,22 @@
     {
       'library_name': 'libfontconfig1',
       'dependencies=': [],
+      'custom_configure_flags': '--disable-docs',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
       'library_name': 'libcairo2',
       'dependencies=': [],
+      'custom_configure_flags': '--disable-gtk-doc',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
       'library_name': 'libpcre3',
       'dependencies=': [],
-      'custom_configure_flags': '--enable-utf8 --enable-unicode-properties',
+      'custom_configure_flags': [
+        '--enable-utf8',
+        '--enable-unicode-properties',
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -126,6 +131,11 @@
     {
       'library_name': 'libglib2.0-0',
       'dependencies=': [],
+      'custom_configure_flags': [
+        '--disable-gtk-doc',
+        '--disable-gtk-doc-html',
+        '--disable-gtk-doc-pdf',
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -143,6 +153,7 @@
     {
       'library_name': 'libxcb1',
       'dependencies=': [],
+      'custom_configure_flags': '--disable-build-docs',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -154,7 +165,10 @@
     {
       'library_name': 'libxi6',
       'dependencies=': [],
-      'custom_configure_flags': '--disable-specs --disable-docs',
+      'custom_configure_flags': [
+        '--disable-specs',
+        '--disable-docs',
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {

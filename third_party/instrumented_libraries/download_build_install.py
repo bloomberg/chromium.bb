@@ -52,6 +52,13 @@ def get_library_build_dependencies(library):
   build_dependencies = [l.strip() for l in command_result.stdout]
   return build_dependencies
 
+def check_library_build_dependencies(library):
+  build_dependencies = get_library_build_dependencies(library)
+  if len(build_dependencies):
+    print >> sys.stderr, 'Please, install build-dependencies for %s' % library
+    print >> sys.stderr, 'One-liner for APT:'
+    print >> sys.stderr, 'sudo apt-get -y --no-remove build-dep %s' % library
+    sys.exit(1)
 
 def shell_call(command, verbose=False, environment=None):
   """ Wrapper on subprocess.Popen
@@ -111,17 +118,25 @@ def download_build_install(parsed_arguments):
     # There should be exactly one subdirectory after downloading a package.
     subdirectories = [d for d in os.listdir('.') if os.path.isdir(d)]
     if len(subdirectories) != 1:
-      raise Exception('There was not one directory after downloading ' \
-          'a package %s' % parsed_arguments.library)
+      raise (Exception('There was not one directory after downloading '
+          'a package %s' % parsed_arguments.library))
     with ScopedChangeDirectory(subdirectories[0]):
       # Now we are in the package directory.
       configure_command = './configure %s --prefix=%s' % (
           parsed_arguments.custom_configure_flags, install_prefix)
-      shell_call(configure_command, parsed_arguments.verbose, environment)
-      shell_call('make -j%s' % parsed_arguments.jobs, parsed_arguments.verbose)
-      shell_call('make -j%s install' % parsed_arguments.jobs,
-          parsed_arguments.verbose)
-  
+      try:
+        shell_call(configure_command, parsed_arguments.verbose, environment)
+        shell_call('make -j%s' % parsed_arguments.jobs,
+            parsed_arguments.verbose, environment)
+        shell_call('make -j%s install' % parsed_arguments.jobs,
+            parsed_arguments.verbose, environment)
+      except Exception as exception:
+        print exception
+        print "Failed to build library %s." % parsed_arguments.library
+        print ("Probably, some of its dependencies are not installed: %s" %
+            ' '.join(get_library_build_dependencies(parsed_arguments.library)))
+        sys.exit(1)
+
   # Touch a txt file to indicate library is installed.
   open('%s/%s.txt' % (install_prefix, parsed_arguments.library), 'w').close()
 
@@ -143,7 +158,8 @@ def main():
   argument_parser.add_argument('-s', '--sanitizer-type', required=True,
       choices=SUPPORTED_SANITIZERS.keys()) 
   argument_parser.add_argument('-v', '--verbose', action='store_true')
- 
+  argument_parser.add_argument('--check-build-deps', action='store_true')
+
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of
   # ignoring (and doesn't have such options).
@@ -152,15 +168,9 @@ def main():
   # Ensure current working directory is this script directory.
   os.chdir(get_script_absolute_path())
   # Ensure all build dependencies are installed.
-  build_dependencies = get_library_build_dependencies(parsed_arguments.library)
-  if len(build_dependencies):
-    print >> sys.stderr, 'Please, install build-dependencies for %s' % \
-        parsed_arguments.library
-    print >> sys.stderr, 'One-liner for APT:'
-    print >> sys.stderr, 'sudo apt-get -y --no-remove build-dep %s' % \
-        parsed_arguments.library
-    sys.exit(1)
-
+  if parsed_arguments.check_build_deps:
+    check_library_build_dependencies(parsed_arguments.library)
+    
   download_build_install(parsed_arguments)
 
 
