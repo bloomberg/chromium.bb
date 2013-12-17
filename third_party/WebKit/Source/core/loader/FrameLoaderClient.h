@@ -79,6 +79,7 @@ class FetchRequest;
     class RTCPeerConnectionHandler;
     class SecurityOrigin;
     class SharedBuffer;
+    class SharedWorkerRepositoryClient;
     class SocketStreamHandle;
     class SubstituteData;
     class Widget;
@@ -228,6 +229,8 @@ class FetchRequest;
         virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
 
         virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>) = 0;
+
+        virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
 
         virtual void didStopAllLoaders() { }
 

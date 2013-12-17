@@ -578,7 +578,6 @@ void WebFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)
 void WebFrameImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient* client)
 {
     m_sharedWorkerRepositoryClient = SharedWorkerRepositoryClientImpl::create(client);
-    frame()->document()->setSharedWorkerRepositoryClient(m_sharedWorkerRepositoryClient.get());
 }
 
 WebSize WebFrameImpl::scrollOffset() const

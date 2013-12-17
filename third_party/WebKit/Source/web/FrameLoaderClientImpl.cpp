@@ -34,6 +34,7 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "SharedWorkerRepositoryClientImpl.h"
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
 #include "WebDOMEvent.h"
@@ -770,6 +771,11 @@ PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerP
     if (!m_webFrame->client())
         return nullptr;
     return adoptPtr(m_webFrame->client()->createServiceWorkerProvider(m_webFrame, client.leakPtr()));
+}
+
+SharedWorkerRepositoryClient* FrameLoaderClientImpl::sharedWorkerRepositoryClient()
+{
+    return m_webFrame->sharedWorkerRepositoryClient();
 }
 
 void FrameLoaderClientImpl::didStopAllLoaders()

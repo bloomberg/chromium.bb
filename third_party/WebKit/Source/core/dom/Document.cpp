@@ -382,7 +382,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_frame(initializer.frame())
     , m_domWindow(m_frame ? m_frame->domWindow() : 0)
     , m_import(initializer.import())
-    , m_sharedWorkerRepositoryClient(0)
     , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_wellFormed(false)
@@ -575,8 +574,6 @@ void Document::dispose()
         m_import->wasDetachedFromDocument();
         m_import = 0;
     }
-
-    m_sharedWorkerRepositoryClient = 0;
 
     // removeDetachedChildren() doesn't always unregister IDs,
     // so tear down scope information upfront to avoid having stale references in the map.
@@ -1972,8 +1969,8 @@ void Document::detach(const AttachContext& context)
     if (page())
         page()->documentDetached(this);
 
-    if (m_sharedWorkerRepositoryClient)
-        m_sharedWorkerRepositoryClient->documentDetached(this);
+    if (m_frame->loader().client()->sharedWorkerRepositoryClient())
+        m_frame->loader().client()->sharedWorkerRepositoryClient()->documentDetached(this);
 
     if (this == topDocument())
         clearAXObjectCache();

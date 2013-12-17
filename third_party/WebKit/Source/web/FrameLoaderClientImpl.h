@@ -153,6 +153,7 @@ public:
     virtual void dispatchWillInsertBody() OVERRIDE;
 
     virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<WebServiceWorkerProviderClient>) OVERRIDE;
+    virtual WebCore::SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() OVERRIDE;
 
     virtual void didStopAllLoaders() OVERRIDE;
 
