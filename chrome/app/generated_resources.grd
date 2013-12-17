@@ -11356,24 +11356,46 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
         edit
       </message>
-      <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
-        Add person
-      </message>
-      <message name="IDS_PROFILES_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
-        Browse as guest
-      </message>
-      <message name="IDS_PROFILES_EXIT_GUEST_BUTTON" desc="Button in the avatar menu bubble view to end guest browsing.">
-        End guest session
-      </message>
-      <message name="IDS_PROFILES_ALL_PEOPLE_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-        View all people
-      </message>
-      <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
-        Add account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
-      </message>
-      <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
-        Manage accounts
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
+          Add person
+        </message>
+        <message name="IDS_PROFILES_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
+          Browse as guest
+        </message>
+        <message name="IDS_PROFILES_EXIT_GUEST_BUTTON" desc="Button in the avatar menu bubble view to end guest browsing.">
+          End guest session
+        </message>
+        <message name="IDS_PROFILES_ALL_PEOPLE_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
+          View all people
+        </message>
+        <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
+          Add account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
+        </message>
+        <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
+          Manage accounts
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
+          Add Person
+        </message>
+        <message name="IDS_PROFILES_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
+          Browse as Guest
+        </message>
+        <message name="IDS_PROFILES_EXIT_GUEST_BUTTON" desc="Button in the avatar menu bubble view to end guest browsing.">
+          End Guest Session
+        </message>
+        <message name="IDS_PROFILES_ALL_PEOPLE_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
+          View All People
+        </message>
+        <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
+          Add Account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
+        </message>
+        <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
+          Manage Accounts
+        </message>
+      </if>
       <message name="IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON" desc="Button in the avatar menu bubble view used to change the photo for a profile.">
         Change
       </message>
