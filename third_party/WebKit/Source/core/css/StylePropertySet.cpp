@@ -642,22 +642,14 @@ PropertySetCSSStyleDeclaration* MutableStylePropertySet::cssStyleDeclaration()
 
 CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration()
 {
+    // FIXME: get rid of this weirdness of a CSSStyleDeclaration inside of a
+    // style property set.
     if (m_cssomWrapper) {
         ASSERT(!static_cast<CSSStyleDeclaration*>(m_cssomWrapper.get())->parentRule());
         ASSERT(!m_cssomWrapper->parentElement());
         return m_cssomWrapper.get();
     }
     m_cssomWrapper = adoptPtr(new PropertySetCSSStyleDeclaration(this));
-    return m_cssomWrapper.get();
-}
-
-CSSStyleDeclaration* MutableStylePropertySet::ensureInlineCSSStyleDeclaration(Element* parentElement)
-{
-    if (m_cssomWrapper) {
-        ASSERT(m_cssomWrapper->parentElement() == parentElement);
-        return m_cssomWrapper.get();
-    }
-    m_cssomWrapper = adoptPtr(new InlineCSSStyleDeclaration(this, parentElement));
     return m_cssomWrapper.get();
 }
 

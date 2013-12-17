@@ -522,6 +522,8 @@ public:
 
     void synchronizeAttribute(const AtomicString& localName) const;
 
+    MutableStylePropertySet* ensureMutableInlineStyle();
+
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
         : ContainerNode(document, type)
@@ -577,7 +579,6 @@ private:
     void inlineStyleChanged();
     PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
     void setInlineStyleFromString(const AtomicString&);
-    MutableStylePropertySet* ensureMutableInlineStyle();
 
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
     void recalcChildStyle(StyleRecalcChange);

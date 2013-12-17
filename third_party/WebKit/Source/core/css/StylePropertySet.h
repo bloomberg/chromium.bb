@@ -221,7 +221,6 @@ public:
     void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
-    CSSStyleDeclaration* ensureInlineCSSStyleDeclaration(Element* parentElement);
 
     Vector<CSSProperty, 4> m_propertyVector;
 

@@ -3425,7 +3425,7 @@ CSSStyleDeclaration* Element::style()
 {
     if (!isStyledElement())
         return 0;
-    return ensureMutableInlineStyle()->ensureInlineCSSStyleDeclaration(this);
+    return ensureElementRareData().ensureInlineCSSStyleDeclaration(this);
 }
 
 MutableStylePropertySet* Element::ensureMutableInlineStyle()

@@ -97,6 +97,8 @@ public:
     unsigned childIndex() const { return m_childIndex; }
     void setChildIndex(unsigned index) { m_childIndex = index; }
 
+    CSSStyleDeclaration* ensureInlineCSSStyleDeclaration(Element* ownerElement);
+
     void clearShadow() { m_shadow = nullptr; }
     ElementShadow* shadow() const { return m_shadow.get(); }
     ElementShadow& ensureShadow()
@@ -186,6 +188,7 @@ private:
     OwnPtr<NamedNodeMap> m_attributeMap;
     OwnPtr<InputMethodContext> m_inputMethodContext;
     OwnPtr<ActiveAnimations> m_activeAnimations;
+    OwnPtr<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<PseudoElement> m_generatedBefore;
     RefPtr<PseudoElement> m_generatedAfter;

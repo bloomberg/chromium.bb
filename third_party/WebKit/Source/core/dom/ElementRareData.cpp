@@ -42,8 +42,16 @@ struct SameSizeAsElementRareData : NodeRareData {
     RegionOversetState regionOversetState;
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[10];
+    void* pointers[11];
 };
+
+CSSStyleDeclaration* ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
+{
+    if (!m_cssomWrapper)
+        m_cssomWrapper = adoptPtr(new InlineCSSStyleDeclaration(ownerElement));
+    return m_cssomWrapper.get();
+}
+
 
 COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
 

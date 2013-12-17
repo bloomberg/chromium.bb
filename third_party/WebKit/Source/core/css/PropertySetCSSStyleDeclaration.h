@@ -40,16 +40,11 @@ class ExceptionState;
 class MutableStylePropertySet;
 class StyleSheetContents;
 
-class PropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
+class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 public:
-    PropertySetCSSStyleDeclaration(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
-
     virtual Element* parentElement() const { return 0; }
     virtual void clearParentElement() { ASSERT_NOT_REACHED(); }
     StyleSheetContents* contextStyleSheet() const;
-
-    virtual void ref() OVERRIDE;
-    virtual void deref() OVERRIDE;
 
 private:
     virtual CSSRule* parentRule() const OVERRIDE { return 0; };
@@ -84,9 +79,22 @@ protected:
     enum MutationType { NoChanges, PropertyChanged };
     virtual void willMutate() { }
     virtual void didMutate(MutationType) { }
+    virtual MutableStylePropertySet* propertySet() const = 0;
+
+    OwnPtr<HashMap<CSSValue*, RefPtr<CSSValue> > > m_cssomCSSValueClones;
+};
+
+class PropertySetCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration {
+public:
+    PropertySetCSSStyleDeclaration(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
+
+    virtual void ref() OVERRIDE;
+    virtual void deref() OVERRIDE;
+
+protected:
+    virtual MutableStylePropertySet* propertySet() const { return m_propertySet; };
 
     MutableStylePropertySet* m_propertySet;
-    OwnPtr<HashMap<CSSValue*, RefPtr<CSSValue> > > m_cssomCSSValueClones;
 };
 
 class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
@@ -119,16 +127,18 @@ private:
     CSSRule* m_parentRule;
 };
 
-class InlineCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
+class InlineCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration
 {
 public:
-    InlineCSSStyleDeclaration(MutableStylePropertySet* propertySet, Element* parentElement)
-        : PropertySetCSSStyleDeclaration(propertySet)
-        , m_parentElement(parentElement)
+    explicit InlineCSSStyleDeclaration(Element* parentElement)
+        : m_parentElement(parentElement)
     {
     }
 
 private:
+    virtual MutableStylePropertySet* propertySet() const OVERRIDE;
+    virtual void ref() OVERRIDE;
+    virtual void deref() OVERRIDE;
     virtual CSSStyleSheet* parentStyleSheet() const OVERRIDE;
     virtual Element* parentElement() const OVERRIDE { return m_parentElement; }
     virtual void clearParentElement() OVERRIDE { m_parentElement = 0; }
