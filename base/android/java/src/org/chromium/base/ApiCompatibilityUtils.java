@@ -129,24 +129,24 @@ public class ApiCompatibilityUtils {
     /**
      * @see android.view.View#getPaddingStart()
      */
-    public static void getPaddingStart(View view) {
+    public static int getPaddingStart(View view) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.getPaddingStart();
+            return view.getPaddingStart();
         } else {
             // Before JB MR1, all layouts are left-to-right, so start == left.
-            view.getPaddingLeft();
+            return view.getPaddingLeft();
         }
     }
 
     /**
      * @see android.view.View#getPaddingEnd()
      */
-    public static void getPaddingEnd(View view) {
+    public static int getPaddingEnd(View view) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.getPaddingEnd();
+            return view.getPaddingEnd();
         } else {
             // Before JB MR1, all layouts are left-to-right, so end == right.
-            view.getPaddingRight();
+            return view.getPaddingRight();
         }
     }
 
