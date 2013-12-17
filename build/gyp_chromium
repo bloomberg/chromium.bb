@@ -129,7 +129,7 @@ def GetArgsStringForGN(supplemental_files):
   # These string arguments get passed directly.
   for v in ['windows_sdk_path']:
     if v in vars_dict:
-      gn_args += ' ' + v + '="' + EscapeStringForGN(vars_dict[v]) + '"'
+      gn_args += ' ' + v + '=' + EscapeStringForGN(vars_dict[v])
 
   # Set the GYP flag so BUILD files know they're being invoked in GYP mode.
   gn_args += ' is_gyp=true'
