@@ -176,8 +176,8 @@ class RemoteAccess(object):
     self.RemoteSh('touch %s && reboot' % REBOOT_MARKER)
     time.sleep(CHECK_INTERVAL)
     try:
-      timeout_util.WaitForReturnTrue(self._CheckIfRebooted, CHECK_INTERVAL,
-                                     REBOOT_MAX_WAIT)
+      timeout_util.WaitForReturnTrue(self._CheckIfRebooted, REBOOT_MAX_WAIT,
+                                     period=CHECK_INTERVAL)
     except timeout_util.TimeoutError:
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (REBOOT_MAX_WAIT,))
