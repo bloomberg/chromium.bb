@@ -25,13 +25,6 @@ using blink::WebFrame;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 
-namespace {
-
-// The first RenderFrame is routing ID 1, and the first RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
-}
-
 namespace content {
 
 static const int kMaxWaitTimeMs = 5000;
@@ -142,7 +135,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
   RenderView* GetRenderView() {
     // We could have the test on the UI thread get the WebContent's routing ID,
     // but we know this will be the first RV so skip that and just hardcode it.
-    return RenderView::FromRoutingID(kRenderViewRoutingId);
+    return RenderView::FromRoutingID(1);
   }
 
   void ResourceFetcherDownloadOnRenderer(const GURL& url) {

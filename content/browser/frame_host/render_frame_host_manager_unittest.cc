@@ -567,24 +567,17 @@ TEST_F(RenderFrameHostManagerTest, Init) {
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
+                                 web_contents.get(), web_contents.get());
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
-  RenderViewHostImpl* rvh = manager->current_host();
-  RenderFrameHostImpl* rfh = manager->current_frame_host();
-  ASSERT_TRUE(rvh);
-  ASSERT_TRUE(rfh);
-  EXPECT_EQ(rvh, rfh->render_view_host());
-  EXPECT_EQ(instance, rvh->GetSiteInstance());
-  EXPECT_EQ(web_contents.get(), rvh->GetDelegate());
-  EXPECT_EQ(web_contents.get(), rfh->delegate());
-  EXPECT_TRUE(manager->GetRenderWidgetHostView());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  RenderViewHost* host = manager.current_host();
+  ASSERT_TRUE(host);
+  EXPECT_EQ(instance, host->GetSiteInstance());
+  EXPECT_EQ(web_contents.get(), host->GetDelegate());
+  EXPECT_TRUE(manager.GetRenderWidgetHostView());
+  EXPECT_FALSE(manager.pending_render_view_host());
 }
 
 // Tests the Navigate function. We navigate three sites consecutively and check
@@ -600,13 +593,10 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
                           Source<WebContents>(web_contents.get()));
 
   // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
+                                 web_contents.get(), web_contents.get());
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 
@@ -616,16 +606,16 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
       NULL /* instance */, -1 /* page_id */, kUrl1, Referrer(),
       base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
-  host = manager->Navigate(entry1);
+  host = manager.Navigate(entry1);
 
   // The RenderViewHost created in Init will be reused.
-  EXPECT_TRUE(host == manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
+  manager.DidNavigateMainFrame(host);
   // Commit to SiteInstance should be delayed until RenderView commit.
-  EXPECT_TRUE(host == manager->current_host());
+  EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
   EXPECT_FALSE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
@@ -638,15 +628,15 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
       Referrer(kUrl1, blink::WebReferrerPolicyDefault),
       base::string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
-  host = manager->Navigate(entry2);
+  host = manager.Navigate(entry2);
 
   // The RenderViewHost created in Init will be reused.
-  EXPECT_TRUE(host == manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
-  EXPECT_TRUE(host == manager->current_host());
+  manager.DidNavigateMainFrame(host);
+  EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
@@ -658,22 +648,22 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
       Referrer(kUrl2, blink::WebReferrerPolicyDefault),
       base::string16() /* title */, PAGE_TRANSITION_LINK,
       false /* is_renderer_init */);
-  host = manager->Navigate(entry3);
+  host = manager.Navigate(entry3);
 
   // A new RenderViewHost should be created.
-  EXPECT_TRUE(manager->pending_render_view_host());
-  ASSERT_EQ(host, manager->pending_render_view_host());
+  EXPECT_TRUE(manager.pending_render_view_host());
+  ASSERT_EQ(host, manager.pending_render_view_host());
 
   notifications.Reset();
 
   // Commit.
-  manager->DidNavigateMainFrame(manager->pending_render_view_host());
-  EXPECT_TRUE(host == manager->current_host());
+  manager.DidNavigateMainFrame(manager.pending_render_view_host());
+  EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
   // Check the pending RenderViewHost has been committed.
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
   EXPECT_TRUE(
@@ -695,13 +685,10 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
                           Source<WebContents>(web_contents.get()));
 
   // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
+                                 web_contents.get(), web_contents.get());
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
@@ -709,11 +696,11 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
                              Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
-  RenderViewHost* host = manager->Navigate(entry1);
+  RenderViewHost* host = manager.Navigate(entry1);
 
   // The RenderViewHost created in Init will be reused.
-  EXPECT_TRUE(host == manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
   EXPECT_TRUE(
@@ -721,10 +708,10 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   notifications.Reset();
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
+  manager.DidNavigateMainFrame(host);
 
   // Commit to SiteInstance should be delayed until RenderView commit.
-  EXPECT_TRUE(host == manager->current_host());
+  EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
   EXPECT_FALSE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
@@ -737,12 +724,12 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
       base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   RenderViewHostImpl* host2 = static_cast<RenderViewHostImpl*>(
-      manager->Navigate(entry2));
+      manager.Navigate(entry2));
   int host2_process_id = host2->GetProcess()->GetID();
 
   // A new RenderViewHost should be created.
-  EXPECT_TRUE(manager->pending_render_view_host());
-  ASSERT_EQ(host2, manager->pending_render_view_host());
+  EXPECT_TRUE(manager.pending_render_view_host());
+  ASSERT_EQ(host2, manager.pending_render_view_host());
   EXPECT_NE(host2, host);
 
   // Check that the navigation is still suspended because the old RVH
@@ -769,15 +756,15 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // call of RenderFrameHostManager::SwapOutOldPage before
   // RenderFrameHostManager::DidNavigateMainFrame is called.
   // The RVH is not swapped out until the commit.
-  manager->SwapOutOldPage();
+  manager.SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
   test_host->OnSwappedOut(false);
 
-  EXPECT_EQ(host, manager->current_host());
+  EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(static_cast<RenderViewHostImpl*>(
-      manager->current_host())->is_swapped_out());
-  EXPECT_EQ(host2, manager->pending_render_view_host());
+      manager.current_host())->is_swapped_out());
+  EXPECT_EQ(host2, manager.pending_render_view_host());
   // There should be still no navigation messages being sent.
   EXPECT_FALSE(test_process_host2->sink().GetUniqueMessageMatching(
       ViewMsg_Navigate::ID));
@@ -789,11 +776,11 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   test_process_host->sink().ClearMessages();
-  RenderViewHost* host3 = manager->Navigate(entry3);
+  RenderViewHost* host3 = manager.Navigate(entry3);
 
   // A new RenderViewHost should be created. host2 is now deleted.
-  EXPECT_TRUE(manager->pending_render_view_host());
-  ASSERT_EQ(host3, manager->pending_render_view_host());
+  EXPECT_TRUE(manager.pending_render_view_host());
+  ASSERT_EQ(host3, manager.pending_render_view_host());
   EXPECT_NE(host3, host);
   EXPECT_NE(host3->GetProcess()->GetID(), host2_process_id);
 
@@ -802,9 +789,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // request.
   EXPECT_TRUE(static_cast<RenderViewHostImpl*>(
       host3)->are_navigations_suspended());
-  EXPECT_EQ(host, manager->current_host());
+  EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(static_cast<RenderViewHostImpl*>(
-      manager->current_host())->is_swapped_out());
+      manager.current_host())->is_swapped_out());
 
   // Simulate a response to the second beforeunload request.
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
@@ -815,19 +802,19 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // call of RenderFrameHostManager::SwapOutOldPage before
   // RenderFrameHostManager::DidNavigateMainFrame is called.
   // The RVH is not swapped out until the commit.
-  manager->SwapOutOldPage();
+  manager.SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
   test_host->OnSwappedOut(false);
 
   // Commit.
-  manager->DidNavigateMainFrame(host3);
-  EXPECT_TRUE(host3 == manager->current_host());
+  manager.DidNavigateMainFrame(host3);
+  EXPECT_TRUE(host3 == manager.current_host());
   ASSERT_TRUE(host3);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host3->GetSiteInstance())->
       HasSite());
   // Check the pending RenderViewHost has been committed.
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
   EXPECT_TRUE(
@@ -841,28 +828,25 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
+                                 web_contents.get(), web_contents.get());
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
-  EXPECT_FALSE(manager->current_host()->IsRenderViewLive());
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
+  EXPECT_FALSE(manager.current_host()->IsRenderViewLive());
 
   const GURL kUrl("chrome://foo");
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
                             Referrer(), base::string16() /* title */,
                             PAGE_TRANSITION_TYPED,
                             false /* is_renderer_init */);
-  RenderViewHost* host = manager->Navigate(entry);
+  RenderViewHost* host = manager.Navigate(entry);
 
   // We commit the pending RenderViewHost immediately because the previous
   // RenderViewHost was not live.  We test a case where it is live in
   // WebUIInNewTab.
   EXPECT_TRUE(host);
-  EXPECT_EQ(host, manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // It's important that the site instance get set on the Web UI page as soon
   // as the navigation starts, rather than lazily after it commits, so we don't
@@ -874,11 +858,11 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateRendererStateForNavigate() took the short cut path.
-  EXPECT_FALSE(manager->pending_web_ui());
-  EXPECT_TRUE(manager->web_ui());
+  EXPECT_FALSE(manager.pending_web_ui());
+  EXPECT_TRUE(manager.web_ui());
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
+  manager.DidNavigateMainFrame(host);
   EXPECT_TRUE(host->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
@@ -891,14 +875,12 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Create a blank tab.
   scoped_ptr<TestWebContents> web_contents1(
       TestWebContents::Create(browser_context(), blank_instance));
-  FrameTree tree1(web_contents1->GetFrameTree()->root()->navigator(),
-                 web_contents1.get(), web_contents1.get(),
-                 web_contents1.get(), web_contents1.get());
-  RenderFrameHostManager* manager1 = tree1.root()->render_manager();
-  manager1->Init(
+  RenderFrameHostManager manager1(web_contents1.get(), web_contents1.get(),
+                                  web_contents1.get(), web_contents1.get());
+  manager1.Init(
       browser_context(), blank_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Test the case that new RVH is considered live.
-  manager1->current_host()->CreateRenderView(base::string16(), -1, -1);
+  manager1.current_host()->CreateRenderView(base::string16(), -1, -1);
 
   // Navigate to a WebUI page.
   const GURL kUrl1("chrome://foo");
@@ -906,46 +888,44 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
                              Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
-  RenderViewHost* host1 = manager1->Navigate(entry1);
+  RenderViewHost* host1 = manager1.Navigate(entry1);
 
   // We should have a pending navigation to the WebUI RenderViewHost.
   // It should already have bindings.
-  EXPECT_EQ(host1, manager1->pending_render_view_host());
-  EXPECT_NE(host1, manager1->current_host());
+  EXPECT_EQ(host1, manager1.pending_render_view_host());
+  EXPECT_NE(host1, manager1.current_host());
   EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Commit and ensure we still have bindings.
-  manager1->DidNavigateMainFrame(host1);
+  manager1.DidNavigateMainFrame(host1);
   SiteInstance* webui_instance = host1->GetSiteInstance();
-  EXPECT_EQ(host1, manager1->current_host());
+  EXPECT_EQ(host1, manager1.current_host());
   EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Now simulate clicking a link that opens in a new tab.
   scoped_ptr<TestWebContents> web_contents2(
       TestWebContents::Create(browser_context(), webui_instance));
-  FrameTree tree2(web_contents2->GetFrameTree()->root()->navigator(),
-                  web_contents2.get(), web_contents2.get(),
-                  web_contents2.get(), web_contents2.get());
-  RenderFrameHostManager* manager2 = tree2.root()->render_manager();
-  manager2->Init(
+  RenderFrameHostManager manager2(web_contents2.get(), web_contents2.get(),
+                                  web_contents2.get(), web_contents2.get());
+  manager2.Init(
       browser_context(), webui_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
-  manager2->current_host()->CreateRenderView(base::string16(), -1, -1);
+  manager2.current_host()->CreateRenderView(base::string16(), -1, -1);
 
   const GURL kUrl2("chrome://foo/bar");
   NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
                              Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_LINK,
                              true /* is_renderer_init */);
-  RenderViewHost* host2 = manager2->Navigate(entry2);
+  RenderViewHost* host2 = manager2.Navigate(entry2);
 
   // No cross-process transition happens because we are already in the right
   // SiteInstance.  We should grant bindings immediately.
-  EXPECT_EQ(host2, manager2->current_host());
+  EXPECT_EQ(host2, manager2.current_host());
   EXPECT_TRUE(host2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
-  manager2->DidNavigateMainFrame(host2);
+  manager2.DidNavigateMainFrame(host2);
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
@@ -1078,20 +1058,20 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRVHs) {
                   rvh2->GetSiteInstance()));
 
   // Ensure rvh1 is placed on swapped out list of the current tab.
-  EXPECT_TRUE(manager->IsRVHOnSwappedOutList(rvh1));
+  EXPECT_TRUE(manager->IsOnSwappedOutList(rvh1));
   EXPECT_EQ(rvh1,
             manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
 
   // Ensure a swapped out RVH is created in the first opener tab.
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
+  EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rvh));
   EXPECT_TRUE(opener1_rvh->is_swapped_out());
 
   // Ensure a swapped out RVH is created in the second opener tab.
   TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
       opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener2_manager->IsRVHOnSwappedOutList(opener2_rvh));
+  EXPECT_TRUE(opener2_manager->IsOnSwappedOutList(opener2_rvh));
   EXPECT_TRUE(opener2_rvh->is_swapped_out());
 
   // Navigate to a cross-BrowsingInstance URL.
@@ -1193,7 +1173,7 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   // Ensure a swapped out RVH is created in the first opener tab.
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
+  EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rvh));
   EXPECT_TRUE(opener1_rvh->is_swapped_out());
 
   // Ensure the new RVH has WebUI bindings.
@@ -1211,13 +1191,10 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
       TestWebContents::Create(browser_context(), instance));
 
   // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
+                                 web_contents.get(), web_contents.get());
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 
@@ -1227,17 +1204,17 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
       NULL /* instance */, -1 /* page_id */, kUrl1, Referrer(),
       base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
-  host = manager->Navigate(entry1);
+  host = manager.Navigate(entry1);
 
   // The RenderViewHost created in Init will be reused.
-  EXPECT_TRUE(host == manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
-  EXPECT_EQ(manager->current_host()->GetSiteInstance(), instance);
+  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
+  EXPECT_EQ(manager.current_host()->GetSiteInstance(), instance);
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
+  manager.DidNavigateMainFrame(host);
   // Commit to SiteInstance should be delayed until RenderView commit.
-  EXPECT_EQ(host, manager->current_host());
+  EXPECT_EQ(host, manager.current_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
@@ -1250,15 +1227,15 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
       Referrer(kUrl1, blink::WebReferrerPolicyDefault),
       base::string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
-  host = manager->Navigate(entry2);
+  host = manager.Navigate(entry2);
 
   // The RenderViewHost created in Init will be reused.
-  EXPECT_EQ(host, manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
-  EXPECT_EQ(host, manager->current_host());
+  manager.DidNavigateMainFrame(host);
+  EXPECT_EQ(host, manager.current_host());
   ASSERT_TRUE(host);
   EXPECT_EQ(static_cast<SiteInstanceImpl*>(host->GetSiteInstance()),
       instance);
@@ -1279,13 +1256,10 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
                           Source<WebContents>(web_contents.get()));
 
   // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
+                                 web_contents.get(), web_contents.get());
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
@@ -1293,11 +1267,11 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
                              Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
-  RenderViewHost* host = manager->Navigate(entry1);
+  RenderViewHost* host = manager.Navigate(entry1);
 
   // The RenderViewHost created in Init will be reused.
-  EXPECT_EQ(host, manager->current_host());
-  EXPECT_FALSE(manager->pending_render_view_host());
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
   EXPECT_TRUE(
@@ -1305,10 +1279,10 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   notifications.Reset();
 
   // Commit.
-  manager->DidNavigateMainFrame(host);
+  manager.DidNavigateMainFrame(host);
 
   // Commit to SiteInstance should be delayed until RenderView commit.
-  EXPECT_EQ(host, manager->current_host());
+  EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
   static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->SetSite(kUrl1);
@@ -1320,26 +1294,26 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
       base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   RenderViewHostImpl* host2 = static_cast<RenderViewHostImpl*>(
-      manager->Navigate(entry2));
+      manager.Navigate(entry2));
 
   // A new RenderViewHost should be created.
-  ASSERT_EQ(host2, manager->pending_render_view_host());
+  ASSERT_EQ(host2, manager.pending_render_view_host());
   EXPECT_NE(host2, host);
 
-  EXPECT_EQ(host, manager->current_host());
+  EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(static_cast<RenderViewHostImpl*>(
-      manager->current_host())->is_swapped_out());
-  EXPECT_EQ(host2, manager->pending_render_view_host());
+      manager.current_host())->is_swapped_out());
+  EXPECT_EQ(host2, manager.pending_render_view_host());
 
   // 3) Close the tab. -------------------------
   notifications.ListenFor(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                           Source<RenderWidgetHost>(host2));
-  manager->ShouldClosePage(false, true, base::TimeTicks());
+  manager.ShouldClosePage(false, true, base::TimeTicks());
 
   EXPECT_TRUE(
       notifications.Check1AndReset(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED));
-  EXPECT_FALSE(manager->pending_render_view_host());
-  EXPECT_EQ(host, manager->current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
+  EXPECT_EQ(host, manager.current_host());
 }
 
 }  // namespace content

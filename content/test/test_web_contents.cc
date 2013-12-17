@@ -43,7 +43,7 @@ TestWebContents::~TestWebContents() {
 }
 
 RenderViewHost* TestWebContents::GetPendingRenderViewHost() const {
-  return GetRenderManager()->pending_render_view_host();
+  return GetRenderManager()->pending_render_view_host_;
 }
 
 TestRenderViewHost* TestWebContents::pending_test_rvh() const {

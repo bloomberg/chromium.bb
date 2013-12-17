@@ -48,10 +48,6 @@ using ::testing::StrictMock;
 namespace safe_browsing {
 
 namespace {
-
-// The RenderFrame is routing ID 1, and the RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
 class MockPhishingClassifier : public PhishingClassifier {
  public:
   explicit MockPhishingClassifier(content::RenderView* render_view)
@@ -150,8 +146,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     intercepting_filter_ = new InterceptingMessageFilter();
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(kRenderViewRoutingId);
+    content::RenderView* render_view = content::RenderView::FromRoutingID(1);
 
     GetWebContents()->GetRenderProcessHost()->AddFilter(
         intercepting_filter_.get());
@@ -238,8 +233,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   }
 
   void NavigateMainFrameInternal(const GURL& url) {
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(kRenderViewRoutingId);
+    content::RenderView* render_view = content::RenderView::FromRoutingID(1);
     render_view->GetWebView()->mainFrame()->firstChild()->loadRequest(
         blink::WebURLRequest(url));
   }

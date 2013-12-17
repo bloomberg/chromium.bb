@@ -48,7 +48,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
       is_swapped_out_(is_swapped_out) {
-  frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_),
@@ -61,10 +60,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
   if (delegate_)
     delegate_->RenderFrameDeleted(this);
-
-  // Notify the FrameTree that this RFH is going away, allowing it to shut down
-  // the corresponding RenderViewHost if it is no longer needed.
-  frame_tree_->UnregisterRenderFrameHost(this);
 }
 
 int RenderFrameHostImpl::GetRoutingID() {

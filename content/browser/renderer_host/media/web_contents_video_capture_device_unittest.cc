@@ -228,13 +228,14 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
  public:
   CaptureTestRenderViewHost(SiteInstance* instance,
                             RenderViewHostDelegate* delegate,
+                            RenderFrameHostDelegate* frame_delegate,
                             RenderWidgetHostDelegate* widget_delegate,
                             int routing_id,
                             int main_frame_routing_id,
                             bool swapped_out,
                             CaptureTestSourceController* controller)
-      : TestRenderViewHost(instance, delegate, widget_delegate, routing_id,
-                           main_frame_routing_id, swapped_out),
+      : TestRenderViewHost(instance, delegate, frame_delegate, widget_delegate,
+                           routing_id, main_frame_routing_id, swapped_out),
         controller_(controller) {
     // Override the default view installed by TestRenderViewHost; we need
     // our special subclass which has mocked-out tab capture support.
@@ -289,13 +290,15 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
+      RenderFrameHostDelegate* frame_delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,
       bool swapped_out) OVERRIDE {
-    return new CaptureTestRenderViewHost(instance, delegate, widget_delegate,
-                                         routing_id, main_frame_routing_id,
-                                         swapped_out, controller_);
+    return new CaptureTestRenderViewHost(instance, delegate, frame_delegate,
+                                         widget_delegate, routing_id,
+                                         main_frame_routing_id, swapped_out,
+                                         controller_);
   }
  private:
   CaptureTestSourceController* controller_;

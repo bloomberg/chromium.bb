@@ -30,6 +30,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
+      RenderFrameHostDelegate* frame_delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,

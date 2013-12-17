@@ -44,13 +44,6 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 
-namespace {
-
-// The first RenderFrame is routing ID 1, and the first RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
-}
-
 namespace safe_browsing {
 
 class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
@@ -83,7 +76,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     extractor_.reset(new PhishingDOMFeatureExtractor(
-        content::RenderView::FromRoutingID(kRenderViewRoutingId), &clock_));
+        content::RenderView::FromRoutingID(1), &clock_));
 
     ASSERT_TRUE(StartTestServer());
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -120,9 +113,8 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
 
   // Does the actual work of removing the iframe "frame1" from the document.
   void RemoveIframe() {
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(kRenderViewRoutingId);
-    blink::WebFrame* main_frame = render_view->GetWebView()->mainFrame();
+    blink::WebFrame* main_frame =
+        content::RenderView::FromRoutingID(1)->GetWebView()->mainFrame();
     ASSERT_TRUE(main_frame);
     main_frame->executeScript(
         blink::WebString(

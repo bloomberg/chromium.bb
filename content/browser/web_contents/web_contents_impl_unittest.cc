@@ -184,7 +184,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
   virtual RenderViewHost* CreateRenderViewHost() OVERRIDE {
     return new TestRenderViewHost(
         SiteInstance::Create(web_contents()->GetBrowserContext()),
-        this, this, MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+        this, this, this, MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
   }
 
   virtual WebContentsView* CreateWebContentsView() OVERRIDE {
@@ -429,8 +429,6 @@ TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
 TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   contents()->transition_cross_site = true;
   TestRenderViewHost* orig_rvh = test_rvh();
-  RenderFrameHostImpl* orig_rfh =
-      contents()->GetFrameTree()->root()->current_frame_host();
   int orig_rvh_delete_count = 0;
   orig_rvh->set_delete_counter(&orig_rvh_delete_count);
   SiteInstance* instance1 = contents()->GetSiteInstance();
@@ -463,8 +461,6 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
   pending_rvh->set_delete_counter(&pending_rvh_delete_count);
-  RenderFrameHostImpl* pending_rfh = contents()->GetFrameTree()->root()->
-      render_manager()->pending_frame_host();
 
   // Navigations should be suspended in pending_rvh until ShouldCloseACK.
   EXPECT_TRUE(pending_rvh->are_navigations_suspended());
@@ -488,9 +484,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
-  // We keep the original RFH around, swapped out.
+  // We keep the original RVH around, swapped out.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
-      orig_rfh));
+      orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
@@ -513,9 +509,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(goback_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
-  // The pending RFH should now be swapped out, not deleted.
+  // The pending RVH should now be swapped out, not deleted.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
-      IsOnSwappedOutList(pending_rfh));
+      IsOnSwappedOutList(pending_rvh));
   EXPECT_EQ(pending_rvh_delete_count, 0);
 
   // Close contents and ensure RVHs are deleted.
@@ -638,8 +634,6 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
 
   contents()->transition_cross_site = true;
   TestRenderViewHost* orig_rvh = test_rvh();
-  RenderFrameHostImpl* orig_rfh =
-      contents()->GetFrameTree()->root()->current_frame_host();
   int orig_rvh_delete_count = 0;
   orig_rvh->set_delete_counter(&orig_rvh_delete_count);
   SiteInstanceImpl* orig_instance =
@@ -710,9 +704,9 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(new_instance, orig_instance);
   EXPECT_FALSE(contents()->GetPendingRenderViewHost());
-  // We keep the original RFH around, swapped out.
+  // We keep the original RVH around, swapped out.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
-      orig_rfh));
+      orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Close contents and ensure RVHs are deleted.

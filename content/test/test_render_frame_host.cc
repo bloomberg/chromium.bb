@@ -4,9 +4,6 @@
 
 #include "content/test/test_render_frame_host.h"
 
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/test/test_render_view_host.h"
-
 namespace content {
 
 TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
@@ -20,13 +17,7 @@ TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
                           frame_tree,
                           frame_tree_node,
                           routing_id,
-                          is_swapped_out) {
-  // Allow TestRenderViewHosts to easily access their main frame RFH.
-  if (frame_tree_node == frame_tree->root()) {
-    static_cast<TestRenderViewHost*>(render_view_host)->
-        set_main_render_frame_host(this);
-  }
-}
+                          is_swapped_out) {}
 
 TestRenderFrameHost::~TestRenderFrameHost() {}
 

@@ -238,12 +238,14 @@ gfx::NativeViewId TestRenderWidgetHostView::GetParentForWindowlessPlugin()
 TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
+    RenderFrameHostDelegate* frame_delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
     bool swapped_out)
     : RenderViewHostImpl(instance,
                          delegate,
+                         frame_delegate,
                          widget_delegate,
                          routing_id,
                          main_frame_routing_id,
@@ -254,8 +256,7 @@ TestRenderViewHost::TestRenderViewHost(
       simulate_fetch_via_proxy_(false),
       simulate_history_list_was_cleared_(false),
       contents_mime_type_("text/html"),
-      opener_route_id_(MSG_ROUTING_NONE),
-      main_render_frame_host_(NULL) {
+      opener_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
