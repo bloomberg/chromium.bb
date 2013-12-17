@@ -279,8 +279,8 @@
     detectVideoPlaying('remote-view-2', onCallEstablished);
   }
 
-  function callAndEnsureAudioMutingWorks() {
-    callAndEnsureAudioIsPlaying();
+  function callAndEnsureAudioMutingWorks(force_isac_16k) {
+    callAndEnsureAudioIsPlaying(force_isac_16k);
     setAllEventsOccuredHandler(function() {
       var audioTrack =
         gSecondConnection.getRemoteStreams()[0].getAudioTracks()[0];
