@@ -484,6 +484,7 @@ void DelegatedRendererLayerImpl::ClearChildId() {
     provider->DestroyChild(child_id_);
   }
 
+  resources_.clear();
   child_id_ = 0;
 }
 

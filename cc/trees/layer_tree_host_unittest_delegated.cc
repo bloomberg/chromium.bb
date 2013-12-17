@@ -377,6 +377,87 @@ class LayerTreeHostDelegatedTestCreateChildId
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCreateChildId);
 
+// Test that we can gracefully handle invalid frames after the context was lost.
+// For example, we might be trying to use the previous frame in that case and
+// have to make sure we don't crash because our resource accounting goes wrong.
+class LayerTreeHostDelegatedTestInvalidFrameAfterContextLost
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  LayerTreeHostDelegatedTestInvalidFrameAfterContextLost()
+      : num_activates_(0), num_output_surfaces_initialized_(0) {}
+
+  virtual void DidCommit() OVERRIDE {
+    if (TestEnded())
+      return;
+    scoped_ptr<DelegatedFrameData> frame1 =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+    AddTextureQuad(frame1.get(), 999);
+    AddTransferableResource(frame1.get(), 999);
+    SetFrameData(frame1.Pass());
+  }
+
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
+    if (!num_output_surfaces_initialized_++)
+      return;
+
+    scoped_refptr<DelegatedRendererLayer> old_delegated = delegated_;
+    SetFrameData(
+        CreateInvalidFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1)));
+    // Make sure we end up using the same layer, or we won't test the right
+    // thing, which is to make sure we can handle an invalid frame when using
+    // a stale layer from before the context was lost.
+    DCHECK(delegated_.get() == old_delegated.get());
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (host_impl->active_tree()->source_frame_number() < 1)
+      return;
+
+    ContextProvider* context_provider =
+        host_impl->output_surface()->context_provider();
+
+    ++num_activates_;
+    switch (num_activates_) {
+      case 2:
+        context_provider->Context3d()->loseContextCHROMIUM(
+            GL_GUILTY_CONTEXT_RESET_ARB,
+            GL_INNOCENT_CONTEXT_RESET_ARB);
+        break;
+      case 3:
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                           bool success) OVERRIDE {
+    EXPECT_TRUE(success);
+
+    if (num_activates_ < 2)
+      return;
+
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    EXPECT_EQ(2, num_activates_);
+    // Resources should have gotten cleared after the context was lost.
+    EXPECT_EQ(0U, delegated_impl->Resources().size());
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    LayerTreeHostDelegatedTestCaseSingleDelegatedLayer::AfterTest();
+    EXPECT_EQ(2, num_output_surfaces_initialized_);
+  }
+
+ protected:
+  int num_activates_;
+  int num_output_surfaces_initialized_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestInvalidFrameAfterContextLost);
+
 class LayerTreeHostDelegatedTestOffscreenContext_NoFilters
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
  protected:
