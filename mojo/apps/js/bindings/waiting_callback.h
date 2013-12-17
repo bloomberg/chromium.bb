@@ -21,8 +21,6 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback>,
   static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate, v8::Handle<v8::Function> callback);
 
-  static void EnsureRegistered(v8::Isolate* isolate);
-
   BindingsSupport::AsyncWaitID wait_id() const {
     return wait_id_;
   }

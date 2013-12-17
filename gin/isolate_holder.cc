@@ -73,7 +73,6 @@ void IsolateHolder::Init() {
   v8::Isolate::Scope isolate_scope(isolate_);
   v8::HandleScope handle_scope(isolate_);
   isolate_data_.reset(new PerIsolateData(isolate_));
-  InitFunctionTemplates(isolate_data_.get());
 }
 
 }  // namespace gin

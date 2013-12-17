@@ -28,10 +28,10 @@ class Context : public gin::Wrappable<Context> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
+  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
+
   static gin::Handle<Context> Create(v8::Isolate* isolate, uint64_t encoded,
                                      int width, int height);
-  static v8::Handle<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
-
   static gin::Handle<Shader> CreateShader(const gin::Arguments& arguments,
                                           GLenum type);
   static void ShaderSource(gin::Handle<Shader> shader,

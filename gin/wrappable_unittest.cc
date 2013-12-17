@@ -19,6 +19,8 @@ class MyObject : public Wrappable<MyObject> {
  public:
   static WrapperInfo kWrapperInfo;
 
+  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
+
   static gin::Handle<MyObject> Create(v8::Isolate* isolate) {
     return CreateHandle(isolate, new MyObject());
   }
@@ -44,27 +46,15 @@ class MyObjectBlink : public Wrappable<MyObjectBlink> {
 };
 
 WrapperInfo MyObject::kWrapperInfo = { kEmbedderNativeGin };
-WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
-WrapperInfo MyObjectBlink::kWrapperInfo = { kEmbedderNativeGin };
-
-void RegisterTemplates(v8::Isolate* isolate) {
-  PerIsolateData* data = PerIsolateData::From(isolate);
-  DCHECK(data->GetObjectTemplate(&MyObject::kWrapperInfo).IsEmpty());
-
-  v8::Handle<v8::ObjectTemplate> templ = ObjectTemplateBuilder(isolate)
+v8::Local<v8::ObjectTemplate> MyObject::GetObjectTemplate(
+    v8::Isolate* isolate) {
+  return ObjectTemplateBuilder(isolate)
       .SetProperty("value", &MyObject::value, &MyObject::set_value)
       .Build();
-  templ->SetInternalFieldCount(kNumberOfInternalFields);
-  data->SetObjectTemplate(&MyObject::kWrapperInfo, templ);
-
-  templ = v8::ObjectTemplate::New(isolate);
-  templ->SetInternalFieldCount(kNumberOfInternalFields);
-  data->SetObjectTemplate(&MyObject2::kWrapperInfo, templ);
-
-  templ = v8::ObjectTemplate::New(isolate);
-  templ->SetInternalFieldCount(kNumberOfInternalFields);
-  data->SetObjectTemplate(&MyObjectBlink::kWrapperInfo, templ);
 }
+
+WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
+WrapperInfo MyObjectBlink::kWrapperInfo = { kEmbedderNativeGin };
 
 typedef V8Test WrappableTest;
 
@@ -72,7 +62,6 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  RegisterTemplates(isolate);
   Handle<MyObject> obj = MyObject::Create(isolate);
 
   v8::Handle<v8::Value> wrapper = ConvertToV8(isolate, obj.get());
@@ -86,8 +75,6 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
 TEST_F(WrappableTest, UnwrapFailures) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(isolate);
-
-  RegisterTemplates(isolate);
 
   // Something that isn't an object.
   v8::Handle<v8::Value> thing = v8::Number::New(42);
@@ -117,7 +104,6 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  RegisterTemplates(isolate);
   gin::Handle<MyObject> obj = MyObject::Create(isolate);
 
   obj->set_value(42);

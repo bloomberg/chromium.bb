@@ -27,11 +27,22 @@ GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
 // USAGE:
 // // my_class.h
 // class MyClass : Wrappable<MyClass> {
+//  public:
+//   static WrapperInfo kWrapperInfo;
+//
+//   // Optional, only required if non-empty template should be used.
+//   static v8::Local<v8::ObjectTemplate> GetObjectTemplate(
+//       v8::Isolate* isolate);
 //   ...
 // };
 //
 // // my_class.cc
-// INIT_WRAPABLE(MyClass);
+// WrapperInfo MyClass::kWrapperInfo = { kEmbedderNativeGin };
+//
+// v8::Local<v8::ObjectTemplate> MyClass::GetObjectTemplate(
+//     v8::Isolate* isolate) {
+//   return ObjectTemplateBuilder(isolate).SetValue("foobar", 42).Build();
+// }
 //
 // Subclasses should also typically have private constructors and expose a
 // static Create function that returns a gin::Handle. Forcing creators through
@@ -46,17 +57,29 @@ class Wrappable;
 // Non-template base class to share code between templates instances.
 class GIN_EXPORT WrappableBase {
  protected:
+  typedef v8::Local<v8::ObjectTemplate>(*GetObjectTemplateFunction)(
+      v8::Isolate*);
+
   WrappableBase();
   virtual ~WrappableBase();
-  v8::Handle<v8::Object> GetWrapperImpl(v8::Isolate* isolate,
-                                        WrapperInfo* wrapper_info);
-  v8::Handle<v8::Object> CreateWrapper(v8::Isolate* isolate,
-                                       WrapperInfo* wrapper_info);
-  v8::Persistent<v8::Object> wrapper_;  // Weak
+
+  v8::Handle<v8::Object> GetWrapperImpl(
+      v8::Isolate* isolate,
+      WrapperInfo* wrapper_info,
+      GetObjectTemplateFunction template_getter);
+
+  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
 
  private:
   static void WeakCallback(
       const v8::WeakCallbackData<v8::Object, WrappableBase>& data);
+
+  v8::Handle<v8::Object> CreateWrapper(
+      v8::Isolate* isolate,
+      WrapperInfo* wrapper_info,
+      GetObjectTemplateFunction template_getter);
+
+  v8::Persistent<v8::Object> wrapper_;  // Weak
 
   DISALLOW_COPY_AND_ASSIGN(WrappableBase);
 };
@@ -69,7 +92,7 @@ class Wrappable : public WrappableBase {
   // To customize the wrapper created for a subclass, override GetWrapperInfo()
   // instead of overriding this function.
   v8::Handle<v8::Object> GetWrapper(v8::Isolate* isolate) {
-    return GetWrapperImpl(isolate, &T::kWrapperInfo);
+    return GetWrapperImpl(isolate, &T::kWrapperInfo, &T::GetObjectTemplate);
   }
 
  protected:

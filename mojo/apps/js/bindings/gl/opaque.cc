@@ -5,7 +5,6 @@
 #include "mojo/apps/js/bindings/gl/opaque.h"
 
 #include "gin/object_template_builder.h"
-#include "gin/per_isolate_data.h"
 
 namespace mojo {
 namespace js {
@@ -15,18 +14,6 @@ gin::WrapperInfo Opaque::kWrapperInfo = { gin::kEmbedderNativeGin };
 
 gin::Handle<Opaque> Opaque::Create(v8::Isolate* isolate, GLuint value) {
   return gin::CreateHandle(isolate, new Opaque(value));
-}
-
-v8::Handle<v8::ObjectTemplate> Opaque::GetObjectTemplate(v8::Isolate* isolate) {
-  gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-  v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(&kWrapperInfo);
-  if (templ.IsEmpty()) {
-    templ = gin::ObjectTemplateBuilder(isolate)
-        .Build();
-    templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-    data->SetObjectTemplate(&kWrapperInfo, templ);
-  }
-  return templ;
 }
 
 Opaque::Opaque(GLuint value) : value_(value) {

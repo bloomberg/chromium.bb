@@ -12,7 +12,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
-#include "gin/per_isolate_data.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -76,6 +75,17 @@ gin::WrapperInfo StatsCollectionController::kWrapperInfo = {
 };
 
 // static
+v8::Local<v8::ObjectTemplate> StatsCollectionController::GetObjectTemplate(
+    v8::Isolate* isolate) {
+  return gin::ObjectTemplateBuilder(isolate)
+      .SetMethod("getHistogram", &StatsCollectionController::GetHistogram)
+      .SetMethod("getBrowserHistogram",
+                 &StatsCollectionController::GetBrowserHistogram)
+      .SetMethod("tabLoadTiming", &StatsCollectionController::GetTabLoadTiming)
+      .Build();
+}
+
+// static
 void StatsCollectionController::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -84,21 +94,6 @@ void StatsCollectionController::Install(blink::WebFrame* frame) {
     return;
 
   v8::Context::Scope context_scope(context);
-
-  gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-  if (data->GetObjectTemplate(&StatsCollectionController::kWrapperInfo)
-          .IsEmpty()) {
-    v8::Handle<v8::ObjectTemplate> templ =
-        gin::ObjectTemplateBuilder(isolate)
-            .SetMethod("getHistogram", &StatsCollectionController::GetHistogram)
-            .SetMethod("getBrowserHistogram",
-                       &StatsCollectionController::GetBrowserHistogram)
-            .SetMethod("tabLoadTiming",
-                       &StatsCollectionController::GetTabLoadTiming)
-            .Build();
-    templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-    data->SetObjectTemplate(&StatsCollectionController::kWrapperInfo, templ);
-  }
 
   gin::Handle<StatsCollectionController> controller =
       gin::CreateHandle(isolate, new StatsCollectionController());

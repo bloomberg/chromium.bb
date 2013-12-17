@@ -22,6 +22,7 @@ class StatsCollectionController
     : public gin::Wrappable<StatsCollectionController> {
  public:
   static gin::WrapperInfo kWrapperInfo;
+  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
 
   static void Install(blink::WebFrame* frame);
 

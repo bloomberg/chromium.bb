@@ -39,12 +39,8 @@ v8::Local<v8::ObjectTemplate> GetModuleTemplate(v8::Isolate* isolate) {
     templ = gin::ObjectTemplateBuilder(isolate)
         .SetMethod("Context", CreateContext)
         .Build();
-    templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
     data->SetObjectTemplate(&kWrapperInfo, templ);
   }
-
-  Context::GetObjectTemplate(isolate);
-  Opaque::GetObjectTemplate(isolate);
 
   return templ;
 }

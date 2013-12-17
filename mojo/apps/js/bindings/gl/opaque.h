@@ -23,7 +23,6 @@ class Opaque : public gin::Wrappable<Opaque> {
   static gin::WrapperInfo kWrapperInfo;
 
   static gin::Handle<Opaque> Create(v8::Isolate* isolate, GLuint value);
-  static v8::Handle<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
 
   GLuint value() const { return value_; }
   void set_value(GLuint val) { value_ = val; }

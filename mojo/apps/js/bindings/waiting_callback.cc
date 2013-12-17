@@ -5,7 +5,6 @@
 #include "mojo/apps/js/bindings/waiting_callback.h"
 
 #include "gin/per_context_data.h"
-#include "gin/per_isolate_data.h"
 
 namespace mojo {
 namespace js {
@@ -35,16 +34,6 @@ WaitingCallback::~WaitingCallback() {
 gin::Handle<WaitingCallback> WaitingCallback::Create(
     v8::Isolate* isolate, v8::Handle<v8::Function> callback) {
   return gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
-}
-
-void WaitingCallback::EnsureRegistered(v8::Isolate* isolate) {
-  gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-  if (!data->GetObjectTemplate(&WaitingCallback::kWrapperInfo).IsEmpty()) {
-    return;
-  }
-  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-  templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-  data->SetObjectTemplate(&WaitingCallback::kWrapperInfo, templ);
 }
 
 void WaitingCallback::OnHandleReady(MojoResult result) {

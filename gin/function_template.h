@@ -331,11 +331,6 @@ struct Dispatcher<R(P1, P2, P3, P4)> {
 }  // namespace internal
 
 
-// This should be called once per-isolate to initialize the function template
-// system.
-GIN_EXPORT void InitFunctionTemplates(PerIsolateData* isolate_data);
-
-
 // CreateFunctionTemplate creates a v8::FunctionTemplate that will create
 // JavaScript functions that execute a provided C++ function or base::Callback.
 // JavaScript arguments are automatically converted via gin::Converter, as is

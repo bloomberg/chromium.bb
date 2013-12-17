@@ -8,7 +8,6 @@
 
 #include "gin/arguments.h"
 #include "gin/object_template_builder.h"
-#include "gin/per_isolate_data.h"
 #include "mojo/public/gles2/gles2.h"
 
 namespace mojo {
@@ -22,21 +21,14 @@ gin::Handle<Context> Context::Create(v8::Isolate* isolate, uint64_t encoded,
   return gin::CreateHandle(isolate, new Context(encoded, width, height));
 }
 
-v8::Handle<v8::ObjectTemplate> Context::GetObjectTemplate(
+v8::Local<v8::ObjectTemplate> Context::GetObjectTemplate(
     v8::Isolate* isolate) {
-  gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-  v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(&kWrapperInfo);
-  if (templ.IsEmpty()) {
-    templ = gin::ObjectTemplateBuilder(isolate)
-        .SetValue("VERTEX_SHADER", GL_VERTEX_SHADER)
-        .SetMethod("createShader", CreateShader)
-        .SetMethod("shaderSource", ShaderSource)
-        .SetMethod("compileShader", CompileShader)
-        .Build();
-    templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-    data->SetObjectTemplate(&kWrapperInfo, templ);
-  }
-  return templ;
+  return gin::ObjectTemplateBuilder(isolate)
+      .SetValue("VERTEX_SHADER", GL_VERTEX_SHADER)
+      .SetMethod("createShader", CreateShader)
+      .SetMethod("shaderSource", ShaderSource)
+      .SetMethod("compileShader", CompileShader)
+      .Build();
 }
 
 gin::Handle<Shader> Context::CreateShader(const gin::Arguments& args,

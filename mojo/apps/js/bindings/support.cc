@@ -54,12 +54,10 @@ v8::Local<v8::ObjectTemplate> Support::GetTemplate(v8::Isolate* isolate) {
       &g_wrapper_info);
 
   if (templ.IsEmpty()) {
-    WaitingCallback::EnsureRegistered(isolate);
-
-     templ = gin::ObjectTemplateBuilder(isolate)
-        .SetMethod("asyncWait", AsyncWait)
-        .SetMethod("cancelWait", CancelWait)
-        .Build();
+    templ = gin::ObjectTemplateBuilder(isolate)
+                .SetMethod("asyncWait", AsyncWait)
+                .SetMethod("cancelWait", CancelWait)
+                .Build();
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }

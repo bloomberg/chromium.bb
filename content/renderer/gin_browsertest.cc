@@ -37,14 +37,6 @@ class TestGinObject : public gin::Wrappable<TestGinObject> {
 
 gin::WrapperInfo TestGinObject::kWrapperInfo = { gin::kEmbedderNativeGin };
 
-void RegisterTemplates(v8::Isolate* isolate) {
-  gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-
-  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-  templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-  data->SetObjectTemplate(&TestGinObject::kWrapperInfo, templ);
-}
-
 class GinBrowserTest : public RenderViewTest {
  public:
   GinBrowserTest() {}
@@ -74,8 +66,6 @@ TEST_F(GinBrowserTest, GinAndGarbageCollection) {
     v8::HandleScope handle_scope(isolate);
     v8::Context::Scope context_scope(
         view_->GetWebView()->mainFrame()->mainWorldScriptContext());
-
-    RegisterTemplates(isolate);
 
     // We create the object inside a scope so it's not kept alive by a handle
     // on the stack.

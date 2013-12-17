@@ -65,7 +65,6 @@ struct CallbackParamTraits<const T*> {
 class GIN_EXPORT CallbackHolderBase : public Wrappable<CallbackHolderBase> {
  public:
   static WrapperInfo kWrapperInfo;
-
  protected:
   virtual ~CallbackHolderBase() {}
 };
@@ -185,11 +184,6 @@ $for ARG [[    typename CallbackParamTraits<P$(ARG)>::LocalType a$(ARG);
 ]]
 
 }  // namespace internal
-
-
-// This should be called once per-isolate to initialize the function template
-// system.
-GIN_EXPORT void InitFunctionTemplates(PerIsolateData* isolate_data);
 
 
 // CreateFunctionTemplate creates a v8::FunctionTemplate that will create
