@@ -190,12 +190,12 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
   view_.reset([[AutofillSectionView alloc] initWithFrame:NSZeroRect]);
   [self setView:view_];
-  [[self view] setSubviews:
+  [view_ setSubviews:
       @[label_, inputs_, [suggestContainer_ view], suggestButton_]];
   if (tooltipController_) {
-    [[self view] addSubview:[tooltipController_ view]
-                 positioned:NSWindowAbove
-                 relativeTo:inputs_];
+    [view_ addSubview:[tooltipController_ view]
+           positioned:NSWindowAbove
+           relativeTo:inputs_];
   }
 
   if ([self isCreditCardSection]) {
@@ -627,7 +627,9 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       if ([tooltipText length] > 0) {
         DCHECK(!tooltipController_);
         DCHECK(!tooltipField_);
-        tooltipController_.reset([[AutofillTooltipController alloc] init]);
+        tooltipController_.reset(
+            [[AutofillTooltipController alloc]
+                 initWithArrowLocation:info_bubble::kTopRight]);
         tooltipField_ = field.get();
         NSImage* icon =
             ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(

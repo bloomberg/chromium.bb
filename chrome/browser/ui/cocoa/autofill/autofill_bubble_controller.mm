@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
-#import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -26,12 +25,14 @@ const CGFloat kMaxLabelWidth =
                    message:(NSString*)message {
   return [self initWithParentWindow:parentWindow
                             message:message
-                              inset:NSMakeSize(kLabelInset, kLabelInset)];
+                              inset:NSMakeSize(kLabelInset, kLabelInset)
+                      arrowLocation:info_bubble::kTopCenter];
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message
-                     inset:(NSSize)inset {
+                     inset:(NSSize)inset
+             arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation {
   base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:NSMakeRect(0, 0, 200, 100)
                                           styleMask:NSBorderlessWindowMask
@@ -43,7 +44,7 @@ const CGFloat kMaxLabelWidth =
                          anchoredAt:NSZeroPoint])) {
     inset_ = inset;
     [self setShouldOpenAsKeyWindow:NO];
-    [[self bubble] setArrowLocation:info_bubble::kTopCenter];
+    [[self bubble] setArrowLocation:arrowLocation];
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
 
     label_.reset([[NSTextField alloc] init]);
