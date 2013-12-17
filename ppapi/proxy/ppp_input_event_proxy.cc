@@ -54,10 +54,6 @@ static const PPP_InputEvent input_event_interface = {
 static const PPP_InputEvent input_event_interface = {};
 #endif  // !defined(OS_NACL)
 
-InterfaceProxy* CreateInputEventProxy(Dispatcher* dispatcher) {
-  return new PPP_InputEvent_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_InputEvent_Proxy::PPP_InputEvent_Proxy(Dispatcher* dispatcher)
@@ -73,15 +69,8 @@ PPP_InputEvent_Proxy::~PPP_InputEvent_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_InputEvent_Proxy::GetInfo() {
-  static const Info info = {
-    &input_event_interface,
-    PPP_INPUT_EVENT_INTERFACE,
-    API_ID_PPP_INPUT_EVENT,
-    false,
-    &CreateInputEventProxy,
-  };
-  return &info;
+const PPP_InputEvent* PPP_InputEvent_Proxy::GetProxyInterface() {
+  return &input_event_interface;
 }
 
 bool PPP_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {

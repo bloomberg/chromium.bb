@@ -29,10 +29,6 @@ static const PPP_Graphics3D graphics_3d_interface = {
 static const PPP_Graphics3D graphics_3d_interface = {};
 #endif  // !defined(OS_NACL)
 
-InterfaceProxy* CreateGraphics3DProxy(Dispatcher* dispatcher) {
-  return new PPP_Graphics3D_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_Graphics3D_Proxy::PPP_Graphics3D_Proxy(Dispatcher* dispatcher)
@@ -48,15 +44,8 @@ PPP_Graphics3D_Proxy::~PPP_Graphics3D_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_Graphics3D_Proxy::GetInfo() {
-  static const Info info = {
-    &graphics_3d_interface,
-    PPP_GRAPHICS_3D_INTERFACE,
-    API_ID_PPP_GRAPHICS_3D,
-    false,
-    &CreateGraphics3DProxy,
-  };
-  return &info;
+const PPP_Graphics3D* PPP_Graphics3D_Proxy::GetProxyInterface() {
+  return &graphics_3d_interface;
 }
 
 bool PPP_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {

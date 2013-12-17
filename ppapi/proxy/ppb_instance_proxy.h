@@ -39,8 +39,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   PPB_Instance_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Instance_Proxy();
 
-  static const Info* GetInfoPrivate();
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 

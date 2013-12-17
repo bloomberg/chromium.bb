@@ -22,7 +22,7 @@ class PPP_Instance_Private_Proxy : public InterfaceProxy {
   PPP_Instance_Private_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Instance_Private_Proxy();
 
-  static const Info* GetInfo();
+  static const PPP_Instance_Private* GetProxyInterface();
 
  private:
   // InterfaceProxy implementation.

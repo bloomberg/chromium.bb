@@ -45,10 +45,6 @@ static const PPP_Messaging messaging_interface = {
 static const PPP_Messaging messaging_interface = {};
 #endif  // !defined(OS_NACL)
 
-InterfaceProxy* CreateMessagingProxy(Dispatcher* dispatcher) {
-  return new PPP_Messaging_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_Messaging_Proxy::PPP_Messaging_Proxy(Dispatcher* dispatcher)
@@ -64,15 +60,8 @@ PPP_Messaging_Proxy::~PPP_Messaging_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_Messaging_Proxy::GetInfo() {
-  static const Info info = {
-    &messaging_interface,
-    PPP_MESSAGING_INTERFACE,
-    API_ID_PPP_MESSAGING,
-    false,
-    &CreateMessagingProxy,
-  };
-  return &info;
+const PPP_Messaging* PPP_Messaging_Proxy::GetProxyInterface() {
+  return &messaging_interface;
 }
 
 bool PPP_Messaging_Proxy::OnMessageReceived(const IPC::Message& msg) {

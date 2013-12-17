@@ -76,10 +76,6 @@ class InterfaceList {
   void AddPPB(const char* name, const void* iface, Permission permission);
   void AddPPP(const char* name, const void* iface);
 
-  // Old-style add functions. These should be removed when the rest of the
-  // proxies are converted over to using the new system.
-  void AddPPP(const InterfaceProxy::Info* info);
-
   PpapiPermissions permissions_;
 
   NameToInterfaceInfoMap name_to_browser_info_;

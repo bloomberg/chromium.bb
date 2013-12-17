@@ -18,7 +18,7 @@ class PPP_Graphics3D_Proxy : public InterfaceProxy {
   PPP_Graphics3D_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Graphics3D_Proxy();
 
-  static const Info* GetInfo();
+  static const PPP_Graphics3D* GetProxyInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

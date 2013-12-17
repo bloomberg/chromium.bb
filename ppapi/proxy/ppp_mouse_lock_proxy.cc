@@ -35,10 +35,6 @@ static const PPP_MouseLock mouse_lock_interface = {
 static const PPP_MouseLock mouse_lock_interface = {};
 #endif  // !defined(OS_NACL)
 
-InterfaceProxy* CreateMouseLockProxy(Dispatcher* dispatcher) {
-  return new PPP_MouseLock_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_MouseLock_Proxy::PPP_MouseLock_Proxy(Dispatcher* dispatcher)
@@ -54,15 +50,8 @@ PPP_MouseLock_Proxy::~PPP_MouseLock_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_MouseLock_Proxy::GetInfo() {
-  static const Info info = {
-    &mouse_lock_interface,
-    PPP_MOUSELOCK_INTERFACE,
-    API_ID_PPP_MOUSE_LOCK,
-    false,
-    &CreateMouseLockProxy,
-  };
-  return &info;
+const PPP_MouseLock* PPP_MouseLock_Proxy::GetProxyInterface() {
+  return &mouse_lock_interface;
 }
 
 bool PPP_MouseLock_Proxy::OnMessageReceived(const IPC::Message& msg) {

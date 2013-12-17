@@ -61,10 +61,6 @@ const char kSerializationError[] = "Failed to convert a PostMessage "
     "argument from a PP_Var to a Javascript value. It may have cycles or be of "
     "an unsupported type.";
 
-InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher) {
-  return new PPB_Instance_Proxy(dispatcher);
-}
-
 void RequestSurroundingText(PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
@@ -94,18 +90,6 @@ PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher)
 }
 
 PPB_Instance_Proxy::~PPB_Instance_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoPrivate() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Instance_Private_0_1_Thunk(),
-    PPB_INSTANCE_PRIVATE_INTERFACE_0_1,
-    API_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
 }
 
 bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {

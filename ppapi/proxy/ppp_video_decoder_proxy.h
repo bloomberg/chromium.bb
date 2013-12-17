@@ -21,7 +21,7 @@ class PPP_VideoDecoder_Proxy : public InterfaceProxy {
   PPP_VideoDecoder_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_VideoDecoder_Proxy();
 
-  static const Info* GetInfo();
+  static const PPP_VideoDecoder_Dev* GetProxyInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

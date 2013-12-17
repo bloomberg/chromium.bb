@@ -261,26 +261,31 @@ InterfaceList::InterfaceList() {
 
   // PPP (plugin) interfaces.
   // TODO(brettw) move these to interface_list*.h
+  AddProxy(API_ID_PPP_GRAPHICS_3D, &ProxyFactory<PPP_Graphics3D_Proxy>);
+  AddPPP(PPP_GRAPHICS_3D_INTERFACE, PPP_Graphics3D_Proxy::GetProxyInterface());
+  AddProxy(API_ID_PPP_INPUT_EVENT, &ProxyFactory<PPP_InputEvent_Proxy>);
+  AddPPP(PPP_INPUT_EVENT_INTERFACE, PPP_InputEvent_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_INSTANCE, &ProxyFactory<PPP_Instance_Proxy>);
-  #if !defined(OS_NACL)
+#if !defined(OS_NACL)
   AddPPP(PPP_INSTANCE_INTERFACE_1_1,
          PPP_Instance_Proxy::GetInstanceInterface());
-  #endif
+  AddProxy(API_ID_PPP_INSTANCE_PRIVATE,
+           &ProxyFactory<PPP_Instance_Private_Proxy>);
+  AddPPP(PPP_INSTANCE_PRIVATE_INTERFACE,
+         PPP_Instance_Private_Proxy::GetProxyInterface());
+#endif
+  AddProxy(API_ID_PPP_MESSAGING, &ProxyFactory<PPP_Messaging_Proxy>);
+  AddPPP(PPP_MESSAGING_INTERFACE, PPP_Messaging_Proxy::GetProxyInterface());
+  AddProxy(API_ID_PPP_MOUSE_LOCK, &ProxyFactory<PPP_MouseLock_Proxy>);
+  AddPPP(PPP_MOUSELOCK_INTERFACE, PPP_MouseLock_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_PRINTING, &ProxyFactory<PPP_Printing_Proxy>);
   AddPPP(PPP_PRINTING_DEV_INTERFACE, PPP_Printing_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_TEXT_INPUT, &ProxyFactory<PPP_TextInput_Proxy>);
   AddPPP(PPP_TEXTINPUT_DEV_INTERFACE, PPP_TextInput_Proxy::GetProxyInterface());
-
-  // Old-style GetInfo PPP interfaces.
-  // Do not add more stuff here, they should be added to interface_list*.h
-  // TODO(brettw) remove these.
-  AddPPP(PPP_InputEvent_Proxy::GetInfo());
-  AddPPP(PPP_Messaging_Proxy::GetInfo());
-  AddPPP(PPP_MouseLock_Proxy::GetInfo());
-  AddPPP(PPP_Graphics3D_Proxy::GetInfo());
 #if !defined(OS_NACL)
-  AddPPP(PPP_Instance_Private_Proxy::GetInfo());
-  AddPPP(PPP_VideoDecoder_Proxy::GetInfo());
+  AddProxy(API_ID_PPP_VIDEO_DECODER_DEV, &ProxyFactory<PPP_VideoDecoder_Proxy>);
+  AddPPP(PPP_VIDEODECODER_DEV_INTERFACE,
+         PPP_VideoDecoder_Proxy::GetProxyInterface());
 #endif
 }
 
@@ -361,11 +366,6 @@ void InterfaceList::AddPPP(const char* name,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
   name_to_plugin_info_[name] = InterfaceInfo(iface, PERMISSION_NONE);
-}
-
-void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {
-  AddProxy(info->id, info->create_proxy);
-  AddPPP(info->name, info->interface_ptr);
 }
 
 }  // namespace proxy

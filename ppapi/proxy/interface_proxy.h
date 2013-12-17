@@ -24,24 +24,6 @@ class InterfaceProxy : public IPC::Listener, public IPC::Sender {
   // is transferred to the caller.
   typedef InterfaceProxy* (*Factory)(Dispatcher* dispatcher);
 
-  // DEPRECATED: New classes should be registered directly in the interface
-  // list. This is kept around until we convert all the existing code.
-  //
-  // Information about the interface. Each interface has a static function to
-  // return its info, which allows either construction on the target side, and
-  // getting the proxied interface on the source side (see dispatcher.h for
-  // terminology).
-  struct Info {
-    const void* interface_ptr;
-
-    const char* name;
-    ApiID id;
-
-    bool is_trusted;
-
-    InterfaceProxy::Factory create_proxy;
-  };
-
   virtual ~InterfaceProxy();
 
   Dispatcher* dispatcher() const { return dispatcher_; }

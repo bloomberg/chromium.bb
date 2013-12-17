@@ -34,10 +34,6 @@ static const PPP_Instance_Private instance_private_interface = {
   &GetInstanceObject
 };
 
-InterfaceProxy* CreateInstancePrivateProxy(Dispatcher* dispatcher) {
-  return new PPP_Instance_Private_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_Instance_Private_Proxy::PPP_Instance_Private_Proxy(Dispatcher* dispatcher)
@@ -53,15 +49,8 @@ PPP_Instance_Private_Proxy::~PPP_Instance_Private_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_Instance_Private_Proxy::GetInfo() {
-  static const Info info = {
-    &instance_private_interface,
-    PPP_INSTANCE_PRIVATE_INTERFACE,
-    API_ID_PPP_INSTANCE_PRIVATE,
-    false,
-    &CreateInstancePrivateProxy,
-  };
-  return &info;
+const PPP_Instance_Private* PPP_Instance_Private_Proxy::GetProxyInterface() {
+  return &instance_private_interface;
 }
 
 bool PPP_Instance_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {
