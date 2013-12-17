@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/string_tokenizer.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -36,6 +37,24 @@ void UpdatePortalledWifiState() {
                                base::StringValue(shill::kStatePortal));
 }
 
+// Returns true if |network_type| is found in the comma separated list given
+// with kEnabledStubNetworkTypes switch.
+bool IsStubNetworkTypeEnabled(const std::string& network_type) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  // If the switch is not present, enabled by default.
+  if (!command_line->HasSwitch(switches::kEnabledStubNetworkTypes))
+    return true;
+
+  const std::string value =
+      command_line->GetSwitchValueASCII(switches::kEnabledStubNetworkTypes);
+  base::StringTokenizer tokenizer(value, ",");
+  while (tokenizer.GetNext()) {
+    if (tokenizer.token() == network_type)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 const char kSharedProfilePath[] = "/profile/default";
@@ -61,10 +80,7 @@ void SetupDefaultEnvironment() {
     return;
 
   // Stub Technologies.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           chromeos::switches::kDisableStubEthernet)) {
-    manager->AddTechnology(shill::kTypeEthernet, true);
-  }
+  manager->AddTechnology(shill::kTypeEthernet, true);
   manager->AddTechnology(shill::kTypeWifi, true);
   manager->AddTechnology(shill::kTypeCellular, true);
   manager->AddTechnology(shill::kTypeWimax, true);
@@ -86,8 +102,8 @@ void SetupDefaultEnvironment() {
   const bool add_to_visible = true;
   const bool add_to_watchlist = true;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           chromeos::switches::kDisableStubEthernet)) {
+  // On real devices, service is not added for ethernet if cable is disconneted.
+  if (IsStubNetworkTypeEnabled(shill::kTypeEthernet)) {
     services->AddService("eth1", "eth1",
                          shill::kTypeEthernet,
                          shill::kStateOnline,
@@ -100,7 +116,8 @@ void SetupDefaultEnvironment() {
   services->AddService("wifi1",
                        "wifi1",
                        shill::kTypeWifi,
-                       shill::kStateOnline,
+                       IsStubNetworkTypeEnabled(shill::kTypeWifi) ?
+                           shill::kStateOnline : shill::kStateIdle,
                        add_to_visible, add_to_watchlist);
   services->SetServiceProperty("wifi1",
                                shill::kSecurityProperty,
@@ -178,7 +195,8 @@ void SetupDefaultEnvironment() {
   services->AddService("vpn1",
                        "vpn1",
                        shill::kTypeVPN,
-                       shill::kStateOnline,
+                       IsStubNetworkTypeEnabled(shill::kTypeVPN) ?
+                           shill::kStateOnline : shill::kStateIdle,
                        add_to_visible, add_to_watchlist);
   services->SetServiceProperty(
       "vpn1", shill::kProviderProperty, provider_properties);
@@ -187,7 +205,7 @@ void SetupDefaultEnvironment() {
   services->AddService("vpn2",
                        "vpn2",
                        shill::kTypeVPN,
-                       shill::kStateOffline,
+                       shill::kStateIdle,
                        add_to_visible, add_to_watchlist);
   services->SetServiceProperty(
       "vpn2", shill::kProviderProperty, provider_properties);

@@ -66,9 +66,6 @@ const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 const char kDisableOOBEBlockingUpdate[] =
     "disable-oobe-blocking-update";
 
-// Disables fake ethernet network in the stub implementations.
-const char kDisableStubEthernet[] = "disable-stub-ethernet";
-
 // Enables overriding the path for the default echo component extension.
 // Useful for testing.
 const char kEchoExtensionPath[]             = "echo-ext-path";
@@ -92,6 +89,15 @@ const char kEnableStubPortalledWifi[] = "enable-stub-portalled-wifi";
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";
+
+// Specifies stub network types to be enabled.  If this switch is not specified,
+// ethernet, wifi and vpn are enabled by default.
+//
+// Examples:
+// Disable all network types: --enabled-stub-network-types=''
+// Enable wifi only: --enabled-stub-network-types=wifi
+// Enable ethernet and wifi: --enabled-stub-network-types=ethernet,wifi
+const char kEnabledStubNetworkTypes[] = "enabled-stub-network-types";
 
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
