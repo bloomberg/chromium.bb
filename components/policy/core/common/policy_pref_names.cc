@@ -11,6 +11,12 @@ namespace policy_prefs {
 // by UMA_HISTOGRAM_ENUMERATION.
 const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
 
+// Blocks access to the listed host patterns.
+const char kUrlBlacklist[] = "policy.url_blacklist";
+
+// Allows access to the listed host patterns, as exceptions to the blacklist.
+const char kUrlWhitelist[] = "policy.url_whitelist";
+
 // Integer that specifies the policy refresh rate for user-policy in
 // milliseconds. Not all values are meaningful, so it is clamped to a sane range
 // by the cloud policy subsystem.

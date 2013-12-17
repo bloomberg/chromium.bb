@@ -7,9 +7,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
 
@@ -76,8 +76,10 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     }
   }
 
-  if (disabled_schemes || url_blacklist)
-    prefs->SetValue(prefs::kUrlBlacklist, merged_url_blacklist.release());
+  if (disabled_schemes || url_blacklist) {
+    prefs->SetValue(policy_prefs::kUrlBlacklist,
+                    merged_url_blacklist.release());
+  }
 }
 
 }  // namespace policy

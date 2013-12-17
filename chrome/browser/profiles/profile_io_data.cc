@@ -45,7 +45,6 @@
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
-#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
@@ -83,7 +83,8 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/policy_helpers.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -491,7 +492,14 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // Don't pass it in |profile_params_| to make sure it is correctly cleaned up,
   // in particular when this ProfileIOData isn't |initialized_| during deletion.
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  url_blacklist_manager_.reset(new policy::URLBlacklistManager(pref_service));
+  policy::URLBlacklist::SegmentURLCallback callback =
+      static_cast<policy::URLBlacklist::SegmentURLCallback>(
+          URLFixerUpper::SegmentURL);
+  url_blacklist_manager_.reset(
+      new policy::URLBlacklistManager(pref_service,
+                                      io_message_loop_proxy,
+                                      callback,
+                                      policy::SkipBlacklistForURL));
 
   if (!is_incognito()) {
     // Add policy headers for non-incognito requests.

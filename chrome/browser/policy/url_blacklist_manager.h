@@ -12,16 +12,18 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/url_matcher/url_matcher.h"
+#include "url/gurl.h"
 
-class GURL;
 class PrefService;
 
 namespace base {
 class ListValue;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -38,7 +40,12 @@ namespace policy {
 // against this set. The filters are currently kept in memory.
 class URLBlacklist {
  public:
-  URLBlacklist();
+  // This is meant to be bound to URLFixerUpper::SegmentURL. See that function
+  // for documentation on the parameters and return value.
+  typedef std::string (*SegmentURLCallback)(const std::string&,
+                                            url_parse::Parsed*);
+
+  explicit URLBlacklist(SegmentURLCallback segment_url);
   virtual ~URLBlacklist();
 
   // Allows or blocks URLs matching one of the filters, depending on |allow|.
@@ -69,7 +76,8 @@ class URLBlacklist {
   // of the hostname (if it is one.)
   // |port| is 0 if none is explicitly defined.
   // |path| does not include query parameters.
-  static bool FilterToComponents(const std::string& filter,
+  static bool FilterToComponents(SegmentURLCallback segment_url,
+                                 const std::string& filter,
                                  std::string* scheme,
                                  std::string* host,
                                  bool* match_subdomains,
@@ -95,6 +103,7 @@ class URLBlacklist {
   static bool FilterTakesPrecedence(const FilterComponents& lhs,
                                     const FilterComponents& rhs);
 
+  SegmentURLCallback segment_url_;
   url_matcher::URLMatcherConditionSet::ID id_;
   std::map<url_matcher::URLMatcherConditionSet::ID, FilterComponents> filters_;
   scoped_ptr<url_matcher::URLMatcher> url_matcher_;
@@ -121,8 +130,17 @@ class URLBlacklist {
 // the actual update starts, and grab a WeakPtr.
 class URLBlacklistManager {
  public:
+  // Returns true if the blacklist should be skipped for |url|.
+  typedef bool (*SkipBlacklistCallback)(const GURL& url);
+
   // Must be constructed on the UI thread.
-  explicit URLBlacklistManager(PrefService* pref_service);
+  // |io_task_runner| must be backed by the IO thread.
+  // |segment_url| is used to break a URL spec into its components.
+  URLBlacklistManager(
+      PrefService* pref_service,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      URLBlacklist::SegmentURLCallback segment_url,
+      SkipBlacklistCallback skip_blacklist);
   virtual ~URLBlacklistManager();
 
   // Must be called on the UI thread, before destruction.
@@ -172,12 +190,24 @@ class URLBlacklistManager {
   PrefChangeRegistrar pref_change_registrar_;
   PrefService* pref_service_;  // Weak.
 
+  // Used to post tasks to the IO thread.
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
+  // Used to break a URL into its components.
+  URLBlacklist::SegmentURLCallback segment_url_;
+
+  // Used to optionally skip blacklisting for some URLs.
+  SkipBlacklistCallback skip_blacklist_;
+
   // ---------
   // IO thread
   // ---------
 
   // Used to get |weak_ptr_| to self on the IO thread.
   base::WeakPtrFactory<URLBlacklistManager> io_weak_ptr_factory_;
+
+  // Used to post tasks to the UI thread.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // The current blacklist.
   scoped_ptr<URLBlacklist> blacklist_;

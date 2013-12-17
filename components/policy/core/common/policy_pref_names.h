@@ -11,6 +11,8 @@ namespace policy {
 namespace policy_prefs {
 
 POLICY_EXPORT extern const char kLastPolicyStatisticsUpdate[];
+POLICY_EXPORT extern const char kUrlBlacklist[];
+POLICY_EXPORT extern const char kUrlWhitelist[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
 
 }  // namespace policy_prefs

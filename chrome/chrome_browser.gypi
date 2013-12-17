@@ -1490,6 +1490,8 @@
         'browser/policy/file_selection_dialogs_policy_handler.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
+        'browser/policy/policy_helpers.cc',
+        'browser/policy/policy_helpers.h',
         'browser/policy/profile_policy_connector.cc',
         'browser/policy/profile_policy_connector_stub.cc',
         'browser/policy/profile_policy_connector.h',

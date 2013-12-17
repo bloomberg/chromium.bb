@@ -303,7 +303,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kMaxConnectionsPerProxy,
     Value::TYPE_INTEGER },
   { key::kURLWhitelist,
-    prefs::kUrlWhitelist,
+    policy_prefs::kUrlWhitelist,
     Value::TYPE_LIST },
   { key::kEnableMemoryInfo,
     prefs::kEnableMemoryInfo,

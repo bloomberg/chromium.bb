@@ -6,30 +6,19 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/net/url_fixer_upper.h"
-#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/common/url_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
-#include "url/gurl.h"
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager.h"
-#endif
-
-using content::BrowserThread;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherCondition;
 using url_matcher::URLMatcherConditionFactory;
@@ -41,35 +30,17 @@ namespace policy {
 
 namespace {
 
+const char kFileScheme[] = "file";
+
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 1000;
 
-#if !defined(OS_CHROMEOS)
-
-const char kServiceLoginAuth[] = "/ServiceLoginAuth";
-
-bool IsSigninFlowURL(const GURL& url) {
-  // Whitelist all the signin flow URLs flagged by the SigninManager.
-  if (SigninManager::IsWebBasedSigninFlowURL(url))
-    return true;
-
-  // Additionally whitelist /ServiceLoginAuth.
-  if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
-    return false;
-  return url.path() == kServiceLoginAuth;
-}
-
-#endif  // !defined(OS_CHROMEOS)
-
-// A task that builds the blacklist on the FILE thread.
-scoped_ptr<URLBlacklist> BuildBlacklist(scoped_ptr<base::ListValue> block,
-                                        scoped_ptr<base::ListValue> allow) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist);
+// A task that builds the blacklist on a background thread.
+void BuildBlacklist(scoped_ptr<base::ListValue> block,
+                    scoped_ptr<base::ListValue> allow,
+                    URLBlacklist* blacklist) {
   blacklist->Block(block.get());
   blacklist->Allow(allow.get());
-  return blacklist.Pass();
 }
 
 }  // namespace
@@ -86,9 +57,8 @@ struct URLBlacklist::FilterComponents {
   bool allow;
 };
 
-URLBlacklist::URLBlacklist() : id_(0),
-                               url_matcher_(new URLMatcher) {
-}
+URLBlacklist::URLBlacklist(SegmentURLCallback segment_url)
+    : segment_url_(segment_url), id_(0), url_matcher_(new URLMatcher) {}
 
 URLBlacklist::~URLBlacklist() {
 }
@@ -103,9 +73,9 @@ void URLBlacklist::AddFilters(bool allow,
     DCHECK(success);
     FilterComponents components;
     components.allow = allow;
-    if (!FilterToComponents(pattern, &components.scheme, &components.host,
-                            &components.match_subdomains, &components.port,
-                            &components.path)) {
+    if (!FilterToComponents(segment_url_, pattern, &components.scheme,
+                            &components.host, &components.match_subdomains,
+                            &components.port, &components.path)) {
       LOG(ERROR) << "Invalid pattern " << pattern;
       continue;
     }
@@ -153,7 +123,8 @@ size_t URLBlacklist::Size() const {
 }
 
 // static
-bool URLBlacklist::FilterToComponents(const std::string& filter,
+bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
+                                      const std::string& filter,
                                       std::string* scheme,
                                       std::string* host,
                                       bool* match_subdomains,
@@ -161,12 +132,12 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
                                       std::string* path) {
   url_parse::Parsed parsed;
 
-  if (URLFixerUpper::SegmentURL(filter, &parsed) == chrome::kFileScheme) {
+  if (segment_url(filter, &parsed) == kFileScheme) {
     base::FilePath file_path;
     if (!net::FileURLToFilePath(GURL(filter), &file_path))
       return false;
 
-    *scheme = chrome::kFileScheme;
+    *scheme = kFileScheme;
     host->clear();
     *match_subdomains = true;
     *port = 0;
@@ -290,27 +261,33 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
   return false;
 }
 
-URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
+URLBlacklistManager::URLBlacklistManager(
+    PrefService* pref_service,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+    URLBlacklist::SegmentURLCallback segment_url,
+    SkipBlacklistCallback skip_blacklist)
     : ui_weak_ptr_factory_(this),
       pref_service_(pref_service),
+      io_task_runner_(io_task_runner),
+      segment_url_(segment_url),
+      skip_blacklist_(skip_blacklist),
       io_weak_ptr_factory_(this),
-      blacklist_(new URLBlacklist) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+      ui_task_runner_(base::MessageLoopProxy::current()),
+      blacklist_(new URLBlacklist(segment_url)) {
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
                                       base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kUrlBlacklist, callback);
-  pref_change_registrar_.Add(prefs::kUrlWhitelist, callback);
+  pref_change_registrar_.Add(policy_prefs::kUrlBlacklist, callback);
+  pref_change_registrar_.Add(policy_prefs::kUrlWhitelist, callback);
 
   // Start enforcing the policies without a delay when they are present at
   // startup.
-  if (pref_service_->HasPrefPath(prefs::kUrlBlacklist))
+  if (pref_service_->HasPrefPath(policy_prefs::kUrlBlacklist))
     Update();
 }
 
 void URLBlacklistManager::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   // Cancel any pending updates, and stop listening for pref change updates.
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
   pref_change_registrar_.RemoveAll();
@@ -320,71 +297,75 @@ URLBlacklistManager::~URLBlacklistManager() {
 }
 
 void URLBlacklistManager::ScheduleUpdate() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   // Cancel pending updates, if any. This can happen if two preferences that
   // change the blacklist are updated in one message loop cycle. In those cases,
   // only rebuild the blacklist after all the preference updates are processed.
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostTask(
+  ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&URLBlacklistManager::Update,
                  ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void URLBlacklistManager::Update() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   // The preferences can only be read on the UI thread.
   scoped_ptr<base::ListValue> block(
-      pref_service_->GetList(prefs::kUrlBlacklist)->DeepCopy());
+      pref_service_->GetList(policy_prefs::kUrlBlacklist)->DeepCopy());
   scoped_ptr<base::ListValue> allow(
-      pref_service_->GetList(prefs::kUrlWhitelist)->DeepCopy());
+      pref_service_->GetList(policy_prefs::kUrlWhitelist)->DeepCopy());
 
   // Go through the IO thread to grab a WeakPtr to |this|. This is safe from
   // here, since this task will always execute before a potential deletion of
   // ProfileIOData on IO.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&URLBlacklistManager::UpdateOnIO,
-                                     base::Unretained(this),
-                                     base::Passed(&block),
-                                     base::Passed(&allow)));
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&URLBlacklistManager::UpdateOnIO,
+                                       base::Unretained(this),
+                                       base::Passed(&block),
+                                       base::Passed(&allow)));
 }
 
 void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
                                      scoped_ptr<base::ListValue> allow) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   // The URLBlacklist is built on the FILE thread. Once it's ready, it is passed
   // to the URLBlacklistManager on IO.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
+  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url_));
+  URLBlacklist* raw_blacklist = blacklist.get();
+  const bool task_is_slow = false;
+  base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
       base::Bind(&BuildBlacklist,
                  base::Passed(&block),
-                 base::Passed(&allow)),
+                 base::Passed(&allow),
+                 base::Unretained(raw_blacklist)),
       base::Bind(&URLBlacklistManager::SetBlacklist,
-                 io_weak_ptr_factory_.GetWeakPtr()));
+                 io_weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&blacklist)),
+      task_is_slow);
 }
 
 void URLBlacklistManager::SetBlacklist(scoped_ptr<URLBlacklist> blacklist) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   blacklist_ = blacklist.Pass();
 }
 
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   return blacklist_->IsURLBlocked(url);
 }
 
 bool URLBlacklistManager::IsRequestBlocked(
     const net::URLRequest& request) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   int filter_flags = net::LOAD_MAIN_FRAME | net::LOAD_SUB_FRAME;
   if ((request.load_flags() & filter_flags) == 0)
     return false;
 
-#if !defined(OS_CHROMEOS)
-  if (IsSigninFlowURL(request.url()))
+  if (skip_blacklist_(request.url()))
     return false;
-#endif
 
   return IsURLBlocked(request.url());
 }
@@ -392,9 +373,9 @@ bool URLBlacklistManager::IsRequestBlocked(
 // static
 void URLBlacklistManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kUrlBlacklist,
+  registry->RegisterListPref(policy_prefs::kUrlBlacklist,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kUrlWhitelist,
+  registry->RegisterListPref(policy_prefs::kUrlWhitelist,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

@@ -84,6 +84,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -2000,7 +2001,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   FlushBlacklistPolicy();
 
   PrefService* prefs = browser()->profile()->GetPrefs();
-  const base::ListValue* list_url = prefs->GetList(prefs::kUrlBlacklist);
+  const base::ListValue* list_url = prefs->GetList(policy_prefs::kUrlBlacklist);
   EXPECT_EQ(list_url->Find(base::StringValue("file://*")),
             list_url->end());
 
@@ -2011,7 +2012,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
-  list_url = prefs->GetList(prefs::kUrlBlacklist);
+  list_url = prefs->GetList(policy_prefs::kUrlBlacklist);
   EXPECT_NE(list_url->Find(base::StringValue("file://*")),
             list_url->end());
 

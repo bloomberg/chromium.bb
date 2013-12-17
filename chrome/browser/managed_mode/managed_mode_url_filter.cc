@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -23,6 +24,7 @@ using content::BrowserThread;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
 using net::registry_controlled_domains::GetRegistryLength;
+using policy::URLBlacklist;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionSet;
 
@@ -87,14 +89,16 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   uint16 port;
   std::string path;
   bool match_subdomains = true;
-  if (!policy::URLBlacklist::FilterToComponents(
-          pattern, &scheme, &host, &match_subdomains, &port, &path)) {
+  URLBlacklist::SegmentURLCallback callback =
+      static_cast<URLBlacklist::SegmentURLCallback>(URLFixerUpper::SegmentURL);
+  if (!URLBlacklist::FilterToComponents(
+          callback, pattern, &scheme, &host, &match_subdomains, &port, &path)) {
     LOG(ERROR) << "Invalid pattern " << pattern;
     return false;
   }
 
   scoped_refptr<URLMatcherConditionSet> condition_set =
-      policy::URLBlacklist::CreateConditionSet(
+      URLBlacklist::CreateConditionSet(
           &contents_->url_matcher, ++matcher_id_,
           scheme, host, match_subdomains, port, path);
   all_conditions_.push_back(condition_set);
