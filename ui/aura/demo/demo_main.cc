@@ -18,7 +18,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -165,9 +164,8 @@ int main(int argc, char** argv) {
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
 
-  ui::RegisterPathProvider();
   base::i18n::InitializeICU();
-  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   return DemoMain();
 }

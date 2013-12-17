@@ -22,7 +22,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/debug_utils.h"
@@ -297,9 +296,8 @@ int main(int argc, char** argv) {
   bool allow_test_contexts = false;
   ui::InitializeContextFactoryForTests(allow_test_contexts);
 
-  ui::RegisterPathProvider();
   base::i18n::InitializeICU();
-  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   aura::Env::CreateInstance();
