@@ -706,7 +706,6 @@ public:
      * @param content The header value (value of the meta tag's "content" attribute)
      */
     void processHttpEquiv(const AtomicString& equiv, const AtomicString& content);
-    void processViewport(const String& features, ViewportDescription::Type origin);
     void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
 
