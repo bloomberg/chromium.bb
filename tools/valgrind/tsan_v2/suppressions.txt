@@ -99,6 +99,9 @@ race:*GetObjectFromEntryAddress
 # http://crbug.com/258479
 race:SamplingStateScope
 
+# http://crbug.com/258499
+race:third_party/skia/include/core/SkRefCnt.h
+
 # http://crbug.com/268924
 race:base::g_power_monitor
 race:base::PowerMonitor::PowerMonitor
@@ -149,3 +152,6 @@ race:gLCDOrientation
 
 # http://crbug.com/328868
 race:PR_Lock
+
+# http://crbug.com/329225
+race:blink::currentTimeFunction
