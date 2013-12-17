@@ -79,8 +79,12 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
     if (scriptURL.isEmpty())
         return 0;
 
-    if (document->page() && document->page()->sharedWorkerRepositoryClient())
-        document->page()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
+    if (document->sharedWorkerRepositoryClient()) {
+        document->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
+    } else {
+        if (document->page() && document->page()->sharedWorkerRepositoryClient())
+            document->page()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
+    }
 
     return worker.release();
 }

@@ -81,6 +81,7 @@
 #include "FindInPageCoordinates.h"
 #include "HTMLNames.h"
 #include "PageOverlay.h"
+#include "SharedWorkerRepositoryClientImpl.h"
 #include "V8DOMFileSystem.h"
 #include "V8DirectoryEntry.h"
 #include "V8FileEntry.h"
@@ -572,6 +573,12 @@ void WebFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 void WebFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)
 {
     m_permissionClient = permissionClient;
+}
+
+void WebFrameImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient* client)
+{
+    m_sharedWorkerRepositoryClient = SharedWorkerRepositoryClientImpl::create(client);
+    frame()->document()->setSharedWorkerRepositoryClient(m_sharedWorkerRepositoryClient.get());
 }
 
 WebSize WebFrameImpl::scrollOffset() const

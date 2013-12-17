@@ -67,6 +67,7 @@ class WebPerformance;
 class WebPermissionClient;
 class WebRange;
 class WebSecurityOrigin;
+class WebSharedWorkerRepositoryClient;
 class WebString;
 class WebURL;
 class WebURLLoader;
@@ -164,6 +165,7 @@ public:
 
     // Initializes the various client interfaces.
     virtual void setPermissionClient(WebPermissionClient*) = 0;
+    virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
 
     // Geometry -----------------------------------------------------------

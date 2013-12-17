@@ -150,6 +150,7 @@ class SegmentedString;
 class SelectorQueryCache;
 class SerializedScriptValue;
 class Settings;
+class SharedWorkerRepositoryClient;
 class StyleEngine;
 class StyleResolver;
 class StyleSheet;
@@ -436,6 +437,9 @@ public:
     Frame* frame() const { return m_frame; } // can be null
     Page* page() const; // can be null
     Settings* settings() const; // can be null
+
+    SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return m_sharedWorkerRepositoryClient; }
+    void setSharedWorkerRepositoryClient(SharedWorkerRepositoryClient* client) { m_sharedWorkerRepositoryClient = client; }
 
     float devicePixelRatio() const;
 
@@ -1108,6 +1112,7 @@ private:
     Frame* m_frame;
     DOMWindow* m_domWindow;
     HTMLImport* m_import;
+    SharedWorkerRepositoryClient* m_sharedWorkerRepositoryClient;
 
     RefPtr<ResourceFetcher> m_fetcher;
     RefPtr<DocumentParser> m_parser;

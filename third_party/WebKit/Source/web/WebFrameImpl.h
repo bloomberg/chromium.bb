@@ -58,6 +58,7 @@ struct WindowFeatures;
 
 namespace blink {
 class ChromePrintContext;
+class SharedWorkerRepositoryClientImpl;
 class WebDataSourceImpl;
 class WebInputElement;
 class WebFrameClient;
@@ -84,6 +85,7 @@ public:
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const;
     virtual void setRemoteWebLayer(WebLayer*);
     virtual void setPermissionClient(WebPermissionClient*);
+    virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*);
     virtual WebSize scrollOffset() const;
     virtual void setScrollOffset(const WebSize&);
     virtual WebSize minimumScrollOffset() const;
@@ -303,6 +305,7 @@ public:
     void setClient(WebFrameClient* client) { m_client = client; }
 
     WebPermissionClient* permissionClient() { return m_permissionClient; }
+    SharedWorkerRepositoryClientImpl* sharedWorkerRepositoryClient() const { return m_sharedWorkerRepositoryClient.get(); }
 
     void setInputEventsTransformForEmulation(const WebCore::IntSize&, float);
 
@@ -437,6 +440,7 @@ private:
 
     WebFrameClient* m_client;
     WebPermissionClient* m_permissionClient;
+    OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 
     // A way for the main frame to keep track of which frame has an active
     // match. Should be 0 for all other frames.
