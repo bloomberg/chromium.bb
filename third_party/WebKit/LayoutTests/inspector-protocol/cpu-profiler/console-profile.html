@@ -22,7 +22,7 @@ function test()
     InspectorTest.sendCommand("Runtime.evaluate", { expression: "collectProfiles()"}, didCollectProfiles);
 
     var headers = [];
-    InspectorTest.eventHandler["Profiler.addProfileHeader"] = function(messageObject)
+    InspectorTest.eventHandler["Profiler.consoleProfileFinished"] = function(messageObject)
     {
         headers.push({
             profile: messageObject["params"]["profile"],

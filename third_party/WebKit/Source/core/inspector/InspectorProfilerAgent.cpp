@@ -108,7 +108,7 @@ void InspectorProfilerAgent::consoleProfile(const String& title, ScriptState* st
     String id = String::number(m_nextProfileId++);
     m_startedProfiles.append(ProfileDescriptor(id, title));
     ScriptProfiler::start(id);
-    m_frontend->consoleProfile(id, currentDebugLocation(), title.isNull() ? 0 : &title);
+    m_frontend->consoleProfileStarted(id, currentDebugLocation(), title.isNull() ? 0 : &title);
 }
 
 void InspectorProfilerAgent::consoleProfileEnd(const String& title)
@@ -141,7 +141,7 @@ void InspectorProfilerAgent::consoleProfileEnd(const String& title)
     RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation();
     if (!m_keepAliveProfile)
         m_keepAliveProfile = profile;
-    m_frontend->addProfileHeader(id, location, createCPUProfile(*profile), resolvedTitle.isNull() ? 0 : &resolvedTitle);
+    m_frontend->consoleProfileFinished(id, location, createCPUProfile(*profile), resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 
 void InspectorProfilerAgent::enable(ErrorString*)

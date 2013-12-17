@@ -14,22 +14,22 @@ function test()
 
     function disallowConsoleProfiles()
     {
-        InspectorTest.eventHandler["Profiler.consoleProfile"] = function(messageObject)
+        InspectorTest.eventHandler["Profiler.consoleProfileStarted"] = function(messageObject)
         {
             InspectorTest.log("FAIL: console profile started " + JSON.stringify(messageObject, null, 4));
         }
-        InspectorTest.eventHandler["Profiler.addProfileHeader"] = function(messageObject)
+        InspectorTest.eventHandler["Profiler.consoleProfileFinished"] = function(messageObject)
         {
             InspectorTest.log("FAIL: unexpected profile received " + JSON.stringify(messageObject, null, 4));
         }
     }
     function allowConsoleProfiles()
     {
-        InspectorTest.eventHandler["Profiler.consoleProfile"] = function(messageObject)
+        InspectorTest.eventHandler["Profiler.consoleProfileStarted"] = function(messageObject)
         {
             InspectorTest.log("PASS: console initiated profile started");
         }
-        InspectorTest.eventHandler["Profiler.addProfileHeader"] = function(messageObject)
+        InspectorTest.eventHandler["Profiler.consoleProfileFinished"] = function(messageObject)
         {
             InspectorTest.log("PASS: console initiated profile received");
         }
