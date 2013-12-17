@@ -9,9 +9,10 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -36,11 +37,14 @@ const char kFileScheme[] = "file";
 const size_t kMaxFiltersPerPolicy = 1000;
 
 // A task that builds the blacklist on a background thread.
-void BuildBlacklist(scoped_ptr<base::ListValue> block,
-                    scoped_ptr<base::ListValue> allow,
-                    URLBlacklist* blacklist) {
+scoped_ptr<URLBlacklist> BuildBlacklist(
+    scoped_ptr<base::ListValue> block,
+    scoped_ptr<base::ListValue> allow,
+    URLBlacklist::SegmentURLCallback segment_url) {
+  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url));
   blacklist->Block(block.get());
   blacklist->Allow(allow.get());
+  return blacklist.Pass();
 }
 
 }  // namespace
@@ -60,8 +64,7 @@ struct URLBlacklist::FilterComponents {
 URLBlacklist::URLBlacklist(SegmentURLCallback segment_url)
     : segment_url_(segment_url), id_(0), url_matcher_(new URLMatcher) {}
 
-URLBlacklist::~URLBlacklist() {
-}
+URLBlacklist::~URLBlacklist() {}
 
 void URLBlacklist::AddFilters(bool allow,
                               const base::ListValue* list) {
@@ -263,11 +266,13 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
 
 URLBlacklistManager::URLBlacklistManager(
     PrefService* pref_service,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     URLBlacklist::SegmentURLCallback segment_url,
     SkipBlacklistCallback skip_blacklist)
     : ui_weak_ptr_factory_(this),
       pref_service_(pref_service),
+      background_task_runner_(background_task_runner),
       io_task_runner_(io_task_runner),
       segment_url_(segment_url),
       skip_blacklist_(skip_blacklist),
@@ -330,21 +335,17 @@ void URLBlacklistManager::Update() {
 void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
                                      scoped_ptr<base::ListValue> allow) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  // The URLBlacklist is built on the FILE thread. Once it's ready, it is passed
+  // The URLBlacklist is built on a worker thread. Once it's ready, it is passed
   // to the URLBlacklistManager on IO.
-  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url_));
-  URLBlacklist* raw_blacklist = blacklist.get();
-  const bool task_is_slow = false;
-  base::WorkerPool::PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_,
       FROM_HERE,
       base::Bind(&BuildBlacklist,
                  base::Passed(&block),
                  base::Passed(&allow),
-                 base::Unretained(raw_blacklist)),
+                 segment_url_),
       base::Bind(&URLBlacklistManager::SetBlacklist,
-                 io_weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&blacklist)),
-      task_is_slow);
+                 io_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void URLBlacklistManager::SetBlacklist(scoped_ptr<URLBlacklist> blacklist) {

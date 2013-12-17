@@ -134,10 +134,13 @@ class URLBlacklistManager {
   typedef bool (*SkipBlacklistCallback)(const GURL& url);
 
   // Must be constructed on the UI thread.
+  // |background_task_runner| is used to build the blacklist in a background
+  // thread.
   // |io_task_runner| must be backed by the IO thread.
   // |segment_url| is used to break a URL spec into its components.
   URLBlacklistManager(
       PrefService* pref_service,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
       URLBlacklist::SegmentURLCallback segment_url,
       SkipBlacklistCallback skip_blacklist);
@@ -189,6 +192,9 @@ class URLBlacklistManager {
   // Used to track the policies and update the blacklist on changes.
   PrefChangeRegistrar pref_change_registrar_;
   PrefService* pref_service_;  // Weak.
+
+  // Used to post tasks to a background thread.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Used to post tasks to the IO thread.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

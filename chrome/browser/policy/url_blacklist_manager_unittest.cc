@@ -35,6 +35,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
   explicit TestingURLBlacklistManager(PrefService* pref_service)
       : URLBlacklistManager(pref_service,
                             base::MessageLoopProxy::current(),
+                            base::MessageLoopProxy::current(),
                             GetSegmentURLCallback(),
                             SkipBlacklistForURL),
         update_called_(0),

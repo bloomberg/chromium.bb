@@ -495,8 +495,12 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   policy::URLBlacklist::SegmentURLCallback callback =
       static_cast<policy::URLBlacklist::SegmentURLCallback>(
           URLFixerUpper::SegmentURL);
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   url_blacklist_manager_.reset(
       new policy::URLBlacklistManager(pref_service,
+                                      background_task_runner,
                                       io_message_loop_proxy,
                                       callback,
                                       policy::SkipBlacklistForURL));
