@@ -213,16 +213,14 @@ bool TracingControllerImpl::DisableRecording(
   // acked below.
   pending_disable_recording_ack_count_ = trace_message_filters_.size() + 1;
 
-  // Handle special case of zero child processes by immediately telling the
-  // caller that tracing has ended. Use asynchronous OnDisableRecordingAcked
-  // to avoid recursive call back to the caller.
+  // Handle special case of zero child processes by immediately flushing the
+  // trace log. Once the flush has completed the caller will be notified that
+  // tracing has ended.
   if (pending_disable_recording_ack_count_ == 1) {
-    // Ack asynchronously now, because we don't have any children to wait for.
-    std::vector<std::string> category_groups;
-    TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnDisableRecordingAcked,
-                   base::Unretained(this), category_groups));
+    // Flush asynchronously now, because we don't have any children to wait for.
+    TraceLog::GetInstance()->Flush(
+        base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
+                   base::Unretained(this)));
   }
 
   // Notify all child processes.
@@ -314,14 +312,13 @@ bool TracingControllerImpl::CaptureMonitoringSnapshot(
   pending_capture_monitoring_snapshot_ack_count_ =
       trace_message_filters_.size() + 1;
 
-  // Handle special case of zero child processes by immediately telling the
-  // caller that capturing snapshot has ended. Use asynchronous
-  // OnCaptureMonitoringSnapshotAcked to avoid recursive call back to the
-  // caller.
+  // Handle special case of zero child processes by immediately flushing the
+  // trace log. Once the flush has completed the caller will be notified that
+  // the capture snapshot has ended.
   if (pending_capture_monitoring_snapshot_ack_count_ == 1) {
-    // Ack asynchronously now, because we don't have any children to wait for.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnCaptureMonitoringSnapshotAcked,
+    // Flush asynchronously now, because we don't have any children to wait for.
+    TraceLog::GetInstance()->FlushButLeaveBufferIntact(
+        base::Bind(&TracingControllerImpl::OnLocalMonitoringTraceDataCollected,
                    base::Unretained(this)));
   }
 
