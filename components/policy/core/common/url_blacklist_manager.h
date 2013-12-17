@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
-#define CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_URL_BLACKLIST_MANAGER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_URL_BLACKLIST_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "components/policy/policy_export.h"
 #include "components/url_matcher/url_matcher.h"
 #include "url/gurl.h"
 
@@ -38,7 +39,7 @@ namespace policy {
 
 // Contains a set of filters to block and allow certain URLs, and matches GURLs
 // against this set. The filters are currently kept in memory.
-class URLBlacklist {
+class POLICY_EXPORT URLBlacklist {
  public:
   // This is meant to be bound to URLFixerUpper::SegmentURL. See that function
   // for documentation on the parameters and return value.
@@ -128,7 +129,7 @@ class URLBlacklist {
 // exists in UI, then a potential destruction on IO will come after any task
 // posted to IO from that method on UI. This is used to go through IO before
 // the actual update starts, and grab a WeakPtr.
-class URLBlacklistManager {
+class POLICY_EXPORT URLBlacklistManager {
  public:
   // Returns true if the blacklist should be skipped for |url|.
   typedef bool (*SkipBlacklistCallback)(const GURL& url);
@@ -223,4 +224,4 @@ class URLBlacklistManager {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_URL_BLACKLIST_MANAGER_H_

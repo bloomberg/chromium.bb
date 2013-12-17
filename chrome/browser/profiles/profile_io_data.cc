@@ -84,10 +84,10 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/policy_helpers.h"
-#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#include "components/policy/core/common/url_blacklist_manager.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)

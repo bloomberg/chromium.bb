@@ -1496,8 +1496,6 @@
         'browser/policy/schema_registry_service.h',
         'browser/policy/schema_registry_service_factory.cc',
         'browser/policy/schema_registry_service_factory.h',
-        'browser/policy/url_blacklist_manager.cc',
-        'browser/policy/url_blacklist_manager.h',
         'browser/policy/url_blacklist_policy_handler.cc',
         'browser/policy/url_blacklist_policy_handler.h',
         'browser/predictors/autocomplete_action_predictor.cc',
@@ -2805,8 +2803,6 @@
             ['include', 'browser/policy/profile_policy_connector.h'],
             ['include', 'browser/policy/profile_policy_connector_factory.cc'],
             ['include', 'browser/policy/profile_policy_connector_factory.h'],
-            ['include', 'browser/policy/url_blacklist_manager.cc'],
-            ['include', 'browser/policy/url_blacklist_manager.h'],
           ],
         }],
         ['enable_plugins==1', {

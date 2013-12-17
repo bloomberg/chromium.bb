@@ -55,6 +55,8 @@
             'cloud_policy_proto',
             'json_schema',
             'policy',
+            'url_matcher',
+            'user_prefs',
           ],
           'sources': [
             'policy/core/browser/cloud/message_util.cc',
@@ -171,6 +173,8 @@
             'policy/core/common/schema_map.h',
             'policy/core/common/schema_registry.cc',
             'policy/core/common/schema_registry.h',
+            'policy/core/common/url_blacklist_manager.cc',
+            'policy/core/common/url_blacklist_manager.h',
             'policy/policy_export.h',
           ],
           'conditions': [
@@ -227,6 +231,8 @@
             'policy/core/common/policy_service.h',
             'policy/core/common/policy_service_stub.cc',
             'policy/core/common/policy_service_stub.h',
+            'policy/core/common/url_blacklist_manager.cc',
+            'policy/core/common/url_blacklist_manager.h',
           ],
         }],
       ],

@@ -59,7 +59,7 @@
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/url_blacklist_manager.h"
+#include "components/policy/core/common/url_blacklist_manager.h"
 #endif
 
 using content::BrowserThread;

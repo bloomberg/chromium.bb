@@ -106,8 +106,8 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
+#include "components/policy/core/common/url_blacklist_manager.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
