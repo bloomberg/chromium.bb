@@ -235,6 +235,7 @@ class StickyKeysTest : public test::AshTestBase,
         is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
         gfx::Point(0, 0),
         gfx::Point(0, 0),
+        ui::EF_LEFT_MOUSE_BUTTON,
         ui::EF_LEFT_MOUSE_BUTTON);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);

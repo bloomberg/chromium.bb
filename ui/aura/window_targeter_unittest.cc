@@ -37,6 +37,7 @@ TEST_F(WindowTargeterTest, Basic) {
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
                        gfx::Point(20, 20),
                        gfx::Point(20, 20),
+                       ui::EF_NONE,
                        ui::EF_NONE);
   root_window()->GetDispatcher()->AsRootWindowHostDelegate()->
       OnHostMouseEvent(&press);

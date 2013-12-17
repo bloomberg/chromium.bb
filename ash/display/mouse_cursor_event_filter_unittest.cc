@@ -41,7 +41,7 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
       gfx::Point point_in_screen) {
     gfx::Point location = drag_source_root->bounds().CenterPoint();
     ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, location,
-                           location, 0);
+                           location, 0, 0);
     ui::Event::DispatcherApi(&pressed).set_target(drag_source_root);
     event_filter()->OnMouseEvent(&pressed);
     bool is_warped = event_filter()->WarpMouseCursorIfNecessary(
@@ -49,7 +49,7 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
     event_filter()->reset_was_mouse_warped_for_test();
 
     ui::MouseEvent released(ui::ET_MOUSE_RELEASED, location,
-                           location, 0);
+                            location, 0, 0);
     ui::Event::DispatcherApi(&released).set_target(drag_source_root);
     event_filter()->OnMouseEvent(&released);
     return is_warped;

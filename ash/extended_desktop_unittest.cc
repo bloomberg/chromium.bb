@@ -441,8 +441,7 @@ TEST_F(ExtendedDesktopTest, Capture) {
   generator2.ClickLeftButton();
   EXPECT_EQ("0 0 0", r2_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0", r2_d1.GetMouseButtonCountsAndReset());
-  // mouse is already entered.
-  EXPECT_EQ("0 1 0", r1_d2.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("1 1 0", r1_d2.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1", r1_d2.GetMouseButtonCountsAndReset());
   r1_w2->ReleaseCapture();
   EXPECT_EQ(NULL, aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));

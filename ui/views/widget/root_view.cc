@@ -524,7 +524,8 @@ void RootView::OnMouseCaptureLost() {
       gfx::Point last_point(last_mouse_event_x_, last_mouse_event_y_);
       ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
                                    last_point, last_point,
-                                   last_mouse_event_flags_);
+                                   last_mouse_event_flags_,
+                                   0);
       UpdateCursor(release_event);
     }
     // We allow the view to delete us from OnMouseCaptureLost. As such,

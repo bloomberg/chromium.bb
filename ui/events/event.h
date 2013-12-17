@@ -321,7 +321,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   MouseEvent(EventType type,
              const gfx::Point& location,
              const gfx::Point& root_location,
-             int flags);
+             int flags,
+             int changed_button_flags);
 
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {

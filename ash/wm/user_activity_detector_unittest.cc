@@ -105,7 +105,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
       UserActivityDetector::kNotifyIntervalMs);
   AdvanceTime(advance_delta);
   ui::MouseEvent mouse_event(
-      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE);
+      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE, ui::EF_NONE);
   SetEventTarget(window.get(), &mouse_event);
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
@@ -212,7 +212,8 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
 TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
   ui::MouseEvent mouse_event(
-      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_IS_SYNTHESIZED);
+      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_IS_SYNTHESIZED,
+      ui::EF_NONE);
   SetEventTarget(window.get(), &mouse_event);
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());

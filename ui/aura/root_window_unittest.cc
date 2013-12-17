@@ -114,7 +114,8 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
   // Send a mouse event to window1.
   gfx::Point point(101, 201);
   ui::MouseEvent event1(
-      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
+      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&event1);
 
   // Event was tested for non-client area for the target window.
@@ -136,7 +137,8 @@ TEST_F(RootWindowTest, RepostEvent) {
   EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
   gfx::Point point(10, 10);
   ui::MouseEvent event(
-      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
+      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher()->RepostEvent(event);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
@@ -155,6 +157,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       ui::ET_MOUSE_PRESSED,
       location,
       location,
+      ui::EF_LEFT_MOUSE_BUTTON,
       ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
@@ -164,7 +167,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       ui::ET_MOUSE_PRESSED,
       location,
       location,
-      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+      ui::EF_RIGHT_MOUSE_BUTTON));
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
@@ -173,7 +177,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       ui::ET_MOUSE_RELEASED,
       location,
       location,
-      ui::EF_RIGHT_MOUSE_BUTTON));
+      ui::EF_RIGHT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
@@ -182,7 +187,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       ui::ET_MOUSE_RELEASED,
       location,
       location,
-      ui::EF_SHIFT_DOWN));
+      ui::EF_SHIFT_DOWN,
+      ui::EF_RIGHT_MOUSE_BUTTON));
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
 
@@ -191,6 +197,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       ui::ET_MOUSE_PRESSED,
       location,
       location,
+      ui::EF_MIDDLE_MOUSE_BUTTON,
       ui::EF_MIDDLE_MOUSE_BUTTON));
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
@@ -201,7 +208,7 @@ TEST_F(RootWindowTest, TranslatedEvent) {
       gfx::Rect(50, 50, 100, 100), root_window()));
 
   gfx::Point origin(100, 100);
-  ui::MouseEvent root(ui::ET_MOUSE_PRESSED, origin, origin, 0);
+  ui::MouseEvent root(ui::ET_MOUSE_PRESSED, origin, origin, 0, 0);
 
   EXPECT_EQ("100,100", root.location().ToString());
   EXPECT_EQ("100,100", root.root_location().ToString());
@@ -567,7 +574,7 @@ TEST_F(RootWindowTest, RepostTargetsCaptureWindow) {
   window->SetCapture();
   const ui::MouseEvent press_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-      ui::EF_LEFT_MOUSE_BUTTON);
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher()->RepostEvent(press_event);
   RunAllPendingInMessageLoop();  // Necessitated by RepostEvent().
   // Mouse moves/enters may be generated. We only care about a pressed.
@@ -584,7 +591,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
       &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
 
   ui::MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
-                                  gfx::Point(0, 0), 0);
+                                  gfx::Point(0, 0), 0, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_move_event);
   // Discard MOUSE_ENTER.
@@ -594,7 +601,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
 
   // Check that we don't immediately dispatch the MOUSE_DRAGGED event.
   ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
-                                     gfx::Point(0, 0), 0);
+                                     gfx::Point(0, 0), 0, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   EXPECT_TRUE(filter->events().empty());
@@ -602,7 +609,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   // Check that we do dispatch the held MOUSE_DRAGGED event before another type
   // of event.
   ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
-                                     gfx::Point(0, 0), 0);
+                                     gfx::Point(0, 0), 0, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
@@ -611,7 +618,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
 
   // Check that we coalesce held MOUSE_DRAGGED events.
   ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
-                                      gfx::Point(1, 1), 0);
+                                      gfx::Point(1, 1), 0, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
@@ -732,14 +739,14 @@ TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
 
   // Dispatch a non-synthetic mouse event when mouse events are enabled.
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
-                        gfx::Point(10, 10), 0);
+                        gfx::Point(10, 10), 0, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_FALSE(filter->events().empty());
   filter->events().clear();
 
   // Dispatch a synthetic mouse event when mouse events are enabled.
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
-                        gfx::Point(10, 10), ui::EF_IS_SYNTHESIZED);
+                        gfx::Point(10, 10), ui::EF_IS_SYNTHESIZED, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse2);
   EXPECT_FALSE(filter->events().empty());
   filter->events().clear();
@@ -766,7 +773,7 @@ TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
   // Dispatch a mouse move event into the window.
   gfx::Point mouse_location(gfx::Point(15, 25));
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, mouse_location,
-                        mouse_location, 0);
+                        mouse_location, 0, 0);
   EXPECT_TRUE(filter->events().empty());
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_FALSE(filter->events().empty());
@@ -1261,7 +1268,7 @@ class DontResetHeldEventWindowDelegate : public test::TestWindowDelegate {
         mouse_event_count_++ == 0) {
       ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED,
                                  gfx::Point(10, 10), gfx::Point(10, 10),
-                                 ui::EF_SHIFT_DOWN);
+                                 ui::EF_SHIFT_DOWN, 0);
       root_->GetDispatcher()->RepostEvent(mouse_event);
     }
   }
@@ -1288,10 +1295,10 @@ TEST_F(RootWindowTest, DontResetHeldEvent) {
   w1->SetBounds(gfx::Rect(0, 0, 40, 40));
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                          gfx::Point(10, 10), gfx::Point(10, 10),
-                         ui::EF_SHIFT_DOWN);
+                         ui::EF_SHIFT_DOWN, 0);
   root_window()->GetDispatcher()->RepostEvent(pressed);
   ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED,
-                          gfx::Point(10, 10), gfx::Point(10, 10), 0);
+                          gfx::Point(10, 10), gfx::Point(10, 10), 0, 0);
   // Invoke OnHostMouseEvent() to flush event scheduled by way of RepostEvent().
   root_window_delegate->OnHostMouseEvent(&pressed2);
   // Delegate should have seen reposted event (identified by way of
@@ -1358,7 +1365,7 @@ TEST_F(RootWindowTest, MAYBE_DeleteRootFromHeldMouseEvent) {
   w1->SetBounds(gfx::Rect(0, 0, 40, 40));
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                          gfx::Point(10, 10), gfx::Point(10, 10),
-                         ui::EF_SHIFT_DOWN);
+                         ui::EF_SHIFT_DOWN, 0);
   r2->RepostEvent(pressed);
   // RunAllPendingInMessageLoop() to make sure the |pressed| is run.
   RunAllPendingInMessageLoop();
@@ -1477,7 +1484,7 @@ class RootWindowTestWithMessageLoop : public RootWindowTest {
     // terminate the message-loop. When the message-loop unwinds and gets back,
     // the reposted event should not have fired.
     ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
-                         gfx::Point(10, 10), ui::EF_NONE);
+                         gfx::Point(10, 10), ui::EF_NONE, ui::EF_NONE);
     message_loop()->PostTask(FROM_HERE,
                              base::Bind(&RootWindow::RepostEvent,
                                         base::Unretained(dispatcher()),

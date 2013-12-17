@@ -44,6 +44,7 @@ void BaseScrollBarButton::RepeaterNotifyClick() {
 #endif
   ui::MouseEvent event(ui::ET_MOUSE_RELEASED,
                        cursor_point, cursor_point,
+                       ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_LEFT_MOUSE_BUTTON);
   Button::NotifyClick(event);
 }

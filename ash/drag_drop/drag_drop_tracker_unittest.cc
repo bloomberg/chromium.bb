@@ -37,6 +37,7 @@ class DragDropTrackerTest : public test::AshTestBase {
     ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
                      location,
                      location,
+                     ui::EF_NONE,
                      ui::EF_NONE);
     aura::Window* target = tracker->GetTarget(e);
     return target;
@@ -147,6 +148,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   ui::MouseEvent original00(ui::ET_MOUSE_DRAGGED,
                             gfx::Point(50, 50),
                             gfx::Point(50, 50),
+                            ui::EF_NONE,
                             ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted00(ConvertEvent(window0.get(),
                                                         original00));
@@ -160,6 +162,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   ui::MouseEvent original01(ui::ET_MOUSE_DRAGGED,
                             gfx::Point(350, 150),
                             gfx::Point(350, 150),
+                            ui::EF_NONE,
                             ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted01(ConvertEvent(window1.get(),
                                                         original01));
@@ -176,6 +179,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   ui::MouseEvent original10(ui::ET_MOUSE_DRAGGED,
                             gfx::Point(-150, 50),
                             gfx::Point(-150, 50),
+                            ui::EF_NONE,
                             ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted10(ConvertEvent(window0.get(),
                                                         original10));
@@ -189,6 +193,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   ui::MouseEvent original11(ui::ET_MOUSE_DRAGGED,
                             gfx::Point(150, 150),
                             gfx::Point(150, 150),
+                            ui::EF_NONE,
                             ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted11(ConvertEvent(window1.get(),
                                                            original11));

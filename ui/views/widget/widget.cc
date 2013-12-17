@@ -966,7 +966,7 @@ void Widget::SynthesizeMouseMoveEvent() {
   ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED,
                              last_mouse_event_position_,
                              last_mouse_event_position_,
-                             ui::EF_IS_SYNTHESIZED);
+                             ui::EF_IS_SYNTHESIZED, 0);
   root_view_->OnMouseMoved(mouse_event);
 }
 

@@ -43,9 +43,11 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
       browser_view->GetToolbarView()->location_bar()->star_view();
 
   ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-      ui::EF_LEFT_MOUSE_BUTTON);
+                               ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
-      gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON);
+                                gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON,
+                                ui::EF_LEFT_MOUSE_BUTTON);
 
   // Verify that clicking once shows the bookmark bubble.
   EXPECT_FALSE(BookmarkBubbleView::IsShowing());

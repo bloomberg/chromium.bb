@@ -58,7 +58,7 @@ TEST(EventTest, GetCharacter) {
 
 TEST(EventTest, ClickCount) {
   const gfx::Point origin(0, 0);
-  MouseEvent mouseev(ET_MOUSE_PRESSED, origin, origin, 0);
+  MouseEvent mouseev(ET_MOUSE_PRESSED, origin, origin, 0, 0);
   for (int i = 1; i <=3 ; ++i) {
     mouseev.SetClickCount(i);
     EXPECT_EQ(i, mouseev.GetClickCount());
@@ -67,8 +67,8 @@ TEST(EventTest, ClickCount) {
 
 TEST(EventTest, Repeated) {
   const gfx::Point origin(0, 0);
-  MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, 0);
-  MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, 0);
+  MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, 0, 0);
+  MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, 0, 0);
   LocatedEventTestApi test_ev1(&mouse_ev1);
   LocatedEventTestApi test_ev2(&mouse_ev2);
 

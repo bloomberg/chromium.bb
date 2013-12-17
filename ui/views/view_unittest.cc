@@ -412,7 +412,7 @@ TEST_F(ViewTest, MouseEvent) {
 
   gfx::Point p1(110, 120);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
   EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_PRESSED);
   EXPECT_EQ(v2->location_.x(), 10);
@@ -425,7 +425,7 @@ TEST_F(ViewTest, MouseEvent) {
   v2->Reset();
   gfx::Point p2(50, 40);
   ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, p2, p2,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, 0);
   root->OnMouseDragged(dragged);
   EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_DRAGGED);
   EXPECT_EQ(v2->location_.x(), -50);
@@ -436,7 +436,8 @@ TEST_F(ViewTest, MouseEvent) {
   // Releasted event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
+  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0,
+                          0);
   root->OnMouseDragged(released);
   EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_RELEASED);
   EXPECT_EQ(v2->location_.x(), -100);
@@ -471,7 +472,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
   v2->delete_on_pressed_ = true;
   gfx::Point point(110, 120);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
   EXPECT_EQ(0, v1->child_count());
 
@@ -1359,7 +1360,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 
   // Move the mouse in v111.
   gfx::Point p1(6, 6);
-  ui::MouseEvent move1(ui::ET_MOUSE_MOVED, p1, p1, 0);
+  ui::MouseEvent move1(ui::ET_MOUSE_MOVED, p1, p1, 0, 0);
   root_view->OnMouseMoved(move1);
   EXPECT_TRUE(v111->received_mouse_enter_);
   EXPECT_FALSE(v11->last_mouse_event_type_);
@@ -1370,7 +1371,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 
   // Now, move into v121.
   gfx::Point p2(65, 21);
-  ui::MouseEvent move2(ui::ET_MOUSE_MOVED, p2, p2, 0);
+  ui::MouseEvent move2(ui::ET_MOUSE_MOVED, p2, p2, 0, 0);
   root_view->OnMouseMoved(move2);
   EXPECT_TRUE(v111->received_mouse_exit_);
   EXPECT_TRUE(v121->received_mouse_enter_);
@@ -1381,7 +1382,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 
   // Now, move into v11.
   gfx::Point p3(1, 1);
-  ui::MouseEvent move3(ui::ET_MOUSE_MOVED, p3, p3, 0);
+  ui::MouseEvent move3(ui::ET_MOUSE_MOVED, p3, p3, 0, 0);
   root_view->OnMouseMoved(move3);
   EXPECT_TRUE(v121->received_mouse_exit_);
   EXPECT_TRUE(v11->received_mouse_enter_);
@@ -1392,7 +1393,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 
   // Move to v21.
   gfx::Point p4(121, 15);
-  ui::MouseEvent move4(ui::ET_MOUSE_MOVED, p4, p4, 0);
+  ui::MouseEvent move4(ui::ET_MOUSE_MOVED, p4, p4, 0, 0);
   root_view->OnMouseMoved(move4);
   EXPECT_TRUE(v21->received_mouse_enter_);
   EXPECT_FALSE(v2->last_mouse_event_type_);
@@ -1405,7 +1406,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 
   // Move to v1.
   gfx::Point p5(21, 0);
-  ui::MouseEvent move5(ui::ET_MOUSE_MOVED, p5, p5, 0);
+  ui::MouseEvent move5(ui::ET_MOUSE_MOVED, p5, p5, 0, 0);
   root_view->OnMouseMoved(move5);
   EXPECT_TRUE(v21->received_mouse_exit_);
   EXPECT_TRUE(v1->received_mouse_enter_);
@@ -1415,7 +1416,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 
   // Now, move into v11.
   gfx::Point p6(15, 15);
-  ui::MouseEvent mouse6(ui::ET_MOUSE_MOVED, p6, p6, 0);
+  ui::MouseEvent mouse6(ui::ET_MOUSE_MOVED, p6, p6, 0, 0);
   root_view->OnMouseMoved(mouse6);
   EXPECT_TRUE(v11->received_mouse_enter_);
   EXPECT_FALSE(v1->last_mouse_event_type_);
@@ -1427,7 +1428,7 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
   // and the mouse remains inside |v1| the whole time, it receives another ENTER
   // when the mouse leaves v11.
   gfx::Point p7(21, 0);
-  ui::MouseEvent mouse7(ui::ET_MOUSE_MOVED, p7, p7, 0);
+  ui::MouseEvent mouse7(ui::ET_MOUSE_MOVED, p7, p7, 0, 0);
   root_view->OnMouseMoved(mouse7);
   EXPECT_TRUE(v11->received_mouse_exit_);
   EXPECT_FALSE(v1->received_mouse_enter_);
@@ -1964,14 +1965,15 @@ TEST_F(ViewTest, TransformEvent) {
 
   gfx::Point p1(110, 210);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
   EXPECT_EQ(0, v1->last_mouse_event_type_);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v2->last_mouse_event_type_);
   EXPECT_EQ(190, v2->location_.x());
   EXPECT_EQ(10, v2->location_.y());
 
-  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
+  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0,
+                          0);
   root->OnMouseReleased(released);
 
   // Now rotate |v2| inside |v1| clockwise.
@@ -1988,7 +1990,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   gfx::Point point2(110, 320);
   ui::MouseEvent p2(ui::ET_MOUSE_PRESSED, point2, point2,
-                    ui::EF_LEFT_MOUSE_BUTTON);
+                    ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(p2);
   EXPECT_EQ(0, v1->last_mouse_event_type_);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v2->last_mouse_event_type_);
@@ -2024,7 +2026,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   gfx::Point point(112, 110);
   ui::MouseEvent p3(ui::ET_MOUSE_PRESSED, point, point,
-                    ui::EF_LEFT_MOUSE_BUTTON);
+                    ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(p3);
 
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v3->last_mouse_event_type_);
@@ -2063,7 +2065,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   gfx::Point point3(124, 125);
   ui::MouseEvent p4(ui::ET_MOUSE_PRESSED, point3, point3,
-                    ui::EF_LEFT_MOUSE_BUTTON);
+                    ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(p4);
 
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v3->last_mouse_event_type_);

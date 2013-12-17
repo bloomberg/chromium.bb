@@ -293,20 +293,22 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   void MouseClick(const gfx::Rect bound, int x_offset) {
     gfx::Point point(bound.x() +  x_offset, bound.y() + bound.height() / 2);
     ui::MouseEvent click(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     textfield_view_->OnMousePressed(click);
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, point, point,
-                           ui::EF_LEFT_MOUSE_BUTTON);
+                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     textfield_view_->OnMouseReleased(release);
   }
 
   // This is to avoid double/triple click.
   void NonClientMouseClick() {
     ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_NON_CLIENT);
+                         ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_NON_CLIENT,
+                         ui::EF_LEFT_MOUSE_BUTTON);
     textfield_view_->OnMousePressed(click);
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_NON_CLIENT);
+                           ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_NON_CLIENT,
+                           ui::EF_LEFT_MOUSE_BUTTON);
     textfield_view_->OnMouseReleased(release);
   }
 
@@ -781,7 +783,7 @@ TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
   widget_->GetFocusManager()->AdvanceFocus(true);
   EXPECT_EQ(3, GetFocusedView()->id());
   ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                       ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(click);
   EXPECT_EQ(1, GetFocusedView()->id());
 }
@@ -813,12 +815,13 @@ TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
   ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                       ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent double_click(
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK);
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
+      ui::EF_LEFT_MOUSE_BUTTON);
 
   // Test for double click.
   textfield_view_->OnMousePressed(click);
@@ -847,15 +850,15 @@ TEST_F(NativeTextfieldViewsTest, DragToSelect) {
   gfx::Point start_point(kStart, 0);
   gfx::Point end_point(kEnd, 0);
   ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, start_point, start_point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent click_b(ui::ET_MOUSE_PRESSED, end_point, end_point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent drag_left(ui::ET_MOUSE_DRAGGED, gfx::Point(), gfx::Point(),
-                           ui::EF_LEFT_MOUSE_BUTTON);
+                           ui::EF_LEFT_MOUSE_BUTTON, 0);
   ui::MouseEvent drag_right(ui::ET_MOUSE_DRAGGED, end_point, end_point,
-                            ui::EF_LEFT_MOUSE_BUTTON);
+                            ui::EF_LEFT_MOUSE_BUTTON, 0);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, end_point, end_point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(click_a);
   EXPECT_TRUE(textfield_->GetSelectedText().empty());
   // Check that dragging left selects the beginning of the string.
@@ -962,6 +965,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   textfield_->SetObscured(false);
   // Ensure that textfields only initiate drag operations inside the selection.
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, kStringPoint, kStringPoint,
+                             ui::EF_LEFT_MOUSE_BUTTON,
                              ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(press_event);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
@@ -991,7 +995,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   textfield_->SelectRange(gfx::Range(1, 5));
   gfx::Point point(GetCursorPositionX(3), 0);
   ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(click_a);
   EXPECT_TRUE(textfield_view_->CanStartDragForView(textfield_view_,
                   click_a.location(), gfx::Point()));
@@ -1046,7 +1050,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
   textfield_->SelectRange(gfx::Range(5, 10));
   gfx::Point point(GetCursorPositionX(7), 0);
   ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(click_a);
   EXPECT_TRUE(textfield_view_->CanStartDragForView(textfield_view_,
                   click_a.location(), gfx::Point()));
@@ -1095,7 +1099,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   textfield_->SelectRange(gfx::Range(6, 10));
   gfx::Point point(GetCursorPositionX(8), 0);
   ui::MouseEvent click(ui::ET_MOUSE_PRESSED, point, point,
-                       ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(click);
   ui::OSExchangeData data;
   textfield_view_->WriteDragDataForView(NULL, click.location(), &data);
@@ -1108,9 +1112,9 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   // "Cancel" the drag, via move and release over the selection, and OnDragDone.
   gfx::Point drag_point(GetCursorPositionX(9), 0);
   ui::MouseEvent drag(ui::ET_MOUSE_DRAGGED, drag_point, drag_point,
-                      ui::EF_LEFT_MOUSE_BUTTON);
+                      ui::EF_LEFT_MOUSE_BUTTON, 0);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, drag_point, drag_point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMouseDragged(drag);
   textfield_view_->OnMouseReleased(release);
   textfield_view_->OnDragDone();
@@ -1850,13 +1854,14 @@ TEST_F(NativeTextfieldViewsTest, KeepInitiallySelectedWord) {
   const gfx::Point middle(middle_cursor.x(),
                           middle_cursor.y() + middle_cursor.height() / 2);
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, middle, middle,
+                             ui::EF_LEFT_MOUSE_BUTTON,
                              ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(press_event);
   EXPECT_EQ(gfx::Range(4, 7), textfield_->GetSelectedRange());
 
   // Drag the mouse to the beginning of the textfield.
   ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, beginning, beginning,
-                            ui::EF_LEFT_MOUSE_BUTTON);
+                            ui::EF_LEFT_MOUSE_BUTTON, 0);
   textfield_view_->OnMouseDragged(drag_event);
   EXPECT_EQ(gfx::Range(7, 0), textfield_->GetSelectedRange());
 }

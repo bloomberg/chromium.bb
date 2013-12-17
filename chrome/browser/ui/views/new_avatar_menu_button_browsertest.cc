@@ -83,7 +83,8 @@ void NewAvatarMenuButtonTest::StartAvatarMenu() {
   ASSERT_FALSE(browser_view->frame()->GetAvatarMenuButton());
 
   ProfileChooserView::clear_close_on_deactivate_for_testing();
-  ui::MouseEvent mouse_ev(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
+  ui::MouseEvent mouse_ev(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0,
+                          0);
   button->NotifyClick(mouse_ev);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(ProfileChooserView::IsShowing());

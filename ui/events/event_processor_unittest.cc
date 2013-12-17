@@ -41,7 +41,7 @@ TEST_F(EventProcessorTest, Basic) {
   root()->AddChild(child.Pass());
 
   MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                   EF_NONE);
+                   EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -130,7 +130,8 @@ TEST_F(EventProcessorTest, Bounds) {
   // Dispatch a mouse event that falls on the parent, but not on the child. When
   // the default event-targeter used, the event will still reach |grandchild|,
   // because the default targeter does not look at the bounds.
-  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1), EF_NONE);
+  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1), EF_NONE,
+                   EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -151,7 +152,7 @@ TEST_F(EventProcessorTest, Bounds) {
   parent_r->ResetReceivedEvents();
 
   MouseEvent second(ET_MOUSE_MOVED, gfx::Point(12, 12), gfx::Point(12, 12),
-                    EF_NONE);
+                    EF_NONE, EF_NONE);
   DispatchEvent(&second);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));

@@ -509,14 +509,14 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   {
     // Resize edges and corners show proper cursors.
     window_delegate.set_hittest_code(HTBOTTOM);
-    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
     EXPECT_EQ(ui::kCursorSouthResize, dispatcher->last_cursor().native_type());
   }
 
   {
     window_delegate.set_hittest_code(HTBOTTOMLEFT);
-    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
     EXPECT_EQ(ui::kCursorSouthWestResize,
               dispatcher->last_cursor().native_type());
@@ -524,7 +524,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
 
   {
     window_delegate.set_hittest_code(HTBOTTOMRIGHT);
-    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
     EXPECT_EQ(ui::kCursorSouthEastResize,
               dispatcher->last_cursor().native_type());
@@ -532,28 +532,28 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
 
   {
     window_delegate.set_hittest_code(HTLEFT);
-    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
     EXPECT_EQ(ui::kCursorWestResize, dispatcher->last_cursor().native_type());
   }
 
   {
     window_delegate.set_hittest_code(HTRIGHT);
-    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
     EXPECT_EQ(ui::kCursorEastResize, dispatcher->last_cursor().native_type());
   }
 
   {
     window_delegate.set_hittest_code(HTTOP);
-    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
     EXPECT_EQ(ui::kCursorNorthResize, dispatcher->last_cursor().native_type());
   }
 
   {
     window_delegate.set_hittest_code(HTTOPLEFT);
-    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
     EXPECT_EQ(ui::kCursorNorthWestResize,
               dispatcher->last_cursor().native_type());
@@ -561,7 +561,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
 
   {
     window_delegate.set_hittest_code(HTTOPRIGHT);
-    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
     EXPECT_EQ(ui::kCursorNorthEastResize,
               dispatcher->last_cursor().native_type());
@@ -570,7 +570,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   {
     // Client area uses null cursor.
     window_delegate.set_hittest_code(HTCLIENT);
-    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
     EXPECT_EQ(ui::kCursorNull, dispatcher->last_cursor().native_type());
   }
@@ -606,6 +606,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   ui::MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
                           miss_point,
                           miss_point,
+                          ui::EF_LEFT_MOUSE_BUTTON,
                           ui::EF_LEFT_MOUSE_BUTTON);
   aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouseev1);
@@ -613,6 +614,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   ui::MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
                          miss_point,
                          miss_point,
+                         ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouseup);
 
@@ -621,6 +623,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   ui::MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
                           hit_point,
                           hit_point,
+                          ui::EF_LEFT_MOUSE_BUTTON,
                           ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouseev2);
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -657,7 +660,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
   dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
   ui::MouseEvent mouse_pressed(
-      ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
+      ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_pressed);
 
   // Both filters should get the events.
@@ -676,7 +679,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   // Dispatches events.
   dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
   ui::MouseEvent mouse_released(
-      ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
+      ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_released);
 
   // f1 should still get the events but f2 no longer gets them.

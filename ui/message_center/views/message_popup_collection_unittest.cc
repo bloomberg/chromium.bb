@@ -358,7 +358,7 @@ TEST_F(MessagePopupCollectionTest, DetectMouseHover) {
   views::WidgetDelegateView* toast1 = GetToast(id1);
   EXPECT_TRUE(toast1 != NULL);
 
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), 0);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), 0, 0);
 
   // Test that mouse detection logic works in presence of out-of-order events.
   toast0->OnMouseEntered(event);
@@ -393,7 +393,7 @@ TEST_F(MessagePopupCollectionTest, DetectMouseHoverWithUserClose) {
   views::WidgetDelegateView* toast1 = GetToast(id1);
   ASSERT_TRUE(toast1 != NULL);
 
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), 0);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), 0, 0);
   toast1->OnMouseEntered(event);
   static_cast<MessageCenterObserver*>(collection())->OnNotificationRemoved(
       id1, true);

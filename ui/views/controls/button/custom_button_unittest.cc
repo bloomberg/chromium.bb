@@ -80,10 +80,12 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
 
   gfx::Point center(10, 10);
   button->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED, center, center,
+                                        ui::EF_LEFT_MOUSE_BUTTON,
                                         ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
 
   button->OnMouseReleased(ui::MouseEvent(ui::ET_MOUSE_RELEASED, center, center,
+                                         ui::EF_LEFT_MOUSE_BUTTON,
                                          ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_HOVERED, button->state());
 

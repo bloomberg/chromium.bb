@@ -36,7 +36,8 @@ class MouseEventCapturer : public ui::EventHandler {
           event->type(),
           event->location(),
           event->root_location(),
-          event->flags()));
+          event->flags(),
+          event->changed_button_flags()));
       // Stop event propagation so we don't click on random stuff that
       // might break test assumptions.
       event->StopPropagation();

@@ -271,12 +271,14 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   WindowPropertyObserver observer(window.get());
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, generator.current_location(),
                        generator.current_location(),
-                       ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK);
+                       ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
+                       ui::EF_MIDDLE_MOUSE_BUTTON);
   aura::WindowEventDispatcher* dispatcher = root->GetDispatcher();
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&press);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, generator.current_location(),
                          generator.current_location(),
-                         ui::EF_IS_DOUBLE_CLICK);
+                         ui::EF_IS_DOUBLE_CLICK,
+                         ui::EF_MIDDLE_MOUSE_BUTTON);
   dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&release);
 
   EXPECT_FALSE(window_state->IsMaximized());

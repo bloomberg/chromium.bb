@@ -17,10 +17,10 @@ namespace {
 void ClickAt(views::View* view, int x, int y) {
   gfx::Point point(x, y);
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, point, point,
-                       ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMousePressed(press);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, point, point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMouseReleased(release);
 }
 

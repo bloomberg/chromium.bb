@@ -74,7 +74,9 @@ ui::LocatedEvent* DragDropTracker::ConvertEvent(
   return new ui::MouseEvent(event.type(),
                             target_location,
                             target_root_location,
-                            event.flags());
+                            event.flags(),
+                            static_cast<const ui::MouseEvent&>(event).
+                                changed_button_flags());
 }
 
 }  // namespace internal

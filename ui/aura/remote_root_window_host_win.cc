@@ -487,7 +487,7 @@ void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
     return;
 
   gfx::Point location(x, y);
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags, 0);
   delegate_->OnHostMouseEvent(&event);
 }
 
@@ -498,7 +498,8 @@ void RemoteRootWindowHostWin::OnMouseButton(
     ui::EventType type,
     ui::EventFlags flags) {
   gfx::Point location(x, y);
-  ui::MouseEvent mouse_event(type, location, location, flags);
+  // TODO: this needs to pass in changed flags.
+  ui::MouseEvent mouse_event(type, location, location, flags, 0);
 
   SetEventFlags(flags | key_event_flags());
   if (type == ui::ET_MOUSEWHEEL) {

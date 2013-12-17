@@ -39,6 +39,7 @@ void ClickViewCenter(views::View* view) {
   view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
                                       click_location_in_local,
                                       click_location_in_local,
+                                      ui::EF_NONE,
                                       ui::EF_NONE));
 }
 

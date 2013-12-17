@@ -227,7 +227,7 @@ TEST_F(WidgetTest, CaptureAutoReset) {
   // By default, mouse release removes capture.
   gfx::Point click_location(45, 15);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
-      ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&release);
   EXPECT_FALSE(toplevel->HasCapture());
 
@@ -274,9 +274,9 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
   gfx::Point click_location(45, 15);
 
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-      ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
-      ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 
   EXPECT_TRUE(toplevel->HasCapture());
 
@@ -327,9 +327,10 @@ TEST_F(WidgetTest, DisableCaptureWidgetFromMousePress) {
                  base::Owned(new ui::MouseEvent(ui::ET_MOUSE_RELEASED,
                                                 location,
                                                 location,
+                                                ui::EF_LEFT_MOUSE_BUTTON,
                                                 ui::EF_LEFT_MOUSE_BUTTON))));
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
-                       ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   first->OnMouseEvent(&press);
   EXPECT_FALSE(first->HasCapture());
   first->Close();
@@ -361,7 +362,7 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   // Click on child1
   gfx::Point p1(45, 45);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&pressed);
 
   EXPECT_TRUE(toplevel->HasCapture());
@@ -369,7 +370,7 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   EXPECT_FALSE(child2->HasCapture());
 
   ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1,
-                          ui::EF_LEFT_MOUSE_BUTTON);
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&released);
 
   EXPECT_FALSE(toplevel->HasCapture());
@@ -381,7 +382,7 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   // Click on child2
   gfx::Point p2(315, 45);
   ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2,
-                          ui::EF_LEFT_MOUSE_BUTTON);
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&pressed2);
   EXPECT_TRUE(pressed2.handled());
   EXPECT_TRUE(toplevel->HasCapture());
@@ -389,7 +390,7 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   EXPECT_FALSE(child1->HasCapture());
 
   ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2,
-                           ui::EF_LEFT_MOUSE_BUTTON);
+                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&released2);
   EXPECT_FALSE(toplevel->HasCapture());
   EXPECT_FALSE(child1->HasCapture());
@@ -414,21 +415,24 @@ TEST_F(WidgetTest, CheckResizeControllerEvents) {
 
   // Move to an outside position.
   gfx::Point p1(200, 200);
-  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EF_NONE);
+  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EF_NONE,
+                           ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_out);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the active view.
   gfx::Point p2(95, 95);
-  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EF_NONE);
+  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EF_NONE,
+                            ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_over);
   EXPECT_EQ(1, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the outer resizing border.
   gfx::Point p3(102, 95);
-  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3, ui::EF_NONE);
+  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3, ui::EF_NONE,
+                               ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_resizer);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(1, view->ExitedCalls());
@@ -775,7 +779,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseEventDispatchedToRightWindow) {
   // Send a mouse event to the RootWindow associated with |widget1|. Even though
   // |widget2| has capture, |widget1| should still get the event.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
-                             ui::EF_NONE);
+                             ui::EF_NONE, ui::EF_NONE);
   widget1.GetNativeWindow()->GetDispatcher()->AsRootWindowHostDelegate()->
       OnHostMouseEvent(&mouse_event);
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());

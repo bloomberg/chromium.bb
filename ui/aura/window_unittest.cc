@@ -1221,7 +1221,7 @@ TEST_F(WindowTest, RootWindowHostExit) {
   d1.ResetExpectations();
 
   ui::MouseEvent exit_event(
-      ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(), 0);
+      ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(), 0, 0);
   dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit_event);
   EXPECT_FALSE(d1.entered());
   EXPECT_TRUE(d1.exited());

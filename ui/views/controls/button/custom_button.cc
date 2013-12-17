@@ -199,6 +199,7 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
     ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED,
                                    gfx::Point(),
                                    gfx::Point(),
+                                   ui::EF_LEFT_MOUSE_BUTTON,
                                    ui::EF_LEFT_MOUSE_BUTTON);
     NotifyClick(synthetic_event);
   } else {
@@ -216,6 +217,7 @@ bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
   ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED,
                                  gfx::Point(),
                                  gfx::Point(),
+                                 ui::EF_LEFT_MOUSE_BUTTON,
                                  ui::EF_LEFT_MOUSE_BUTTON);
   NotifyClick(synthetic_event);
   return true;
@@ -260,6 +262,7 @@ bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED,
                                  gfx::Point(),
                                  gfx::Point(),
+                                 ui::EF_LEFT_MOUSE_BUTTON,
                                  ui::EF_LEFT_MOUSE_BUTTON);
   NotifyClick(synthetic_event);
   return true;

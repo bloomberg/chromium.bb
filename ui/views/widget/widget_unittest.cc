@@ -1305,7 +1305,7 @@ class CloseWidgetView : public View {
 void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   const gfx::Rect screen_bounds(widget->GetWindowBoundsInScreen());
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
-                            screen_bounds.CenterPoint(), 0);
+                            screen_bounds.CenterPoint(), 0, 0);
   aura::RootWindowHostDelegate* rwhd =
       widget->GetNativeWindow()->GetDispatcher()->AsRootWindowHostDelegate();
   rwhd->OnHostMouseEvent(&move_event);
@@ -1316,19 +1316,20 @@ void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
     return;
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, screen_bounds.CenterPoint(),
-                             screen_bounds.CenterPoint(), 0);
+                             screen_bounds.CenterPoint(), 0, 0);
   rwhd->OnHostMouseEvent(&press_event);
   if (last_event_type == ui::ET_MOUSE_PRESSED)
     return;
 
   gfx::Point end_point(screen_bounds.CenterPoint());
   end_point.Offset(1, 1);
-  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point, 0);
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point, 0, 0);
   rwhd->OnHostMouseEvent(&drag_event);
   if (last_event_type == ui::ET_MOUSE_DRAGGED)
     return;
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point, 0);
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point, 0,
+                               0);
   rwhd->OnHostMouseEvent(&release_event);
 }
 
@@ -1542,7 +1543,7 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   gfx::Point cursor_location(5, 5);
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
-                      ui::EF_NONE);
+                      ui::EF_NONE, ui::EF_NONE);
   widget->OnMouseEvent(&move);
 
   EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
@@ -1724,7 +1725,7 @@ TEST_F(WidgetTest, TestWidgetDeletedInOnMousePressed) {
 
   gfx::Point click_location(45, 15);
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-      ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   widget->OnMouseEvent(&press);
 
   // Yay we did not crash!
@@ -1867,7 +1868,7 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   EXPECT_EQ(NULL, GetMousePressedHandler(root_view));
   gfx::Point click_location(45, 15);
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-      ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   widget->OnMouseEvent(&press);
   EXPECT_EQ(view, GetMousePressedHandler(root_view));
   widget->Hide();
@@ -1877,7 +1878,7 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   widget->Show();
   EXPECT_EQ(NULL, GetMouseMoveHandler(root_view));
   gfx::Point move_location(45, 15);
-  ui::MouseEvent move(ui::ET_MOUSE_MOVED, move_location, move_location, 0);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, move_location, move_location, 0, 0);
   widget->OnMouseEvent(&move);
   EXPECT_EQ(view, GetMouseMoveHandler(root_view));
   widget->Hide();
@@ -2066,6 +2067,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   ui::MouseEvent move_main(ui::ET_MOUSE_MOVED,
                            cursor_location_main,
                            cursor_location_main,
+                           ui::EF_NONE,
                            ui::EF_NONE);
   top_level_widget.GetNativeView()->GetDispatcher()->
       AsRootWindowHostDelegate()->OnHostMouseEvent(&move_main);
@@ -2092,6 +2094,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   ui::MouseEvent mouse_down_dialog(ui::ET_MOUSE_PRESSED,
                                    cursor_location_dialog,
                                    cursor_location_dialog,
+                                   ui::EF_NONE,
                                    ui::EF_NONE);
   top_level_widget.GetNativeView()->GetDispatcher()->
       AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_down_dialog);
@@ -2103,6 +2106,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   ui::MouseEvent mouse_down_main(ui::ET_MOUSE_MOVED,
                                  cursor_location_main2,
                                  cursor_location_main2,
+                                 ui::EF_NONE,
                                  ui::EF_NONE);
   top_level_widget.GetNativeView()->GetDispatcher()->
       AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_down_main);

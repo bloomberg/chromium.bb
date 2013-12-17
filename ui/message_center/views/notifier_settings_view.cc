@@ -384,7 +384,8 @@ void NotifierSettingsView::NotifierButton::SendLearnMorePressedForTest() {
     return;
   gfx::Point point(110, 120);
   ui::MouseEvent pressed(
-      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
+      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
   ButtonPressed(learn_more_, pressed);
 }
 

@@ -2230,12 +2230,13 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
           target_menu, active_mouse_view, &target_point);
       ui::MouseEvent mouse_entered_event(ui::ET_MOUSE_ENTERED,
                                          target_point, target_point,
-                                         0);
+                                         0, 0);
       active_mouse_view->OnMouseEntered(mouse_entered_event);
 
       ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED,
                                          target_point, target_point,
-                                         event.flags());
+                                         event.flags(),
+                                         event.changed_button_flags());
       active_mouse_view->OnMousePressed(mouse_pressed_event);
     }
   }
@@ -2245,7 +2246,8 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     View::ConvertPointToTarget(target_menu, active_mouse_view, &target_point);
     ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED,
                                        target_point, target_point,
-                                       event.flags());
+                                       event.flags(),
+                                       event.changed_button_flags());
     active_mouse_view->OnMouseDragged(mouse_dragged_event);
   }
 }
@@ -2261,7 +2263,7 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
                              &target_loc);
   View::ConvertPointFromScreen(active_mouse_view, &target_loc);
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc, target_loc,
-                               event.flags());
+                               event.flags(), event.changed_button_flags());
   // Reset active mouse view before sending mouse released. That way if it calls
   // back to us, we aren't in a weird state.
   SetActiveMouseView(NULL);

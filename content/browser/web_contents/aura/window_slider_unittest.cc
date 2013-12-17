@@ -251,7 +251,7 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
     new ui::MouseEvent(ui::ET_MOUSE_MOVED,
                        gfx::Point(55, 10),
                        gfx::Point(55, 10),
-                       0),
+                       0, 0),
     new ui::KeyEvent(ui::ET_KEY_PRESSED,
                      ui::VKEY_A,
                      0,

@@ -220,10 +220,12 @@ class ComboboxTest : public ViewsTestBase {
   void PerformClick(const gfx::Point& point) {
     ui::MouseEvent pressed_event = ui::MouseEvent(ui::ET_MOUSE_PRESSED, point,
                                                   point,
+                                                  ui::EF_LEFT_MOUSE_BUTTON,
                                                   ui::EF_LEFT_MOUSE_BUTTON);
     widget_->OnMouseEvent(&pressed_event);
     ui::MouseEvent released_event = ui::MouseEvent(ui::ET_MOUSE_RELEASED, point,
                                                    point,
+                                                   ui::EF_LEFT_MOUSE_BUTTON,
                                                    ui::EF_LEFT_MOUSE_BUTTON);
     widget_->OnMouseEvent(&released_event);
   }

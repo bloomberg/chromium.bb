@@ -123,7 +123,7 @@ bool RadioButton::IsGroupFocusTraversable() const {
 void RadioButton::OnFocus() {
   Checkbox::OnFocus();
   SetChecked(true);
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), 0);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), 0, 0);
   LabelButton::NotifyClick(event);
 }
 

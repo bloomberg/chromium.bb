@@ -63,7 +63,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const ui::LatencyInfo&) {
   gfx::Point location(web_wheel.x, web_wheel.y);
   ui::MouseEvent mouse_event(
-      ui::ET_MOUSEWHEEL, location, location, ui::EF_NONE);
+      ui::ET_MOUSEWHEEL, location, location, ui::EF_NONE, ui::EF_NONE);
   ui::MouseWheelEvent wheel_event(
       mouse_event, web_wheel.deltaX, web_wheel.deltaY);
 
@@ -127,7 +127,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   gfx::Point location(web_mouse.x, web_mouse.y);
   ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
-  ui::MouseEvent mouse_event(event_type, location, location, flags);
+  // TODO: last argument (changed_button_flags) likely isn't right.
+  ui::MouseEvent mouse_event(event_type, location, location, flags, 0);
 
   GetRootWindowHostDelegate()->OnHostMouseEvent(&mouse_event);
 }

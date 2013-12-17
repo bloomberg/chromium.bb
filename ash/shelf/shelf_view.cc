@@ -616,7 +616,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
   ash::wm::ConvertPointFromScreen(
       ash::wm::GetRootWindowAt(location_in_screen_coordinates),
       &point_in_root);
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root, 0, 0);
   PointerPressedOnButton(drag_and_drop_view,
                          ShelfButtonHost::DRAG_AND_DROP,
                          event);
@@ -639,7 +639,7 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   ash::wm::ConvertPointFromScreen(
       ash::wm::GetRootWindowAt(location_in_screen_coordinates),
       &point_in_root);
-  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root, 0, 0);
   PointerDraggedOnButton(drag_and_drop_view,
                          ShelfButtonHost::DRAG_AND_DROP,
                          event);
