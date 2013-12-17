@@ -136,9 +136,6 @@ void ContextFeaturesClientImpl::urlDidChange(Document* document)
 
 bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
 {
-    if (!m_client)
-        return defaultValue;
-
 #if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
     WebFrameImpl* frame = WebFrameImpl::fromFrame(document->frame());
     if (!frame)
@@ -157,6 +154,9 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
         }
     }
 #endif
+
+    if (!m_client)
+        return defaultValue;
 
     switch (type) {
 #if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
