@@ -33,4 +33,9 @@ message PrecacheConfigurationSettings {
   // Values that are zero or lower indicate that none of the user's top sites
   // will be used for precaching.
   optional int64 top_sites_count = 1 [default = 10];
+
+  // List of additional starting URLs that resources will be precached for.
+  // These are URLs that the server predicts that the user will visit, as a
+  // result of server-side analytics.
+  repeated string forced_starting_url = 2;
 };

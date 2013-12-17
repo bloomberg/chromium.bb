@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/hash_tables.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
 #include "net/base/escape.h"
@@ -192,6 +193,11 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
   PrecacheConfigurationSettings config;
 
   if (ParseProtoFromFetchResponse(source, &config)) {
+    // Keep track of starting URLs that manifests are being fetched for, in
+    // order to remove duplicates. This is a hash set on strings, and not GURLs,
+    // because there is no hash function defined for GURL.
+    base::hash_set<std::string> unique_starting_urls;
+
     // Attempt to fetch manifests for starting URLs up to the maximum top sites
     // count. If a manifest does not exist for a particular starting URL, then
     // the fetch will fail, and that starting URL will be ignored.
@@ -199,7 +205,24 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
     for (std::list<GURL>::const_iterator it = starting_urls_.begin();
          it != starting_urls_.end() && rank < config.top_sites_count();
          ++it, ++rank) {
-      manifest_urls_to_fetch_.push_back(ConstructManifestURL(*it));
+      if (unique_starting_urls.find(it->spec()) == unique_starting_urls.end()) {
+        // Only add a fetch for the manifest URL if this manifest isn't already
+        // going to be fetched.
+        manifest_urls_to_fetch_.push_back(ConstructManifestURL(*it));
+        unique_starting_urls.insert(it->spec());
+      }
+    }
+
+    for (int i = 0; i < config.forced_starting_url_size(); ++i) {
+      // Convert the string URL into a GURL and take the spec() of it so that
+      // the URL string gets canonicalized.
+      GURL url(config.forced_starting_url(i));
+      if (unique_starting_urls.find(url.spec()) == unique_starting_urls.end()) {
+        // Only add a fetch for the manifest URL if this manifest isn't already
+        // going to be fetched.
+        manifest_urls_to_fetch_.push_back(ConstructManifestURL(url));
+        unique_starting_urls.insert(url.spec());
+      }
     }
   }
 

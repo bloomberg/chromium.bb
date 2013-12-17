@@ -99,6 +99,9 @@ const char kGoodManifestURL[] =
     "http://manifest-url-prefix.com/http%253A%252F%252Fgood-manifest.com%252F";
 const char kResourceFetchFailureURL[] = "http://resource-fetch-failure.com";
 const char kGoodResourceURL[] = "http://good-resource.com";
+const char kForcedStartingURLManifestURL[] =
+    "http://manifest-url-prefix.com/"
+    "http%253A%252F%252Fforced-starting-url.com%252F";
 
 TEST_F(PrecacheFetcherTest, FullPrecache) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -114,6 +117,9 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
 
   PrecacheConfigurationSettings config;
   config.set_top_sites_count(3);
+  config.add_forced_starting_url("http://forced-starting-url.com");
+  // Duplicate starting URL, the manifest for this should only be fetched once.
+  config.add_forced_starting_url("http://good-manifest.com");
 
   PrecacheManifest good_manifest;
   good_manifest.add_resource()->set_url(kResourceFetchFailureURL);
@@ -135,6 +141,9 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
                            net::URLRequestStatus::FAILED);
   factory_.SetFakeResponse(GURL(kGoodResourceURL), "good", net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(GURL(kForcedStartingURLManifestURL),
+                           PrecacheManifest().SerializeAsString(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);
@@ -149,6 +158,7 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
   expected_requested_urls.insert(GURL(kGoodManifestURL));
   expected_requested_urls.insert(GURL(kResourceFetchFailureURL));
   expected_requested_urls.insert(GURL(kGoodResourceURL));
+  expected_requested_urls.insert(GURL(kForcedStartingURLManifestURL));
 
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 
