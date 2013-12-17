@@ -83,7 +83,7 @@ config("compiler") {
       if (cpu_arch == "x64") {
         cflags += "-m64"
         ldflags += "-m64"
-      } else if (cpu_arch == "x32") {
+      } else if (cpu_arch == "x86") {
         cflags += "-m32"
         ldflags += "-m32"
       }
@@ -125,6 +125,12 @@ config("compiler") {
       if (sysroot != "") {
         cflags += "--sysroot=" + sysroot
         ldflags += "--sysroot=" + sysroot
+
+        # Need to get some linker flags out of the sysroot.
+        ldflags += exec_script("../linux/sysroot_ld_path.py",
+            [rebase_path("../../linux/sysroot_ld_path.sh", ".", root_build_dir),
+             sysroot],
+            "value")
       }
 
       ldflags += [

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("sysroot.gni")
+
 # Defines a config specifying the result of running pkg-config for the given
 # packages. Put the package names you want to query in the "packages" variable
 # inside the template invocation.
@@ -20,8 +22,14 @@ template("pkg_config") {
   assert(defined(packages),
         "Variable |packages| must be defined to be a list in pkg_config.")
   config(target_name) {
+    if (sysroot != "") {
+      # Pass the sysroot if we're using one (it requires the CPU arch also).
+      args = ["-s", sysroot, "-a", cpu_arch] + packages
+    } else {
+      args = packages
+    }
     pkgresult = exec_script("//build/config/linux/pkg-config.py",
-                            packages, "value")
+                            args, "value")
     include_dirs = pkgresult[0]
     cflags = pkgresult[1]
     libs = pkgresult[2]
