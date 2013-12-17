@@ -41,76 +41,70 @@ TEST(HttpAuthHandlerSpdyProxyTest, GenerateAuthToken) {
   // Verifies that challenge parsing is expected as described in individual
   // cases below.
   static const struct {
-    Error err1, err2;
-    const char* origin;
-    const char* challenge;
-    const char* username;
-    const char* sid;
+    Error err1,             // Expected response from hander creation
+          err2;             // Expected response from GenerateAuthToken
+    const char* origin;     // Origin for challenge
+    const char* challenge;  // Challenge string
     const char* expected_credentials;
   } tests[] = {
       // A well-formed challenge where a sid is provided produces a valid
-      // response header echoing the sid and ps token.
+      // response header echoing the sid and ps token, for either origin.
       { OK, OK,
         kValidOrigin,
         kValidChallenge,
-        "",
-        "sid-string",
         "SpdyProxy ps=\"1-2-3-4\", sid=\"sid-string\"",},
 
-      // A non-SSL origin returns ERR_UNSUPPORTED_AUTH_SCHEME.
+      { OK, OK,
+        kValidOrigin2,
+        kValidChallenge,
+        "SpdyProxy ps=\"1-2-3-4\", sid=\"sid-string\"",},
+
+      // An origin matching host but not scheme returns
+      // ERR_UNSUPPORTED_AUTH_SCHEME
       { ERR_UNSUPPORTED_AUTH_SCHEME, OK,
-        "http://www.proxy.com/", "", "", "", "",},
+        "http://www.proxy.com/", "", "",},
 
       // An SSL origin not matching the authorized origin returns
       // ERR_UNSUPPORTED_AUTH_SCHEME.
       { ERR_UNSUPPORTED_AUTH_SCHEME, OK,
-        "https://www.unconfigured.com/", "", "", "", "",},
+        "https://www.unconfigured.com/", "", "",},
 
       // Absent ps token yields ERR_INVALID_RESPONSE.
       { ERR_INVALID_RESPONSE, OK,
-        kValidOrigin, "SpdyProxy realm=\"SpdyProxy\"", "", "", "",},
+        kValidOrigin, "SpdyProxy realm=\"SpdyProxy\"", "",},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    GURL origin(tests[i].origin);
-    GURL authorized_origin(kValidOrigin);
-    std::vector<GURL> authorized_origins;
-    authorized_origins.push_back(authorized_origin);
-    HttpAuthHandlerSpdyProxy::Factory factory(authorized_origins);
-    scoped_ptr<HttpAuthHandler> spdyproxy;
-    EXPECT_EQ(tests[i].err1, factory.CreateAuthHandlerFromString(
-        tests[i].challenge, HttpAuth::AUTH_PROXY, origin, BoundNetLog(),
-        &spdyproxy));
-    if (tests[i].err1 != OK) {
-      continue;
-    }
-    AuthCredentials credentials(ASCIIToUTF16(tests[i].username),
-                                ASCIIToUTF16(tests[i].sid));
-    HttpRequestInfo request_info;
-    std::string auth_token;
-    int rv = spdyproxy->GenerateAuthToken(&credentials, &request_info,
-                                          CompletionCallback(), &auth_token);
-    EXPECT_EQ(tests[i].err2, rv);
-    if (tests[i].err2 != OK) {
-      continue;
-    }
-    EXPECT_STREQ(tests[i].expected_credentials, auth_token.c_str());
-  }
-}
 
-TEST(HttpAuthHandlerSpdyProxyTest, NonProxyAuthTypeFails) {
-  // Verifies that an authorization request fails if requested by an ordinary
-  // site. (i.e., HttpAuth::AUTH_SERVER)
-  GURL origin(kValidOrigin);
-  GURL accepted_origin(kValidOrigin);
-  GURL accepted_origin2(kValidOrigin2);
-  std::vector<GURL> accepted_origins;
-  accepted_origins.push_back(accepted_origin);
-  accepted_origins.push_back(accepted_origin2);
-  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origins);
-  scoped_ptr<HttpAuthHandler> spdyproxy;
-  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME, factory.CreateAuthHandlerFromString(
-      kValidChallenge, HttpAuth::AUTH_SERVER, origin,
-      BoundNetLog(), &spdyproxy));
+  // Run each test case for both proxy and server auth.
+  HttpAuth::Target targets[] = { HttpAuth::AUTH_SERVER, HttpAuth::AUTH_PROXY };
+
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(targets); ++i) {
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(tests); ++j) {
+      GURL origin(tests[j].origin);
+      GURL authorized_origin(kValidOrigin);
+      GURL authorized_origin2(kValidOrigin2);
+      std::vector<GURL> authorized_origins;
+      authorized_origins.push_back(authorized_origin);
+      authorized_origins.push_back(authorized_origin2);
+      HttpAuthHandlerSpdyProxy::Factory factory(authorized_origins);
+      scoped_ptr<HttpAuthHandler> spdyproxy;
+      EXPECT_EQ(tests[j].err1, factory.CreateAuthHandlerFromString(
+          tests[j].challenge, targets[i], origin, BoundNetLog(),
+          &spdyproxy));
+      if (tests[j].err1 != OK)
+        continue;
+      AuthCredentials credentials(ASCIIToUTF16(""),
+                                  ASCIIToUTF16("sid-string"));
+      HttpRequestInfo request_info;
+      std::string auth_token;
+      int rv = spdyproxy->GenerateAuthToken(&credentials, &request_info,
+                                            CompletionCallback(), &auth_token);
+      EXPECT_EQ(tests[j].err2, rv);
+      if (tests[i].err2 != OK)
+        continue;
+      EXPECT_STREQ(tests[i].expected_credentials, auth_token.c_str());
+    }
+  }
 }
 
 TEST(HttpAuthHandlerSpdyProxyTest, HandleAnotherChallenge) {

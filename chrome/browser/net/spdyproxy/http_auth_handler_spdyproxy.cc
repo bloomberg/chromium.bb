@@ -58,10 +58,9 @@ int HttpAuthHandlerSpdyProxy::Factory::CreateAuthHandler(
   // SPDY proxy, since otherwise a user's authentication token can be
   // sniffed by a malicious proxy that presents an appropriate challenge.
   const GURL origin_origin = origin.GetOrigin();
-  if (!(target == HttpAuth::AUTH_PROXY &&
-      std::find(authorized_spdyproxy_origins_.begin(),
-                authorized_spdyproxy_origins_.end(),
-                origin_origin) != authorized_spdyproxy_origins_.end())) {
+  if (!(std::find(authorized_spdyproxy_origins_.begin(),
+                  authorized_spdyproxy_origins_.end(),
+                  origin_origin) != authorized_spdyproxy_origins_.end())) {
     UMA_HISTOGRAM_COUNTS("Net.UnexpectedSpdyProxyAuth", 1);
     VLOG(1) << "SpdyProxy auth request with an unexpected config."
             << " origin: " << origin_origin.possibly_invalid_spec();
