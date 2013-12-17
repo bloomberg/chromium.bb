@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS HTMLMediaElement.addTextTrack bogus first arg 
 PASS HTMLMediaElement.addTextTrack uppercase first arg 
 PASS HTMLMediaElement.addTextTrack subtitles first arg 
@@ -10,4 +10,5 @@ PASS HTMLMediaElement.addTextTrack undefined second and third arg
 PASS HTMLMediaElement.addTextTrack null second and third arg 
 PASS HTMLMediaElement.addTextTrack foo and bar second and third arg 
 PASS HTMLMediaElement.addTextTrack foo second arg, third arg omitted 
+Harness: the test ran to completion.
 

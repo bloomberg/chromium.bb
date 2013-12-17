@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 FAIL Set Window.onafterprint assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Window.onafterprint assert_true: expected true got undefined
 FAIL Set HTMLBodyElement.onafterprint assert_equals: Initially null expected null but got undefined
@@ -129,4 +129,5 @@ PASS Set HTMLFrameSetElement.onunload
 PASS Enumerate HTMLFrameSetElement.onunload 
 PASS Reflect HTMLFrameSetElement.onunload 
 PASS Forward HTMLFrameSetElement.onunload to Window 
+Harness: the test ran to completion.
 

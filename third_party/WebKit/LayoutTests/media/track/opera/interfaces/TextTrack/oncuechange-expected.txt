@@ -1,4 +1,5 @@
-
+This is a testharness.js-based test.
 PASS TextTrack.oncuechange 
 PASS TextTrack.addEventListener/removeEventListener 
+Harness: the test ran to completion.
 

@@ -1,4 +1,5 @@
-
+This is a testharness.js-based test.
 PASS TextTrack.label 
 PASS TextTrack.label, \u0000 
+Harness: the test ran to completion.
 

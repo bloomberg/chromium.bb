@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Basic test 
 PASS Set hostname with ? in it 
 PASS Set hostname to null 
@@ -9,4 +9,5 @@ PASS Set hostname to a malformed URL
 PASS Set hostname to URL containing username and .. 
 PASS Set hostname to a URL with tel: protocol 
 PASS hostname property invalid URL 
+Harness: the test ran to completion.
 

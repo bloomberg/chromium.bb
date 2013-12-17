@@ -1,3 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Check that change on a link with same url doesn't affect others. 
+Harness: the test ran to completion.
 

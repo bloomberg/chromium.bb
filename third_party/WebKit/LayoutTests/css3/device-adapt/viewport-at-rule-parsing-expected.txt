@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Empty at-rule parsing 
 PASS at-rule with extra spaces 
 PASS Rule with attributes 
@@ -6,4 +6,5 @@ PASS Rule with malformed attributes
 PASS Should be accepted inside media queries 
 PASS Nested viewport rule 
 PASS Rules inside a viewport rule 
+Harness: the test ran to completion.
 

@@ -48,7 +48,8 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
         # FIXME: Instead of this long 'if' block, each failure class might
         # have a responsibility for writing a test result.
         if isinstance(failure, (test_failures.FailureMissingResult,
-                                test_failures.FailureTextMismatch)):
+                                test_failures.FailureTextMismatch,
+                                test_failures.FailureTestHarnessAssertion)):
             writer.write_text_files(driver_output.text, expected_driver_output.text)
             writer.create_text_diff_and_write_result(driver_output.text, expected_driver_output.text)
         elif isinstance(failure, test_failures.FailureMissingImage):

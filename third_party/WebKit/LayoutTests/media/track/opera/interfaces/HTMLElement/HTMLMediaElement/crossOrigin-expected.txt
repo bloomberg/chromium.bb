@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS HTMLMediaElement.crossOrigin 
 PASS HTMLMediaElement.crossOrigin, content attribute missing 
 PASS HTMLMediaElement.crossOrigin, content attribute invalid value 
@@ -10,4 +10,5 @@ PASS HTMLMediaElement.crossOrigin, setting to null
 PASS HTMLMediaElement.crossOrigin, setting to invalid value 
 PASS HTMLMediaElement.crossOrigin, setting to uppercase ANONYMOUS 
 PASS HTMLMediaElement.crossOrigin, setting to use-credentials 
+Harness: the test ran to completion.
 

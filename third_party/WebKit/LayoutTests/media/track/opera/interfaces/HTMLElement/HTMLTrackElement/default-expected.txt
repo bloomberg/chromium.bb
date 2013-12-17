@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS HTMLTrackElement.default missing value 
 PASS HTMLTrackElement.default empty string content attribute 
 PASS HTMLTrackElement.default empty string IDL attribute 
@@ -6,4 +6,5 @@ PASS HTMLTrackElement.default foo in content attribute
 PASS HTMLTrackElement.default foo in IDL attribute 
 PASS HTMLTrackElement.default true in IDL attribute 
 PASS HTMLTrackElement.default false in IDL attribute 
+Harness: the test ran to completion.
 

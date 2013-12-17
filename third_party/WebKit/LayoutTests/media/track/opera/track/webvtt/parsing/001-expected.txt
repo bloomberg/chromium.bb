@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS WebVTT parser tests, settings-vertical.vtt 
 PASS WebVTT parser tests, settings-size.vtt 
 PASS WebVTT parser tests, settings-position.vtt 
@@ -34,4 +34,5 @@ PASS WebVTT parser tests, newlines.vtt
 PASS WebVTT parser tests, omitted-hours.vtt 
 PASS WebVTT parser tests, timings-60.vtt 
 PASS WebVTT parser tests, timings-negative.vtt 
+Harness: the test ran to completion.
 

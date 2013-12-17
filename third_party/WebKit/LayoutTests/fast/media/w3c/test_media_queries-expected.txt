@@ -1,5 +1,5 @@
 
-
+This is a testharness.js-based test.
 PASS subtest_1 
 PASS subtest_2 
 PASS subtest_3 
@@ -363,4 +363,5 @@ PASS subtest_357
 PASS subtest_358 
 PASS subtest_359 
 PASS subtest_360 
+Harness: the test ran to completion.
 

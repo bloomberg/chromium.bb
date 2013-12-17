@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Add 'tv, screen' to 'screen' 
 PASS Add 'tv' to 'screen' 
 PASS Add 'tv' to 'screen, tv' 
@@ -20,4 +20,5 @@ PASS Remove 'tv' from 'not all, not all, tv, not all'
 PASS Remove 'tv, print' from 'screen, tv, screen' 
 PASS Remove '#?:/' from 'screen, tv, not all' 
 PASS Remove without argument 
+Harness: the test ran to completion.
 

@@ -1,3 +1,4 @@
-
+This is a testharness.js-based test.
 PASS CSS Test: @viewport constrained - zoom: 200% not affecting width 
+Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
- 
+ This is a testharness.js-based test.
 PASS VTTCue.getCueAsHTML(), creating the cue 
 PASS VTTCue.getCueAsHTML(), <c> 
 PASS VTTCue.getCueAsHTML(), <c.a.b> 
@@ -11,4 +11,5 @@ PASS VTTCue.getCueAsHTML(), <v>
 PASS VTTCue.getCueAsHTML(), <v a b> 
 PASS VTTCue.getCueAsHTML(), <00:00:00.500> 
 FAIL VTTCue.getCueAsHTML(), x\0 assert_equals: data expected "x\0" but got "x"
+Harness: the test ran to completion.
 

@@ -43,13 +43,15 @@ setup({output: false});
 add_completion_callback(function (tests, harnessStatus)
 {
     // An array to hold string pieces, which will be joined later to produce the final result.
-    var resultsArray = ["\n"];
+    var resultsArray = ["This is a testharness.js-based test.\n"];
 
     if (harnessStatus.status !== 0) {
         resultsArray.push("Harness Error. harnessStatus.status = ",
                           harnessStatus.status,
                           " , harnessStatus.message = ",
                           harnessStatus.message);
+    } else if (tests.length == 0) {
+        results.Array.push("FAIL: No tests actually ran.\n");
     } else {
         for (var i = 0; i < tests.length; i++) {
             resultsArray.push(convertResultStatusToString(tests[i].status),
@@ -60,6 +62,7 @@ add_completion_callback(function (tests, harnessStatus)
                               "\n");
         }
     }
+    resultsArray.push("Harness: the test ran to completion.\n")
 
     var resultElement = document.createElement("pre");
     resultElement.textContent = resultsArray.join("");

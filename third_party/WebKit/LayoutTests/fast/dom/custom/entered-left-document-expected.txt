@@ -1,3 +1,4 @@
-
+This is a testharness.js-based test.
 PASS entered, left callbacks should only be invoked when entering or leaving a document with a view 
+Harness: the test ran to completion.
 

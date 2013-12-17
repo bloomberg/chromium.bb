@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS All stylesheets present 
 PASS Drop ":-webkit-any\( {}" 
 PASS Drop ":nth-child\( {}" 
@@ -11,4 +11,5 @@ PASS Drop ":cue\( {}"
 PASS Drop ":-webkit-distributed\( {}" 
 PASS Drop ":part\( {}" 
 PASS Drop ":host\( {}" 
+Harness: the test ran to completion.
 

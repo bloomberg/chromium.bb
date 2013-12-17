@@ -1,6 +1,6 @@
 WebVTT cue data parser test tree-building
 
-
+This is a testharness.js-based test.
 PASS WebVTT cue data parser test tree-building - 4e1243bd22c66e76c2ba9eddc1f91394e57f9f83 
 PASS WebVTT cue data parser test tree-building - 6ceded63b53eeab3681a0fc540e959ca88f7dce9 
 PASS WebVTT cue data parser test tree-building - 71de37451e7d5524eacc8a190d21cd64c4304e14 
@@ -21,4 +21,5 @@ PASS WebVTT cue data parser test tree-building - 10f4823ffb17c71654c4602bc45c583
 PASS WebVTT cue data parser test tree-building - 909924ef392fb20c9526acfa4f18f891eda61a0c 
 PASS WebVTT cue data parser test tree-building - e5ca35cc29404efc0ebd58aa5f6efefc86fc5287 
 PASS WebVTT cue data parser test tree-building - e535c486dac7dc571463b150adc55fd841bc3008 
+Harness: the test ran to completion.
 

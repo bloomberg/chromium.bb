@@ -576,7 +576,11 @@ function tableRow(testObject)
     var actual = testObject.actual;
     if (actual.indexOf('TEXT') != -1) {
         globalState().hasTextFailures = true;
-        row += textResultLinks(testPrefix);
+        if (testObject.is_testharness_test) {
+            row += resultLink(testPrefix, '-actual.txt', 'actual');
+        } else {
+            row += textResultLinks(testPrefix);
+        }
     }
     
     if (actual.indexOf('AUDIO') != -1) {

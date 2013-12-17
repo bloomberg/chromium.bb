@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS register a type extension 
 PASS register a type extension with a non-element prototype 
 PASS register a type extension of an unknown element 
@@ -7,4 +7,5 @@ PASS register a type extension of an element whose interface is HTMLElement
 PASS register a type extensions of an interface with multiple element names 
 PASS register a type extension with unusual case 
 PASS registering a type extension of a custom tag should fail 
+Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Set HTMLBodyElement.onblur 
 PASS Enumerate HTMLBodyElement.onblur 
 PASS Reflect HTMLBodyElement.onblur 
@@ -39,4 +39,5 @@ PASS Set HTMLFrameSetElement.onscroll
 PASS Enumerate HTMLFrameSetElement.onscroll 
 PASS Reflect HTMLFrameSetElement.onscroll 
 PASS Forward HTMLFrameSetElement.onscroll to Window 
+Harness: the test ran to completion.
 

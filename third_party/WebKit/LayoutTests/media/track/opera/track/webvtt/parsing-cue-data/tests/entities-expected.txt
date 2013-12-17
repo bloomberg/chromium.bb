@@ -1,6 +1,6 @@
 WebVTT cue data parser test entities
 
-
+This is a testharness.js-based test.
 PASS WebVTT cue data parser test entities - 3686fc0cdc60dc536e75df054b0bd372273db2cc 
 PASS WebVTT cue data parser test entities - f1869f6e2853635eec81cc3afa3e2b8148ccbdc0 
 PASS WebVTT cue data parser test entities - 92d76530d723b6b4e4ef8280c01cf1c80f9bebdb 
@@ -20,4 +20,5 @@ PASS WebVTT cue data parser test entities - b1fff1ac42688d16e00f6c758d84e5152e39
 PASS WebVTT cue data parser test entities - bd68f6beda2c2264e61dff7359c1ad48bc0a9934 
 PASS WebVTT cue data parser test entities - 5b77a0be23453dfe6eea59d43bb0708f89e1df82 
 PASS WebVTT cue data parser test entities - 87986551b0e6180cb279f2aa4cdddf77daa90c11 
+Harness: the test ran to completion.
 

@@ -236,12 +236,41 @@ class SingleTestRunner(object):
             return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
                               pid=driver_output.pid)
 
-        failures.extend(self._compare_text(expected_driver_output.text, driver_output.text))
-        failures.extend(self._compare_audio(expected_driver_output.audio, driver_output.audio))
-        if self._should_run_pixel_test:
-            failures.extend(self._compare_image(expected_driver_output, driver_output))
+        is_testharness_test, testharness_failures = self._compare_testharness_test(driver_output, expected_driver_output)
+        if is_testharness_test:
+            failures.extend(testharness_failures)
+        else:
+            failures.extend(self._compare_text(expected_driver_output.text, driver_output.text))
+            failures.extend(self._compare_audio(expected_driver_output.audio, driver_output.audio))
+            if self._should_run_pixel_test:
+                failures.extend(self._compare_image(expected_driver_output, driver_output))
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
                           pid=driver_output.pid)
+
+    def _compare_testharness_test(self, driver_output, expected_driver_output):
+        if expected_driver_output.image or expected_driver_output.audio or expected_driver_output.text:
+            return False, []
+
+        if driver_output.image or driver_output.audio or self._is_render_tree(driver_output.text):
+            return False, []
+
+        failures = []
+        found_a_pass = False
+        text = driver_output.text or ''
+        lines = text.splitlines()
+        if not lines or lines[0] != 'This is a testharness.js-based test.':
+            return False, []
+        if lines[-2:] != ['Harness: the test ran to completion.', '']:
+            return True, [test_failures.FailureTestHarnessAssertion()]
+
+        for line in lines:
+            if line.startswith('FAIL') or line.startswith('TIMEOUT'):
+                return True, [test_failures.FailureTestHarnessAssertion()]
+
+        return True, []
+
+    def _is_render_tree(self, text):
+        return text and "layer at (0,0) size 800x600" in text
 
     def _compare_text(self, expected_text, actual_text):
         failures = []

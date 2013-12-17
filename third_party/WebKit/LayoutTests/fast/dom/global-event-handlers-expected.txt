@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS No Element.onabort 
 PASS Set HTMLElement.onabort 
 PASS Enumerate HTMLElement.onabort 
@@ -648,4 +648,5 @@ PASS Set Document.onwaiting
 PASS Enumerate Document.onwaiting 
 PASS Set Window.onwaiting 
 PASS Enumerate Window.onwaiting 
+Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS HTMLTrackElement.srclang missing value 
 PASS HTMLTrackElement.srclang empty string content attribute 
 PASS HTMLTrackElement.srclang empty string IDL attribute 
@@ -10,4 +10,5 @@ PASS HTMLTrackElement.srclang uppercase IDL attribute
 PASS HTMLTrackElement.srclang whitespace in content attribute 
 PASS HTMLTrackElement.srclang whitespace in IDL attribute 
 PASS HTMLTrackElement.srclang \u0000 in IDL attribute 
+Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Basic test 
 PASS Set host with ? in it 
 PASS Set default port for another protocol 
@@ -15,4 +15,5 @@ PASS Set host that starts with :
 PASS Set host to URL containing username and .. 
 PASS Set host to a URL with tel: protocol 
 PASS host property invalid URL 
+Harness: the test ran to completion.
 

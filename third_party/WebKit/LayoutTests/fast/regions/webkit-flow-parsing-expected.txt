@@ -1,5 +1,5 @@
 This test verifies that the webkit-flow-into property is correctly parsed
-
+This is a testharness.js-based test.
 PASS Test Parse none 
 PASS Test Parse first-flow 
 PASS Test Parse 'first-flow' 
@@ -17,4 +17,5 @@ PASS Test Non-Inherited none, none
 PASS Test Non-Inherited none, child-flow 
 PASS Test Non-Inherited parent-flow, none 
 PASS Test Non-Inherited parent-flow, child-flow 
+Harness: the test ran to completion.
 
