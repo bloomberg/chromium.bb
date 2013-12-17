@@ -79,7 +79,7 @@ bool Writer::WriteBlob(const void *buffer, size_t size) {
     return false;
   const char* char_buffer = static_cast<const char*>(buffer);
   int ret = base::WritePlatformFileAtCurrentPos(file_, char_buffer, size);
-  if (ret != size) {
+  if (ret != static_cast<int>(size)) {
     LOG(ERROR) << "Failed to write " << size << " bytes.";
     return false;
   }
