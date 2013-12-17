@@ -1321,6 +1321,18 @@ internal.add_config('test-ap',
 
 ### Master paladin (CQ builder).
 
+# We are heading toward a master paladin config named 'master-paladin'.
+# That config cannot be tested with a trybot until the trybot waterfall
+# recognizes 'master-paladin' as a valid target.  Create such a target
+# that does nothing in particular in the meantime.
+internal_paladin.add_config('master-paladin',
+  boards=['x86-mario'],
+  paladin_builder_name='Commit Queue Master',
+  vm_tests=None,
+  important=False,
+)
+
+# The real master paladin (for now).
 internal_paladin.add_config('x86-mario-paladin',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
