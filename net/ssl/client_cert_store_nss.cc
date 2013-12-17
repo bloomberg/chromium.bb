@@ -11,23 +11,47 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/cert/x509_util.h"
 
 namespace net {
 
-namespace {
+ClientCertStoreNSS::ClientCertStoreNSS(
+    const PasswordDelegateFactory& password_delegate_factory)
+    : password_delegate_factory_(password_delegate_factory) {}
 
-// Examines the certificates in |cert_list| to find all certificates that match
-// the client certificate request in |request|, storing the matching
-// certificates in |selected_certs|.
-// If |query_nssdb| is true, NSS will be queried to construct full certificate
-// chains. If it is false, only the certificate will be considered.
-void GetClientCertsImpl(CERTCertList* cert_list,
-                        const SSLCertRequestInfo& request,
-                        bool query_nssdb,
-                        CertificateList* selected_certs) {
+ClientCertStoreNSS::~ClientCertStoreNSS() {}
+
+void ClientCertStoreNSS::GetClientCerts(const SSLCertRequestInfo& request,
+                                         CertificateList* selected_certs,
+                                         const base::Closure& callback) {
+  scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
+  if (!password_delegate_factory_.is_null()) {
+    password_delegate.reset(
+        password_delegate_factory_.Run(request.host_and_port));
+  }
+  if (base::WorkerPool::PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&ClientCertStoreNSS::GetClientCertsOnWorkerThread,
+                     // Caller is responsible for keeping the ClientCertStore
+                     // alive until the callback is run.
+                     base::Unretained(this),
+                     base::Passed(&password_delegate),
+                     &request,
+                     selected_certs),
+          callback,
+          true))
+    return;
+  selected_certs->clear();
+  callback.Run();
+}
+
+void ClientCertStoreNSS::GetClientCertsImpl(CERTCertList* cert_list,
+                                            const SSLCertRequestInfo& request,
+                                            bool query_nssdb,
+                                            CertificateList* selected_certs) {
   DCHECK(cert_list);
   DCHECK(selected_certs);
 
@@ -53,12 +77,16 @@ void GetClientCertsImpl(CERTCertList* cert_list,
   if (!ca_names_items.empty())
     ca_names.names = &ca_names_items[0];
 
+  size_t num_raw = 0;
   for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
        !CERT_LIST_END(node, cert_list);
        node = CERT_LIST_NEXT(node)) {
+    ++num_raw;
     // Only offer unexpired certificates.
     if (CERT_CheckCertValidTimes(node->cert, PR_Now(), PR_TRUE) !=
         secCertTimeValid) {
+      DVLOG(2) << "skipped expired cert: "
+               << base::StringPiece(node->cert->nickname);
       continue;
     }
 
@@ -71,15 +99,21 @@ void GetClientCertsImpl(CERTCertList* cert_list,
          cert->IsIssuedByEncoded(request.cert_authorities)) ||
         (query_nssdb &&
          NSS_CmpCertChainWCANames(node->cert, &ca_names) == SECSuccess)) {
+      DVLOG(2) << "matched cert: " << base::StringPiece(node->cert->nickname);
       selected_certs->push_back(cert);
     }
+    else
+      DVLOG(2) << "skipped non-matching cert: "
+               << base::StringPiece(node->cert->nickname);
   }
+  DVLOG(2) << "num_raw:" << num_raw
+           << " num_selected:" << selected_certs->size();
 
   std::sort(selected_certs->begin(), selected_certs->end(),
             x509_util::ClientCertSorter());
 }
 
-void GetClientCertsOnWorkerThread(
+void ClientCertStoreNSS::GetClientCertsOnWorkerThread(
     scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
     const SSLCertRequestInfo* request,
     CertificateList* selected_certs) {
@@ -91,41 +125,13 @@ void GetClientCertsOnWorkerThread(
       password_delegate.get());
   // It is ok for a user not to have any client certs.
   if (!client_certs) {
+    DVLOG(2) << "No client certs found.";
     selected_certs->clear();
     return;
   }
 
   GetClientCertsImpl(client_certs, *request, true, selected_certs);
   CERT_DestroyCertList(client_certs);
-}
-
-}  // namespace
-
-ClientCertStoreNSS::ClientCertStoreNSS(
-    const PasswordDelegateFactory& password_delegate_factory)
-    : password_delegate_factory_(password_delegate_factory) {}
-
-ClientCertStoreNSS::~ClientCertStoreNSS() {}
-
-void ClientCertStoreNSS::GetClientCerts(const SSLCertRequestInfo& request,
-                                         CertificateList* selected_certs,
-                                         const base::Closure& callback) {
-  scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
-  if (!password_delegate_factory_.is_null()) {
-    password_delegate.reset(
-        password_delegate_factory_.Run(request.host_and_port));
-  }
-  if (!base::WorkerPool::PostTaskAndReply(
-           FROM_HERE,
-           base::Bind(&GetClientCertsOnWorkerThread,
-                      base::Passed(&password_delegate),
-                      &request,
-                      selected_certs),
-           callback,
-           true)) {
-    selected_certs->clear();
-    callback.Run();
-  }
 }
 
 bool ClientCertStoreNSS::SelectClientCertsForTesting(

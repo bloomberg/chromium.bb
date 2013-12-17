@@ -31,7 +31,6 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -469,6 +468,14 @@ class NSSInitSingleton {
     }
 
     return chromeos_user_map_[username_hash]->GetPrivateSlot(callback);
+  }
+
+  void CloseTestChromeOSUser(const std::string& username_hash) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    ChromeOSUserMap::iterator i = chromeos_user_map_.find(username_hash);
+    DCHECK(i != chromeos_user_map_.end());
+    delete i->second;
+    chromeos_user_map_.erase(i);
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -981,6 +988,27 @@ bool IsTPMTokenReady(const base::Closure& callback) {
 
 bool InitializeTPMToken(int token_slot_id) {
   return g_nss_singleton.Get().InitializeTPMToken(token_slot_id);
+}
+
+ScopedTestNSSChromeOSUser::ScopedTestNSSChromeOSUser(
+    const std::string& username_hash)
+    : username_hash_(username_hash), constructed_successfully_(false) {
+  if (!temp_dir_.CreateUniqueTempDir())
+    return;
+  constructed_successfully_ =
+      InitializeNSSForChromeOSUser(username_hash,
+                                   username_hash,
+                                   false /* is_primary_user */,
+                                   temp_dir_.path());
+}
+
+ScopedTestNSSChromeOSUser::~ScopedTestNSSChromeOSUser() {
+  if (constructed_successfully_)
+    g_nss_singleton.Get().CloseTestChromeOSUser(username_hash_);
+}
+
+void ScopedTestNSSChromeOSUser::FinishInit() {
+  InitializePrivateSoftwareSlotForChromeOSUser(username_hash_);
 }
 
 bool InitializeNSSForChromeOSUser(

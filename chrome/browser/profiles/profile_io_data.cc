@@ -108,6 +108,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "net/ssl/client_cert_store_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS)
@@ -853,7 +854,12 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
 
 scoped_ptr<net::ClientCertStore>
 ProfileIOData::ResourceContext::CreateClientCertStore() {
-#if defined(USE_NSS)
+#if defined(OS_CHROMEOS)
+  return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreChromeOS(
+      io_data_->username_hash(),
+      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
+                 chrome::kCryptoModulePasswordClientAuth)));
+#elif defined(USE_NSS)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                  chrome::kCryptoModulePasswordClientAuth)));

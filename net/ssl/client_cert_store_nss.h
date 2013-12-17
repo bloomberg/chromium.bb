@@ -12,6 +12,8 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 
+typedef struct CERTCertListStr CERTCertList;
+
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
 }
@@ -32,8 +34,25 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
                               CertificateList* selected_certs,
                               const base::Closure& callback) OVERRIDE;
 
+ protected:
+  // Examines the certificates in |cert_list| to find all certificates that
+  // match the client certificate request in |request|, storing the matching
+  // certificates in |selected_certs|.
+  // If |query_nssdb| is true, NSS will be queried to construct full certificate
+  // chains. If it is false, only the certificate will be considered.
+  virtual void GetClientCertsImpl(CERTCertList* cert_list,
+                                  const SSLCertRequestInfo& request,
+                                  bool query_nssdb,
+                                  CertificateList* selected_certs);
+
  private:
   friend class ClientCertStoreNSSTestDelegate;
+
+  void GetClientCertsOnWorkerThread(
+      scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+          password_delegate,
+      const SSLCertRequestInfo* request,
+      CertificateList* selected_certs);
 
   // A hook for testing. Filters |input_certs| using the logic being used to
   // filter the system store when GetClientCerts() is called.
