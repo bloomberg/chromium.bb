@@ -325,7 +325,6 @@ public:
         bool m_discardMarginAfter : 1;
         RenderNamedFlowFragment* m_renderNamedFlowFragment;
     };
-    LayoutUnit marginOffsetForSelfCollapsingBlock();
 
     RenderNamedFlowFragment* renderNamedFlowFragment() const { return m_rareData ? m_rareData->m_renderNamedFlowFragment : 0; }
     void setRenderNamedFlowFragment(RenderNamedFlowFragment*);
