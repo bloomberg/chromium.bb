@@ -3,7 +3,6 @@ include_rules = [
   "+chromeos",
   "+components/user_prefs",
   "+sync/api",
-  "+ui/shell",
   "+webkit/common/user_agent/user_agent_util.h",
 
   # TODO(jamescook): Remove these. http://crbug.com/305404
