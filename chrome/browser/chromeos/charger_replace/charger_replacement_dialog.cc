@@ -12,6 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 
@@ -34,6 +35,7 @@ const char kNewChargerNotOrdered[] = "0";
 
 // static member variable.
 bool ChargerReplacementDialog::is_window_visible_ = false;
+gfx::NativeWindow ChargerReplacementDialog::current_window_ = NULL;
 
 ChargerReplacementDialog::ChargerReplacementDialog(
     gfx::NativeWindow parent_window)
@@ -44,6 +46,7 @@ ChargerReplacementDialog::ChargerReplacementDialog(
 
 ChargerReplacementDialog::~ChargerReplacementDialog() {
   is_window_visible_ = false;
+  current_window_ = NULL;
 }
 
 bool ChargerReplacementDialog::ShouldShowDialog() {
@@ -60,16 +63,20 @@ bool ChargerReplacementDialog::ShouldShowDialog() {
           ChargerReplacementHandler::CONFIRM_ORDER_NEW_CHARGER_BY_PHONE);
 }
 
+void ChargerReplacementDialog::SetFocusOnChargerDialogIfVisible() {
+  if (is_window_visible_ && current_window_)
+    current_window_->Focus();
+}
+
 void ChargerReplacementDialog::Show() {
   content::RecordAction(
         content::UserMetricsAction("ShowChargerReplacementDialog"));
 
   is_window_visible_ = true;
-  gfx::NativeWindow dialog_window =
-      chrome::ShowWebDialog(parent_window_,
-                            ProfileManager::GetDefaultProfile(),
-                            this);
-  charger_replacement_handler_->set_charger_window(dialog_window);
+  current_window_ = chrome::ShowWebDialog(parent_window_,
+                                          ProfileManager::GetDefaultProfile(),
+                                          this);
+  charger_replacement_handler_->set_charger_window(current_window_);
 }
 
 ui::ModalType ChargerReplacementDialog::GetDialogModalType() const {

@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/charger_replace/charger_replacement_dialog.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -887,6 +888,12 @@ void LoginDisplayHostImpl::LoadURL(const GURL& url) {
   // Subscribe to crash events.
   content::WebContentsObserver::Observe(login_view_->GetWebContents());
   login_view_->LoadURL(url);
+
+  // LoadURL could be called after the spring charger dialog shows, and
+  // take away the focus from it. Set the focus back to the charger dialog
+  // if it is visible.
+  // See crbug.com/328538.
+  ChargerReplacementDialog::SetFocusOnChargerDialogIfVisible();
 }
 
 void LoginDisplayHostImpl::ShowWebUI() {
@@ -899,6 +906,13 @@ void LoginDisplayHostImpl::ShowWebUI() {
   login_view_->GetWebContents()->GetView()->Focus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
+
+  // Login window could be shown after the spring charger dialog shows, and
+  // take away the focus from it. Set the focus back to the charger dialog
+  // if it is visible.
+  // See crbug.com/328538.
+  ChargerReplacementDialog::SetFocusOnChargerDialogIfVisible();
+
   // We should reset this flag to allow changing of status area visibility.
   initialize_webui_hidden_ = false;
 }

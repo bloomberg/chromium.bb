@@ -21,6 +21,8 @@ class ChargerReplacementDialog : public ui::WebDialogDelegate {
   // True if ChargerReplacementDialog should be shown.
   static bool ShouldShowDialog();
 
+  static void SetFocusOnChargerDialogIfVisible();
+
   void Show();
   void set_can_close(bool can_close) { can_close_ = can_close; }
 
@@ -44,6 +46,7 @@ class ChargerReplacementDialog : public ui::WebDialogDelegate {
       const content::ContextMenuParams& params) OVERRIDE;
 
   static bool is_window_visible_;
+  static gfx::NativeWindow current_window_;
 
   gfx::NativeWindow parent_window_;
   bool can_close_;
