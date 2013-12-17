@@ -28,6 +28,8 @@ class LocationIconView : public views::ImageView {
   // Whether we should show the tooltip for this icon or not.
   void ShowTooltip(bool show);
 
+  PageInfoHelper* page_info_helper() { return &page_info_helper_; }
+
  private:
   PageInfoHelper page_info_helper_;
 

@@ -26,12 +26,12 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (chrome::ShouldDisplayOriginChip())
+  if (!chrome::ShouldDisplayOriginChip())
     page_info_helper_.ProcessEvent(event);
 }
 
 void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
-  if (chrome::ShouldDisplayOriginChip() &&
+  if (!chrome::ShouldDisplayOriginChip() &&
       (event->type() == ui::ET_GESTURE_TAP)) {
     page_info_helper_.ProcessEvent(*event);
     event->SetHandled();

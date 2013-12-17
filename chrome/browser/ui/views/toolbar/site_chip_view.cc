@@ -30,6 +30,8 @@
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -284,6 +286,9 @@ void SiteChipView::Init() {
 
   // TODO(gbillock): Would be nice to just use stock LabelButton stuff here.
   location_icon_view_ = new LocationIconView(toolbar_view_->location_bar());
+  // Make location icon hover events count as hovering the site chip.
+  location_icon_view_->set_interactive(false);
+
   host_label_ = new views::Label();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   host_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
@@ -447,6 +452,20 @@ void SiteChipView::OnPaint(gfx::Canvas* canvas) {
 // this button.
 void SiteChipView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
+  // See if the event needs to be passed to the LocationIconView.
+  if (event.IsMouseEvent() || (event.type() == ui::ET_GESTURE_TAP)) {
+    location_icon_view_->set_interactive(true);
+    const ui::LocatedEvent& located_event =
+        static_cast<const ui::LocatedEvent&>(event);
+    if (GetEventHandlerForPoint(located_event.location()) ==
+            location_icon_view_) {
+      location_icon_view_->page_info_helper()->ProcessEvent(located_event);
+      location_icon_view_->set_interactive(false);
+      return;
+    }
+    location_icon_view_->set_interactive(false);
+  }
+
   UMA_HISTOGRAM_COUNTS("SiteChip.Pressed", 1);
   content::RecordAction(content::UserMetricsAction("SiteChipPress"));
 
