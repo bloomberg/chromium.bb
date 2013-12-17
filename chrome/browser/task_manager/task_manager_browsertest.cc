@@ -47,7 +47,8 @@
 
 // http://crbug.com/31663
 // TODO(linux_aura) http://crbug.com/163931
-#if !(defined(OS_WIN) && defined(USE_AURA)) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if !(defined(OS_WIN) && defined(USE_AURA)) && \
+    !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 
 using content::WebContents;
 
@@ -97,12 +98,10 @@ class TaskManagerNoShowBrowserTest : public ExtensionBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
-    // Do not prelaunch the GPU process and disable accelerated compositing
-    // for these tests as the GPU process will show up in task manager but
-    // whether it appears before or after the new tab renderer process is not
-    // well defined.
-    command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
-    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+    // Do not launch the GPU process as the GPU process will show up in task
+    // manager but whether it appears before or after the new tab renderer
+    // process is not well defined.
+    command_line->AppendSwitch(switches::kDisableGpu);
 
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
