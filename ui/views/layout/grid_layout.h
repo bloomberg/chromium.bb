@@ -267,10 +267,11 @@ class VIEWS_EXPORT ColumnSet {
 
   // Adds a column for padding. When adding views, padding columns are
   // automatically skipped. For example, if you create a column set with
-  // two columns separated by a padding column, the first AddView automatically
+  // two columns separated by a padding column, the second AddView automatically
   // skips past the padding column. That is, to add two views, do:
   // layout->AddView(v1); layout->AddView(v2);, not:
   // layout->AddView(v1); layout->SkipColumns(1); layout->AddView(v2);
+  // See class description for details on |resize_percent|.
   void AddPaddingColumn(float resize_percent, int width);
 
   // Adds a column. The alignment gives the default alignment for views added
@@ -282,6 +283,7 @@ class VIEWS_EXPORT ColumnSet {
   // made as wide as the widest views in each column, even if extra space is
   // provided. In other words, GridLayout does not automatically resize views
   // unless the column is marked as resizable.
+  // See class description for details on |resize_percent|.
   void AddColumn(GridLayout::Alignment h_align,
                  GridLayout::Alignment v_align,
                  float resize_percent,
