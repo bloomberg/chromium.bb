@@ -59,23 +59,35 @@ public:
 private:
     template<bool keyMatches(StringImpl*, Element*)> Element* get(StringImpl*, const TreeScope*) const;
 
-    typedef HashMap<StringImpl*, Element*> Map;
+    struct MapEntry {
+        MapEntry()
+            : element(0)
+            , count(0)
+        { }
 
-    // We maintain the invariant that m_duplicateCounts is the count of all elements with a given key
-    // excluding the one referenced in m_map, if any. This means it one less than the total count
-    // when the first node with a given key is cached, otherwise the same as the total count.
+        explicit MapEntry(Element* firstElement)
+            : element(firstElement)
+            , count(1)
+        { }
+
+        Element* element;
+        unsigned count;
+    };
+
+    typedef HashMap<StringImpl*, MapEntry> Map;
+
     mutable Map m_map;
-    mutable HashCountedSet<StringImpl*> m_duplicateCounts;
 };
 
 inline bool DocumentOrderedMap::contains(StringImpl* id) const
 {
-    return m_map.contains(id) || m_duplicateCounts.contains(id);
+    return m_map.contains(id);
 }
 
 inline bool DocumentOrderedMap::containsMultiple(StringImpl* id) const
 {
-    return m_duplicateCounts.contains(id);
+    Map::const_iterator it = m_map.find(id);
+    return it != m_map.end() && it->value.count > 1;
 }
 
 } // namespace WebCore
