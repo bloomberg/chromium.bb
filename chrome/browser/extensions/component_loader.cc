@@ -288,8 +288,10 @@ void ComponentLoader::AddFileManagerExtension() {
 }
 
 void ComponentLoader::AddHangoutServicesExtension() {
+#if defined(GOOGLE_CHROME_BUILD)
   Add(IDR_HANGOUT_SERVICES_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("hangout_services")));
+#endif
 }
 
 void ComponentLoader::AddImageLoaderExtension() {
