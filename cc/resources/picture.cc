@@ -248,6 +248,8 @@ void Picture::GatherPixelRefs(
                "height", layer_rect_.height());
 
   DCHECK(picture_);
+  if (!WillPlayBackBitmaps())
+    return;
   cell_size_ = gfx::Size(
       tile_grid_info.fTileInterval.width() +
           2 * tile_grid_info.fMargin.width(),

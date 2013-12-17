@@ -117,6 +117,8 @@ class CC_EXPORT Picture
   void EmitTraceSnapshot();
   void EmitTraceSnapshotAlias(Picture* original);
 
+  bool WillPlayBackBitmaps() const { return picture_->willPlayBackBitmaps(); }
+
  private:
   explicit Picture(gfx::Rect layer_rect);
   // This constructor assumes SkPicture is already ref'd and transfers

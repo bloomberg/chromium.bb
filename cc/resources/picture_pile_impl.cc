@@ -386,7 +386,8 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
       continue;
 
     const Picture* picture = it->second.GetPicture();
-    if (!picture || (processed_pictures_.count(picture) != 0))
+    if (!picture || (processed_pictures_.count(picture) != 0) ||
+        !picture->WillPlayBackBitmaps())
       continue;
 
     processed_pictures_.insert(picture);
