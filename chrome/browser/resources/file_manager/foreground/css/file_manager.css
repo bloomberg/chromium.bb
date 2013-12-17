@@ -2042,7 +2042,7 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 }
 
 #progress-center:not(.opened)
-    #progress-center-close-view.single:not(.cancelable) button.toggle,
+    #progress-center-close-view.single:not(.cancelable) ~ button.toggle,
 #progress-center li:not(.cancelable) button.cancel {
   visibility: hidden;
 }
