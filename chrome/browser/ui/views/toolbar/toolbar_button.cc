@@ -33,11 +33,12 @@ ToolbarButton::~ToolbarButton() {
 }
 
 void ToolbarButton::Init() {
-  SetFocusable(true);
+  SetFocusable(false);
+  SetAccessibilityFocusable(true);
 
   // Provides the hover/pressed style used by buttons in the toolbar.
   views::LabelButtonBorder* border =
-      new views::LabelButtonBorder(views::Button::STYLE_BUTTON);
+      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON);
   const int kHoverImages[] = IMAGE_GRID(IDR_TOOLBAR_BUTTON_HOVER);
   border->SetPainter(false, views::Button::STATE_HOVERED,
                      views::Painter::CreateImageGridPainter(
@@ -46,8 +47,6 @@ void ToolbarButton::Init() {
   border->SetPainter(false, views::Button::STATE_PRESSED,
                      views::Painter::CreateImageGridPainter(
                          kPressedImages));
-  border->SetPainter(false, views::Button::STATE_NORMAL, NULL);
-  border->SetPainter(true, views::Button::STATE_NORMAL, NULL);
   set_border(border);
 }
 
