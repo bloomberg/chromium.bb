@@ -97,9 +97,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // Browser wants a look at all top-level navigation requests.
   bool browser_handles_all_top_level_requests;
 
-  // Browser wants a look at all top-level link clicks.
-  bool browser_handles_all_top_level_link_clicks;
-
   // Cursor blink rate in seconds.
   // Currently only changed from default on Linux.  Uses |gtk-cursor-blink|
   // from GtkSettings.

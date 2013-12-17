@@ -3223,9 +3223,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
         IsNonLocalTopLevelNavigation(url, frame, type, is_form_post);
     if (!browser_handles_request) {
       browser_handles_request = IsTopLevelNavigation(frame) &&
-          (renderer_preferences_.browser_handles_all_top_level_requests ||
-           (renderer_preferences_.browser_handles_all_top_level_link_clicks &&
-            type == blink::WebNavigationTypeLinkClicked));
+          renderer_preferences_.browser_handles_all_top_level_requests;
     }
 
     if (browser_handles_request) {
