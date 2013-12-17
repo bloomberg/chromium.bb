@@ -7,5 +7,5 @@
 // TODO(bshe): remove this line when polymer supports the configuration.
 document.register = undefined;
 
-<include src="../../../third_party/polymer/platform.js"></include>
-<include src="../../../third_party/polymer/polymer.js"></include>
+<include src="../../../third_party/polymer/platform/platform.js"></include>
+<include src="../../../third_party/polymer/polymer/polymer.js"></include>
