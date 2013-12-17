@@ -20,9 +20,7 @@ namespace system {
 // protection provided by |DataPipe|'s |lock_|.
 class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
  public:
-  LocalDataPipe();
-
-  MojoResult Init(const MojoCreateDataPipeOptions* options);
+  explicit LocalDataPipe(const MojoCreateDataPipeOptions& validated_options);
 
  private:
   friend class base::RefCountedThreadSafe<LocalDataPipe>;
@@ -67,10 +65,6 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
   size_t GetMaxNumBytesToReadNoLock();
 
   // The members below are protected by |DataPipe|'s |lock_|:
-  // TODO(vtl): FIXME -- move this to DataPipe?
-  bool producer_open_;
-  bool consumer_open_;
-
   scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> buffer_;
   // Circular buffer.
   size_t start_index_;

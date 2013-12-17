@@ -17,6 +17,47 @@
 namespace mojo {
 namespace system {
 
+// static
+MojoResult DataPipe::ValidateOptions(
+    const MojoCreateDataPipeOptions* in_options,
+    MojoCreateDataPipeOptions* out_options) {
+  static const MojoCreateDataPipeOptions kDefaultOptions = {
+    static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+    1u,
+    static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
+  };
+  if (!in_options) {
+    *out_options = kDefaultOptions;
+    return MOJO_RESULT_OK;
+  }
+
+  if (in_options->struct_size < sizeof(*in_options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  out_options->struct_size = static_cast<uint32_t>(sizeof(*out_options));
+
+  if (in_options->element_num_bytes == 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  out_options->element_num_bytes = in_options->element_num_bytes;
+
+  if (in_options->capacity_num_bytes == 0) {
+    // Round the default capacity down to a multiple of the element size (but at
+    // least one element).
+    out_options->capacity_num_bytes = std::max(
+        static_cast<uint32_t>(kDefaultDataPipeCapacityBytes -
+            (kDefaultDataPipeCapacityBytes % in_options->element_num_bytes)),
+        in_options->element_num_bytes);
+  } else {
+    if (in_options->capacity_num_bytes % in_options->element_num_bytes != 0)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    out_options->capacity_num_bytes = in_options->capacity_num_bytes;
+  }
+  if (out_options->capacity_num_bytes > kMaxDataPipeCapacityBytes)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  return MOJO_RESULT_OK;
+}
+
 void DataPipe::ProducerCancelAllWaiters() {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
@@ -25,6 +66,8 @@ void DataPipe::ProducerCancelAllWaiters() {
 
 void DataPipe::ProducerClose() {
   base::AutoLock locker(lock_);
+  DCHECK(producer_open_);
+  producer_open_ = false;
   DCHECK(has_local_producer_no_lock());
   producer_waiter_list_.reset();
   // TODO(vtl): FIXME -- "cancel" any two-phase write (do we need to do this?)
@@ -110,6 +153,8 @@ void DataPipe::ConsumerCancelAllWaiters() {
 
 void DataPipe::ConsumerClose() {
   base::AutoLock locker(lock_);
+  DCHECK(consumer_open_);
+  consumer_open_ = false;
   DCHECK(has_local_consumer_no_lock());
   consumer_waiter_list_.reset();
   // TODO(vtl): FIXME -- "cancel" any two-phase read (do we need to do this?)
@@ -195,42 +240,27 @@ void DataPipe::ConsumerRemoveWaiter(Waiter* waiter) {
   consumer_waiter_list_->RemoveWaiter(waiter);
 }
 
-DataPipe::DataPipe(bool has_local_producer, bool has_local_consumer)
-    : element_num_bytes_(0),
+DataPipe::DataPipe(bool has_local_producer,
+                   bool has_local_consumer,
+                   const MojoCreateDataPipeOptions& validated_options)
+    : may_discard_((validated_options.flags &
+                       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD)),
+      element_num_bytes_(validated_options.element_num_bytes),
+      capacity_num_bytes_(validated_options.capacity_num_bytes),
+      producer_open_(true),
+      consumer_open_(true),
       producer_waiter_list_(has_local_producer ? new WaiterList() : NULL),
       consumer_waiter_list_(has_local_consumer ? new WaiterList() : NULL),
       producer_in_two_phase_write_(false),
       consumer_in_two_phase_read_(false) {
-  DCHECK(has_local_producer || has_local_consumer);
+//FIXME
 }
 
 DataPipe::~DataPipe() {
+  DCHECK(!producer_open_);
+  DCHECK(!consumer_open_);
   DCHECK(!has_local_producer_no_lock());
   DCHECK(!has_local_consumer_no_lock());
-}
-
-MojoResult DataPipe::Init(bool may_discard,
-                          size_t element_num_bytes,
-                          size_t capacity_num_bytes) {
-  // No need to lock: This method is not thread-safe.
-
-  if (element_num_bytes == 0)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (capacity_num_bytes == 0) {
-    // Round the default capacity down to a multiple of the element size.
-    capacity_num_bytes = kDefaultDataPipeCapacityBytes -
-        (kDefaultDataPipeCapacityBytes % element_num_bytes);
-    // But make sure that the capacity is still at least one.
-    if (capacity_num_bytes == 0)
-      capacity_num_bytes = element_num_bytes;
-  }
-  if (capacity_num_bytes > kMaxDataPipeCapacityBytes)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-  may_discard_ = may_discard;
-  element_num_bytes_ = element_num_bytes;
-  capacity_num_bytes_ = capacity_num_bytes;
-  return MOJO_RESULT_OK;
 }
 
 void DataPipe::AwakeProducerWaitersForStateChangeNoLock() {

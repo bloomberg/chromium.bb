@@ -194,7 +194,7 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
 
 // |MojoCreateDataPipeOptions|: Used to specify creation parameters for a data
 // pipe to |MojoCreateDataPipe()|.
-//   |size_t struct_size|: Set to the size of the |MojoCreateDataPipeOptions|
+//   |uint32_t struct_size|: Set to the size of the |MojoCreateDataPipeOptions|
 //       struct. (Used to allow for future extensions.)
 //   |MojoCreateDataPipeOptionsFlags flags|: Used to specify different modes of
 //       operation.
@@ -225,11 +225,16 @@ const MojoCreateDataPipeOptionsFlags
 #endif
 
 struct MojoCreateDataPipeOptions {
-  size_t struct_size;
+  uint32_t struct_size;
   MojoCreateDataPipeOptionsFlags flags;
   uint32_t element_num_bytes;
   uint32_t capacity_num_bytes;
 };
+// TODO(vtl): Can we make this assertion work in C?
+#ifdef __cplusplus
+MOJO_COMPILE_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
+                    MojoCreateDataPipeOptions_has_wrong_size);
+#endif
 
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
 // and |MojoBeginWriteData()|.

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/system/constants.h"
+#include "mojo/system/data_pipe.h"
 #include "mojo/system/data_pipe_consumer_dispatcher.h"
 #include "mojo/system/data_pipe_producer_dispatcher.h"
 #include "mojo/system/dispatcher.h"
@@ -355,15 +356,21 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
 MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
                                     MojoHandle* data_pipe_producer_handle,
                                     MojoHandle* data_pipe_consumer_handle) {
-  if (options && !VerifyUserPointer<void>(options, sizeof(*options)))
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options) {
+    // The |struct_size| field must be valid to read.
+    if (!VerifyUserPointer<uint32_t>(&options->struct_size, 1))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    // And then |options| must point to at least |options->struct_size| bytes.
+    if (!VerifyUserPointer<void>(options, options->struct_size))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
   if (!VerifyUserPointer<MojoHandle>(data_pipe_producer_handle, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  scoped_refptr<LocalDataPipe> data_pipe(new LocalDataPipe());
-  MojoResult result = data_pipe->Init(options);
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  MojoResult result = DataPipe::ValidateOptions(options, &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -387,6 +394,7 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
     }
   }
 
+  scoped_refptr<DataPipe> data_pipe(new LocalDataPipe(validated_options));
   producer_dispatcher->Init(data_pipe);
   consumer_dispatcher->Init(data_pipe);
 

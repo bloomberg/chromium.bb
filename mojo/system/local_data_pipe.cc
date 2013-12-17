@@ -6,7 +6,7 @@
 // E.g., |start_index_| and |current_num_bytes_| fit into a |uint32_t|, but
 // their sum may not. This is bad and poses a security risk. (We're currently
 // saved by the limit on capacity -- the maximum size of the buffer, checked in
-// |DataPipe::Init()|, is currently sufficiently small.
+// |DataPipe::ValidateOptions()|, is currently sufficiently small.
 
 #include "mojo/system/local_data_pipe.h"
 
@@ -18,45 +18,20 @@
 namespace mojo {
 namespace system {
 
-LocalDataPipe::LocalDataPipe()
-    : DataPipe(true, true),
-      producer_open_(true),
-      consumer_open_(true),
+LocalDataPipe::LocalDataPipe(const MojoCreateDataPipeOptions& options)
+    : DataPipe(true, true, options),
       start_index_(0),
       current_num_bytes_(0),
       two_phase_max_num_bytes_written_(0),
       two_phase_max_num_bytes_read_(0) {
-}
-
-MojoResult LocalDataPipe::Init(const MojoCreateDataPipeOptions* options) {
-  static const MojoCreateDataPipeOptions kDefaultOptions = {
-    sizeof(MojoCreateDataPipeOptions),
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-    1u,
-    static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
-  };
-  if (!options)
-    options = &kDefaultOptions;
-
-  if (options->struct_size < sizeof(*options))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  // Note: lazily allocate memory, since a common case will be that one of the
-  // handles is immediately passed off to another process.
-  return DataPipe::Init(
-      (options->flags & MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD),
-      static_cast<size_t>(options->element_num_bytes),
-      static_cast<size_t>(options->capacity_num_bytes));
+  // Note: |buffer_| is lazily allocated, since a common case will be that one
+  // of the handles is immediately passed off to another process.
 }
 
 LocalDataPipe::~LocalDataPipe() {
-  DCHECK(!producer_open_);
-  DCHECK(!consumer_open_);
 }
 
 void LocalDataPipe::ProducerCloseImplNoLock() {
-  DCHECK(producer_open_);
-  producer_open_ = false;
   if (!current_num_bytes_)
     buffer_.reset();
   AwakeConsumerWaitersForStateChangeNoLock();
@@ -132,21 +107,19 @@ MojoResult LocalDataPipe::ProducerEndWriteDataImplNoLock(
 
 MojoWaitFlags LocalDataPipe::ProducerSatisfiedFlagsNoLock() {
   MojoWaitFlags rv = MOJO_WAIT_FLAG_NONE;
-  if (consumer_open_ && current_num_bytes_ < capacity_num_bytes())
+  if (consumer_open_no_lock() && current_num_bytes_ < capacity_num_bytes())
     rv |= MOJO_WAIT_FLAG_WRITABLE;
   return rv;
 }
 
 MojoWaitFlags LocalDataPipe::ProducerSatisfiableFlagsNoLock() {
   MojoWaitFlags rv = MOJO_WAIT_FLAG_NONE;
-  if (consumer_open_)
+  if (consumer_open_no_lock())
     rv |= MOJO_WAIT_FLAG_WRITABLE;
   return rv;
 }
 
 void LocalDataPipe::ConsumerCloseImplNoLock() {
-  DCHECK(consumer_open_);
-  consumer_open_ = false;
   // TODO(vtl): FIXME -- broken if two-phase write ongoing
   buffer_.reset();
   current_num_bytes_ = 0;
@@ -258,13 +231,13 @@ MojoWaitFlags LocalDataPipe::ConsumerSatisfiedFlagsNoLock() {
 
 MojoWaitFlags LocalDataPipe::ConsumerSatisfiableFlagsNoLock() {
   MojoWaitFlags rv = MOJO_WAIT_FLAG_NONE;
-  if (current_num_bytes_ > 0 || producer_open_)
+  if (current_num_bytes_ > 0 || producer_open_no_lock())
     rv |= MOJO_WAIT_FLAG_READABLE;
   return rv;
 }
 
 void LocalDataPipe::EnsureBufferNoLock() {
-  DCHECK(producer_open_);
+  DCHECK(producer_open_no_lock());
   if (buffer_.get())
     return;
   buffer_.reset(static_cast<char*>(

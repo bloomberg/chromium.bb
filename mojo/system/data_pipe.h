@@ -27,6 +27,13 @@ class WaiterList;
 class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     public base::RefCountedThreadSafe<DataPipe> {
  public:
+  // Validates and/or sets default options. If non-null, |in_options| must point
+  // to a struct of at least |in_options->struct_size| bytes. |out_options| must
+  // point to a (current) |MojoCreateDataPipeOptions| and will be entirely
+  // overwritten on success (it may be partly overwritten on failure).
+  static MojoResult ValidateOptions(const MojoCreateDataPipeOptions* in_options,
+                                    MojoCreateDataPipeOptions* out_options);
+
   // These are called by the producer dispatcher to implement its methods of
   // corresponding names.
   void ProducerCancelAllWaiters();
@@ -66,16 +73,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   void ConsumerRemoveWaiter(Waiter* waiter);
 
  protected:
-  DataPipe(bool has_local_producer, bool has_local_consumer);
+  DataPipe(bool has_local_producer,
+           bool has_local_consumer,
+           const MojoCreateDataPipeOptions& validated_options);
 
   friend class base::RefCountedThreadSafe<DataPipe>;
   virtual ~DataPipe();
-
-  // Not thread-safe; must be called before any other methods are called. This
-  // object is only usable on success.
-  MojoResult Init(bool may_discard,
-                  size_t element_num_bytes,
-                  size_t capacity_num_bytes);
 
   void AwakeProducerWaitersForStateChangeNoLock();
   void AwakeConsumerWaitersForStateChangeNoLock();
@@ -117,6 +120,16 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   size_t element_num_bytes() const { return element_num_bytes_; }
   size_t capacity_num_bytes() const { return capacity_num_bytes_; }
 
+  // Must be called under lock.
+  bool producer_open_no_lock() const {
+    lock_.AssertAcquired();
+    return producer_open_;
+  }
+  bool consumer_open_no_lock() const {
+    lock_.AssertAcquired();
+    return consumer_open_;
+  }
+
  private:
   bool has_local_producer_no_lock() const {
     return !!producer_waiter_list_.get();
@@ -125,12 +138,15 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     return !!consumer_waiter_list_.get();
   }
 
-  // Set by |Init()| and never changed afterwards:
-  bool may_discard_;
-  size_t element_num_bytes_;
-  size_t capacity_num_bytes_;
+  const bool may_discard_;
+  const size_t element_num_bytes_;
+  const size_t capacity_num_bytes_;
 
   base::Lock lock_;  // Protects the following members.
+  // *Known* state of producer or consumer.
+  bool producer_open_;
+  bool consumer_open_;
+  // Non-null only if the producer or consumer, respectively, is local.
   scoped_ptr<WaiterList> producer_waiter_list_;
   scoped_ptr<WaiterList> consumer_waiter_list_;
   bool producer_in_two_phase_write_;
