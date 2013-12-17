@@ -3404,12 +3404,6 @@
                   'MEMORY_TOOL_REPLACES_ALLOCATOR',
                 ],
               }],
-              ['_toolset=="target" and OS=="linux"', {
-                'ldflags': [
-                  # http://crbug.com/234010.
-                  '-lrt',
-                ],
-              }],
             ],
           }],
           ['asan==1', {
