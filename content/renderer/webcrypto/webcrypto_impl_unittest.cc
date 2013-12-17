@@ -22,6 +22,14 @@
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
+// The OpenSSL implementation of WebCrypto is less complete, so don't run all of
+// the tests: http://crbug.com/267888
+#if defined(USE_OPENSSL)
+#define MAYBE(test_name) DISABLED_##test_name
+#else
+#define MAYBE(test_name) test_name
+#endif
+
 namespace content {
 
 namespace {
@@ -60,8 +68,6 @@ void RestoreJwkOctDictionary(base::DictionaryValue* dict) {
   dict->SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
 }
 
-#if !defined(USE_OPENSSL)
-
 // Helper for ImportJwkRsaFailures. Restores the JWK JSON
 // dictionary to a good state
 void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
@@ -75,21 +81,6 @@ void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
       "p0LGxjD1M8jMcvYq6DPEC_JYQumEu3i9v5fAEH1VvbZi9cTg-rmEXLUUjvc5LdOq_5OuHmtm"
       "e7PUJHYW1PW6ENTP0ibeiNOfFvs");
   dict->SetString("e", "AQAB");
-}
-
-blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
-    blink::WebCryptoAlgorithmId algorithm_id,
-    unsigned modulus_length,
-    const std::vector<uint8>& public_exponent) {
-  DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep);
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      algorithm_id,
-      new blink::WebCryptoRsaKeyGenParams(
-          modulus_length,
-          webcrypto::Uint8VectorStart(public_exponent),
-          public_exponent.size()));
 }
 
 // Determines if two ArrayBuffers have identical content.
@@ -110,8 +101,6 @@ bool CopiesExist(std::vector<blink::WebArrayBuffer> bufs) {
   }
   return false;
 }
-
-#endif  // #if !defined(USE_OPENSSL)
 
 }  // namespace
 
@@ -497,8 +486,6 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
   }
 }
 
-#if !defined(USE_OPENSSL)
-
 TEST_F(WebCryptoImplTest, AesCbcFailures) {
   const std::string key_hex = "2b7e151628aed2a6abf7158809cf4f3c";
   blink::WebCryptoKey key = ImportSecretKeyFromRawHexString(
@@ -570,7 +557,7 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
   EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatPkcs8, key, &output));
 }
 
-TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
+TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
   struct TestCase {
     const char* key;
     const char* iv;
@@ -706,7 +693,7 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
   }
 }
 
-TEST_F(WebCryptoImplTest, GenerateKeyAes) {
+TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyAes)) {
   // Generate a small sample of AES keys.
   std::vector<blink::WebArrayBuffer> keys;
   blink::WebArrayBuffer key_bytes;
@@ -725,7 +712,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyAes) {
   EXPECT_FALSE(CopiesExist(keys));
 }
 
-TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
+TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyAesBadLength)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   EXPECT_FALSE(
       GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(0), &key));
@@ -735,7 +722,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
       GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(129), &key));
 }
 
-TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
+TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmac)) {
   // Generate a small sample of HMAC keys.
   std::vector<blink::WebArrayBuffer> keys;
   for (int i = 0; i < 16; ++i) {
@@ -753,7 +740,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
   EXPECT_FALSE(CopiesExist(keys));
 }
 
-TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
+TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmacNoLength)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   blink::WebCryptoAlgorithm algorithm =
       webcrypto::CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 0);
@@ -762,7 +749,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
 }
 
-TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
+TEST_F(WebCryptoImplTest, MAYBE(ImportSecretKeyNoAlgorithm)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
 
   // This fails because the algorithm is null.
@@ -775,7 +762,6 @@ TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
       &key));
 }
 
-#endif  //#if !defined(USE_OPENSSL)
 
 TEST_F(WebCryptoImplTest, ImportJwkFailures) {
 
@@ -885,9 +871,7 @@ TEST_F(WebCryptoImplTest, ImportJwkOctFailures) {
   RestoreJwkOctDictionary(&dict);
 }
 
-#if !defined(USE_OPENSSL)
-
-TEST_F(WebCryptoImplTest, ImportJwkRsaFailures) {
+TEST_F(WebCryptoImplTest, MAYBE(ImportJwkRsaFailures)) {
 
   base::DictionaryValue dict;
   RestoreJwkRsaDictionary(&dict);
@@ -943,9 +927,7 @@ TEST_F(WebCryptoImplTest, ImportJwkRsaFailures) {
   RestoreJwkRsaDictionary(&dict);
 }
 
-#endif  // #if !defined(USE_OPENSSL)
-
-TEST_F(WebCryptoImplTest, ImportJwkInputConsistency) {
+TEST_F(WebCryptoImplTest, MAYBE(ImportJwkInputConsistency)) {
   // The Web Crypto spec says that if a JWK value is present, but is
   // inconsistent with the input value, the operation must fail.
 
@@ -1054,7 +1036,7 @@ TEST_F(WebCryptoImplTest, ImportJwkInputConsistency) {
   // algorithm.
 }
 
-TEST_F(WebCryptoImplTest, ImportJwkHappy) {
+TEST_F(WebCryptoImplTest, MAYBE(ImportJwkHappy)) {
 
   // This test verifies the happy path of JWK import, including the application
   // of the imported key material.
@@ -1096,9 +1078,7 @@ TEST_F(WebCryptoImplTest, ImportJwkHappy) {
   // TODO(padolph): Import an RSA public key JWK and use it
 }
 
-#if !defined(USE_OPENSSL)
-
-TEST_F(WebCryptoImplTest, ImportExportSpki) {
+TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // openssl genrsa -out pair.pem 2048
   // openssl rsa -in pair.pem -out pubkey.der -outform DER -pubout
   // xxd -p pubkey.der
@@ -1189,7 +1169,7 @@ TEST_F(WebCryptoImplTest, ImportExportSpki) {
   EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
 }
 
-TEST_F(WebCryptoImplTest, ImportPkcs8) {
+TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
 
   // The following is a DER-encoded PKCS#8 representation of the RSA key from
   // Example 1 of NIST's "Test vectors for RSA PKCS#1 v1.5 Signature".
@@ -1267,7 +1247,7 @@ TEST_F(WebCryptoImplTest, ImportPkcs8) {
       &key));
 }
 
-TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
+TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   // Note: using unrealistic short key lengths here to avoid bogging down tests.
 
   // Successful WebCryptoAlgorithmIdRsaEsPkcs1v1_5 key generation.
@@ -1381,15 +1361,16 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
       ExportKeyInternal(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
-TEST_F(WebCryptoImplTest, RsaEsRoundTrip) {
+TEST_F(WebCryptoImplTest, MAYBE(RsaEsRoundTrip)) {
   // Note: using unrealistic short key length here to avoid bogging down tests.
 
   // Create a key pair.
   const unsigned kModulusLength = 256;
   blink::WebCryptoAlgorithm algorithm =
-      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                               kModulusLength,
-                               HexStringToBytes("010001"));
+      webcrypto::CreateRsaKeyGenAlgorithm(
+          blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+          kModulusLength,
+          HexStringToBytes("010001"));
   const blink::WebCryptoKeyUsageMask usage_mask =
       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt;
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
@@ -1437,7 +1418,7 @@ TEST_F(WebCryptoImplTest, RsaEsRoundTrip) {
   }
 }
 
-TEST_F(WebCryptoImplTest, RsaEsKnownAnswer) {
+TEST_F(WebCryptoImplTest, MAYBE(RsaEsKnownAnswer)) {
   // Because the random data in PKCS1.5 padding makes the encryption output non-
   // deterministic, we cannot easily do a typical known-answer test for RSA
   // encryption / decryption. Instead we will take a known-good encrypted
@@ -1563,15 +1544,16 @@ TEST_F(WebCryptoImplTest, RsaEsKnownAnswer) {
   ExpectArrayBufferMatchesHex(cleartext_hex, decrypted_data);
 }
 
-TEST_F(WebCryptoImplTest, RsaEsFailures) {
+TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
   // Note: using unrealistic short key length here to avoid bogging down tests.
 
   // Create a key pair.
   const unsigned kModulusLength = 256;
   blink::WebCryptoAlgorithm algorithm =
-      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                               kModulusLength,
-                               HexStringToBytes("010001"));
+      webcrypto::CreateRsaKeyGenAlgorithm(
+          blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+          kModulusLength,
+          HexStringToBytes("010001"));
   const blink::WebCryptoKeyUsageMask usage_mask =
       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt;
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
@@ -1635,7 +1617,5 @@ TEST_F(WebCryptoImplTest, RsaEsFailures) {
       &decrypted_data));
   ExpectArrayBufferMatchesHex(message_hex_str, decrypted_data);
 }
-
-#endif  // #if !defined(USE_OPENSSL)
 
 }  // namespace content
