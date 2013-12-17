@@ -82,6 +82,17 @@ const CGFloat kLabelWithInputTopPadding = 5.0;
 @end
 
 
+@interface AutofillSuggestionContainer (Private)
+
+// Set the main suggestion text and the corresponding |icon|.
+// Attempts to wrap the text if |wrapText| is set.
+- (void)setSuggestionText:(NSString*)line
+                     icon:(NSImage*)icon
+                 wrapText:(BOOL)wrapText;
+
+@end
+
+
 @implementation AutofillSuggestionContainer
 
 - (AutofillTextField*)inputField {
@@ -125,7 +136,9 @@ const CGFloat kLabelWithInputTopPadding = 5.0;
   [self setView:view];
 }
 
-- (void)setSuggestionText:(NSString*)line icon:(NSImage*)icon {
+- (void)setSuggestionText:(NSString*)line
+                     icon:(NSImage*)icon
+                 wrapText:(BOOL)wrapText {
   [label_ setString:@""];
 
   if ([icon size].width) {
@@ -151,10 +164,30 @@ const CGFloat kLabelWithInputTopPadding = 5.0;
   [[label_ textStorage] appendAttributedString:str1];
 
   [label_ setVerticallyResizable:YES];
-  [label_ setHorizontallyResizable:NO];
-  [label_ setFrameSize:NSMakeSize(2 * autofill::kFieldWidth, kInfiniteSize)];
+  [label_ setHorizontallyResizable:!wrapText];
+  if (wrapText) {
+    CGFloat availableWidth =
+        4 * autofill::kFieldWidth - [inputField_ frame].size.width;
+    [label_ setFrameSize:NSMakeSize(availableWidth, kInfiniteSize)];
+  } else {
+    [label_ setFrameSize:NSMakeSize(kInfiniteSize, kInfiniteSize)];
+  }
+  [[label_ layoutManager] ensureLayoutForTextContainer:[label_ textContainer]];
   [label_ sizeToFit];
 }
+
+- (void)
+    setSuggestionWithVerticallyCompactText:(NSString*)verticallyCompactText
+                   horizontallyCompactText:(NSString*)horizontallyCompactText
+                                      icon:(NSImage*)icon
+                                  maxWidth:(CGFloat)maxWidth {
+  // Prefer the vertically compact text when it fits. If it doesn't fit, fall
+  // back to the horizontally compact text.
+  [self setSuggestionText:verticallyCompactText icon:icon wrapText:NO];
+  if ([self preferredSize].width > maxWidth)
+    [self setSuggestionText:horizontallyCompactText icon:icon wrapText:YES];
+}
+
 
 - (void)showInputField:(NSString*)text withIcon:(NSImage*)icon {
   [[inputField_ cell] setPlaceholderString:text];

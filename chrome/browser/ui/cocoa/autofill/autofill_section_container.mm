@@ -310,12 +310,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 - (void)updateSuggestionState {
   const autofill::SuggestionState& suggestionState =
       delegate_->SuggestionStateForSection(section_);
-  // TODO(estade): use |vertically_compact_text| when it fits.
-  const base::string16& text = suggestionState.horizontally_compact_text;
   showSuggestions_ = suggestionState.visible;
-
-  [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(text)
-                                  icon:suggestionState.icon.AsNSImage()];
 
   if (!suggestionState.extra_text.empty()) {
     NSString* extraText =
@@ -323,6 +318,21 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
     [suggestContainer_ showInputField:extraText withIcon:extraIcon];
   }
+
+  // NOTE: It's important to set the input field, if there is one, _before_
+  // setting the suggestion text, since the suggestion container needs to
+  // account for the input field's width when deciding which of the two string
+  // representations to use.
+  NSString* verticallyCompactText =
+      base::SysUTF16ToNSString(suggestionState.vertically_compact_text);
+  NSString* horizontallyCompactText =
+      base::SysUTF16ToNSString(suggestionState.horizontally_compact_text);
+  [suggestContainer_
+      setSuggestionWithVerticallyCompactText:verticallyCompactText
+                     horizontallyCompactText:horizontallyCompactText
+                                        icon:suggestionState.icon.AsNSImage()
+                                    maxWidth:kDetailsWidth];
+
   [view_ setShouldHighlightOnHover:showSuggestions_];
   if (showSuggestions_)
     [view_ setClickTarget:suggestButton_];
