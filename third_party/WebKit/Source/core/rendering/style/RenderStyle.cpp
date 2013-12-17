@@ -611,7 +611,8 @@ StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle* other, unsigned&
         || visual->clip != other->visual->clip || visual->hasClip != other->visual->hasClip))
         return StyleDifferenceRepaintLayer;
 
-    if (RuntimeEnabledFeatures::cssCompositingEnabled() && rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode)
+    if (RuntimeEnabledFeatures::cssCompositingEnabled() && (rareNonInheritedData->m_effectiveBlendMode != other->rareNonInheritedData->m_effectiveBlendMode
+        || rareNonInheritedData->m_isolation != other->rareNonInheritedData->m_isolation))
         return StyleDifferenceRepaintLayer;
 
     if (rareNonInheritedData->opacity != other->rareNonInheritedData->opacity) {

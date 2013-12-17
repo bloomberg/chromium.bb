@@ -114,22 +114,20 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     // Setup transparency layers before setting up SVG resources!
     bool isRenderingMask = isRenderingMaskImage(m_object);
     float opacity = isRenderingMask ? 1 : style->opacity();
-    blink::WebBlendMode blendMode = isRenderingMask ? blink::WebBlendModeNormal : style->blendMode();
-    if (opacity < 1 || blendMode != blink::WebBlendModeNormal) {
-        FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
+    bool hasBlendMode = style->hasBlendMode() && !isRenderingMask;
 
-        if (opacity < 1 || blendMode != blink::WebBlendModeNormal) {
-            m_paintInfo->context->clip(repaintRect);
-            if (blendMode != blink::WebBlendModeNormal) {
-                if (!(m_renderingFlags & RestoreGraphicsContext)) {
-                    m_paintInfo->context->save();
-                    m_renderingFlags |= RestoreGraphicsContext;
-                }
-                m_paintInfo->context->setCompositeOperation(CompositeSourceOver, blendMode);
+    if (opacity < 1 || hasBlendMode || style->hasIsolation()) {
+        FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
+        m_paintInfo->context->clip(repaintRect);
+        if (hasBlendMode) {
+            if (!(m_renderingFlags & RestoreGraphicsContext)) {
+                m_paintInfo->context->save();
+                m_renderingFlags |= RestoreGraphicsContext;
             }
-            m_paintInfo->context->beginTransparencyLayer(opacity);
-            m_renderingFlags |= EndOpacityLayer;
+            m_paintInfo->context->setCompositeOperation(CompositeSourceOver, style->blendMode());
         }
+        m_paintInfo->context->beginTransparencyLayer(opacity);
+        m_renderingFlags |= EndOpacityLayer;
     }
 
     ClipPathOperation* clipPathOperation = style->clipPath();
