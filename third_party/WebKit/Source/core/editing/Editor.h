@@ -240,9 +240,6 @@ public:
     };
     friend class RevealSelectionScope;
 
-    // Export interpretKeyEvent only for testing
-    static const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
-
 private:
     Frame& m_frame;
     RefPtr<CompositeEditCommand> m_lastEditCommand;

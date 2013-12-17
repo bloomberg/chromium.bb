@@ -876,6 +876,8 @@
             'editing/DeleteFromTextNodeCommand.h',
             'editing/DeleteSelectionCommand.cpp',
             'editing/EditCommand.cpp',
+            'editing/EditingBehavior.cpp',
+            'editing/EditingBehavior.h',
             'editing/EditingStyle.cpp',
             'editing/Editor.cpp',
             'editing/EditorCommand.cpp',

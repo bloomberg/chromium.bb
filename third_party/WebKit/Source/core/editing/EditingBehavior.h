@@ -24,6 +24,7 @@
 #include "core/editing/EditingBehaviorTypes.h"
 
 namespace WebCore {
+class KeyboardEvent;
 
 class EditingBehavior {
 
@@ -89,6 +90,8 @@ public:
     {
         return m_type != EditingWindowsBehavior && m_type != EditingMacBehavior;
     }
+
+    const char* interpretKeyEvent(const KeyboardEvent&) const;
 
 private:
     EditingBehaviorType m_type;
