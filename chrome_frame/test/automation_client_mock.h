@@ -36,22 +36,7 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
   // MOCK_METHOD1(OnMessageReceived, void(const IPC::Message&));
 
   MOCK_METHOD0(OnChannelError, void(void));
-  MOCK_METHOD1(OnNavigationStateChanged, void(int flags));
-  MOCK_METHOD1(OnUpdateTargetUrl, void(
-      const std::wstring& new_target_url));
-  MOCK_METHOD1(OnAcceleratorPressed, void(const MSG& accel_message));
-  MOCK_METHOD1(OnTabbedOut, void(bool reverse));
-  MOCK_METHOD2(OnOpenURL, void(const GURL& url, int open_disposition));
-  MOCK_METHOD1(OnDidNavigate, void(
-      const NavigationInfo& navigation_info));
-  MOCK_METHOD2(OnNavigationFailed, void(int error_code, const GURL& gurl));
   MOCK_METHOD1(OnLoad, void(const GURL& url));
-  MOCK_METHOD3(OnMessageFromChromeFrame, void(
-      const std::string& message,
-      const std::string& origin,
-      const std::string& target));
-  MOCK_METHOD3(OnHandleContextMenu, void(HANDLE menu_handle,
-      int align_flags, const MiniContextMenuParams& params));
   MOCK_METHOD2(OnRequestStart, void(int request_id,
       const AutomationURLRequest& request));
   MOCK_METHOD2(OnRequestRead, void(int request_id, int bytes_to_read));
@@ -95,7 +80,6 @@ class MockAutomationProxy : public ChromeFrameAutomationProxy {
   MOCK_METHOD1(CreateTabProxy, scoped_refptr<TabProxy>(int handle));
   MOCK_METHOD1(ReleaseTabProxy, void(AutomationHandle handle));
   MOCK_METHOD0(server_version, std::string(void));
-  MOCK_METHOD1(SendProxyConfig, void(const std::string&));
 
   ~MockAutomationProxy() {}
 };

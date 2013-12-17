@@ -320,19 +320,6 @@ bool AutomationResourceMessageFilter::GetAutomationRequestId(
   return false;
 }
 
-bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
-    int routing_id, int tab_handle, int request_id) {
-  int automation_request_id = 0;
-  bool valid_id = GetAutomationRequestId(request_id, &automation_request_id);
-  if (!valid_id) {
-    LOG(ERROR) << "Invalid request id: " << request_id;
-    return false;
-  }
-
-  return Send(new AutomationMsg_DownloadRequestInHost(tab_handle,
-                                                      automation_request_id));
-}
-
 // static
 void AutomationResourceMessageFilter::ResumeJobsForPendingView(
     int tab_handle,

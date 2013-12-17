@@ -182,7 +182,6 @@ STDMETHODIMP ChromeActiveDocument::IsDirty() {
 
 void ChromeActiveDocument::OnAutomationServerReady() {
   BaseActiveX::OnAutomationServerReady();
-  BaseActiveX::GiveFocusToChrome(true);
 }
 
 STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
@@ -426,13 +425,6 @@ STDMETHODIMP ChromeActiveDocument::SaveHistory(IStream* stream) {
 }
 
 STDMETHODIMP ChromeActiveDocument::SetPositionCookie(DWORD position_cookie) {
-  if (automation_client_.get()) {
-    int index = static_cast<int>(position_cookie);
-    navigation_info_->navigation_index = index;
-    automation_client_->NavigateToIndex(index);
-  } else {
-    DLOG(WARNING) << "Invalid automation client instance";
-  }
   return S_OK;
 }
 
@@ -598,88 +590,12 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
   return S_OK;
 }
 
-void ChromeActiveDocument::OnNavigationStateChanged(
-    int flags, const NavigationInfo& nav_info) {
-  // TODO(joshia): handle INVALIDATE_TYPE_TAB,INVALIDATE_TYPE_LOAD etc.
-  DVLOG(1) << __FUNCTION__
-           << "\n Flags: " << flags
-           << ", Url: " << nav_info.url
-           << ", Title: " << nav_info.title
-           << ", Type: " << nav_info.navigation_type
-           << ", Relative Offset: " << nav_info.relative_offset
-           << ", Index: " << nav_info.navigation_index;
-
-  UpdateNavigationState(nav_info, flags);
-}
-
-void ChromeActiveDocument::OnUpdateTargetUrl(
-    const std::wstring& new_target_url) {
-  if (in_place_frame_)
-    in_place_frame_->SetStatusText(new_target_url.c_str());
-}
-
 bool IsFindAccelerator(const MSG& msg) {
   // TODO(robertshield): This may not stand up to localization. Fix if this
   // is the case.
   return msg.message == WM_KEYDOWN && msg.wParam == 'F' &&
          base::win::IsCtrlPressed() &&
          !(base::win::IsAltPressed() || base::win::IsShiftPressed());
-}
-
-void ChromeActiveDocument::OnAcceleratorPressed(const MSG& accel_message) {
-  if (::TranslateAccelerator(m_hWnd, accelerator_table_,
-                             const_cast<MSG*>(&accel_message)))
-    return;
-
-  bool handled_accel = false;
-  if (in_place_frame_ != NULL) {
-    handled_accel = (S_OK == in_place_frame_->TranslateAcceleratorW(
-        const_cast<MSG*>(&accel_message), 0));
-  }
-
-  if (!handled_accel) {
-    if (IsFindAccelerator(accel_message)) {
-      // Handle the showing of the find dialog explicitly.
-      OnFindInPage();
-    } else {
-      BaseActiveX::OnAcceleratorPressed(accel_message);
-    }
-  } else {
-    DVLOG(1) << "IE handled accel key " << accel_message.wParam;
-  }
-}
-
-void ChromeActiveDocument::OnTabbedOut(bool reverse) {
-  DVLOG(1) << __FUNCTION__;
-  if (in_place_frame_) {
-    MSG msg = { NULL, WM_KEYDOWN, VK_TAB };
-    in_place_frame_->TranslateAcceleratorW(&msg, 0);
-  }
-}
-
-void ChromeActiveDocument::OnDidNavigate(const NavigationInfo& nav_info) {
-  DVLOG(1) << __FUNCTION__ << std::endl
-           << "Url: " << nav_info.url
-           << ", Title: " << nav_info.title
-           << ", Type: " << nav_info.navigation_type
-           << ", Relative Offset: " << nav_info.relative_offset
-           << ", Index: " << nav_info.navigation_index;
-
-  CrashMetricsReporter::GetInstance()->IncrementMetric(
-      CrashMetricsReporter::CHROME_FRAME_NAVIGATION_COUNT);
-
-  UpdateNavigationState(nav_info, 0);
-}
-
-void ChromeActiveDocument::OnCloseTab() {
-  // Base class will fire DIChromeFrameEvents::onclose.
-  BaseActiveX::OnCloseTab();
-
-  // Close the container window.
-  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
-  DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
-  if (web_browser2)
-    web_browser2->Quit();
 }
 
 void ChromeActiveDocument::UpdateNavigationState(
@@ -905,102 +821,6 @@ void ChromeActiveDocument::OnGetZoomRange(const GUID* cmd_group_guid,
   }
 }
 
-void ChromeActiveDocument::OnSetZoomRange(const GUID* cmd_group_guid,
-                                          DWORD command_id,
-                                          DWORD cmd_exec_opt,
-                                          VARIANT* in_args,
-                                          VARIANT* out_args) {
-  const int kZoomIn = 125;
-  const int kZoomOut = 75;
-
-  if (in_args && V_VT(in_args) == VT_I4 && IsValid()) {
-    if (in_args->lVal == kZoomIn) {
-      automation_client_->SetZoomLevel(content::PAGE_ZOOM_IN);
-    } else if (in_args->lVal == kZoomOut) {
-      automation_client_->SetZoomLevel(content::PAGE_ZOOM_OUT);
-    } else {
-      DLOG(WARNING) << "Unsupported zoom level:" << in_args->lVal;
-    }
-  }
-}
-
-void ChromeActiveDocument::OnUnload(const GUID* cmd_group_guid,
-                                    DWORD command_id,
-                                    DWORD cmd_exec_opt,
-                                    VARIANT* in_args,
-                                    VARIANT* out_args) {
-  if (IsValid() && out_args) {
-    // If the navigation is attempted to the url loaded in CF, with the only
-    // difference being the addition of an anchor, IE will attempt to unload
-    // the currently loaded document which basically would end up running
-    // unload handlers on the currently loaded document thus rendering it non
-    // functional. We handle this as below:-
-    // The BHO receives the new url in the BeforeNavigate event.
-    // We compare the non anchor portions of the url in the BHO with the loaded
-    // url and if they match, we initiate a Chrome navigation to the url with
-    // the anchor which works nicely.
-    // We don't want to continue processing the unload in this case.
-    // Note:-
-    // IE handles these navigations by querying the loaded document for
-    // IHTMLDocument which then handles the new navigation. That won't work for
-    // us as we don't implement IHTMLDocument.
-    NavigationManager* mgr = NavigationManager::GetThreadInstance();
-    DLOG_IF(ERROR, !mgr) << "Couldn't get instance of NavigationManager";
-    if (mgr) {
-      ChromeFrameUrl url;
-      url.Parse(mgr->url());
-      if (url.gurl().has_ref()) {
-        url_canon::Replacements<char> replacements;
-        replacements.ClearRef();
-
-        if (url.gurl().ReplaceComponents(replacements) ==
-            GURL(static_cast<BSTR>(url_))) {
-          // We want to reuse the existing automation client and channel for
-          // initiating the new navigation. Setting the
-          // is_automation_client_reused_ flag to true before calling the
-          // LaunchUrl function achieves that.
-          is_automation_client_reused_ = true;
-          LaunchUrl(url, mgr->referrer());
-          out_args->vt = VT_BOOL;
-          out_args->boolVal = VARIANT_FALSE;
-          return;
-        }
-      }
-    }
-    bool should_unload = true;
-    automation_client_->OnUnload(&should_unload);
-    out_args->vt = VT_BOOL;
-    out_args->boolVal = should_unload ? VARIANT_TRUE : VARIANT_FALSE;
-  }
-}
-
-void ChromeActiveDocument::OnAttachExternalTab(
-    const AttachExternalTabParams& params) {
-  if (!automation_client_.get()) {
-    DLOG(WARNING) << "Invalid automation client instance";
-    return;
-  }
-  DWORD flags = 0;
-  if (params.user_gesture)
-    flags = NWMF_USERREQUESTED;
-  else if (popup_allowed_)
-    flags = NWMF_USERALLOWED;
-
-  HRESULT hr = S_OK;
-  if (popup_manager_) {
-    const std::wstring& url_wide = UTF8ToWide(params.url.spec());
-    hr = popup_manager_->EvaluateNewWindow(url_wide.c_str(), NULL, url_,
-        NULL, FALSE, flags, 0);
-  }
-  // Allow popup
-  if (hr == S_OK) {
-    BaseActiveX::OnAttachExternalTab(params);
-    return;
-  }
-
-  automation_client_->BlockExternalTab(params.cookie);
-}
-
 bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   base::win::ScopedComPtr<IBrowserService> browser_service;
   base::win::ScopedComPtr<ITravelLog> travel_log;
@@ -1019,23 +839,6 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
       MF_ENABLED : MF_DISABLED));
   // Call base class (adds 'About' item)
   return BaseActiveX::PreProcessContextMenu(menu);
-}
-
-bool ChromeActiveDocument::HandleContextMenuCommand(
-    UINT cmd, const MiniContextMenuParams& params) {
-  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
-  DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
-
-  if (cmd == IDC_BACK)
-    web_browser2->GoBack();
-  else if (cmd == IDC_FORWARD)
-    web_browser2->GoForward();
-  else if (cmd == IDC_RELOAD)
-    web_browser2->Refresh();
-  else
-    return BaseActiveX::HandleContextMenuCommand(cmd, params);
-
-  return true;
 }
 
 HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
@@ -1062,48 +865,7 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
 
 bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
                                      const std::string& referrer) {
-  DCHECK(!cf_url.gurl().is_empty());
-
-  if (!automation_client_.get()) {
-    // http://code.google.com/p/chromium/issues/detail?id=52894
-    // Still not sure how this happens.
-    DLOG(ERROR) << "No automation client!";
-    if (!Initialize()) {
-      NOTREACHED() << "...and failed to start a new one >:(";
-      return false;
-    }
-  }
-
-  document_url_ = cf_url.gurl().spec();
-
-  url_.Allocate(UTF8ToWide(cf_url.gurl().spec()).c_str());
-  if (cf_url.attach_to_external_tab()) {
-    automation_client_->AttachExternalTab(cf_url.cookie());
-    OnMoveWindow(cf_url.dimensions());
-  } else if (!automation_client_->InitiateNavigation(cf_url.gurl().spec(),
-                                                     referrer,
-                                                     this)) {
-    DLOG(ERROR) << "Invalid URL: " << url_;
-    Error(L"Invalid URL");
-    url_.Reset();
-    return false;
-  }
-
-  if (is_automation_client_reused_)
-    return true;
-
-  automation_client_->SetUrlFetcher(url_fetcher_.get());
-  if (launch_params_) {
-    return automation_client_->Initialize(this, launch_params_);
-  } else {
-    std::wstring profile = UTF8ToWide(cf_url.profile_name());
-    // If no profile was given, then make use of the host process's name.
-    if (profile.empty())
-      profile = GetHostProcessName(false);
-    return InitializeAutomation(profile, IsIEInPrivate(),
-                                false, cf_url.gurl(), GURL(referrer),
-                                false);
-  }
+  return false;
 }
 
 HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
@@ -1269,45 +1031,6 @@ HRESULT ChromeActiveDocument::OnEncodingChange(const GUID* cmd_group_guid,
   IEExec(&CGID_ExplorerBarDoc, command_id, cmd_exec_opt, NULL, NULL);
   return S_OK;
 }
-
-void ChromeActiveDocument::OnGoToHistoryEntryOffset(int offset) {
-  DVLOG(1) <<  __FUNCTION__ << " - offset:" << offset;
-
-  base::win::ScopedComPtr<IBrowserService> browser_service;
-  base::win::ScopedComPtr<ITravelLog> travel_log;
-  GetBrowserServiceAndTravelLog(browser_service.Receive(),
-                                travel_log.Receive());
-
-  if (browser_service && travel_log)
-    travel_log->Travel(browser_service, offset);
-}
-
-void ChromeActiveDocument::OnMoveWindow(const gfx::Rect& dimensions) {
-  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
-  DoQueryService(SID_SWebBrowserApp, m_spClientSite,
-                 web_browser2.Receive());
-  if (!web_browser2)
-    return;
-  DVLOG(1) << "this:" << this << "\ndimensions: width:" << dimensions.width()
-           << " height:" << dimensions.height();
-  if (!dimensions.IsEmpty()) {
-    web_browser2->put_MenuBar(VARIANT_FALSE);
-    web_browser2->put_ToolBar(VARIANT_FALSE);
-
-    int width = dimensions.width();
-    int height = dimensions.height();
-    // Compute the size of the browser window given the desired size of the
-    // content area. As per MSDN, the WebBrowser object returns an error from
-    // this method. As a result the code below is best effort.
-    web_browser2->ClientToWindow(&width, &height);
-
-    web_browser2->put_Width(width);
-    web_browser2->put_Height(height);
-    web_browser2->put_Left(dimensions.x());
-    web_browser2->put_Top(dimensions.y());
-  }
-}
-
 HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
     IBrowserService** browser_service, ITravelLog** travel_log) {
   DCHECK(browser_service || travel_log);
@@ -1392,8 +1115,6 @@ LRESULT ChromeActiveDocument::OnShowWindow(UINT message, WPARAM wparam,
 LRESULT ChromeActiveDocument::OnSetFocus(UINT message, WPARAM wparam,
                                          LPARAM lparam,
                                          BOOL& handled) {  // NO_LINT
-  if (!ignore_setfocus_)
-    GiveFocusToChrome(false);
   return 0;
 }
 

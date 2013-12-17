@@ -137,17 +137,6 @@ enum NotificationType {
   // Details<InfoBar::ReplacedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
 
-  // This is sent when an externally hosted tab is closed.  No details are
-  // expected.
-  NOTIFICATION_EXTERNAL_TAB_CLOSED,
-
-  // Indicates that the new page tab has finished loading. This is used for
-  // performance testing to see how fast we can load it after startup, and is
-  // only called once for the lifetime of the browser. The source is unused.
-  // Details is an integer: the number of milliseconds elapsed between
-  // starting and finishing all painting.
-  NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-
   // Used to fire notifications about how long various events took to
   // complete.  E.g., this is used to get more fine grained timings from the
   // new tab page.  The source is a WebContents and the details is a

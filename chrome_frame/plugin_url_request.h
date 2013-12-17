@@ -81,10 +81,6 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     EndRequest(request_id);
   }
 
-  void DownloadUrlRequestInHost(int request_id) {
-    DownloadRequestInHost(request_id);
-  }
-
   void StopAllRequests() {
     StopAll();
   }
@@ -98,7 +94,6 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
       int request_id, const AutomationURLRequest& request_info) = 0;
   virtual void ReadRequest(int request_id, int bytes_to_read) = 0;
   virtual void EndRequest(int request_id) = 0;
-  virtual void DownloadRequestInHost(int request_id) = 0;
   virtual void StopAll() = 0;
 };
 

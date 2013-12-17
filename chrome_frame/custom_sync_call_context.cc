@@ -6,21 +6,6 @@
 
 #include "base/bind.h"
 
-CreateExternalTabContext::CreateExternalTabContext(
-    ChromeFrameAutomationClient* client)
-    : client_(client) {
-}
-
-void CreateExternalTabContext::Completed(
-    HWND chrome_window, HWND tab_window, int tab_handle, int session_id) {
-  AutomationLaunchResult launch_result =
-      client_->CreateExternalTabComplete(chrome_window, tab_window,
-                                         tab_handle, session_id);
-  client_->PostTask(
-      FROM_HERE, base::Bind(&ChromeFrameAutomationClient::InitializeComplete,
-                            client_.get(), launch_result));
-}
-
 BeginNavigateContext::BeginNavigateContext(ChromeFrameAutomationClient* client)
     : client_(client) {
 }

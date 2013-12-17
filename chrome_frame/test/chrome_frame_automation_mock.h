@@ -104,14 +104,6 @@ class AutomationMockDelegate
     QuitMessageLoop();
   }
 
-  virtual void OnLoad(const GURL& url) {
-    if (url_ == url) {
-      navigation_result_ = true;
-    } else {
-      QuitMessageLoop();
-    }
-  }
-
   virtual void OnLoadFailed(int error_code, const std::string& url) {
     navigation_result_ = false;
     QuitMessageLoop();
@@ -164,77 +156,6 @@ class AutomationMockLaunch
   bool launch_result() const {
     return is_connected();
   }
-};
-
-class AutomationMockNavigate
-    : public AutomationMockDelegate<AutomationMockNavigate> {
- public:
-  typedef AutomationMockDelegate<AutomationMockNavigate> Base;
-  AutomationMockNavigate(base::MessageLoop* caller_message_loop,
-                         int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
-             false) {
-  }
-  virtual void OnLoad(const GURL& url) {
-    Base::OnLoad(url);
-    QuitMessageLoop();
-  }
-};
-
-class AutomationMockPostMessage
-    : public AutomationMockDelegate<AutomationMockPostMessage> {
- public:
-  typedef AutomationMockDelegate<AutomationMockPostMessage> Base;
-  AutomationMockPostMessage(base::MessageLoop* caller_message_loop,
-                            int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
-             false),
-        postmessage_result_(false) {}
-  bool postmessage_result() const {
-    return postmessage_result_;
-  }
-  virtual void OnLoad(const GURL& url) {
-    Base::OnLoad(url);
-    if (navigation_result()) {
-      automation()->ForwardMessageFromExternalHost("Test", "null", "*");
-    }
-  }
-  virtual void OnMessageFromChromeFrame(const std::string& message,
-                                        const std::string& origin,
-                                        const std::string& target) {
-    postmessage_result_ = true;
-    QuitMessageLoop();
-  }
- private:
-  bool postmessage_result_;
-};
-
-class AutomationMockHostNetworkRequestStart
-    : public AutomationMockDelegate<AutomationMockHostNetworkRequestStart> {
- public:
-  typedef AutomationMockDelegate<AutomationMockHostNetworkRequestStart> Base;
-  AutomationMockHostNetworkRequestStart(base::MessageLoop* caller_message_loop,
-      int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
-             false),
-        request_start_result_(false) {
-    if (automation()) {
-      automation()->set_use_chrome_network(false);
-    }
-  }
-  bool request_start_result() const {
-    return request_start_result_;
-  }
-  virtual void OnRequestStart(int request_id,
-                              const AutomationURLRequest& request) {
-    request_start_result_ = true;
-    QuitMessageLoop();
-  }
-  virtual void OnLoad(const GURL& url) {
-    Base::OnLoad(url);
-  }
- private:
-  bool request_start_result_;
 };
 
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_AUTOMATION_MOCK_H_

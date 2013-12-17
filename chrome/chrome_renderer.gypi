@@ -246,8 +246,6 @@
         'renderer/content_settings_observer.cc',
         'renderer/content_settings_observer.h',
         'renderer/custom_menu_commands.h',
-        'renderer/external_host_bindings.cc',
-        'renderer/external_host_bindings.h',
         'renderer/external_extension.cc',
         'renderer/external_extension.h',
         'renderer/page_load_histograms.cc',

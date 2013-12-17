@@ -41,35 +41,19 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
   bool is_valid_message = false;
 
   switch (type) {
-    case AutomationMsg_CreateExternalTab::ID:
-    case AutomationMsg_ConnectExternalTab::ID:
-    case AutomationMsg_BrowserMove::ID:
-    case AutomationMsg_ProcessUnhandledAccelerator::ID:
-    case AutomationMsg_ForwardContextMenuCommandToChrome::ID:
-    case AutomationMsg_TabReposition::ID:
-    case AutomationMsg_NavigateInExternalTab::ID:
-    case AutomationMsg_NavigateExternalTabAtIndex::ID:
     case AutomationMsg_Find::ID:
-    case AutomationMsg_SetInitialFocus::ID:
     case AutomationMsg_SetPageFontSize::ID:
-    case AutomationMsg_SetProxyConfig::ID:
     case AutomationMsg_Cut::ID:
     case AutomationMsg_Copy::ID:
     case AutomationMsg_Paste::ID:
     case AutomationMsg_SelectAll::ID:
     case AutomationMsg_ReloadAsync::ID:
     case AutomationMsg_StopAsync::ID:
-    case AutomationMsg_PrintAsync::ID:
     case AutomationMsg_HandleUnused::ID:
-    case AutomationMsg_HandleMessageFromExternalHost::ID:
     case AutomationMsg_RequestStarted::ID:
     case AutomationMsg_RequestData::ID:
     case AutomationMsg_RequestEnd::ID:
-    case AutomationMsg_SaveAsAsync::ID:
-    case AutomationMsg_RemoveBrowsingData::ID:
-    case AutomationMsg_OverrideEncoding::ID:
-    case AutomationMsg_RunUnloadHandlers::ID:
-    case AutomationMsg_SetZoomLevel::ID: {
+    case AutomationMsg_OverrideEncoding::ID: {
       is_valid_message = true;
       break;
     }

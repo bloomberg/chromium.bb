@@ -52,23 +52,6 @@ IPC_STRUCT_BEGIN(AutomationURLResponse)
   IPC_STRUCT_MEMBER(uint64, upload_size)
 IPC_STRUCT_END()
 
-#if defined(OS_WIN)
-
-IPC_STRUCT_BEGIN(ExternalTabSettings)
-  IPC_STRUCT_MEMBER(HWND, parent)
-  IPC_STRUCT_MEMBER(gfx::Rect, dimensions)
-  IPC_STRUCT_MEMBER(unsigned int, style)
-  IPC_STRUCT_MEMBER(bool, is_incognito)
-  IPC_STRUCT_MEMBER(bool, load_requests_via_automation)
-  IPC_STRUCT_MEMBER(bool, handle_top_level_requests)
-  IPC_STRUCT_MEMBER(GURL, initial_url)
-  IPC_STRUCT_MEMBER(GURL, referrer)
-  IPC_STRUCT_MEMBER(bool, infobars_enabled)
-  IPC_STRUCT_MEMBER(bool, route_all_top_level_navigations)
-IPC_STRUCT_END()
-
-#endif  // defined(OS_WIN)
-
 IPC_STRUCT_BEGIN(NavigationInfo)
   IPC_STRUCT_MEMBER(int, navigation_type)
   IPC_STRUCT_MEMBER(int, relative_offset)
@@ -80,64 +63,6 @@ IPC_STRUCT_BEGIN(NavigationInfo)
   IPC_STRUCT_MEMBER(bool, displayed_insecure_content)
   IPC_STRUCT_MEMBER(bool, ran_insecure_content)
 IPC_STRUCT_END()
-
-// A stripped down version of ContextMenuParams.
-IPC_STRUCT_BEGIN(MiniContextMenuParams)
-  // The x coordinate for displaying the menu.
-  IPC_STRUCT_MEMBER(int, screen_x)
-
-  // The y coordinate for displaying the menu.
-  IPC_STRUCT_MEMBER(int, screen_y)
-
-  // This is the URL of the link that encloses the node the context menu was
-  // invoked on.
-  IPC_STRUCT_MEMBER(GURL, link_url)
-
-  // The link URL to be used ONLY for "copy link address". We don't validate
-  // this field in the frontend process.
-  IPC_STRUCT_MEMBER(GURL, unfiltered_link_url)
-
-  // This is the source URL for the element that the context menu was
-  // invoked on.  Example of elements with source URLs are img, audio, and
-  // video.
-  IPC_STRUCT_MEMBER(GURL, src_url)
-
-  // This is the URL of the top level page that the context menu was invoked
-  // on.
-  IPC_STRUCT_MEMBER(GURL, page_url)
-
-  // This is the absolute keyword search URL including the %s search tag when
-  // the "Add as search engine..." option is clicked (left empty if not used).
-  IPC_STRUCT_MEMBER(GURL, keyword_url)
-
-  // This is the URL of the subframe that the context menu was invoked on.
-  IPC_STRUCT_MEMBER(GURL, frame_url)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(AttachExternalTabParams)
-  IPC_STRUCT_MEMBER(uint64, cookie)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(gfx::Rect, dimensions)
-  IPC_STRUCT_MEMBER(int, disposition)
-  IPC_STRUCT_MEMBER(bool, user_gesture)
-  IPC_STRUCT_MEMBER(std::string, profile_name)
-IPC_STRUCT_END()
-
-#if defined(OS_WIN)
-
-IPC_STRUCT_BEGIN(Reposition_Params)
-  IPC_STRUCT_MEMBER(HWND, window)
-  IPC_STRUCT_MEMBER(HWND, window_insert_after)
-  IPC_STRUCT_MEMBER(int, left)
-  IPC_STRUCT_MEMBER(int, top)
-  IPC_STRUCT_MEMBER(int, width)
-  IPC_STRUCT_MEMBER(int, height)
-  IPC_STRUCT_MEMBER(int, flags)
-  IPC_STRUCT_MEMBER(bool, set_parent)
-  IPC_STRUCT_MEMBER(HWND, parent_window)
-IPC_STRUCT_END()
-
-#endif  // defined(OS_WIN)
 
 IPC_STRUCT_BEGIN(AutomationURLRequest)
   IPC_STRUCT_MEMBER(std::string, url)
@@ -153,51 +78,7 @@ IPC_STRUCT_END()
 #ifndef CHROME_COMMON_AUTOMATION_MESSAGES_H_
 #define CHROME_COMMON_AUTOMATION_MESSAGES_H_
 
-// This struct passes information about the context menu in Chrome stored
-// as a ui::MenuModel to Chrome Frame.  It is basically a container of
-// items that go in the menu.  An item may be a submenu, so the data
-// structure may be a tree.
-struct ContextMenuModel {
-  ContextMenuModel();
-  ~ContextMenuModel();
-
-  // This struct describes one item in the menu.
-  struct Item {
-    Item();
-
-    // This is the type of the menu item, using values from the enum
-    // ui::MenuModel::ItemType (serialized as an int).
-    int type;
-
-    // This is the command id of the menu item, which will be passed by
-    // Chrome Frame to Chrome if the item is selected.
-    int item_id;
-
-    // This the the menu label, if needed.
-    std::wstring label;
-
-    // These are states of the menu item.
-    bool checked;
-    bool enabled;
-
-    // This recursively describes the submenu if type is
-    // ui::MenuModel::TYPE_SUBMENU.
-    ContextMenuModel* submenu;
-  };
-
-  // This is the list of menu items.
-  std::vector<Item> items;
-};
-
 namespace IPC {
-
-template <>
-struct ParamTraits<ContextMenuModel> {
-  typedef ContextMenuModel param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct ParamTraits<scoped_refptr<net::UploadData> > {

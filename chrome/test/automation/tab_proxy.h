@@ -160,61 +160,12 @@ class TabProxy : public AutomationResourceProxy {
   bool GetCookieByName(const GURL& url,
                        const std::string& name,
                        std::string* cookies) WARN_UNUSED_RESULT;
-
-#if defined(OS_WIN)
-  // The functions in this block are for external tabs, hence Windows only.
-
-  // The container of an externally hosted tab calls this to reflect any
-  // accelerator keys that it did not process. This gives the tab a chance
-  // to handle the keys
-  bool ProcessUnhandledAccelerator(const MSG& msg) WARN_UNUSED_RESULT;
-
-  // Ask the tab to set focus to either the first or last element on the page.
-  // When the restore_focus_to_view parameter is true, the render view
-  // associated with the current tab is informed that it is receiving focus.
-  // For external tabs only.
-  bool SetInitialFocus(bool reverse, bool restore_focus_to_view)
-      WARN_UNUSED_RESULT;
-
-  // Navigates to a url in an externally hosted tab.
-  // This method accepts the same kinds of URL input that
-  // can be passed to Chrome on the command line. This is a synchronous call and
-  // hence blocks until the navigation completes.
-  AutomationMsg_NavigationResponseValues NavigateInExternalTab(
-      const GURL& url, const GURL& referrer) WARN_UNUSED_RESULT;
-
-  AutomationMsg_NavigationResponseValues NavigateExternalTabAtIndex(
-      int index) WARN_UNUSED_RESULT;
-
-  // Posts a message to the external tab.
-  void HandleMessageFromExternalHost(const std::string& message,
-                                     const std::string& origin,
-                                     const std::string& target);
-#endif  // defined(OS_WIN)
-
-  // Sends off an asynchronous request for printing.
-  bool PrintAsync() WARN_UNUSED_RESULT;
-
   // Waits until the infobar count is |count|.
   // Returns true on success.
   bool WaitForInfoBarCount(size_t count) WARN_UNUSED_RESULT;
 
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding) WARN_UNUSED_RESULT;
-
-#if defined(OS_WIN)
-  // Resizes the tab window.
-  // The parent_window parameter allows a parent to be specified for the window
-  // passed in.
-  void Reposition(HWND window, HWND window_insert_after, int left, int top,
-                  int width, int height, int flags, HWND parent_window);
-
-  // Sends the selected context menu command to the chrome instance
-  void SendContextMenuCommand(int selected_command);
-
-  // To be called when the window hosting the tab has moved.
-  void OnHostMoved();
-#endif  // defined(OS_WIN)
 
   // Selects all contents on the page.
   void SelectAll();
@@ -228,7 +179,6 @@ class TabProxy : public AutomationResourceProxy {
   // the chrome instance.
   void ReloadAsync();
   void StopAsync();
-  void SaveAsAsync();
 
   // Notify the JavaScript engine in the render to change its parameters
   // while performing stress testing. See

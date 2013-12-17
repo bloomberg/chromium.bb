@@ -57,19 +57,6 @@ bool TestAutomationProvider::OnMessageReceived(const IPC::Message& msg) {
   return __super::OnMessageReceived(msg);
 }
 
-// IPC override to grab the tab handle.
-bool TestAutomationProvider::Send(IPC::Message* msg) {
-  if (msg->type() == AutomationMsg_TabLoaded::ID) {
-    DCHECK(tab_handle_ == -1) << "Currently only support one tab";
-    tab_handle_ = msg->routing_id();
-    DVLOG(1) << "Got tab handle: " << tab_handle_;
-    DCHECK(tab_handle_ != -1 && tab_handle_ != 0);
-    delegate_->OnInitialTabLoaded();
-  }
-
-  return AutomationProvider::Send(msg);
-}
-
 net::URLRequestJob* TestAutomationProvider::Factory(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,

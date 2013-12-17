@@ -28,8 +28,6 @@
 
 class BrowserProxy;
 class TabProxy;
-class WindowProxy;
-struct ExternalTabSettings;
 
 // This is an interface that AutomationProxy-related objects can use to
 // access the message-sending abilities of the Proxy.
@@ -130,10 +128,6 @@ class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
   // Use GetBrowserWindowCount to see how many browser windows you can ask for.
   // Window numbers are 0-based.
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
-
-  // Sends the browser a new proxy configuration to start using. Returns true
-  // if the proxy config was successfully sent, false otherwise.
-  bool SendProxyConfig(const std::string& new_proxy_config) WARN_UNUSED_RESULT;
 
   // These methods are intended to be called by the background thread
   // to signal that the given event has occurred, and that any corresponding

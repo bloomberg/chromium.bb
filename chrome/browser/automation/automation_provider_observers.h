@@ -153,25 +153,6 @@ class OOBEWebuiReadyObserver : public content::NotificationObserver {
 };
 #endif  // defined(OS_CHROMEOS)
 
-// Watches for NewTabUI page loads for performance timing purposes.
-class NewTabUILoadObserver : public content::NotificationObserver {
- public:
-  explicit NewTabUILoadObserver(AutomationProvider* automation,
-                                Profile* profile);
-  virtual ~NewTabUILoadObserver();
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabUILoadObserver);
-};
-
 class NavigationControllerRestoredObserver
     : public content::NotificationObserver {
  public:

@@ -100,10 +100,6 @@ class AutomationResourceMessageFilter
   static bool LookupRegisteredRenderView(
       int renderer_pid, int renderer_id, AutomationDetails* details);
 
-  // Sends the download request to the automation host.
-  bool SendDownloadRequestToHost(int routing_id, int tab_handle,
-                                 int request_id);
-
   // Retrieves cookies for the url passed in from the external host. The
   // callback passed in is notified on success or failure asynchronously.
   static void GetCookiesForUrl(content::BrowserMessageFilter* filter,

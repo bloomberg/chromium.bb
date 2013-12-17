@@ -70,79 +70,7 @@ class TopLevelWindowMapping {
   DISALLOW_COPY_AND_ASSIGN(TopLevelWindowMapping);
 };
 
-// Message pump hook function that monitors for WM_MOVE and WM_MOVING
-// messages on a top-level window, and passes notification to the appropriate
-// Chrome-Frame instances.
-LRESULT CALLBACK TopWindowProc(int code, WPARAM wparam, LPARAM lparam) {
-  CWPSTRUCT* info = reinterpret_cast<CWPSTRUCT*>(lparam);
-  const UINT &message = info->message;
-  const HWND &message_hwnd = info->hwnd;
-
-  switch (message) {
-    case WM_MOVE:
-    case WM_MOVING: {
-      TopLevelWindowMapping::WindowList cf_instances =
-          TopLevelWindowMapping::GetInstance()->GetInstances(message_hwnd);
-      TopLevelWindowMapping::WindowList::iterator
-          iter(cf_instances.begin()), end(cf_instances.end());
-      for (; iter != end; ++iter) {
-        PostMessage(*iter, WM_HOST_MOVED_NOTIFICATION, NULL, NULL);
-      }
-      break;
-    }
-    default:
-      break;
-  }
-
-  return CallNextHookEx(0, code, wparam, lparam);
-}
-
-HHOOK InstallLocalWindowHook(HWND window) {
-  if (!window)
-    return NULL;
-
-  DWORD proc_thread = ::GetWindowThreadProcessId(window, NULL);
-  if (!proc_thread)
-    return NULL;
-
-  // Note that this hook is installed as a LOCAL hook.
-  return  ::SetWindowsHookEx(WH_CALLWNDPROC,
-                             TopWindowProc,
-                             NULL,
-                             proc_thread);
-}
-
 }  // unnamed namespace
-
-namespace chrome_frame {
-std::string ActiveXCreateUrl(const GURL& parsed_url,
-                             const AttachExternalTabParams& params) {
-  return base::StringPrintf(
-      "%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
-      parsed_url.GetOrigin().spec().c_str(),
-      params.cookie,
-      params.disposition,
-      params.dimensions.x(),
-      params.dimensions.y(),
-      params.dimensions.width(),
-      params.dimensions.height(),
-      params.profile_name.c_str());
-}
-
-int GetDisposition(const AttachExternalTabParams& params) {
-  return params.disposition;
-}
-
-void GetMiniContextMenuData(UINT cmd,
-                            const MiniContextMenuParams& params,
-                            GURL* referrer,
-                            GURL* url) {
-  *referrer = params.frame_url.is_empty() ? params.page_url : params.frame_url;
-  *url = (cmd == IDS_CONTENT_CONTEXT_SAVELINKAS ?
-      params.link_url : params.src_url);
-}
-
-}  // namespace chrome_frame
 
 ChromeFrameActivex::ChromeFrameActivex()
     : chrome_wndproc_hook_(NULL),
@@ -190,12 +118,6 @@ LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
   return 0;
 }
 
-LRESULT ChromeFrameActivex::OnHostMoved(UINT message, WPARAM wparam,
-                                        LPARAM lparam, BOOL& handled) {
-  Base::OnHostMoved();
-  return 0;
-}
-
 HRESULT ChromeFrameActivex::GetContainingDocument(IHTMLDocument2** doc) {
   base::win::ScopedComPtr<IOleContainer> container;
   HRESULT hr = m_spClientSite->GetContainer(container.Receive());
@@ -212,16 +134,6 @@ HRESULT ChromeFrameActivex::GetDocumentWindow(IHTMLWindow2** window) {
   return hr;
 }
 
-void ChromeFrameActivex::OnLoad(const GURL& gurl) {
-  base::win::ScopedComPtr<IDispatch> event;
-  std::string url = gurl.spec();
-  if (SUCCEEDED(CreateDomEvent("event", url, "", event.Receive())))
-    Fire_onload(event);
-
-  FireEvent(onload_, url);
-  Base::OnLoad(gurl);
-}
-
 void ChromeFrameActivex::OnLoadFailed(int error_code, const std::string& url) {
   base::win::ScopedComPtr<IDispatch> event;
   if (SUCCEEDED(CreateDomEvent("event", url, "", event.Receive())))
@@ -229,50 +141,6 @@ void ChromeFrameActivex::OnLoadFailed(int error_code, const std::string& url) {
 
   FireEvent(onloaderror_, url);
   Base::OnLoadFailed(error_code, url);
-}
-
-void ChromeFrameActivex::OnMessageFromChromeFrame(const std::string& message,
-                                                  const std::string& origin,
-                                                  const std::string& target) {
-  DVLOG(1) << __FUNCTION__;
-
-  if (target.compare("*") != 0) {
-    bool drop = true;
-
-    if (is_privileged()) {
-      // Forward messages if the control is in privileged mode.
-      base::win::ScopedComPtr<IDispatch> message_event;
-      if (SUCCEEDED(CreateDomEvent("message", message, origin,
-                                   message_event.Receive()))) {
-        base::win::ScopedBstr target_bstr(UTF8ToWide(target).c_str());
-        Fire_onprivatemessage(message_event, target_bstr);
-
-        FireEvent(onprivatemessage_, message_event, target_bstr);
-      }
-    } else {
-      if (HaveSameOrigin(target, document_url_)) {
-        drop = false;
-      } else {
-        DLOG(WARNING) << "Dropping posted message since target doesn't match "
-            "the current document's origin. target=" << target;
-      }
-    }
-
-    if (drop)
-      return;
-  }
-
-  base::win::ScopedComPtr<IDispatch> message_event;
-  if (SUCCEEDED(CreateDomEvent("message", message, origin,
-                               message_event.Receive()))) {
-    Fire_onmessage(message_event);
-
-    FireEvent(onmessage_, message_event);
-
-    base::win::ScopedVariant event_var;
-    event_var.Set(static_cast<IDispatch*>(message_event));
-    InvokeScriptFunction(onmessage_handler_, event_var.AsInput());
-  }
 }
 
 bool ChromeFrameActivex::ShouldShowVersionMismatchDialog(
@@ -478,18 +346,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
 
     InitializeAutomationSettings();
 
-    if (service) {
-      base::win::ScopedBstr navigation_url;
-      service->GetNavigationUrl(navigation_url.Receive());
-      if (navigation_url.Length()) {
-        ChromeFrameUrl cf_url;
-        cf_url.Parse(navigation_url.operator BSTR());
-        if (cf_url.attach_to_external_tab()) {
-          automation_client_->AttachExternalTab(cf_url.cookie());
-          attaching_to_existing_cf_tab_ = true;
-        }
-      }
-    }
+   
     url_fetcher_->set_frame_busting(!is_privileged());
     automation_client_->SetUrlFetcher(url_fetcher_.get());
     if (!InitializeAutomation(profile_name, IsIEInPrivate(), true,
@@ -629,24 +486,7 @@ void ChromeFrameActivex::FireEvent(const EventHandlers& handlers,
 }
 
 HRESULT ChromeFrameActivex::InstallTopLevelHook(IOleClientSite* client_site) {
-  // Get the parent window of the site, and install our hook on the topmost
-  // window of the parent.
-  base::win::ScopedComPtr<IOleWindow> ole_window;
-  HRESULT hr = ole_window.QueryFrom(client_site);
-  if (FAILED(hr))
-    return hr;
-
-  HWND parent_wnd;
-  hr = ole_window->GetWindow(&parent_wnd);
-  if (FAILED(hr))
-    return hr;
-
-  HWND top_window = ::GetAncestor(parent_wnd, GA_ROOT);
-  chrome_wndproc_hook_ = InstallLocalWindowHook(top_window);
-  if (chrome_wndproc_hook_)
-    TopLevelWindowMapping::GetInstance()->AddMapping(top_window, m_hWnd);
-
-  return chrome_wndproc_hook_ ? S_OK : E_FAIL;
+  return E_FAIL;
 }
 
 HRESULT ChromeFrameActivex::registerBhoIfNeeded() {

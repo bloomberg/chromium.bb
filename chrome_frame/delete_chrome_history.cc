@@ -31,9 +31,6 @@ HRESULT DeleteChromeHistory::FinalConstruct() {
 }
 
 void DeleteChromeHistory::OnAutomationServerReady() {
-  DVLOG(1) << __FUNCTION__;
-  automation_client_->RemoveBrowsingData(remove_mask_);
-  loop_.Quit();
 }
 
 void DeleteChromeHistory::OnAutomationServerLaunchFailed(

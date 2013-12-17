@@ -178,11 +178,6 @@ void NewTabUI::PaintTimeout() {
   if ((now - last_paint_) >= base::TimeDelta::FromMilliseconds(kTimeoutMs)) {
     // Painting has quieted down.  Log this as the full time to run.
     base::TimeDelta load_time = last_paint_ - start_;
-    int load_time_ms = static_cast<int>(load_time.InMilliseconds());
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-        content::Source<Profile>(GetProfile()),
-        content::Details<int>(&load_time_ms));
     UMA_HISTOGRAM_TIMES("NewTabUI load", load_time);
   } else {
     // Not enough quiet time has elapsed.

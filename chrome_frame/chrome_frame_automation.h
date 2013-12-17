@@ -45,7 +45,6 @@ struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {  // NOLINT
   virtual void ReleaseTabProxy(AutomationHandle handle) = 0;
   virtual std::string server_version() = 0;
 
-  virtual void SendProxyConfig(const std::string&) = 0;
  protected:
   virtual ~ChromeFrameAutomationProxy() {}
 };
@@ -82,10 +81,6 @@ class ChromeFrameAutomationProxyImpl
 
   virtual bool Send(IPC::Message* msg) {
     return AutomationProxy::Send(msg);
-  }
-
-  virtual void SendProxyConfig(const std::string& p) {
-    AutomationProxy::SendProxyConfig(p);
   }
 
  protected:
@@ -318,18 +313,10 @@ class ChromeFrameAutomationClient
       const std::string& referrer,
       NavigationConstraints* navigation_constraints);
 
-  virtual bool NavigateToIndex(int index);
-  bool ForwardMessageFromExternalHost(const std::string& message,
-                                      const std::string& origin,
-                                      const std::string& target);
-  bool SetProxySettings(const std::string& json_encoded_proxy_settings);
-
   void FindInPage(const std::wstring& search_string,
                   FindInPageDirection forward,
                   FindInPageCase match_case,
                   bool find_next);
-
-  virtual void OnChromeFrameHostMoved();
 
   TabProxy* tab() const { return tab_.get(); }
 
@@ -338,15 +325,8 @@ class ChromeFrameAutomationClient
         TaskMarshallerThroughWindowsMessages<ChromeFrameAutomationClient>)
   END_MSG_MAP()
 
-  // Resizes the hosted chrome window. This is brokered to the chrome
-  // automation instance as the host browser could be running under low IL,
-  // which would cause the SetWindowPos call to fail.
-  void Resize(int width, int height, int flags);
-
   // Sets the passed in window as the parent of the external tab.
   void SetParentWindow(HWND parent_window);
-
-  void SendContextMenuCommandToChromeFrame(int selected_command);
 
   HWND tab_window() const {
     return tab_window_;
@@ -359,10 +339,6 @@ class ChromeFrameAutomationClient
 
   // BitBlts the contents of the chrome window to the print dc.
   void Print(HDC print_dc, const RECT& print_bounds);
-
-  // Called in full tab mode and indicates a request to chrome to print
-  // the whole tab.
-  void PrintTab();
 
   void set_use_chrome_network(bool use_chrome_network) {
     use_chrome_network_ = use_chrome_network;
@@ -385,21 +361,10 @@ class ChromeFrameAutomationClient
   // Url request manager set up.
   void SetUrlFetcher(PluginUrlRequestManager* url_fetcher);
 
-  // Attaches an existing external tab to this automation client instance.
-  void AttachExternalTab(uint64 external_tab_cookie);
-  void BlockExternalTab(uint64 cookie);
-
   void SetPageFontSize(enum AutomationPageFontSize);
 
   // For IDeleteBrowsingHistorySupport
   void RemoveBrowsingData(int remove_mask);
-
-  // Sets the current zoom level on the tab.
-  void SetZoomLevel(content::PageZoom zoom_level);
-
-  // Fires before unload and unload handlers on the page if any. Allows the
-  // the website to put up a confirmation dialog on unload.
-  void OnUnload(bool* should_unload);
 
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.
@@ -410,15 +375,6 @@ class ChromeFrameAutomationClient
   // TabProxyDelegate implementation
   virtual bool OnMessageReceived(TabProxy* tab, const IPC::Message& msg);
   virtual void OnChannelError(TabProxy* tab);
-
-  void CreateExternalTab();
-  AutomationLaunchResult CreateExternalTabComplete(HWND chrome_window,
-                                                   HWND tab_window,
-                                                   int tab_handle,
-                                                   int session_id);
-  // Called in UI thread. Here we fire event to the client notifying for
-  // the result of Initialize() method call.
-  void InitializeComplete(AutomationLaunchResult result);
 
   virtual void OnFinalMessage(HWND wnd) {
     Release();
@@ -433,7 +389,6 @@ class ChromeFrameAutomationClient
   void OnChannelErrorUIThread();
 
   HWND chrome_window() const { return chrome_window_; }
-  void BeginNavigate();
   void BeginNavigateCompleted(AutomationMsg_NavigationResponseValues result);
 
   // Helpers
@@ -489,8 +444,6 @@ class ChromeFrameAutomationClient
   int tab_handle_;
   // The SessionId used by Chrome as the id in the Javascript Tab object.
   int session_id_;
-  // Only used if we attach to an existing tab.
-  uint64 external_tab_cookie_;
 
   // Set to true if we received a navigation request prior to the automation
   // server being initialized.

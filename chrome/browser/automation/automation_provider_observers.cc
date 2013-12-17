@@ -209,30 +209,6 @@ void InitialLoadObserver::ConditionMet() {
     automation_->OnInitialTabLoadsComplete();
 }
 
-NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation,
-                                           Profile* profile)
-    : automation_(automation->AsWeakPtr()) {
-  registrar_.Add(this, chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-                 content::Source<Profile>(profile));
-}
-
-NewTabUILoadObserver::~NewTabUILoadObserver() {
-}
-
-void NewTabUILoadObserver::Observe(int type,
-                                   const content::NotificationSource& source,
-                                   const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD) {
-    content::Details<int> load_time(details);
-    if (automation_.get()) {
-      automation_->Send(
-          new AutomationMsg_InitialNewTabUILoadComplete(*load_time.ptr()));
-    }
-  } else {
-    NOTREACHED();
-  }
-}
-
 NavigationControllerRestoredObserver::NavigationControllerRestoredObserver(
     AutomationProvider* automation,
     NavigationController* controller,

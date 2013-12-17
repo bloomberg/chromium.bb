@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/automation/window_proxy.h"
 #include "ipc/ipc_descriptors.h"
 #if defined(OS_WIN)
 // TODO(port): Enable when dialog_delegate is ported.
@@ -293,10 +292,6 @@ bool AutomationProxy::GetMetricEventDuration(const std::string& event_name,
                                              int* duration_ms) {
   return Send(new AutomationMsg_GetMetricEventDuration(event_name,
                                                        duration_ms));
-}
-
-bool AutomationProxy::SendProxyConfig(const std::string& new_proxy_config) {
-  return Send(new AutomationMsg_SetProxyConfig(new_proxy_config));
 }
 
 void AutomationProxy::Disconnect() {

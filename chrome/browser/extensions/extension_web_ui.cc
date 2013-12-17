@@ -137,11 +137,6 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
   // those (this is also reflected in ChromeWebUIControllerFactory::
   // UseWebUIBindingsForURL).
   int bindings = 0;
-
-  // Bind externalHost to Extension WebUI loaded in Chrome Frame.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kChromeFrame))
-    bindings |= content::BINDINGS_POLICY_EXTERNAL_HOST;
   web_ui->SetBindings(bindings);
 
   // Hack: A few things we specialize just for the bookmark manager.

@@ -23,14 +23,10 @@ void AutomationTabTracker::AddObserver(NavigationController* resource) {
   // Register for both notifications.
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
                  content::Source<NavigationController>(resource));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-                 content::Source<NavigationController>(resource));
 }
 
 void AutomationTabTracker::RemoveObserver(NavigationController* resource) {
   registrar_.Remove(this, chrome::NOTIFICATION_TAB_CLOSING,
-                    content::Source<NavigationController>(resource));
-  registrar_.Remove(this, chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
                     content::Source<NavigationController>(resource));
 }
 
@@ -39,7 +35,6 @@ void AutomationTabTracker::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED:
     case chrome::NOTIFICATION_TAB_CLOSING:
       break;
     default:

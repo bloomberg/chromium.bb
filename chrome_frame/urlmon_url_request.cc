@@ -1156,54 +1156,10 @@ void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
     DLOG(ERROR) << __FUNCTION__ << " no request found for " << request_id;
 }
 
-void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
-  DVLOG(1) << __FUNCTION__ << " " << request_id;
-  if (!IsWindow(notification_window_)) {
-    NOTREACHED() << "Cannot handle download if we don't have anyone to hand it "
-                    "to.";
-    return;
-  }
-
-  scoped_refptr<UrlmonUrlRequest> request(LookupRequest(request_id,
-                                                        &request_map_));
-  if (request) {
-    DownloadRequestInHostHelper(request);
-  } else if (background_worker_thread_enabled_) {
-    base::AutoLock lock(background_resource_map_lock_);
-    request = LookupRequest(request_id, &background_request_map_);
-    if (request) {
-      background_thread_->message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&UrlmonUrlRequestManager::DownloadRequestInHostHelper,
-                     base::Unretained(this), request.get()));
-    }
-  }
-  if (!request)
-    DLOG(ERROR) << __FUNCTION__ << " no request found for " << request_id;
-}
-
-void UrlmonUrlRequestManager::DownloadRequestInHostHelper(
-    UrlmonUrlRequest* request) {
-  DCHECK(request);
-  UrlmonUrlRequest::TerminateBindCallback callback =
-      base::Bind(&UrlmonUrlRequestManager::BindTerminated,
-                 base::Unretained(this));
-  request->TerminateBind(callback);
-}
-
 void UrlmonUrlRequestManager::BindTerminated(IMoniker* moniker,
                                              IBindCtx* bind_ctx,
                                              IStream* post_data,
                                              const char* request_headers) {
-  DownloadInHostParams* download_params = new DownloadInHostParams;
-  download_params->bind_ctx = bind_ctx;
-  download_params->moniker = moniker;
-  download_params->post_data = post_data;
-  if (request_headers) {
-    download_params->request_headers = request_headers;
-  }
-  ::PostMessage(notification_window_, WM_DOWNLOAD_IN_HOST,
-        reinterpret_cast<WPARAM>(download_params), 0);
 }
 
 void UrlmonUrlRequestManager::EndRequest(int request_id) {

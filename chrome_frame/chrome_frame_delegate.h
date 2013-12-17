@@ -20,10 +20,8 @@
 #include "ipc/ipc_message.h"
 
 class GURL;
-struct AttachExternalTabParams;
 struct AutomationURLRequest;
 struct ContextMenuModel;
-struct MiniContextMenuParams;
 struct NavigationInfo;
 
 namespace net {
@@ -57,10 +55,6 @@ class ChromeFrameDelegate {
   // messages.
   virtual bool IsValid() const = 0;
 
-  // To be called when the top-most window of an application hosting
-  // ChromeFrame is moved.
-  virtual void OnHostMoved() = 0;
-
  protected:
   virtual ~ChromeFrameDelegate() {}
 };
@@ -86,37 +80,13 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
     return true;
   }
 
-  virtual void OnHostMoved() {}
-
  protected:
   // Protected methods to be overridden.
-  virtual void OnNavigationStateChanged(
-      int flags, const NavigationInfo& nav_info) {}
-  virtual void OnUpdateTargetUrl(const std::wstring& new_target_url) {}
-  virtual void OnAcceleratorPressed(const MSG& accel_message) {}
-  virtual void OnTabbedOut(bool reverse) {}
-  virtual void OnOpenURL(
-      const GURL& url, const GURL& referrer, int open_disposition) {}
-  virtual void OnDidNavigate(const NavigationInfo& navigation_info) {}
-  virtual void OnNavigationFailed(int error_code, const GURL& gurl) {}
-  virtual void OnLoad(const GURL& url) {}
-  virtual void OnMoveWindow(const gfx::Rect& pos) {}
-  virtual void OnMessageFromChromeFrame(const std::string& message,
-                                        const std::string& origin,
-                                        const std::string& target) {}
-  virtual void OnHandleContextMenu(const ContextMenuModel& context_menu_model,
-                                   int align_flags,
-                                   const MiniContextMenuParams& params) {}
   virtual void OnRequestStart(
       int request_id, const AutomationURLRequest& request) {}
   virtual void OnRequestRead(int request_id, int bytes_to_read) {}
   virtual void OnRequestEnd(int request_id,
                             const net::URLRequestStatus& status) {}
-  virtual void OnDownloadRequestInHost(int request_id) {}
-  virtual void OnAttachExternalTab(
-      const AttachExternalTabParams& attach_params) {}
-  virtual void OnGoToHistoryEntryOffset(int offset) {}
-  virtual void OnCloseTab() {}
 };
 
 // This interface enables tasks to be marshaled to desired threads.

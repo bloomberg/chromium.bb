@@ -296,12 +296,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
 // Asks the renderer to send back V8 heap stats.
 IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetV8HeapStats)
 
-// Posts a message to the renderer.
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_HandleMessageFromExternalHost,
-                    std::string /* The message */,
-                    std::string /* The origin */,
-                    std::string /* The target*/)
-
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
@@ -575,12 +569,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
 
 // Tells the renderer that the NPAPI cannot be used. For example Ash on windows.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_NPAPINotSupported)
-
-// A message for an external host.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
-                    std::string  /* message */,
-                    std::string  /* origin */,
-                    std::string  /* target */)
 
 // Notification that the page has an OpenSearch description document
 // associated with it.

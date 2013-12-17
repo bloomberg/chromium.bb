@@ -48,11 +48,8 @@ class InitialLoadObserver;
 class LoginHandler;
 class MetricEventDurationObserver;
 class NavigationControllerRestoredObserver;
-class NewTabUILoadObserver;
 class Profile;
 struct AutomationMsg_Find_Params;
-struct Reposition_Params;
-struct ExternalTabSettings;
 
 namespace IPC {
 class ChannelProxy;
@@ -141,11 +138,6 @@ class AutomationProvider
     return reply_message;
   }
 
-#if defined(OS_WIN)
-  // Adds the external tab passed in to the tab tracker.
-  bool AddExternalTab(ExternalTabContainer* external_tab);
-#endif
-
   // Get the DictionaryValue equivalent for a download item. Caller owns the
   // DictionaryValue.
   base::DictionaryValue* GetDictionaryFromDownloadItem(
@@ -220,7 +212,6 @@ class AutomationProvider
 
   void HandleUnused(const IPC::Message& message, int handle);
   void GetFilteredInetHitCount(int* hit_count);
-  void SetProxyConfig(const std::string& new_proxy_config);
 
   // Responds to the FindInPage request, retrieves the search query parameters,
   // launches an observer to listen for results and issues a StartFind request.
@@ -229,9 +220,6 @@ class AutomationProvider
                          IPC::Message* reply_message);
 
   void OnSetPageFontSize(int tab_handle, int font_size);
-
-  // See browsing_data_remover.h for explanation of bitmap fields.
-  void RemoveBrowsingData(int remove_mask);
 
   // Notify the JavaScript engine in the render to change its parameters
   // while performing stress testing. See
@@ -243,9 +231,6 @@ class AutomationProvider
   void EndTracing(IPC::Message* reply_message);
   void OnTraceDataCollected(IPC::Message* reply_message,
                             const base::FilePath& path);
-
-  // Asynchronous request for printing the current tab.
-  void PrintAsync(int tab_handle);
 
   // Uses the specified encoding to override the encoding of the page in the
   // specified tab.
@@ -263,65 +248,11 @@ class AutomationProvider
 
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
-  void SaveAsAsync(int tab_handle);
 
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();
 
-#if defined(OS_WIN)
-  // The functions in this block are for use with external tabs, so they are
-  // Windows only.
-
-  // The container of an externally hosted tab calls this to reflect any
-  // accelerator keys that it did not process. This gives the tab a chance
-  // to handle the keys
-  void ProcessUnhandledAccelerator(const IPC::Message& message, int handle,
-                                   const MSG& msg);
-
-  void SetInitialFocus(const IPC::Message& message, int handle, bool reverse,
-                       bool restore_focus_to_view);
-
-  void OnTabReposition(int tab_handle,
-                       const Reposition_Params& params);
-
-  void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
-
-  void CreateExternalTab(const ExternalTabSettings& settings,
-                         HWND* tab_container_window,
-                         HWND* tab_window,
-                         int* tab_handle,
-                         int* session_id);
-
-  void ConnectExternalTab(uint64 cookie,
-                          bool allow,
-                          HWND parent_window,
-                          HWND* tab_container_window,
-                          HWND* tab_window,
-                          int* tab_handle,
-                          int* session_id);
-
-  void NavigateInExternalTab(
-      int handle, const GURL& url, const GURL& referrer,
-      AutomationMsg_NavigationResponseValues* status);
-  void NavigateExternalTabAtIndex(
-      int handle, int index, AutomationMsg_NavigationResponseValues* status);
-
-  // Handler for a message sent by the automation client.
-  void OnMessageFromExternalHost(int handle, const std::string& message,
-                                 const std::string& origin,
-                                 const std::string& target);
-
-  void OnBrowserMoved(int handle);
-
-  void OnRunUnloadHandlers(int handle, IPC::Message* reply_message);
-
-  void OnSetZoomLevel(int handle, int zoom_level);
-
-  ExternalTabContainer* GetExternalTabForHandle(int handle);
-#endif  // defined(OS_WIN)
-
   scoped_ptr<IPC::ChannelProxy> channel_;
-  scoped_ptr<NewTabUILoadObserver> new_tab_ui_load_observer_;
   scoped_ptr<FindInPageNotificationObserver> find_in_page_observer_;
 
   // True iff we should enable observers that check for initial load conditions.

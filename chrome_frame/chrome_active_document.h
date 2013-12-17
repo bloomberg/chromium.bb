@@ -248,8 +248,6 @@ END_MSG_MAP()
     GetTabProxy()->command() : 1)
 
 BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
-  EXEC_COMMAND_HANDLER_GENERIC(NULL, OLECMDID_PRINT,
-                               automation_client_->PrintTab())
   EXEC_COMMAND_HANDLER_NO_ARGS(NULL, OLECMDID_FIND, OnFindInPage)
   EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_MSHTML, IDM_FIND, OnFindInPage)
   EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_MSHTML, IDM_VIEWSOURCE, OnViewSource)
@@ -258,7 +256,6 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_COPY, Copy)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_PASTE, Paste)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_STOP, StopAsync)
-  FORWARD_TAB_COMMAND(NULL, OLECMDID_SAVEAS, SaveAsAsync)
   EXEC_COMMAND_HANDLER(NULL, OLECMDID_REFRESH, OnRefreshPage)
   EXEC_COMMAND_HANDLER(&CGID_Explorer, SBCMDID_MIXEDZONE,
                        OnDetermineSecurityZone)
@@ -274,18 +271,8 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_ShellDocView, DOCHOST_DISPLAY_PRIVACY,
                                OnDisplayPrivacyInfo)
   EXEC_COMMAND_HANDLER(NULL, OLECMDID_OPTICAL_GETZOOMRANGE, OnGetZoomRange)
-  EXEC_COMMAND_HANDLER(NULL, OLECMDID_OPTICAL_ZOOM, OnSetZoomRange)
-  EXEC_COMMAND_HANDLER(NULL, OLECMDID_ONUNLOAD, OnUnload)
 END_EXEC_COMMAND_MAP()
 
-  // IPCs from automation server.
-  virtual void OnNavigationStateChanged(
-      int flags, const NavigationInfo& nav_info);
-  virtual void OnUpdateTargetUrl(const std::wstring& new_target_url);
-  virtual void OnAcceleratorPressed(const MSG& accel_message);
-  virtual void OnTabbedOut(bool reverse);
-  virtual void OnDidNavigate(const NavigationInfo& nav_info);
-  virtual void OnCloseTab();
   // Override DoVerb
   STDMETHOD(DoVerb)(LONG verb,
                     LPMSG msg,
@@ -341,7 +328,6 @@ END_EXEC_COMMAND_MAP()
 
   // Callbacks from ChromeFramePlugin<T>
   bool PreProcessContextMenu(HMENU menu);
-  bool HandleContextMenuCommand(UINT cmd, const MiniContextMenuParams& params);
 
   // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
@@ -359,11 +345,6 @@ END_EXEC_COMMAND_MAP()
   HRESULT GetInPlaceFrame(IOleInPlaceFrame** in_place_frame);
 
  protected:
-  // ChromeFrameActivexBase overrides
-  virtual void OnAttachExternalTab(const AttachExternalTabParams& params);
-  virtual void OnGoToHistoryEntryOffset(int offset);
-  virtual void OnMoveWindow(const gfx::Rect& dimensions);
-
   // A helper method that updates our internal navigation state
   // as well as IE's navigation state (viz Title and current URL).
   // The navigation_flags is a TabContents::InvalidateTypes enum
@@ -385,15 +366,6 @@ END_EXEC_COMMAND_MAP()
 
   void OnGetZoomRange(const GUID* cmd_group_guid, DWORD command_id,
                       DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
-
-  void OnSetZoomRange(const GUID* cmd_group_guid, DWORD command_id,
-                      DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
-
-  // This function handles the OLECMDID_ONUNLOAD command. It enables Chrome to
-  // invoke before unload and unload handlers on the page if any, thereby
-  // enabling a webpage to potentially cancel the operation.
-  void OnUnload(const GUID* cmd_group_guid, DWORD command_id,
-                DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
   // Call exec on our site's command target
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,

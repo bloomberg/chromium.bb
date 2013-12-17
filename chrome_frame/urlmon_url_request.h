@@ -84,7 +84,6 @@ class UrlmonUrlRequestManager
                             const AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
-  virtual void DownloadRequestInHost(int request_id);
   virtual void StopAll();
 
   // PluginUrlRequestDelegate implementation
@@ -102,9 +101,6 @@ class UrlmonUrlRequestManager
   // so it may start NavigateWithBindContext.
   void BindTerminated(IMoniker* moniker, IBindCtx* bind_ctx,
                       IStream* post_data, const char* request_headers);
-
-  // Helper function to initiate a download request in the host.
-  void DownloadRequestInHostHelper(UrlmonUrlRequest* request);
 
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;

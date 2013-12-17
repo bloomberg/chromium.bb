@@ -19,7 +19,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate/translate_helper.h"
@@ -220,8 +219,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_HandleMessageFromExternalHost,
-                        OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
@@ -254,16 +251,6 @@ void ChromeRenderViewObserver::OnWebUIJavaScript(
   webui_javascript_->jscript = jscript;
   webui_javascript_->id = id;
   webui_javascript_->notify_result = notify_result;
-}
-
-void ChromeRenderViewObserver::OnHandleMessageFromExternalHost(
-    const std::string& message,
-    const std::string& origin,
-    const std::string& target) {
-  if (message.empty())
-    return;
-  GetExternalHostBindings()->ForwardMessageFromExternalHost(message, origin,
-                                                            target);
 }
 
 void ChromeRenderViewObserver::OnJavaScriptStressTestControl(int cmd,
@@ -447,13 +434,6 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
       base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
 }
 
-void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
-  if (render_view()->GetEnabledBindings() &
-          content::BINDINGS_POLICY_EXTERNAL_HOST) {
-    GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
-  }
-}
-
 void ChromeRenderViewObserver::DetailedConsoleMessageAdded(
     const base::string16& message,
     const base::string16& source,
@@ -596,14 +576,6 @@ void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
       return;  // don't index if we got a huge block of text with no spaces
     contents->resize(last_space_index);
   }
-}
-
-ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
-  if (!external_host_bindings_.get()) {
-    external_host_bindings_.reset(new ExternalHostBindings(
-        render_view(), routing_id()));
-  }
-  return external_host_bindings_.get();
 }
 
 bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {

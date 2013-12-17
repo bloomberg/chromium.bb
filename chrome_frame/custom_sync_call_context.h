@@ -14,21 +14,6 @@
 #include "chrome_frame/chrome_frame_automation.h"
 #include "ipc/ipc_sync_message.h"
 
-// Class that maintains contextual information for the create and connect
-// external tab operations.
-class CreateExternalTabContext
-    : public SyncMessageReplyDispatcher::SyncMessageCallContext {
- public:
-  typedef Tuple4<HWND, HWND, int, int> output_type;
-  explicit CreateExternalTabContext(ChromeFrameAutomationClient* client);
-
-  void Completed(HWND chrome_window, HWND tab_window, int tab_handle,
-                 int session_id);
-
- private:
-  scoped_refptr<ChromeFrameAutomationClient> client_;
-};
-
 // This class maintains context information for the BeginNavigate operations
 // pertaining to the external tab.
 class BeginNavigateContext

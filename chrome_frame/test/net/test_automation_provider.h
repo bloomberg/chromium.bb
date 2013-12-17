@@ -39,7 +39,6 @@ class TestAutomationProvider
 
   // AutomationProvider overrides.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual bool Send(IPC::Message* msg);
 
   // Protocol factory for handling http/https requests over automation.
   static net::URLRequestJob* Factory(net::URLRequest* request,

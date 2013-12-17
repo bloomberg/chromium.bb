@@ -9,16 +9,6 @@
 
 namespace automation {
 
-// JSON value labels for proxy settings that are passed in via
-// AutomationMsg_SetProxyConfig. These are here since they are used by both
-// AutomationProvider and AutomationProxy.
-extern const char kJSONProxyAutoconfig[];
-extern const char kJSONProxyNoProxy[];
-extern const char kJSONProxyPacUrl[];
-extern const char kJSONProxyPacMandatory[];
-extern const char kJSONProxyBypassList[];
-extern const char kJSONProxyServer[];
-
 // When passing the kTestingChannelID switch to the browser, prepend
 // this prefix to the channel id to enable the named testing interface.
 // Named testing interface is used when you want to connect an

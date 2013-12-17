@@ -288,67 +288,6 @@ bool TabProxy::Close(bool wait_until_closed) {
   return succeeded;
 }
 
-#if defined(OS_WIN)
-bool TabProxy::ProcessUnhandledAccelerator(const MSG& msg) {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(
-      new AutomationMsg_ProcessUnhandledAccelerator(handle_, msg));
-  // This message expects no response
-}
-
-bool TabProxy::SetInitialFocus(bool reverse, bool restore_focus_to_view) {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(
-      new AutomationMsg_SetInitialFocus(handle_, reverse,
-                                        restore_focus_to_view));
-  // This message expects no response
-}
-
-AutomationMsg_NavigationResponseValues TabProxy::NavigateInExternalTab(
-    const GURL& url, const GURL& referrer) {
-  if (!is_valid())
-    return AUTOMATION_MSG_NAVIGATION_ERROR;
-
-  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_NavigateInExternalTab(handle_, url,
-                                                        referrer, &rv));
-  return rv;
-}
-
-AutomationMsg_NavigationResponseValues TabProxy::NavigateExternalTabAtIndex(
-    int index) {
-  if (!is_valid())
-    return AUTOMATION_MSG_NAVIGATION_ERROR;
-
-  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_NavigateExternalTabAtIndex(handle_, index,
-                                                             &rv));
-  return rv;
-}
-
-void TabProxy::HandleMessageFromExternalHost(const std::string& message,
-                                             const std::string& origin,
-                                             const std::string& target) {
-  if (!is_valid())
-    return;
-
-  sender_->Send(
-      new AutomationMsg_HandleMessageFromExternalHost(
-          handle_, message, origin, target));
-}
-#endif  // defined(OS_WIN)
-
-bool TabProxy::PrintAsync() {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_PrintAsync(handle_));
-}
-
 bool TabProxy::WaitForInfoBarCount(size_t target_count) {
   if (!is_valid())
     return false;
@@ -367,33 +306,6 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
                                                    &succeeded));
   return succeeded;
 }
-
-#if defined(OS_WIN)
-void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
-                          int top, int width, int height, int flags,
-                          HWND parent_window) {
-  Reposition_Params params;
-  params.window = window;
-  params.window_insert_after = window_insert_after;
-  params.left = left;
-  params.top = top;
-  params.width = width;
-  params.height = height;
-  params.flags = flags;
-  params.set_parent = (::IsWindow(parent_window) ? true : false);
-  params.parent_window = parent_window;
-  sender_->Send(new AutomationMsg_TabReposition(handle_, params));
-}
-
-void TabProxy::SendContextMenuCommand(int selected_command) {
-  sender_->Send(new AutomationMsg_ForwardContextMenuCommandToChrome(
-      handle_, selected_command));
-}
-
-void TabProxy::OnHostMoved() {
-  sender_->Send(new AutomationMsg_BrowserMove(handle_));
-}
-#endif  // defined(OS_WIN)
 
 void TabProxy::SelectAll() {
   sender_->Send(new AutomationMsg_SelectAll(handle_));
@@ -417,10 +329,6 @@ void TabProxy::ReloadAsync() {
 
 void TabProxy::StopAsync() {
   sender_->Send(new AutomationMsg_StopAsync(handle_));
-}
-
-void TabProxy::SaveAsAsync() {
-  sender_->Send(new AutomationMsg_SaveAsAsync(handle_));
 }
 
 void TabProxy::JavaScriptStressTestControl(int cmd, int param) {

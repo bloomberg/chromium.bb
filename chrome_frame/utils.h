@@ -231,9 +231,6 @@ bool IsIEInPrivate();
 // Calls [ieframe|shdocvw]!DoFileDownload to initiate a download.
 HRESULT DoFileDownloadInIE(const wchar_t* url);
 
-// Construct a menu from the model sent from Chrome.
-HMENU BuildContextMenu(const ContextMenuModel& menu_model);
-
 // Uses GURL internally to append 'relative' to 'document'
 std::string ResolveURL(const std::string& document,
                        const std::string& relative);
@@ -428,13 +425,6 @@ HRESULT RewindStream(IStream* stream);
 
 // Fired when we want to notify IE about privacy changes.
 #define WM_FIRE_PRIVACY_CHANGE_NOTIFICATION (WM_APP + 1)
-
-// Sent (not posted) when a request needs to be downloaded in the host browser
-// instead of Chrome.  WPARAM is 0 and LPARAM is a pointer to an IMoniker
-// object.
-// NOTE: Since the message is sent synchronously, the handler should only
-// start asynchronous operations in order to not block the sender unnecessarily.
-#define WM_DOWNLOAD_IN_HOST (WM_APP + 2)
 
 // This structure contains the parameters sent over to initiate a download
 // request in the host browser.
