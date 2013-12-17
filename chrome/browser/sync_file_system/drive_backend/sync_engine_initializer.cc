@@ -13,7 +13,6 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
-#include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 
@@ -112,12 +111,8 @@ SyncEngineInitializer::~SyncEngineInitializer() {
 }
 
 void SyncEngineInitializer::Run(const SyncStatusCallback& callback) {
-  util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Initialize] Start.");
-
   // The metadata seems to have been already initialized. Just return with OK.
   if (sync_context_ && sync_context_->GetMetadataDatabase()) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Already initialized.");
     callback.Run(SYNC_STATUS_OK);
     return;
   }
@@ -137,8 +132,6 @@ void SyncEngineInitializer::DidCreateMetadataDatabase(
     SyncStatusCode status,
     scoped_ptr<MetadataDatabase> instance) {
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to initialize MetadataDatabase.");
     callback.Run(status);
     return;
   }
@@ -146,8 +139,6 @@ void SyncEngineInitializer::DidCreateMetadataDatabase(
   DCHECK(instance);
   metadata_database_ = instance.Pass();
   if (metadata_database_->HasSyncRoot()) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Found Local cache of sync-root.");
     callback.Run(SYNC_STATUS_OK);
     return;
   }
@@ -171,8 +162,6 @@ void SyncEngineInitializer::DidGetAboutResource(
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to get AboutResource.");
     callback.Run(status);
     return;
   }
@@ -187,8 +176,6 @@ void SyncEngineInitializer::DidGetAboutResource(
 
 void SyncEngineInitializer::FindSyncRoot(const SyncStatusCallback& callback) {
   if (find_sync_root_retry_count_++ >= kMaxRetry) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Reached max retry count.");
     callback.Run(SYNC_STATUS_FAILED);
     return;
   }
@@ -210,17 +197,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to find sync root.");
     callback.Run(status);
-    return;
-  }
-
-  if (!resource_list) {
-    NOTREACHED();
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Got invalid resource list.");
-    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
@@ -289,8 +266,6 @@ void SyncEngineInitializer::DidCreateSyncRoot(
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to create sync root.");
     callback.Run(status);
     return;
   }
@@ -315,8 +290,6 @@ void SyncEngineInitializer::DidDetachSyncRoot(
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to detach sync root.");
     callback.Run(status);
     return;
   }
@@ -343,17 +316,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to get initial app-root folders.");
     callback.Run(status);
-    return;
-  }
-
-  if (!resource_list) {
-    NOTREACHED();
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Got invalid initial app-root list.");
-    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
@@ -392,15 +355,10 @@ void SyncEngineInitializer::DidPopulateDatabase(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Initialize] Failed to populate initial data"
-              " to MetadataDatabase.");
     callback.Run(status);
     return;
   }
 
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Initialize] Completed successfully.");
   callback.Run(SYNC_STATUS_OK);
 }
 
