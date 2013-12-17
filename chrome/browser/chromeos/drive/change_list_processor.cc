@@ -206,15 +206,13 @@ FileError ChangeListProcessor::ApplyEntryMap(
   }
 
   // Apply all entries except deleted ones to the metadata.
-  std::vector<ResourceEntry> deleted_entries;
-  deleted_entries.reserve(entry_map_.size());
+  std::vector<std::string> deleted_resource_ids;
   while (!entry_map_.empty()) {
     ResourceEntryMap::iterator it = entry_map_.begin();
 
     // Process deleted entries later to avoid deleting moved entries under it.
     if (it->second.deleted()) {
-      deleted_entries.push_back(ResourceEntry());
-      deleted_entries.back().Swap(&it->second);
+      deleted_resource_ids.push_back(it->first);
       entry_map_.erase(it);
       continue;
     }
@@ -285,71 +283,63 @@ FileError ChangeListProcessor::ApplyEntryMap(
   }
 
   // Apply deleted entries.
-  for (size_t i = 0; i < deleted_entries.size(); ++i) {
-    // TODO(hashimoto): Handle ApplyEntry errors correctly.
-    FileError error = ApplyEntry(deleted_entries[i]);
-    DLOG_IF(WARNING, error != FILE_ERROR_OK)
-        << "ApplyEntry failed: " << FileErrorToString(error)
-        << ", title = " << deleted_entries[i].title();
+  for (size_t i = 0; i < deleted_resource_ids.size(); ++i) {
+    std::string local_id;
+    FileError error = resource_metadata_->GetIdByResourceId(
+        deleted_resource_ids[i], &local_id);
+    if (error == FILE_ERROR_OK)
+      error = resource_metadata_->RemoveEntry(local_id);
+
+    DLOG_IF(WARNING, error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+        << "Failed to delete: " << FileErrorToString(error)
+        << ", resource_id = " << deleted_resource_ids[i];
   }
 
   return FILE_ERROR_OK;
 }
 
 FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
+  DCHECK(!entry.deleted());
+
+  const std::string& parent_resource_id =
+      parent_resource_id_map_[entry.resource_id()];
+  DCHECK(!parent_resource_id.empty()) << entry.resource_id();
+
+  std::string parent_local_id;
+  FileError error = resource_metadata_->GetIdByResourceId(
+      parent_resource_id, &parent_local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   // Lookup the entry.
   std::string local_id;
-  FileError error = resource_metadata_->GetIdByResourceId(entry.resource_id(),
-                                                          &local_id);
+  error = resource_metadata_->GetIdByResourceId(entry.resource_id(), &local_id);
+
   ResourceEntry existing_entry;
   if (error == FILE_ERROR_OK)
     error = resource_metadata_->GetResourceEntryById(local_id, &existing_entry);
 
-  const FileError get_existing_entry_result = error;
-  if (entry.deleted()) {
-    // Deleted file/directory.
-    switch (get_existing_entry_result) {
-      case FILE_ERROR_OK:
-        error = resource_metadata_->RemoveEntry(local_id);
-        break;
-      case FILE_ERROR_NOT_FOUND:  // Already deleted.
-        error = FILE_ERROR_OK;
-        break;
-      default:
-        error = get_existing_entry_result;
+  ResourceEntry new_entry(entry);
+  new_entry.set_parent_local_id(parent_local_id);
+
+  switch (error) {
+    case FILE_ERROR_OK:  // Entry exists and needs to be refreshed.
+      new_entry.set_local_id(local_id);
+      error = resource_metadata_->RefreshEntry(new_entry);
+      break;
+    case FILE_ERROR_NOT_FOUND: {  // Adding a new entry.
+      std::string local_id;
+      error = resource_metadata_->AddEntry(new_entry, &local_id);
+      break;
     }
-  } else {
-    const std::string& parent_resource_id =
-        parent_resource_id_map_[entry.resource_id()];
-    DCHECK(!parent_resource_id.empty()) << entry.resource_id();
-
-    std::string parent_local_id;
-    error = resource_metadata_->GetIdByResourceId(
-        parent_resource_id, &parent_local_id);
-    if (error == FILE_ERROR_OK) {
-      ResourceEntry new_entry(entry);
-      new_entry.set_parent_local_id(parent_local_id);
-
-      switch (get_existing_entry_result) {
-        case FILE_ERROR_OK:  // Entry exists and needs to be refreshed.
-          new_entry.set_local_id(local_id);
-          error = resource_metadata_->RefreshEntry(new_entry);
-          break;
-        case FILE_ERROR_NOT_FOUND: {  // Adding a new entry.
-          std::string local_id;
-          error = resource_metadata_->AddEntry(new_entry, &local_id);
-          break;
-        }
-        default:
-          error = get_existing_entry_result;
-      }
-
-      if (error == FILE_ERROR_OK)
-        UpdateChangedDirs(entry);
-    }
+    default:
+      return error;
   }
+  if (error != FILE_ERROR_OK)
+    return error;
 
-  return error;
+  UpdateChangedDirs(entry);
+  return FILE_ERROR_OK;
 }
 
 // static
