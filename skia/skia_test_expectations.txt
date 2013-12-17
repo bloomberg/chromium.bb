@@ -57,9 +57,4 @@ crbug.com/326138 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailur
 crbug.com/326138 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 crbug.com/326138 virtual/gpu/fast/canvas/quadraticCurveTo.xml [ ImageOnlyFailure ]
 
-# the Skia roll to r12698 caused imperceptible diffs in the following tests:
-crbug.com/329201 svg/W3C-SVG-1.1/filters-example-01-b.svg [ ImageOnlyFailure ]
-crbug.com/329201 svg/as-background-image/svg-as-background-6.html [ ImageOnlyFailure ]
-crbug.com/329201 svg/text/text-path-01-b.svg [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
