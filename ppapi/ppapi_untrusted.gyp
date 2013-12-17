@@ -134,6 +134,7 @@
         'extra_args': [
           '--strip-all',
         ],
+        'create_nmf': '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
       },
       'conditions': [
         ['target_arch!="arm" and disable_glibc==0', {
@@ -149,14 +150,15 @@
           'actions': [
           {
             'action_name': 'Generate GLIBC NMF and copy libs',
-            'inputs': ['>(out_glibc64)', '>(out_glibc32)'],
+            # NOTE: create_nmf must be first, it is the script python executes
+            # below.
+            'inputs': ['>(create_nmf)', '>(out_glibc64)', '>(out_glibc32)'],
             # NOTE: There is no explicit dependency for the lib32
             # and lib64 directories created in the PRODUCT_DIR.
             # They are created as a side-effect of NMF creation.
             'outputs': ['>(nmf_glibc)'],
             'action': [
               'python',
-              '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
               '>@(_inputs)',
               '--objdump=>(nacl_objdump)',
               '--library-path=>(libdir_glibc64)',
@@ -189,12 +191,16 @@
          'actions': [
             {
               'action_name': 'Generate PNACL NEWLIB NMF',
-              'inputs': ['>(out_pnacl_newlib_x86_32_nexe)',
-                         '>(out_pnacl_newlib_x86_64_nexe)'],
+              # NOTE: create_nmf must be first, it is the script python executes
+              # below.
+              'inputs': [
+                '>(create_nmf)',
+                '>(out_pnacl_newlib_x86_32_nexe)',
+                '>(out_pnacl_newlib_x86_64_nexe)'
+              ],
               'outputs': ['>(nmf_pnacl)'],
               'action': [
                 'python',
-                '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
                 '>@(_inputs)',
                 '--output=>(nmf_pnacl)',
               ],
@@ -213,11 +219,12 @@
           'actions': [
             {
               'action_name': 'Generate PNACL NEWLIB NMF',
-              'inputs': ['>(out_pnacl_newlib_arm_nexe)'],
+              # NOTE: create_nmf must be first, it is the script python executes
+              # below.
+              'inputs': ['>(create_nmf)', '>(out_pnacl_newlib_arm_nexe)'],
               'outputs': ['>(nmf_pnacl)'],
               'action': [
                 'python',
-                '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
                 '>@(_inputs)',
                 '--output=>(nmf_pnacl)',
               ],
