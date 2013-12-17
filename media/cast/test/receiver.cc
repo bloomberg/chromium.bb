@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -211,6 +212,9 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::MessageLoopForIO main_message_loop;
+  CommandLine::Init(argc, argv);
+  InitLogging(logging::LoggingSettings());
+
   VLOG(1) << "Cast Receiver";
   base::Thread main_thread("Cast main send thread");
   base::Thread audio_thread("Cast audio decoder thread");
