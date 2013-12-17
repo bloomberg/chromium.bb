@@ -26,6 +26,7 @@
     "management",
     "webview",
     "unlimitedStorage",
+    "https://*.ytimg.com/*",
     "https://www.google.com/*",
     "https://commondatastorage.googleapis.com/*",
     "https://storage.googleapis.com/*",
