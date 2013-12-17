@@ -127,10 +127,15 @@ void AutoEnrollmentClient::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 bool AutoEnrollmentClient::IsDisabled() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(
+  // Do not communicate auto-enrollment data to the server if
+  // 1. we are running integration or perf tests with telemetry.
+  // 2. modulus configuration is not present.
+  return command_line->HasSwitch(
+             chromeos::switches::kOobeSkipPostLogin) ||
+         (!command_line->HasSwitch(
              chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
          !command_line->HasSwitch(
-             chromeos::switches::kEnterpriseEnrollmentModulusLimit);
+             chromeos::switches::kEnterpriseEnrollmentModulusLimit));
 }
 
 // static
