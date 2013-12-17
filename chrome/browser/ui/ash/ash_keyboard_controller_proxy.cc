@@ -39,7 +39,7 @@ namespace {
 const char* kVirtualKeyboardExtensionID = "mppnpdlheglhdfmldimlhpnegondlapf";
 
 // The virtual keyboard show/hide animation duration.
-const int kAnimationDurationMs = 100;
+const int kAnimationDurationMs = 200;
 
 Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
   switch (type) {
