@@ -11,6 +11,9 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_util.h"
+#endif
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
@@ -69,6 +72,18 @@ void PasswordManagerHandler::GetLocalizedValues(
 
   localized_strings->SetString("passwordManagerLearnMoreURL",
                                chrome::kPasswordManagerLearnMoreURL);
+  bool disable_show_passwords = false;
+
+#if defined(OS_WIN) && defined(USE_ASH)
+  // We disable the ability to show passwords when running in Windows Metro
+  // interface.  This is because we cannot pop native Win32 dialogs from the
+  // Metro process.
+  // TODO(wfh): Revisit this if Metro usage grows.
+  if (chrome::IsNativeWindowInAsh(GetNativeWindow()))
+    disable_show_passwords = true;
+#endif
+
+  localized_strings->SetBoolean("disableShowPasswords", disable_show_passwords);
 }
 
 void PasswordManagerHandler::RegisterMessages() {

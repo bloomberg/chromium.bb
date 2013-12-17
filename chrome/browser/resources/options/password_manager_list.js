@@ -279,7 +279,12 @@ cr.define('options.passwordManager', function() {
 
     /** @override */
     createItem: function(entry) {
-      return new PasswordListItem(this.dataModel, entry, this.showPasswords_);
+      var showPasswords = this.showPasswords_;
+
+      if (loadTimeData.getBoolean('disableShowPasswords'))
+        showPasswords = false;
+
+      return new PasswordListItem(this.dataModel, entry, showPasswords);
     },
 
     /** @override */
