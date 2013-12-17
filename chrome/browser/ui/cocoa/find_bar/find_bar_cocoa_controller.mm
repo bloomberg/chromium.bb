@@ -212,7 +212,7 @@ const float kRightEdgeOffset = 25;
     // The textbox is empty so we reset.
     findTabHelper->StopFinding(FindBarController::kClearSelectionOnPage);
     [self updateUIForFindResult:findTabHelper->find_result()
-                       withText:string16()];
+                       withText:base::string16()];
   }
 }
 
@@ -383,7 +383,7 @@ const float kRightEdgeOffset = 25;
 - (void)clearResults:(const FindNotificationDetails&)results {
   // Just call updateUIForFindResult, which will take care of clearing
   // the search text and the results label.
-  [self updateUIForFindResult:results withText:string16()];
+  [self updateUIForFindResult:results withText:base::string16()];
 }
 
 - (void)updateUIForFindResult:(const FindNotificationDetails&)result

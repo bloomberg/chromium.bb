@@ -92,8 +92,8 @@ std::string GetAvatarImageAtIndex(
 }
 
 size_t GetIndexOfProfileWithEmailAndName(const ProfileInfoCache& info_cache,
-                                         const string16& email,
-                                         const string16& name) {
+                                         const base::string16& email,
+                                         const base::string16& name) {
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     if (info_cache.GetUserNameOfProfileAtIndex(i) == email &&
         info_cache.GetNameOfProfileAtIndex(i) == name) {
@@ -190,11 +190,11 @@ void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
 
 void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     const base::ListValue* args) {
-  string16 email_address;
+  base::string16 email_address;
   if (!args->GetString(0, &email_address))
     return;
 
-  string16 display_name;
+  base::string16 display_name;
   if (!args->GetString(1, &display_name))
     return;
 
@@ -256,11 +256,11 @@ void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
-  base::string16 emailAddress;
-  base::string16 displayName;
+  base::string16 email_address;
+  base::string16 display_name;
 
-  if (!args->GetString(0, &emailAddress) ||
-      !args->GetString(1, &displayName)) {
+  if (!args->GetString(0, &email_address) ||
+      !args->GetString(1, &display_name)) {
     NOTREACHED();
     return;
   }
@@ -268,7 +268,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t profile_index = GetIndexOfProfileWithEmailAndName(
-      info_cache, emailAddress, displayName);
+      info_cache, email_address, display_name);
 
   if (profile_index >= info_cache.GetNumberOfProfiles()) {
     NOTREACHED();

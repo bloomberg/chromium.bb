@@ -174,7 +174,7 @@ int StringForChromeHost(const GURL& url) {
 
 }  // namespace
 
-string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
+base::string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
   // First, strip view-source: if it appears.  Note that GetContent removes
   // "view-source:" but leaves the http, https or ftp scheme.
   GURL url(provided_url);
@@ -354,7 +354,7 @@ void SiteChipView::Update(content::WebContents* web_contents) {
     painter_ = NULL;
   }
 
-  string16 host = SiteLabelFromURL(url_displayed_);
+  base::string16 host = SiteLabelFromURL(url_displayed_);
   if (security_level_ == ToolbarModel::EV_SECURE) {
     host = l10n_util::GetStringFUTF16(IDS_SITE_CHIP_EV_SSL_LABEL,
         toolbar_view_->GetToolbarModel()->GetEVCertName(),

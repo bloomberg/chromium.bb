@@ -75,7 +75,7 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
                          profile:profile()
                           parent:folder_b_0_
                              url:GURL()
-                           title:string16()
+                           title:base::string16()
                    configuration:BookmarkEditor::SHOW_TREE];
   }
 

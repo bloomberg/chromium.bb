@@ -100,14 +100,15 @@ void InstantSearchPrerenderer::Prerender(const InstantSuggestion& suggestion) {
       SetSuggestionToPrefetch(suggestion);
 }
 
-void InstantSearchPrerenderer::Commit(const string16& query) {
+void InstantSearchPrerenderer::Commit(const base::string16& query) {
   DCHECK(prerender_handle_);
   DCHECK(prerender_contents());
   SearchTabHelper::FromWebContents(prerender_contents())->Submit(query);
 }
 
-bool InstantSearchPrerenderer::CanCommitQuery(content::WebContents* source,
-                                              const string16& query) const {
+bool InstantSearchPrerenderer::CanCommitQuery(
+    content::WebContents* source,
+    const base::string16& query) const {
   if (!source || query.empty())
     return false;
 
@@ -125,7 +126,7 @@ bool InstantSearchPrerenderer::CanCommitQuery(content::WebContents* source,
 bool InstantSearchPrerenderer::UsePrerenderedPage(
     const GURL& url,
     chrome::NavigateParams* params) {
-  string16 search_terms = chrome::GetSearchTermsFromURL(profile_, url);
+  base::string16 search_terms = chrome::GetSearchTermsFromURL(profile_, url);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
   if (search_terms.empty() ||

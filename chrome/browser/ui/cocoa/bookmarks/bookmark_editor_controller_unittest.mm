@@ -41,7 +41,7 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
                                  parent:default_parent_
                                    node:default_node
                                     url:GURL()
-                                  title:string16()
+                                  title:base::string16()
                           configuration:BookmarkEditor::NO_TREE];
     [controller_ runAsModalSheet];
   }
@@ -150,7 +150,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaProfileTest {
                                  parent:parent
                                    node:NULL
                                     url:GURL()
-                                  title:string16()
+                                  title:base::string16()
                           configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
@@ -190,7 +190,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
                                  parent:parent
                                    node:node
                                     url:GURL()
-                                  title:string16()
+                                  title:base::string16()
                           configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
@@ -231,7 +231,7 @@ class BookmarkEditorControllerUtf8NodeTest : public CocoaProfileTest {
                                  parent:parent
                                    node:node
                                     url:GURL()
-                                  title:string16()
+                                  title:base::string16()
                           configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
@@ -315,7 +315,7 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
                              parent:folder_bb_
                                node:bookmark_bb_3_
                                 url:GURL()
-                              title:string16()
+                              title:base::string16()
                       configuration:BookmarkEditor::SHOW_TREE];
   }
 
@@ -462,7 +462,7 @@ class BookmarkEditorControllerTreeNoNodeTest :
                              parent:folder_bb_
                                node:nil
                                 url:GURL()
-                              title:string16()
+                              title:base::string16()
                       configuration:BookmarkEditor::SHOW_TREE];
   }
 

@@ -40,7 +40,7 @@ base::string16 GetLocalizedStringForMetricTypeDescription(
     const MetricType type);
 
 // Miscellaneous
-string16 GetLocalizedStringFromUnit(const Unit unit);
+base::string16 GetLocalizedStringFromUnit(const Unit unit);
 
 }  // namespace performance_monitor
 

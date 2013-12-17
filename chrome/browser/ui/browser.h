@@ -444,8 +444,8 @@ class Browser : public TabStripModelObserver,
   virtual void OverscrollUpdate(int delta_y) OVERRIDE;
   virtual void ShowValidationMessage(content::WebContents* web_contents,
                                      const gfx::Rect& anchor_in_root_view,
-                                     const string16& main_text,
-                                     const string16& sub_text) OVERRIDE;
+                                     const base::string16& main_text,
+                                     const base::string16& sub_text) OVERRIDE;
   virtual void HideValidationMessage(
       content::WebContents* web_contents) OVERRIDE;
   virtual void MoveValidationMessage(

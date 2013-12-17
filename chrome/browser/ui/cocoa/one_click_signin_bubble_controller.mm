@@ -31,7 +31,7 @@ void PerformClose(OneClickSigninBubbleController* controller) {
          syncCallback:syncCallback
         closeCallback:base::Bind(PerformClose, self)
          isSyncDialog:NO
-                email:string16()
+                email:base::string16()
          errorMessage:errorMessage]);
 
   NSWindow* parentWindow = [controller window];

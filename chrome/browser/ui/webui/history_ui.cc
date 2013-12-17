@@ -317,7 +317,7 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   SetUrlAndTitle(result.get());
 
-  string16 domain = net::IDNToUnicode(url.host(), accept_languages);
+  base::string16 domain = net::IDNToUnicode(url.host(), accept_languages);
   // When the domain is empty, use the scheme instead. This allows for a
   // sensible treatment of e.g. file: URLs when group by domain is on.
   if (domain.empty())

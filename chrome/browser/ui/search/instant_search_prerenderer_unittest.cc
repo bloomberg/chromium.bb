@@ -193,7 +193,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     return GetInstantSearchPrerenderer()->prerender_url_;
   }
 
-  void SetLastQuery(const string16& query) {
+  void SetLastQuery(const base::string16& query) {
     GetInstantSearchPrerenderer()->last_instant_suggestion_ =
         InstantSuggestion(query, std::string());
   }
@@ -217,7 +217,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     return GetInstantSearchPrerenderer()->prerender_handle_.get();
   }
 
-  void PrerenderSearchQuery(const string16& query) {
+  void PrerenderSearchQuery(const base::string16& query) {
     Init(true, true);
     InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
     prerenderer->Prerender(InstantSuggestion(query, std::string()));
@@ -270,7 +270,7 @@ TEST_F(InstantSearchPrerendererTest, DoNotPrefetchSearchResults) {
 TEST_F(InstantSearchPrerendererTest, CanCommitQuery) {
   Init(true, true);
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
-  string16 query = ASCIIToUTF16("flowers");
+  base::string16 query = ASCIIToUTF16("flowers");
   prerenderer->Prerender(InstantSuggestion(query, std::string()));
   EXPECT_TRUE(prerenderer->CanCommitQuery(GetActiveWebContents(), query));
 
@@ -278,11 +278,12 @@ TEST_F(InstantSearchPrerendererTest, CanCommitQuery) {
   // invalid search queries.
   EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
                                            ASCIIToUTF16("joy")));
-  EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(), string16()));
+  EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
+                                           base::string16()));
 }
 
 TEST_F(InstantSearchPrerendererTest, CommitQuery) {
-  string16 query = ASCIIToUTF16("flowers");
+  base::string16 query = ASCIIToUTF16("flowers");
   PrerenderSearchQuery(query);
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
   prerenderer->Commit(query);

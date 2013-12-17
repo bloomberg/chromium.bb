@@ -240,10 +240,10 @@ void ExtensionMessageBubbleView::Init() {
     extensions->SetMultiLine(true);
     extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    std::vector<string16> extension_list;
+    std::vector<base::string16> extension_list;
     char16 bullet_point = 0x2022;
 
-    std::vector<string16> suspicious = delegate_->GetExtensions();
+    std::vector<base::string16> suspicious = delegate_->GetExtensions();
     size_t i = 0;
     for (; i < suspicious.size() && i < kMaxExtensionsToShow; ++i) {
       // Add each extension with bullet point.
@@ -252,7 +252,7 @@ void ExtensionMessageBubbleView::Init() {
     }
 
     if (i > kMaxExtensionsToShow) {
-      string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
+      base::string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
       extension_list.push_back(bullet_point + ASCIIToUTF16(" ") +
           delegate_->GetOverflowText(difference));
     }
@@ -263,7 +263,7 @@ void ExtensionMessageBubbleView::Init() {
     layout->AddView(extensions);
   }
 
-  string16 action_button = delegate_->GetActionButtonLabel();
+  base::string16 action_button = delegate_->GetActionButtonLabel();
 
   const int action_row_column_set_id = 3;
   views::ColumnSet* bottom_columns =

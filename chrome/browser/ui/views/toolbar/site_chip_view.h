@@ -82,7 +82,7 @@ class SiteChipView : public ToolbarButton,
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
  private:
-  string16 SiteLabelFromURL(const GURL& url);
+  base::string16 SiteLabelFromURL(const GURL& url);
 
   ToolbarView* toolbar_view_;
   views::Label* host_label_;

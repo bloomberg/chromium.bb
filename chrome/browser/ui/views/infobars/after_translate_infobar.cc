@@ -118,8 +118,8 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(
   AddChildView(second_button);
   if (autodetermined_source_language_)
     second_button->SetVisible(false);
-  label_3_ =
-      CreateLabel(autodetermined_source_language_ ? string16() : strings[2]);
+  label_3_ = CreateLabel(autodetermined_source_language_ ? base::string16() :
+                                                           strings[2]);
   AddChildView(label_3_);
 
   revert_button_ = CreateLabelButton(this,

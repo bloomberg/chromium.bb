@@ -386,7 +386,7 @@ NSColor* IdentityVerifiedTextColor() {
       kFramePadding + info_bubble::kBubbleArrowHeight);
 
   // Create a text field (empty for now) to show the site identity.
-  identityField_ = [self addText:string16()
+  identityField_ = [self addText:base::string16()
                         withSize:[NSFont systemFontSize]
                             bold:YES
                           toView:contentView_
@@ -395,7 +395,7 @@ NSColor* IdentityVerifiedTextColor() {
       NSHeight([identityField_ frame]) + kConnectionHeadlineSpacing;
 
   // Create a text field to identity status (e.g. verified, not verified).
-  identityStatusField_ = [self addText:string16()
+  identityStatusField_ = [self addText:base::string16()
                               withSize:[NSFont smallSystemFontSize]
                                   bold:NO
                                 toView:contentView_
@@ -543,7 +543,7 @@ NSColor* IdentityVerifiedTextColor() {
                                         toView:contentView
                                        atPoint:imagePosition];
   identityStatusDescriptionField_ =
-      [self addText:string16()
+      [self addText:base::string16()
            withSize:[NSFont smallSystemFontSize]
                bold:NO
              toView:contentView.get()
@@ -556,7 +556,7 @@ NSColor* IdentityVerifiedTextColor() {
                                           toView:contentView
                                          atPoint:imagePosition];
   connectionStatusDescriptionField_ =
-      [self addText:string16()
+      [self addText:base::string16()
            withSize:[NSFont smallSystemFontSize]
                bold:NO
              toView:contentView.get()
@@ -575,7 +575,7 @@ NSColor* IdentityVerifiedTextColor() {
              toView:contentView.get()
             atPoint:textPosition];
   firstVisitDescriptionField_ =
-      [self addText:string16()
+      [self addText:base::string16()
            withSize:[NSFont smallSystemFontSize]
                bold:NO
              toView:contentView.get()
