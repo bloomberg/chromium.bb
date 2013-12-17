@@ -68,7 +68,7 @@ bool IsMagnifierEnabled() {
 }
 
 Profile* profile() {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   return profile;
 }
@@ -101,8 +101,8 @@ void PrepareNonNewProfile(const std::string& name) {
   // To prepare a non-new profile for tests, we must ensure the profile
   // directory and the preference files are created, because that's what
   // Profile::IsNewProfile() checks. UserLoggedIn(), however, does not yet
-  // create the profile directory until GetDefaultProfile() is called.
-  ProfileManager::GetDefaultProfile();
+  // create the profile directory until GetActiveUserProfile() is called.
+  ProfileManager::GetActiveUserProfile();
 }
 
 }  // namespace
@@ -129,7 +129,7 @@ class MagnificationManagerTest : public InProcessBrowserTest,
 
     // Set the login-screen profile.
     MagnificationManager::Get()->SetProfileForTest(
-        ProfileManager::GetDefaultProfile());
+        ProfileManager::GetActiveUserProfile());
   }
 
   // content::NotificationObserver implementation.

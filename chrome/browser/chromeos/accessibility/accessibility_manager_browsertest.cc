@@ -176,7 +176,7 @@ int GetAutoclickDelay() {
 }
 
 Profile* GetProfile() {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   return profile;
 }
