@@ -144,7 +144,6 @@ extern const char kChrome[];
 extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
 extern const char kChromeAppLauncher[];
 extern const char kChromeFrame[];
-extern const char kChromeFrameQuickEnable[];
 extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
 extern const char kCriticalUpdateVersion[];

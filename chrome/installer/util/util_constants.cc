@@ -27,9 +27,6 @@ const char kChromeAppLauncher[] = "app-launcher";
 // Install Chrome Frame.
 const char kChromeFrame[] = "chrome-frame";
 
-// Installs Chrome Frame from an already installed multi-install of Chrome.
-const char kChromeFrameQuickEnable[] = "quick-enable-cf";
-
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";
 

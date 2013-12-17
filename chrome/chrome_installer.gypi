@@ -275,8 +275,6 @@
             'installer/setup/archive_patch_helper.h',
             'installer/setup/cf_migration.cc',
             'installer/setup/cf_migration.h',
-            'installer/setup/chrome_frame_quick_enable.cc',
-            'installer/setup/chrome_frame_quick_enable.h',
             'installer/setup/install.cc',
             'installer/setup/install.h',
             'installer/setup/install_worker.cc',

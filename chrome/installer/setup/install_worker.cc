@@ -393,8 +393,7 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
     if (p.is_chrome_binaries()) {
       AddQueryEULAAcceptanceWorkItems(
           installer_state, setup_path, new_version, p, list);
-      AddQuickEnableChromeFrameWorkItems(
-          installer_state, original_state, setup_path, new_version, list);
+      AddQuickEnableChromeFrameWorkItems(installer_state, list);
       AddQuickEnableApplicationLauncherWorkItems(
           installer_state, original_state, setup_path, new_version, list);
     }
@@ -1512,50 +1511,21 @@ void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
 }
 
 void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
-                                        const InstallationState& machine_state,
-                                        const base::FilePath& setup_path,
-                                        const Version& new_version,
                                         WorkItemList* work_item_list) {
   DCHECK(work_item_list);
-
-  const bool system_install = installer_state.system_install();
-  bool will_have_chrome_frame =
-      WillProductBePresentAfterSetup(installer_state, machine_state,
-                                     BrowserDistribution::CHROME_FRAME);
-  bool will_have_chrome_binaries =
-      WillProductBePresentAfterSetup(installer_state, machine_state,
-                                     BrowserDistribution::CHROME_BINARIES);
 
   string16 cmd_key(GetRegCommandKey(
                        BrowserDistribution::GetSpecificDistribution(
                            BrowserDistribution::CHROME_BINARIES),
                        kCmdQuickEnableCf));
 
-  if (will_have_chrome_frame) {
-    // Chrome Frame is (to be) installed. Unconditionally remove the Quick
-    // Enable command from the binaries. We do this even if multi-install Chrome
-    // isn't installed since we don't want them left behind in any case.
-    work_item_list->AddDeleteRegKeyWorkItem(
-        installer_state.root_key(), cmd_key)->set_log_message(
-            "removing " + WideToASCII(kCmdQuickEnableCf) + " command");
+  // Unconditionally remove the legacy Quick Enable command from the binaries.
+  // Do this even if multi-install Chrome isn't installed to ensure that it is
+  // not left behind in any case.
+  work_item_list->AddDeleteRegKeyWorkItem(
+      installer_state.root_key(), cmd_key)->set_log_message(
+          "removing " + WideToASCII(kCmdQuickEnableCf) + " command");
 
-  } else if (will_have_chrome_binaries) {
-    // Chrome Frame isn't (to be) installed while some other multi-install
-    // product is (to be) installed. Add the Quick Enable command to
-    // the binaries.
-    CommandLine cmd_line(GetGenericQuickEnableCommand(installer_state,
-                                                      machine_state,
-                                                      setup_path,
-                                                      new_version));
-    // kMultiInstall and kVerboseLogging were processed above.
-    cmd_line.AppendSwitch(switches::kChromeFrameQuickEnable);
-    if (installer_state.system_install())
-      cmd_line.AppendSwitch(switches::kSystemLevel);
-    AppCommand cmd(cmd_line.GetCommandLineString());
-    cmd.set_sends_pings(true);
-    cmd.set_is_web_accessible(true);
-    cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
-  }
 }
 
 }  // namespace installer

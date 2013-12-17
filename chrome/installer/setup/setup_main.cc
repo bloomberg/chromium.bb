@@ -37,7 +37,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/archive_patch_helper.h"
 #include "chrome/installer/setup/cf_migration.h"
-#include "chrome/installer/setup/chrome_frame_quick_enable.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -1212,9 +1211,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
             cmd_line.GetProgram(), installer::REENTRY_SYS_UPDATE, true);
       }
     }
-  } else if (cmd_line.HasSwitch(installer::switches::kChromeFrameQuickEnable)) {
-    *exit_code = installer::ChromeFrameQuickEnable(original_state,
-                                                   installer_state);
   } else if (cmd_line.HasSwitch(installer::switches::kPatch)) {
     const std::string patch_type_str(
         cmd_line.GetSwitchValueASCII(installer::switches::kPatch));
@@ -1775,8 +1771,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
         cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser) ||
         cmd_line.HasSwitch(installer::switches::kRemoveChromeRegistration) ||
         cmd_line.HasSwitch(installer::switches::kInactiveUserToast) ||
-        cmd_line.HasSwitch(installer::switches::kSystemLevelToast) ||
-        cmd_line.HasSwitch(installer::switches::kChromeFrameQuickEnable)) {
+        cmd_line.HasSwitch(installer::switches::kSystemLevelToast)) {
       return installer::SXS_OPTION_NOT_SUPPORTED;
     }
   }

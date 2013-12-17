@@ -210,9 +210,6 @@ class InstallationValidator {
   static void ValidateQueryEULAAcceptanceCommand(const ProductContext& ctx,
                                                  const AppCommand& app_cmd,
                                                  bool* is_valid);
-  static void ValidateQuickEnableCfCommand(const ProductContext& ctx,
-                                           const AppCommand& app_cmd,
-                                           bool* is_valid);
   static void ValidateQuickEnableApplicationHostCommand(
     const ProductContext& ctx,
     const AppCommand& app_cmd,

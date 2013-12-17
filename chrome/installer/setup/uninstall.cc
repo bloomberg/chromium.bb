@@ -160,22 +160,6 @@ void ProcessOnOsUpgradeWorkItems(
     LOG(ERROR) << "Failed to remove on-os-upgrade command.";
 }
 
-// Adds or removes the quick-enable-cf command to the binaries' version key in
-// the registry as needed.
-void ProcessQuickEnableWorkItems(
-    const installer::InstallerState& installer_state,
-    const installer::InstallationState& machine_state) {
-  scoped_ptr<WorkItemList> work_item_list(
-      WorkItem::CreateNoRollbackWorkItemList());
-
-  AddQuickEnableChromeFrameWorkItems(installer_state, machine_state,
-                                     base::FilePath(),
-                                     Version(), work_item_list.get());
-
-  if (!work_item_list->Do())
-    LOG(ERROR) << "Failed to update quick-enable-cf command.";
-}
-
 void ProcessIELowRightsPolicyWorkItems(
     const installer::InstallerState& installer_state) {
   scoped_ptr<WorkItemList> work_items(WorkItem::CreateNoRollbackWorkItemList());
@@ -1265,11 +1249,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
   }
 
-  if (installer_state.is_multi_install()) {
+  if (installer_state.is_multi_install())
     ProcessGoogleUpdateItems(original_state, installer_state, product);
-
-    ProcessQuickEnableWorkItems(installer_state, original_state);
-  }
 
   // Get the state of the installed product (if any)
   const ProductState* product_state =
