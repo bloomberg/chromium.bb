@@ -33,7 +33,7 @@ AppLoadService::PostReloadAction::PostReloadAction()
 AppLoadService::AppLoadService(Profile* profile)
     : profile_(profile) {
   registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+      this, chrome::NOTIFICATION_EXTENSION_LOADED,
       content::NotificationService::AllSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -78,13 +78,8 @@ void AppLoadService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
-      extensions::ExtensionHost* host =
-          content::Details<extensions::ExtensionHost>(details).ptr();
-      const Extension* extension = host->extension();
-      // It is possible for an extension to be unloaded before it stops loading.
-      if (!extension)
-        break;
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      Extension* extension = content::Details<Extension>(details).ptr();
       std::map<std::string, PostReloadAction>::iterator it =
           post_reload_actions_.find(extension->id());
       if (it == post_reload_actions_.end())

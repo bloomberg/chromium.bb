@@ -380,9 +380,12 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
 #endif
   extensions::EventRouter* event_router =
       ExtensionSystem::Get(profile)->event_router();
-  bool listening_to_restart = event_router->
-      ExtensionHasEventListener(extension->id(),
-                                app_runtime::OnRestarted::kEventName);
+  // We check for registered events, rather than listeners, because listeners
+  // may not be instantiated for the events yet.
+  std::set<std::string> events =
+      event_router->GetRegisteredEvents(extension->id());
+  bool listening_to_restart =
+      events.count(app_runtime::OnRestarted::kEventName) > 0;
 
   if (listening_to_restart) {
     extensions::AppEventRouter::DispatchOnRestartedEvent(profile, extension);
@@ -393,9 +396,8 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
       extension_service()->extension_prefs();
   bool had_windows = extension_prefs->IsActive(extension->id());
   extension_prefs->SetIsActive(extension->id(), false);
-  bool listening_to_launch = event_router->
-      ExtensionHasEventListener(extension->id(),
-                                app_runtime::OnLaunched::kEventName);
+  bool listening_to_launch =
+      events.count(app_runtime::OnLaunched::kEventName) > 0;
 
   if (listening_to_launch && had_windows)
     LaunchPlatformAppWithNoData(profile, extension);
