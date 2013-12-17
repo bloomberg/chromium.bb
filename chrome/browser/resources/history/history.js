@@ -1870,10 +1870,12 @@ function removeNode(node, onRemove) {
 
   // Delete the node when the animation is complete.
   node.addEventListener('webkitTransitionEnd', function(e) {
-    if (e.currentTarget != e.target)
-      return;
-
     node.parentNode.removeChild(node);
+
+    // In case there is nested deletion happening, prevent this event from
+    // being handled by listeners on ancestor nodes.
+    e.stopPropagation();
+
     if (onRemove)
       onRemove();
   });
