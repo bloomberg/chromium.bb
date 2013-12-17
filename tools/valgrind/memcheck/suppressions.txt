@@ -5352,62 +5352,6 @@
    fun:_ZN7content14RenderViewImpl20SetWebkitPreferencesERK14WebPreferences
 }
 {
-   bug_241892a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore11CSSSelector8RareData6createEN3WTF10PassRefPtrINS2_16AtomicStringImplEEE
-   fun:_ZN7WebCore11CSSSelector14createRareDataEv
-   ...
-   fun:_Z10cssyyparsePN7WebCore9CSSParserE
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_18StyleSheetContentsE*
-   fun:_ZN7WebCore18StyleSheetContents17parseStringAtLineERKN3WTF6StringEib
-   fun:_ZN7WebCore12StyleElement11createSheetE*
-   fun:_ZN7WebCore12StyleElement7processEPNS_7ElementE
-}
-{
-   bug_241892b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore11CSSSelector8RareData6createEN3WTF10PassRefPtrINS2_16AtomicStringImplEEE
-   fun:_ZN7WebCore11CSSSelector14createRareDataEv
-   ...
-   fun:_Z10cssyyparsePN7WebCore9CSSParserE
-   fun:_ZN7WebCore9CSSParser13parseSelectorERKN3WTF6StringERNS_15CSSSelectorListE
-}
-{
-   bug_241892c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore11CSSSelector8RareData6createEN3WTF10PassRefPtrINS2_16AtomicStringImplEEE
-   fun:_ZN7WebCore11CSSSelector14createRareDataEv
-   fun:_ZN7WebCore11CSSSelector12setAttributeERKNS_13QualifiedNameE
-   fun:_ZN7WebCore17CSSParserSelector12setAttributeERKNS_13QualifiedNameE
-   fun:_Z10cssyyparsePN7WebCore9CSSParserE
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_18StyleSheetContentsERKN3WTF6StringERKNS3_12TextPositionEPNS0_17SourceDataHandlerEb
-   fun:_ZN7WebCore18StyleSheetContents21parseStringAtPositionERKN3WTF6StringERKNS1_12TextPositionEb
-   fun:_ZN7WebCore12StyleElement11createSheetEPNS_7ElementERKN3WTF6StringE
-   fun:_ZN7WebCore12StyleElement7processEPNS_7ElementE
-   fun:_ZN7WebCore12StyleElement17processStyleSheetEPNS_8DocumentEPNS_7ElementE
-   fun:_ZN7WebCore16HTMLStyleElement26didNotifySubtreeInsertionsEPNS_13ContainerNodeE
-   fun:_ZN7WebCore26ChildNodeInsertionNotifier6notifyEPNS_4NodeE
-   fun:_ZN7WebCoreL24updateTreeAfterInsertionEPNS_13ContainerNodeEPNS_4NodeENS_14AttachBehaviorE
-   fun:_ZN7WebCore13ContainerNode11appendChildEN3WTF10PassRefPtrINS_4NodeEEERiNS_14AttachBehaviorE
-   fun:_ZN7WebCore4Node11appendChildEN3WTF10PassRefPtrIS0_EERiNS_14AttachBehaviorE
-   fun:_ZN7WebCore6V8Node23appendChildMethodCustomERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN7WebCore14NodeV8InternalL37appendChildMethodCallbackForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-}
-{
-   bug_241892d
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7WebCore11CSSSelector8RareDataEEnwEm
-   fun:_ZN7WebCore11CSSSelector8RareData6createEN3WTF10PassRefPtrINS2_10StringImplEEE
-   fun:_ZN7WebCore11CSSSelector14createRareDataEv
-   ...
-   fun:_Z10cssyyparsePN7WebCore9CSSParserE
-}
-{
    bug_241932
    Memcheck:Leak
    fun:calloc
