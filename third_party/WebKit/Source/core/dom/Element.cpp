@@ -1534,6 +1534,11 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
             ElementRareData* data = elementRareData();
             data->resetStyleState();
             data->clearComputedStyle();
+
+            if (change >= Inherit) {
+                if (ActiveAnimations* activeAnimations = data->activeAnimations())
+                    activeAnimations->setAnimationStyleChange(false);
+            }
         }
         if (parentRenderStyle())
             change = recalcOwnStyle(change);
@@ -1721,6 +1726,21 @@ void Element::didAffectSelector(AffectedSelectorMask mask)
     setNeedsStyleRecalc();
     if (ElementShadow* elementShadow = shadowWhereNodeCanBeDistributed(*this))
         elementShadow->didAffectSelector(mask);
+}
+
+void Element::setAnimationStyleChange(bool animationStyleChange)
+{
+    if (ActiveAnimations* activeAnimations = elementRareData()->activeAnimations())
+        activeAnimations->setAnimationStyleChange(animationStyleChange);
+}
+
+void Element::setNeedsAnimationStyleRecalc()
+{
+    if (styleChangeType() != NoStyleChange)
+        return;
+
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
+    setAnimationStyleChange(true);
 }
 
 PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)

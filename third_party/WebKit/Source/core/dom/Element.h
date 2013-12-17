@@ -301,6 +301,8 @@ public:
     virtual bool rendererIsNeeded(const RenderStyle&);
     void recalcStyle(StyleRecalcChange, Text* nextTextSibling = 0);
     void didAffectSelector(AffectedSelectorMask);
+    void setAnimationStyleChange(bool);
+    void setNeedsAnimationStyleRecalc();
 
     bool supportsStyleSharing() const;
 

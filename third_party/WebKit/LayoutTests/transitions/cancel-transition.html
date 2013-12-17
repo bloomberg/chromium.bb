@@ -19,13 +19,13 @@
         #container.run #left {
             left: 450px;
             -webkit-transition-property: left;
-            -webkit-transition-duration: 0.5s;
+            -webkit-transition-duration: 1s;
             -webkit-transition-timing-function: linear;
         }
         #container.run #translate {
             -webkit-transform: translate(400px, 0px);
             -webkit-transition-property: -webkit-transform;
-            -webkit-transition-duration: 0.5s;
+            -webkit-transition-duration: 1s;
             -webkit-transition-timing-function: linear;
         }
     </style>
@@ -52,7 +52,7 @@
             document.getElementById("container").className = "run";
             document.body.offsetHeight;
             // The transition should restart at the beginning here. After 250 it should be halfway done.
-            setTimeout(check, 250);
+            setTimeout(check, 500);
         }
 
         function check()
@@ -60,7 +60,7 @@
             var left = parseFloat(window.getComputedStyle(document.getElementById('left')).left);
             result = "left: ";
             if (!isEqual(left, 250, 50))
-                result += "<span style='color:red'>FAIL (was: " + left + ", expected: 150)</span>";
+                result += "<span style='color:red'>FAIL (was: " + left + ", expected: 250)</span>";
             else
                 result += "<span style='color:green'>PASS</span>";
 
@@ -70,7 +70,7 @@
             transform = transform.split("(");
             transform = transform[1].split(",");
             if (!isEqual(transform[4], 200, 50))
-                result += "<span style='color:red'>FAIL (was: " + transform[4] + ", expected: 50)</span>";
+                result += "<span style='color:red'>FAIL (was: " + transform[4] + ", expected: 200)</span>";
             else
                 result += "<span style='color:green'>PASS</span>";
 
@@ -83,8 +83,8 @@
         {
             document.getElementById("container").className = "run";
             document.body.offsetHeight;
-            setTimeout("cancelTransition()", 100);
-            setTimeout("restartTransition()", 200);
+            setTimeout("cancelTransition()", 200);
+            setTimeout("restartTransition()", 400);
         }
     </script>
 </head>

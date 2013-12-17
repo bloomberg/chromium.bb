@@ -692,6 +692,7 @@ crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ F
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
 crbug.com/258896 virtual/legacy-animations-engine/animations/animation-controller-drt-api.html [ Pass Failure ]
+crbug.com/258896 virtual/legacy-animations-engine/transitions/interrupted-immediately.html [ Failure ]
 
 crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualRebaseline ]
 crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]
