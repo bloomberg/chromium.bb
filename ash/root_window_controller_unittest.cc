@@ -127,8 +127,8 @@ class RootWindowControllerTest : public test::AshTestBase {
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   if (!SupportsMultipleDisplays())
     return;
-
-  UpdateDisplay("600x600,500x500");
+  // Windows origin should be doubled when moved to the 1st display.
+  UpdateDisplay("600x600,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   internal::RootWindowController* controller =
       Shell::GetPrimaryRootWindowController();
@@ -146,8 +146,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* maximized = CreateTestWidget(gfx::Rect(700, 10, 100, 100));
   maximized->Maximize();
   EXPECT_EQ(root_windows[1], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("600,0 500x453", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 500x453",
+  EXPECT_EQ("600,0 300x253", maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,0 300x253",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   views::Widget* minimized = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
@@ -156,13 +156,13 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("800,10 100x100",
             minimized->GetWindowBoundsInScreen().ToString());
 
-  views::Widget* fullscreen = CreateTestWidget(gfx::Rect(900, 10, 100, 100));
+  views::Widget* fullscreen = CreateTestWidget(gfx::Rect(850, 10, 100, 100));
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[1], fullscreen->GetNativeView()->GetRootWindow());
 
-  EXPECT_EQ("600,0 500x500",
+  EXPECT_EQ("600,0 300x300",
             fullscreen->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 500x500",
+  EXPECT_EQ("0,0 300x300",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   views::Widget* unparented_control = new Widget;
@@ -197,8 +197,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_FALSE(tracker.Contains(d2));
 
   EXPECT_EQ(root_windows[0], normal->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("50,10 100x100", normal->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("50,10 100x100",
+  EXPECT_EQ("100,20 100x100", normal->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("100,20 100x100",
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Maximized area on primary display has 3px (given as
@@ -223,7 +223,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("200,10 100x100",
+  EXPECT_EQ("400,20 100x100",
             minimized->GetWindowBoundsInScreen().ToString());
 
   EXPECT_EQ(root_windows[0], fullscreen->GetNativeView()->GetRootWindow());
@@ -235,14 +235,14 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
 
   // Test if the restore bounds are correctly updated.
   wm::GetWindowState(maximized->GetNativeView())->Restore();
-  EXPECT_EQ("100,10 100x100", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("100,10 100x100",
+  EXPECT_EQ("200,20 100x100", maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("200,20 100x100",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   fullscreen->SetFullscreen(false);
-  EXPECT_EQ("300,10 100x100",
+  EXPECT_EQ("500,20 100x100",
             fullscreen->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("300,10 100x100",
+  EXPECT_EQ("500,20 100x100",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Test if the unparented widget has moved.
