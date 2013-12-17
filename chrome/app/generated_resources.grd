@@ -15210,6 +15210,9 @@ Do you accept?
     <message name="IDS_RESET_PROFILE_SETTINGS_EXTENSIONS" desc="Extensions tag in the feedback details of the Reset Profile Settings dialog">
       Extensions
     </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_SHORTCUTS" desc="List of Chrome shortcuts in the feedback details of the Reset Profile Settings dialog">
+      Shortcuts
+    </message>
 
     <!-- Identity internals strings -->
     <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
