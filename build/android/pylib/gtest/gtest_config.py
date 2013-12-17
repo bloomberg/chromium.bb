@@ -41,7 +41,6 @@ WEBRTC_NATIVE_TEST_SUITES = [
     'audio_decoder_unittests',
     'common_audio_unittests',
     'common_video_unittests',
-    'metrics_unittests',
     'modules_tests',
     'modules_unittests',
     'neteq_unittests',
