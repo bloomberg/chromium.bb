@@ -603,7 +603,6 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     }
 
     context_.ppc64 = context_ppc64.release();
-    context_flags_ = context_flags;
   } else if (expected_size == sizeof(MDRawContextARM64)) {
     // |context_flags| of MDRawContextARM64 is 64 bits, but other MDRawContext
     // in the else case have 32 bits |context_flags|, so special case it here.
@@ -678,8 +677,17 @@ bool MinidumpContext::Read(uint32_t expected_size) {
         Swap(&context_arm64->float_save.regs[fpr_index]);
       }
     }
+    context_flags_ = static_cast<uint32_t>(context_arm64->context_flags);
+
+    // Check for data loss when converting context flags from uint64_t into
+    // uint32_t
+    if (static_cast<uint64_t>(context_flags_) !=
+        context_arm64->context_flags) {
+      BPLOG(ERROR) << "Data loss detected when converting ARM64 context_flags";
+      return false;
+    }
+
     context_.arm64 = context_arm64.release();
-    context_flags_ = context_flags;
   } else {
     uint32_t context_flags;
     if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
