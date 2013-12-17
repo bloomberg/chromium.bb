@@ -24,19 +24,17 @@
 
 #include "fake_storage.h"
 
-namespace {
+namespace i18n {
+namespace addressinput {
 
-using i18n::addressinput::FakeStorage;
-using i18n::addressinput::scoped_ptr;
-using i18n::addressinput::Storage;
-using i18n::addressinput::ValidatingStorage;
+namespace {
 
 // Tests for ValidatingStorage object.
 class ValidatingStorageTest : public testing::Test  {
  protected:
   ValidatingStorageTest()
       : wrapped_storage_(new FakeStorage),
-        storage_(wrapped_storage_),
+        storage_(scoped_ptr<Storage>(wrapped_storage_)),
         success_(false),
         key_(),
         data_() {}
@@ -108,3 +106,6 @@ TEST_F(ValidatingStorageTest, GarbageData) {
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n

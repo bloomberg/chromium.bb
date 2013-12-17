@@ -28,11 +28,14 @@
 namespace i18n {
 namespace addressinput {
 
-AddressValidator::AddressValidator(const Downloader* downloader,
-                                   Storage* storage,
+AddressValidator::AddressValidator(scoped_ptr<const Downloader> downloader,
+                                   scoped_ptr<Storage> storage,
                                    LoadRulesDelegate* load_rules_delegate)
-    : rule_retriever_(new RuleRetriever(new Retriever(
-          VALIDATION_DATA_URL, downloader, new ValidatingStorage(storage)))),
+    : rule_retriever_(new RuleRetriever(
+          scoped_ptr<const Retriever>(new Retriever(
+              VALIDATION_DATA_URL,
+              downloader.Pass(),
+              scoped_ptr<Storage>(new ValidatingStorage(storage.Pass())))))),
       load_rules_delegate_(load_rules_delegate) {}
 
 AddressValidator::~AddressValidator() {}

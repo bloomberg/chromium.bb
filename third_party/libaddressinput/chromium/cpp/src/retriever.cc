@@ -88,11 +88,11 @@ class Helper {
 }  // namespace
 
 Retriever::Retriever(const std::string& validation_data_url,
-                     const Downloader* downloader,
-                     Storage* storage)
+                     scoped_ptr<const Downloader> downloader,
+                     scoped_ptr<Storage> storage)
     : lookup_key_util_(validation_data_url),
-      downloader_(downloader),
-      storage_(storage) {
+      downloader_(downloader.Pass()),
+      storage_(storage.Pass()) {
   assert(storage_ != NULL);
   assert(downloader_ != NULL);
 }

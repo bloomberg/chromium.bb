@@ -26,22 +26,19 @@
 #include "retriever.h"
 #include "rule.h"
 
-namespace {
+namespace i18n {
+namespace addressinput {
 
-using i18n::addressinput::FakeDownloader;
-using i18n::addressinput::FakeStorage;
-using i18n::addressinput::Retriever;
-using i18n::addressinput::Rule;
-using i18n::addressinput::RuleRetriever;
-using i18n::addressinput::scoped_ptr;
+namespace {
 
 // Tests for RuleRetriever object.
 class RuleRetrieverTest : public testing::Test {
  protected:
   RuleRetrieverTest()
-      : rule_retriever_(new Retriever(FakeDownloader::kFakeDataUrl,
-                                      new FakeDownloader,
-                                      new FakeStorage)),
+      : rule_retriever_(scoped_ptr<const Retriever>(new Retriever(
+            FakeDownloader::kFakeDataUrl,
+            scoped_ptr<const Downloader>(new FakeDownloader),
+            scoped_ptr<Storage>(new FakeStorage)))),
         success_(false),
         key_(),
         rule_() {}
@@ -91,3 +88,6 @@ TEST_F(RuleRetrieverTest, MissingRule) {
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n

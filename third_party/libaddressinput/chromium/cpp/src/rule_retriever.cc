@@ -64,8 +64,8 @@ class Helper {
 
 }  // namespace
 
-RuleRetriever::RuleRetriever(const Retriever* retriever)
-    : data_retriever_(retriever) {
+RuleRetriever::RuleRetriever(scoped_ptr<const Retriever> retriever)
+    : data_retriever_(retriever.Pass()) {
   assert(data_retriever_ != NULL);
 }
 

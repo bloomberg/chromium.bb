@@ -69,8 +69,8 @@ class Helper {
 
 }  // namespace
 
-ValidatingStorage::ValidatingStorage(Storage* storage)
-    : wrapped_storage_(storage) {
+ValidatingStorage::ValidatingStorage(scoped_ptr<Storage> storage)
+    : wrapped_storage_(storage.Pass()) {
   assert(wrapped_storage_ != NULL);
 }
 

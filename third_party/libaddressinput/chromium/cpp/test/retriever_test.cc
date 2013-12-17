@@ -26,14 +26,10 @@
 #include "fake_storage.h"
 #include "region_data_constants.h"
 
-namespace {
+namespace i18n {
+namespace addressinput {
 
-using i18n::addressinput::Downloader;
-using i18n::addressinput::FakeDownloader;
-using i18n::addressinput::FakeStorage;
-using i18n::addressinput::RegionDataConstants;
-using i18n::addressinput::Retriever;
-using i18n::addressinput::scoped_ptr;
+namespace {
 
 const char kKey[] = "data/CA/AB--fr";
 
@@ -45,8 +41,8 @@ class RetrieverTest : public testing::Test {
  protected:
   RetrieverTest()
       : retriever_(FakeDownloader::kFakeDataUrl,
-                   new FakeDownloader,
-                   new FakeStorage),
+                   scoped_ptr<const Downloader>(new FakeDownloader),
+                   scoped_ptr<Storage>(new FakeStorage)),
         success_(false),
         key_(),
         data_() {}
@@ -122,8 +118,8 @@ class FaultyDownloader : public Downloader {
 
 TEST_F(RetrieverTest, FaultyDownloader) {
   Retriever bad_retriever(FakeDownloader::kFakeDataUrl,
-                          new FaultyDownloader,
-                          new FakeStorage);
+                          scoped_ptr<const Downloader>(new FaultyDownloader),
+                          scoped_ptr<Storage>(new FakeStorage));
 
   scoped_ptr<Retriever::Callback> callback(BuildCallback());
   bad_retriever.Retrieve(kKey, *callback);
@@ -134,3 +130,6 @@ TEST_F(RetrieverTest, FaultyDownloader) {
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n

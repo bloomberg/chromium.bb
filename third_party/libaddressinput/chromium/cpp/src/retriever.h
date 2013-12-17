@@ -43,10 +43,9 @@ class Retriever {
  public:
   typedef i18n::addressinput::Callback<std::string, std::string> Callback;
 
-  // Takes ownership of |downloader| and |storage|.
   Retriever(const std::string& validation_data_url,
-            const Downloader* downloader,
-            Storage* storage);
+            scoped_ptr<const Downloader> downloader,
+            scoped_ptr<Storage> storage);
   ~Retriever();
 
   // Retrieves the data for |key| and invokes the |retrieved| callback. Checks

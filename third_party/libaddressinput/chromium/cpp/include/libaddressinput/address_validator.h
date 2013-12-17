@@ -84,10 +84,9 @@ class AddressValidator {
     RULES_NOT_READY
   };
 
-  // Takes ownership of |downloader| and |storage|, which cannot be NULL. Does
-  // not take ownership of |load_rules_delegate|, which can be NULL.
-  AddressValidator(const Downloader* downloader,
-                   Storage* storage,
+  // Does not take ownership of |load_rules_delegate|, which can be NULL.
+  AddressValidator(scoped_ptr<const Downloader> downloader,
+                   scoped_ptr<Storage> storage,
                    LoadRulesDelegate* load_rules_delegate);
   ~AddressValidator();
 

@@ -39,8 +39,7 @@ class RuleRetriever {
  public:
   typedef i18n::addressinput::Callback<std::string, Rule> Callback;
 
-  // Takes ownership of |retriever|.
-  explicit RuleRetriever(const Retriever* retriever);
+  explicit RuleRetriever(scoped_ptr<const Retriever> retriever);
   ~RuleRetriever();
 
   // Retrieves the rule for |key| and invokes the |rule_ready| callback.

@@ -37,8 +37,7 @@ namespace addressinput {
 //    storage->Get("key", *data_ready);
 class ValidatingStorage : public Storage {
  public:
-  // Takes ownership of |storage|.
-  explicit ValidatingStorage(Storage* storage);
+  explicit ValidatingStorage(scoped_ptr<Storage> storage);
   virtual ~ValidatingStorage();
 
   // Storage implementation.
