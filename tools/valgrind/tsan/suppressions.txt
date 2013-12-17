@@ -1139,3 +1139,11 @@
    fun:MessageLoopHelper::TimerExpired
    fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_329253
+  ThreadSanitizer:Race
+  fun:setlocale
+  fun:base::ScopedLocale::ScopedLocale
+  fun:ClientHintsTest_HintsWellFormattedWithNonEnLocale_Test::TestBody
+  fun:testing::internal::HandleSehExceptionsInMethodIfSupported
+}
