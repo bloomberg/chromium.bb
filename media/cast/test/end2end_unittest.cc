@@ -471,7 +471,8 @@ class End2EndTest : public ::testing::Test {
 };
 
 // Audio and video test without packet loss using raw PCM 16 audio "codec";
-TEST_F(End2EndTest, LoopNoLossPcm16) {
+// This test is too slow. Disabled for now: crbug.com/329333.
+TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
   SetupConfig(kPcm16, 32000, false, 1);
   Create();
 
