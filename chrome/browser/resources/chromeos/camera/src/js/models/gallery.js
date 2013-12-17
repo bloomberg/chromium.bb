@@ -304,7 +304,7 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
         onScanFinished();
         return;
       }
-      entries = entries.concat(inEntries);
+      entries = entries.concat(Array.prototype.slice.call(inEntries));
       readEntries();
     }, onFailure);
   };
