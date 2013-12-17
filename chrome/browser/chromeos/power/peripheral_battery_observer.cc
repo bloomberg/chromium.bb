@@ -226,8 +226,9 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
       UTF8ToUTF16(address),
       new PeripheralBatteryNotificationDelegate(address));
 
-  notification_manager->Add(notification,
-                            ProfileManager::GetDefaultProfileOrOffTheRecord());
+  notification_manager->Add(
+      notification,
+      ProfileManager::GetPrimaryUserProfileOrOffTheRecord());
 
   return true;
 }

@@ -84,7 +84,7 @@ void PowerPrefs::Observe(int type,
     }
     case chrome::NOTIFICATION_SESSION_STARTED:
       // Update |profile_| when entering a session.
-      SetProfile(ProfileManager::GetDefaultProfile());
+      SetProfile(ProfileManager::GetPrimaryUserProfile());
       break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Update |profile_| when exiting a session or shutting down.
@@ -229,6 +229,11 @@ void PowerPrefs::RegisterProfilePrefs(
 }
 
 void PowerPrefs::SetProfile(Profile* profile) {
+  // No need to reapply policy if profile hasn't changed, e.g. when adding a
+  // secondary user to an existing session.
+  if (profile == profile_)
+    return;
+
   profile_ = profile;
   pref_change_registrar_.reset();
 

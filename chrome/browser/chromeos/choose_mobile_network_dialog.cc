@@ -26,7 +26,7 @@ namespace chromeos {
 // static
 void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
   chrome::ShowWebDialog(owning_window,
-                        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+                        ProfileManager::GetActiveUserProfile(),
                         new ChooseMobileNetworkDialog);
 }
 

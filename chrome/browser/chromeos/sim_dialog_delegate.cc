@@ -45,7 +45,7 @@ namespace chromeos {
 void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
   chrome::ShowWebDialog(owning_window,
-                        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+                        ProfileManager::GetActiveUserProfile(),
                         new SimDialogDelegate(mode));
 }
 
