@@ -77,7 +77,7 @@ std::string CollectDriverVersionNVidia() {
   }
   int event_base = 0, error_base = 0;
   if (!XNVCTRLQueryExtension(display, &event_base, &error_base)) {
-    VLOG(1) << "NVCtrl extension does not exist.";
+    LOG(INFO) << "NVCtrl extension does not exist.";
     return std::string();
   }
   int screen_count = ScreenCount(display);
@@ -160,26 +160,6 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
 
   (libpci_loader.pci_cleanup)(access);
   return (primary_gpu_identified);
-}
-
-// Find the first GPU in |secondary_gpus| list that matches |active_vendor|
-// and switch it to primary gpu.
-// Return false if we cannot find a match.
-bool FindAndSetActiveGPU(GPUInfo* gpu_info, uint32 active_vendor) {
-  DCHECK(gpu_info);
-  GPUInfo::GPUDevice* device = NULL;
-  for (size_t ii = 0; ii < gpu_info->secondary_gpus.size(); ++ii) {
-    if (gpu_info->secondary_gpus[ii].vendor_id == active_vendor) {
-      device = &(gpu_info->secondary_gpus[ii]);
-      break;
-    }
-  }
-  if (device == NULL)
-    return false;
-  GPUInfo::GPUDevice temp = gpu_info->gpu;
-  gpu_info->gpu = *device;
-  *device = temp;
-  return true;
 }
 
 }  // namespace anonymous
@@ -289,35 +269,6 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
 void MergeGPUInfo(GPUInfo* basic_gpu_info,
                   const GPUInfo& context_gpu_info) {
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
-}
-
-bool DetermineActiveGPU(GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-  if (gpu_info->secondary_gpus.size() == 0)
-    return true;
-  if (gpu_info->gl_vendor.empty())
-    return false;
-  uint32 active_vendor = 0;
-  // For now we only handle Intel/NVIDIA/AMD.
-  if (gpu_info->gl_vendor.find("Intel") != std::string::npos) {
-    if (gpu_info->gpu.vendor_id == kVendorIDIntel)
-      return true;
-    active_vendor = kVendorIDIntel;
-  }
-  if (gpu_info->gl_vendor.find("NVIDIA") != std::string::npos) {
-    if (gpu_info->gpu.vendor_id == kVendorIDNVidia)
-      return true;
-    active_vendor = kVendorIDNVidia;
-  }
-  if (gpu_info->gl_vendor.find("ATI") != std::string::npos ||
-      gpu_info->gl_vendor.find("AMD") != std::string::npos) {
-    if (gpu_info->gpu.vendor_id == kVendorIDAMD)
-      return true;
-    active_vendor = kVendorIDAMD;
-  }
-  if (active_vendor == 0)
-    return false;
-  return FindAndSetActiveGPU(gpu_info, active_vendor);
 }
 
 }  // namespace gpu

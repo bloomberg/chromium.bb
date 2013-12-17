@@ -217,10 +217,4 @@ void MergeGPUInfo(GPUInfo* basic_gpu_info,
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
-bool DetermineActiveGPU(GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-  // On mac, during info collection, we've already detected the active gpu.
-  return true;
-}
-
 }  // namespace gpu
