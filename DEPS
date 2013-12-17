@@ -145,11 +145,11 @@ deps = {
     (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
 
   "src/third_party/ots":
-    (Var("googlecode_url") % "ots") + "/trunk@107",
+    (Var("googlecode_url") % "ots") + "/trunk@108",
 
   "src/third_party/brotli/src":
     Var("chromium_git") +
-    "/external/font-compression-reference.git@fe79fac8da1ec850d94679705a6f3405153f51dd",
+    "/external/font-compression-reference.git@931479d735e1121548c3b07aec866fd772cc4932",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@171600",
