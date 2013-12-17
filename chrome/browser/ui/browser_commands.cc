@@ -256,10 +256,11 @@ int GetContentRestrictions(const Browser* browser) {
     CoreTabHelper* core_tab_helper =
         CoreTabHelper::FromWebContents(current_tab);
     content_restrictions = core_tab_helper->content_restrictions();
-    NavigationEntry* entry =
-        current_tab->GetController().GetLastCommittedEntry();
+    NavigationEntry* active_entry =
+        current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
-    if (!content::IsSavableURL(entry ? entry->GetURL() : GURL()) ||
+    if (!content::IsSavableURL(
+            active_entry ? active_entry->GetURL() : GURL()) ||
         current_tab->ShowingInterstitialPage())
       content_restrictions |= CONTENT_RESTRICTION_SAVE;
     if (current_tab->ShowingInterstitialPage())
@@ -987,7 +988,7 @@ void ToggleSpeechInput(Browser* browser) {
 bool CanRequestTabletSite(WebContents* current_tab) {
   if (!current_tab)
     return false;
-  return current_tab->GetController().GetLastCommittedEntry() != NULL;
+  return current_tab->GetController().GetActiveEntry() != NULL;
 }
 
 bool IsRequestingTabletSite(Browser* browser) {
@@ -995,7 +996,7 @@ bool IsRequestingTabletSite(Browser* browser) {
   if (!current_tab)
     return false;
   content::NavigationEntry* entry =
-      current_tab->GetController().GetLastCommittedEntry();
+      current_tab->GetController().GetActiveEntry();
   if (!entry)
     return false;
   return entry->GetIsOverridingUserAgent();
@@ -1006,7 +1007,7 @@ void ToggleRequestTabletSite(Browser* browser) {
   if (!current_tab)
     return;
   NavigationController& controller = current_tab->GetController();
-  NavigationEntry* entry = controller.GetLastCommittedEntry();
+  NavigationEntry* entry = controller.GetActiveEntry();
   if (!entry)
     return;
   if (entry->GetIsOverridingUserAgent()) {
@@ -1061,25 +1062,25 @@ void ViewSource(Browser* browser,
   content::RecordAction(UserMetricsAction("ViewSource"));
   DCHECK(contents);
 
-  // Note that Clone does not copy the pending or transient entries, so we can
-  // take the last committed entry in view_source_contents.
+  // Note that Clone does not copy the pending or transient entries, so the
+  // active entry in view_source_contents will be the last committed entry.
   WebContents* view_source_contents = contents->Clone();
   DCHECK(view_source_contents->GetController().CanPruneAllButLastCommitted());
   view_source_contents->GetController().PruneAllButLastCommitted();
-  NavigationEntry* entry =
-      view_source_contents->GetController().GetLastCommittedEntry();
-  if (!entry)
+  NavigationEntry* active_entry =
+      view_source_contents->GetController().GetActiveEntry();
+  if (!active_entry)
     return;
 
   GURL view_source_url =
       GURL(content::kViewSourceScheme + std::string(":") + url.spec());
-  entry->SetVirtualURL(view_source_url);
+  active_entry->SetVirtualURL(view_source_url);
 
   // Do not restore scroller position.
-  entry->SetPageState(page_state.RemoveScrollOffset());
+  active_entry->SetPageState(page_state.RemoveScrollOffset());
 
   // Do not restore title, derive it from the url.
-  entry->SetTitle(base::string16());
+  active_entry->SetTitle(string16());
 
   // Now show view-source entry.
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
@@ -1150,7 +1151,7 @@ bool CanCreateApplicationShortcuts(const Browser* browser) {
 
 void ConvertTabToAppWindow(Browser* browser,
                            content::WebContents* contents) {
-  const GURL& url = contents->GetController().GetLastCommittedEntry()->GetURL();
+  const GURL& url = contents->GetController().GetActiveEntry()->GetURL();
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
 
   int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);

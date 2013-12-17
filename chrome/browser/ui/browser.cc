@@ -1416,7 +1416,7 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   const content::NavigationEntry* entry =
-      source->GetController().GetVisibleEntry();
+      source->GetController().GetActiveEntry();
   if (entry) {
     GURL url = entry->GetURL();
     GURL virtual_url = entry->GetVirtualURL();
