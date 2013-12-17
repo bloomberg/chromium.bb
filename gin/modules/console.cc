@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 
@@ -18,13 +19,7 @@ namespace gin {
 
 namespace {
 
-void Log(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  std::vector<std::string> messages;
-  if (!args.GetRemaining(&messages))
-    return args.ThrowTypeError("Expected strings.");
-
+void Log(const std::vector<std::string>& messages) {
   std::cout << JoinString(messages, ' ') << std::endl;
 }
 
@@ -38,9 +33,9 @@ v8::Local<ObjectTemplate> Console::GetTemplate(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<ObjectTemplate> templ = data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
-    templ = ObjectTemplate::New();
-    templ->Set(StringToSymbol(isolate, "log"),
-               v8::FunctionTemplate::New(isolate, Log));
+    templ = ObjectTemplateBuilder(isolate)
+        .SetMethod("log", Log)
+        .Build();
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
   return templ;
