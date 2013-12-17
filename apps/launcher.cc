@@ -83,13 +83,13 @@ bool MakePathAbsolute(const base::FilePath& current_directory,
   return true;
 }
 
-bool GetAbsolutePathFromCommandLine(const CommandLine* command_line,
+bool GetAbsolutePathFromCommandLine(const CommandLine& command_line,
                                     const base::FilePath& current_directory,
                                     base::FilePath* path) {
-  if (!command_line || !command_line->GetArgs().size())
+  if (!command_line.GetArgs().size())
     return false;
 
-  base::FilePath relative_path(command_line->GetArgs()[0]);
+  base::FilePath relative_path(command_line.GetArgs()[0]);
   base::FilePath absolute_path(relative_path);
   if (!MakePathAbsolute(current_directory, &absolute_path)) {
     LOG(WARNING) << "Cannot make absolute path from " << relative_path.value();
@@ -312,7 +312,7 @@ class PlatformAppPathLauncher
 
 void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const Extension* extension,
-                                      const CommandLine* command_line,
+                                      const CommandLine& command_line,
                                       const base::FilePath& current_directory) {
   if (!AppsClient::Get()->CheckAppLaunch(profile, extension))
     return;
@@ -356,7 +356,10 @@ void LaunchPlatformAppWithPath(Profile* profile,
 }
 
 void LaunchPlatformApp(Profile* profile, const Extension* extension) {
-  LaunchPlatformAppWithCommandLine(profile, extension, NULL, base::FilePath());
+  LaunchPlatformAppWithCommandLine(profile,
+                                   extension,
+                                   CommandLine(CommandLine::NO_PROGRAM),
+                                   base::FilePath());
 }
 
 void LaunchPlatformAppWithFileHandler(Profile* profile,

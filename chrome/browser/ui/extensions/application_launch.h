@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -45,11 +46,13 @@ struct AppLaunchParams {
                   int event_flags,
                   chrome::HostDesktopType desktop_type);
 
+  ~AppLaunchParams();
+
   // The profile to load the application from.
   Profile* profile;
 
   // The extension to load.
-  const extensions::Extension* extension;
+  std::string extension_id;
 
   // The container type to launch the application in.
   extensions::LaunchContainer container;
@@ -67,9 +70,9 @@ struct AppLaunchParams {
   // position and dimensions.
   gfx::Rect override_bounds;
 
-  // If non-NULL, information from the command line may be passed on to the
+  // If non-empty, information from the command line may be passed on to the
   // application.
-  const CommandLine* command_line;
+  CommandLine command_line;
 
   // If non-empty, the current directory from which any relative paths on the
   // command line should be expanded from.

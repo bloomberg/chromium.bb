@@ -99,7 +99,7 @@ void AppLoadService::Observe(int type,
           break;
         case LAUNCH_WITH_COMMAND_LINE:
           LaunchPlatformAppWithCommandLine(
-              profile_, extension, &it->second.command_line,
+              profile_, extension, it->second.command_line,
               it->second.current_dir);
           break;
         default:

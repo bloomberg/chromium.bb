@@ -51,7 +51,7 @@ void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {
   params->desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
   apps::ShellWindow* any_existing_window =
       apps::ShellWindowRegistry::Get(params->profile)->
-          GetCurrentShellWindowForApp(params->extension->id());
+          GetCurrentShellWindowForApp(params->extension_id);
   if (any_existing_window &&
       chrome::GetHostDesktopTypeForNativeWindow(
           any_existing_window->GetNativeWindow())

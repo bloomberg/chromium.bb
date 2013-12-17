@@ -371,7 +371,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
       AppLaunchParams params(profile, extension,
                              extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW);
-      params.command_line = &command_line_;
+      params.command_line = command_line_;
       params.current_directory = cur_dir_;
       OpenApplicationWithReenablePrompt(params);
       return true;
@@ -515,7 +515,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     RecordCmdLineAppHistogram(extension->GetType());
 
     AppLaunchParams params(profile, extension, launch_container, NEW_WINDOW);
-    params.command_line = &command_line_;
+    params.command_line = command_line_;
     params.current_directory = cur_dir_;
     WebContents* tab_in_app_window = OpenApplication(params);
 

@@ -524,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   // Run the test
   AppLaunchParams params(
       browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW);
-  params.command_line = CommandLine::ForCurrentProcess();
+  params.command_line = *CommandLine::ForCurrentProcess();
   params.current_directory = test_data_dir_;
   OpenApplication(params);
 

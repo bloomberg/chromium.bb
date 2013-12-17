@@ -376,7 +376,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
                            extension,
                            extensions::LAUNCH_CONTAINER_NONE,
                            NEW_WINDOW);
-    params.command_line = CommandLine::ForCurrentProcess();
+    params.command_line = *CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }
 
