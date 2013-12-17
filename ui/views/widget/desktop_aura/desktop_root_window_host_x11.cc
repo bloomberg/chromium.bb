@@ -1508,6 +1508,9 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
           non_client_view->InvalidateLayout();
         }
         widget->GetRootView()->Layout();
+        // Refresh the window's border, which may need to be updated if we have
+        // changed the window's maximization state.
+        ResetWindowRegion();
       }
       break;
     }
