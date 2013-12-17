@@ -60,7 +60,6 @@ class GroupView : public MessageView, public MessageViewController {
   std::string last_notification_id_;
 
   // Weak references to GroupView descendants owned by their parents.
-  views::View* background_view_;
   views::View* top_view_;
   views::View* bottom_view_;
   BoundedLabel* title_view_;

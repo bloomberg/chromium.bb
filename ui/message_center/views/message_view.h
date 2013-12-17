@@ -41,7 +41,8 @@ const int kPaddingHorizontal = 18;
 const int kWebNotificationButtonWidth = 32;
 const int kWebNotificationIconSize = 40;
 
-// An abstract class that forms the basis of a view for a notification entry.
+// An base class for a notification entry. Contains background, close button
+// and other elements shared by derived notification views.
 class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                                           public views::ButtonListener {
  public:
@@ -70,6 +71,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
@@ -94,6 +96,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   std::string notification_id_;
   NotifierId notifier_id_;
   scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
+  views::View* background_view_;  // Owned by views hierarchy.
   scoped_ptr<views::ImageButton> close_button_;
   views::ScrollView* scroller_;
 

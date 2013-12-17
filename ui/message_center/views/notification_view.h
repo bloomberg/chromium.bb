@@ -87,7 +87,6 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   bool is_expanded_;
 
   // Weak references to NotificationView descendants owned by their parents.
-  views::View* background_view_;
   views::View* top_view_;
   BoundedLabel* title_view_;
   BoundedLabel* message_view_;

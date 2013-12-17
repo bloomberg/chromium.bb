@@ -16,6 +16,7 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/padded_button.h"
+#include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -174,19 +175,28 @@ MessageView::MessageView(MessageViewController* controller,
         new MessageViewContextMenuController(controller,
                                              notifier_id,
                                              display_source)),
+      background_view_(NULL),
       scroller_(NULL) {
   SetFocusable(true);
   set_context_menu_controller(context_menu_controller_.get());
+
+  // Create the opaque background that's above the view's shadow.
+  background_view_ = new views::View();
+  background_view_->set_background(
+      views::Background::CreateSolidBackground(kNotificationBackgroundColor));
+  AddChildView(background_view_);
 
   PaddedButton *close = new PaddedButton(this);
   close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
   close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
   close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
   close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
-  close->set_owned_by_client();
   close->set_animate_on_state_change(false);
   close->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
+  // The close button should be added to view hierarchy by the derived class.
+  // This ensures that it is on top of other views.
+  close->set_owned_by_client();
   close_button_.reset(close);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
@@ -275,6 +285,19 @@ void MessageView::OnBlur() {
   SlideOutView::OnBlur();
   // We paint a focus indicator.
   SchedulePaint();
+}
+
+void MessageView::Layout() {
+  gfx::Rect content_bounds = GetContentsBounds();
+
+  // Background.
+  background_view_->SetBoundsRect(content_bounds);
+
+  // Close button.
+  gfx::Size close_size(close_button_->GetPreferredSize());
+  close_button_->SetBounds(
+      content_bounds.right() - close_size.width(), content_bounds.y(),
+      close_size.width(), close_size.height());
 }
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {

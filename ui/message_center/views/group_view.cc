@@ -71,7 +71,6 @@ GroupView::GroupView(MessageCenterController* controller,
       group_icon_(group_icon),
       group_size_(group_size),
       last_notification_id_(last_notification.id()),
-      background_view_(NULL),
       top_view_(NULL),
       bottom_view_(NULL),
       title_view_(NULL),
@@ -80,13 +79,6 @@ GroupView::GroupView(MessageCenterController* controller,
       icon_view_(NULL)
 {
   std::vector<string16> accessible_lines;
-  // TODO (dimich): move to MessageView
-  // Create the opaque background that's above the view's shadow.
-  background_view_ = new views::View();
-  background_view_->set_background(
-      views::Background::CreateSolidBackground(
-          message_center::kNotificationBackgroundColor));
-
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
@@ -174,7 +166,6 @@ GroupView::GroupView(MessageCenterController* controller,
   // Put together the different content and control views. Layering those allows
   // for proper layout logic and it also allows the close button to
   // overlap the content as needed to provide large enough click and touch area.
-  AddChildView(background_view_);
   AddChildView(top_view_);
   AddChildView(icon_view_);
   AddChildView(bottom_view_);
@@ -208,13 +199,9 @@ int GroupView::GetHeightForWidth(int width) {
 }
 
 void GroupView::Layout() {
+  MessageView::Layout();
   gfx::Insets insets = GetInsets();
   int content_width = width() - insets.width();
-  int content_right = width() - insets.right();
-
-  // Background.
-  background_view_->SetBounds(insets.left(), insets.top(),
-                              content_width, height() - insets.height());
 
   // Top views.
   int top_height = top_view_->GetHeightForWidth(content_width);
@@ -228,11 +215,6 @@ void GroupView::Layout() {
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
-
-  // Close button.
-  gfx::Size close_size(close_button()->GetPreferredSize());
-  close_button()->SetBounds(content_right - close_size.width(), insets.top(),
-                            close_size.width(), close_size.height());
 }
 
 void GroupView::OnFocus() {
