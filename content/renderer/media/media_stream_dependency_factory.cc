@@ -660,8 +660,6 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   audio_device_ = audio_device;
   pc_factory_ = factory;
   webrtc::PeerConnectionFactoryInterface::Options factory_options;
-  factory_options.enable_aec_dump =
-      cmd_line->HasSwitch(switches::kEnableWebRtcAecRecordings);
   factory_options.disable_sctp_data_channels =
       cmd_line->HasSwitch(switches::kDisableSCTPDataChannels);
   factory_options.disable_encryption =

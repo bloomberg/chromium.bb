@@ -140,6 +140,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
     cricket::TransportChannel* channel,
     const char* data,
     size_t data_size,
+    const talk_base::PacketTime& packet_time,
     int flags) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(channel, channel_);

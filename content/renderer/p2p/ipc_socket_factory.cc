@@ -394,9 +394,9 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
     return;
   }
 
-  // TODO(mallinath) - Pass timestamp after updating the libjingle.
-  // talk_base::PacketTime packet_time(timestamp.ToInternalValue(), 0);
-  SignalReadPacket(this, &data[0], data.size(), address_lj);
+  talk_base::PacketTime packet_time(timestamp.ToInternalValue(), 0);
+  SignalReadPacket(this, &data[0], data.size(), address_lj,
+                   packet_time);
 }
 
 }  // namespace

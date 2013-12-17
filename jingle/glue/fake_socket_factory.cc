@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "jingle/glue/utils.h"
+#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 
 namespace jingle_glue {
@@ -113,7 +114,8 @@ void FakeUDPPacketSocket::DeliverPacket(const net::IPEndPoint& from,
     return;
   }
 
-  SignalReadPacket(this, &data[0], data.size(), address);
+  SignalReadPacket(this, &data[0], data.size(), address,
+                   talk_base::CreatePacketTime(0));
 }
 
 FakeSocketManager::FakeSocketManager()

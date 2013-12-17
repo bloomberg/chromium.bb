@@ -233,8 +233,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       constraints, MediaConstraintsInterface::kNoiseSuppression);
   const bool enable_high_pass_filter = GetPropertyFromConstraints(
       constraints, MediaConstraintsInterface::kHighpassFilter);
-  const bool start_aec_dump = GetPropertyFromConstraints(
-      constraints, MediaConstraintsInterface::kInternalAecDump);
 #if defined(IOS) || defined(ANDROID)
   const bool enable_experimental_aec = false;
   const bool enable_typing_detection = false;
@@ -270,8 +268,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (enable_typing_detection)
     EnableTypingDetection(audio_processing_.get());
 
-  if (enable_aec && start_aec_dump)
-    StartAecDump(audio_processing_.get());
 
   // Configure the audio format the audio processing is running on. This
   // has to be done after all the needed components are enabled.
@@ -351,9 +347,6 @@ void MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
 void MediaStreamAudioProcessor::StopAudioProcessing() {
   if (!audio_processing_.get())
     return;
-
-  // It is safe to stop the AEC dump even it is not started.
-  StopAecDump(audio_processing_.get());
 
   audio_processing_.reset();
 }

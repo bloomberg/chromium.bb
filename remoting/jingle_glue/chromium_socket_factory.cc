@@ -350,7 +350,8 @@ void UdpPacketSocket::HandleReadResult(int result) {
       LOG(ERROR) << "Failed to convert address received from RecvFrom().";
       return;
     }
-    SignalReadPacket(this, receive_buffer_->data(), result, address);
+    SignalReadPacket(this, receive_buffer_->data(), result, address,
+                     talk_base::CreatePacketTime(0));
   } else {
     LOG(ERROR) << "Received error when reading from UDP socket: " << result;
   }

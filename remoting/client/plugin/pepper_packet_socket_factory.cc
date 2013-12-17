@@ -328,7 +328,8 @@ void UdpPacketSocket::OnReadCompleted(int result, pp::NetAddress address) {
   if (result > 0) {
     talk_base::SocketAddress socket_address;
     PpNetAddressToSocketAddress(address, &socket_address);
-    SignalReadPacket(this, &receive_buffer_[0], result, socket_address);
+    SignalReadPacket(this, &receive_buffer_[0], result, socket_address,
+                     talk_base::CreatePacketTime(0));
   } else if (result != PP_ERROR_ABORTED) {
     LOG(ERROR) << "Received error when reading from UDP socket: " << result;
   }

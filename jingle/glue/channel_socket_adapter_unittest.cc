@@ -88,7 +88,8 @@ TEST_F(TransportChannelSocketAdapterTest, Read) {
   int result = target_->Read(buffer.get(), kBufferSize, callback_);
   ASSERT_EQ(net::ERR_IO_PENDING, result);
 
-  channel_.SignalReadPacket(&channel_, kTestData, kTestDataSize, 0);
+  channel_.SignalReadPacket(&channel_, kTestData, kTestDataSize,
+                            talk_base::CreatePacketTime(0), 0);
   EXPECT_EQ(kTestDataSize, callback_result_);
 }
 

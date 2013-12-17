@@ -29,7 +29,8 @@ class ChromiumSocketFactoryTest : public testing::Test,
 
   void OnPacket(talk_base::AsyncPacketSocket* socket,
                 const char* data, size_t size,
-                const talk_base::SocketAddress& address) {
+                const talk_base::SocketAddress& address,
+                const talk_base::PacketTime& packet_time) {
     EXPECT_EQ(socket, socket_.get());
     last_packet_.assign(data, data + size);
     last_address_ = address;
