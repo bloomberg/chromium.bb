@@ -62,24 +62,24 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
       MojoHandle* data_pipe_consumer_handle) OVERRIDE;
   virtual MojoResult WriteData(MojoHandle data_pipe_producer_handle,
                                const void* elements,
-                               uint32_t* num_elements,
+                               uint32_t* num_bytes,
                                MojoWriteDataFlags flags) OVERRIDE;
   virtual MojoResult BeginWriteData(MojoHandle data_pipe_producer_handle,
                                     void** buffer,
-                                    uint32_t* buffer_num_elements,
+                                    uint32_t* buffer_num_bytes,
                                     MojoWriteDataFlags flags) OVERRIDE;
   virtual MojoResult EndWriteData(MojoHandle data_pipe_producer_handle,
-                                  uint32_t num_elements_written) OVERRIDE;
+                                  uint32_t num_bytes_written) OVERRIDE;
   virtual MojoResult ReadData(MojoHandle data_pipe_consumer_handle,
                               void* elements,
-                              uint32_t* num_elements,
+                              uint32_t* num_bytes,
                               MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult BeginReadData(MojoHandle data_pipe_consumer_handle,
                                    const void** buffer,
-                                   uint32_t* buffer_num_elements,
+                                   uint32_t* buffer_num_bytes,
                                    MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
-                                 uint32_t num_elements_read) OVERRIDE;
+                                 uint32_t num_bytes_read) OVERRIDE;
 
  private:
   friend class test::CoreTestBase;

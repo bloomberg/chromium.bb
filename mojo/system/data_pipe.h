@@ -31,15 +31,16 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // corresponding names.
   void ProducerCancelAllWaiters();
   void ProducerClose();
-  // This does not validate its arguments.
+  // This does not validate its arguments, except to check that |*num_bytes| is
+  // a multiple of |element_num_bytes_|.
   MojoResult ProducerWriteData(const void* elements,
-                               uint32_t* num_elements,
+                               uint32_t* num_bytes,
                                MojoWriteDataFlags flags);
   // This does not validate its arguments.
   MojoResult ProducerBeginWriteData(void** buffer,
-                                    uint32_t* buffer_num_elements,
+                                    uint32_t* buffer_num_bytes,
                                     MojoWriteDataFlags flags);
-  MojoResult ProducerEndWriteData(uint32_t num_elements_written);
+  MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
   MojoResult ProducerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
                                MojoResult wake_result);
@@ -49,24 +50,20 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // corresponding names.
   void ConsumerCancelAllWaiters();
   void ConsumerClose();
-  // This does not validate its arguments.
+  // This does not validate its arguments, except to check that |*num_bytes| is
+  // a multiple of |element_num_bytes_|.
   MojoResult ConsumerReadData(void* elements,
-                              uint32_t* num_elements,
+                              uint32_t* num_bytes,
                               MojoReadDataFlags flags);
   // This does not validate its arguments.
   MojoResult ConsumerBeginReadData(const void** buffer,
-                                   uint32_t* buffer_num_elements,
+                                   uint32_t* buffer_num_bytes,
                                    MojoReadDataFlags flags);
-  MojoResult ConsumerEndReadData(uint32_t num_elements_read);
+  MojoResult ConsumerEndReadData(uint32_t num_bytes_read);
   MojoResult ConsumerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
                                MojoResult wake_result);
   void ConsumerRemoveWaiter(Waiter* waiter);
-
-  // Thread-safe and fast (they don't take the lock):
-  bool may_discard() const { return may_discard_; }
-  size_t element_size() const { return element_size_; }
-  size_t capacity_num_elements() const { return capacity_num_elements_; }
 
  protected:
   DataPipe(bool has_local_producer, bool has_local_consumer);
@@ -77,34 +74,48 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // Not thread-safe; must be called before any other methods are called. This
   // object is only usable on success.
   MojoResult Init(bool may_discard,
-                  size_t element_size,
-                  size_t capacity_num_elements);
+                  size_t element_num_bytes,
+                  size_t capacity_num_bytes);
 
   void AwakeProducerWaitersForStateChangeNoLock();
   void AwakeConsumerWaitersForStateChangeNoLock();
 
   virtual void ProducerCloseImplNoLock() = 0;
+  // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
+  virtual MojoResult ProducerWriteDataImplNoLock(const void* elements,
+                                                 uint32_t* num_bytes,
+                                                 MojoWriteDataFlags flags) = 0;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       void** buffer,
-      uint32_t* buffer_num_elements,
+      uint32_t* buffer_num_bytes,
       MojoWriteDataFlags flags) = 0;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
-      uint32_t num_elements_written) = 0;
+      uint32_t num_bytes_written) = 0;
   virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() = 0;
   virtual MojoWaitFlags ProducerSatisfiableFlagsNoLock() = 0;
 
   virtual void ConsumerCloseImplNoLock() = 0;
-  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_elements,
+  // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
+  virtual MojoResult ConsumerReadDataImplNoLock(void* elements,
+                                                uint32_t* num_bytes,
+                                                MojoReadDataFlags flags) = 0;
+  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_bytes,
                                                bool all_or_none) = 0;
-  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_elements) = 0;
+  // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
+  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_bytes) = 0;
   virtual MojoResult ConsumerBeginReadDataImplNoLock(
       const void** buffer,
-      uint32_t* buffer_num_elements,
+      uint32_t* buffer_num_bytes,
       MojoReadDataFlags flags) = 0;
-  virtual MojoResult ConsumerEndReadDataImplNoLock(
-      uint32_t num_elements_read) = 0;
+  virtual MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) = 0;
   virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() = 0;
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;
+
+  // Thread-safe and fast (they don't take the lock):
+  // TODO(vtl): FIXME -- "may discard" not respected
+  bool may_discard() const { return may_discard_; }
+  size_t element_num_bytes() const { return element_num_bytes_; }
+  size_t capacity_num_bytes() const { return capacity_num_bytes_; }
 
  private:
   bool has_local_producer_no_lock() const {
@@ -116,8 +127,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
 
   // Set by |Init()| and never changed afterwards:
   bool may_discard_;
-  size_t element_size_;
-  size_t capacity_num_elements_;
+  size_t element_num_bytes_;
+  size_t capacity_num_bytes_;
 
   base::Lock lock_;  // Protects the following members.
   scoped_ptr<WaiterList> producer_waiter_list_;

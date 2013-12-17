@@ -79,7 +79,7 @@ class MockDispatcher : public Dispatcher {
 
   virtual MojoResult WriteDataImplNoLock(
       const void* /*elements*/,
-      uint32_t* /*num_elements*/,
+      uint32_t* /*num_bytes*/,
       MojoWriteDataFlags /*flags*/) OVERRIDE {
     info_->IncrementWriteDataCallCount();
     lock().AssertAcquired();
@@ -88,7 +88,7 @@ class MockDispatcher : public Dispatcher {
 
   virtual MojoResult BeginWriteDataImplNoLock(
       void** /*buffer*/,
-      uint32_t* /*buffer_num_elements*/,
+      uint32_t* /*buffer_num_bytes*/,
       MojoWriteDataFlags /*flags*/) OVERRIDE {
     info_->IncrementBeginWriteDataCallCount();
     lock().AssertAcquired();
@@ -96,14 +96,14 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult EndWriteDataImplNoLock(
-      uint32_t /*num_elements_written*/) OVERRIDE {
+      uint32_t /*num_bytes_written*/) OVERRIDE {
     info_->IncrementEndWriteDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
   virtual MojoResult ReadDataImplNoLock(void* /*elements*/,
-                                        uint32_t* /*num_elements*/,
+                                        uint32_t* /*num_bytes*/,
                                         MojoReadDataFlags /*flags*/) OVERRIDE {
     info_->IncrementReadDataCallCount();
     lock().AssertAcquired();
@@ -112,7 +112,7 @@ class MockDispatcher : public Dispatcher {
 
   virtual MojoResult BeginReadDataImplNoLock(
       const void** /*buffer*/,
-      uint32_t* /*buffer_num_elements*/,
+      uint32_t* /*buffer_num_bytes*/,
       MojoReadDataFlags /*flags*/) OVERRIDE {
     info_->IncrementBeginReadDataCallCount();
     lock().AssertAcquired();
@@ -120,7 +120,7 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult EndReadDataImplNoLock(
-      uint32_t /*num_elements_read*/) OVERRIDE {
+      uint32_t /*num_bytes_read*/) OVERRIDE {
     info_->IncrementEndReadDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;

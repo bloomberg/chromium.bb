@@ -34,12 +34,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual MojoResult CloseImplNoLock() OVERRIDE;
   virtual MojoResult ReadDataImplNoLock(void* elements,
-                                        uint32_t* num_elements,
+                                        uint32_t* num_bytes,
                                         MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult BeginReadDataImplNoLock(const void** buffer,
-                                             uint32_t* buffer_num_elements,
+                                             uint32_t* buffer_num_bytes,
                                              MojoReadDataFlags flags) OVERRIDE;
-  virtual MojoResult EndReadDataImplNoLock(uint32_t num_elements_read) OVERRIDE;
+  virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read) OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result) OVERRIDE;

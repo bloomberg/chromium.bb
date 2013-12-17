@@ -52,59 +52,59 @@ MojoResult Dispatcher::ReadMessage(
 }
 
 MojoResult Dispatcher::WriteData(const void* elements,
-                                 uint32_t* num_elements,
+                                 uint32_t* num_bytes,
                                  MojoWriteDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return WriteDataImplNoLock(elements, num_elements, flags);
+  return WriteDataImplNoLock(elements, num_bytes, flags);
 }
 
 MojoResult Dispatcher::BeginWriteData(void** buffer,
-                                      uint32_t* buffer_num_elements,
+                                      uint32_t* buffer_num_bytes,
                                       MojoWriteDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return BeginWriteDataImplNoLock(buffer, buffer_num_elements, flags);
+  return BeginWriteDataImplNoLock(buffer, buffer_num_bytes, flags);
 }
 
-MojoResult Dispatcher::EndWriteData(uint32_t num_elements_written) {
+MojoResult Dispatcher::EndWriteData(uint32_t num_bytes_written) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return EndWriteDataImplNoLock(num_elements_written);
+  return EndWriteDataImplNoLock(num_bytes_written);
 }
 
 MojoResult Dispatcher::ReadData(void* elements,
-                                uint32_t* num_elements,
+                                uint32_t* num_bytes,
                                 MojoReadDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return ReadDataImplNoLock(elements, num_elements, flags);
+  return ReadDataImplNoLock(elements, num_bytes, flags);
 }
 
 MojoResult Dispatcher::BeginReadData(const void** buffer,
-                                     uint32_t* buffer_num_elements,
+                                     uint32_t* buffer_num_bytes,
                                      MojoReadDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return BeginReadDataImplNoLock(buffer, buffer_num_elements, flags);
+  return BeginReadDataImplNoLock(buffer, buffer_num_bytes, flags);
 }
 
-MojoResult Dispatcher::EndReadData(uint32_t num_elements_read) {
+MojoResult Dispatcher::EndReadData(uint32_t num_bytes_read) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return EndReadDataImplNoLock(num_elements_read);
+  return EndReadDataImplNoLock(num_bytes_read);
 }
 
 MojoResult Dispatcher::AddWaiter(Waiter* waiter,
@@ -184,7 +184,7 @@ MojoResult Dispatcher::ReadMessageImplNoLock(
 }
 
 MojoResult Dispatcher::WriteDataImplNoLock(const void* /*elements*/,
-                                           uint32_t* /*num_elements*/,
+                                           uint32_t* /*num_bytes*/,
                                            MojoWriteDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
@@ -192,18 +192,16 @@ MojoResult Dispatcher::WriteDataImplNoLock(const void* /*elements*/,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::BeginWriteDataImplNoLock(
-    void** /*buffer*/,
-    uint32_t* /*buffer_num_elements*/,
-    MojoWriteDataFlags /*flags*/) {
+MojoResult Dispatcher::BeginWriteDataImplNoLock(void** /*buffer*/,
+                                                uint32_t* /*buffer_num_bytes*/,
+                                                MojoWriteDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::EndWriteDataImplNoLock(
-    uint32_t /*num_elements_written*/) {
+MojoResult Dispatcher::EndWriteDataImplNoLock(uint32_t /*num_bytes_written*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
@@ -211,7 +209,7 @@ MojoResult Dispatcher::EndWriteDataImplNoLock(
 }
 
 MojoResult Dispatcher::ReadDataImplNoLock(void* /*elements*/,
-                                          uint32_t* /*num_elements*/,
+                                          uint32_t* /*num_bytes*/,
                                           MojoReadDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
@@ -219,17 +217,16 @@ MojoResult Dispatcher::ReadDataImplNoLock(void* /*elements*/,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::BeginReadDataImplNoLock(
-    const void** /*buffer*/,
-    uint32_t* /*buffer_num_elements*/,
-    MojoReadDataFlags /*flags*/) {
+MojoResult Dispatcher::BeginReadDataImplNoLock(const void** /*buffer*/,
+                                               uint32_t* /*buffer_num_bytes*/,
+                                               MojoReadDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::EndReadDataImplNoLock(uint32_t /*num_elements_read*/) {
+MojoResult Dispatcher::EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // TODO(vtl): I currently potentially overflow in doing index calculations.
-// E.g., |buffer_first_element_index_| and |buffer_current_num_elements_| fit
-// into a |uint32_t|, but their sum may not. This is bad and poses a security
-// risk. (We're currently saved by the limit on capacity -- the maximum size of
-// the buffer, checked in |DataPipe::Init()|, is currently sufficiently small.
+// E.g., |start_index_| and |current_num_bytes_| fit into a |uint32_t|, but
+// their sum may not. This is bad and poses a security risk. (We're currently
+// saved by the limit on capacity -- the maximum size of the buffer, checked in
+// |DataPipe::Init()|, is currently sufficiently small.
 
 #include "mojo/system/local_data_pipe.h"
 
@@ -22,17 +22,17 @@ LocalDataPipe::LocalDataPipe()
     : DataPipe(true, true),
       producer_open_(true),
       consumer_open_(true),
-      buffer_first_element_index_(0),
-      buffer_current_num_elements_(0),
-      two_phase_max_elements_written_(0),
-      two_phase_max_elements_read_(0) {
+      start_index_(0),
+      current_num_bytes_(0),
+      two_phase_max_num_bytes_written_(0),
+      two_phase_max_num_bytes_read_(0) {
 }
 
 MojoResult LocalDataPipe::Init(const MojoCreateDataPipeOptions* options) {
   static const MojoCreateDataPipeOptions kDefaultOptions = {
-    sizeof(MojoCreateDataPipeOptions),  // |struct_size|.
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-    1u,  // |element_size|.
+    sizeof(MojoCreateDataPipeOptions),
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+    1u,
     static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
   };
   if (!options)
@@ -45,8 +45,8 @@ MojoResult LocalDataPipe::Init(const MojoCreateDataPipeOptions* options) {
   // handles is immediately passed off to another process.
   return DataPipe::Init(
       (options->flags & MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD),
-      static_cast<size_t>(options->element_size),
-      static_cast<size_t>(options->capacity_num_elements));
+      static_cast<size_t>(options->element_num_bytes),
+      static_cast<size_t>(options->capacity_num_bytes));
 }
 
 LocalDataPipe::~LocalDataPipe() {
@@ -57,50 +57,82 @@ LocalDataPipe::~LocalDataPipe() {
 void LocalDataPipe::ProducerCloseImplNoLock() {
   DCHECK(producer_open_);
   producer_open_ = false;
-  if (!buffer_current_num_elements_) {
+  if (!current_num_bytes_)
     buffer_.reset();
-    buffer_current_num_elements_ = 0;
-  }
   AwakeConsumerWaitersForStateChangeNoLock();
+}
+
+MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(
+    const void* elements,
+    uint32_t* num_bytes,
+    MojoWriteDataFlags flags) {
+  DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
+  DCHECK_GT(*num_bytes, 0u);
+
+  // TODO(vtl): This implementation may write less than requested, even if room
+  // is available. Fix this.
+  void* buffer = NULL;
+  uint32_t buffer_num_bytes = *num_bytes;
+  MojoResult rv = ProducerBeginWriteDataImplNoLock(&buffer,
+                                                   &buffer_num_bytes,
+                                                   flags);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+  DCHECK_EQ(buffer_num_bytes % element_num_bytes(), 0u);
+
+  uint32_t num_bytes_to_write = std::min(*num_bytes, buffer_num_bytes);
+  memcpy(buffer, elements, num_bytes_to_write);
+
+  rv = ProducerEndWriteDataImplNoLock(num_bytes_to_write);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  *num_bytes = num_bytes_to_write;
+  return MOJO_RESULT_OK;
 }
 
 MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
     void** buffer,
-    uint32_t* buffer_num_elements,
+    uint32_t* buffer_num_bytes,
     MojoWriteDataFlags flags) {
-  size_t max_elements_to_write = GetMaxElementsToWriteNoLock();
+  size_t max_num_bytes_to_write = GetMaxNumBytesToWriteNoLock();
   // TODO(vtl): Consider this return value.
   if ((flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE) &&
-      *buffer_num_elements < max_elements_to_write)
+      *buffer_num_bytes > max_num_bytes_to_write)
     return MOJO_RESULT_OUT_OF_RANGE;
 
-  size_t next_index = (buffer_first_element_index_ +
-                       buffer_current_num_elements_) % capacity_num_elements();
+  // Don't go into a two-phase write if there's no room.
+  // TODO(vtl): Change this to "should wait" when we have that error code.
+  if (max_num_bytes_to_write == 0)
+    return MOJO_RESULT_NOT_FOUND;
+
+  size_t write_index =
+      (start_index_ + current_num_bytes_) % capacity_num_bytes();
   EnsureBufferNoLock();
-  *buffer = buffer_.get() + next_index * element_size();
-  *buffer_num_elements = static_cast<uint32_t>(max_elements_to_write);
-  two_phase_max_elements_written_ =
-      static_cast<uint32_t>(max_elements_to_write);
+  *buffer = buffer_.get() + write_index;
+  *buffer_num_bytes = static_cast<uint32_t>(max_num_bytes_to_write);
+  two_phase_max_num_bytes_written_ =
+      static_cast<uint32_t>(max_num_bytes_to_write);
   return MOJO_RESULT_OK;
 }
 
 MojoResult LocalDataPipe::ProducerEndWriteDataImplNoLock(
-    uint32_t num_elements_written) {
-  if (num_elements_written > two_phase_max_elements_written_) {
+    uint32_t num_bytes_written) {
+  if (num_bytes_written > two_phase_max_num_bytes_written_) {
     // Note: The two-phase write ends here even on failure.
-    two_phase_max_elements_written_ = 0;  // For safety.
+    two_phase_max_num_bytes_written_ = 0;  // For safety.
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  buffer_current_num_elements_ += num_elements_written;
-  DCHECK_LE(buffer_current_num_elements_, capacity_num_elements());
-  two_phase_max_elements_written_ = 0;  // For safety.
+  current_num_bytes_ += num_bytes_written;
+  DCHECK_LE(current_num_bytes_, capacity_num_bytes());
+  two_phase_max_num_bytes_written_ = 0;  // For safety.
   return MOJO_RESULT_OK;
 }
 
 MojoWaitFlags LocalDataPipe::ProducerSatisfiedFlagsNoLock() {
   MojoWaitFlags rv = MOJO_WAIT_FLAG_NONE;
-  if (consumer_open_ && buffer_current_num_elements_ < capacity_num_elements())
+  if (consumer_open_ && current_num_bytes_ < capacity_num_bytes())
     rv |= MOJO_WAIT_FLAG_WRITABLE;
   return rv;
 }
@@ -115,81 +147,118 @@ MojoWaitFlags LocalDataPipe::ProducerSatisfiableFlagsNoLock() {
 void LocalDataPipe::ConsumerCloseImplNoLock() {
   DCHECK(consumer_open_);
   consumer_open_ = false;
+  // TODO(vtl): FIXME -- broken if two-phase write ongoing
   buffer_.reset();
-  buffer_current_num_elements_ = 0;
+  current_num_bytes_ = 0;
   AwakeProducerWaitersForStateChangeNoLock();
 }
 
-MojoResult LocalDataPipe::ConsumerDiscardDataNoLock(uint32_t* num_elements,
+MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
+                                                     uint32_t* num_bytes,
+                                                     MojoReadDataFlags flags) {
+  DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
+  DCHECK_GT(*num_bytes, 0u);
+  // These cases are handled by more specific methods.
+  DCHECK(!(flags & MOJO_READ_DATA_FLAG_DISCARD));
+  DCHECK(!(flags & MOJO_READ_DATA_FLAG_QUERY));
+
+  // TODO(vtl): This implementation may write less than requested, even if room
+  // is available. Fix this.
+  const void* buffer = NULL;
+  uint32_t buffer_num_bytes = 0;
+  MojoResult rv = ConsumerBeginReadDataImplNoLock(&buffer,
+                                                  &buffer_num_bytes,
+                                                  MOJO_READ_DATA_FLAG_NONE);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+  DCHECK_EQ(buffer_num_bytes % element_num_bytes(), 0u);
+
+  uint32_t num_bytes_to_read = std::min(*num_bytes, buffer_num_bytes);
+  memcpy(elements, buffer, num_bytes_to_read);
+
+  rv = ConsumerEndReadDataImplNoLock(num_bytes_to_read);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  *num_bytes = num_bytes_to_read;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult LocalDataPipe::ConsumerDiscardDataNoLock(uint32_t* num_bytes,
                                                     bool all_or_none) {
+  DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
+  DCHECK_GT(*num_bytes, 0u);
+
   // TODO(vtl): Think about the error code in this case.
-  if (all_or_none && *num_elements > buffer_current_num_elements_)
+  if (all_or_none && *num_bytes > current_num_bytes_)
     return MOJO_RESULT_OUT_OF_RANGE;
 
-  size_t num_elements_to_discard =
-      std::min(static_cast<size_t>(*num_elements),
-               buffer_current_num_elements_);
-  buffer_first_element_index_ =
-      (buffer_first_element_index_ + num_elements_to_discard) %
-          capacity_num_elements();
-  buffer_current_num_elements_ -= num_elements_to_discard;
+  size_t num_bytes_to_discard =
+      std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
+  start_index_ = (start_index_ + num_bytes_to_discard) % capacity_num_bytes();
+  current_num_bytes_ -= num_bytes_to_discard;
 
   AwakeProducerWaitersForStateChangeNoLock();
   AwakeConsumerWaitersForStateChangeNoLock();
 
-  *num_elements = static_cast<uint32_t>(num_elements_to_discard);
+  *num_bytes = static_cast<uint32_t>(num_bytes_to_discard);
   return MOJO_RESULT_OK;
 }
 
-MojoResult LocalDataPipe::ConsumerQueryDataNoLock(uint32_t* num_elements) {
+MojoResult LocalDataPipe::ConsumerQueryDataNoLock(uint32_t* num_bytes) {
   // Note: This cast is safe, since the capacity fits into a |uint32_t|.
-  *num_elements = static_cast<uint32_t>(buffer_current_num_elements_);
+  *num_bytes = static_cast<uint32_t>(current_num_bytes_);
   return MOJO_RESULT_OK;
 }
 
 MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
     const void** buffer,
-    uint32_t* buffer_num_elements,
+    uint32_t* buffer_num_bytes,
     MojoReadDataFlags flags) {
-  size_t max_elements_to_read = GetMaxElementsToReadNoLock();
+  size_t max_num_bytes_to_read = GetMaxNumBytesToReadNoLock();
   // TODO(vtl): Consider this return value.
   if ((flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE) &&
-      *buffer_num_elements < max_elements_to_read)
+      *buffer_num_bytes > max_num_bytes_to_read)
     return MOJO_RESULT_OUT_OF_RANGE;
-  // Note: This works even if |buffer_| is null.
-  *buffer = buffer_.get() + buffer_first_element_index_ * element_size();
-  *buffer_num_elements = static_cast<uint32_t>(max_elements_to_read);
-  two_phase_max_elements_read_ = static_cast<uint32_t>(max_elements_to_read);
+
+  // Don't go into a two-phase read if there's no data.
+  // TODO(vtl): Change this to "should wait" when we have that error code.
+  if (max_num_bytes_to_read == 0)
+    return MOJO_RESULT_NOT_FOUND;
+
+  *buffer = buffer_.get() + start_index_;
+  *buffer_num_bytes = static_cast<uint32_t>(max_num_bytes_to_read);
+  two_phase_max_num_bytes_read_ = static_cast<uint32_t>(max_num_bytes_to_read);
   return MOJO_RESULT_OK;
 }
 
 MojoResult LocalDataPipe::ConsumerEndReadDataImplNoLock(
-    uint32_t num_elements_read) {
-  if (num_elements_read > two_phase_max_elements_read_) {
+    uint32_t num_bytes_read) {
+  if (num_bytes_read > two_phase_max_num_bytes_read_) {
     // Note: The two-phase read ends here even on failure.
-    two_phase_max_elements_read_ = 0;  // For safety.
+    two_phase_max_num_bytes_read_ = 0;  // For safety.
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  buffer_first_element_index_ += num_elements_read;
-  DCHECK_LE(buffer_first_element_index_, capacity_num_elements());
-  buffer_first_element_index_ %= capacity_num_elements();
-  DCHECK_LE(num_elements_read, buffer_current_num_elements_);
-  buffer_current_num_elements_ -= num_elements_read;
-  two_phase_max_elements_read_ = 0;  // For safety.
+  start_index_ += num_bytes_read;
+  DCHECK_LE(start_index_, capacity_num_bytes());
+  start_index_ %= capacity_num_bytes();
+  DCHECK_LE(num_bytes_read, current_num_bytes_);
+  current_num_bytes_ -= num_bytes_read;
+  two_phase_max_num_bytes_read_ = 0;  // For safety.
   return MOJO_RESULT_OK;
 }
 
 MojoWaitFlags LocalDataPipe::ConsumerSatisfiedFlagsNoLock() {
   MojoWaitFlags rv = MOJO_WAIT_FLAG_NONE;
-  if (buffer_current_num_elements_ > 0)
+  if (current_num_bytes_ > 0)
     rv |= MOJO_WAIT_FLAG_READABLE;
   return rv;
 }
 
 MojoWaitFlags LocalDataPipe::ConsumerSatisfiableFlagsNoLock() {
   MojoWaitFlags rv = MOJO_WAIT_FLAG_NONE;
-  if (buffer_current_num_elements_ > 0 || producer_open_)
+  if (current_num_bytes_ > 0 || producer_open_)
     rv |= MOJO_WAIT_FLAG_READABLE;
   return rv;
 }
@@ -199,27 +268,25 @@ void LocalDataPipe::EnsureBufferNoLock() {
   if (buffer_.get())
     return;
   buffer_.reset(static_cast<char*>(
-      base::AlignedAlloc(static_cast<size_t>(capacity_num_elements()) *
-                             element_size(),
-                         kDataPipeBufferAlignmentBytes)));
+      base::AlignedAlloc(capacity_num_bytes(), kDataPipeBufferAlignmentBytes)));
 }
 
-size_t LocalDataPipe::GetMaxElementsToWriteNoLock() {
-  size_t next_index = buffer_first_element_index_ +
-                      buffer_current_num_elements_;
-  if (next_index >= capacity_num_elements()) {
-    next_index %= capacity_num_elements();
-    DCHECK_GE(buffer_first_element_index_, next_index);
-    return buffer_first_element_index_ - next_index;
+size_t LocalDataPipe::GetMaxNumBytesToWriteNoLock() {
+  size_t next_index = start_index_ + current_num_bytes_;
+  if (next_index >= capacity_num_bytes()) {
+    next_index %= capacity_num_bytes();
+    DCHECK_GE(start_index_, next_index);
+    DCHECK_EQ(start_index_ - next_index,
+              capacity_num_bytes() - current_num_bytes_);
+    return start_index_ - next_index;
   }
-  return capacity_num_elements() - next_index;
+  return capacity_num_bytes() - next_index;
 }
 
-size_t LocalDataPipe::GetMaxElementsToReadNoLock() {
-  if (buffer_first_element_index_ + buffer_current_num_elements_ >
-          capacity_num_elements())
-    return capacity_num_elements() - buffer_first_element_index_;
-  return buffer_current_num_elements_;
+size_t LocalDataPipe::GetMaxNumBytesToReadNoLock() {
+  if (start_index_ + current_num_bytes_ > capacity_num_bytes())
+    return capacity_num_bytes() - start_index_;
+  return current_num_bytes_;
 }
 
 }  // namespace system

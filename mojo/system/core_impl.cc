@@ -397,70 +397,70 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
 
 MojoResult CoreImpl::WriteData(MojoHandle data_pipe_producer_handle,
                                const void* elements,
-                               uint32_t* num_elements,
+                               uint32_t* num_bytes,
                                MojoWriteDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->WriteData(elements, num_elements, flags);
+  return dispatcher->WriteData(elements, num_bytes, flags);
 }
 
 MojoResult CoreImpl::BeginWriteData(MojoHandle data_pipe_producer_handle,
                                     void** buffer,
-                                    uint32_t* buffer_num_elements,
+                                    uint32_t* buffer_num_bytes,
                                     MojoWriteDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->BeginWriteData(buffer, buffer_num_elements, flags);
+  return dispatcher->BeginWriteData(buffer, buffer_num_bytes, flags);
 }
 
 MojoResult CoreImpl::EndWriteData(MojoHandle data_pipe_producer_handle,
-                                  uint32_t num_elements_written) {
+                                  uint32_t num_bytes_written) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->EndWriteData(num_elements_written);
+  return dispatcher->EndWriteData(num_bytes_written);
 }
 
 MojoResult CoreImpl::ReadData(MojoHandle data_pipe_consumer_handle,
                               void* elements,
-                              uint32_t* num_elements,
+                              uint32_t* num_bytes,
                               MojoReadDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->ReadData(elements, num_elements, flags);
+  return dispatcher->ReadData(elements, num_bytes, flags);
 }
 
 MojoResult CoreImpl::BeginReadData(MojoHandle data_pipe_consumer_handle,
                                    const void** buffer,
-                                   uint32_t* buffer_num_elements,
+                                   uint32_t* buffer_num_bytes,
                                    MojoReadDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->BeginReadData(buffer, buffer_num_elements, flags);
+  return dispatcher->BeginReadData(buffer, buffer_num_bytes, flags);
 }
 
 MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
-                                 uint32_t num_elements_read) {
+                                 uint32_t num_bytes_read) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->EndReadData(num_elements_read);
+  return dispatcher->EndReadData(num_bytes_read);
 }
 
 CoreImpl::CoreImpl()

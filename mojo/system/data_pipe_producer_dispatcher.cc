@@ -38,38 +38,37 @@ MojoResult DataPipeProducerDispatcher::CloseImplNoLock() {
 
 MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(
     const void* elements,
-    uint32_t* num_elements,
+    uint32_t* num_bytes,
     MojoWriteDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointer<uint32_t>(num_elements, 1))
+  if (!VerifyUserPointer<uint32_t>(num_bytes, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointerForSize(elements, data_pipe_->element_size(),
-                                *num_elements))
+  if (!VerifyUserPointer<void>(elements, *num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return data_pipe_->ProducerWriteData(elements, num_elements, flags);
+  return data_pipe_->ProducerWriteData(elements, num_bytes, flags);
 }
 
 MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
     void** buffer,
-    uint32_t* buffer_num_elements,
+    uint32_t* buffer_num_bytes,
     MojoWriteDataFlags flags) {
   lock().AssertAcquired();
 
   if (!VerifyUserPointer<void*>(buffer, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<uint32_t>(buffer_num_elements, 1))
+  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return data_pipe_->ProducerBeginWriteData(buffer, buffer_num_elements, flags);
+  return data_pipe_->ProducerBeginWriteData(buffer, buffer_num_bytes, flags);
 }
 
 MojoResult DataPipeProducerDispatcher::EndWriteDataImplNoLock(
-    uint32_t num_elements_written) {
+    uint32_t num_bytes_written) {
   lock().AssertAcquired();
 
-  return data_pipe_->ProducerEndWriteData(num_elements_written);
+  return data_pipe_->ProducerEndWriteData(num_bytes_written);
 }
 
 MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(

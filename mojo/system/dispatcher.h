@@ -53,19 +53,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
       uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
   MojoResult WriteData(const void* elements,
-                       uint32_t* num_elements,
+                       uint32_t* elements_num_bytes,
                        MojoWriteDataFlags flags);
   MojoResult BeginWriteData(void** buffer,
-                            uint32_t* buffer_num_elements,
+                            uint32_t* buffer_num_bytes,
                             MojoWriteDataFlags flags);
-  MojoResult EndWriteData(uint32_t num_elements_written);
+  MojoResult EndWriteData(uint32_t num_bytes_written);
   MojoResult ReadData(void* elements,
-                      uint32_t* num_elements,
+                      uint32_t* num_bytes,
                       MojoReadDataFlags flags);
   MojoResult BeginReadData(const void** buffer,
-                           uint32_t* buffer_num_elements,
+                           uint32_t* buffer_num_bytes,
                            MojoReadDataFlags flags);
-  MojoResult EndReadData(uint32_t num_elements_read);
+  MojoResult EndReadData(uint32_t num_bytes_read);
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
   // object changes state to satisfy |flags| with result |wake_result| (which
@@ -119,19 +119,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
       uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
   virtual MojoResult WriteDataImplNoLock(const void* elements,
-                                         uint32_t* num_elements,
+                                         uint32_t* num_bytes,
                                          MojoWriteDataFlags flags);
   virtual MojoResult BeginWriteDataImplNoLock(void** buffer,
-                                              uint32_t* buffer_num_elements,
+                                              uint32_t* buffer_num_bytes,
                                               MojoWriteDataFlags flags);
-  virtual MojoResult EndWriteDataImplNoLock(uint32_t num_elements_written);
+  virtual MojoResult EndWriteDataImplNoLock(uint32_t num_bytes_written);
   virtual MojoResult ReadDataImplNoLock(void* elements,
-                                        uint32_t* num_elements,
+                                        uint32_t* num_bytes,
                                         MojoReadDataFlags flags);
   virtual MojoResult BeginReadDataImplNoLock(const void** buffer,
-                                             uint32_t* buffer_num_elements,
+                                             uint32_t* buffer_num_bytes,
                                              MojoReadDataFlags flags);
-  virtual MojoResult EndReadDataImplNoLock(uint32_t num_elements_read);
+  virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read);
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result);

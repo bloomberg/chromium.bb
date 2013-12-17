@@ -30,24 +30,32 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
 
   // |DataPipe| implementation:
   virtual void ProducerCloseImplNoLock() OVERRIDE;
+  virtual MojoResult ProducerWriteDataImplNoLock(
+      const void* elements,
+      uint32_t* num_bytes,
+      MojoWriteDataFlags flags) OVERRIDE;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       void** buffer,
-      uint32_t* buffer_num_elements,
+      uint32_t* buffer_num_bytes,
       MojoWriteDataFlags flags) OVERRIDE;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
-      uint32_t num_elements_written) OVERRIDE;
+      uint32_t num_bytes_written) OVERRIDE;
   virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() OVERRIDE;
   virtual MojoWaitFlags ProducerSatisfiableFlagsNoLock() OVERRIDE;
   virtual void ConsumerCloseImplNoLock() OVERRIDE;
-  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_elements,
+  virtual MojoResult ConsumerReadDataImplNoLock(
+      void* elements,
+      uint32_t* num_bytes,
+      MojoReadDataFlags flags) OVERRIDE;
+  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_bytes,
                                                bool all_or_none) OVERRIDE;
-  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_elements) OVERRIDE;
+  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_bytes) OVERRIDE;
   virtual MojoResult ConsumerBeginReadDataImplNoLock(
       const void** buffer,
-      uint32_t* buffer_num_elements,
+      uint32_t* buffer_num_bytes,
       MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult ConsumerEndReadDataImplNoLock(
-      uint32_t num_elements_read) OVERRIDE;
+      uint32_t num_bytes_read) OVERRIDE;
   virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() OVERRIDE;
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() OVERRIDE;
 
@@ -55,20 +63,22 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
 
   // Get the maximum (single) write/read size right now (in number of elements);
   // result fits in a |uint32_t|.
-  size_t GetMaxElementsToWriteNoLock();
-  size_t GetMaxElementsToReadNoLock();
+  size_t GetMaxNumBytesToWriteNoLock();
+  size_t GetMaxNumBytesToReadNoLock();
 
   // The members below are protected by |DataPipe|'s |lock_|:
+  // TODO(vtl): FIXME -- move this to DataPipe?
   bool producer_open_;
   bool consumer_open_;
 
   scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> buffer_;
   // Circular buffer.
-  size_t buffer_first_element_index_;
-  size_t buffer_current_num_elements_;
+  size_t start_index_;
+  size_t current_num_bytes_;
 
-  uint32_t two_phase_max_elements_written_;
-  uint32_t two_phase_max_elements_read_;
+  // TODO(vtl): FIXME -- merge this with bool in superclass
+  uint32_t two_phase_max_num_bytes_written_;
+  uint32_t two_phase_max_num_bytes_read_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDataPipe);
 };

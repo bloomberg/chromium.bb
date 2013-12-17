@@ -38,11 +38,11 @@ MojoResult DataPipeConsumerDispatcher::CloseImplNoLock() {
 
 MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
     void* elements,
-    uint32_t* num_elements,
+    uint32_t* num_bytes,
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointer<uint32_t>(num_elements, 1))
+  if (!VerifyUserPointer<uint32_t>(num_bytes, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
   // These flags are mutally exclusive.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) &&
@@ -54,37 +54,36 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
     elements = NULL;  // Null it out for safety.
   } else {
     // Only verify |elements| if we're neither discarding nor querying.
-    if (!VerifyUserPointerForSize(elements, data_pipe_->element_size(),
-                                  *num_elements))
+    if (!VerifyUserPointer<void>(elements, *num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  return data_pipe_->ConsumerReadData(elements, num_elements, flags);
+  return data_pipe_->ConsumerReadData(elements, num_bytes, flags);
 }
 
 MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
     const void** buffer,
-    uint32_t* buffer_num_elements,
+    uint32_t* buffer_num_bytes,
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
 
   if (!VerifyUserPointer<const void*>(buffer, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<uint32_t>(buffer_num_elements, 1))
+  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
       (flags & MOJO_READ_DATA_FLAG_QUERY))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return data_pipe_->ConsumerBeginReadData(buffer, buffer_num_elements, flags);
+  return data_pipe_->ConsumerBeginReadData(buffer, buffer_num_bytes, flags);
 }
 
 MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
-    uint32_t num_elements_read) {
+    uint32_t num_bytes_read) {
   lock().AssertAcquired();
 
-  return data_pipe_->ConsumerEndReadData(num_elements_read);
+  return data_pipe_->ConsumerEndReadData(num_bytes_read);
 }
 
 MojoResult DataPipeConsumerDispatcher::AddWaiterImplNoLock(

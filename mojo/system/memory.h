@@ -19,12 +19,6 @@ template <size_t size>
 bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerForSize(const void* pointer,
                                                       size_t count);
 
-// A non-templatized version of the above, for when the element size isn't
-// fixed.
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerForSize(const void* pointer,
-                                                      size_t size,
-                                                      size_t count);
-
 // Verify that |count * sizeof(T)| bytes can be read from the user |pointer|
 // insofar as possible/necessary (note: this is done carefully since |count *
 // sizeof(T)| may overflow a |size_t|. |count| may be zero. If |T| is |void|,

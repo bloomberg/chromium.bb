@@ -194,16 +194,22 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
 
 // |MojoCreateDataPipeOptions|: Used to specify creation parameters for a data
 // pipe to |MojoCreateDataPipe()|.
-//   |MojoCreateDataPipeOptionsFlags|: Used to specify different modes of
+//   |size_t struct_size|: Set to the size of the |MojoCreateDataPipeOptions|
+//       struct. (Used to allow for future extensions.)
+//   |MojoCreateDataPipeOptionsFlags flags|: Used to specify different modes of
 //       operation.
 //     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE|: No flags; default mode.
 //     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD|: May discard data for
 //         whatever reason; best-effort delivery. In particular, if the capacity
 //         is reached, old data may be discard to make room for new data.
-//
-// |element_size * capacity_num_elements| must be less than 2^32 (i.e., it must
-// fit into a 32-bit unsigned integer).
-// TODO(vtl): Finish this.
+//   |uint32_t element_num_bytes|: The size of an element, in bytes. All
+//       transactions and buffers will consist of an integral number of
+//       elements. Must be nonzero.
+//   |uint32_t capacity_num_bytes|: The capacity of the data pipe, in number of
+//       bytes; must be a multiple of |element_num_bytes|. The data pipe will
+//       always be able to queue AT LEAST this much data. Set to zero to opt for
+//       a system-dependent automatically-calculated capacity (which will always
+//       be at least one element).
 typedef uint32_t MojoCreateDataPipeOptionsFlags;
 
 #ifdef __cplusplus
@@ -219,10 +225,10 @@ const MojoCreateDataPipeOptionsFlags
 #endif
 
 struct MojoCreateDataPipeOptions {
-  size_t struct_size;  // Set to the size of this structure.
+  size_t struct_size;
   MojoCreateDataPipeOptionsFlags flags;
-  uint32_t element_size;  // Must be nonzero.
-  uint32_t capacity_num_elements;  // Zero means "default"/automatic.
+  uint32_t element_num_bytes;
+  uint32_t capacity_num_bytes;
 };
 
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
@@ -431,41 +437,41 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
 MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
     MojoHandle data_pipe_producer_handle,
     const void* elements,
-    uint32_t* num_elements,
+    uint32_t* num_bytes,
     MojoWriteDataFlags flags);
 
-// TODO(vtl): Note to self: |buffer_num_elements| is an "in-out" parameter:
-// on the "in" side, |*buffer_num_elements| is the number requested; on success,
-// on the "out" side, it's the number available (which may be GREATER or LESS
-// than the number requested; if the "all-or-nothing" flag is set, it's AT LEAST
-// the number requested).
+// TODO(vtl): Note to self: |buffer_num_bytes| is an "in-out" parameter: on the
+// "in" side, |*buffer_num_bytes| is the number requested; on success, on the
+// "out" side, it's the number available (which may be GREATER or LESS than the
+// number requested; if the "all-or-nothing" flag is set, it's AT LEAST the
+// number requested).
 MOJO_SYSTEM_EXPORT MojoResult MojoBeginWriteData(
     MojoHandle data_pipe_producer_handle,
     void** buffer,
-    uint32_t* buffer_num_elements,
+    uint32_t* buffer_num_bytes,
     MojoWriteDataFlags flags);
 
 MOJO_SYSTEM_EXPORT MojoResult MojoEndWriteData(
     MojoHandle data_pipe_producer_handle,
-    uint32_t num_elements_written);
+    uint32_t num_bytes_written);
 
 // TODO(vtl): Note to self: If |MOJO_READ_DATA_FLAG_QUERY| is set, then
 // |elements| must be null (and nothing will be read).
 MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
     MojoHandle data_pipe_consumer_handle,
     void* elements,
-    uint32_t* num_elements,
+    uint32_t* num_bytes,
     MojoReadDataFlags flags);
 
 MOJO_SYSTEM_EXPORT MojoResult MojoBeginReadData(
     MojoHandle data_pipe_consumer_handle,
     const void** buffer,
-    uint32_t* buffer_num_elements,
+    uint32_t* buffer_num_bytes,
     MojoReadDataFlags flags);
 
 MOJO_SYSTEM_EXPORT MojoResult MojoEndReadData(
     MojoHandle data_pipe_consumer_handle,
-    uint32_t num_elements_read);
+    uint32_t num_bytes_read);
 
 #ifdef __cplusplus
 }  // extern "C"
