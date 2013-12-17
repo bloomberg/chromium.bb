@@ -69,7 +69,7 @@ class QuicClient : public EpollCallbackInterface,
   // Disconnects from the QUIC server.
   void Disconnect();
 
-  // Sends a request simple GET for each URL in arg, and then waits for
+  // Sends a request simple GET for each URL in |args|, and then waits for
   // each to complete.
   void SendRequestsAndWaitForResponse(const CommandLine::StringVector& args);
 

@@ -14,7 +14,7 @@ class MockRandom : public QuicRandom {
  public:
   // Initializes base_ to 0xDEADBEEF.
   MockRandom();
-  MockRandom(uint32 base);
+  explicit MockRandom(uint32 base);
 
   // QuicRandom:
   // Fills the |data| buffer with a repeating byte, initially 'r'.

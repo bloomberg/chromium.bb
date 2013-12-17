@@ -16,7 +16,6 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_stream_sequencer.h"
 
 namespace net {

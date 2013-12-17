@@ -110,6 +110,7 @@ class QuicConnectionPeer {
 };
 
 }  // namespace test
+
 }  // namespace net
 
 #endif  // NET_QUIC_TEST_TOOLS_QUIC_TEST_PEER_H_
