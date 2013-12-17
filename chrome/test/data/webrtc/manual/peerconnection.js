@@ -61,7 +61,11 @@ function negotiateCallFromHere() {
       $('pc-createanswer-constraints').value));
 
   ensureHasPeerConnection_();
-  negotiateCall();
+  try {
+    negotiateCall();
+  } catch (exception) {
+    error(exception);
+  }
 }
 
 function addLocalStreamFromHere() {
@@ -233,9 +237,12 @@ window.onload = function() {
   hookupDtmfSenderCallback_();
   displayVideoSize_($('local-view'));
   displayVideoSize_($('remote-view'));
-  getDevices();
+  updateGetUserMediaConstraints();
   setPcDataChannelType();
   setupLocalStorageFieldValues();
+  if ($('get-devices-onload').checked == true) {
+    getDevices();
+  }
 };
 
 /**
@@ -303,6 +310,16 @@ function debug_(message) {
 }
 
 /**
+ * Print error message in the debug log + JS console and throw an Error.
+ * @private
+ * @param {string} message Text to print.
+ */
+function error(message) {
+  $('debug').innerHTML += '<span style="color:red;">' + message + '</span><br>';
+  throw new Error(message);
+}
+
+/**
  * @private
  * @param {string} stringRepresentation JavaScript as a string.
  * @return {Object} The PeerConnection constraints as a JavaScript dictionary.
@@ -311,10 +328,10 @@ function getEvaluatedJavaScript_(stringRepresentation) {
   try {
     var evaluatedJavaScript;
     eval('evaluatedJavaScript = ' + stringRepresentation);
+    return evaluatedJavaScript;
   } catch (exception) {
-    throw failTest('Not valid JavaScript expression: ' + stringRepresentation);
+    error('Not valid JavaScript expression: ' + stringRepresentation);
   }
-  return evaluatedJavaScript;
 }
 
 /**
@@ -399,21 +416,52 @@ function setupLocalStorageFieldValues() {
   registerLocalStorage_('pc-server');
   registerLocalStorage_('pc-createanswer-constraints');
   registerLocalStorage_('pc-createoffer-constraints');
+  registerLocalStorage_('get-devices-onload');
 }
 
 /**
- * Stores the value of the element_id parameter using local storage.
+ * Register an input element to use local storage to remember its state between
+ * sessions (using local storage). Only input elements are supported.
  * @private
- * @param {!string} element_id to be used as a key for local storage
+ * @param {!string} element_id to be used as a key for local storage and the id
+ *     of the element to store the state for.
  */
 function registerLocalStorage_(element_id) {
   var element = $(element_id);
-  element.onblur = function() { storeLocalStorageFieldValue_(this); };
+  if (element.tagName != 'INPUT') {
+    error('You can only use registerLocalStorage_ for input elements. ' +
+          'Element \"' + element.tagName +'\" is not an input element. ');
+  }
 
-  if (localStorage.getItem(element.id) === 'undefined') {
-    storeLocalStorageFieldValue_(element);
+  if (localStorage.getItem(element.id) == 'undefined') {
+    storeLocalStorageField_(element);
   } else {
+    getLocalStorageField_(element);
+  }
+  // Registers the appropriate events for input elements.
+  if (element.type == 'checkbox') {
+    element.onclick = function() { storeLocalStorageField_(this); };
+  } else if (element.type == 'text') {
+    element.onblur = function() { storeLocalStorageField_(this); };
+  } else {
+    error('Unsupportered input type: ' + '\"' + element.type + '\"' );
+  }
+}
+
+/**
+ * Fetches the stored values from local storage and updates checkbox status.
+ * @private
+ * @param {!Object} element of which id is representing the key parameter for
+ *     local storage.
+ */
+function getLocalStorageField_(element) {
+  // Makes sure the checkbox status is matching the local storage value.
+  if (element.type == 'checkbox') {
+    element.checked = (localStorage.getItem(element.id) == 'true');
+  } else if (element.type == 'text' ) {
     element.value = localStorage.getItem(element.id);
+  } else {
+    error('Unsupportered input type: ' + '\"' + element.type + '\"' );
   }
 }
 
@@ -423,6 +471,10 @@ function registerLocalStorage_(element_id) {
  * @param {!Object} element of which id is representing the key parameter for
  *     local storage.
  */
-function storeLocalStorageFieldValue_(element) {
-  localStorage.setItem(element.id, element.value);
+function storeLocalStorageField_(element) {
+  if (element.type == 'checkbox') {
+    localStorage.setItem(element.id, element.checked);
+  } else if (element.type == 'text') {
+    localStorage.setItem(element.id, element.value);
+  }
 }

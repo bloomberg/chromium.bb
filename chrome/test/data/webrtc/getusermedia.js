@@ -243,10 +243,10 @@ function displayVideoSize_(videoTag) {
  * to update the constraints.
  */
 function getDevices() {
-  if ($('audiosrc') && $('videosrc') && $('refresh-devices')) {
+  if ($('audiosrc') && $('videosrc') && $('get-devices')) {
     var audio_select = $('audiosrc');
     var video_select = $('videosrc');
-    var refresh_devices = $('refresh-devices');
+    var get_devices = $('get-devices');
     audio_select.innerHTML = '';
     video_select.innerHTML = '';
     try {
@@ -254,7 +254,7 @@ function getDevices() {
     } catch (exception) {
       audio_select.disabled = true;
       video_select.disabled = true;
-      refresh_devices.disabled = true;
+      get_devices.disabled = true;
       updateGetUserMediaConstraints();
       debug('Device enumeration not supported. ' + exception);
       return;
@@ -266,13 +266,13 @@ function getDevices() {
         option.text = devices[i].label;
         if (devices[i].kind == 'audio') {
           if (option.text == '') {
-            option.text = 'Audio: ' + devices[i].id;
+            option.text = devices[i].id;
           }
           audio_select.appendChild(option);
         }
         else if (devices[i].kind == 'video') {
           if (option.text == '') {
-            option.text = 'Video: ' + devices[i].id;
+            option.text = devices[i].id;
           }
           video_select.appendChild(option);
         }
