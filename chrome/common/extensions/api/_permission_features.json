@@ -316,7 +316,8 @@
     "whitelist": [
       "lkegkdgachcnekllcdfkijonogckdnjo",  // API test
       "190C131D270994E7330E9A3CD48224061CB10E2D",  // dogfood 1
-      "7FDDD1C0CB0052596657FDEC92841D509DC8D404"  // dogfood 2
+      "7FDDD1C0CB0052596657FDEC92841D509DC8D404",  // dogfood 2
+      "E13990DC5440B6E270503DA27A35762F423725C3"   // dogfood 3
     ]
   },
   "downloads": {
