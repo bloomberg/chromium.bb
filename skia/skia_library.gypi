@@ -6,61 +6,16 @@
 # This gypi file contains the Skia library.
 # In component mode (shared_lib) it is folded into a single shared library with
 # the Chrome-specific enhancements but in all other cases it is a separate lib.
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# variables and defines should go in skia_common.gypi so they can be seen
+# by files listed here and in skia_library_opts.gypi.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 {
   'dependencies': [
     'skia_library_opts.gyp:skia_opts',
     '../third_party/zlib/zlib.gyp:zlib',
   ],
-
-  'variables': {
-    'variables': {
-      'conditions': [
-        ['OS== "ios"', {
-          'skia_support_gpu': 0,
-        }, {
-          'skia_support_gpu': 1,
-        }],
-        ['OS=="ios" or enable_printing == 0', {
-          'skia_support_pdf': 0,
-        }, {
-          'skia_support_pdf': 1,
-        }],
-      ],
-    },
-    'skia_support_gpu': '<(skia_support_gpu)',
-    'skia_support_pdf': '<(skia_support_pdf)',
-
-    # These two set the paths so we can include skia/gyp/core.gypi
-    'skia_src_path': '../third_party/skia/src',
-    'skia_include_path': '../third_party/skia/include',
-
-    # This list will contain all defines that also need to be exported to
-    # dependent components.
-    'skia_export_defines': [
-      'SK_ENABLE_INST_COUNT=0',
-      'SK_SUPPORT_GPU=<(skia_support_gpu)',
-      'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
-      'SK_ENABLE_LEGACY_API_ALIASING=1',
-      'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
-      'SK_SUPPORT_LEGACY_COLORTYPE=1',
-      'GR_GL_IGNORE_ES3_MSAA=0',
-      'SK_SUPPORT_LEGACY_PIXELREF_CONSTRUCTOR=1'
-    ],
-
-    'default_font_cache_limit%': '(20*1024*1024)',
-
-    'conditions': [
-      ['OS== "android"', {
-        # Android devices are typically more memory constrained, so
-        # default to a smaller glyph cache (it may be overriden at runtime
-        # when the renderer starts up, depending on the actual device memory).
-        'default_font_cache_limit': '(1*1024*1024)',
-        'skia_export_defines': [
-          'SK_BUILD_FOR_ANDROID',
-        ],
-      }],
-    ],
-  },
 
   'includes': [
     '../third_party/skia/gyp/core.gypi',
@@ -194,46 +149,6 @@
       ],
     }],
 
-    #Settings for text blitting, chosen to approximate the system browser.
-    [ 'OS == "linux"', {
-      'defines': [
-        'SK_GAMMA_EXPONENT=1.2',
-        'SK_GAMMA_CONTRAST=0.2',
-      ],
-    }],
-    ['OS == "android"', {
-      'defines': [
-        'SK_GAMMA_APPLY_TO_A8',
-        'SK_GAMMA_EXPONENT=1.4',
-        'SK_GAMMA_CONTRAST=0.0',
-      ],
-    }],
-    ['OS == "win"', {
-      'defines': [
-        'SK_GAMMA_SRGB',
-        'SK_GAMMA_CONTRAST=0.5',
-      ],
-    }],
-    ['OS == "mac"', {
-      'defines': [
-        'SK_GAMMA_SRGB',
-        'SK_GAMMA_CONTRAST=0.0',
-      ],
-    }],
-
-    # For POSIX platforms, prefer the Mutex implementation provided by Skia
-    # since it does not generate static initializers.
-    [ 'os_posix == 1', {
-      'defines+': [
-        'SK_USE_POSIX_THREADS',
-      ],
-      'direct_dependent_settings': {
-        'defines': [
-          'SK_USE_POSIX_THREADS',
-        ],
-      },
-    }],
-
     [ 'OS != "ios"', {
       'dependencies': [
         '../third_party/WebKit/public/blink_skia_config.gyp:blink_skia_config',
@@ -245,16 +160,6 @@
     [ 'OS != "mac"', {
       'sources/': [
         ['exclude', '/mac/']
-      ],
-    }],
-    [ 'target_arch == "arm" and arm_version >= 7 and arm_neon == 1', {
-      'defines': [
-        '__ARM_HAVE_NEON',
-      ],
-    }],
-    [ 'target_arch == "arm" and arm_version >= 7 and arm_neon_optional == 1', {
-      'defines': [
-        '__ARM_HAVE_OPTIONAL_NEON_SUPPORT',
       ],
     }],
     [ 'OS == "android" and target_arch == "arm"', {
@@ -313,9 +218,6 @@
       ],
     }],
     [ 'OS == "ios"', {
-      'defines': [
-        'SK_BUILD_FOR_IOS',
-      ],
       'include_dirs': [
         '../third_party/skia/include/utils/ios',
         '../third_party/skia/include/utils/mac',
@@ -348,9 +250,6 @@
       ],
     }],
     [ 'OS == "mac"', {
-      'defines': [
-        'SK_BUILD_FOR_MAC',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '../third_party/skia/include/utils/mac',
@@ -403,15 +302,6 @@
         '-Wstring-conversion',
       ],
     }],
-    # On windows, GDI handles are a scarse system-wide resource so we have to keep
-    # the glyph cache, which holds up to 4 GDI handles per entry, to a fairly small
-    # size.
-    # http://crbug.com/314387
-    [ 'OS == "win"', {
-      'defines': [
-        'SK_DEFAULT_FONT_CACHE_COUNT_LIMIT=256',
-      ],
-    }],
   ],
   'target_conditions': [
     # Pull in specific Mac files for iOS (which have been filtered out
@@ -423,35 +313,6 @@
         ['include', 'SkCreateCGImageRef\\.cpp$',],
       ],
     }],
-  ],
-
-  'defines': [
-    '<@(skia_export_defines)',
-
-    # skia uses static initializers to initialize the serialization logic
-    # of its "pictures" library. This is currently not used in chrome; if
-    # it ever gets used the processes that use it need to call
-    # SkGraphics::Init().
-    'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
-
-    # Forcing the unoptimized path for the offset image filter in skia until
-    # all filters used in Blink support the optimized path properly
-    'SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION',
-
-    # Disable this check because it is too strict for some Chromium-specific
-    # subclasses of SkPixelRef. See bug: crbug.com/171776.
-    'SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK',
-
-    'IGNORE_ROT_AA_RECT_OPT',
-
-    'SK_IGNORE_BLURRED_RRECT_OPT',
-
-    'SK_IGNORE_QUAD_RR_CORNERS_OPT',
-
-    # this flag forces Skia not to use typographic metrics with GDI.
-    'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
-
-    'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
   ],
 
   'direct_dependent_settings': {
@@ -468,9 +329,6 @@
       '../third_party/skia/include/pipe',
       '../third_party/skia/include/ports',
       '../third_party/skia/include/utils',
-    ],
-    'defines': [
-      '<@(skia_export_defines)',
     ],
   },
 }
