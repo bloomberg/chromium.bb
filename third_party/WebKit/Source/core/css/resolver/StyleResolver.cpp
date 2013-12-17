@@ -735,7 +735,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const RenderStyle& elementStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const RenderStyle& elementStyle, RenderStyle* parentStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
@@ -743,7 +743,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
 
     if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
-    StyleResolverState state(document(), element);
+    StyleResolverState state(document(), element, parentStyle);
 
     MatchResult result;
     if (keyframe->properties())
@@ -824,7 +824,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
         const StyleKeyframe* keyframe = keyframes[i].get();
 
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, keyframe, name));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, 0, keyframe, name));
         keyframeValue.addProperties(keyframe->properties());
 
         // Add this keyframe style to all the indicated key times
@@ -844,7 +844,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
             zeroPercentKeyframe->setKeyText("0%");
         }
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, zeroPercentKeyframe, name));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, 0, zeroPercentKeyframe, name));
         keyframeValue.addProperties(zeroPercentKeyframe->properties());
         list.insert(keyframeValue);
     }
@@ -857,7 +857,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
             hundredPercentKeyframe->setKeyText("100%");
         }
         KeyframeValue keyframeValue(1, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, hundredPercentKeyframe, name));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, 0, hundredPercentKeyframe, name));
         keyframeValue.addProperties(hundredPercentKeyframe->properties());
         list.insert(keyframeValue);
     }
@@ -1100,7 +1100,7 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
         && !(state.style()->animations() && !state.style()->animations()->isEmpty()))
         return;
 
-    state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), this));
+    state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), state.parentStyle(), this));
     if (!state.animationUpdate())
         return;
     const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();

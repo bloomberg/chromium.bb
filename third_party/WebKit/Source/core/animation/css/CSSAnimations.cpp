@@ -92,7 +92,7 @@ static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeAnimation
     return chainedTimingFunction;
 }
 
-static void resolveKeyframes(StyleResolver* resolver, Element* element, const RenderStyle& style, const AtomicString& name, TimingFunction* defaultTimingFunction,
+static void resolveKeyframes(StyleResolver* resolver, Element* element, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
     Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
@@ -110,7 +110,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
     HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, styleKeyframe, name);
+        RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
         RefPtr<Keyframe> keyframe = Keyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
@@ -344,18 +344,18 @@ const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver*
     return 0;
 }
 
-PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle& style, StyleResolver* resolver)
+PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     OwnPtr<CSSAnimationUpdate> update = adoptPtr(new CSSAnimationUpdate());
-    calculateAnimationUpdate(update.get(), element, style, resolver);
+    calculateAnimationUpdate(update.get(), element, style, parentStyle, resolver);
     calculateAnimationCompositableValues(update.get(), element);
     calculateTransitionUpdate(update.get(), element, style);
     calculateTransitionCompositableValues(update.get(), element);
     return update->isEmpty() ? nullptr : update.release();
 }
 
-void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element* element, const RenderStyle& style, StyleResolver* resolver)
+void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element* element, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
     const CSSAnimationDataList* animationDataList = style.animations();
     const CSSAnimations* cssAnimations = element->activeAnimations() ? &element->activeAnimations()->cssAnimations() : 0;
@@ -397,7 +397,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
             bool isPaused;
             RefPtr<TimingFunction> defaultTimingFunction = timingFromAnimationData(animationData, timing, isPaused);
             Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
-            resolveKeyframes(resolver, element, style, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
+            resolveKeyframes(resolver, element, style, parentStyle, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
             if (!keyframesAndTimingFunctions.isEmpty()) {
                 HashSet<RefPtr<InertAnimation> > animations;
                 for (size_t j = 0; j < keyframesAndTimingFunctions.size(); ++j) {
