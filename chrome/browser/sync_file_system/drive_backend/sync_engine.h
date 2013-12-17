@@ -91,6 +91,7 @@ class SyncEngine : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       const std::string& version_id,
       const DownloadVersionCallback& callback) OVERRIDE;
+  virtual void PromoteDemotedChanges() OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
@@ -185,6 +186,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   bool should_check_conflict_;
   bool should_check_remote_change_;
+  bool listing_remote_changes_;
   base::TimeTicks time_to_check_changes_;
 
   bool sync_enabled_;

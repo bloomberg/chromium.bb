@@ -117,6 +117,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       const std::string& version_id,
       const DownloadVersionCallback& callback) OVERRIDE;
+  virtual void PromoteDemotedChanges() OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(

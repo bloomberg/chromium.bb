@@ -225,6 +225,8 @@ class RemoteFileSyncService {
       const std::string& id,
       const DownloadVersionCallback& callback) = 0;
 
+  virtual void PromoteDemotedChanges() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);
 };

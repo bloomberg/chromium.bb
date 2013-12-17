@@ -173,6 +173,8 @@ void LocalFileSyncContext::FinalizeSnapshotSync(
   } else {
     // Abort in-memory mirror change.
     backend->change_tracker()->RemoveMirrorAndCommitChangesForURL(url);
+    if (sync_finish_status == SYNC_STATUS_FILE_BUSY)
+      backend->change_tracker()->DemoteChangesForURL(url);
   }
 
   // We've been keeping it in writing mode, so clear the writing counter
@@ -494,6 +496,42 @@ void LocalFileSyncContext::HasPendingLocalChanges(
                                        !changes.empty()));
 }
 
+void LocalFileSyncContext::PromoteDemotedChanges(
+    const GURL& origin,
+    fileapi::FileSystemContext* file_system_context) {
+  // This is initially called on UI thread and to be relayed to FILE thread.
+  DCHECK(file_system_context);
+  if (!file_system_context->default_file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    file_system_context->default_file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::PromoteDemotedChanges,
+                   this, origin, make_scoped_refptr(file_system_context)));
+    return;
+  }
+
+  SyncFileSystemBackend* backend =
+      SyncFileSystemBackend::GetBackend(file_system_context);
+  DCHECK(backend);
+  DCHECK(backend->change_tracker());
+  if (!backend->change_tracker()->PromoteDemotedChanges())
+    return;
+
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LocalFileSyncContext::UpdateChangesForOrigin,
+                 this, origin));
+}
+
+void LocalFileSyncContext::UpdateChangesForOrigin(const GURL& origin) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_io_)
+    return;
+  origins_with_pending_changes_.insert(origin);
+  ScheduleNotifyChangesUpdatedOnIOThread();
+}
+
 void LocalFileSyncContext::AddOriginChangeObserver(
     LocalOriginChangeObserver* observer) {
   origin_change_observers_.AddObserver(observer);
@@ -521,8 +559,7 @@ void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (shutdown_on_io_)
     return;
-  origins_with_pending_changes_.insert(url.origin());
-  ScheduleNotifyChangesUpdatedOnIOThread();
+  UpdateChangesForOrigin(url.origin());
   if (url_syncable_callback_.is_null() ||
       sync_status()->IsWriting(url_waiting_sync_on_io_)) {
     return;
@@ -900,8 +937,7 @@ void LocalFileSyncContext::ClearSyncFlagOnIOThread(
   }
 
   // Since a sync has finished the number of changes must have been updated.
-  origins_with_pending_changes_.insert(url.origin());
-  ScheduleNotifyChangesUpdatedOnIOThread();
+  UpdateChangesForOrigin(url.origin());
 }
 
 void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
@@ -912,8 +948,7 @@ void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
   sync_status()->EndWriting(url);
 
   // Since a sync has finished the number of changes must have been updated.
-  origins_with_pending_changes_.insert(url.origin());
-  ScheduleNotifyChangesUpdatedOnIOThread();
+  UpdateChangesForOrigin(url.origin());
 }
 
 void LocalFileSyncContext::DidApplyRemoteChange(

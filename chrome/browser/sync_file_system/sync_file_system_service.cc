@@ -425,8 +425,8 @@ void SyncFileSystemService::Initialize(
   remote_service_->AddFileStatusObserver(this);
   remote_service_->SetRemoteChangeProcessor(local_service_.get());
 
-  sync_runners_.push_back(local_syncer.release());
-  sync_runners_.push_back(remote_syncer.release());
+  local_sync_runners_.push_back(local_syncer.release());
+  remote_sync_runners_.push_back(remote_syncer.release());
 
   ProfileSyncServiceBase* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -554,6 +554,24 @@ void SyncFileSystemService::DidGetLocalChangeStatus(
       status,
       has_pending_local_changes ?
           SYNC_FILE_STATUS_HAS_PENDING_CHANGES : SYNC_FILE_STATUS_SYNCED);
+}
+
+void SyncFileSystemService::OnSyncIdle() {
+  int64 remote_changes = 0;
+  for (ScopedVector<SyncProcessRunner>::iterator iter =
+           remote_sync_runners_.begin();
+       iter != remote_sync_runners_.end(); ++iter)
+    remote_changes += (*iter)->pending_changes();
+  if (remote_changes == 0)
+    local_service_->PromoteDemotedChanges();
+
+  int64 local_changes = 0;
+  for (ScopedVector<SyncProcessRunner>::iterator iter =
+           local_sync_runners_.begin();
+       iter != local_sync_runners_.end(); ++iter)
+    local_changes += (*iter)->pending_changes();
+  if (local_changes == 0 && v2_remote_service_)
+    v2_remote_service_->PromoteDemotedChanges();
 }
 
 void SyncFileSystemService::OnRemoteServiceStateUpdated(
@@ -720,8 +738,13 @@ void SyncFileSystemService::UpdateSyncEnabledStatus(
 
 void SyncFileSystemService::RunForEachSyncRunners(
     void(SyncProcessRunner::*method)()) {
-  for (ScopedVector<SyncProcessRunner>::iterator iter = sync_runners_.begin();
-       iter != sync_runners_.end(); ++iter)
+  for (ScopedVector<SyncProcessRunner>::iterator iter =
+           local_sync_runners_.begin();
+       iter != local_sync_runners_.end(); ++iter)
+    ((*iter)->*method)();
+  for (ScopedVector<SyncProcessRunner>::iterator iter =
+           remote_sync_runners_.begin();
+       iter != remote_sync_runners_.end(); ++iter)
     ((*iter)->*method)();
 }
 
@@ -741,7 +764,7 @@ RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
     v2_remote_service_->AddServiceObserver(v2_remote_syncer.get());
     v2_remote_service_->AddFileStatusObserver(this);
     v2_remote_service_->SetRemoteChangeProcessor(local_service_.get());
-    sync_runners_.push_back(v2_remote_syncer.release());
+    remote_sync_runners_.push_back(v2_remote_syncer.release());
   }
   return v2_remote_service_.get();
 }

@@ -182,6 +182,10 @@ class LocalFileSyncContext
       const fileapi::FileSystemURL& url,
       const HasPendingLocalChangeCallback& callback);
 
+  void PromoteDemotedChanges(const GURL& origin,
+                             fileapi::FileSystemContext* file_system_context);
+  void UpdateChangesForOrigin(const GURL& origin);
+
   // They must be called on UI thread.
   void AddOriginChangeObserver(LocalOriginChangeObserver* observer);
   void RemoveOriginChangeObserver(LocalOriginChangeObserver* observer);

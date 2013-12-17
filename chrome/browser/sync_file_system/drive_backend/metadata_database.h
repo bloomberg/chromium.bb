@@ -263,6 +263,8 @@ class MetadataDatabase {
 
   void UpdateByDeletedRemoteFile(const std::string& file_id,
                                  const SyncStatusCallback& callback);
+  void UpdateByDeletedRemoteFileList(const FileIDList& file_ids,
+                                     const SyncStatusCallback& callback);
 
   // TODO(tzik): Drop |change_id| parameter.
   // Adds new FileTracker and FileMetadata.  The database must not have

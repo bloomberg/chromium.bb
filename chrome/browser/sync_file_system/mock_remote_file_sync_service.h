@@ -64,6 +64,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(const fileapi::FileSystemURL&,
                     const std::string&,
                     const DownloadVersionCallback&));
+  MOCK_METHOD0(PromoteDemotedChanges, void());
 
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;

@@ -68,6 +68,7 @@ class LocalFileChangeTracker
                           int max_urls);
 
   // Returns all changes recorded for the given |url|.
+  // Note that this also returns demoted changes.
   // This should be called after writing is disabled.
   void GetChangesForURL(const fileapi::FileSystemURL& url,
                         FileChangeList* changes);
@@ -86,11 +87,14 @@ class LocalFileChangeTracker
   // commits the updated change status to database.
   void ResetToMirrorAndCommitChangesForURL(const fileapi::FileSystemURL& url);
 
-  // Re-insert changes for the file with newer (bigger) sequence numbers,
-  // so that they won't be fetched by GetChangesForURL() soon. This could be
-  // useful for changes that have been failed to apply but would need to be
-  // retried again later.
+  // Re-inserts changes into the separate demoted_changes_ queue. They won't
+  // be fetched by GetNextChangedURLs() unless PromoteDemotedChanges() is
+  // called.
   void DemoteChangesForURL(const fileapi::FileSystemURL& url);
+
+  // Promotes all demoted changes to the normal queue. Returns true if it has
+  // promoted any changes.
+  bool PromoteDemotedChanges();
 
   // Called by FileSyncService at the startup time to restore last dirty changes
   // left after the last shutdown (if any).
@@ -159,8 +163,8 @@ class LocalFileChangeTracker
   FileChangeMap changes_;
   ChangeSeqMap change_seqs_;
 
-  // For mirrors.
-  FileChangeMap mirror_changes_;
+  FileChangeMap mirror_changes_;  // For mirrors.
+  FileChangeMap demoted_changes_;  // For demoted changes.
 
   scoped_ptr<TrackerDB> tracker_db_;
 

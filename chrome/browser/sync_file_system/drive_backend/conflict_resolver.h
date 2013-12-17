@@ -37,6 +37,8 @@ class TrackerSet;
 // ConflictResolver picks up one of them and delete others.
 class ConflictResolver : public SyncTask {
  public:
+  typedef std::vector<std::string> FileIDList;
+
   explicit ConflictResolver(SyncEngineContext* sync_context);
   virtual ~ConflictResolver();
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
@@ -54,10 +56,18 @@ class ConflictResolver : public SyncTask {
                      const std::string& file_id,
                      google_apis::GDataErrorCode error);
 
+  void UpdateFileMetadata(const std::string& file_id,
+                          const SyncStatusCallback& callback);
+  void DidGetRemoteMetadata(const std::string& file_id,
+                            const SyncStatusCallback& callback,
+                            google_apis::GDataErrorCode error,
+                            scoped_ptr<google_apis::ResourceEntry> entry);
+
   std::string target_file_id_;
   std::vector<std::string> parents_to_remove_;
 
   std::vector<FileIDAndETag> non_primary_file_ids_;
+  FileIDList deleted_file_ids_;
 
   bool IsContextReady();
   drive::DriveServiceInterface* drive_service();

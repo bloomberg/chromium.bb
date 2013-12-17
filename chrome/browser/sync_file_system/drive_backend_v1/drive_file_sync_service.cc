@@ -294,6 +294,9 @@ void DriveFileSyncService::DownloadRemoteVersion(
       base::Bind(&EmptyStatusCallback));
 }
 
+void DriveFileSyncService::PromoteDemotedChanges() {
+}
+
 void DriveFileSyncService::ApplyLocalChange(
     const FileChange& local_file_change,
     const base::FilePath& local_file_path,

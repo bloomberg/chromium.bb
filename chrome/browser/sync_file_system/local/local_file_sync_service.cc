@@ -184,6 +184,12 @@ void LocalFileSyncService::HasPendingLocalChanges(
       origin_to_contexts_[url.origin()], url, callback);
 }
 
+void LocalFileSyncService::PromoteDemotedChanges() {
+  for (OriginToContext::iterator iter = origin_to_contexts_.begin();
+       iter != origin_to_contexts_.end(); ++iter)
+    sync_context_->PromoteDemotedChanges(iter->first, iter->second);
+}
+
 void LocalFileSyncService::GetLocalFileMetadata(
     const FileSystemURL& url, const SyncFileMetadataCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
@@ -248,7 +254,7 @@ void LocalFileSyncService::ApplyRemoteChange(
     const SyncStatusCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Remote->Local] ApplyRemoteChange: %s on %s",
+            "[Remote -> Local] ApplyRemoteChange: %s on %s",
             change.DebugString().c_str(),
             url.DebugString().c_str());
 
@@ -374,7 +380,7 @@ void LocalFileSyncService::DidApplyRemoteChange(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Remote->Local] ApplyRemoteChange finished --> %s",
+            "[Remote -> Local] ApplyRemoteChange finished --> %s",
             SyncStatusCodeToString(status));
   callback.Run(status);
 }

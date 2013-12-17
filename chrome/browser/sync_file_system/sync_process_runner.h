@@ -35,6 +35,8 @@ class SyncProcessRunner {
   void Schedule();
   void ScheduleIfNotRunning();
 
+  int64 pending_changes() const { return pending_changes_; }
+
  protected:
   void OnChangesUpdated(int64 pending_changes);
   SyncFileSystemService* sync_service() { return sync_service_; }

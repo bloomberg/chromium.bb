@@ -288,17 +288,16 @@ void SyncEngine::DownloadRemoteVersion(
   callback.Run(SYNC_STATUS_FAILED, webkit_blob::ScopedFile());
 }
 
+void SyncEngine::PromoteDemotedChanges() {
+  metadata_database_->PromoteLowerPriorityTrackersToNormal();
+}
+
 void SyncEngine::ApplyLocalChange(
     const FileChange& local_change,
     const base::FilePath& local_path,
     const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Local->Remote] ApplyLocalChange: %s on %s",
-            local_change.DebugString().c_str(),
-            url.DebugString().c_str());
-
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
       this, local_metadata, local_change, local_path, url);
   task_manager_->ScheduleSyncTask(
@@ -417,6 +416,7 @@ SyncEngine::SyncEngine(
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       should_check_conflict_(true),
       should_check_remote_change_(true),
+      listing_remote_changes_(false),
       sync_enabled_(false),
       conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       network_available_(false),
@@ -506,10 +506,6 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
 void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                                      const SyncStatusCallback& callback,
                                      SyncStatusCode status) {
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Local->Remote] ApplyLocalChange finished --> %s",
-            SyncStatusCodeToString(status));
-
   if ((status == SYNC_STATUS_OK || status == SYNC_STATUS_RETRY) &&
       syncer->url().is_valid() &&
       syncer->sync_action() != SYNC_ACTION_NONE) {
@@ -531,14 +527,25 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                    base::Bind(&EmptyStatusCallback));
   }
 
+  if (syncer->needs_remote_change_listing() &&
+      !listing_remote_changes_) {
+    task_manager_->ScheduleSyncTaskAtPriority(
+        scoped_ptr<SyncTask>(new ListChangesTask(this)),
+        SyncTaskManager::PRIORITY_HIGH,
+        base::Bind(&SyncEngine::DidFetchChanges,
+                   weak_ptr_factory_.GetWeakPtr()));
+    should_check_remote_change_ = false;
+    listing_remote_changes_ = true;
+    time_to_check_changes_ =
+        base::TimeTicks::Now() +
+        base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
+  }
+
   if (status != SYNC_STATUS_OK &&
       status != SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     callback.Run(status);
     return;
   }
-
-  if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC)
-    metadata_database_->PromoteLowerPriorityTrackersToNormal();
 
   if (status == SYNC_STATUS_OK)
     should_check_conflict_ = true;
@@ -551,6 +558,9 @@ void SyncEngine::MaybeStartFetchChanges() {
     return;
 
   if (!metadata_database_)
+    return;
+
+  if (listing_remote_changes_)
     return;
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -569,6 +579,7 @@ void SyncEngine::MaybeStartFetchChanges() {
           base::Bind(&SyncEngine::DidFetchChanges,
                      weak_ptr_factory_.GetWeakPtr()))) {
     should_check_remote_change_ = false;
+    listing_remote_changes_ = true;
     time_to_check_changes_ =
         now + base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
   }
@@ -582,6 +593,7 @@ void SyncEngine::DidResolveConflict(SyncStatusCode status) {
 void SyncEngine::DidFetchChanges(SyncStatusCode status) {
   if (status == SYNC_STATUS_OK)
     should_check_conflict_ = true;
+  listing_remote_changes_ = false;
 }
 
 void SyncEngine::UpdateServiceStateFromSyncStatusCode(

@@ -145,8 +145,11 @@ void LocalFileChangeTracker::GetChangesForURL(
   DCHECK(changes);
   changes->clear();
   FileChangeMap::iterator found = changes_.find(url);
-  if (found == changes_.end())
-    return;
+  if (found == changes_.end()) {
+    found = demoted_changes_.find(url);
+    if (found == demoted_changes_.end())
+      return;
+  }
   *changes = found->second.change_list;
 }
 
@@ -154,6 +157,7 @@ void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   ClearDirtyOnDatabase(url);
   mirror_changes_.erase(url);
+  demoted_changes_.erase(url);
   FileChangeMap::iterator found = changes_.find(url);
   if (found == changes_.end())
     return;
@@ -208,9 +212,33 @@ void LocalFileChangeTracker::DemoteChangesForURL(
 
   FileChangeList::List change_list = changes.list();
   while (!change_list.empty()) {
-    RecordChange(url, change_list.front());
+    RecordChangeToChangeMaps(url, change_list.front(), 0,
+                             &demoted_changes_, NULL);
     change_list.pop_front();
   }
+}
+
+bool LocalFileChangeTracker::PromoteDemotedChanges() {
+  if (demoted_changes_.empty())
+    return false;
+  for (FileChangeMap::iterator iter = demoted_changes_.begin();
+       iter != demoted_changes_.end();) {
+    fileapi::FileSystemURL url = iter->first;
+    FileChangeList::List change_list = iter->second.change_list.list();
+    demoted_changes_.erase(iter++);
+
+    // Make sure that this URL is in no queues.
+    DCHECK(!ContainsKey(changes_, url));
+    DCHECK(!ContainsKey(demoted_changes_, url));
+    DCHECK(!ContainsKey(mirror_changes_, url));
+
+    while (!change_list.empty()) {
+      RecordChange(url, change_list.front());
+      change_list.pop_front();
+    }
+  }
+  demoted_changes_.clear();
+  return true;
 }
 
 SyncStatusCode LocalFileChangeTracker::Initialize(
@@ -238,6 +266,7 @@ void LocalFileChangeTracker::ResetForFileSystem(
       continue;
     }
     mirror_changes_.erase(url);
+    demoted_changes_.erase(url);
     change_seqs_.erase(iter->second.change_seq);
     changes_.erase(iter++);
 
@@ -362,6 +391,10 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 void LocalFileChangeTracker::RecordChange(
     const FileSystemURL& url, const FileChange& change) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  if (ContainsKey(demoted_changes_, url)) {
+    RecordChangeToChangeMaps(url, change, 0, &demoted_changes_, NULL);
+    return;
+  }
   int change_seq = current_change_seq_++;
   RecordChangeToChangeMaps(url, change, change_seq, &changes_, &change_seqs_);
   if (ContainsKey(mirror_changes_, url))

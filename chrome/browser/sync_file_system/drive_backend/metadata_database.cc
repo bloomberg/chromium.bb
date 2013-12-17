@@ -894,6 +894,19 @@ void MetadataDatabase::UpdateByDeletedRemoteFile(
   WriteToDatabase(batch.Pass(), callback);
 }
 
+void MetadataDatabase::UpdateByDeletedRemoteFileList(
+    const FileIDList& file_ids,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  for (FileIDList::const_iterator itr = file_ids.begin();
+       itr != file_ids.end(); ++itr) {
+    scoped_ptr<FileMetadata> file(
+        CreateDeletedFileMetadata(GetLargestKnownChangeID(), *itr));
+    UpdateByFileMetadata(FROM_HERE, file.Pass(), batch.get());
+  }
+  WriteToDatabase(batch.Pass(), callback);
+}
+
 void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
     int64 parent_tracker_id,
     const google_apis::FileResource& resource,

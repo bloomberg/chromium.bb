@@ -116,6 +116,8 @@ class LocalFileSyncService
       const fileapi::FileSystemURL& url,
       const HasPendingLocalChangeCallback& callback);
 
+  void PromoteDemotedChanges();
+
   // Returns the metadata of a remote file pointed by |url|.
   virtual void GetLocalFileMetadata(
       const fileapi::FileSystemURL& url,
@@ -149,6 +151,7 @@ class LocalFileSyncService
   void SetOriginEnabled(const GURL& origin, bool enabled);
 
  private:
+  typedef std::map<GURL, fileapi::FileSystemContext*> OriginToContext;
   friend class OriginChangeMapTest;
 
   class OriginChangeMap {
@@ -222,7 +225,7 @@ class LocalFileSyncService
 
   // Origin to context map. (Assuming that as far as we're in the same
   // profile single origin wouldn't belong to multiple FileSystemContexts.)
-  std::map<GURL, fileapi::FileSystemContext*> origin_to_contexts_;
+  OriginToContext origin_to_contexts_;
 
   // Origins which have pending changes but have not been initialized yet.
   // (Used only for handling dirty files left in the local tracker database

@@ -179,18 +179,39 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   EXPECT_EQ(URL(kPath5), urls_to_process[3]);
   EXPECT_EQ(URL(kPath4), urls_to_process[4]);
 
-  // Demote changes for kPath1.
-  change_tracker()->DemoteChangesForURL(URL(kPath1));
+  // No changes to promote yet, we've demoted no changes.
+  EXPECT_FALSE(change_tracker()->PromoteDemotedChanges());
 
-  // Now the order must be changed again.
+  // Demote changes for kPath1 and kPath3.
+  change_tracker()->DemoteChangesForURL(URL(kPath1));
+  change_tracker()->DemoteChangesForURL(URL(kPath3));
+
+  // Now we'll get no changes for kPath1 and kPath3 (it's in a separate queue).
+  urls_to_process.clear();
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+  ASSERT_EQ(3U, urls_to_process.size());
+  EXPECT_EQ(URL(kPath2), urls_to_process[0]);
+  EXPECT_EQ(URL(kPath5), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath4), urls_to_process[2]);
+
+  // Promote changes.
+  EXPECT_TRUE(change_tracker()->PromoteDemotedChanges());
+
+  // Now we should have kPath1 and kPath3.
   urls_to_process.clear();
   change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
   ASSERT_EQ(5U, urls_to_process.size());
   EXPECT_EQ(URL(kPath2), urls_to_process[0]);
-  EXPECT_EQ(URL(kPath3), urls_to_process[1]);
-  EXPECT_EQ(URL(kPath5), urls_to_process[2]);
-  EXPECT_EQ(URL(kPath4), urls_to_process[3]);
-  EXPECT_EQ(URL(kPath1), urls_to_process[4]);
+  EXPECT_EQ(URL(kPath5), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath4), urls_to_process[2]);
+  EXPECT_TRUE(URL(kPath1) == urls_to_process[3] ||
+              URL(kPath1) == urls_to_process[4]);
+  EXPECT_TRUE(URL(kPath3) == urls_to_process[3] ||
+              URL(kPath3) == urls_to_process[4]);
+
+  // No changes to promote any more.
+  EXPECT_FALSE(change_tracker()->PromoteDemotedChanges());
+
 
   VerifyAndClearChange(URL(kPath1),
                FileChange(FileChange::FILE_CHANGE_DELETE,

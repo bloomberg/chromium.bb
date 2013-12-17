@@ -94,6 +94,8 @@ void SyncProcessRunner::OnChangesUpdated(
     int64 pending_changes) {
   DCHECK_GE(pending_changes, 0);
   if (pending_changes_ != pending_changes) {
+    if (pending_changes == 0)
+      sync_service()->OnSyncIdle();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[%s] pending_changes updated: %" PRId64,
               name_.c_str(), pending_changes);

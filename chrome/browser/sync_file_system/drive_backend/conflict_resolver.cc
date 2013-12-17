@@ -5,16 +5,19 @@
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 
 #include "base/callback.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
+#include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace sync_file_system {
@@ -53,6 +56,11 @@ void ConflictResolver::Run(const SyncStatusCallback& callback) {
       return;
     }
 
+    util::Log(logging::LOG_VERBOSE, FROM_HERE,
+              "[ConflictResolver] Detected multi-parent trackers "
+              "(active tracker_id=%" PRId64 ")",
+              trackers.active_tracker()->tracker_id());
+
     DCHECK(trackers.has_active());
     for (TrackerSet::const_iterator itr = trackers.begin();
          itr != trackers.end(); ++itr) {
@@ -77,14 +85,23 @@ void ConflictResolver::Run(const SyncStatusCallback& callback) {
   if (metadata_database()->GetConflictingTrackers(&trackers)) {
     target_file_id_ = PickPrimaryFile(trackers);
     DCHECK(!target_file_id_.empty());
+    int64 primary_tracker_id = -1;
     for (TrackerSet::const_iterator itr = trackers.begin();
          itr != trackers.end(); ++itr) {
       const FileTracker& tracker = **itr;
       if (tracker.file_id() != target_file_id_) {
         non_primary_file_ids_.push_back(
             std::make_pair(tracker.file_id(), tracker.synced_details().etag()));
+      } else {
+        primary_tracker_id = tracker.tracker_id();
       }
     }
+
+    util::Log(logging::LOG_VERBOSE, FROM_HERE,
+              "[ConflictResolver] Detected %" PRIuS " conflicting trackers "
+              "(primary tracker_id=%" PRId64 ")",
+              non_primary_file_ids_.size(), primary_tracker_id);
+
     RemoveNonPrimaryFiles(callback);
     return;
   }
@@ -105,6 +122,9 @@ void ConflictResolver::DetachFromNonPrimaryParents(
       base::Bind(&ConflictResolver::DidDetachFromParent,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "[ConflictResolver] Detach %s from %s",
+            target_file_id_.c_str(), parent_folder_id.c_str());
 }
 
 void ConflictResolver::DidDetachFromParent(const SyncStatusCallback& callback,
@@ -191,7 +211,12 @@ void ConflictResolver::RemoveNonPrimaryFiles(
   std::string file_id = non_primary_file_ids_.back().first;
   std::string etag = non_primary_file_ids_.back().second;
   non_primary_file_ids_.pop_back();
+
+  deleted_file_ids_.push_back(file_id);
   DCHECK_NE(target_file_id_, file_id);
+
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "[ConflictResolver] Remove non-primary file %s", file_id.c_str());
 
   // TODO(tzik): Check if the file is a folder, and merge its contents into
   // the folder identified by |target_file_id_|.
@@ -207,7 +232,7 @@ void ConflictResolver::DidRemoveFile(const SyncStatusCallback& callback,
                                      google_apis::GDataErrorCode error) {
   if (error == google_apis::HTTP_PRECONDITION ||
       error == google_apis::HTTP_CONFLICT) {
-    callback.Run(SYNC_STATUS_RETRY);
+    UpdateFileMetadata(file_id, callback);
     return;
   }
 
@@ -217,17 +242,55 @@ void ConflictResolver::DidRemoveFile(const SyncStatusCallback& callback,
     return;
   }
 
+  deleted_file_ids_.push_back(file_id);
   if (!non_primary_file_ids_.empty()) {
     RemoveNonPrimaryFiles(callback);
     return;
   }
 
-  callback.Run(SYNC_STATUS_OK);
+  metadata_database()->UpdateByDeletedRemoteFileList(
+      deleted_file_ids_, callback);
 }
 
 bool ConflictResolver::IsContextReady() {
   return sync_context_->GetDriveService() &&
       sync_context_->GetMetadataDatabase();
+}
+
+void ConflictResolver::UpdateFileMetadata(
+    const std::string& file_id,
+    const SyncStatusCallback& callback) {
+  drive_service()->GetResourceEntry(
+      file_id,
+      base::Bind(&ConflictResolver::DidGetRemoteMetadata,
+                 weak_ptr_factory_.GetWeakPtr(), file_id, callback));
+}
+
+void ConflictResolver::DidGetRemoteMetadata(
+    const std::string& file_id,
+    const SyncStatusCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceEntry> entry) {
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
+    callback.Run(status);
+    return;
+  }
+
+  if (error != google_apis::HTTP_NOT_FOUND) {
+    metadata_database()->UpdateByDeletedRemoteFile(file_id, callback);
+    return;
+  }
+
+  if (!entry) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  metadata_database()->UpdateByFileResource(
+      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      callback);
 }
 
 drive::DriveServiceInterface* ConflictResolver::drive_service() {

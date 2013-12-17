@@ -49,6 +49,9 @@ class LocalToRemoteSyncer : public SyncTask {
   const fileapi::FileSystemURL& url() const { return url_; }
   const base::FilePath& target_path() const { return target_path_; }
   SyncAction sync_action() const { return sync_action_; }
+  bool needs_remote_change_listing() const {
+    return needs_remote_change_listing_;
+  }
 
  private:
   void SyncCompleted(const SyncStatusCallback& callback,
@@ -112,6 +115,8 @@ class LocalToRemoteSyncer : public SyncTask {
   scoped_ptr<FileTracker> remote_file_tracker_;
   scoped_ptr<FileTracker> remote_parent_folder_tracker_;
   base::FilePath target_path_;
+
+  bool needs_remote_change_listing_;
 
   scoped_ptr<FolderCreator> folder_creator_;
 

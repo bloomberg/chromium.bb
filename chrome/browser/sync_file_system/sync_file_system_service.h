@@ -76,6 +76,8 @@ class SyncFileSystemService
 
   LocalChangeProcessor* GetLocalChangeProcessor(const GURL& origin);
 
+  void OnSyncIdle();
+
  private:
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
@@ -159,7 +161,8 @@ class SyncFileSystemService
   scoped_ptr<RemoteFileSyncService> v2_remote_service_;
 
   // Holds all SyncProcessRunners.
-  ScopedVector<SyncProcessRunner> sync_runners_;
+  ScopedVector<SyncProcessRunner> local_sync_runners_;
+  ScopedVector<SyncProcessRunner> remote_sync_runners_;
 
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;
