@@ -1,24 +1,28 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_BLACKLIST_H_
 #define CHROME_BROWSER_EXTENSIONS_BLACKLIST_H_
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/extensions/blacklist_state.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 namespace extensions {
 
+class BlacklistStateFetcher;
 class Extension;
 class ExtensionPrefs;
 
@@ -51,16 +55,6 @@ class Blacklist : public content::NotificationObserver,
     scoped_refptr<SafeBrowsingDatabaseManager> original_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
-  };
-
-  // The numeric values here match the values of the respective enum in proto
-  // received from SafeBrowsing server.
-  enum BlacklistState {
-    NOT_BLACKLISTED = 0,
-    BLACKLISTED_MALWARE = 1,
-    BLACKLISTED_SECURITY_VULNERABILITY = 2,
-    BLACKLISTED_CWS_POLICY_VIOLATION = 3,
-    BLACKLISTED_POTENTIALLY_UNWANTED = 4
   };
 
   typedef std::map<std::string, BlacklistState> BlacklistStateMap;
@@ -99,6 +93,9 @@ class Blacklist : public content::NotificationObserver,
   void IsBlacklisted(const std::string& extension_id,
                      const IsBlacklistedCallback& callback);
 
+  // Used to mock BlacklistStateFetcher in unit tests.
+  void SetBlacklistStateFetcherForTest(BlacklistStateFetcher* fetcher);
+
   // Adds/removes an observer to the blacklist.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -117,8 +114,10 @@ class Blacklist : public content::NotificationObserver,
   void GetBlacklistStateForIDs(const GetBlacklistedIDsCallback& callback,
                                const std::set<std::string>& blacklisted_ids);
 
-  void RequestExtensionsBlacklistState(const std::set<std::string> ids,
-                                       base::Callback<void()> callback);
+  void RequestExtensionsBlacklistState(const std::set<std::string>& ids,
+                                       const base::Callback<void()>& callback);
+
+  void OnBlacklistStateReceived(const std::string& id, BlacklistState state);
 
   void ReturnBlacklistStateMap(const GetBlacklistedIDsCallback& callback,
                                const std::set<std::string>& blacklisted_ids);
@@ -127,7 +126,20 @@ class Blacklist : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
+  // The cached BlacklistState's, received from BlacklistStateFetcher.
   BlacklistStateMap blacklist_state_cache_;
+
+  scoped_ptr<BlacklistStateFetcher> state_fetcher_;
+
+  typedef std::list<std::pair<std::vector<std::string>,
+                              base::Callback<void()> > >
+      StateRequestsList;
+
+  // The list of ongoing requests for blacklist states that couldn't be
+  // served directly from the cache. A new request is created in
+  // GetBlacklistedIDs and deleted when the callback is called from
+  // OnBlacklistStateReceived.
+  StateRequestsList state_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(Blacklist);
 };

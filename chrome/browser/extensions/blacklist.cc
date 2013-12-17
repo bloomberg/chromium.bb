@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -118,8 +119,7 @@ class SafeBrowsingClientImpl
 void CheckOneExtensionState(
     const Blacklist::IsBlacklistedCallback& callback,
     const Blacklist::BlacklistStateMap& state_map) {
-  callback.Run(state_map.empty() ? Blacklist::NOT_BLACKLISTED
-                                 : state_map.begin()->second);
+  callback.Run(state_map.empty() ? NOT_BLACKLISTED : state_map.begin()->second);
 }
 
 void GetMalwareFromBlacklistStateMap(
@@ -128,7 +128,10 @@ void GetMalwareFromBlacklistStateMap(
   std::set<std::string> malware;
   for (Blacklist::BlacklistStateMap::const_iterator it = state_map.begin();
        it != state_map.end(); ++it) {
-    if (it->second == Blacklist::BLACKLISTED_MALWARE)
+    // TODO(oleg): UNKNOWN is treated as MALWARE for backwards compatibility.
+    // In future GetMalwareIDs will be removed and the caller will have to
+    // deal with BLACKLISTED_UNKNOWN state returned from GetBlacklistedIDs.
+    if (it->second == BLACKLISTED_MALWARE || it->second == BLACKLISTED_UNKNOWN)
       malware.insert(it->first);
   }
   callback.Run(malware);
@@ -223,7 +226,9 @@ void Blacklist::GetBlacklistStateForIDs(
        it != blacklisted_ids.end(); ++it) {
     BlacklistStateMap::const_iterator cache_it =
         blacklist_state_cache_.find(*it);
-    if (cache_it == blacklist_state_cache_.end())
+    if (cache_it == blacklist_state_cache_.end() ||
+        cache_it->second == BLACKLISTED_UNKNOWN)  // Do not return UNKNOWN
+                                                  // from cache, retry request.
       ids_unknown_state.insert(*it);
     else
       extensions_state[*it] = cache_it->second;
@@ -261,17 +266,55 @@ void Blacklist::ReturnBlacklistStateMap(
 }
 
 void Blacklist::RequestExtensionsBlacklistState(
-    const std::set<std::string> ids, base::Callback<void()> callback) {
+    const std::set<std::string>& ids, const base::Callback<void()>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // This is a stub. The request will be made here, but the server is not up
-  // yet. For compatibility with current blacklist logic, mark all extensions
-  // as malicious.
+  if (!state_fetcher_)
+    state_fetcher_.reset(new BlacklistStateFetcher());
+
+  state_requests_.push_back(
+      make_pair(std::vector<std::string>(ids.begin(), ids.end()), callback));
   for (std::set<std::string>::const_iterator it = ids.begin();
        it != ids.end();
        ++it) {
-    blacklist_state_cache_[*it] = BLACKLISTED_MALWARE;
+    state_fetcher_->Request(
+        *it,
+        base::Bind(&Blacklist::OnBlacklistStateReceived, AsWeakPtr(), *it));
   }
-  callback.Run();
+}
+
+void Blacklist::OnBlacklistStateReceived(const std::string& id,
+                                         BlacklistState state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  blacklist_state_cache_[id] = state;
+
+  // Go through the opened requests and call the callbacks for those requests
+  // for which we already got all the required blacklist states.
+  StateRequestsList::iterator requests_it = state_requests_.begin();
+  while (requests_it != state_requests_.end()) {
+    const std::vector<std::string>& ids = requests_it->first;
+
+    bool have_all_in_cache = true;
+    for (std::vector<std::string>::const_iterator ids_it = ids.begin();
+         ids_it != ids.end();
+         ++ids_it) {
+      if (!ContainsKey(blacklist_state_cache_, *ids_it)) {
+        have_all_in_cache = false;
+        break;
+      }
+    }
+
+    if (have_all_in_cache) {
+      requests_it->second.Run();
+      requests_it = state_requests_.erase(requests_it); // returns next element
+    } else {
+      ++requests_it;
+    }
+  }
+}
+
+void Blacklist::SetBlacklistStateFetcherForTest(
+    BlacklistStateFetcher* fetcher) {
+  state_fetcher_.reset(fetcher);
 }
 
 void Blacklist::AddObserver(Observer* observer) {

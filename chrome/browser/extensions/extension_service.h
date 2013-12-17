@@ -393,7 +393,7 @@ class ExtensionService
       const extensions::Extension* extension,
       const syncer::StringOrdinal& page_ordinal,
       bool has_requirement_errors,
-      extensions::Blacklist::BlacklistState blacklist_state,
+      extensions::BlacklistState blacklist_state,
       bool wait_for_idle);
 
   // Checks for delayed installation for all pending installs.
@@ -655,7 +655,7 @@ class ExtensionService
   void AddNewOrUpdatedExtension(
       const extensions::Extension* extension,
       extensions::Extension::State initial_state,
-      extensions::Blacklist::BlacklistState blacklist_state,
+      extensions::BlacklistState blacklist_state,
       const syncer::StringOrdinal& page_ordinal);
 
   // Handles sending notification that |extension| was loaded.

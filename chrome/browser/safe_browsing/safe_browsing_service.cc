@@ -336,13 +336,7 @@ void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
   url_request_context_.reset();
 }
 
-void SafeBrowsingService::StartOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (enabled_)
-    return;
-  enabled_ = true;
-
+SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   SafeBrowsingProtocolConfig config;
   // On Windows, get the safe browsing client name from the browser
   // distribution classes in installer util. These classes don't yet have
@@ -369,6 +363,18 @@ void SafeBrowsingService::StartOnIOThread(
     config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
     config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
   }
+
+  return config;
+}
+
+void SafeBrowsingService::StartOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (enabled_)
+    return;
+  enabled_ = true;
+
+  SafeBrowsingProtocolConfig config = GetProtocolConfig();
 
 #if defined(FULL_SAFE_BROWSING)
   DCHECK(database_manager_.get());

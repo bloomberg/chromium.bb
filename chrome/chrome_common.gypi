@@ -735,6 +735,7 @@
       'type': 'static_library',
       'sources': [
         'common/safe_browsing/client_model.proto',
+        'common/safe_browsing/crx_info.proto',
         'common/safe_browsing/csd.proto'
       ],
       'variables': {

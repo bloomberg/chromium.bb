@@ -234,7 +234,7 @@ class CrxInstaller
 
   // Runs on the UI thread. Callback from Blacklist.
   void OnBlacklistChecked(
-      extensions::Blacklist::BlacklistState blacklist_state);
+      extensions::BlacklistState blacklist_state);
 
   // Runs on the UI thread. Confirms the installation to the ExtensionService.
   void ConfirmInstall();
@@ -390,7 +390,7 @@ class CrxInstaller
 
   bool has_requirement_errors_;
 
-  extensions::Blacklist::BlacklistState blacklist_state_;
+  extensions::BlacklistState blacklist_state_;
 
   bool install_wait_for_idle_;
 

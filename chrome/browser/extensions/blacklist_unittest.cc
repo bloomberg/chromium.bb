@@ -5,10 +5,13 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 #include "chrome/browser/extensions/test_blacklist.h"
+#include "chrome/browser/extensions/test_blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,8 +38,8 @@ std::set<std::string> Set(const std::string& a,
 }
 std::set<std::string> Set(const std::string& a,
                           const std::string& b,
-                          const std::string& d,
-                          const std::string& c) {
+                          const std::string& c,
+                          const std::string& d) {
   std::set<std::string> set = Set(a, b, c);
   set.insert(d);
   return set;
@@ -72,9 +75,39 @@ class BlacklistTest : public testing::Test {
   Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db_;
 };
 
-void Assign(std::set<std::string> *to, const std::set<std::string>& from) {
+class BlacklistStateFetcherMock : public BlacklistStateFetcher {
+ public:
+  virtual void Request(const std::string& id,
+                       const RequestCallback& callback) OVERRIDE {
+    request_count_++;
+
+    BlacklistState result = NOT_BLACKLISTED;
+    if (ContainsKey(states_, id))
+      result = states_[id];
+
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                                base::Bind(callback, result));
+  }
+
+  void SetState(const std::string& id, BlacklistState state) {
+    states_[id] = state;
+  }
+
+  int request_count() const {
+    return request_count_;
+  }
+
+ private:
+  std::map<std::string, BlacklistState> states_;
+  int request_count_;
+};
+
+template<typename T>
+void Assign(T *to, const T& from) {
   *to = from;
 }
+
+}  // namespace
 
 TEST_F(BlacklistTest, OnlyIncludesRequestedIDs) {
   std::string a = AddExtension("a");
@@ -83,16 +116,21 @@ TEST_F(BlacklistTest, OnlyIncludesRequestedIDs) {
 
   Blacklist blacklist(prefs());
   TestBlacklist tester(&blacklist);
+  BlacklistStateFetcherMock* fetcher = new BlacklistStateFetcherMock();
+  fetcher->SetState(a, BLACKLISTED_MALWARE);
+  fetcher->SetState(b, BLACKLISTED_MALWARE);
+  blacklist.SetBlacklistStateFetcherForTest(fetcher);
 
   blacklist_db()->Enable();
   blacklist_db()->SetUnsafe(a, b);
 
-  EXPECT_EQ(Blacklist::BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
-  EXPECT_EQ(Blacklist::BLACKLISTED_MALWARE, tester.GetBlacklistState(b));
-  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(c));
+  EXPECT_EQ(BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
+  EXPECT_EQ(BLACKLISTED_MALWARE, tester.GetBlacklistState(b));
+  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(c));
 
   std::set<std::string> blacklisted_ids;
-  blacklist.GetMalwareIDs(Set(a, c), base::Bind(&Assign, &blacklisted_ids));
+  blacklist.GetMalwareIDs(
+      Set(a, c), base::Bind(&Assign<std::set<std::string> >, &blacklisted_ids));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(Set(a), blacklisted_ids);
@@ -103,21 +141,24 @@ TEST_F(BlacklistTest, SafeBrowsing) {
 
   Blacklist blacklist(prefs());
   TestBlacklist tester(&blacklist);
+  BlacklistStateFetcherMock* fetcher = new BlacklistStateFetcherMock();
+  fetcher->SetState(a, BLACKLISTED_MALWARE);
+  blacklist.SetBlacklistStateFetcherForTest(fetcher);
 
-  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(a));
+  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
 
   blacklist_db()->SetUnsafe(a);
   // The manager is still disabled at this point, so it won't be blacklisted.
-  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(a));
+  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
 
   blacklist_db()->Enable().NotifyUpdate();
   base::RunLoop().RunUntilIdle();
   // Now it should be.
-  EXPECT_EQ(Blacklist::BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
+  EXPECT_EQ(BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
 
   blacklist_db()->ClearUnsafe().NotifyUpdate();
   // Safe browsing blacklist empty, now enabled.
-  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(a));
+  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
 }
 
 // Tests that Blacklist clears the old prefs blacklist on startup.
@@ -138,7 +179,7 @@ TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
   EXPECT_EQ(Set(a, c, d), prefs()->GetBlacklistedExtensions());
 
   Blacklist blacklist(prefs());
-  TestBlacklist tester(&blacklist);
+  blacklist.SetBlacklistStateFetcherForTest(new BlacklistStateFetcherMock());
 
   // Blacklist has been cleared. Only the installed extension "a" left.
   EXPECT_EQ(Set(a), prefs()->GetBlacklistedExtensions());
@@ -150,7 +191,8 @@ TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
   // concern of somebody else (currently, ExtensionService).
   std::set<std::string> blacklisted_ids;
   blacklist.GetMalwareIDs(Set(a, b, c, d),
-                          base::Bind(&Assign, &blacklisted_ids));
+                          base::Bind(&Assign<std::set<std::string> >,
+                                     &blacklisted_ids));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::set<std::string>(), blacklisted_ids);
 
@@ -161,5 +203,105 @@ TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
   EXPECT_FALSE(prefs()->IsExtensionBlacklisted(d));
 }
 
-}  // namespace
+// Test getting different blacklist states from Blacklist.
+TEST_F(BlacklistTest, GetBlacklistStates) {
+  Blacklist blacklist(prefs());
+
+  std::string a = AddExtension("a");
+  std::string b = AddExtension("b");
+  std::string c = AddExtension("c");
+  std::string d = AddExtension("d");
+  std::string e = AddExtension("e");
+
+  blacklist_db()->Enable();
+  blacklist_db()->SetUnsafe(a, b, c, d);
+
+  // Will be deleted by blacklist destructor.
+  BlacklistStateFetcherMock* fetcher = new BlacklistStateFetcherMock();
+  fetcher->SetState(a, BLACKLISTED_MALWARE);
+  fetcher->SetState(b, BLACKLISTED_SECURITY_VULNERABILITY);
+  fetcher->SetState(c, BLACKLISTED_CWS_POLICY_VIOLATION);
+  fetcher->SetState(d, BLACKLISTED_POTENTIALLY_UNWANTED);
+  blacklist.SetBlacklistStateFetcherForTest(fetcher);
+
+  Blacklist::BlacklistStateMap states_abc;
+  Blacklist::BlacklistStateMap states_bcd;
+  blacklist.GetBlacklistedIDs(Set(a, b, c, e),
+                              base::Bind(&Assign<Blacklist::BlacklistStateMap>,
+                                         &states_abc));
+  blacklist.GetBlacklistedIDs(Set(b, c, d, e),
+                              base::Bind(&Assign<Blacklist::BlacklistStateMap>,
+                                         &states_bcd));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(BLACKLISTED_MALWARE, states_abc[a]);
+  EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, states_abc[b]);
+  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states_abc[c]);
+  EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, states_bcd[b]);
+  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states_bcd[c]);
+  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_bcd[d]);
+  EXPECT_EQ(states_abc.end(), states_abc.find(e));
+  EXPECT_EQ(states_bcd.end(), states_bcd.find(e));
+
+  int old_request_count = fetcher->request_count();
+  Blacklist::BlacklistStateMap states_ad;
+  blacklist.GetBlacklistedIDs(Set(a, d, e),
+                              base::Bind(&Assign<Blacklist::BlacklistStateMap>,
+                                         &states_ad));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(BLACKLISTED_MALWARE, states_ad[a]);
+  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_ad[d]);
+  EXPECT_EQ(states_ad.end(), states_ad.find(e));
+  EXPECT_EQ(old_request_count, fetcher->request_count());
+}
+
+// Test both Blacklist and BlacklistStateFetcher by requesting the blacklist
+// states, sending fake requests and parsing the responses.
+TEST_F(BlacklistTest, FetchBlacklistStates) {
+  Blacklist blacklist(prefs());
+
+  std::string a = AddExtension("a");
+  std::string b = AddExtension("b");
+  std::string c = AddExtension("c");
+
+  blacklist_db()->Enable();
+  blacklist_db()->SetUnsafe(a, b);
+
+  // Prepare real fetcher.
+  BlacklistStateFetcher* fetcher = new BlacklistStateFetcher();
+  TestBlacklistStateFetcher fetcher_tester(fetcher);
+  blacklist.SetBlacklistStateFetcherForTest(fetcher);
+
+  fetcher_tester.SetBlacklistVerdict(
+      a, ClientCRXListInfoResponse_Verdict_CWS_POLICY_VIOLATION);
+  fetcher_tester.SetBlacklistVerdict(
+      b, ClientCRXListInfoResponse_Verdict_POTENTIALLY_UNWANTED);
+
+  Blacklist::BlacklistStateMap states;
+  blacklist.GetBlacklistedIDs(
+      Set(a, b, c), base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states));
+  base::RunLoop().RunUntilIdle();
+
+   // Two fetchers should be created.
+  EXPECT_TRUE(fetcher_tester.HandleFetcher(0));
+  EXPECT_TRUE(fetcher_tester.HandleFetcher(1));
+
+  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states[a]);
+  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states[b]);
+  EXPECT_EQ(states.end(), states.find(c));
+
+  Blacklist::BlacklistStateMap cached_states;
+
+  blacklist.GetBlacklistedIDs(
+      Set(a, b, c), base::Bind(&Assign<Blacklist::BlacklistStateMap>,
+                               &cached_states));
+  base::RunLoop().RunUntilIdle();
+
+  // No new fetchers.
+  EXPECT_FALSE(fetcher_tester.HandleFetcher(2));
+  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, cached_states[a]);
+  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, cached_states[b]);
+  EXPECT_EQ(cached_states.end(), cached_states.find(c));
+}
+
 }  // namespace extensions

@@ -1822,7 +1822,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
 
     AddNewOrUpdatedExtension(extension,
                              Extension::ENABLED_COMPONENT,
-                             extensions::Blacklist::NOT_BLACKLISTED,
+                             extensions::NOT_BLACKLISTED,
                              syncer::StringOrdinal());
     return;
   }
@@ -2076,7 +2076,7 @@ void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,
     bool has_requirement_errors,
-    extensions::Blacklist::BlacklistState blacklist_state,
+    extensions::BlacklistState blacklist_state,
     bool wait_for_idle) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2128,7 +2128,7 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->ClearDisableReasons(id);
   }
 
-  if (blacklist_state == extensions::Blacklist::BLACKLISTED_MALWARE) {
+  if (blacklist_state == extensions::BLACKLISTED_MALWARE) {
     // Installation of a blacklisted extension can happen from sync, policy,
     // etc, where to maintain consistency we need to install it, just never
     // load it (see AddExtension). Usually it should be the job of callers to
@@ -2161,7 +2161,7 @@ void ExtensionService::OnExtensionInstalled(
   const Extension::State initial_state =
       initial_enable ? Extension::ENABLED : Extension::DISABLED;
   const bool blacklisted_for_malware =
-      blacklist_state == extensions::Blacklist::BLACKLISTED_MALWARE;
+      blacklist_state == extensions::BLACKLISTED_MALWARE;
   if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
     extension_prefs_->SetDelayedInstallInfo(
         extension,
@@ -2209,11 +2209,11 @@ void ExtensionService::OnExtensionInstalled(
 void ExtensionService::AddNewOrUpdatedExtension(
     const Extension* extension,
     Extension::State initial_state,
-    extensions::Blacklist::BlacklistState blacklist_state,
+    extensions::BlacklistState blacklist_state,
     const syncer::StringOrdinal& page_ordinal) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const bool blacklisted_for_malware =
-      blacklist_state == extensions::Blacklist::BLACKLISTED_MALWARE;
+      blacklist_state == extensions::BLACKLISTED_MALWARE;
   extension_prefs_->OnExtensionInstalled(extension,
                                          initial_state,
                                          blacklisted_for_malware,

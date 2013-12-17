@@ -20,7 +20,7 @@ class TestBlacklist {
 
   Blacklist* blacklist() { return blacklist_; }
 
-  Blacklist::BlacklistState GetBlacklistState(const std::string& extension_id);
+  BlacklistState GetBlacklistState(const std::string& extension_id);
 
  private:
   Blacklist* blacklist_;

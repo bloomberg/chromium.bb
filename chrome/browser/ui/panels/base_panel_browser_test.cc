@@ -572,7 +572,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
       OnExtensionInstalled(extension.get(),
                            syncer::StringOrdinal(),
                            false /* no requirement errors */,
-                           extensions::Blacklist::NOT_BLACKLISTED,
+                           extensions::NOT_BLACKLISTED,
                            false /* don't wait for idle */);
   return extension;
 }

@@ -126,7 +126,7 @@ CrxInstaller::CrxInstaller(
       did_handle_successfully_(true),
       error_on_unsupported_requirements_(false),
       has_requirement_errors_(false),
-      blacklist_state_(extensions::Blacklist::NOT_BLACKLISTED),
+      blacklist_state_(extensions::NOT_BLACKLISTED),
       install_wait_for_idle_(true),
       update_from_settings_page_(false),
       installer_(service_weak->profile()) {
@@ -519,14 +519,15 @@ void CrxInstaller::OnRequirementsChecked(
 }
 
 void CrxInstaller::OnBlacklistChecked(
-    extensions::Blacklist::BlacklistState blacklist_state) {
+    extensions::BlacklistState blacklist_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!service_weak_)
     return;
 
   blacklist_state_ = blacklist_state;
 
-  if (blacklist_state_ == extensions::Blacklist::BLACKLISTED_MALWARE &&
+  if ((blacklist_state_ == extensions::BLACKLISTED_MALWARE ||
+       blacklist_state_ == extensions::BLACKLISTED_UNKNOWN) &&
       !allow_silent_install_) {
     // User tried to install a blacklisted extension. Show an error and
     // refuse to install it.

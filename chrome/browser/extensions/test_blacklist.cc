@@ -19,15 +19,15 @@ TestBlacklist::TestBlacklist(Blacklist* blacklist)
 
 namespace {
 
-void Assign(Blacklist::BlacklistState *out, Blacklist::BlacklistState in) {
+void Assign(BlacklistState *out, BlacklistState in) {
   *out = in;
 }
 
 }  // namespace
 
-Blacklist::BlacklistState TestBlacklist::GetBlacklistState(
+BlacklistState TestBlacklist::GetBlacklistState(
     const std::string& extension_id) {
-  Blacklist::BlacklistState blacklist_state;
+  BlacklistState blacklist_state;
   blacklist_->IsBlacklisted(extension_id,
                             base::Bind(&Assign, &blacklist_state));
   base::RunLoop().RunUntilIdle();

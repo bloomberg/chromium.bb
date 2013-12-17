@@ -35,6 +35,10 @@ class FakeSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a,
                                              const std::string& b,
                                              const std::string& c);
+  FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a,
+                                             const std::string& b,
+                                             const std::string& c,
+                                             const std::string& d);
 
   // Send the update notification.
   void NotifyUpdate();

@@ -58,6 +58,14 @@ FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::SetUnsafe(
   return *this;
 }
 
+FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::SetUnsafe(
+    const std::string& a, const std::string& b, const std::string& c,
+    const std::string& d) {
+  SetUnsafe(a, b, c);
+  unsafe_ids_.insert(d);
+  return *this;
+}
+
 void FakeSafeBrowsingDatabaseManager::NotifyUpdate() {
   SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(true);
 }

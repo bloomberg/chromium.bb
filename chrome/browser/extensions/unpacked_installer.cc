@@ -296,7 +296,7 @@ void UnpackedInstaller::ConfirmInstall() {
       installer_.extension().get(),
       syncer::StringOrdinal(),
       false /* no requirement errors */,
-      Blacklist::NOT_BLACKLISTED,
+      NOT_BLACKLISTED,
       false /* don't wait for idle */);
 }
 

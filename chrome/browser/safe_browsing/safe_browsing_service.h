@@ -24,6 +24,7 @@
 
 class PrefChangeRegistrar;
 class PrefService;
+struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingPingManager;
 class SafeBrowsingProtocolManager;
@@ -78,6 +79,9 @@ class SafeBrowsingService
   // Called on UI thread to decide if the download file's sha256 hash
   // should be calculated for safebrowsing.
   bool DownloadBinHashNeeded() const;
+
+  // Create a protocol config struct.
+  SafeBrowsingProtocolConfig GetProtocolConfig() const;
 
   bool enabled() const { return enabled_; }
 
