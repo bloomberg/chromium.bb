@@ -36,14 +36,14 @@ class SpeechView : public views::View,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
-  int GetIndicatorRadius(int16 level);
+  int GetIndicatorRadius(uint8 level);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from SpeechUIModelObserver:
-  virtual void OnSpeechSoundLevelChanged(int16 level) OVERRIDE;
+  virtual void OnSpeechSoundLevelChanged(uint8 level) OVERRIDE;
   virtual void OnSpeechResult(const base::string16& result,
                               bool is_final) OVERRIDE;
   virtual void OnSpeechRecognitionStateChanged(

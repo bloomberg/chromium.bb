@@ -19,8 +19,9 @@ enum SpeechRecognitionState {
 
 class APP_LIST_EXPORT SpeechUIModelObserver {
  public:
-  // Invoked when sound level for the speech recognition has changed.
-  virtual void OnSpeechSoundLevelChanged(int16 level) {}
+  // Invoked when sound level for the speech recognition has changed. |level|
+  // represents the current sound-level in the range of [0, 255].
+  virtual void OnSpeechSoundLevelChanged(uint8 level) {}
 
   // Invoked when a speech result arrives. |is_final| is true only when the
   // speech result is final.

@@ -37,6 +37,10 @@ class APP_LIST_EXPORT SpeechUIModel {
   int16 sound_level_;
   SpeechRecognitionState state_;
 
+  // The sound level range to compute visible sound-level.
+  int16 minimum_sound_level_;
+  int16 maximum_sound_level_;
+
   ObserverList<SpeechUIModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechUIModel);

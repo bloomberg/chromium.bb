@@ -37,10 +37,6 @@ const SkColor kHintTextColor = SkColorSetRGB(119, 119, 119);
 const SkColor kResultTextColor = SkColorSetRGB(178, 178, 178);
 const SkColor kSoundLevelIndicatorColor = SkColorSetRGB(219, 219, 219);
 
-// TODO(mukai): check with multiple devices to make sure these limits.
-const int16 kSoundLevelMin = 50;
-const int16 kSoundLevelMax = 210;
-
 class SoundLevelIndicator : public views::View {
  public:
   SoundLevelIndicator();
@@ -150,11 +146,10 @@ void SpeechView::Reset() {
       IDR_APP_LIST_SPEECH_MIC_ON));
 }
 
-int SpeechView::GetIndicatorRadius(int16 level) {
-  level = std::min(std::max(level, kSoundLevelMin), kSoundLevelMax);
+int SpeechView::GetIndicatorRadius(uint8 level) {
   int radius_min = mic_button_->width() / 2;
-  return (level - kSoundLevelMin) * (kIndicatorRadiusMax - radius_min) /
-      (kSoundLevelMax - kSoundLevelMin) + radius_min;
+  int range = kIndicatorRadiusMax - radius_min;
+  return level * range / kuint8max + radius_min;
 }
 
 void SpeechView::Layout() {
@@ -188,7 +183,7 @@ void SpeechView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   delegate_->ToggleSpeechRecognition();
 }
 
-void SpeechView::OnSpeechSoundLevelChanged(int16 level) {
+void SpeechView::OnSpeechSoundLevelChanged(uint8 level) {
   if (!visible())
     return;
 

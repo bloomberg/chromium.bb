@@ -6,7 +6,16 @@
 
 namespace app_list {
 
-SpeechUIModel::SpeechUIModel() {}
+namespace {
+
+// The default sound level, just gotten from the developer device.
+const int16 kDefaultSoundLevel = 200;
+
+}  // namespace
+
+SpeechUIModel::SpeechUIModel()
+    : minimum_sound_level_(kDefaultSoundLevel),
+      maximum_sound_level_(kDefaultSoundLevel) {}
 
 SpeechUIModel::~SpeechUIModel() {}
 
@@ -27,9 +36,35 @@ void SpeechUIModel::UpdateSoundLevel(int16 level) {
     return;
 
   sound_level_ = level;
+
+  // Tweak the sound level limits adaptively.
+  // - min is the minimum value during the speech recognition starts but speech
+  //   itself hasn't started.
+  // - max is the maximum value when the user speaks.
+  if (state_ == SPEECH_RECOGNITION_IN_SPEECH)
+    maximum_sound_level_ = std::max(level, maximum_sound_level_);
+  else
+    minimum_sound_level_ = std::min(level, minimum_sound_level_);
+
+  if (maximum_sound_level_ < minimum_sound_level_) {
+    maximum_sound_level_ = std::max(
+        static_cast<int16>(minimum_sound_level_ + kDefaultSoundLevel),
+        kint16max);
+  }
+
+  int16 range = maximum_sound_level_ - minimum_sound_level_;
+  uint8 visible_level = 0;
+  if (range > 0) {
+    int16 visible_level_in_range =
+        std::min(std::max(minimum_sound_level_, sound_level_),
+                 maximum_sound_level_);
+    visible_level =
+        (visible_level_in_range - minimum_sound_level_) * kuint8max / range;
+  }
+
   FOR_EACH_OBSERVER(SpeechUIModelObserver,
                     observers_,
-                    OnSpeechSoundLevelChanged(level));
+                    OnSpeechSoundLevelChanged(visible_level));
 }
 
 void SpeechUIModel::SetSpeechRecognitionState(
@@ -38,6 +73,12 @@ void SpeechUIModel::SetSpeechRecognitionState(
     return;
 
   state_ = new_state;
+  // Revert the min/max sound level to the default.
+  if (state_ == SPEECH_RECOGNITION_ON) {
+    minimum_sound_level_ = kDefaultSoundLevel;
+    maximum_sound_level_ = kDefaultSoundLevel;
+  }
+
   FOR_EACH_OBSERVER(SpeechUIModelObserver,
                     observers_,
                     OnSpeechRecognitionStateChanged(new_state));
