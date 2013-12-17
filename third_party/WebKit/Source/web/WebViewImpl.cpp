@@ -341,12 +341,6 @@ void WebViewImpl::setValidationMessageClient(WebValidationMessageClient* client)
     m_page->setValidationMessageClient(m_validationMessage.get());
 }
 
-void WebViewImpl::setPermissionClient(WebPermissionClient* permissionClient)
-{
-    m_permissionClient = permissionClient;
-    m_featureSwitchClient->setPermissionClient(permissionClient);
-}
-
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)
 {
     providePrerendererClientTo(m_page.get(), new PrerendererClientImpl(prerendererClient));
@@ -371,7 +365,6 @@ void WebViewImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClien
 WebViewImpl::WebViewImpl(WebViewClient* client)
     : m_client(client)
     , m_autofillClient(0)
-    , m_permissionClient(0)
     , m_spellCheckClient(0)
     , m_passwordGeneratorClient(0)
     , m_chromeClientImpl(this)

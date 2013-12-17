@@ -32,7 +32,6 @@
 #include "LocalFileSystemClient.h"
 
 #include "WebFrameImpl.h"
-#include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -58,10 +57,7 @@ bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
     if (context->isDocument()) {
         Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        if (webFrame->permissionClient())
-            return webFrame->permissionClient()->allowFileSystem(webFrame);
-        blink::WebViewImpl* webView = webFrame->viewImpl();
-        return !webView->permissionClient() || webView->permissionClient()->allowFileSystem(webFrame);
+        return !webFrame->permissionClient() || webFrame->permissionClient()->allowFileSystem(webFrame);
     }
     ASSERT(context->isWorkerGlobalScope());
     return WorkerPermissionClient::from(toWorkerGlobalScope(context))->allowFileSystem();

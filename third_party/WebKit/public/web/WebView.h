@@ -51,7 +51,6 @@ class WebGraphicsContext3D;
 class WebHitTestResult;
 class WebNode;
 class WebPageOverlay;
-class WebPermissionClient;
 class WebPrerendererClient;
 class WebRange;
 class WebSettings;
@@ -100,7 +99,6 @@ public:
     // Initializes the various client interfaces.
     virtual void setAutofillClient(WebAutofillClient*) = 0;
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
-    virtual void setPermissionClient(WebPermissionClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
     virtual void setValidationMessageClient(WebValidationMessageClient*) = 0;

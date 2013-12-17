@@ -33,9 +33,9 @@
 #include "WebKit.h"
 #include "WebPermissionClient.h"
 #include "WebSecurityOrigin.h"
-#include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
+#include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -57,11 +57,8 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
         WebSecurityOrigin origin(context->securityOrigin());
         Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        if (webFrame->permissionClient())
-            return webFrame->permissionClient()->allowIndexedDB(webFrame, name, origin);
-        WebViewImpl* webView = webFrame->viewImpl();
-        // FIXME: webView->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
-        return !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(webFrame, name, origin);
+        // FIXME: webFrame->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
+        return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(webFrame, name, origin);
     }
 
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);

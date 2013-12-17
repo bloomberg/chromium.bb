@@ -31,8 +31,6 @@
 #ifndef WebPermissionClient_h
 #define WebPermissionClient_h
 
-#define WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS
-
 namespace blink {
 
 class WebDocument;
@@ -92,7 +90,6 @@ public:
     // Controls whether access to write the clipboard is allowed for this frame.
     virtual bool allowWriteToClipboard(WebFrame*, bool defaultValue) { return defaultValue; }
 
-#if defined(WEBPERMISSIONCLIENT_USES_FRAME_FOR_ALL_METHODS)
     // Controls whether enabling Web Components API for this frame.
     virtual bool allowWebComponents(WebFrame*, bool defaultValue) { return defaultValue; }
 
@@ -103,12 +100,6 @@ public:
 
     // Controls whether pushState and related History APIs are enabled for this frame.
     virtual bool allowPushState(WebFrame*) { return true; }
-#else
-    // These methods are deprecated and will be removed after Chrome uses the new versions above.
-    virtual bool allowWebComponents(const WebDocument&, bool defaultValue) { return defaultValue; }
-    virtual bool allowMutationEvents(const WebDocument&, bool defaultValue) { return defaultValue; }
-    virtual bool allowPushState(const WebDocument&) { return true; }
-#endif
 
     // Controls whether WebGL extension WEBGL_debug_renderer_info is allowed for this frame.
     virtual bool allowWebGLDebugRendererInfo(WebFrame*) { return false; }

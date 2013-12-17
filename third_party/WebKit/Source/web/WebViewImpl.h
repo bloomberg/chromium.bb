@@ -181,7 +181,6 @@ public:
     virtual void initializeMainFrame(WebFrameClient*);
     virtual void setAutofillClient(WebAutofillClient*);
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*);
-    virtual void setPermissionClient(WebPermissionClient*);
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;
     virtual void setSpellCheckClient(WebSpellCheckClient*);
     virtual void setValidationMessageClient(WebValidationMessageClient*) OVERRIDE;
@@ -349,11 +348,6 @@ public:
     WebAutofillClient* autofillClient()
     {
         return m_autofillClient;
-    }
-
-    WebPermissionClient* permissionClient()
-    {
-        return m_permissionClient;
     }
 
     WebSpellCheckClient* spellCheckClient()
@@ -647,7 +641,6 @@ private:
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;
-    WebPermissionClient* m_permissionClient;
     WebSpellCheckClient* m_spellCheckClient;
     WebPasswordGeneratorClient* m_passwordGeneratorClient;
 

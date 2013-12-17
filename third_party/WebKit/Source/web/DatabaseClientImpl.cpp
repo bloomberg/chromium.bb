@@ -33,7 +33,6 @@
 
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
-#include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -63,12 +62,6 @@ bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const
             return false;
         if (webFrame->permissionClient())
             return webFrame->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
-
-        WebViewImpl* webView = webFrame->viewImpl();
-        if (!webView)
-            return false;
-        if (webView->permissionClient())
-            return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
     } else {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(executionContext);
         return WorkerPermissionClient::from(workerGlobalScope)->allowDatabase(name, displayName, estimatedSize);

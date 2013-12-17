@@ -43,7 +43,6 @@
 
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
-#include "WebViewImpl.h"
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -135,14 +134,7 @@ bool StorageAreaProxy::canAccessStorage(Frame* frame)
     if (m_canAccessStorageCachedFrame == frame)
         return m_canAccessStorageCachedResult;
     blink::WebFrameImpl* webFrame = blink::WebFrameImpl::fromFrame(frame);
-    bool result;
-    if (webFrame->permissionClient()) {
-        result = webFrame->permissionClient()->allowStorage(webFrame, m_storageType == LocalStorage);
-    } else {
-        blink::WebViewImpl* webView = webFrame->viewImpl();
-        result = !webView->permissionClient() || webView->permissionClient()->allowStorage(webFrame, m_storageType == LocalStorage);
-    }
-
+    bool result = !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(webFrame, m_storageType == LocalStorage);
     m_canAccessStorageCachedFrame = frame;
     m_canAccessStorageCachedResult = result;
     return result;

@@ -169,10 +169,6 @@ bool FrameLoaderClientImpl::allowScriptExtension(const String& extensionName,
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowScriptExtension(m_webFrame, extensionName, extensionGroup, worldId);
 
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowScriptExtension(m_webFrame, extensionName, extensionGroup, worldId);
-
     return true;
 }
 
@@ -187,10 +183,6 @@ bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowScript(m_webFrame, enabledPerSettings);
 
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowScript(m_webFrame, enabledPerSettings);
-
     return enabledPerSettings;
 }
 
@@ -198,10 +190,6 @@ bool FrameLoaderClientImpl::allowScriptFromSource(bool enabledPerSettings, const
 {
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowScriptFromSource(m_webFrame, enabledPerSettings, scriptURL);
-
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowScriptFromSource(m_webFrame, enabledPerSettings, scriptURL);
 
     return enabledPerSettings;
 }
@@ -211,10 +199,6 @@ bool FrameLoaderClientImpl::allowPlugins(bool enabledPerSettings)
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowPlugins(m_webFrame, enabledPerSettings);
 
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowPlugins(m_webFrame, enabledPerSettings);
-
     return enabledPerSettings;
 }
 
@@ -222,10 +206,6 @@ bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imag
 {
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowImage(m_webFrame, enabledPerSettings, imageURL);
-
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowImage(m_webFrame, enabledPerSettings, imageURL);
 
     return enabledPerSettings;
 }
@@ -235,10 +215,6 @@ bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettin
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowDisplayingInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
 
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowDisplayingInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
-
     return enabledPerSettings;
 }
 
@@ -247,10 +223,6 @@ bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings,
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowRunningInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
 
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowRunningInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
-
     return enabledPerSettings;
 }
 
@@ -258,20 +230,12 @@ void FrameLoaderClientImpl::didNotAllowScript()
 {
     if (m_webFrame->permissionClient())
         m_webFrame->permissionClient()->didNotAllowScript(m_webFrame);
-
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        webview->permissionClient()->didNotAllowScript(m_webFrame);
 }
 
 void FrameLoaderClientImpl::didNotAllowPlugins()
 {
     if (m_webFrame->permissionClient())
         m_webFrame->permissionClient()->didNotAllowPlugins(m_webFrame);
-
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        webview->permissionClient()->didNotAllowPlugins(m_webFrame);
 
 }
 
@@ -792,10 +756,6 @@ bool FrameLoaderClientImpl::allowWebGLDebugRendererInfo()
 {
     if (m_webFrame->permissionClient())
         return m_webFrame->permissionClient()->allowWebGLDebugRendererInfo(m_webFrame);
-
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->permissionClient())
-        return webview->permissionClient()->allowWebGLDebugRendererInfo(m_webFrame);
     return false;
 }
 
