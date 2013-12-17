@@ -451,8 +451,10 @@ weston_view_create(struct weston_surface *surface)
 	view->output = NULL;
 
 	view->output_move_listener.notify = weston_view_output_move_handler;
+	wl_list_init(&view->output_move_listener.link);
 	view->output_destroy_listener.notify =
 		weston_view_output_destroy_handler;
+	wl_list_init(&view->output_destroy_listener.link);
 
 	return view;
 }
