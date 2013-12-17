@@ -157,6 +157,9 @@ static const int kOpusExtraDataChannelsOffset = 9;
 // Offset to the pre-skip value in the Opus extra data.
 static const int kOpusExtraDataSkipSamplesOffset = 10;
 
+// Offset to the gain value in the Opus extra data.
+static const int kOpusExtraDataGainOffset = 16;
+
 // Offset to the channel mapping byte in the Opus extra data.
 static const int kOpusExtraDataChannelMappingOffset = 18;
 
@@ -179,16 +182,18 @@ struct OpusExtraData {
         skip_samples(0),
         channel_mapping(0),
         num_streams(0),
-        num_coupled(0) {
+        num_coupled(0),
+        gain_db(0) {
     memcpy(stream_map,
            kDefaultOpusChannelLayout,
            kMaxChannelsWithDefaultLayout);
   }
   int channels;
-  int skip_samples;
+  uint16 skip_samples;
   int channel_mapping;
   int num_streams;
   int num_coupled;
+  int16 gain_db;
   uint8 stream_map[kMaxVorbisChannels];
 };
 
@@ -213,6 +218,8 @@ static bool ParseOpusExtraData(const uint8* data, int data_size,
 
   extra_data->skip_samples =
       ReadLE16(data, data_size, kOpusExtraDataSkipSamplesOffset);
+  extra_data->gain_db = static_cast<int16>(
+      ReadLE16(data, data_size, kOpusExtraDataGainOffset));
 
   extra_data->channel_mapping = *(data + kOpusExtraDataChannelMappingOffset);
 
@@ -498,6 +505,14 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                                                   &status);
   if (!opus_decoder_ || status != OPUS_OK) {
     DLOG(ERROR) << "opus_multistream_decoder_create failed status="
+                << opus_strerror(status);
+    return false;
+  }
+
+  status = opus_multistream_decoder_ctl(
+      opus_decoder_, OPUS_SET_GAIN(opus_extra_data.gain_db));
+  if (status != OPUS_OK) {
+    DLOG(ERROR) << "Failed to set OPUS header gain; status="
                 << opus_strerror(status);
     return false;
   }
