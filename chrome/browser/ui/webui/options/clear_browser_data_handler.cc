@@ -78,6 +78,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "clearBrowserDataLabel", IDS_CLEAR_BROWSING_DATA_LABEL },
+    { "contentSettingsAndSearchEnginesRemain",
+      IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS },
     { "deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX },
     { "deleteDownloadHistoryCheckbox", IDS_DEL_DOWNLOAD_HISTORY_CHKBOX },
     { "deleteCacheCheckbox", IDS_DEL_CACHE_CHKBOX },

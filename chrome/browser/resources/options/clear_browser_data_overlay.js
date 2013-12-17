@@ -52,6 +52,8 @@ cr.define('options', function() {
       }
       this.updateCommitButtonState_();
 
+      this.createStuffRemainsFooter_();
+
       $('clear-browser-data-dismiss').onclick = function(event) {
         ClearBrowserDataOverlay.dismiss();
       };
@@ -62,6 +64,54 @@ cr.define('options', function() {
 
       var show = loadTimeData.getBoolean('showDeleteBrowsingHistoryCheckboxes');
       this.showDeleteHistoryCheckboxes_(show);
+    },
+
+    // Create a footer that explains that some content is not cleared by the
+    // clear browsing history dialog.
+    createStuffRemainsFooter_: function() {
+      // The localized string is of the form "Saved [content settings] and
+      // {search engines} will not be cleared and may reflect your browsing
+      // habits.". The following parses out the parts in brackts and braces and
+      // converts them into buttons whereas the remainders are represented as
+      // span elements.
+      var footer =
+          document.querySelector('#some-stuff-remains-footer p');
+      var footerFragments =
+          loadTimeData.getString('contentSettingsAndSearchEnginesRemain')
+                      .split(/([|#])/);
+      for (var i = 0; i < footerFragments.length;) {
+        var buttonId = '';
+        if (i + 2 < footerFragments.length) {
+          if (footerFragments[i] == '|' && footerFragments[i + 2] == '|') {
+            buttonId = 'open-content-settings-from-clear-browsing-data';
+          } else if (footerFragments[i] == '#' &&
+                     footerFragments[i + 2] == '#') {
+            buttonId = 'open-search-engines-from-clear-browsing-data';
+          }
+        }
+
+        if (buttonId != '') {
+          var button = document.createElement('button');
+          button.setAttribute('id', buttonId);
+          button.setAttribute('class', 'link-button');
+          button.textContent = footerFragments[i + 1];
+          footer.appendChild(button);
+          i += 3;
+        } else {
+          var span = document.createElement('span');
+          span.textContent = footerFragments[i];
+          footer.appendChild(span);
+          i += 1;
+        }
+      }
+      $('open-content-settings-from-clear-browsing-data').onclick =
+          function(event) {
+        OptionsPage.navigateToPage('content');
+      }
+      $('open-search-engines-from-clear-browsing-data').onclick =
+          function(event) {
+        OptionsPage.navigateToPage('searchEngines');
+      }
     },
 
     // Set the enabled state of the commit button.

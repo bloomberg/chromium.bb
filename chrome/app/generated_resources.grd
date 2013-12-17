@@ -7752,31 +7752,31 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Obliterate the following items from:
       </message>
       <message name="IDS_DEL_BROWSING_HISTORY_CHKBOX" desc="Checkbox for deleting Browsing History">
-        Clear browsing history
+        Browsing history
       </message>
       <message name="IDS_DEL_DOWNLOAD_HISTORY_CHKBOX" desc="Checkbox for deleting Download History">
-        Clear download history
+        Download history
       </message>
       <message name="IDS_DEL_CACHE_CHKBOX" desc="Checkbox for deleting Cache">
-        Empty the cache
+        Cached images and files
       </message>
       <message name="IDS_DEL_COOKIES_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
-        Delete cookies and other site data
+        Cookies and other site data
       </message>
       <message name="IDS_DEL_COOKIES_FLASH_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
-        Delete cookies and other site and plug-in data
+        Cookies and other site and plug-in data
       </message>
       <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
-        Clear saved passwords
+        Passwords
       </message>
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
-        Clear saved Autofill form data
+        Autofill form data
       </message>
       <message name="IDS_DEL_HOSTED_APPS_DATA_CHKBOX" desc="Checkbox for deleting data of hosted apps">
-        Clear data from hosted apps
+        Hosted app data
       </message>
       <message name="IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX" desc="Checkbox for deauthorizing content licenses (DRM videos, etc.)">
-        Deauthorize content licenses
+        Content licenses
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Title for OK button on dialog">
         Clear browsing data
@@ -7798,6 +7798,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the beginning of time
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS" desc="Information that some data may remain even though the user clears their browsing history. The text in '|'s and '#'s will be turned into buttons. The translated text should contain exactly one phrase in '|'s and one in '#'s.">
+        Saved |content settings| and #search engines# will not be cleared and may reflect your browsing habits.
       </message>
 
       <!-- Managed User Avatar Menu -->

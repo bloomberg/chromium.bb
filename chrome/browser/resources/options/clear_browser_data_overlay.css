@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #clear-browser-data-overlay {
-  min-width: 500px;
+  width: 500px;
 }
 
 #clear-data-checkboxes {
@@ -28,4 +28,12 @@
   font-weight: bold;
   margin: 0 20px 11px 17px;
   padding: 6px 8px;
+}
+
+#some-stuff-remains-footer > p {
+  margin: 0;
+}
+
+#some-stuff-remains-footer button {
+  padding: 0;
 }
