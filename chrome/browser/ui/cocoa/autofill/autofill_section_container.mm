@@ -374,7 +374,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
 - (BOOL)validateFor:(autofill::ValidationType)validationType {
   NSArray* fields = nil;
-  if (![inputs_ isHidden]) {
+  if (!showSuggestions_) {
     fields = [inputs_ subviews];
   } else if ([self isCreditCardSection]) {
     if (![[suggestContainer_ inputField] isHidden])
