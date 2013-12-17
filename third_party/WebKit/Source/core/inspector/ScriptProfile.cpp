@@ -49,11 +49,6 @@ String ScriptProfile::title() const
     return toCoreString(m_profile->GetTitle());
 }
 
-unsigned int ScriptProfile::uid() const
-{
-    return m_profile->GetUid();
-}
-
 double ScriptProfile::idleTime() const
 {
     return m_idleTime;

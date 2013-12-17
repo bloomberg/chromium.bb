@@ -50,7 +50,6 @@ public:
     ~ScriptProfile();
 
     String title() const;
-    unsigned int uid() const;
     double idleTime() const;
 
     double startTime() const;
