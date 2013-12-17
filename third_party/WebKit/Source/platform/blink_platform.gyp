@@ -349,10 +349,10 @@
               ['include', 'fonts/skia/FontCacheSkiaWin\\.cpp$'],
               ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
               ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
+              ['exclude', 'fonts/win/FontCustomPlatformDataWin\\.cpp$'],
               ['exclude', 'fonts/win/SimpleFontDataWin\\.cpp$'],
               ['exclude', 'fonts/GlyphPageTreeNodeWin\\.cpp$'],
               ['exclude', 'fonts/FontCacheWin\\.cpp$'],
-              ['exclude', 'fonts/FontCustomPlatformDataWin\\.cpp$'],
             ],
           }],
           ['"ENABLE_HARFBUZZ_ON_WINDOWS=1" in feature_defines', {
