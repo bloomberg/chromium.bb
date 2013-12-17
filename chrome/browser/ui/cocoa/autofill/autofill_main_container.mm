@@ -83,7 +83,8 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   [[self view] addSubview:saveInChromeCheckbox_];
 
   saveInChromeTooltip_.reset(
-      [[AutofillTooltipController alloc] init]);
+      [[AutofillTooltipController alloc]
+            initWithArrowLocation:info_bubble::kTopCenter]);
   [saveInChromeTooltip_ setImage:
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_AUTOFILL_TOOLTIP_ICON).ToNSImage()];

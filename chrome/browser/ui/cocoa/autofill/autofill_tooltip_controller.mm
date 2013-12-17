@@ -66,8 +66,9 @@ CGFloat kTooltipInset = 10;
 
 @synthesize message = message_;
 
-- (id)init {
+- (id)initWithArrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation {
   if ((self = [super init])) {
+    arrowLocation_ = arrowLocation;
     view_.reset([[AutofillTooltip alloc] init]);
     [self setView:view_];
     [view_ setTooltipDelegate:self];
@@ -108,7 +109,8 @@ CGFloat kTooltipInset = 10;
     [[AutofillBubbleController alloc]
         initWithParentWindow:[[self view] window]
                      message:[self message]
-                       inset:NSMakeSize(kTooltipInset, kTooltipInset)];
+                       inset:NSMakeSize(kTooltipInset, kTooltipInset)
+               arrowLocation:arrowLocation_];
 
   // Handle bubble self-deleting.
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];

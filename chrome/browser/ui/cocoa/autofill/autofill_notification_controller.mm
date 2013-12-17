@@ -142,7 +142,8 @@
     //   (2) this way, the sizing computation can be cached.
     [checkbox_ sizeToFit];
 
-    tooltipController_.reset([[AutofillTooltipController alloc] init]);
+    tooltipController_.reset([[AutofillTooltipController alloc]
+                                 initWithArrowLocation:info_bubble::kTopRight]);
     [tooltipController_ setImage:
         ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_AUTOFILL_TOOLTIP_ICON).ToNSImage()];
