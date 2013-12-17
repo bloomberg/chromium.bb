@@ -2374,21 +2374,22 @@
       return 5;
     },
     function () {
-      // test 67: removedNamedItemNS on missing attributes, from Sylvain Pasche
-      var p = document.createElement("p");
-      var msg = 'wrong exception raised';
-      try {
-        p.attributes.removeNamedItemNS("http://www.example.com/", "absent");
-        msg = 'no exception raised';
-      } catch (e) {
-        if ('code' in e) {
-          if (e.code == 8)
-            msg = '';
-          else
-            msg += '; code = ' + e.code;
-        }
-      }
-      assert(msg == '', "when calling removeNamedItemNS in a non existent attribute: " + msg);
+// COMMENTED OUT IN NOV 2013 BECAUSE DOM SPEC REMOVED THIS FEATURE
+//       // test 67: removedNamedItemNS on missing attributes, from Sylvain Pasche
+//       var p = document.createElement("p");
+//       var msg = 'wrong exception raised';
+//       try {
+//         p.attributes.removeNamedItemNS("http://www.example.com/", "absent");
+//         msg = 'no exception raised';
+//       } catch (e) {
+//         if ('code' in e) {
+//           if (e.code == 8)
+//             msg = '';
+//           else
+//             msg += '; code = ' + e.code;
+//         }
+//       }
+//       assert(msg == '', "when calling removeNamedItemNS in a non existent attribute: " + msg);
       return 5;
     },
     function () {
