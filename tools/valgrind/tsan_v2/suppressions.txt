@@ -96,6 +96,9 @@ race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
 # http://crbug.com/257543
 race:*GetObjectFromEntryAddress
 
+# http://crbug.com/258479
+race:SamplingStateScope
+
 # http://crbug.com/268924
 race:base::g_power_monitor
 race:base::PowerMonitor::PowerMonitor
@@ -144,3 +147,5 @@ race:ScavengePointer
 race:gLCDOrder
 race:gLCDOrientation
 
+# http://crbug.com/328868
+race:PR_Lock
