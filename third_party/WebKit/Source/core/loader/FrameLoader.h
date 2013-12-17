@@ -139,8 +139,6 @@ public:
     void checkLoadComplete();
     void detachFromParent();
 
-    void addExtraFieldsToRequest(ResourceRequest&);
-
     static void addHTTPOriginIfNeeded(ResourceRequest&, const AtomicString& origin);
 
     FrameLoaderClient* client() const { return m_client; }

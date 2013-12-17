@@ -97,8 +97,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-
 bool isBackForwardLoadType(FrameLoadType type)
 {
     return type == FrameLoadTypeBackForward;
@@ -1124,37 +1122,6 @@ void FrameLoader::detachFromParent()
         m_frame->willDetachPage();
         m_frame->detachFromPage();
     }
-}
-
-void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request)
-{
-    bool isMainResource = (request.targetType() == ResourceRequest::TargetIsMainFrame) || (request.targetType() == ResourceRequest::TargetIsSubframe);
-
-    if (isMainResource && isLoadingMainFrame())
-        request.setFirstPartyForCookies(request.url());
-    else
-        request.setFirstPartyForCookies(m_frame->document()->firstPartyForCookies());
-
-    // The remaining modifications are only necessary for HTTP and HTTPS.
-    if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
-        return;
-
-    applyUserAgent(request);
-
-    if (request.cachePolicy() == ReloadIgnoringCacheData) {
-        if (m_loadType == FrameLoadTypeReload)
-            request.setHTTPHeaderField("Cache-Control", "max-age=0");
-        else if (m_loadType == FrameLoadTypeReloadFromOrigin) {
-            request.setHTTPHeaderField("Cache-Control", "no-cache");
-            request.setHTTPHeaderField("Pragma", "no-cache");
-        }
-    }
-
-    if (isMainResource)
-        request.setHTTPAccept(defaultAcceptHeader);
-
-    // Make sure we send the Origin header.
-    addHTTPOriginIfNeeded(request, nullAtom);
 }
 
 void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicString& origin)

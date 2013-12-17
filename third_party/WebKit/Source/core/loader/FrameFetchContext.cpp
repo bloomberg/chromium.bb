@@ -44,6 +44,8 @@
 
 namespace WebCore {
 
+static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+
 FrameFetchContext::FrameFetchContext(Frame* frame)
     : m_frame(frame)
 {
@@ -54,20 +56,21 @@ void FrameFetchContext::reportLocalLoadFailed(const KURL& url)
     FrameLoader::reportLocalLoadFailed(m_frame, url.elidedString());
 }
 
-void FrameFetchContext::addAdditionalRequestHeaders(Document& document, ResourceRequest& request, Resource::Type type)
+void FrameFetchContext::addAdditionalRequestHeaders(Document* document, ResourceRequest& request, FetchResourceType type)
 {
-    if (type != Resource::MainResource) {
+    bool isMainResource = type == FetchMainResource;
+    if (!isMainResource) {
         String outgoingReferrer;
         String outgoingOrigin;
         if (request.httpReferrer().isNull()) {
-            outgoingReferrer = document.outgoingReferrer();
-            outgoingOrigin = document.outgoingOrigin();
+            outgoingReferrer = document->outgoingReferrer();
+            outgoingOrigin = document->outgoingOrigin();
         } else {
             outgoingReferrer = request.httpReferrer();
             outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
         }
 
-        outgoingReferrer = SecurityPolicy::generateReferrerHeader(document.referrerPolicy(), request.url(), outgoingReferrer);
+        outgoingReferrer = SecurityPolicy::generateReferrerHeader(document->referrerPolicy(), request.url(), outgoingReferrer);
         if (outgoingReferrer.isEmpty())
             request.clearHTTPReferrer();
         else if (!request.httpReferrer())
@@ -76,7 +79,31 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document& document, Resource
         FrameLoader::addHTTPOriginIfNeeded(request, outgoingOrigin);
     }
 
-    m_frame->loader().addExtraFieldsToRequest(request);
+    if (isMainResource && m_frame->isMainFrame())
+        request.setFirstPartyForCookies(request.url());
+    else
+        request.setFirstPartyForCookies(m_frame->tree().top()->document()->firstPartyForCookies());
+
+    // The remaining modifications are only necessary for HTTP and HTTPS.
+    if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
+        return;
+
+    m_frame->loader().applyUserAgent(request);
+
+    if (request.cachePolicy() == ReloadIgnoringCacheData) {
+        if (m_frame->loader().loadType() == FrameLoadTypeReload) {
+            request.setHTTPHeaderField("Cache-Control", "max-age=0");
+        } else if (m_frame->loader().loadType() == FrameLoadTypeReloadFromOrigin) {
+            request.setHTTPHeaderField("Cache-Control", "no-cache");
+            request.setHTTPHeaderField("Pragma", "no-cache");
+        }
+    }
+
+    if (isMainResource)
+        request.setHTTPAccept(defaultAcceptHeader);
+
+    // Default to sending an empty Origin header if one hasn't been set yet.
+    FrameLoader::addHTTPOriginIfNeeded(request, nullAtom);
 }
 
 CachePolicy FrameFetchContext::cachePolicy(Document* document) const

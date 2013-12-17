@@ -732,7 +732,7 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
     if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
         request.setHTTPHeaderField("Purpose", "prefetch");
 
-    context().addAdditionalRequestHeaders(*document(), request, type);
+    context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
 ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& request, Resource* resource)

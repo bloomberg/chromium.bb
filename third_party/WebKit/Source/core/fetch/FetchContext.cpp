@@ -48,7 +48,7 @@ void FetchContext::reportLocalLoadFailed(const KURL&)
 {
 }
 
-void FetchContext::addAdditionalRequestHeaders(Document&, ResourceRequest&, Resource::Type)
+void FetchContext::addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType)
 {
 }
 

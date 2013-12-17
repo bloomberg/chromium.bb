@@ -49,6 +49,11 @@ class ResourceLoader;
 class ResourceResponse;
 class ResourceRequest;
 
+enum FetchResourceType {
+    FetchMainResource,
+    FetchSubresource
+};
+
 class FetchContext {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
@@ -58,7 +63,7 @@ public:
     virtual ~FetchContext() { }
 
     virtual void reportLocalLoadFailed(const KURL&);
-    virtual void addAdditionalRequestHeaders(Document&, ResourceRequest&, Resource::Type);
+    virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType);
     virtual CachePolicy cachePolicy(Document*) const;
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority);
