@@ -982,6 +982,7 @@ testcase.intermediate.share = function(path) {
                          this.next);
     },
     function(result) {
+      chrome.test.assertTrue(!!result);
       callRemoteTestUtil('waitForStyles',
                          appId,
                          [{
@@ -1003,6 +1004,7 @@ testcase.intermediate.share = function(path) {
     },
     // Wait until the share dialog's contents are hidden.
     function(result) {
+      chrome.test.assertTrue(!!result);
       callRemoteTestUtil('waitForElement',
                          appId,
                          ['.share-dialog-webview-wrapper.loaded',

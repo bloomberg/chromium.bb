@@ -93,6 +93,15 @@ shareDialog.onResizeComplete_ = function() {
 };
 
 /**
+ * Changes the visibility of the dialog.
+ * @param {boolean} visible True to set the dialog visible, false to set it
+ *     invisible.
+ */
+shareDialog.setVisible = function(visible) {
+  shareDialog.sendMessage_('setVisible', {visible: visible});
+};
+
+/**
  * Prepares the embedder to make the contents visible.
  */
 shareDialog.prepareForVisible = function() {
