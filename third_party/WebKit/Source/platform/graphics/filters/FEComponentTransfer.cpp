@@ -189,10 +189,12 @@ bool FEComponentTransfer::applySkia()
     unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
     getValues(rValues, gValues, bValues, aValues);
 
+    SkRect skSrc = requestedRegionOfInputImageData(in->absolutePaintRect());
+    SkRect skDst = IntRect(IntPoint(), absolutePaintRect().size());
     SkPaint paint;
     paint.setColorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues))->unref();
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
+    resultImage->context()->drawBitmapRect(nativeImage->bitmap(), &skSrc, skDst, &paint);
 
     return true;
 }
