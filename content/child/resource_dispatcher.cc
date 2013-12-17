@@ -585,11 +585,8 @@ void ResourceDispatcher::CancelPendingRequest(int request_id) {
     return;
   }
 
-  SiteIsolationPolicy::OnRequestComplete(request_id);
-  PendingRequestInfo& request_info = it->second;
-  ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
-  pending_requests_.erase(it);
-
+  // |request_id| will be removed from |pending_requests_| when
+  // OnRequestComplete returns with ERR_ABORTED.
   message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
 }
 
