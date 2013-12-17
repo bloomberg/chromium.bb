@@ -45,8 +45,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "grit/webkit_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -2734,6 +2736,39 @@ TEST_F(AutofillDialogControllerTest, WalletShippingSameAsBilling) {
   controller()->ForceFinishSubmit();
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
       ::prefs::kAutofillDialogWalletShippingSameAsBilling));
+}
+
+// Verifies that a call to the IconsForFields() method before the card type is
+// known returns a placeholder image that is at least as large as the icons for
+// all of the supported major credit card issuers.
+TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
+  FieldValueMap inputs;
+  inputs[CREDIT_CARD_NUMBER] = base::string16();
+
+  FieldIconMap icons = controller()->IconsForFields(inputs);
+  EXPECT_EQ(1U, icons.size());
+
+  ASSERT_EQ(1U, icons.count(CREDIT_CARD_NUMBER));
+  gfx::Image placeholder_icon = icons[CREDIT_CARD_NUMBER];
+
+  // Verify that the placeholder icon is at least as large as the icons for the
+  // supported credit card issuers.
+  const int kSupportedCardIdrs[] = {
+    IDR_AUTOFILL_CC_AMEX,
+    IDR_AUTOFILL_CC_DINERS,
+    IDR_AUTOFILL_CC_DISCOVER,
+    IDR_AUTOFILL_CC_GENERIC,
+    IDR_AUTOFILL_CC_JCB,
+    IDR_AUTOFILL_CC_MASTERCARD,
+    IDR_AUTOFILL_CC_VISA,
+  };
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  for (size_t i = 0; i < arraysize(kSupportedCardIdrs); ++i) {
+    SCOPED_TRACE(base::IntToString(i));
+    gfx::Image supported_card_icon = rb.GetImageNamed(kSupportedCardIdrs[i]);
+    EXPECT_GE(placeholder_icon.Width(), supported_card_icon.Width());
+    EXPECT_GE(placeholder_icon.Height(), supported_card_icon.Height());
+  }
 }
 
 }  // namespace autofill
