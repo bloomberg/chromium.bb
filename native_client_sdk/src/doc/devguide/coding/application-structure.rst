@@ -234,11 +234,19 @@ Below is the Instance class from the "Hello tutorial" example:
 
 
 As in the example above, the Instance class for your module will likely include
-an implementation of the ``HandleMessage()`` funtion. The browser calls an
+an implementation of the ``HandleMessage()`` function. The browser calls an
 instance's ``HandleMessage()`` function every time the JavaScript code in an
 application calls ``postMessage()`` to send a message to the instance. See the
 :doc:`Native Client messaging system<message-system>` for more information about
 how to send messages between JavaScript code and Native Client modules.
+
+The NaCl code is only invoked to handle various browser-issued
+events and callbacks. There is no need to shut down the NaCl instance by
+calling the ``exit()`` function. NaCl modules will be shut down when the user
+leaves the web page, or the NaCl module's ``<embed>`` is otherwise destroyed.
+If the NaCl module does call the ``exit()`` function, the instance will
+issue a ``crash`` event
+:doc:`which can be handled in Javascript<progress-events>`.
 
 While the ``CreateModule()`` factory function, the ``Module`` class, and the
 ``Instance`` class are required for a Native Client application, the code

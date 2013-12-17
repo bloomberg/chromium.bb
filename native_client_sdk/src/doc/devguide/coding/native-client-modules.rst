@@ -184,7 +184,7 @@ Below is the Instance class from the "Hello tutorial" example:
 
 
 As in the example above, the Instance class for your module will likely include
-an implementation of the ``HandleMessage()`` funtion. The browser calls an
+an implementation of the ``HandleMessage()`` function. The browser calls an
 instance's ``HandleMessage()`` function every time the JavaScript code in an
 application calls ``postMessage()`` to send a message to the instance. See the
 :doc:`Native Client messaging system<message-system>` for more information about

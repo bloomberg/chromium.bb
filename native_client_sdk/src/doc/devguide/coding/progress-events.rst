@@ -123,6 +123,10 @@ events types reported by the Native Client runtime:
 |             | is not part of     |           |               |               |
 |             | the W3C Progress   |           |               |               |
 |             | Events standard.   |           |               |               |
+|             | The ``exitStatus`` |           |               |               |
+|             | attribute provides |           |               |               |
+|             | the numeric exit   |           |               |               |
+|             | status value.      |           |               |               |
 +-------------+--------------------+-----------+---------------+---------------+
 
 The sequence of events for a successful module load is as follows:
@@ -298,3 +302,20 @@ the progress events are generated.
       </div>
     </body>
   </html>
+
+The ``exitStatus`` attribute
+============================
+
+This read-only attribute is set if the application calls ``exit(n)``,
+``abort()``, or crashes. Since NaCl modules are event handlers, there is no
+need to call ``exit(n)`` in normal execution. If the module does exit or
+crash, the ``crash`` progress event is issued and the ``exitStatus`` attribute
+will contain the numeric value of the exit status:
+
+* In the case of explicit calls to ``exit(n)``, the numeric value will be
+  ``n`` (between 0 and 255).
+* In the case of crashes and calls to ``abort()``, the numeric value will
+  be non-zero, but the exact value will depend on the chosen libc and the
+  target architecture, and may change in the future. Applications should not
+  rely on the ``exitStatus`` value being stable in these cases, but the value
+  may nevertheless be useful for temporary debugging.
