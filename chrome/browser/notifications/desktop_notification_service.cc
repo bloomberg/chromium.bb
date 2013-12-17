@@ -630,7 +630,10 @@ void DesktopNotificationService::ShowWelcomeNotificationIfNecessary(
 void DesktopNotificationService::OnStringListPrefChanged(
     const char* pref_name, std::set<std::string>* ids_field) {
   ids_field->clear();
-  const base::ListValue* pref_list = profile_->GetPrefs()->GetList(pref_name);
+  // Separate GetPrefs()->GetList() to analyze the crash. See crbug.com/322320
+  const PrefService* pref_service = profile_->GetPrefs();
+  CHECK(pref_service);
+  const base::ListValue* pref_list = pref_service->GetList(pref_name);
   for (size_t i = 0; i < pref_list->GetSize(); ++i) {
     std::string element;
     if (pref_list->GetString(i, &element) && !element.empty())
