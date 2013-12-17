@@ -43,7 +43,7 @@ class GIN_EXPORT ContextHolder {
 
  private:
   v8::Isolate* isolate_;
-  v8::Persistent<v8::Context> context_;
+  v8::UniquePersistent<v8::Context> context_;
   scoped_ptr<PerContextData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextHolder);

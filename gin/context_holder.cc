@@ -19,9 +19,6 @@ ContextHolder::~ContextHolder() {
 
   data_->Detach(context);
   data_.reset();
-
-  // TODO(abarth): Figure out how to set kResetInDestructor to true.
-  context_.Reset();
 }
 
 void ContextHolder::SetContext(v8::Handle<v8::Context> context) {
