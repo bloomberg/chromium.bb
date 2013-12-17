@@ -47,8 +47,11 @@ public:
 
     virtual void contextDestroyed() OVERRIDE
     {
-        m_tracker->contextDestroyed(executionContext());
+        ASSERT(executionContext());
+        ExecutionContextData* self = m_tracker->m_executionContextDataMap.take(executionContext());
+        ASSERT(self == this);
         ContextLifecycleObserver::contextDestroyed();
+        delete self;
     }
 
 private:
@@ -193,13 +196,6 @@ bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
     return !callFrames.hasNoValue();
 }
 
-void AsyncCallStackTracker::contextDestroyed(ExecutionContext* context)
-{
-    ASSERT(context);
-    if (ExecutionContextData* data = m_executionContextDataMap.take(context))
-        delete data;
-}
-
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)
 {
     ExecutionContextData* data = m_executionContextDataMap.get(context);
@@ -213,11 +209,10 @@ AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContex
 void AsyncCallStackTracker::clear()
 {
     m_currentAsyncCallChain = 0;
-    Vector<ExecutionContextData*> contextsData;
-    copyValuesToVector(m_executionContextDataMap, contextsData);
-    m_executionContextDataMap.clear();
-    for (Vector<ExecutionContextData*>::const_iterator it = contextsData.begin(); it != contextsData.end(); ++it)
-        delete *it;
+    ExecutionContextDataMap copy;
+    m_executionContextDataMap.swap(copy);
+    for (ExecutionContextDataMap::const_iterator it = copy.begin(); it != copy.end(); ++it)
+        delete it->value;
 }
 
 } // namespace WebCore

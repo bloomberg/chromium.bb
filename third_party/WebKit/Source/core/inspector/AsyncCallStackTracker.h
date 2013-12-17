@@ -92,12 +92,12 @@ private:
     static bool validateCallFrames(const ScriptValue& callFrames);
 
     class ExecutionContextData;
-    void contextDestroyed(ExecutionContext*);
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 
     unsigned m_maxAsyncCallStackDepth;
     RefPtr<AsyncCallChain> m_currentAsyncCallChain;
-    HashMap<ExecutionContext*, ExecutionContextData*> m_executionContextDataMap;
+    typedef HashMap<ExecutionContext*, ExecutionContextData*> ExecutionContextDataMap;
+    ExecutionContextDataMap m_executionContextDataMap;
 };
 
 } // namespace WebCore
