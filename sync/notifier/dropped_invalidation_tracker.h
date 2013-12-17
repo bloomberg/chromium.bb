@@ -27,6 +27,9 @@ class Invalidation;
 // an instance of this class to that Invalidation's Drop() method.  In order to
 // indicate recovery from a drop, the handler can call this class'
 // RecordRecoveryFromDropEvent().
+//
+// Copy and assign are allowed for this class so we can use it in STL
+// containers.
 class SYNC_EXPORT DroppedInvalidationTracker {
  public:
   explicit DroppedInvalidationTracker(const invalidation::ObjectId& id);
@@ -51,6 +54,12 @@ class SYNC_EXPORT DroppedInvalidationTracker {
   invalidation::ObjectId id_;
   AckHandle drop_ack_handle_;
 
+  // This flag is set to true when we have dropped an invalidation and have not
+  // yet recovered from this drop event.  Note that this may not always coincide
+  // with drop_ack_handler_ being initialized because a null AckHandler could be
+  // passed in to RecordDropEvent().
+  bool recovering_from_drop_;
+
   // A WeakHandle to the enitity responsible for persisting invalidation
   // acknowledgement state on disk.  We can get away with using a WeakHandle
   // because we don't care if our drop recovery message doesn't gets delivered
@@ -58,8 +67,6 @@ class SYNC_EXPORT DroppedInvalidationTracker {
   // invalidation state again on the next restart.  It would be a waste of time
   // and resources, but otherwise not particularly harmful.
   WeakHandle<AckHandler> drop_ack_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(DroppedInvalidationTracker);
 };
 
 }  // namespace syncer

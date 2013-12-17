@@ -35,6 +35,7 @@ class SYNC_EXPORT SingleObjectInvalidationSet {
   void Insert(const Invalidation& invalidation);
   void InsertAll(const SingleObjectInvalidationSet& other);
   void Clear();
+  void Erase(const_iterator it);
 
   // Returns true if this list contains an unknown version.
   //

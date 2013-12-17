@@ -5,6 +5,7 @@
 #ifndef SYNC_NOTIFIER_MOCK_ACK_HANDLER_H_
 #define SYNC_NOTIFIER_MOCK_ACK_HANDLER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -12,6 +13,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/ack_handler.h"
+#include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
 
@@ -38,8 +40,19 @@ class SYNC_EXPORT MockAckHandler
   // been acknowledged yet.
   bool IsUnacked(const Invalidation& invalidation) const;
 
+  // Returns true if the specified invalidation has been delivered and
+  // acknowledged.
+  bool IsAcknowledged(const Invalidation& invalidation) const;
+
+  // Returns true if the specified invalidation has been delivered and
+  // dropped.
+  bool IsDropped(const Invalidation& invalidation) const;
+
   // Returns true if the specified invalidation was never delivered.
   bool IsUnsent(const Invalidation& invalidation) const;
+
+  // Retruns true if all invalidations have been acked and all drops recovered.
+  bool AllInvalidationsAccountedFor() const;
 
   // Implementation of AckHandler.
   virtual void Acknowledge(
@@ -51,12 +64,18 @@ class SYNC_EXPORT MockAckHandler
 
  private:
   typedef std::vector<syncer::Invalidation> InvalidationVector;
+  typedef std::map<invalidation::ObjectId,
+                   AckHandle,
+                   ObjectIdLessThan> IdHandleMap;
 
   WeakHandle<AckHandler> WeakHandleThis();
 
   InvalidationVector unsent_invalidations_;
   InvalidationVector unacked_invalidations_;
   InvalidationVector acked_invalidations_;
+  InvalidationVector dropped_invalidations_;
+
+  IdHandleMap unrecovered_drop_events_;
 };
 
 }  // namespace syncer

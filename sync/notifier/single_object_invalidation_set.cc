@@ -26,6 +26,10 @@ void SingleObjectInvalidationSet::Clear() {
   invalidations_.clear();
 }
 
+void SingleObjectInvalidationSet::Erase(const_iterator it) {
+  invalidations_.erase(*it);
+}
+
 bool SingleObjectInvalidationSet::StartsWithUnknownVersion() const {
   return !invalidations_.empty() &&
       invalidations_.begin()->is_unknown_version();

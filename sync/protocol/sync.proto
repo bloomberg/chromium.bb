@@ -425,14 +425,6 @@ message GetUpdateTriggers {
   // first.  Introduced in M29.
   optional bool client_dropped_hints = 2;
 
-  // This flag is set if the invalidation server reports that it may have
-  // dropped some invalidations at some point.  The client will also drop any
-  // locally cached hints that are older than the server-did-drop notification.
-  //
-  // TODO(sync): Determine the format for this.
-  //
-  // optional bool server_dropped_hints = 6;
-
   // This flag is set when the client suspects that its list of invalidation
   // hints may be incomplete.  This may be the case if:
   // - The client is syncing for the first time.
@@ -468,6 +460,10 @@ message GetUpdateTriggers {
   // invalidations.
   // Introduced in M29.
   optional int64 datatype_refresh_nudges = 5;
+
+  // This flag is set if the invalidation server reports that it may have
+  // dropped some invalidations at some point.  Introduced in M33.
+  optional bool server_dropped_hints = 6;
 }
 
 message DataTypeProgressMarker {

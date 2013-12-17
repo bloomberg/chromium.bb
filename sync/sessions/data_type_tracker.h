@@ -11,6 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
+#include "sync/notifier/dropped_invalidation_tracker.h"
+#include "sync/notifier/single_object_invalidation_set.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -24,7 +26,7 @@ typedef std::deque<std::string> PayloadList;
 
 class DataTypeTracker {
  public:
-  DataTypeTracker();
+  explicit DataTypeTracker(const invalidation::ObjectId& object_id);
   ~DataTypeTracker();
 
   // For STL compatibility, we do not forbid the creation of a default copy
@@ -65,9 +67,6 @@ class DataTypeTracker {
   // updates.
   bool HasPendingInvalidation() const;
 
-  // Returns the most recent invalidation payload.
-  std::string GetMostRecentInvalidationPayload() const;
-
   // Fills in the legacy invalidaiton payload information fields.
   void SetLegacyNotificationHint(
       sync_pb::DataTypeProgressMarker* progress) const;
@@ -100,24 +99,19 @@ class DataTypeTracker {
   // successful sync cycle.
   int local_refresh_request_count_;
 
-  // The list of invalidation payloads received since the last successful sync
-  // cycle.  This list may be incomplete.  See also: local_payload_overflow_ and
-  // server_payload_overflow_.
-  PayloadList pending_payloads_;
-
-  // This flag is set if the the local buffer space was been exhausted, causing
-  // us to prematurely discard the invalidation payloads stored locally.
-  bool local_payload_overflow_;
-
-  // This flag is set if the server buffer space was exchauseted, causing the
-  // server to prematurely discard some invalidation payloads.
-  bool server_payload_overflow_;
+  // The list of invalidations received since the last successful sync cycle.
+  // This list may be incomplete.  See also:
+  // drop_tracker_.IsRecoveringFromDropEvent() and server_payload_overflow_.
+  SingleObjectInvalidationSet pending_invalidations_;
 
   size_t payload_buffer_size_;
 
   // If !unthrottle_time_.is_null(), this type is throttled and may not download
   // or commit data until the specified time.
   base::TimeTicks unthrottle_time_;
+
+  // A helper to keep track invalidations we dropped due to overflow.
+  DroppedInvalidationTracker drop_tracker_;
 };
 
 }  // namespace syncer

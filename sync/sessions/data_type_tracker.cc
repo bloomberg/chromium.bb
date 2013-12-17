@@ -6,18 +6,18 @@
 
 #include "base/logging.h"
 #include "sync/internal_api/public/base/invalidation.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/single_object_invalidation_set.h"
 #include "sync/sessions/nudge_tracker.h"
 
 namespace syncer {
 namespace sessions {
 
-DataTypeTracker::DataTypeTracker()
+DataTypeTracker::DataTypeTracker(const invalidation::ObjectId& object_id)
   : local_nudge_count_(0),
     local_refresh_request_count_(0),
-    local_payload_overflow_(false),
-    server_payload_overflow_(false),
-    payload_buffer_size_(NudgeTracker::kDefaultMaxPayloadsPerType) { }
+    payload_buffer_size_(NudgeTracker::kDefaultMaxPayloadsPerType),
+    drop_tracker_(object_id) { }
 
 DataTypeTracker::~DataTypeTracker() { }
 
@@ -29,20 +29,73 @@ void DataTypeTracker::RecordLocalRefreshRequest() {
   local_refresh_request_count_++;
 }
 
+namespace {
+
+bool IsInvalidationVersionLessThan(
+    const Invalidation& a,
+    const Invalidation& b) {
+  InvalidationVersionLessThan comparator;
+  return comparator(a, b);
+}
+
+}  // namespace
+
 void DataTypeTracker::RecordRemoteInvalidations(
     const SingleObjectInvalidationSet& invalidations) {
-  for (SingleObjectInvalidationSet::const_iterator it =
-       invalidations.begin(); it != invalidations.end(); ++it) {
-    if (it->is_unknown_version()) {
-      server_payload_overflow_ = true;
-    } else {
-      pending_payloads_.push_back(it->payload());
-      if (pending_payloads_.size() > payload_buffer_size_) {
-        // Drop the oldest payload if we've overflowed.
-        pending_payloads_.pop_front();
-        local_payload_overflow_ = true;
-      }
+  // Merge the incoming invalidations into our list of pending invalidations.
+  //
+  // We won't use STL algorithms here because our concept of equality doesn't
+  // quite fit the expectations of set_intersection.  In particular, two
+  // invalidations can be equal according to the SingleObjectInvalidationSet's
+  // rules (ie. have equal versions), but still have different AckHandle values
+  // and need to be acknowledged separately.
+  //
+  // The invalidaitons service can only track one outsanding invalidation per
+  // type and version, so the acknowledgement here should be redundant.  We'll
+  // acknowledge them anyway since it should do no harm, and makes this code a
+  // bit easier to test.
+  //
+  // Overlaps should be extremely rare for most invalidations.  They can happen
+  // for unknown version invalidations, though.
+  SingleObjectInvalidationSet::const_iterator incoming_it =
+      invalidations.begin();
+  SingleObjectInvalidationSet::const_iterator existing_it =
+      pending_invalidations_.begin();
+
+  while (incoming_it != invalidations.end()) {
+    // Keep existing_it ahead of incoming_it.
+    while (existing_it != pending_invalidations_.end()
+           && IsInvalidationVersionLessThan(*existing_it, *incoming_it)) {
+      existing_it++;
     }
+
+    if (existing_it != pending_invalidations_.end()
+        && !IsInvalidationVersionLessThan(*incoming_it, *existing_it)
+        && !IsInvalidationVersionLessThan(*existing_it, *incoming_it)) {
+      // Incoming overlaps with existing.  Either both are unknown versions
+      // (likely) or these two have the same version number (very unlikely).
+      // Acknowledge and overwrite existing.
+      SingleObjectInvalidationSet::const_iterator old_inv = existing_it;
+      existing_it++;
+      old_inv->Acknowledge();
+      pending_invalidations_.Erase(old_inv);
+      pending_invalidations_.Insert(*incoming_it);
+      incoming_it++;
+    } else {
+      DCHECK(existing_it == pending_invalidations_.end()
+             || IsInvalidationVersionLessThan(*incoming_it, *existing_it));
+      // The incoming_it points at a version not in the pending_invalidations_
+      // list.  Add it to the list then increment past it.
+      pending_invalidations_.Insert(*incoming_it);
+      incoming_it++;
+    }
+  }
+
+  // Those incoming invalidations may have caused us to exceed our buffer size.
+  // Trim some items from our list, if necessary.
+  while (pending_invalidations_.GetSize() > payload_buffer_size_) {
+    pending_invalidations_.begin()->Drop(&drop_tracker_);
+    pending_invalidations_.Erase(pending_invalidations_.begin());
   }
 }
 
@@ -54,9 +107,21 @@ void DataTypeTracker::RecordSuccessfulSyncCycle() {
 
   local_nudge_count_ = 0;
   local_refresh_request_count_ = 0;
-  pending_payloads_.clear();
-  local_payload_overflow_ = false;
-  server_payload_overflow_ = false;
+
+  // TODO(rlarocque): If we want this to be correct even if we should happen to
+  // crash before writing all our state, we should wait until the results of
+  // this sync cycle have been written to disk before updating the invalidations
+  // state.  See crbug.com/324996.
+  for (SingleObjectInvalidationSet::const_iterator it =
+       pending_invalidations_.begin();
+       it != pending_invalidations_.end(); ++it) {
+    it->Acknowledge();
+  }
+  pending_invalidations_.Clear();
+
+  if (drop_tracker_.IsRecoveringFromDropEvent()) {
+    drop_tracker_.RecordRecoveryFromDropEvent();
+  }
 }
 
 // This limit will take effect on all future invalidations received.
@@ -69,16 +134,14 @@ bool DataTypeTracker::IsSyncRequired() const {
       (local_nudge_count_ > 0 ||
        local_refresh_request_count_ > 0 ||
        HasPendingInvalidation() ||
-       local_payload_overflow_ ||
-       server_payload_overflow_);
+       drop_tracker_.IsRecoveringFromDropEvent());
 }
 
 bool DataTypeTracker::IsGetUpdatesRequired() const {
   return !IsThrottled() &&
       (local_refresh_request_count_ > 0 ||
        HasPendingInvalidation() ||
-       local_payload_overflow_ ||
-       server_payload_overflow_);
+       drop_tracker_.IsRecoveringFromDropEvent());
 }
 
 bool DataTypeTracker::HasLocalChangePending() const {
@@ -86,11 +149,7 @@ bool DataTypeTracker::HasLocalChangePending() const {
 }
 
 bool DataTypeTracker::HasPendingInvalidation() const {
-  return !pending_payloads_.empty();
-}
-
-std::string DataTypeTracker::GetMostRecentInvalidationPayload() const {
-  return pending_payloads_.back();
+  return !pending_invalidations_.IsEmpty();
 }
 
 void DataTypeTracker::SetLegacyNotificationHint(
@@ -98,10 +157,11 @@ void DataTypeTracker::SetLegacyNotificationHint(
   DCHECK(!IsThrottled())
       << "We should not make requests if the type is throttled.";
 
-  if (HasPendingInvalidation()) {
+  if (!pending_invalidations_.IsEmpty() &&
+      !pending_invalidations_.back().is_unknown_version()) {
     // The old-style source info can contain only one hint per type.  We grab
     // the most recent, to mimic the old coalescing behaviour.
-    progress->set_notification_hint(GetMostRecentInvalidationPayload());
+    progress->set_notification_hint(pending_invalidations_.back().payload());
   } else if (HasLocalChangePending()) {
     // The old-style source info sent up an empty string (as opposed to
     // nothing at all) when the type was locally nudged, but had not received
@@ -115,17 +175,19 @@ void DataTypeTracker::FillGetUpdatesTriggersMessage(
   // Fill the list of payloads, if applicable.  The payloads must be ordered
   // oldest to newest, so we insert them in the same order as we've been storing
   // them internally.
-  for (PayloadList::const_iterator payload_it = pending_payloads_.begin();
-       payload_it != pending_payloads_.end(); ++payload_it) {
-    msg->add_notification_hint(*payload_it);
+  for (SingleObjectInvalidationSet::const_iterator it =
+       pending_invalidations_.begin();
+       it != pending_invalidations_.end(); ++it) {
+    if (!it->is_unknown_version()) {
+      msg->add_notification_hint(it->payload());
+    }
   }
 
-  msg->set_client_dropped_hints(local_payload_overflow_);
+  msg->set_server_dropped_hints(
+      pending_invalidations_.StartsWithUnknownVersion());
+  msg->set_client_dropped_hints(drop_tracker_.IsRecoveringFromDropEvent());
   msg->set_local_modification_nudges(local_nudge_count_);
   msg->set_datatype_refresh_nudges(local_refresh_request_count_);
-
-  // TODO(rlarocque): Support Tango trickles.  See crbug.com/223437.
-  // msg->set_server_dropped_hints(server_payload_oveflow_);
 }
 
 bool DataTypeTracker::IsThrottled() const {

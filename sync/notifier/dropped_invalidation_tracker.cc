@@ -11,7 +11,8 @@ namespace syncer {
 DroppedInvalidationTracker::DroppedInvalidationTracker(
     const invalidation::ObjectId& id)
     : id_(id),
-      drop_ack_handle_(AckHandle::InvalidAckHandle()) {}
+      drop_ack_handle_(AckHandle::InvalidAckHandle()),
+      recovering_from_drop_(false) {}
 
 DroppedInvalidationTracker::~DroppedInvalidationTracker() {}
 
@@ -23,6 +24,7 @@ void DroppedInvalidationTracker::RecordDropEvent(
     WeakHandle<AckHandler> handler, AckHandle handle) {
   drop_ack_handler_ = handler;
   drop_ack_handle_ = handle;
+  recovering_from_drop_ = true;
 }
 
 void DroppedInvalidationTracker::RecordRecoveryFromDropEvent() {
@@ -33,10 +35,11 @@ void DroppedInvalidationTracker::RecordRecoveryFromDropEvent() {
                            drop_ack_handle_);
   }
   drop_ack_handler_ = syncer::WeakHandle<AckHandler>();
+  recovering_from_drop_ = false;
 }
 
 bool DroppedInvalidationTracker::IsRecoveringFromDropEvent() const {
-  return drop_ack_handler_.IsInitialized();
+  return recovering_from_drop_;
 }
 
 }  // namespace syncer

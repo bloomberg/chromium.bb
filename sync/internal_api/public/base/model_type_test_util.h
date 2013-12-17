@@ -21,6 +21,13 @@ ObjectIdInvalidationMap BuildInvalidationMap(
     int version,
     const std::string& payload);
 
+// Builds an invalidation.  Similar to Invalidation::Init, but its first
+// parameter is a ModelType rather than an ObjectId.
+syncer::Invalidation BuildInvalidation(
+    ModelType type,
+    int version,
+    const std::string& payload);
+
 // Defined for googletest.  Forwards to ModelTypeSetToString().
 void PrintTo(ModelTypeSet model_types, ::std::ostream* os);
 

@@ -652,9 +652,6 @@ void SyncBackendHostImpl::OnInvalidatorStateChange(
 
 void SyncBackendHostImpl::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  // TODO(rlarocque): Acknowledge these invalidations only after the syncer has
-  // acted on them and saved the results to disk.
-  invalidation_map.AcknowledgeAll();
   registrar_->sync_thread()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoOnIncomingInvalidation,
