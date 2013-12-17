@@ -4601,6 +4601,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PACKAGE_INSTALL_ERROR" desc="Error message in case package fails to install because of some problem with the filesystem.">
         Could not install package: '<ph name="ERROR_CODE">$1<ex>error</ex></ph>'
       </message>
+      <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install a utility process crashed.">
+        Could not install package because a utility process crashed. Try restarting chrome and trying again.
+      </message>
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
         This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
       </message>

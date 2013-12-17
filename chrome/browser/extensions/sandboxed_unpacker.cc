@@ -336,7 +336,9 @@ void SandboxedUnpacker::OnProcessCrashed(int exit_code) {
      UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
      l10n_util::GetStringFUTF16(
          IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-         ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")));
+         ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")) +
+       ASCIIToUTF16(". ") +
+       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_PROCESS_CRASHED));
 }
 
 void SandboxedUnpacker::StartProcessOnIOThread(
