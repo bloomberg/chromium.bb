@@ -34,9 +34,8 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
   // Directory entries in zip files end with "/".
   is_directory_ = EndsWith(file_name_in_zip, "/", false);
 
-  // Check the file name here for directory traversal issues. In the name of
-  // simplicity and security, we might reject a valid file name such as "a..b".
-  is_unsafe_ = file_name_in_zip.find("..") != std::string::npos;
+  // Check the file name here for directory traversal issues.
+  is_unsafe_ = file_path_.ReferencesParent();
 
   // We also consider that the file name is unsafe, if it's invalid UTF-8.
   base::string16 file_name_utf16;
@@ -231,7 +230,14 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
     }
   }
 
+  stream.CloseSync();
   unzCloseCurrentFile(zip_file_);
+
+  if (current_entry_info()->last_modified() != base::Time::UnixEpoch())
+    base::TouchFile(output_file_path,
+                    base::Time::Now(),
+                    current_entry_info()->last_modified());
+
   return success;
 }
 
