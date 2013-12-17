@@ -25,12 +25,10 @@ This test ensures that the descendants of children of non-stacking context overf
             (GraphicsLayer
               (position 1.00 386.00)
               (bounds 385.00 15.00)
-              (drawsContent 1)
             )
             (GraphicsLayer
               (position 386.00 1.00)
               (bounds 15.00 385.00)
-              (drawsContent 1)
             )
             (GraphicsLayer
               (position 386.00 386.00)
