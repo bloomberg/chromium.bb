@@ -38,6 +38,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -45,12 +46,14 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -285,6 +288,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   AutofillDialogControllerTest() {}
   virtual ~AutofillDialogControllerTest() {}
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     autofill::test::DisableSystemServices(browser()->profile());
     InitializeController();
@@ -304,8 +311,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
     form.method = ASCIIToUTF16("POST");
-    form.origin = GURL("http://example.com/form.html");
-    form.action = GURL("http://example.com/submit.html");
     form.user_submitted = true;
 
     FormFieldData field;
@@ -347,7 +352,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     content::WebContents* contents = GetActiveWebContents();
     TabAutofillManagerDelegate* delegate =
         TabAutofillManagerDelegate::FromWebContents(contents);
-    DCHECK(!delegate->GetDialogControllerForTesting());
+    CHECK(!delegate->GetDialogControllerForTesting());
 
     ui_test_utils::NavigateToURL(
         browser(), GURL(std::string("data:text/html,") +
@@ -384,17 +389,41 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
           "</body>"
         "</html>"));
 
-    dom_message_queue_.reset(new content::DOMMessageQueue);
-
-    // Triggers the onclick handler which invokes requestAutocomplete().
-    content::SimulateMouseClick(contents, 0, blink::WebMouseEvent::ButtonLeft);
-    ExpectDomMessage("clicked");
-
+    InitiateDialog();
     AutofillDialogControllerImpl* controller =
         static_cast<AutofillDialogControllerImpl*>(
             delegate->GetDialogControllerForTesting());
-    DCHECK(controller);
     return controller;
+  }
+
+  // Loads an html page on a provided server, the causes it to launch rAc.
+  // Returns whether rAc succesfully launched.
+  bool RunTestPage(const net::SpawnedTestServer& server) {
+    GURL url = server.GetURL(
+        "files/request_autocomplete/test_page.html");
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    // Pass through the broken SSL interstitial, if any.
+    content::WebContents* contents = GetActiveWebContents();
+    content::InterstitialPage* interstitial_page =
+        contents->GetInterstitialPage();
+    if (interstitial_page) {
+      ui_test_utils::UrlLoadObserver observer(
+          url,
+          content::Source<content::NavigationController>(
+              &contents->GetController()));
+      interstitial_page->Proceed();
+      observer.Wait();
+    }
+
+    InitiateDialog();
+
+    TabAutofillManagerDelegate* delegate =
+        TabAutofillManagerDelegate::FromWebContents(contents);
+    AutofillDialogControllerImpl* controller =
+        static_cast<AutofillDialogControllerImpl*>(
+            delegate->GetDialogControllerForTesting());
+    return !!controller;
   }
 
   // Wait for a message from the DOM automation controller (from JS in the
@@ -404,6 +433,15 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     ASSERT_TRUE(dom_message_queue_->WaitForMessage(&message));
     dom_message_queue_->ClearQueue();
     EXPECT_EQ("\"" + expected + "\"", message);
+  }
+
+  void InitiateDialog() {
+    dom_message_queue_.reset(new content::DOMMessageQueue);
+
+    // Triggers the onclick handler which invokes requestAutocomplete().
+    content::WebContents* contents = GetActiveWebContents();
+    content::SimulateMouseClick(contents, 0, blink::WebMouseEvent::ButtonLeft);
+    ExpectDomMessage("clicked");
   }
 
   // Returns the value filled into the first field with autocomplete attribute
@@ -840,6 +878,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
+  ASSERT_TRUE(controller);
 
   AddCreditcardToProfile(controller->profile(), test::GetVerifiedCreditCard());
   AddAutofillProfileToProfile(controller->profile(),
@@ -863,6 +902,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        MAYBE_AutocompleteErrorEventReasonInvalid) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name' pattern='.*zebra.*'>");
+  ASSERT_TRUE(controller);
 
   const CreditCard& credit_card = test::GetVerifiedCreditCard();
   ASSERT_TRUE(
@@ -888,8 +928,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        MAYBE_AutocompleteErrorEventReasonCancel) {
-  SetUpHtmlAndInvoke("<input autocomplete='cc-name'>")->GetTestableView()->
-      CancelForTesting();
+  AutofillDialogControllerImpl* controller =
+      SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
+  ASSERT_TRUE(controller);
+  controller->GetTestableView()->CancelForTesting();
   ExpectDomMessage("error: cancel");
 }
 
@@ -919,7 +961,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
     // Create some valid inputted billing data.
     const DetailInput& cc_number =
         controller()->RequestedFieldsForSection(SECTION_CC)[0];
-    ASSERT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
+    EXPECT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
     view->SetTextContentsOfInput(cc_number, ASCIIToUTF16("4111111111111111"));
   }
 
@@ -1149,6 +1191,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        MAYBE_FillFormIncludesCVC) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-csc'>");
+  ASSERT_TRUE(controller);
 
   AddCreditcardToProfile(controller->profile(), test::GetVerifiedCreditCard());
   AddAutofillProfileToProfile(controller->profile(),
@@ -1296,6 +1339,87 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RefreshOnManageTabClose) {
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
   GetActiveWebContents()->Close();
+}
+
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_DoesWorkOnHttpWithFlag DISABLED_DoesWorkOnHttpWithFlag
+#else
+#define MAYBE_DoesWorkOnHttpWithFlag DoesWorkOnHttpWithFlag
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       MAYBE_DoesWorkOnHttpWithFlag) {
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(http_server.Start());
+  EXPECT_TRUE(RunTestPage(http_server));
+}
+
+// Like the parent test, but doesn't add the --reduce-security-for-testing flag.
+class AutofillDialogControllerSecurityTest :
+    public AutofillDialogControllerTest {
+ public:
+  AutofillDialogControllerSecurityTest() {}
+  virtual ~AutofillDialogControllerSecurityTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    CHECK(!command_line->HasSwitch(::switches::kReduceSecurityForTesting));
+  }
+
+  typedef net::BaseTestServer::SSLOptions SSLOptions;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerSecurityTest);
+};
+
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_DoesntWorkOnHttp DISABLED_DoesntWorkOnHttp
+#else
+#define MAYBE_DoesntWorkOnHttp DoesntWorkOnHttp
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
+                       MAYBE_DoesntWorkOnHttp) {
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(http_server.Start());
+  EXPECT_FALSE(RunTestPage(http_server));
+}
+
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_DoesWorkOnHttpWithFlags DISABLED_DoesWorkOnHttpWithFlags
+#else
+#define MAYBE_DoesWorkOnHttpWithFlags DoesWorkOnHttpWithFlags
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
+                       MAYBE_DoesWorkOnHttpWithFlags) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      SSLOptions(SSLOptions::CERT_OK),
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  EXPECT_TRUE(RunTestPage(https_server));
+}
+
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_DoesntWorkOnBrokenHttps DISABLED_DoesntWorkOnBrokenHttps
+#else
+#define MAYBE_DoesntWorkOnBrokenHttps DoesntWorkOnBrokenHttps
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
+                       MAYBE_DoesntWorkOnBrokenHttps) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      SSLOptions(SSLOptions::CERT_EXPIRED),
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  EXPECT_FALSE(RunTestPage(https_server));
 }
 
 }  // namespace autofill

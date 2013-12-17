@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <body>
+    <form><input autocomplete="cc-name"></form>
+    <script>
+      function send(msg) {
+        domAutomationController.setAutomationId(0);
+        domAutomationController.send(msg);
+      }
+
+      window.onclick = function() {
+        document.forms[0].requestAutocomplete();
+        send('clicked');
+      };
+    </script>
+  </body>
+</html>

@@ -774,9 +774,12 @@ const char kProcessType[]                   = "type";
 // Reduces the GPU process sandbox to be less strict.
 const char kReduceGpuSandbox[]              = "reduce-gpu-sandbox";
 
+// Enables more web features over insecure connections. Designed to be used
+// for testing purposes only.
+const char kReduceSecurityForTesting[]      = "reduce-security-for-testing";
+
 // Register Pepper plugins (see pepper_plugin_list.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
-
 
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";

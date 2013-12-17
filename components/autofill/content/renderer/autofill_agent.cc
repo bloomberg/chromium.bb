@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/web_element_descriptor.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
@@ -265,13 +266,20 @@ void AutofillAgent::DidChangeScrollOffset(blink::WebFrame*) {
 
 void AutofillAgent::didRequestAutocomplete(blink::WebFrame* frame,
                                            const WebFormElement& form) {
+  // Disallow the dialog over non-https or broken https, except when the
+  // ignore SSL flag is passed. See http://crbug.com/272512.
+  // TODO(palmer): this should be moved to the browser process after frames
+  // get their own processes.
   GURL url(frame->document().url());
   content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(frame);
+  bool is_safe = url.SchemeIs(content::kHttpsScheme) &&
+      !net::IsCertStatusError(ssl_status.cert_status);
+  bool allow_unsafe = CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kReduceSecurityForTesting);
+
   FormData form_data;
   if (!in_flight_request_form_.isNull() ||
-      (url.SchemeIs(content::kHttpsScheme) &&
-       (net::IsCertStatusError(ssl_status.cert_status) ||
-        net::IsCertStatusMinorError(ssl_status.cert_status))) ||
+      (!is_safe && !allow_unsafe) ||
       !WebFormElementToFormData(form,
                                 WebFormControlElement(),
                                 REQUIRE_AUTOCOMPLETE,

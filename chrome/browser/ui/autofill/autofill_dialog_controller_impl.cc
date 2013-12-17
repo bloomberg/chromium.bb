@@ -570,6 +570,25 @@ base::WeakPtr<AutofillDialogController> AutofillDialogController::Create(
 void AutofillDialogControllerImpl::Show() {
   dialog_shown_timestamp_ = base::Time::Now();
 
+  // Determine what field types should be included in the dialog.
+  bool has_types = false;
+  bool has_sections = false;
+  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
+      &has_types, &has_sections);
+
+  // Fail if the author didn't specify autocomplete types.
+  if (!has_types) {
+    callback_.Run(NULL);
+    delete this;
+    return;
+  }
+
+  // Log any relevant UI metrics and security exceptions.
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
+
+  GetMetricLogger().LogDialogSecurityMetric(
+      AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
+
   // The Autofill dialog is shown in response to a message from the renderer and
   // as such, it can only be made in the context of the current document. A call
   // to GetActiveEntry would return a pending entry, if there was one, which
@@ -579,34 +598,9 @@ void AutofillDialogControllerImpl::Show() {
   invoked_from_same_origin_ =
       current_url.GetOrigin() == source_url_.GetOrigin();
 
-  // Log any relevant UI metrics and security exceptions.
-  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
-
-  GetMetricLogger().LogDialogSecurityMetric(
-      AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
-
-  // Determine what field types should be included in the dialog.
-  // Note that RequestingCreditCardInfo() below relies on parsed field types.
-  bool has_types = false;
-  bool has_sections = false;
-  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
-      &has_types, &has_sections);
-
-  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
-    GetMetricLogger().LogDialogSecurityMetric(
-        AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
-  }
-
   if (!invoked_from_same_origin_) {
     GetMetricLogger().LogDialogSecurityMetric(
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
-  }
-
-  // Fail if the author didn't specify autocomplete types.
-  if (!has_types) {
-    callback_.Run(NULL);
-    delete this;
-    return;
   }
 
   common::BuildInputsForSection(SECTION_CC,
@@ -2000,12 +1994,6 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING)));
   }
 
-  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
-    notifications.push_back(DialogNotification(
-        DialogNotification::SECURITY_WARNING,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING)));
-  }
-
   if (!invoked_from_same_origin_) {
     notifications.push_back(DialogNotification(
         DialogNotification::SECURITY_WARNING,
@@ -2473,22 +2461,6 @@ bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
     return popup_controller_->HandleKeyPressEvent(event);
 
   return false;
-}
-
-bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
-  DCHECK_GT(form_structure_.field_count(), 0U);
-
-  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    AutofillType type = form_structure_.field(i)->Type();
-    if (common::IsCreditCardType(type.GetStorableType()))
-      return true;
-  }
-
-  return false;
-}
-
-bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
-  return source_url_.SchemeIs(content::kHttpsScheme);
 }
 
 bool AutofillDialogControllerImpl::IsSubmitPausedOn(

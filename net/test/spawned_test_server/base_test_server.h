@@ -174,7 +174,7 @@ class BaseTestServer {
   BaseTestServer(Type type,  const std::string& host);
 
   // Initialize a TestServer with a specific set of SSLOptions for HTTPS or WSS.
-  explicit BaseTestServer(Type type, const SSLOptions& ssl_options);
+  BaseTestServer(Type type, const SSLOptions& ssl_options);
 
   // Returns the host port pair used by current Python based test server only
   // if the server is started.

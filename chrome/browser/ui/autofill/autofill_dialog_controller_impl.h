@@ -280,10 +280,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Should be called on the Wallet sign-in error.
   virtual void OnWalletSigninError();
 
-  // Whether the information input in this dialog will be securely transmitted
-  // to the requesting site.
-  virtual bool TransmissionWillBeSecure() const;
-
   // Whether submission is currently waiting for |action| to be handled.
   bool IsSubmitPausedOn(wallet::RequiredAction action) const;
 
@@ -320,9 +316,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   DialogSignedInState SignedInState() const;
 
  private:
-  // Whether or not the current request wants credit info back.
-  bool RequestingCreditCardInfo() const;
-
   // Initializes or updates |suggested_cc_| et al.
   void SuggestionsUpdated();
 

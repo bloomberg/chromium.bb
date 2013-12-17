@@ -319,12 +319,6 @@ class TestAutofillDialogController
     open_tab_url_ = url;
   }
 
-  // Whether the information input in this dialog will be securely transmitted
-  // to the requesting site.
-  virtual bool TransmissionWillBeSecure() const OVERRIDE {
-    return true;
-  }
-
   virtual void ShowNewCreditCardBubble(
       scoped_ptr<CreditCard> new_card,
       scoped_ptr<AutofillProfile> billing_profile) OVERRIDE {

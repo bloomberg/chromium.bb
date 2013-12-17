@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for the AutofillPopup.
  */
 public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
+    private static final String SWITCH_REDUCE_SECURITY_FOR_TESTING = "reduce-security-for-testing";
     private static final long DIALOG_CALLBACK_DELAY_MILLISECONDS = 50;
     private static final String TEST_NAME = "Joe Doe";
     private static final String TEST_PHONE = "(415)413-0703";
@@ -147,6 +149,8 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
+        CommandLine.init(new String[]{});
+        CommandLine.getInstance().appendSwitch(SWITCH_REDUCE_SECURITY_FOR_TESTING);
         AutofillDialogControllerAndroid.allowInsecureDialogsForTesting();
     }
 
