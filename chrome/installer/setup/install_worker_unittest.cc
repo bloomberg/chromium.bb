@@ -435,6 +435,14 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
   const bool multi_install = false;
   MockWorkItemList work_item_list;
 
+  const HKEY kRegRoot = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  static const wchar_t kRegKeyPath[] = L"Software\\Chromium\\test";
+  scoped_ptr<CreateRegKeyWorkItem> create_reg_key_work_item(
+      WorkItem::CreateCreateRegKeyWorkItem(kRegRoot, kRegKeyPath));
+  scoped_ptr<SetRegValueWorkItem> set_reg_value_work_item(
+      WorkItem::CreateSetRegValueWorkItem(kRegRoot, kRegKeyPath, L"", L"",
+                                          false));
+
   scoped_ptr<InstallationState> installation_state(
       BuildChromeInstallationState(system_level, multi_install));
 
@@ -447,6 +455,10 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
   // TODO(robertshield): Set up some real expectations.
   EXPECT_CALL(work_item_list, AddCopyTreeWorkItem(_, _, _, _, _))
       .Times(AtLeast(1));
+  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(_, _))
+      .WillRepeatedly(Return(create_reg_key_work_item.get()));
+  EXPECT_CALL(work_item_list, AddSetRegStringValueWorkItem(_, _, _, _, _))
+      .WillRepeatedly(Return(set_reg_value_work_item.get()));
 
   AddInstallWorkItems(*installation_state.get(),
                       *installer_state.get(),
