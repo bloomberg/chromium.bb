@@ -21,7 +21,10 @@ class IDLLabelResolver(IDLVisitor):
   def Depart(self, node, ignore, childdata):
     # Build list of Release=Version
     if node.IsA('LabelItem'):
-      return (node.GetName(), node.GetProperty('VALUE'))
+      channel = node.GetProperty('channel')
+      if not channel:
+        channel = 'stable'
+      return (node.GetName(), node.GetProperty('VALUE'), channel)
 
     # On completion of the Label, apply to the parent File if the
     # name of the label matches the generation label.
@@ -75,7 +78,9 @@ class IDLNamespaceVersionResolver(IDLVisitor):
     if parent_namespace and node.cls in IDLNode.NamedSet:
       # Set version min and max based on properties
       if self.release_map:
-        vmin = node.GetProperty('version')
+        vmin = node.GetProperty('dev_version')
+        if vmin == None:
+          vmin = node.GetProperty('version')
         vmax = node.GetProperty('deprecate')
         # If no min is available, the use the parent File's min
         if vmin == None:

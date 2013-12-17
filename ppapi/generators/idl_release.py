@@ -214,9 +214,11 @@ class IDLReleaseMap(object):
   def __init__(self, release_info):
     self.version_to_release = {}
     self.release_to_version = {}
-    for release, version in release_info:
+    self.release_to_channel = {}
+    for release, version, channel in release_info:
       self.version_to_release[version] = release
       self.release_to_version[release] = version
+      self.release_to_channel[release] = channel
     self.releases = sorted(self.release_to_version.keys())
     self.versions = sorted(self.version_to_release.keys())
 
@@ -237,6 +239,9 @@ class IDLReleaseMap(object):
 
   def GetVersionRange(self):
     return (self.versions[0], self.version[-1])
+
+  def GetChannel(self, release):
+    return self.release_to_channel.get(release, None)
 
 #
 # Test Code

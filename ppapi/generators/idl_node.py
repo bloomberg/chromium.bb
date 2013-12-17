@@ -276,6 +276,10 @@ class IDLNode(IDLRelease):
       else:
         my_releases = set([my_min])
 
+      r = self.GetRelease(self.GetProperty('version'))
+      if not r in my_releases:
+        my_releases |= set([r])
+
       # Break cycle if we reference ourselves
       if self in visited:
         return [my_min]
@@ -338,6 +342,22 @@ class IDLNode(IDLRelease):
   def GetPropertyLocal(self, name):
     return self._property_node.GetPropertyLocal(name)
 
+  def NodeIsDevOnly(self):
+    """Returns true iff a node is only in dev channel."""
+    return self.GetProperty('dev_version') and not self.GetProperty('version')
+
+  def DevInterfaceMatchesStable(self, release):
+    """Returns true if an interface has an equivalent stable version."""
+    assert(self.IsA('Interface'))
+    for child in self.GetListOf('Member'):
+      unique = child.GetUniqueReleases([release])
+      if not unique or not child.InReleases([release]):
+        continue
+      if child.NodeIsDevOnly():
+        return False
+    return True
+
+
 #
 # IDLFile
 #
@@ -352,7 +372,7 @@ class IDLFile(IDLNode):
     IDLNode.__init__(self, 'File', name, 1, 0, attrs + children)
     # TODO(teravest): Why do we set release map like this here? This looks
     # suspicious...
-    self.release_map = IDLReleaseMap([('M13', 1.0)])
+    self.release_map = IDLReleaseMap([('M13', 1.0, 'stable')])
 
 
 #
