@@ -465,16 +465,6 @@ void SerializeAccessibilityNode(
 bool ShouldIncludeChildNode(
     const WebAXObject& parent,
     const WebAXObject& child) {
-  switch(parent.role()) {
-    case blink::WebAXRoleSlider:
-    case blink::WebAXRoleEditableText:
-    case blink::WebAXRoleTextArea:
-    case blink::WebAXRoleTextField:
-      return false;
-    default:
-      break;
-  }
-
   // The child may be invalid due to issues in webkit accessibility code.
   // Don't add children that are invalid thus preventing a crash.
   // https://bugs.webkit.org/show_bug.cgi?id=44149

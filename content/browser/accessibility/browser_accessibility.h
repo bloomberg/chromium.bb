@@ -282,6 +282,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibility* parent_;
 
  private:
+  // Return the sum of the lengths of all static text descendants,
+  // including this object if it's static text.
+  int GetStaticTextLenRecursive() const;
+
   // The index of this within its parent object.
   int32 index_in_parent_;
 

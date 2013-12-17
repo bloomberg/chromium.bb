@@ -1933,9 +1933,6 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
   if (offset < 0 || offset > static_cast<LONG>(text_str.size()))
     return E_INVALIDARG;
 
-  if (blink_role() != blink::WebAXRoleStaticText)
-    return E_FAIL;
-
   gfx::Rect character_bounds;
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
     character_bounds = GetGlobalBoundsForRange(offset, 1);
@@ -2721,9 +2718,6 @@ STDMETHODIMP BrowserAccessibilityWin::get_unclippedSubstringBounds(
       start_index > end_index) {
     return E_INVALIDARG;
   }
-
-  if (blink_role() != blink::WebAXRoleStaticText)
-    return E_FAIL;
 
   gfx::Rect bounds = GetGlobalBoundsForRange(
       start_index, end_index - start_index);

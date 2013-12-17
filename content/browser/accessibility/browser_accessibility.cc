@@ -44,7 +44,22 @@ BrowserAccessibility::~BrowserAccessibility() {
 }
 
 bool BrowserAccessibility::PlatformIsLeaf() const {
-  return role_ == blink::WebAXRoleStaticText || child_count() == 0;
+  if (child_count() == 0)
+    return true;
+
+  // All of these roles may have children that we use as internal
+  // implementation details, but we want to expose them as leaves
+  // to platform accessibility APIs.
+  switch (role_) {
+    case blink::WebAXRoleEditableText:
+    case blink::WebAXRoleSlider:
+    case blink::WebAXRoleStaticText:
+    case blink::WebAXRoleTextArea:
+    case blink::WebAXRoleTextField:
+      return true;
+    default:
+      return false;
+  }
 }
 
 uint32 BrowserAccessibility::PlatformChildCount() const {
@@ -196,7 +211,24 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
 
 gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     const {
-  DCHECK_EQ(role_, blink::WebAXRoleStaticText);
+  if (role_ != blink::WebAXRoleStaticText) {
+    // Apply recursively to all static text descendants. For example, if
+    // you call it on a div with two text node children, it just calls
+    // GetLocalBoundsForRange on each of the two children (adjusting
+    // |start| for each one) and unions the resulting rects.
+    gfx::Rect bounds;
+    for (size_t i = 0; i < children_.size(); ++i) {
+      BrowserAccessibility* child = children_[i];
+      int child_len = child->GetStaticTextLenRecursive();
+      if (start < child_len && start + len > 0) {
+        gfx::Rect child_rect = child->GetLocalBoundsForRange(start, len);
+        bounds.Union(child_rect);
+      }
+      start -= child_len;
+    }
+    return bounds;
+  }
+
   int end = start + len;
   int child_start = 0;
   int child_end = 0;
@@ -584,6 +616,18 @@ std::string BrowserAccessibility::GetTextRecursive() const {
   for (uint32 i = 0; i < PlatformChildCount(); ++i)
     result += PlatformGetChild(i)->GetTextRecursive();
   return result;
+}
+
+int BrowserAccessibility::GetStaticTextLenRecursive() const {
+  if (role_ == blink::WebAXRoleStaticText) {
+    return static_cast<int>(
+        GetStringAttribute(AccessibilityNodeData::ATTR_VALUE).size());
+  }
+
+  int len = 0;
+  for (size_t i = 0; i < children_.size(); ++i)
+    len += children_[i]->GetStaticTextLenRecursive();
+  return len;
 }
 
 }  // namespace content

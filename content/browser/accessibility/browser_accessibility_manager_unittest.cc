@@ -692,6 +692,11 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   // Test range that's beyond the text.
   EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
             static_text_accessible->GetLocalBoundsForRange(-1, 999).ToString());
+
+  // Test that we can call bounds for range on the parent element, too,
+  // and it still works.
+  EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
+            root_accessible->GetLocalBoundsForRange(0, 13).ToString());
 }
 
 TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
@@ -774,6 +779,94 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   // the bounds are as wide as four characters.
   EXPECT_EQ(gfx::Rect(120, 100, 40, 20).ToString(),
             static_text_accessible->GetLocalBoundsForRange(2, 2).ToString());
+}
+
+TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
+  AccessibilityNodeData root;
+  root.id = 1;
+  root.role = blink::WebAXRoleRootWebArea;
+  root.child_ids.push_back(2);
+
+  AccessibilityNodeData div;
+  div.id = 2;
+  div.role = blink::WebAXRoleDiv;
+  div.location = gfx::Rect(100, 100, 100, 20);
+  div.child_ids.push_back(3);
+  div.child_ids.push_back(4);
+  div.child_ids.push_back(5);
+
+  AccessibilityNodeData static_text1;
+  static_text1.id = 3;
+  static_text1.SetValue("AB");
+  static_text1.role = blink::WebAXRoleStaticText;
+  static_text1.location = gfx::Rect(100, 100, 40, 20);
+  static_text1.child_ids.push_back(6);
+
+  AccessibilityNodeData img;
+  img.id = 4;
+  img.role = blink::WebAXRoleImage;
+  img.location = gfx::Rect(140, 100, 20, 20);
+
+  AccessibilityNodeData static_text2;
+  static_text2.id = 5;
+  static_text2.SetValue("CD");
+  static_text2.role = blink::WebAXRoleStaticText;
+  static_text2.location = gfx::Rect(160, 100, 40, 20);
+  static_text2.child_ids.push_back(7);
+
+  AccessibilityNodeData inline_text1;
+  inline_text1.id = 6;
+  inline_text1.SetValue("AB");
+  inline_text1.role = blink::WebAXRoleInlineTextBox;
+  inline_text1.location = gfx::Rect(100, 100, 40, 20);
+  inline_text1.AddIntAttribute(AccessibilityNodeData::ATTR_TEXT_DIRECTION,
+                               blink::WebAXTextDirectionLR);
+  std::vector<int32> character_offsets1;
+  character_offsets1.push_back(20);  // 0
+  character_offsets1.push_back(40);  // 1
+  inline_text1.AddIntListAttribute(
+      AccessibilityNodeData::ATTR_CHARACTER_OFFSETS, character_offsets1);
+
+  AccessibilityNodeData inline_text2;
+  inline_text2.id = 7;
+  inline_text2.SetValue("CD");
+  inline_text2.role = blink::WebAXRoleInlineTextBox;
+  inline_text2.location = gfx::Rect(160, 100, 40, 20);
+  inline_text2.AddIntAttribute(AccessibilityNodeData::ATTR_TEXT_DIRECTION,
+                               blink::WebAXTextDirectionLR);
+  std::vector<int32> character_offsets2;
+  character_offsets2.push_back(20);  // 0
+  character_offsets2.push_back(40);  // 1
+  inline_text2.AddIntListAttribute(
+      AccessibilityNodeData::ATTR_CHARACTER_OFFSETS, character_offsets2);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root,
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
+  manager->UpdateNodesForTesting(
+      div, static_text1, img, static_text2, inline_text1, inline_text2);
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+
+  EXPECT_EQ(gfx::Rect(100, 100, 20, 20).ToString(),
+            root_accessible->GetLocalBoundsForRange(0, 1).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 40, 20).ToString(),
+            root_accessible->GetLocalBoundsForRange(0, 2).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 80, 20).ToString(),
+            root_accessible->GetLocalBoundsForRange(0, 3).ToString());
+
+  EXPECT_EQ(gfx::Rect(120, 100, 60, 20).ToString(),
+            root_accessible->GetLocalBoundsForRange(1, 2).ToString());
+
+  EXPECT_EQ(gfx::Rect(120, 100, 80, 20).ToString(),
+            root_accessible->GetLocalBoundsForRange(1, 3).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 20).ToString(),
+            root_accessible->GetLocalBoundsForRange(0, 4).ToString());
 }
 
 }  // namespace content
