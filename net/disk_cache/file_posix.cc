@@ -17,7 +17,7 @@
 namespace {
 
 // The maximum number of threads for this pool.
-const int kMaxThreads = 20;
+const int kMaxThreads = 5;
 
 class FileWorkerPool : public base::SequencedWorkerPool {
  public:
