@@ -1765,7 +1765,7 @@ class BranchUtilStage(bs.BuilderStage):
       src_manifest: The ManifestCheckout object for the current manifest.
       src_checkout: The ProjectCheckout object to process.
     """
-    if not src_checkout.IsCrosProject():
+    if not src_checkout.IsBranchableProject():
       # We don't have the ability to push branches to this repository. Just
       # use TOT instead.
       return
@@ -1816,7 +1816,7 @@ class BranchUtilStage(bs.BuilderStage):
     for node in root.findall('project'):
       path = node.attrib['path']
       checkout = src_manifest.FindCheckoutFromPath(path)
-      if checkout.IsCrosProject():
+      if checkout.IsBranchableProject():
         # Point at the new branch.
         node.attrib.pop('revision', None)
         node.attrib.pop('upstream', None)

@@ -259,9 +259,10 @@ class ProjectCheckout(dict):
       remote = self['remote']
       raise AssertionError('Remote %s is not pushable.' % (remote,))
 
-  def IsCrosProject(self):
+  def IsBranchableProject(self):
     """Return whether this project is hosted on ChromeOS git servers."""
-    return self['remote'] in constants.CROS_REMOTES
+    return (self['remote'] in constants.CROS_REMOTES and
+        re.match(constants.BRANCHABLE_PROJECTS[self['remote']], self['name']))
 
   def GetPath(self, absolute=False):
     """Get the path to the checkout.

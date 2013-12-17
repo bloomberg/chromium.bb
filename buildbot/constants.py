@@ -103,6 +103,15 @@ GIT_REMOTES = {
 }
 GIT_REMOTES.update(CROS_REMOTES)
 
+# Mapping 'remote name' -> regexp that matches names of repositories on that
+# remote that can be branched when creating CrOS branch. Branching script will
+# actually create a new git ref when branching these projects. It won't attempt
+# to create a git ref for other projects that may be mentioned in a manifest.
+BRANCHABLE_PROJECTS = {
+    EXTERNAL_REMOTE: r'chromiumos/(.+)',
+    INTERNAL_REMOTE: r'chromeos/(.+)',
+}
+
 # TODO(sosa): Move to manifest-versions-external once its created
 MANIFEST_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
