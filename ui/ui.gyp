@@ -425,7 +425,7 @@
             '../build/linux/system.gyp:pangocairo',
           ],
         }],
-        ['use_x11==0 or use_clipboard_aurax11==1', {
+        ['OS=="win" or use_clipboard_aurax11==1', {
           'sources!': [
             'base/clipboard/clipboard_aura.cc',
           ],

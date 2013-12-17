@@ -552,10 +552,6 @@
           'use_x11%': 1,
         }],
 
-        ['OS=="linux" and use_aura==1 and chromeos==0', {
-          'use_clipboard_aurax11%': 1,
-        }],
-
         # Flags to use glib.
         ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or embedded==1', {
           'use_glib%': 0,
@@ -1906,6 +1902,11 @@
         'ozone_platform_dri%': 0,
         'ozone_platform_test%': 0,
       }],
+
+      ['desktop_linux==1 and use_aura==1 and use_x11==1', {
+        'use_clipboard_aurax11%': 1,
+      }],
+
       ['OS=="win" and use_goma==1', {
         # goma doesn't support pch yet.
         'chromium_win_pch': 0,
