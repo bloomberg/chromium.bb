@@ -32,7 +32,7 @@
       layout: null,
 
       up: function(event) {
-        if (this.layout == 'none') 
+        if (this.layout == 'none')
           hideKeyboard();
         else
           this.fire('set-layout', {layout: this.layout});
@@ -48,9 +48,38 @@
       },
     });
   </script>
-</polymer>
+</polymer-element>
 
-<polymer-element name="kb-options-menu">
+<polymer-element name="kb-options-menu-toggle-lock-item"
+    extends="kb-options-menu-item">
+  <script>
+    (function() {
+      /**
+       * The lock and unlock label for this key.
+       * @const
+       * @enum {string}
+       */
+      // TODO(bshe): Localize the string resources. http://crbug.com/328871
+      var KEY_LABEL = {
+        LOCK: 'Lock',
+        UNLOCK: 'Unlock'
+      };
+
+      Polymer('kb-options-menu-toggle-lock-item', {
+        up: function(event) {
+          lockKeyboard(!keyboardLocked());
+          this.hidden = true;
+        },
+
+        get label() {
+          return keyboardLocked() ? KEY_LABEL.UNLOCK : KEY_LABEL.LOCK;
+        }
+      });
+    })();
+  </script>
+</polymer-element>
+
+<polymer-element name="kb-options-menu" noscript>
   <template>
     <style>
       @host {
@@ -69,6 +98,7 @@
     <!-- TODO(kevers): This is a temporary placeholder to enable testing
       -- of layout switching.  Deprecate once a decision is reached on
       -- a more permanent solution for layout selection. -->
+    <kb-options-menu-toggle-lock-item></kb-options-menu-toggle-lock-item>
     <kb-options-menu-item layout="system-qwerty" label="System QWERTY">
     </kb-options-menu-item>
     <kb-options-menu-item layout="qwerty" label="QWERTY">
@@ -78,10 +108,7 @@
     <kb-options-menu-item layout="none" label="Hide keyboard">
     </kb-options-menu-item>
   </template>
-  <script>
-    Polymer('kb-options-menu', {});
-   </script>
-</polymer>
+</polymer-element>
 
 <polymer-element name="kb-keyboard-overlay" attributes="keyset"
     on-pointerup="up">
