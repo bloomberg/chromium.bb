@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -327,6 +328,11 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
 TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   // This test makes sure that rules are restored from the rule store
   // on registry (in particular, browser) restart.
+
+  // TODO(vabr): Once some API using declarative rules enters the stable
+  // channel, make sure to use that API here, and remove |channel|.
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+
   ExtensionService* extension_service = env_.GetExtensionService();
 
   // 1. Add an extension, before rules registry gets created.
@@ -340,6 +346,9 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
                             &error));
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
+  EXPECT_TRUE(extension_service->extensions()->Contains(extension->id()));
+  EXPECT_TRUE(
+      extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest));
   env_.GetExtensionSystem()->SetReady();
 
   // 2. First run, adding a rule for the extension.
