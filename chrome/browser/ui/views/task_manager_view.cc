@@ -28,6 +28,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/label_button.h"
@@ -162,6 +164,7 @@ class TaskManagerView : public views::ButtonListener,
   // views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 
@@ -381,6 +384,9 @@ void TaskManagerView::Init() {
 
   // Makes sure our state is consistent.
   OnSelectionChanged();
+
+  ui::Accelerator ctrl_w(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  AddAccelerator(ctrl_w);
 }
 
 void TaskManagerView::UpdateStatsCounters() {
@@ -465,6 +471,13 @@ void TaskManagerView::Layout() {
 
 gfx::Size TaskManagerView::GetPreferredSize() {
   return gfx::Size(460, 270);
+}
+
+bool TaskManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
+  DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
+  GetWidget()->Close();
+  return true;
 }
 
 // static
