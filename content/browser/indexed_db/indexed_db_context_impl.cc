@@ -426,6 +426,12 @@ void IndexedDBContextImpl::TransactionComplete(const GURL& origin_url) {
   QueryAvailableQuota(origin_url);
 }
 
+void IndexedDBContextImpl::DatabaseDeleted(const GURL& origin_url) {
+  AddToOriginSet(origin_url);
+  QueryDiskAndUpdateQuotaUsage(origin_url);
+  QueryAvailableQuota(origin_url);
+}
+
 bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
                                             int64 additional_bytes) {
   if (space_available_map_.find(origin_url) == space_available_map_.end()) {

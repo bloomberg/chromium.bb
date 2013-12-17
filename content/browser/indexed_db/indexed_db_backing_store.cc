@@ -842,6 +842,7 @@ bool IndexedDBBackingStore::DeleteDatabase(const base::string16& name) {
     INTERNAL_WRITE_ERROR(DELETE_DATABASE);
     return false;
   }
+  db_->Compact(start_key, stop_key);
   return true;
 }
 

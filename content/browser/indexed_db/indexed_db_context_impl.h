@@ -67,6 +67,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void ConnectionOpened(const GURL& origin_url, IndexedDBConnection* db);
   void ConnectionClosed(const GURL& origin_url, IndexedDBConnection* db);
   void TransactionComplete(const GURL& origin_url);
+  void DatabaseDeleted(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
   bool IsOverQuota(const GURL& origin_url);
 

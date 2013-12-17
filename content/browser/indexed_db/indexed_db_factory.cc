@@ -25,7 +25,6 @@ IndexedDBFactory::~IndexedDBFactory() {}
 
 void IndexedDBFactory::ReleaseDatabase(
     const IndexedDBDatabase::Identifier& identifier,
-    const GURL& origin_url,
     bool forcedClose) {
   IndexedDBDatabaseMap::iterator it = database_map_.find(identifier);
   DCHECK(it != database_map_.end());
@@ -35,7 +34,7 @@ void IndexedDBFactory::ReleaseDatabase(
   // No grace period on a forced-close, as the initiator is
   // assuming the backing store will be released once all
   // connections are closed.
-  ReleaseBackingStore(origin_url, forcedClose);
+  ReleaseBackingStore(identifier.first, forcedClose);
 }
 
 void IndexedDBFactory::ReleaseBackingStore(const GURL& origin_url,
@@ -184,6 +183,14 @@ void IndexedDBFactory::DeleteDatabase(
   database->DeleteDatabase(callbacks);
   database_map_.erase(unique_identifier);
   ReleaseBackingStore(origin_url, false /* immediate */);
+}
+
+void IndexedDBFactory::DatabaseDeleted(
+    const IndexedDBDatabase::Identifier& identifier) {
+  // NULL after ContextDestroyed() called, and in some unit tests.
+  if (!context_)
+    return;
+  context_->DatabaseDeleted(identifier.first);
 }
 
 void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {

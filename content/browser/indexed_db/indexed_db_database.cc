@@ -1656,6 +1656,8 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
   metadata_.int_version = IndexedDBDatabaseMetadata::NO_INT_VERSION;
   metadata_.object_stores.clear();
   callbacks->OnSuccess();
+  if (factory_)
+    factory_->DatabaseDeleted(identifier_);
 }
 
 void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
@@ -1702,7 +1704,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
     // factory_ should only be null in unit tests.
     // TODO(jsbell): DCHECK(factory_ || !in_unit_tests) - somehow.
     if (factory_) {
-      factory_->ReleaseDatabase(identifier_, origin_url, forced);
+      factory_->ReleaseDatabase(identifier_, forced);
       factory_ = NULL;
     }
   }

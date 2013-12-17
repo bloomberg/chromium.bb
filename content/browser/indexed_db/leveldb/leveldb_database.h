@@ -67,6 +67,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   bool Write(const LevelDBWriteBatch& write_batch);
   scoped_ptr<LevelDBIterator> CreateIterator(const LevelDBSnapshot* = 0);
   const LevelDBComparator* Comparator() const;
+  void Compact(const base::StringPiece& start, const base::StringPiece& stop);
 
  protected:
   LevelDBDatabase();

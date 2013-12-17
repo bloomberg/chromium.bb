@@ -456,4 +456,11 @@ const LevelDBComparator* LevelDBDatabase::Comparator() const {
   return comparator_;
 }
 
+void LevelDBDatabase::Compact(const base::StringPiece& start,
+                              const base::StringPiece& stop) {
+  const leveldb::Slice start_slice = MakeSlice(start);
+  const leveldb::Slice stop_slice = MakeSlice(stop);
+  db_->CompactRange(&start_slice, &stop_slice);
+}
+
 }  // namespace content
