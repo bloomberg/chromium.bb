@@ -1213,16 +1213,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.directoryModel_.onEntryChanged(kind, entry);
     this.selectionHandler_.onFileSelectionChanged();
 
-    if (kind == util.EntryChangedKind.CREATE && FileType.isImage(entry)) {
+    if (kind === util.EntryChangedKind.CREATED && FileType.isImage(entry)) {
       // Preload a thumbnail if the new copied entry an image.
-      var metadata = entry.getMetadata(function(metadata) {
-        var url = entry.toURL();
+      this.metadataCache_.get(entry, 'thumbnail|drive', function(metadata) {
         var thumbnailLoader_ = new ThumbnailLoader(
-            url,
+            entry,
             ThumbnailLoader.LoaderType.CANVAS,
             metadata,
             undefined,  // Media type.
-            FileType.isOnDrive(url) ?
+            FileType.isOnDrive(entry) ?
                 ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
                 ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
             10);  // Very low priority.

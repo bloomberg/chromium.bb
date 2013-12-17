@@ -1045,31 +1045,34 @@ util.toggleFullScreen = function(appWindow, enabled) {
 /**
  * The type of a file operation.
  * @enum {string}
+ * @const
  */
-util.FileOperationType = {
+util.FileOperationType = Object.freeze({
   COPY: 'COPY',
   MOVE: 'MOVE',
   ZIP: 'ZIP',
-};
+});
 
 /**
  * The type of a file operation error.
  * @enum {number}
+ * @const
  */
-util.FileOperationErrorType = {
+util.FileOperationErrorType = Object.freeze({
   UNEXPECTED_SOURCE_FILE: 0,
   TARGET_EXISTS: 1,
   FILESYSTEM_ERROR: 2,
-};
+});
 
 /**
  * The kind of an entry changed event.
  * @enum {number}
+ * @const
  */
-util.EntryChangedKind = {
+util.EntryChangedKind = Object.freeze({
   CREATED: 0,
   DELETED: 1,
-};
+});
 
 /**
  * Obtains whether an entry is fake or not.
