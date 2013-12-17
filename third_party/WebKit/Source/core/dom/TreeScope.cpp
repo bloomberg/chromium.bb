@@ -245,7 +245,7 @@ Element* TreeScope::elementFromPoint(int x, int y) const
     if (!renderer)
         return 0;
     Node* node = renderer->node();
-    if (!node)
+    if (!node || node->isDocumentNode())
         return 0;
     if (node->isPseudoElement() || node->isTextNode())
         node = node->parentOrShadowHostNode();
