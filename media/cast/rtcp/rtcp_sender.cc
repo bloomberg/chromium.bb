@@ -458,7 +458,8 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
   for (; it != remb->remb_ssrcs.end(); ++it) {
     big_endian_writer.WriteU32(*it);
   }
-  cast_environment_->Logging()->InsertGenericEvent(kRembBitrate,
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertGenericEvent(now, kRembBitrate,
                                                    remb->remb_bitrate);
 }
 

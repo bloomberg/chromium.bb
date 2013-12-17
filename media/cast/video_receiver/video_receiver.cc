@@ -250,8 +250,9 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
   *render_time = GetRenderTime(now, rtp_timestamp);
 
   // TODO(mikhal): Store actual render time and not diff.
-  cast_environment_->Logging()->InsertFrameEventWithDelay(kVideoRenderDelay,
-      rtp_timestamp, (*encoded_frame)->frame_id, now - *render_time);
+  cast_environment_->Logging()->InsertFrameEventWithDelay(now,
+      kVideoRenderDelay, rtp_timestamp, (*encoded_frame)->frame_id,
+      now - *render_time);
 
   // Minimum time before a frame is due to be rendered before we pull it for
   // decode.
@@ -394,7 +395,7 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     time_incoming_packet_updated_ = true;
   }
 
-  cast_environment_->Logging()->InsertPacketEvent(kPacketReceived,
+  cast_environment_->Logging()->InsertPacketEvent(now, kPacketReceived,
       rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
       rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
 

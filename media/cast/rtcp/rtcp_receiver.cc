@@ -212,9 +212,10 @@ void RtcpReceiver::HandleReportBlock(const RtcpField* rtcp_field,
     return;
   }
   VLOG(1) << "Cast RTCP received RB from SSRC " << remote_ssrc;
-  cast_environment_->Logging()->InsertGenericEvent(kPacketLoss,
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertGenericEvent(now, kPacketLoss,
                                                    rb.fraction_lost);
-  cast_environment_->Logging()->InsertGenericEvent(kJitterMs,
+  cast_environment_->Logging()->InsertGenericEvent(now, kJitterMs,
                                                    rb.jitter);
 
   RtcpReportBlock report_block;

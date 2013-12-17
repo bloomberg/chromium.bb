@@ -15,7 +15,8 @@ namespace cast {
 
 void LogFrameEncodedEvent(CastEnvironment* const cast_environment,
                           const base::TimeTicks& capture_time) {
-  cast_environment->Logging()->InsertFrameEvent(kVideoFrameEncoded,
+  base::TimeTicks now = cast_environment->Clock()->NowTicks();
+  cast_environment->Logging()->InsertFrameEvent(now, kVideoFrameEncoded,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
 }
 
@@ -52,7 +53,8 @@ bool VideoEncoder::EncodeVideoFrame(
     return false;
   }
 
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameSentToEncoder,
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertFrameEvent(now, kVideoFrameSentToEncoder,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
       base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread,

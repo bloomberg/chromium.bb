@@ -9,12 +9,12 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/logging/logging_impl.h"
-
+#include "media/cast/test/fake_task_runner.h"
 
 namespace media {
 namespace cast {
 
- // Insert frame duration- one second.
+// Insert frame duration- one second.
 const int64 kIntervalTime1S = 1;
 // Test frame rate goal - 30fps.
 const int kFrameIntervalMs = 33;
@@ -23,16 +23,21 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class TestLogging : public ::testing::Test {
  protected:
-  TestLogging()
+  TestLogging() {
     // Enable logging, disable tracing and uma.
-      : logging_(&testing_clock_, true, false, false) {
+    config_.enable_data_collection = true;
+
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    logging_.reset(new LoggingImpl(task_runner_, config_));
   }
 
   virtual ~TestLogging() {}
 
-  LoggingImpl logging_;
+  CastLoggingConfig config_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_ptr<LoggingImpl> logging_;
   base::SimpleTestTickClock testing_clock_;
 };
 
@@ -42,19 +47,21 @@ TEST_F(TestLogging, BasicFrameLogging) {
   uint32 rtp_timestamp = 0;
   uint32 frame_id = 0;
   do {
-    logging_.InsertFrameEvent(kAudioFrameCaptured, rtp_timestamp, frame_id);
+    logging_->InsertFrameEvent(testing_clock_.NowTicks(),
+                               kAudioFrameCaptured, rtp_timestamp, frame_id);
     testing_clock_.Advance(
-       base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
+        base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
     ++frame_id;
     time_interval = testing_clock_.NowTicks() - start_time;
   }  while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
-  FrameRawMap frame_map = logging_.GetFrameRawData();
+  FrameRawMap frame_map = logging_->GetFrameRawData();
   // Size of map should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, frame_map.size());
   // Verify stats.
-  const FrameStatsMap* frame_stats = logging_.GetFrameStatsData();
+  const FrameStatsMap* frame_stats =
+      logging_->GetFrameStatsData(testing_clock_.NowTicks());
   // Size of stats equals the number of events.
   EXPECT_EQ(1u, frame_stats->size());
   FrameStatsMap::const_iterator it = frame_stats->find(kAudioFrameCaptured);
@@ -77,20 +84,21 @@ TEST_F(TestLogging, FrameLoggingWithSize) {
   do {
     int size = kBaseFrameSizeBytes +
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
-    logging_.InsertFrameEventWithSize(
+    logging_->InsertFrameEventWithSize(testing_clock_.NowTicks(),
         kAudioFrameCaptured, rtp_timestamp, frame_id, size);
     testing_clock_.Advance(
-       base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
+        base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
     ++frame_id;
     time_interval = testing_clock_.NowTicks() - start_time;
   }  while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
-  FrameRawMap frame_map =  logging_.GetFrameRawData();
+  FrameRawMap frame_map =  logging_->GetFrameRawData();
   // Size of map should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, frame_map.size());
   // Verify stats.
-  const FrameStatsMap* frame_stats = logging_.GetFrameStatsData();
+  const FrameStatsMap* frame_stats =
+      logging_->GetFrameStatsData(testing_clock_.NowTicks());
   // Size of stats equals the number of events.
   EXPECT_EQ(1u, frame_stats->size());
   FrameStatsMap::const_iterator it = frame_stats->find(kAudioFrameCaptured);
@@ -114,21 +122,22 @@ TEST_F(TestLogging, FrameLoggingWithDelay) {
   do {
     int delay = kPlayoutDelayMs +
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
-    logging_.InsertFrameEventWithDelay(
+    logging_->InsertFrameEventWithDelay(testing_clock_.NowTicks(),
         kAudioFrameCaptured, rtp_timestamp, frame_id,
         base::TimeDelta::FromMilliseconds(delay));
     testing_clock_.Advance(
-       base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
+        base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
     ++frame_id;
     time_interval = testing_clock_.NowTicks() - start_time;
   }  while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
-  FrameRawMap frame_map =  logging_.GetFrameRawData();
+  FrameRawMap frame_map =  logging_->GetFrameRawData();
   // Size of map should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, frame_map.size());
   // Verify stats.
-  const FrameStatsMap* frame_stats = logging_.GetFrameStatsData();
+  const FrameStatsMap* frame_stats =
+      logging_->GetFrameStatsData(testing_clock_.NowTicks());
   // Size of stats equals the number of events.
   EXPECT_EQ(1u, frame_stats->size());
   FrameStatsMap::const_iterator it = frame_stats->find(kAudioFrameCaptured);
@@ -147,14 +156,16 @@ TEST_F(TestLogging, MultipleEventFrameLogging) {
   uint32 rtp_timestamp = 0;
   uint32 frame_id = 0;
   do {
-    logging_.InsertFrameEvent(kAudioFrameCaptured, rtp_timestamp, frame_id);
+    logging_->InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
+                               rtp_timestamp, frame_id);
     if (frame_id % 2) {
-      logging_.InsertFrameEventWithSize(
+      logging_->InsertFrameEventWithSize(testing_clock_.NowTicks(),
           kAudioFrameEncoded, rtp_timestamp, frame_id, 1500);
     } else if (frame_id % 3) {
-      logging_.InsertFrameEvent(kVideoFrameDecoded, rtp_timestamp, frame_id);
+      logging_->InsertFrameEvent(testing_clock_.NowTicks(), kVideoFrameDecoded,
+                                 rtp_timestamp, frame_id);
     } else {
-      logging_.InsertFrameEventWithDelay(
+      logging_->InsertFrameEventWithDelay(testing_clock_.NowTicks(),
           kVideoRenderDelay, rtp_timestamp, frame_id,
           base::TimeDelta::FromMilliseconds(20));
     }
@@ -165,7 +176,7 @@ TEST_F(TestLogging, MultipleEventFrameLogging) {
     time_interval = testing_clock_.NowTicks() - start_time;
   }  while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
-  FrameRawMap frame_map =  logging_.GetFrameRawData();
+  FrameRawMap frame_map = logging_->GetFrameRawData();
   // Size of map should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, frame_map.size());
   // Multiple events captured per frame.
@@ -182,21 +193,22 @@ TEST_F(TestLogging, PacketLogging) {
   do {
     for (int i = 0; i < kNumPacketsPerFrame; ++i) {
       int size = kBaseSize + base::RandInt(-kSizeInterval, kSizeInterval);
-      logging_.InsertPacketEvent(kPacketSentToPacer, rtp_timestamp, frame_id,
-          i, kNumPacketsPerFrame, size);
+      logging_->InsertPacketEvent(testing_clock_.NowTicks(), kPacketSentToPacer,
+          rtp_timestamp, frame_id, i, kNumPacketsPerFrame, size);
     }
     testing_clock_.Advance(
-       base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
+        base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
     ++frame_id;
     time_interval = testing_clock_.NowTicks() - start_time;
   }  while (time_interval.InSeconds() < kIntervalTime1S);
   // Get logging data.
-  PacketRawMap raw_map = logging_.GetPacketRawData();
+  PacketRawMap raw_map = logging_->GetPacketRawData();
   // Size of map should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, raw_map.size());
   // Verify stats.
-  const PacketStatsMap* stats_map = logging_.GetPacketStatsData();
+  const PacketStatsMap* stats_map =
+      logging_->GetPacketStatsData(testing_clock_.NowTicks());
   // Size of stats equals the number of events.
   EXPECT_EQ(1u, stats_map->size());
   PacketStatsMap::const_iterator it = stats_map->find(kPacketSentToPacer);
@@ -208,39 +220,40 @@ TEST_F(TestLogging, PacketLogging) {
 
 TEST_F(TestLogging, GenericLogging) {
   // Insert multiple generic types.
-  const int kNumRuns = 1000;
+  const size_t kNumRuns = 1000;
   const int kBaseValue = 20;
-  for (int i = 0; i < kNumRuns; ++i) {
+  for (size_t i = 0; i < kNumRuns; ++i) {
     int value = kBaseValue + base::RandInt(-5, 5);
-    logging_.InsertGenericEvent(kRtt, value);
+    logging_->InsertGenericEvent(testing_clock_.NowTicks(), kRttMs, value);
     if (i % 2) {
-      logging_.InsertGenericEvent(kPacketLoss, value);
+      logging_->InsertGenericEvent(testing_clock_.NowTicks(), kPacketLoss,
+                                   value);
     }
     if (!(i % 4)) {
-      logging_.InsertGenericEvent(kJitter, value);
+      logging_->InsertGenericEvent(testing_clock_.NowTicks(), kJitterMs, value);
     }
   }
-  GenericRawMap raw_map = logging_.GetGenericRawData();
-  const GenericStatsMap* stats_map = logging_.GetGenericStatsData();
+  GenericRawMap raw_map = logging_->GetGenericRawData();
+  const GenericStatsMap* stats_map = logging_->GetGenericStatsData();
   // Size of generic map = number of different events.
   EXPECT_EQ(3u, raw_map.size());
   EXPECT_EQ(3u, stats_map->size());
   // Raw events - size of internal map = number of calls.
-  GenericRawMap::iterator rit = raw_map.find(kRtt);
+  GenericRawMap::iterator rit = raw_map.find(kRttMs);
   EXPECT_EQ(kNumRuns, rit->second.value.size());
   EXPECT_EQ(kNumRuns, rit->second.timestamp.size());
   rit = raw_map.find(kPacketLoss);
   EXPECT_EQ(kNumRuns / 2, rit->second.value.size());
   EXPECT_EQ(kNumRuns / 2, rit->second.timestamp.size());
-  rit = raw_map.find(kJitter);
+  rit = raw_map.find(kJitterMs);
   EXPECT_EQ(kNumRuns / 4, rit->second.value.size());
   EXPECT_EQ(kNumRuns / 4, rit->second.timestamp.size());
   // Stats - one value per event.
-  GenericStatsMap::const_iterator sit = stats_map->find(kRtt);
+  GenericStatsMap::const_iterator sit = stats_map->find(kRttMs);
   EXPECT_NEAR(kBaseValue, sit->second, 2.5);
   sit = stats_map->find(kPacketLoss);
   EXPECT_NEAR(kBaseValue, sit->second, 2.5);
-  sit = stats_map->find(kJitter);
+  sit = stats_map->find(kJitterMs);
   EXPECT_NEAR(kBaseValue, sit->second, 2.5);
 }
 

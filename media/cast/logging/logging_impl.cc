@@ -10,23 +10,23 @@
 namespace media {
 namespace cast {
 
-LoggingImpl::LoggingImpl(base::TickClock* clock,
-                         scoped_refptr<base::TaskRunner> main_thread_proxy,
+LoggingImpl::LoggingImpl(scoped_refptr<base::TaskRunner> main_thread_proxy,
                          const CastLoggingConfig& config)
     : main_thread_proxy_(main_thread_proxy),
       config_(config),
-      raw_(clock),
-      stats_(clock) {}
+      raw_(),
+      stats_() {}
 
 LoggingImpl::~LoggingImpl() {}
 
-void LoggingImpl::InsertFrameEvent(CastLoggingEvent event,
+void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
+                                   CastLoggingEvent event,
                                    uint32 rtp_timestamp,
                                    uint32 frame_id) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   if (config_.enable_data_collection) {
-    raw_.InsertFrameEvent(event, rtp_timestamp, frame_id);
-    stats_.InsertFrameEvent(event, rtp_timestamp, frame_id);
+    raw_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
+    stats_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
   }
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
@@ -36,14 +36,17 @@ void LoggingImpl::InsertFrameEvent(CastLoggingEvent event,
   }
 }
 
-void LoggingImpl::InsertFrameEventWithSize(CastLoggingEvent event,
+void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
+                                           CastLoggingEvent event,
                                            uint32 rtp_timestamp,
                                            uint32 frame_id,
                                            int frame_size) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   if (config_.enable_data_collection) {
-    raw_.InsertFrameEventWithSize(event, rtp_timestamp, frame_id, frame_size);
-    stats_.InsertFrameEventWithSize(event, rtp_timestamp, frame_id, frame_size);
+    raw_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp, frame_id,
+                                  frame_size);
+    stats_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp,
+                                    frame_id, frame_size);
   }
   if (config_.enable_uma_stats) {
     UMA_HISTOGRAM_COUNTS(CastLoggingToString(event), frame_size);
@@ -56,14 +59,18 @@ void LoggingImpl::InsertFrameEventWithSize(CastLoggingEvent event,
   }
 }
 
-void LoggingImpl::InsertFrameEventWithDelay(CastLoggingEvent event,
-                                            uint32 rtp_timestamp,
-                                            uint32 frame_id,
-                                            base::TimeDelta delay) {
+void LoggingImpl::InsertFrameEventWithDelay(
+    const base::TimeTicks& time_of_event,
+    CastLoggingEvent event,
+    uint32 rtp_timestamp,
+    uint32 frame_id,
+    base::TimeDelta delay) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   if (config_.enable_data_collection) {
-    raw_.InsertFrameEventWithDelay(event, rtp_timestamp, frame_id, delay);
-    stats_.InsertFrameEventWithDelay(event, rtp_timestamp, frame_id, delay);
+    raw_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
+                                   frame_id, delay);
+    stats_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
+                                     frame_id, delay);
   }
   if (config_.enable_uma_stats) {
     UMA_HISTOGRAM_TIMES(CastLoggingToString(event), delay);
@@ -76,7 +83,8 @@ void LoggingImpl::InsertFrameEventWithDelay(CastLoggingEvent event,
   }
 }
 
-void LoggingImpl::InsertPacketListEvent(CastLoggingEvent event,
+void LoggingImpl::InsertPacketListEvent(const base::TimeTicks& time_of_event,
+                                        CastLoggingEvent event,
                                         const PacketList& packets) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   for (unsigned int i = 0; i < packets.size(); ++i) {
@@ -91,12 +99,13 @@ void LoggingImpl::InsertPacketListEvent(CastLoggingEvent event,
     cast_big_endian_reader.ReadU16(&packet_id);
     cast_big_endian_reader.ReadU16(&max_packet_id);
     // rtp_timestamp is enough - no need for frame_id as well.
-    InsertPacketEvent(event, rtp_timestamp, kFrameIdUnknown, packet_id,
-                      max_packet_id, packet.size());
+    InsertPacketEvent(time_of_event, event, rtp_timestamp, kFrameIdUnknown,
+                      packet_id, max_packet_id, packet.size());
   }
 }
 
-void LoggingImpl::InsertPacketEvent(CastLoggingEvent event,
+void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
+                                    CastLoggingEvent event,
                                     uint32 rtp_timestamp,
                                     uint32 frame_id,
                                     uint16 packet_id,
@@ -104,10 +113,10 @@ void LoggingImpl::InsertPacketEvent(CastLoggingEvent event,
                                     size_t size) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   if (config_.enable_data_collection) {
-    raw_.InsertPacketEvent(event, rtp_timestamp, frame_id, packet_id,
-                           max_packet_id, size);
-    stats_.InsertPacketEvent(event, rtp_timestamp, frame_id, packet_id,
-                             max_packet_id, size);
+    raw_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
+                           packet_id, max_packet_id, size);
+    stats_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
+                             packet_id, max_packet_id, size);
   }
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
@@ -117,11 +126,12 @@ void LoggingImpl::InsertPacketEvent(CastLoggingEvent event,
   }
 }
 
-void LoggingImpl::InsertGenericEvent(CastLoggingEvent event, int value) {
+void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
+                                     CastLoggingEvent event, int value) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   if (config_.enable_data_collection) {
-    raw_.InsertGenericEvent(event, value);
-    stats_.InsertGenericEvent(event, value);
+    raw_.InsertGenericEvent(time_of_event, event, value);
+    stats_.InsertGenericEvent(time_of_event, event, value);
   }
   if (config_.enable_uma_stats) {
     UMA_HISTOGRAM_COUNTS(CastLoggingToString(event), value);
@@ -149,10 +159,11 @@ GenericRawMap LoggingImpl::GetGenericRawData() {
   return raw_.GetGenericData();
 }
 
-const FrameStatsMap* LoggingImpl::GetFrameStatsData() {
+const FrameStatsMap* LoggingImpl::GetFrameStatsData(
+    const base::TimeTicks& now) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   // Get stats data.
-  const FrameStatsMap* stats = stats_.GetFrameStatsData();
+  const FrameStatsMap* stats = stats_.GetFrameStatsData(now);
   if (config_.enable_uma_stats) {
     FrameStatsMap::const_iterator it;
     for (it = stats->begin(); it != stats->end(); ++it) {
@@ -184,10 +195,11 @@ const FrameStatsMap* LoggingImpl::GetFrameStatsData() {
   return stats;
 }
 
-const PacketStatsMap* LoggingImpl::GetPacketStatsData() {
+const PacketStatsMap* LoggingImpl::GetPacketStatsData(
+    const base::TimeTicks& now) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   // Get stats data.
-  const PacketStatsMap* stats = stats_.GetPacketStatsData();
+  const PacketStatsMap* stats = stats_.GetPacketStatsData(now);
   if (config_.enable_uma_stats) {
     PacketStatsMap::const_iterator it;
     for (it = stats->begin(); it != stats->end(); ++it) {

@@ -24,36 +24,42 @@ namespace cast {
 class LoggingRaw : public base::NonThreadSafe,
                    public base::SupportsWeakPtr<LoggingRaw> {
  public:
-  explicit LoggingRaw(base::TickClock* clock);
+  LoggingRaw();
   ~LoggingRaw();
 
   // Inform of new event: three types of events: frame, packets and generic.
   // Frame events can be inserted with different parameters.
-  void InsertFrameEvent(CastLoggingEvent event,
+  void InsertFrameEvent(const base::TimeTicks& time_of_event,
+                        CastLoggingEvent event,
                         uint32 rtp_timestamp,
                         uint32 frame_id);
 
   // Size - Inserting the size implies that this is an encoded frame.
-  void InsertFrameEventWithSize(CastLoggingEvent event,
+  void InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
+                                CastLoggingEvent event,
                                 uint32 rtp_timestamp,
                                 uint32 frame_id,
                                 int frame_size);
 
   // Render/playout delay
-  void InsertFrameEventWithDelay(CastLoggingEvent event,
+  void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
+                                 CastLoggingEvent event,
                                  uint32 rtp_timestamp,
                                  uint32 frame_id,
                                  base::TimeDelta delay);
 
   // Insert a packet event.
-  void InsertPacketEvent(CastLoggingEvent event,
+  void InsertPacketEvent(const base::TimeTicks& time_of_event,
+                         CastLoggingEvent event,
                          uint32 rtp_timestamp,
                          uint32 frame_id,
                          uint16 packet_id,
                          uint16 max_packet_id,
                          size_t size);
 
-  void InsertGenericEvent(CastLoggingEvent event, int value);
+  void InsertGenericEvent(const base::TimeTicks& time_of_event,
+                          CastLoggingEvent event,
+                          int value);
 
   // Get raw log data.
   FrameRawMap GetFrameData() const;
@@ -65,11 +71,11 @@ class LoggingRaw : public base::NonThreadSafe,
   void Reset();
 
  private:
-  void InsertBaseFrameEvent(CastLoggingEvent event,
+  void InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
+                            CastLoggingEvent event,
                             uint32 frame_id,
                             uint32 rtp_timestamp);
 
-  base::TickClock* const clock_;  // Not owned by this class.
   FrameRawMap frame_map_;
   PacketRawMap packet_map_;
   GenericRawMap generic_map_;

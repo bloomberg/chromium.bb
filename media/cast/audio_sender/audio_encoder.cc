@@ -23,7 +23,9 @@ namespace cast {
 void LogAudioEncodedEvent(CastEnvironment* const cast_environment,
                           const base::TimeTicks& recorded_time) {
   // TODO(mikhal): Resolve timestamp calculation for audio.
-  cast_environment->Logging()->InsertFrameEvent(kAudioFrameEncoded,
+  base::TimeTicks now = cast_environment->Clock()->NowTicks();
+
+  cast_environment->Logging()->InsertFrameEvent(now, kAudioFrameEncoded,
       GetVideoRtpTimestamp(recorded_time), kFrameIdUnknown);
 }
 

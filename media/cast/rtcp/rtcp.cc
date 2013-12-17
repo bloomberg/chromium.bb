@@ -96,24 +96,24 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       RtcpReceiverEventLogMessages::const_iterator event_it =
           it->event_log_messages_.begin();
       for (; event_it != it->event_log_messages_.end(); ++event_it) {
-        // TODO(pwestin): we need to send in the event_it->event_timestamp to
-        // the log system too.
         switch (event_it->type) {
           case kPacketReceived:
-            cast_environment_->Logging()->InsertPacketEvent(kPacketReceived,
-                rtp_timestamp, kFrameIdUnknown, event_it->packet_id, 0, 0);
+            cast_environment_->Logging()->InsertPacketEvent(
+                event_it->event_timestamp, kPacketReceived, rtp_timestamp,
+                kFrameIdUnknown, event_it->packet_id, 0, 0);
             break;
           case kAckSent:
           case kAudioFrameDecoded:
           case kVideoFrameDecoded:
-            cast_environment_->Logging()->InsertFrameEvent(event_it->type,
-                rtp_timestamp, kFrameIdUnknown);
+            cast_environment_->Logging()->InsertFrameEvent(
+                event_it->event_timestamp, event_it->type, rtp_timestamp,
+                kFrameIdUnknown);
             break;
           case kAudioPlayoutDelay:
           case kVideoRenderDelay:
             cast_environment_->Logging()->InsertFrameEventWithDelay(
-                event_it->type, rtp_timestamp, kFrameIdUnknown,
-                event_it->delay_delta);
+                event_it->event_timestamp, event_it->type, rtp_timestamp,
+                kFrameIdUnknown, event_it->delay_delta);
             break;
           default:
             VLOG(2) << "Received log message via RTCP that we did not expect: "
@@ -156,8 +156,11 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       }
       // TODO(pwestin): how do we handle the truncated rtp_timestamp?
       // Add received log messages into our log system.
-      cast_environment_->Logging()->InsertFrameEvent(log_event, rtp_timestamp,
-          kFrameIdUnknown);
+      // TODO(pwestin): how do we handle the time? we don't care about it but
+      // we need to send in one.
+      base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+      cast_environment_->Logging()->InsertFrameEvent(now, log_event,
+          rtp_timestamp, kFrameIdUnknown);
     }
   }
 
@@ -252,7 +255,7 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 
   if (cast_message) {
     packet_type_flags |= RtcpSender::kRtcpCast;
-    cast_environment_->Logging()->InsertGenericEvent(kAckSent,
+    cast_environment_->Logging()->InsertGenericEvent(now, kAckSent,
         cast_message->ack_frame_id_);
   }
   if (receiver_log) {
@@ -269,9 +272,9 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
           &report_block.cumulative_lost,
           &report_block.extended_high_sequence_number,
           &report_block.jitter);
-      cast_environment_->Logging()->InsertGenericEvent(kJitterMs,
+      cast_environment_->Logging()->InsertGenericEvent(now, kJitterMs,
           report_block.jitter);
-      cast_environment_->Logging()->InsertGenericEvent(kPacketLoss,
+      cast_environment_->Logging()->InsertGenericEvent(now, kPacketLoss,
           report_block.fraction_lost);
 
     }
@@ -461,7 +464,9 @@ bool Rtcp::Rtt(base::TimeDelta* rtt,
   DCHECK(max_rtt) << "Invalid argument";
 
   if (number_of_rtt_in_avg_ == 0) return false;
-  cast_environment_->Logging()->InsertGenericEvent(kRttMs,
+
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertGenericEvent(now, kRttMs,
                                                    rtt->InMilliseconds());
 
   *rtt = rtt_;

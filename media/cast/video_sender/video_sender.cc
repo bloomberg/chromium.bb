@@ -132,7 +132,9 @@ void VideoSender::InsertRawVideoFrame(
     const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(video_encoder_.get()) << "Invalid state";
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameReceived,
+
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertFrameEvent(now, kVideoFrameReceived,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
 
   if (!video_encoder_->EncodeVideoFrame(video_frame, capture_time,
@@ -356,9 +358,10 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeDelta avg_rtt;
   base::TimeDelta min_rtt;
   base::TimeDelta max_rtt;
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   if (rtcp_->Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt)) {
-    cast_environment_->Logging()->InsertGenericEvent(kRttMs,
+    cast_environment_->Logging()->InsertGenericEvent(now, kRttMs,
         rtt.InMilliseconds());
     // Don't use a RTT lower than our average.
     rtt = std::max(rtt, avg_rtt);
@@ -400,7 +403,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     }
   } else {
     rtp_sender_->ResendPackets(cast_feedback.missing_frames_and_packets_);
-    last_send_time_ = cast_environment_->Clock()->NowTicks();
+    last_send_time_ = now;
 
     uint32 new_bitrate = 0;
     if (congestion_control_.OnNack(rtt, &new_bitrate)) {
@@ -413,7 +416,8 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
-  cast_environment_->Logging()->InsertGenericEvent(kAckReceived,
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertGenericEvent(now, kAckReceived,
                                                    acked_frame_id);
   VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;

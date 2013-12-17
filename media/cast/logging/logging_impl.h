@@ -23,42 +23,51 @@ namespace cast {
 // Should only be called from the main thread.
 class LoggingImpl : public base::NonThreadSafe {
  public:
-  LoggingImpl(base::TickClock* clock,
-              scoped_refptr<base::TaskRunner> main_thread_proxy,
+  LoggingImpl(scoped_refptr<base::TaskRunner> main_thread_proxy,
               const CastLoggingConfig& config);
 
   ~LoggingImpl();
 
-  // TODO(pwestin): Add argument to API to send in time of event instead of
-  // grabbing now.
-  void InsertFrameEvent(CastLoggingEvent event,
+  void InsertFrameEvent(const base::TimeTicks& time_of_event,
+                        CastLoggingEvent event,
                         uint32 rtp_timestamp,
                         uint32 frame_id);
-  void InsertFrameEventWithSize(CastLoggingEvent event,
+
+  void InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
+                                CastLoggingEvent event,
                                 uint32 rtp_timestamp,
                                 uint32 frame_id,
                                 int frame_size);
-  void InsertFrameEventWithDelay(CastLoggingEvent event,
+
+  void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
+                                 CastLoggingEvent event,
                                  uint32 rtp_timestamp,
                                  uint32 frame_id,
                                  base::TimeDelta delay);
-  void InsertPacketListEvent(CastLoggingEvent event, const PacketList& packets);
 
-  void InsertPacketEvent(CastLoggingEvent event,
+  void InsertPacketListEvent(const base::TimeTicks& time_of_event,
+                             CastLoggingEvent event,
+                             const PacketList& packets);
+
+  void InsertPacketEvent(const base::TimeTicks& time_of_event,
+                         CastLoggingEvent event,
                          uint32 rtp_timestamp,
                          uint32 frame_id,
                          uint16 packet_id,
                          uint16 max_packet_id,
                          size_t size);
-  void InsertGenericEvent(CastLoggingEvent event, int value);
+
+  void InsertGenericEvent(const base::TimeTicks& time_of_event,
+                          CastLoggingEvent event,
+                          int value);
 
   // Get raw data.
   FrameRawMap GetFrameRawData();
   PacketRawMap GetPacketRawData();
   GenericRawMap GetGenericRawData();
   // Get stats only (computed when called). Triggers UMA stats when enabled.
-  const FrameStatsMap* GetFrameStatsData();
-  const PacketStatsMap* GetPacketStatsData();
+  const FrameStatsMap* GetFrameStatsData(const base::TimeTicks& now);
+  const PacketStatsMap* GetPacketStatsData(const base::TimeTicks& now);
   const GenericStatsMap* GetGenericStatsData();
 
   void Reset();
