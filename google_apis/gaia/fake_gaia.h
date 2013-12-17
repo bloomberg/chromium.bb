@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
@@ -49,6 +50,18 @@ class FakeGaia {
   FakeGaia();
   ~FakeGaia();
 
+  // Sets the initial value of tokens and cookies.
+  void SetAuthTokens(const std::string& auth_code,
+                     const std::string& refresh_token,
+                     const std::string& access_token,
+                     const std::string& gaia_uber_token,
+                     const std::string& session_sid_cookie,
+                     const std::string& session_lsid_cookie);
+
+  // Initializes HTTP request handlers. Should be called after switches
+  // for tweaking GaiaUrls are in place.
+  void Initialize();
+
   // Handles a request and returns a response if the request was recognized as a
   // GAIA request. Note that this respects the switches::kGaiaUrl and friends so
   // that this can used with EmbeddedTestServer::RegisterRequestHandler().
@@ -81,16 +94,61 @@ class FakeGaia {
   void FormatJSONResponse(const base::DictionaryValue& response_dict,
                           net::test_server::BasicHttpResponse* http_response);
 
+  typedef base::Callback<void(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response)>
+          HttpRequestHandlerCallback;
+  typedef std::map<std::string, HttpRequestHandlerCallback> RequestHandlerMap;
+
+  // HTTP request handlers.
+  void HandleProgramaticAuth(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
+  void HandleServiceLogin(const net::test_server::HttpRequest& request,
+                          net::test_server::BasicHttpResponse* http_response);
+  void HandleOAuthLogin(const net::test_server::HttpRequest& request,
+                        net::test_server::BasicHttpResponse* http_response);
+  void HandleSSO(const net::test_server::HttpRequest& request,
+                 net::test_server::BasicHttpResponse* http_response);
+  void HandleMergeSession(const net::test_server::HttpRequest& request,
+                          net::test_server::BasicHttpResponse* http_response);
+  void HandleServiceLoginAuth(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
+  void HandleAuthToken(const net::test_server::HttpRequest& request,
+                       net::test_server::BasicHttpResponse* http_response);
+  void HandleTokenInfo(const net::test_server::HttpRequest& request,
+                       net::test_server::BasicHttpResponse* http_response);
+  void HandleIssueToken(const net::test_server::HttpRequest& request,
+                        net::test_server::BasicHttpResponse* http_response);
+
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first
   // token satisfying the other criteria is returned. Returns NULL if no token
   // matches.
-  const AccessTokenInfo* GetAccessTokenInfo(const std::string& auth_token,
-                                            const std::string& client_id,
-                                            const std::string& scope_string)
+  const AccessTokenInfo* FindAccessTokenInfo(const std::string& auth_token,
+                                             const std::string& client_id,
+                                             const std::string& scope_string)
       const;
 
+  // Extracts the |access_token| from authorization header of |request|.
+  static bool GetAccessToken(const net::test_server::HttpRequest& request,
+                             const char* auth_token_prefix,
+                             std::string* access_token);
+
+  // auth_code cookie value response for /o/oauth2/programmatic_auth call.
+  std::string fake_auth_code_;
+
+  // refresh_token field value response for the initial /o/oauth2/token call
+  // with ...&grant_type=authorization_code.
+  std::string fake_refresh_token_;
+  std::string fake_access_token_;
+  std::string fake_gaia_uber_token_;
+  std::string fake_session_sid_cookie_;
+  std::string fake_session_lsid_cookie_;
+
   AccessTokenInfoMap access_token_info_map_;
+  RequestHandlerMap request_handlers_;
   std::string service_login_response_;
   SamlAccountIdpMap saml_account_idp_map_;
 

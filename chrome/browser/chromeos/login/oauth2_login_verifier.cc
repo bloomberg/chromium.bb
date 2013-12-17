@@ -76,7 +76,7 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
       (detector && detector->GetCaptivePortalState(default_network).status !=
            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
     // If network is offline, defer the token fetching until online.
-    VLOG(1) << "Network is offline.  Deferring OAuth2 access token fetch.";
+    LOG(WARNING) << "Network is offline.  Deferring OAuth2 access token fetch.";
     BrowserThread::PostDelayedTask(
         BrowserThread::UI,
         FROM_HERE,

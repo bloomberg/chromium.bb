@@ -38,6 +38,7 @@ class OobeTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(
         chromeos::switches::kAuthExtensionPath, "gaia_auth");
+    fake_gaia_.Initialize();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

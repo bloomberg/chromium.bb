@@ -36,6 +36,13 @@ namespace chromeos {
 
 namespace {
 
+const char kTestAuthCode[] = "fake-auth-code";
+const char kTestGaiaUberToken[] = "fake-uber-token";
+const char kTestAuthLoginAccessToken[] = "fake-access-token";
+const char kTestRefreshToken[] = "fake-refresh-token";
+const char kTestSessionSIDCookie[] = "fake-session-SID-cookie";
+const char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
+
 const char kRelayState[] = "RelayState";
 
 const char kDefaultIdpHtml[] =
@@ -155,6 +162,7 @@ class SamlTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url_.spec());
     command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
                                     gaia_url_.spec());
+    fake_gaia_.Initialize();
 
     std::string saml_idp_host("saml.idp");
     GURL::Replacements replace_saml_idp_host;
@@ -167,6 +175,13 @@ class SamlTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    fake_gaia_.SetAuthTokens(kTestAuthCode,
+                             kTestRefreshToken,
+                             kTestAuthLoginAccessToken,
+                             kTestGaiaUberToken,
+                             kTestSessionSIDCookie,
+                             kTestSessionLSIDCookie);
+
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
     embedded_test_server()->RegisterRequestHandler(base::Bind(

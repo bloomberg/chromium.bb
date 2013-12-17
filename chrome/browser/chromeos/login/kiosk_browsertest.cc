@@ -8,73 +8,33 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
-#include "base/command_line.h"
-#include "base/location.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
-#include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
-#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
-#include "extensions/common/extension.h"
-#include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/base/network_change_notifier.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/compositor/layer.h"
 
 namespace em = enterprise_management;
 
@@ -110,9 +70,6 @@ const char kTestAccessToken[] = "fake-access-token";
 const char kTestClientId[] = "fake-client-id";
 const char kTestAppScope[] =
     "https://www.googleapis.com/auth/userinfo.profile";
-
-// Note the path name must be the same as in shill stub.
-const char kStubEthernetServicePath[] = "eth1";
 
 // Helper function for GetConsumerKioskModeStatusCallback.
 void ConsumerKioskModeStatusCheck(
@@ -231,7 +188,7 @@ class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(ShellWindowObserver);
 };
 
-class KioskTest : public InProcessBrowserTest {
+class KioskTest : public OobeBaseTest {
  public:
   KioskTest() {
     set_exit_when_last_browser_closes(false);
@@ -240,48 +197,20 @@ class KioskTest : public InProcessBrowserTest {
   virtual ~KioskTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-    // Stop IO thread here because no threads are allowed while
-    // spawning sandbox host process. See crbug.com/322732.
-    embedded_test_server()->StopThread();
 
+  virtual void SetUp() OVERRIDE {
     mock_user_manager_.reset(new MockUserManager);
     AppLaunchController::SkipSplashWaitForTesting();
     AppLaunchController::SetNetworkWaitForTesting(kTestNetworkTimeoutSeconds);
 
-    InProcessBrowserTest::SetUp();
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    host_resolver()->AddRule("*", "127.0.0.1");
-
-    network_portal_detector_ = new NetworkPortalDetectorTestImpl();
-    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
-    network_portal_detector_->SetDefaultNetworkPathForTesting(
-        kStubEthernetServicePath);
-  }
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    // Restart the thread as the sandbox host process has already been spawned.
-    embedded_test_server()->RestartThreadAndListen();
+    OobeBaseTest::SetUp();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
     AppLaunchSigninScreen::SetUserManagerForTesting(NULL);
 
-    // If the login display is still showing, exit gracefully.
-    if (LoginDisplayHostImpl::default_host()) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(&chrome::AttemptExit));
-      content::RunMessageLoop();
-    }
+    OobeBaseTest::CleanUpOnMainThread();
 
     // Clean up while main thread still runs.
     // See http://crbug.com/176659.
@@ -289,25 +218,12 @@ class KioskTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-    command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    OobeBaseTest::SetUpCommandLine(command_line);
 
     // Create gaia and webstore URL from test server url but using different
     // host names. This is to avoid gaia response being tagged as from
     // webstore in chrome_resource_dispatcher_host_delegate.cc.
     const GURL& server_url = embedded_test_server()->base_url();
-
-    std::string gaia_host("gaia");
-    GURL::Replacements replace_gaia_host;
-    replace_gaia_host.SetHostStr(gaia_host);
-    GURL gaia_url = server_url.ReplaceComponents(replace_gaia_host);
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
-    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
-                                    gaia_url.spec());
-
     std::string webstore_host("webstore");
     GURL::Replacements replace_webstore_host;
     replace_webstore_host.SetHostStr(webstore_host);
@@ -408,46 +324,6 @@ class KioskTest : public InProcessBrowserTest {
     EXPECT_TRUE(launch_data_check_listener.was_satisfied());
   }
 
-  void SimulateNetworkOffline() {
-    NetworkPortalDetector::CaptivePortalState offline_state;
-    offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
-    network_portal_detector_->SetDetectionResultsForTesting(
-        kStubEthernetServicePath, offline_state);
-    network_portal_detector_->NotifyObserversForTesting();
-  }
-
-  base::Closure SimulateNetworkOfflineClosure() {
-    return base::Bind(&KioskTest::SimulateNetworkOffline,
-                      base::Unretained(this));
-  }
-
-  void SimulateNetworkOnline() {
-    NetworkPortalDetector::CaptivePortalState online_state;
-    online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-    online_state.response_code = 204;
-    network_portal_detector_->SetDetectionResultsForTesting(
-        kStubEthernetServicePath, online_state);
-    network_portal_detector_->NotifyObserversForTesting();
-  }
-
-  base::Closure SimulateNetworkOnlineClosure() {
-    return base::Bind(&KioskTest::SimulateNetworkOnline,
-                      base::Unretained(this));
-  }
-
-  void SimulateNetworkPortal() {
-    NetworkPortalDetector::CaptivePortalState portal_state;
-    portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
-    network_portal_detector_->SetDetectionResultsForTesting(
-        kStubEthernetServicePath, portal_state);
-    network_portal_detector_->NotifyObserversForTesting();
-  }
-
-  base::Closure SimulateNetworkPortalClosure() {
-    return base::Bind(&KioskTest::SimulateNetworkPortal,
-                      base::Unretained(this));
-  }
-
   void WaitForAppLaunchNetworkTimeout() {
     if (GetAppLaunchController()->network_wait_timedout())
       return;
@@ -491,35 +367,12 @@ class KioskTest : public InProcessBrowserTest {
     return status;
   }
 
-  void JsExpect(const std::string& expression) {
-    bool result;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetLoginUI()->GetWebContents(),
-        "window.domAutomationController.send(!!(" + expression + "));",
-         &result));
-    ASSERT_TRUE(result) << expression;
-  }
-
-  content::WebUI* GetLoginUI() {
-    return static_cast<chromeos::LoginDisplayHostImpl*>(
-        chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
-  }
-
-  SigninScreenHandler* GetSigninScreenHandler() {
-    return static_cast<chromeos::LoginDisplayHostImpl*>(
-        chromeos::LoginDisplayHostImpl::default_host())
-        ->GetOobeUI()
-        ->signin_screen_handler_for_test();
-  }
-
   AppLaunchController* GetAppLaunchController() {
     return chromeos::LoginDisplayHostImpl::default_host()
         ->GetAppLaunchController();
   }
 
-  FakeGaia fake_gaia_;
   scoped_ptr<MockUserManager> mock_user_manager_;
-  NetworkPortalDetectorTestImpl* network_portal_detector_;
 };
 
 IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
