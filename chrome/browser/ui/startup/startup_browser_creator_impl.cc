@@ -206,9 +206,12 @@ bool GetAppLaunchContainer(
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
       extensions_service->extension_prefs(), extension);
 
-  if (!extensions::HasPreferredLaunchContainer(
-          extensions_service->extension_prefs(), extension))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps) &&
+      !extensions::HasPreferredLaunchContainer(
+          extensions_service->extension_prefs(), extension)) {
     launch_container = extensions::LAUNCH_CONTAINER_WINDOW;
+  }
 
   *out_extension = extension;
   *out_launch_container = launch_container;
