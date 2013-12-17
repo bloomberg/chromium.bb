@@ -240,6 +240,12 @@ class CONTENT_EXPORT MediaStreamManager
   DeviceRequest* FindRequest(const std::string& label) const;
   void DeleteRequest(const std::string& label);
   void ClearEnumerationCache(EnumerationCache* cache);
+  // Returns true if the |cache| is invalid, false if it's invalid or if
+  // the |stream_type| is MEDIA_NO_SERVICE.
+  // On Android, this function will always return true for
+  // MEDIA_DEVICE_AUDIO_CAPTURE since we don't have a SystemMonitor to tell
+  // us about audio device changes.
+  bool EnumerationRequired(EnumerationCache* cache, MediaStreamType type);
   // Prepare the request with label |label| by starting device enumeration if
   // needed.
   void SetupRequest(const std::string& label);
