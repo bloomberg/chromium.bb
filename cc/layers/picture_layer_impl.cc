@@ -54,7 +54,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_source_scale_was_animating_(false),
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
-      should_update_tile_priorities_(false) {}
+      should_update_tile_priorities_(false),
+      should_use_gpu_rasterization_(tree_impl->settings().gpu_rasterization) {}
 
 PictureLayerImpl::~PictureLayerImpl() {}
 
@@ -456,11 +457,14 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
   return pile_->GetFlattenedPicture();
 }
 
-bool PictureLayerImpl::ShouldUseGPURasterization() const {
-  // TODO(skaslev): Add a proper heuristic for hybrid (software or GPU)
-  // tile rasterization. Currently, when --enable-gpu-rasterization is
-  // set all tiles get GPU rasterized.
-  return layer_tree_impl()->settings().gpu_rasterization;
+void PictureLayerImpl::SetShouldUseGpuRasterization(
+    bool should_use_gpu_rasterization) {
+  if (should_use_gpu_rasterization != should_use_gpu_rasterization_) {
+    should_use_gpu_rasterization_ = should_use_gpu_rasterization;
+    RemoveAllTilings();
+  } else {
+    should_use_gpu_rasterization_ = should_use_gpu_rasterization;
+  }
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
@@ -471,7 +475,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   int flags = 0;
   if (is_using_lcd_text_)
     flags |= Tile::USE_LCD_TEXT;
-  if (ShouldUseGPURasterization())
+  if (should_use_gpu_rasterization())
     flags |= Tile::USE_GPU_RASTERIZATION;
   return layer_tree_impl()->tile_manager()->CreateTile(
       pile_.get(),
@@ -503,7 +507,8 @@ const Region* PictureLayerImpl::GetInvalidation() {
 const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
     const PictureLayerTiling* tiling) const {
 
-  if (!twin_layer_)
+  if (!twin_layer_ || twin_layer_->should_use_gpu_rasterization() !=
+      should_use_gpu_rasterization())
     return NULL;
   for (size_t i = 0; i < twin_layer_->tilings_->num_tilings(); ++i)
     if (twin_layer_->tilings_->tiling_at(i)->contents_scale() ==
@@ -525,6 +530,10 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
       layer_tree_impl()->resource_provider()->max_texture_size();
 
   gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
+  if (should_use_gpu_rasterization()) {
+    default_tile_size =
+        layer_tree_impl()->settings().default_tile_size_gpu_rasterization;
+  }
   default_tile_size.SetToMin(gfx::Size(max_texture_size, max_texture_size));
 
   gfx::Size max_untiled_content_size =
@@ -850,7 +859,8 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   const Region& recorded = pile_->recorded_region();
   DCHECK(!recorded.IsEmpty());
 
-  if (twin_layer_)
+  if (twin_layer_ && twin_layer_->should_use_gpu_rasterization() ==
+      should_use_gpu_rasterization())
     twin_layer_->SyncTiling(tiling);
 
   return tiling;

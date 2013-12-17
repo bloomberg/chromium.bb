@@ -1405,6 +1405,47 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(tile_scale));
 }
 
+TEST_F(PictureLayerImplTest, TileSizeForGpuRasterization) {
+  gfx::Size default_tile_size_gpu(
+      host_impl_.settings().default_tile_size_gpu_rasterization);
+  gfx::Size layer_bounds(default_tile_size_gpu.width() + 1,
+                         default_tile_size_gpu.height() + 1);
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  // Layers without GPU rasterization (default).
+  SetupDefaultTrees(layer_bounds);
+
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+
+  pending_layer_->CalculateContentsScale(
+      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+
+  pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
+
+  // Tile size should equal default_tile_size.
+  Tile* tile = pending_layer_->tilings()->tiling_at(0)->AllTilesForTesting()[0];
+  EXPECT_EQ(host_impl_.settings().default_tile_size.ToString(),
+            tile->content_rect().size().ToString());
+
+  // Tell the layer to use GPU rasterization.
+  pending_layer_->SetShouldUseGpuRasterization(true);
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+
+  pending_layer_->CalculateContentsScale(
+      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+
+  pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
+
+  // Tile size should now equal default_tile_size_gpu.
+  Tile* tile_gpu =
+      pending_layer_->tilings()->tiling_at(0)->AllTilesForTesting()[0];
+  EXPECT_EQ(default_tile_size_gpu.ToString(),
+            tile_gpu->content_rect().size().ToString());
+}
+
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
   // Set up layers with tilings.
   SetupDefaultTrees(gfx::Size(10, 10));
