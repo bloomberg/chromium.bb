@@ -29,14 +29,13 @@ void TestRenderViewHostFactory::set_render_process_host_factory(
 RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
-    RenderFrameHostDelegate* frame_delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
     bool swapped_out) {
   return new TestRenderViewHost(
-      instance, delegate, frame_delegate, widget_delegate, routing_id,
-      main_frame_routing_id, swapped_out);
+      instance, delegate, widget_delegate, routing_id, main_frame_routing_id,
+      swapped_out);
 }
 
 }  // namespace content

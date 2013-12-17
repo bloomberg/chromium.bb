@@ -76,8 +76,13 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   bool is_swapped_out() { return is_swapped_out_; }
 
-  // TODO(nasko): This should be removed and replaced by RenderProcessHost.
-  RenderViewHostImpl* render_view_host_;  // Not owned.
+  // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
+  // refcount that calls Shutdown when it reaches zero.  This allows each
+  // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
+  // we have a RenderViewHost for each RenderFrameHost.
+  // TODO(creis): RenderViewHost will eventually go away and be replaced with
+  // some form of page context.
+  RenderViewHostImpl* render_view_host_;
 
   RenderFrameHostDelegate* delegate_;
 

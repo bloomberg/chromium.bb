@@ -27,7 +27,6 @@
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -159,7 +158,6 @@ RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
 RenderViewHostImpl::RenderViewHostImpl(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
-    RenderFrameHostDelegate* frame_delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
@@ -178,6 +176,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_swapped_out_(swapped_out),
       is_subframe_(false),
       main_frame_id_(-1),
+      main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_beforeunload_ack_(false),
@@ -189,16 +188,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
-
-  if (main_frame_routing_id == MSG_ROUTING_NONE)
-    main_frame_routing_id = GetProcess()->GetNextRoutingID();
-
-  main_render_frame_host_ = RenderFrameHostFactory::Create(
-      this, frame_delegate, delegate_->GetFrameTree(),
-      delegate_->GetFrameTree()->root(),
-      main_frame_routing_id, is_swapped_out_);
-  delegate_->GetFrameTree()->root()->set_render_frame_host(
-      main_render_frame_host_.get(), false);
 
   GetProcess()->EnableSendQueue();
 
@@ -279,7 +268,7 @@ bool RenderViewHostImpl::CreateRenderView(
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
   params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = GetRoutingID();
-  params.main_frame_routing_id = main_render_frame_host()->routing_id();
+  params.main_frame_routing_id = main_frame_routing_id_;
   params.surface_id = surface_id();
   params.session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_)->id();
@@ -1290,7 +1279,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
 void RenderViewHostImpl::Init() {
   RenderWidgetHostImpl::Init();
-  main_render_frame_host()->Init();
 }
 
 void RenderViewHostImpl::Shutdown() {
@@ -1404,7 +1392,7 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // TODO(creis): Once subframes can be in different processes, we'll need to
   // clear just the FrameTreeNodes affected by the crash (and their subtrees).
   main_frame_id_ = -1;
-  delegate_->GetFrameTree()->SwapMainFrame(main_render_frame_host_.get());
+  delegate_->GetFrameTree()->ResetForMainFrameSwap();
 
   // Our base class RenderWidgetHost needs to reset some stuff.
   RendererExited(render_view_termination_status_, exit_code);
@@ -2299,7 +2287,7 @@ bool RenderViewHostImpl::CanAccessFilesOfPageState(
 void RenderViewHostImpl::AttachToFrameTree() {
   FrameTree* frame_tree = delegate_->GetFrameTree();
 
-  frame_tree->SwapMainFrame(main_render_frame_host_.get());
+  frame_tree->ResetForMainFrameSwap();
   if (main_frame_id() != FrameTreeNode::kInvalidFrameId) {
     frame_tree->OnFirstNavigationAfterSwap(main_frame_id());
   }

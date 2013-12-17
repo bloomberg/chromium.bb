@@ -35,6 +35,7 @@ class Rect;
 namespace content {
 
 class SiteInstance;
+class TestRenderFrameHost;
 class TestWebContents;
 
 // Utility function to initialize ViewHostMsg_NavigateParams_Params
@@ -234,7 +235,6 @@ class TestRenderViewHost
  public:
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
-                     RenderFrameHostDelegate* frame_delegate,
                      RenderWidgetHostDelegate* widget_delegate,
                      int routing_id,
                      int main_frame_routing_id,
@@ -314,6 +314,14 @@ class TestRenderViewHost
   // The opener route id passed to CreateRenderView().
   int opener_route_id() const { return opener_route_id_; }
 
+  // TODO(creis): Remove the need for these methods.
+  TestRenderFrameHost* main_render_frame_host() const {
+    return main_render_frame_host_;
+  }
+  void set_main_render_frame_host(TestRenderFrameHost* rfh) {
+    main_render_frame_host_ = rfh;
+  }
+
   // RenderViewHost overrides --------------------------------------------------
 
   virtual bool CreateRenderView(const base::string16& frame_name,
@@ -358,6 +366,8 @@ class TestRenderViewHost
 
   // See opener_route_id() above.
   int opener_route_id_;
+
+  TestRenderFrameHost* main_render_frame_host_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };
