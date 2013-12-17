@@ -30,3 +30,5 @@ weston.ini : $(srcdir)/weston.ini.in
 		$< > $@
 
 all-local : weston.ini
+
+CLEANFILES = weston.ini
