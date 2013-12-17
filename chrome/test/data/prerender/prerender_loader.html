@@ -1,73 +1,11 @@
 <html>
 <head>
 <title>Preloader</title>
-
 <script src="prerender_events_common.js"></script>
-
-<script>
-  function Click() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click');
-    document.getElementById('toClick').dispatchEvent(eventObject);
-  }
-
-  function ClickTarget() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click');
-    document.getElementById('toClickTarget').dispatchEvent(eventObject);
-  }
-
-  function ShiftClick() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click', true, true, window, 
-                               1, 0, 0, 0, 0, 
-                               false, false, true, false, 0, null);
-    document.getElementById('toClick').dispatchEvent(eventObject);
-  }
-
-  function CtrlClick() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click', true, true, window, 
-                               1, 0, 0, 0, 0, 
-                               true, false, false, false, 0, null);
-    document.getElementById('toClick').dispatchEvent(eventObject);
-  }
-
-  function CtrlShiftClick() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click', true, true, window, 
-                               1, 0, 0, 0, 0, 
-                               true, false, true, false, 0, null);
-    document.getElementById('toClick').dispatchEvent(eventObject);
-  }
-
-  function MetaClick() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click', true, true, window, 
-                               1, 0, 0, 0, 0, 
-                               false, false, false, true, 0, null);
-    document.getElementById('toClick').dispatchEvent(eventObject);
-  }
-
-  function MetaShiftClick() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click', true, true, window, 
-                               1, 0, 0, 0, 0, 
-                               false, false, true, true, 0, null);
-    document.getElementById('toClick').dispatchEvent(eventObject);
-  }
-
-  function WindowOpen() {
-    window.open('REPLACE_WITH_DESTINATION_URL');
-  }
-</script>
-
 </head>
 <body>
 <script>
-  document.write('<link id="theprerender" rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
-  prerender = document.getElementById('theprerender');
-  AddEventHandlersToLinkElement(prerender, 0);
+  AddPrerender('REPLACE_WITH_DESTINATION_URL', 0);
 </script>
 <a target="_blank" id="toClickTarget"
    href="REPLACE_WITH_DESTINATION_URL">Link To click in new window</a>

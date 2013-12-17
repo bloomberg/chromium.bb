@@ -52,3 +52,87 @@ function AddEventHandlersToLinkElement(link, index) {
   link.addEventListener('webkitprerenderstop',
                         PrerenderStopHandler.bind(null, index), false);
 }
+
+function AddPrerender(url, index) {
+  var link = document.createElement('link');
+  link.rel = 'prerender';
+  link.href = url;
+  AddEventHandlersToLinkElement(link, index);
+  document.body.appendChild(link);
+  return link;
+}
+
+function Click() {
+  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1
+  }));
+}
+
+function ClickTarget() {
+  var eventObject = new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1
+  });
+  document.getElementById('toClickTarget').dispatchEvent(eventObject);
+}
+
+function ShiftClick() {
+  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1,
+    shiftKey: true
+  }));
+}
+
+function CtrlClick() {
+  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1,
+    ctrlKey: true
+  }));
+}
+
+function CtrlShiftClick() {
+  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1,
+    ctrlKey: true,
+    shiftKey: true
+  }));
+}
+
+function MetaClick() {
+  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1,
+    metaKey: true
+  }));
+}
+
+function MetaShiftClick() {
+  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1,
+    metaKey: true,
+    shiftKey: true
+  }));
+}
+
+function WindowOpen() {
+  window.open(document.getElementById('toClick').href);
+}

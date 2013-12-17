@@ -25,11 +25,8 @@ function RemoveLinkElement(index) {
 <body>
 <script>
 for (var i = 0; i < numLinksToInsert; ++i) {
-  document.write(
-      '<link id="prerenderElement' + i +
-      '" rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
-  var link = document.getElementById('prerenderElement' + i);
-  AddEventHandlersToLinkElement(link, i);
+  var link = AddPrerender('REPLACE_WITH_DESTINATION_URL', i);
+  link.id = 'prerenderElement' + i;
 }
 </script>
 <a id="toClick" href="REPLACE_WITH_DESTINATION_URL">Link To Click For First Prerender</a>

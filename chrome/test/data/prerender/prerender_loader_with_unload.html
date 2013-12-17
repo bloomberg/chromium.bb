@@ -1,6 +1,7 @@
 <html>
 <head>
 <title>Preloader</title>
+<script src="prerender_events_common.js"></script>
 
 <script>
   function UnloadHandler() {
@@ -13,7 +14,7 @@
 </head>
 <body>
 <script>
-  document.write('<link rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
+  AddPrerender('REPLACE_WITH_DESTINATION_URL', 0);
 </script>
 <a href="REPLACE_WITH_DESTINATION_URL">Link To Click</a>
 </body>
