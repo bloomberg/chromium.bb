@@ -17,6 +17,17 @@
     'disable_newlib_untar%': 0,
     'disable_arm_untar%': 0,
     'disable_pnacl_untar%': 0,
+    'conditions': [
+      ['OS=="win"', {
+        'TOOLCHAIN_OS': 'i686_w64_mingw32'
+      }],
+      ['OS=="linux"', {
+        'TOOLCHAIN_OS': 'i686_linux'
+      }],
+      ['OS=="mac"', {
+        'TOOLCHAIN_OS': 'x86_64_apple_darwin'
+      }],
+    ]
   },
   'targets' : [
     {
@@ -130,8 +141,8 @@
               'description': 'Untar arm toolchain',
               'inputs': [
                  '<(DEPTH)/native_client/build/cygtar.py',
-                 '<(DEPTH)/native_client/toolchain/.tars/gcc_arm_i686_<(OS).tgz',
-                 '<(DEPTH)/native_client/toolchain/.tars/binutils_arm_i686_<(OS).tgz',
+                 '<(DEPTH)/native_client/toolchain/.tars/gcc_arm_<(TOOLCHAIN_OS).tgz',
+                 '<(DEPTH)/native_client/toolchain/.tars/binutils_arm_<(TOOLCHAIN_OS).tgz',
                  '<(DEPTH)/native_client/toolchain/.tars/newlib_arm.tgz',
                  '<(DEPTH)/native_client/toolchain/.tars/gcc_libs_arm.tgz',
               ],
@@ -143,8 +154,8 @@
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
                 '--sdk', '<(SHARED_INTERMEDIATE_DIR)/sdk',
                 '--os', '<(OS)',
-                '<(DEPTH)/native_client/toolchain/.tars/gcc_arm_i686_<(OS).tgz',
-                '<(DEPTH)/native_client/toolchain/.tars/binutils_arm_i686_<(OS).tgz',
+                '<(DEPTH)/native_client/toolchain/.tars/gcc_arm_<(TOOLCHAIN_OS).tgz',
+                '<(DEPTH)/native_client/toolchain/.tars/binutils_arm_<(TOOLCHAIN_OS).tgz',
                 '<(DEPTH)/native_client/toolchain/.tars/newlib_arm.tgz',
                 '<(DEPTH)/native_client/toolchain/.tars/gcc_libs_arm.tgz',
               ],
