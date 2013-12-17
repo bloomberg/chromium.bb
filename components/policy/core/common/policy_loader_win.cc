@@ -5,6 +5,8 @@
 #include "components/policy/core/common/policy_loader_win.h"
 
 #include <windows.h>
+#include <lm.h>       // For limits.
+#include <ntdsapi.h>  // For Ds[Un]Bind
 #include <rpc.h>      // For struct GUID
 #include <shlwapi.h>  // For PathIsUNC()
 #include <userenv.h>  // For GPO functions
@@ -16,19 +18,24 @@
 #pragma comment(lib, "shlwapi.lib")
 // userenv.dll is required for various GPO functions.
 #pragma comment(lib, "userenv.lib")
+// ntdsapi.dll is required for Ds[Un]Bind calls.
+#pragma comment(lib, "ntdsapi.lib")
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_native_library.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "base/win/windows_version.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
@@ -58,6 +65,14 @@ const char kLegacyBrowserSupportExtensionId[] =
 
 // The GUID of the registry settings group policy extension.
 GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
+
+// The list of possible errors that can occur while collecting information about
+// the current enterprise environment.
+enum DomainCheckErrors {
+  DOMAIN_CHECK_ERROR_GET_JOIN_INFO = 0,
+  DOMAIN_CHECK_ERROR_DS_BIND,
+  DOMAIN_CHECK_ERROR_LAST,
+};
 
 // If the LBS extension is found and contains a schema in the registry then this
 // function is used to patch it, and make it compliant. The fix is to
@@ -226,6 +241,42 @@ void ParsePolicy(const RegistryDict* gpo_dict,
   policy->LoadFrom(policy_dict, level, scope);
 }
 
+// Collects stats about the enterprise environment that can be used to decide
+// how to parse the existing policy information.
+void CollectEntepriseUMAs() {
+  // Collect statistics about the windows suite.
+  UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.OSType",
+                            base::win::OSInfo::GetInstance()->version_type(),
+                            base::win::SUITE_LAST);
+
+  // Get the computer's domain status.
+  LPWSTR domain;
+  NETSETUP_JOIN_STATUS join_status;
+  if(NERR_Success != ::NetGetJoinInformation(NULL, &domain, &join_status)) {
+    UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
+                              DOMAIN_CHECK_ERROR_GET_JOIN_INFO,
+                              DOMAIN_CHECK_ERROR_LAST);
+    return;
+  }
+  ::NetApiBufferFree(domain);
+
+  bool in_domain = join_status == NetSetupDomainName;
+  UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.InDomain", in_domain);
+  if (in_domain) {
+    // This check will tell us how often are domain computers actually
+    // connected to the enterprise network while Chrome is running.
+    HANDLE server_bind;
+    if (ERROR_SUCCESS == ::DsBind(NULL, NULL, &server_bind)) {
+      UMA_HISTOGRAM_COUNTS("EnterpriseCheck.DomainBindSucceeded", 1);
+      ::DsUnBind(&server_bind);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
+                                DOMAIN_CHECK_ERROR_DS_BIND,
+                                DOMAIN_CHECK_ERROR_LAST);
+    }
+  }
+}
+
 }  // namespace
 
 const base::FilePath::CharType PolicyLoaderWin::kPRegFileName[] =
@@ -277,6 +328,7 @@ scoped_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
 void PolicyLoaderWin::InitOnBackgroundThread() {
   is_initialized_ = true;
   SetupWatches();
+  CollectEntepriseUMAs();
 }
 
 scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
