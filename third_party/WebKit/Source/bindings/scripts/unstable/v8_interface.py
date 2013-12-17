@@ -102,7 +102,11 @@ def generate_interface(interface):
     generate_constructor_overloads(constructors)
 
     # [CustomConstructor]
-    has_custom_constructor = 'CustomConstructor' in extended_attributes
+    custom_constructors = [{  # Only needed for computing interface length
+        'number_of_required_arguments':
+            len([argument for argument in constructor.arguments
+                 if not argument.is_optional]),
+    } for constructor in interface.custom_constructors]
 
     # [EventConstructor]
     has_event_constructor = 'EventConstructor' in extended_attributes
@@ -122,7 +126,7 @@ def generate_interface(interface):
     else:
         named_constructor = None
 
-    if (constructors or has_custom_constructor or has_event_constructor or
+    if (constructors or custom_constructors or has_event_constructor or
         named_constructor):
         includes.add('bindings/v8/V8ObjectConstructor.h')
 
@@ -132,7 +136,7 @@ def generate_interface(interface):
         'constructors': constructors,
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
-        'has_custom_constructor': has_custom_constructor,
+        'has_custom_constructor': bool(custom_constructors),
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
@@ -142,7 +146,8 @@ def generate_interface(interface):
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
             'GenerateVisitDOMWrapper' in extended_attributes),
         'header_includes': header_includes,
-        'interface_length': interface_length(interface, constructors),
+        'interface_length':
+            interface_length(interface, constructors + custom_constructors),
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
