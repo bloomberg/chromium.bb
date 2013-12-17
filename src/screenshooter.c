@@ -267,7 +267,7 @@ struct weston_recorder {
 	uint32_t total;
 	int fd;
 	struct wl_listener frame_listener;
-	int count;
+	int count, destroying;
 };
 
 static uint32_t *
@@ -354,6 +354,9 @@ transform_rect(struct weston_output *output, pixman_box32_t *r)
 	r->x2 *= output->current_scale;
 	r->y2 *= output->current_scale;
 }
+
+static void
+weston_recorder_destroy(struct weston_recorder *recorder);
 
 static void
 weston_recorder_frame_notify(struct wl_listener *listener, void *data)
@@ -456,6 +459,9 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 
 	pixman_region32_fini(&damage);
 	recorder->count++;
+
+	if (recorder->destroying)
+		weston_recorder_destroy(recorder);
 }
 
 static void
@@ -477,6 +483,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	recorder->rect = malloc(size);
 	recorder->total = 0;
 	recorder->count = 0;
+	recorder->destroying = 0;
 	recorder->output = output;
 
 	if (do_yflip)
@@ -553,7 +560,8 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *da
 			"stopping recorder, total file size %dM, %d frames\n",
 			recorder->total / (1024 * 1024), recorder->count);
 
-		weston_recorder_destroy(recorder);
+		recorder->destroying = 1;
+		weston_output_schedule_repaint(recorder->output);
 	} else {
 		weston_log("starting recorder, file %s\n", filename);
 		weston_recorder_create(output, filename);
