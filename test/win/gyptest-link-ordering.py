@@ -72,4 +72,30 @@ _main:
     print GetDisasm('test_ordering_subdirs.exe')
     test.fail_test()
 
+  # Similar, but with directories mixed into folders (crt and main at the same
+  # level, but with a subdir in the middle).
+
+  expected_disasm_subdirs_mixed = '''
+_mainCRTStartup:
+  00401000: B8 05 00 00 00     mov         eax,5
+  00401005: C3                 ret
+?x@@YAHXZ:
+  00401010: B8 01 00 00 00     mov         eax,1
+  00401015: C3                 ret
+_main:
+  00401020: 33 C0              xor         eax,eax
+  00401022: C3                 ret
+?z@@YAHXZ:
+  00401030: B8 03 00 00 00     mov         eax,3
+  00401035: C3                 ret
+?y@@YAHXZ:
+  00401040: B8 02 00 00 00     mov         eax,2
+  00401045: C3                 ret
+'''
+
+  if (expected_disasm_subdirs_mixed not in
+      GetDisasm('test_ordering_subdirs_mixed.exe')):
+    print GetDisasm('test_ordering_subdirs_mixed.exe')
+    test.fail_test()
+
   test.pass_test()

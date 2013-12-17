@@ -230,7 +230,6 @@ def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None,
   if not prefix: prefix = []
   result = []
   excluded_result = []
-  folders = OrderedDict()
   # Gather files into the final result, excluded, or folders.
   for s in sources:
     if len(s) == 1:
@@ -240,22 +239,16 @@ def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None,
       else:
         result.append(filename)
     else:
-      if not folders.get(s[0]):
-        folders[s[0]] = []
-      folders[s[0]].append(s[1:])
+      contents = _ConvertSourcesToFilterHierarchy([s[1:]], prefix + [s[0]],
+                                                  excluded=excluded,
+                                                  list_excluded=list_excluded)
+      contents = MSVSProject.Filter(s[0], contents=contents)
+      result.append(contents)
   # Add a folder for excluded files.
   if excluded_result and list_excluded:
     excluded_folder = MSVSProject.Filter('_excluded_files',
                                          contents=excluded_result)
     result.append(excluded_folder)
-  # Populate all the folders.
-  for f in folders:
-    contents = _ConvertSourcesToFilterHierarchy(folders[f], prefix=prefix + [f],
-                                                excluded=excluded,
-                                                list_excluded=list_excluded)
-    contents = MSVSProject.Filter(f, contents=contents)
-    result.append(contents)
-
   return result
 
 
