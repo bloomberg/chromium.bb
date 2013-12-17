@@ -212,6 +212,10 @@ cr.define('dnd', function() {
    * @return {DropPosition} An bit field enumeration of valid drop locations.
    */
   function calculateValidDropTargets(overElement) {
+    // Don't allow dropping if there is an ephemeral item being edited.
+    if (list.hasEphemeral())
+      return DropPosition.NONE;
+
     if (!dragInfo.isDragValid() || isOverSearch(overElement))
       return DropPosition.NONE;
 
@@ -321,10 +325,8 @@ cr.define('dnd', function() {
 
     // Do not allow dragging if there is an ephemeral item being edited at the
     // moment.
-    for (var i = 0; i < draggedNodes.length; i++) {
-      if (draggedNodes[i].id === 'new')
-        return;
-    }
+    if (list.hasEphemeral())
+      return;
 
     if (draggedNodes.length) {
       // If we are dragging a single link, we can do the *Link* effect.

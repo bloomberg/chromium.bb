@@ -143,6 +143,18 @@ cr.define('bmm', function() {
     },
 
     /**
+     * @return {boolean} Whether we are editing an ephemeral item.
+     */
+    hasEphemeral: function() {
+      var dataModel = this.dataModel;
+      for (var i = 0; i < dataModel.array_.length; i++) {
+        if (dataModel.array_[i].id == 'new')
+          return true;
+      }
+      return false;
+    },
+
+    /**
      * Handles mouseover on the list so that we can add the context menu button
      * lazily.
      * @private
