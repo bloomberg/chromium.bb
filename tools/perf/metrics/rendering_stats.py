@@ -6,7 +6,7 @@ from operator import attrgetter
 
 
 class RenderingStats(object):
-  def __init__(self, renderer_process, timeline_markers):
+  def __init__(self, renderer_process, timeline_ranges):
     """
     Utility class for extracting rendering statistics from the timeline (or
     other loggin facilities), and providing them in a common format to classes
@@ -18,7 +18,7 @@ class RenderingStats(object):
 
     All *_time values are measured in milliseconds.
     """
-    assert(len(timeline_markers) > 0)
+    assert(len(timeline_ranges) > 0)
     self.renderer_process = renderer_process
 
     self.frame_timestamps = []
@@ -30,17 +30,17 @@ class RenderingStats(object):
     self.rasterize_time = []
     self.rasterized_pixel_count = []
 
-    for marker in timeline_markers:
-      self.initMainThreadStatsFromTimeline(marker.start,
-                                           marker.start+marker.duration)
-      self.initImplThreadStatsFromTimeline(marker.start,
-                                           marker.start+marker.duration)
+    for timeline_range in timeline_ranges:
+      if timeline_range.is_empty:
+        continue
+      self.initMainThreadStatsFromTimeline(timeline_range)
+      self.initImplThreadStatsFromTimeline(timeline_range)
 
-  def initMainThreadStatsFromTimeline(self, start, end):
+  def initMainThreadStatsFromTimeline(self, timeline_range):
     event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
     events = []
     for event in self.renderer_process.IterAllSlicesOfName(event_name):
-      if event.start >= start and event.end <= end:
+      if event.start >= timeline_range.min and event.end <= timeline_range.max:
         if 'data' not in event.args:
           continue
         events.append(event)
@@ -67,11 +67,11 @@ class RenderingStats(object):
       self.recorded_pixel_count.append(
           event.args['data']['recorded_pixel_count'])
 
-  def initImplThreadStatsFromTimeline(self, start, end):
+  def initImplThreadStatsFromTimeline(self, timeline_range):
     event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
     events = []
     for event in self.renderer_process.IterAllSlicesOfName(event_name):
-      if event.start >= start and event.end <= end:
+      if event.start >= timeline_range.min and event.end <= timeline_range.max:
         if 'data' not in event.args:
           continue
         events.append(event)

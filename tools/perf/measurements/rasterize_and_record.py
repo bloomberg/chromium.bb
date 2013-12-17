@@ -8,6 +8,7 @@ import time
 
 from metrics import rendering_stats
 from telemetry.page import page_measurement
+import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline.model import MarkerMismatchError
 from telemetry.core.timeline.model import MarkerOverlapError
 
@@ -106,8 +107,10 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
       timeline_markers = timeline.FindTimelineMarkers(TIMELINE_MARKER)
     except (MarkerMismatchError, MarkerOverlapError) as e:
       raise page_measurement.MeasurementFailure(str(e))
+    timeline_ranges = [ timeline_bounds.Bounds.CreateFromEvent(marker)
+                        for marker in timeline_markers ]
     renderer_process = timeline.GetRendererProcessFromTab(tab)
-    stats = rendering_stats.RenderingStats(renderer_process, timeline_markers)
+    stats = rendering_stats.RenderingStats(renderer_process, timeline_ranges)
 
     results.Add('rasterize_time', 'ms',
                 max(stats.rasterize_time))

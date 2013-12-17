@@ -5,8 +5,6 @@
 from metrics import Metric
 from metrics import rendering_stats
 from metrics import statistics
-from telemetry.core.timeline.model import MarkerMismatchError
-from telemetry.core.timeline.model import MarkerOverlapError
 from telemetry.page import page_measurement
 
 TIMELINE_MARKER = 'Smoothness'
@@ -28,10 +26,10 @@ class SmoothnessMetric(Metric):
   def __init__(self):
     super(SmoothnessMetric, self).__init__()
     self._stats = None
-    self._timeline_marker_names = []
+    self._actions = []
 
-  def AddTimelineMarkerNameToIncludeInMetric(self, timeline_marker_name):
-    self._timeline_marker_names.append(timeline_marker_name)
+  def AddActionToIncludeInMetric(self, action):
+    self._actions.append(action)
 
   def Start(self, page, tab):
     tab.browser.StartTracing('webkit.console,benchmark', 60)
@@ -40,17 +38,12 @@ class SmoothnessMetric(Metric):
   def Stop(self, page, tab):
     tab.ExecuteJavaScript('console.timeEnd("' + TIMELINE_MARKER + '")')
     timeline_model = tab.browser.StopTracing().AsTimelineModel()
-    try:
-      timeline_markers = timeline_model.FindTimelineMarkers(
-          self._timeline_marker_names)
-    except MarkerMismatchError as e:
-      raise page_measurement.MeasurementFailure(str(e))
-    except MarkerOverlapError as e:
-      raise page_measurement.MeasurementFailure(str(e))
+    timeline_ranges = [ action.GetActiveRangeOnTimeline(timeline_model)
+                        for action in self._actions ]
 
     renderer_process = timeline_model.GetRendererProcessFromTab(tab)
     self._stats = rendering_stats.RenderingStats(
-        renderer_process, timeline_markers)
+        renderer_process, timeline_ranges)
 
     if not self._stats.frame_times:
       raise NotEnoughFramesError()

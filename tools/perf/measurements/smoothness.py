@@ -44,9 +44,8 @@ class Smoothness(page_measurement.PageMeasurement):
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
 
   def DidRunAction(self, page, tab, action):
-    timeline_marker_name = action.GetTimelineMarkerName()
-    if self.options.metric == 'smoothness' and timeline_marker_name:
-      self._metric.AddTimelineMarkerNameToIncludeInMetric(timeline_marker_name)
+    if self.options.metric == 'smoothness':
+      self._metric.AddActionToIncludeInMetric(action)
 
   def DidRunActions(self, page, tab):
     if tab.browser.platform.IsRawDisplayFrameRateSupported():

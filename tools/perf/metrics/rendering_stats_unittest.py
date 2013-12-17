@@ -6,6 +6,7 @@ import random
 import unittest
 
 from metrics.rendering_stats import RenderingStats
+import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline import model
 
 
@@ -179,7 +180,9 @@ class RenderingStatsUnitTest(unittest.TestCase):
 
     timeline_markers = timeline.FindTimelineMarkers(
         ['ActionA', 'ActionB', 'ActionA'])
-    stats = RenderingStats(renderer, timeline_markers)
+    timeline_ranges = [ timeline_bounds.Bounds.CreateFromEvent(marker)
+                        for marker in timeline_markers ]
+    stats = RenderingStats(renderer, timeline_ranges)
 
     # Compare rendering stats to reference.
     self.assertEquals(stats.frame_timestamps, ref_stats.frame_timestamps)
