@@ -40,6 +40,8 @@ SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(AnimatedPropertyType type, SVGA
     , m_animationElement(animationElement)
     , m_contextElement(contextElement)
 {
+    ASSERT(m_animationElement);
+    ASSERT(m_contextElement);
 }
 
 SVGAnimatedTypeAnimator::~SVGAnimatedTypeAnimator()

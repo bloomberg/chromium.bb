@@ -29,6 +29,7 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRect.h"
 #include "core/svg/SVGTransformList.h"
+#include "core/svg/properties/NewSVGAnimatedProperty.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 
 namespace WebCore {
@@ -57,6 +58,8 @@ public:
     static PassOwnPtr<SVGAnimatedType> createRect(SVGRect*);
     static PassOwnPtr<SVGAnimatedType> createString(String*);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
+    // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
+    static PassOwnPtr<SVGAnimatedType> createNewProperty(PassRefPtr<NewSVGPropertyBase>);
     static bool supportsAnimVal(AnimatedPropertyType);
 
     AnimatedPropertyType type() const { return m_type; }
@@ -163,6 +166,13 @@ public:
         return *m_data.transformList;
     }
 
+    RefPtr<NewSVGPropertyBase>& newProperty()
+    {
+        ASSERT(m_type == AnimatedNewProperty);
+        ASSERT(m_newProperty);
+        return m_newProperty;
+    }
+
     String valueAsString();
     bool setValueAsString(const QualifiedName&, const String&);
 
@@ -195,6 +205,7 @@ private:
         String* string;
         SVGTransformList* transformList;
     } m_data;
+    RefPtr<NewSVGPropertyBase> m_newProperty;
 };
 
 } // namespace WebCore

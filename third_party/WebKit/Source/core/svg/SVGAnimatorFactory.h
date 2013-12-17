@@ -28,6 +28,7 @@
 #include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedLengthList.h"
+#include "core/svg/SVGAnimatedNewPropertyAnimator.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
@@ -84,6 +85,8 @@ public:
             return adoptPtr(new SVGAnimatedStringAnimator(animationElement, contextElement));
         case AnimatedTransformList:
             return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
+        case AnimatedNewProperty:
+            return adoptPtr(new SVGAnimatedNewPropertyAnimator(animationElement, contextElement));
         case AnimatedUnknown:
             break;
         }

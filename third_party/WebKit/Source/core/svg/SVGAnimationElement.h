@@ -30,6 +30,7 @@
 #include "core/svg/SVGTests.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "platform/animation/UnitBezier.h"
+#include "wtf/Functional.h"
 
 namespace WebCore {
 
@@ -94,17 +95,24 @@ public:
     AnimatedPropertyValueType fromPropertyValueType() const { return m_fromPropertyValueType; }
     AnimatedPropertyValueType toPropertyValueType() const { return m_toPropertyValueType; }
 
+    // FIXME: In C++11, remove this as we can use default template argument.
     template<typename AnimatedType>
     void adjustForInheritance(AnimatedType (*parseTypeFromString)(SVGAnimationElement*, const String&),
                               AnimatedPropertyValueType valueType, AnimatedType& animatedType, SVGElement* contextElement)
     {
+        ASSERT(parseTypeFromString);
+        adjustForInheritance<AnimatedType, AnimatedType (*)(SVGAnimationElement*, const String&)>(parseTypeFromString, valueType, animatedType, contextElement);
+    }
+
+    template<typename AnimatedType, typename ParseTypeFromStringType>
+    void adjustForInheritance(ParseTypeFromStringType parseTypeFromString, AnimatedPropertyValueType valueType, AnimatedType& animatedType, SVGElement* contextElement)
+    {
         if (valueType != InheritValue)
             return;
         // Replace 'inherit' by its computed property value.
-        ASSERT(parseTypeFromString);
         String typeString;
         adjustForInheritance(contextElement, attributeName(), typeString);
-        animatedType = (*parseTypeFromString)(this, typeString);
+        animatedType = parseTypeFromString(this, typeString);
     }
 
     template<typename AnimatedType>

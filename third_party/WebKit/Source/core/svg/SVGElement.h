@@ -29,12 +29,14 @@
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/Timer.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
 class AffineTransform;
 class CSSCursorImageValue;
 class Document;
+class NewSVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAttributeToPropertyMap;
 class SVGCursorElement;
@@ -92,6 +94,7 @@ public:
     virtual void svgAttributeChanged(const QualifiedName&);
 
     virtual void animatedPropertyTypeForAttribute(const QualifiedName&, Vector<AnimatedPropertyType>&);
+    PassRefPtr<NewSVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
 
     void sendSVGLoadEventIfPossible(bool sendParentLoadEvents = false);
     void sendSVGLoadEventIfPossibleAsynchronously();
@@ -194,6 +197,8 @@ protected:
         SVGElement* m_owner;
     };
 
+    void addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase>);
+
 private:
     friend class SVGElementInstance;
 
@@ -216,6 +221,8 @@ private:
 
     HashSet<SVGElement*> m_elementsWithRelativeLengths;
 
+    typedef HashMap<QualifiedName, RefPtr<NewSVGAnimatedPropertyBase> > AttributeToPropertyMap;
+    AttributeToPropertyMap m_newAttributeToPropertyMap;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
         DECLARE_ANIMATED_STRING(ClassName, className)
     END_DECLARE_ANIMATED_PROPERTIES

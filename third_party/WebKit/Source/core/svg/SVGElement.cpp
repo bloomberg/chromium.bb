@@ -54,7 +54,7 @@ namespace WebCore {
 DEFINE_ANIMATED_STRING(SVGElement, HTMLNames::classAttr, ClassName, className)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(className)
+REGISTER_LOCAL_ANIMATED_PROPERTY(className)
 END_REGISTER_ANIMATED_PROPERTIES
 
 using namespace HTMLNames;
@@ -766,9 +766,24 @@ void SVGElement::animatedPropertyTypeForAttribute(const QualifiedName& attribute
     if (!propertyTypes.isEmpty())
         return;
 
+    if (m_newAttributeToPropertyMap.contains(attributeName))
+        propertyTypes.append(AnimatedNewProperty);
+
     AttributeToPropertyTypeMap& cssPropertyTypeMap = cssPropertyToTypeMap();
     if (cssPropertyTypeMap.contains(attributeName))
         propertyTypes.append(cssPropertyTypeMap.get(attributeName));
+}
+
+void SVGElement::addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase> passProperty)
+{
+    RefPtr<NewSVGAnimatedPropertyBase> property(passProperty);
+    QualifiedName attributeName = property->attributeName();
+    m_newAttributeToPropertyMap.set(attributeName, property.release());
+}
+
+PassRefPtr<NewSVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)
+{
+    return m_newAttributeToPropertyMap.get(attributeName);
 }
 
 bool SVGElement::isAnimatableCSSProperty(const QualifiedName& attrName)
@@ -1026,9 +1041,21 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
     SVGElement* nonConstThis = const_cast<SVGElement*>(this);
     if (name == anyQName()) {
         nonConstThis->localAttributeToPropertyMap().synchronizeProperties(nonConstThis);
+
+        AttributeToPropertyMap::const_iterator::Values it = m_newAttributeToPropertyMap.values().begin();
+        AttributeToPropertyMap::const_iterator::Values end = m_newAttributeToPropertyMap.values().end();
+        for (; it != end; ++it) {
+            (*it)->synchronizeAttribute();
+        }
+
         elementData()->m_animatedSVGAttributesAreDirty = false;
-    } else
+    } else {
         nonConstThis->localAttributeToPropertyMap().synchronizeProperty(nonConstThis, name);
+
+        RefPtr<NewSVGAnimatedPropertyBase> property = m_newAttributeToPropertyMap.get(name);
+        if (property)
+            property->synchronizeAttribute();
+    }
 }
 
 void SVGElement::synchronizeRequiredFeatures(SVGElement* contextElement)
@@ -1212,5 +1239,4 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
     return animatableAttributes.contains(name);
 }
 #endif
-
 }
