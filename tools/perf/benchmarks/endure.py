@@ -11,7 +11,6 @@ class _EndureBenchmark(test.Test):
   test = endure.Endure
   # Default options for endure benchmarks. Could be overridden in subclasses.
   options = {
-      'output_format': 'csv',
       'skip_navigate_on_repeat': True,
       'page_repeat_secs': 7200,
       'perf_stats_interval': '100s'
