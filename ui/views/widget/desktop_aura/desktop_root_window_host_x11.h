@@ -31,6 +31,7 @@ class DesktopDragDropClientAuraX11;
 class DesktopDispatcherClient;
 class DesktopRootWindowHostObserverX11;
 class X11DesktopWindowMoveClient;
+class X11ScopedCapture;
 class X11WindowEventFilter;
 
 class VIEWS_EXPORT DesktopRootWindowHostX11 :
@@ -280,6 +281,8 @@ private:
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
   static std::list<XID>* open_windows_;
+
+  scoped_ptr<X11ScopedCapture> x11_capture_;
 
   string16 window_title_;
 

@@ -47,6 +47,7 @@
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
+#include "ui/views/widget/desktop_aura/x11_scoped_capture.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 
 namespace views {
@@ -292,6 +293,7 @@ void DesktopRootWindowHostX11::CloseNow() {
   if (xwindow_ == None)
     return;
 
+  x11_capture_.reset();
   native_widget_delegate_->OnNativeWidgetDestroying();
 
   // If we have children, close them. Use a copy for iteration because they'll
@@ -466,6 +468,7 @@ void DesktopRootWindowHostX11::Activate() {
 
 void DesktopRootWindowHostX11::Deactivate() {
   // Deactivating a window means activating nothing.
+  x11_capture_.reset();
   X11DesktopHandler::get()->ActivateWindow(None);
 }
 
@@ -485,6 +488,7 @@ void DesktopRootWindowHostX11::Maximize() {
 }
 
 void DesktopRootWindowHostX11::Minimize() {
+  x11_capture_.reset();
   XIconifyWindow(xdisplay_, xwindow_, 0);
 }
 
@@ -694,8 +698,10 @@ void DesktopRootWindowHostX11::OnNativeWidgetFocus() {
 }
 
 void DesktopRootWindowHostX11::OnNativeWidgetBlur() {
-  if (xwindow_)
+  if (xwindow_) {
+    x11_capture_.reset();
     native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
+  }
 }
 
 bool DesktopRootWindowHostX11::IsAnimatingClosed() const {
@@ -813,17 +819,11 @@ void DesktopRootWindowHostX11::SetCapture() {
     g_current_capture->OnCaptureReleased();
 
   g_current_capture = this;
-
-  // TODO(erg): In addition to the above, NativeWidgetGtk performs a full X
-  // pointer grab when our NativeWidget is of type Menu. However, things work
-  // without it. Clicking inside a chrome window causes a release capture, and
-  // clicking outside causes an activation change. Since previous attempts at
-  // using XPointerGrab() to implement this have locked my X server, I'm going
-  // to skip this for now.
+  x11_capture_.reset(new X11ScopedCapture(xwindow_));
 }
 
 void DesktopRootWindowHostX11::ReleaseCapture() {
-  if (g_current_capture)
+  if (g_current_capture == this)
     g_current_capture->OnCaptureReleased();
 }
 
@@ -1102,6 +1102,7 @@ bool DesktopRootWindowHostX11::HasWMSpecProperty(const char* property) const {
 }
 
 void DesktopRootWindowHostX11::OnCaptureReleased() {
+  x11_capture_.reset();
   g_current_capture = NULL;
   delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();

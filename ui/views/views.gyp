@@ -404,6 +404,8 @@
         'widget/desktop_aura/x11_desktop_handler.h',
         'widget/desktop_aura/x11_desktop_window_move_client.cc',
         'widget/desktop_aura/x11_desktop_window_move_client.h',
+        'widget/desktop_aura/x11_scoped_capture.cc',
+        'widget/desktop_aura/x11_scoped_capture.h',
         'widget/desktop_aura/x11_whole_screen_move_loop.cc',
         'widget/desktop_aura/x11_whole_screen_move_loop.h',
         'widget/desktop_aura/x11_whole_screen_move_loop_delegate.h',

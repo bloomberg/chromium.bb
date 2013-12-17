@@ -62,6 +62,8 @@ class X11WholeScreenMoveLoop : public base::MessageLoop::Dispatcher {
   // Are we running a nested message loop from RunMoveLoop()?
   bool in_move_loop_;
 
+  bool should_reset_mouse_flags_;
+
   // An invisible InputOnly window . We create this window so we can track the
   // cursor wherever it goes on screen during a drag, since normal windows
   // don't receive pointer motion events outside of their bounds.
