@@ -319,8 +319,8 @@ while read name id comment ; do
       if [[ "$name" = ppapi1[0-9] ]] || [[ "$name" = ppapi2[0-9] ]] || \
          [[ "$name" = ppapi30 ]]; then
           patch -p0 <<-END
-	--- a/buildbot/buildbot_lib.py
-	+++ b/buildbot/buildbot_lib.py
+	--- native_client/buildbot/buildbot_lib.py
+	+++ native_client/buildbot/buildbot_lib.py
 	@@ -378,7 +378,6 @@ class Step(object):
 	         raise StopBuild()
 	     else:
