@@ -38,7 +38,8 @@ X86_IMG_URLS = {
   15: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-15_r01.zip',
   16: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-16_r01.zip',
   17: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-17_r01.zip',
-  18: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip'}
+  18: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip',
+  19: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-19_r01.zip'}
 
 def CheckSDK():
   """Check if SDK is already installed.
