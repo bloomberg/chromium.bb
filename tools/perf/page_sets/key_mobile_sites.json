@@ -11,7 +11,8 @@
     },
     {
       "url": "http://nytimes.com/",
-      "why": "Top news site"
+      "why": "Top news site",
+      "fastpath": true
     },
     {
       "url": "http://iphone.capitolvolkswagen.com/index.htm#new-inventory_p_2Fsb-new_p_2Ehtm_p_3Freset_p_3DInventoryListing",
@@ -28,7 +29,8 @@
     },
     {
       "url": "http://cuteoverload.com",
-      "why": "Image-heavy site"
+      "why": "Image-heavy site",
+      "fastpath": true
     },
     {
       "url": "http://theverge.com",
@@ -191,7 +193,8 @@
     },
     {
       "url": "http://slashdot.org/",
-      "why": "crbug.com/169827"
+      "why": "crbug.com/169827",
+      "fastpath": true
     },
     {
       "url": "http://worldjournal.com/",
@@ -219,11 +222,13 @@
     },
     {
       "url": "http://www.reddit.com/r/programming/comments/1g96ve",
-      "why": "#5 Alexa news"
+      "why": "#5 Alexa news",
+      "fastpath": true
     },
     {
       "url": "http://www.boingboing.net",
-      "why": "Problematic use of fixed position elements"
+      "why": "Problematic use of fixed position elements",
+      "fastpath": true
     },
     {
       "disabled": "Page behaves non-deterministically, replaced with test version for now",
