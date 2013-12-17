@@ -28,7 +28,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
-// TODO(ahutter): Change all VLOGs to DVLOGs after dogfood.
 namespace autofill {
 namespace wallet {
 
@@ -534,7 +533,7 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, this));
   request_->SetRequestContext(context_getter_.get());
-  VLOG(1) << "Making request to " << url << " with post_body=" << post_body;
+  DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(mime_type, post_body);
   request_->AddExtraRequestHeader("Authorization: GoogleLogin auth=" +
                                   delegate_->GetWalletCookieValue());
@@ -557,7 +556,7 @@ void WalletClient::OnURLFetchComplete(
       base::Time::Now() - request_started_timestamp_);
 
   DCHECK_EQ(source, request_.get());
-  VLOG(1) << "Got response from " << source->GetOriginalURL();
+  DVLOG(1) << "Got response from " << source->GetOriginalURL();
 
   // |request_|, which is aliased to |source|, might continue to be used in this
   // |method, but should be freed once control leaves the method.
@@ -573,7 +572,7 @@ void WalletClient::OnURLFetchComplete(
 
   std::string data;
   source->GetResponseAsString(&data);
-  VLOG(1) << "Response body: " << data;
+  DVLOG(1) << "Response body: " << data;
 
   scoped_ptr<base::DictionaryValue> response_dict;
 
@@ -773,7 +772,7 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
       break;
   }
 
-  VLOG(1) << "Wallet encountered a " << error_message;
+  DVLOG(1) << "Wallet encountered a " << error_message;
 
   delegate_->OnWalletError(error_type);
   delegate_->GetMetricLogger().LogWalletErrorMetric(
