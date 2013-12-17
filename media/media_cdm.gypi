@@ -101,6 +101,8 @@
         'cdm/ppapi/api/content_decryption_module.h',
         'cdm/ppapi/cdm_adapter.cc',
         'cdm/ppapi/cdm_adapter.h',
+        'cdm/ppapi/cdm_file_io_impl.cc',
+        'cdm/ppapi/cdm_file_io_impl.h',
         'cdm/ppapi/cdm_helpers.cc',
         'cdm/ppapi/cdm_helpers.h',
         'cdm/ppapi/cdm_logging.cc',

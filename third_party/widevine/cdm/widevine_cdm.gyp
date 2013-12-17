@@ -63,6 +63,8 @@
             '<(DEPTH)/media/cdm/ppapi/api/content_decryption_module.h',
             '<(DEPTH)/media/cdm/ppapi/cdm_adapter.cc',
             '<(DEPTH)/media/cdm/ppapi/cdm_adapter.h',
+            '<(DEPTH)/media/cdm/ppapi/cdm_file_io_impl.cc',
+            '<(DEPTH)/media/cdm/ppapi/cdm_file_io_impl.h',
             '<(DEPTH)/media/cdm/ppapi/cdm_helpers.cc',
             '<(DEPTH)/media/cdm/ppapi/cdm_helpers.h',
             '<(DEPTH)/media/cdm/ppapi/cdm_logging.cc',

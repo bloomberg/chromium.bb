@@ -117,6 +117,7 @@ class CdmAdapter : public pp::Instance,
   virtual void OnSessionError(uint32_t session_id,
                               cdm::MediaKeyError error_code,
                               uint32_t system_code) OVERRIDE;
+  virtual cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) OVERRIDE;
 
  private:
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;

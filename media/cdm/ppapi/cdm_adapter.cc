@@ -4,6 +4,7 @@
 
 #include "media/cdm/ppapi/cdm_adapter.h"
 
+#include "media/cdm/ppapi/cdm_file_io_impl.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
 #include "media/cdm/ppapi/cdm_logging.h"
 #include "media/cdm/ppapi/supported_cdm_versions.h"
@@ -919,6 +920,11 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
       deferred_video_decoder_config_id_ = 0;
       break;
   }
+}
+
+// The CDM owns the returned object and must call FileIO::Close() to release it.
+cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
+  return new CdmFileIOImpl(client, pp_instance());
 }
 
 #if defined(OS_CHROMEOS)
