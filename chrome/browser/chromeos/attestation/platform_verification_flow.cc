@@ -147,6 +147,12 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     ReportError(callback, POLICY_REJECTED);
     return;
   }
+  // A platform key must be bound to a user.  They are not allowed in incognito
+  // or guest mode.
+  if (IsGuestOrIncognito(web_contents)) {
+    ReportError(callback, PLATFORM_NOT_VERIFIED);
+    return;
+  }
   ChallengeContext context(web_contents, service_id, challenge, callback);
   BoolDBusMethodCallback dbus_callback = base::Bind(
       &DBusCallback,
@@ -459,6 +465,15 @@ bool PlatformVerificationFlow::IsExpired(const std::string& certificate) {
     return false;
   }
   return (base::Time::Now() > x509->valid_expiry());
+}
+
+bool PlatformVerificationFlow::IsGuestOrIncognito(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return profile->IsOffTheRecord() || profile->IsGuestSession();
 }
 
 }  // namespace attestation

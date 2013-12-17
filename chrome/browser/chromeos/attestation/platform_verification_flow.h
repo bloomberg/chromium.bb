@@ -264,6 +264,9 @@ class PlatformVerificationFlow
   // Returns true iff |certificate| is an expired X.509 certificate.
   bool IsExpired(const std::string& certificate);
 
+  // Returns true iff |web_contents| belongs to a guest or incognito session.
+  bool IsGuestOrIncognito(content::WebContents* web_contents);
+
   void set_testing_prefs(PrefService* testing_prefs) {
     testing_prefs_ = testing_prefs;
   }
