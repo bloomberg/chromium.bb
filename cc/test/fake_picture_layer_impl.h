@@ -33,6 +33,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::CanHaveTilings;
   using PictureLayerImpl::MarkVisibleResourcesAsRequired;
   using PictureLayerImpl::DoPostCommitInitializationIfNeeded;
+  using PictureLayerImpl::MinimumContentsScale;
 
   bool needs_post_commit_initialization() const {
     return needs_post_commit_initialization_;

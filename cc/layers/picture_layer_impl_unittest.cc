@@ -1425,6 +1425,53 @@ TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
   EXPECT_EQ(0u, active_layer_->num_tilings());
 }
 
+TEST_F(PictureLayerImplTest, FirstTilingDuringPinch) {
+  SetupDefaultTrees(gfx::Size(10, 10));
+  host_impl_.PinchGestureBegin();
+  float high_res_scale = 2.3f;
+  SetContentsScaleOnBothLayers(high_res_scale, 1.f, 1.f, false);
+
+  ASSERT_GE(pending_layer_->num_tilings(), 0u);
+  EXPECT_FLOAT_EQ(high_res_scale,
+                  pending_layer_->HighResTiling()->contents_scale());
+}
+
+TEST_F(PictureLayerImplTest, FirstTilingTooSmall) {
+  SetupDefaultTrees(gfx::Size(10, 10));
+  host_impl_.PinchGestureBegin();
+  float high_res_scale = 0.0001f;
+  EXPECT_GT(pending_layer_->MinimumContentsScale(), high_res_scale);
+
+  SetContentsScaleOnBothLayers(high_res_scale, 1.f, 1.f, false);
+
+  ASSERT_GE(pending_layer_->num_tilings(), 0u);
+  EXPECT_FLOAT_EQ(pending_layer_->MinimumContentsScale(),
+                  pending_layer_->HighResTiling()->contents_scale());
+}
+
+TEST_F(PictureLayerImplTest, PinchingTooSmall) {
+  SetupDefaultTrees(gfx::Size(10, 10));
+
+  float contents_scale = 0.15f;
+  SetContentsScaleOnBothLayers(contents_scale, 1.f, 1.f, false);
+
+  ASSERT_GE(pending_layer_->num_tilings(), 0u);
+  EXPECT_FLOAT_EQ(contents_scale,
+                  pending_layer_->HighResTiling()->contents_scale());
+
+  host_impl_.PinchGestureBegin();
+
+  float page_scale = 0.0001f;
+  EXPECT_LT(page_scale * contents_scale,
+            pending_layer_->MinimumContentsScale());
+
+
+  SetContentsScaleOnBothLayers(contents_scale, 1.f, page_scale, false);
+  ASSERT_GE(pending_layer_->num_tilings(), 0u);
+  EXPECT_FLOAT_EQ(pending_layer_->MinimumContentsScale(),
+                  pending_layer_->HighResTiling()->contents_scale());
+}
+
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
   DeferredInitPictureLayerImplTest()
