@@ -54,10 +54,6 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
-#if defined(OS_MACOSX)
-    // TODO(mcasas): Remove this switch when http://crbug.com/327618 is solved.
-    command_line->AppendSwitch(switches::kDisableAVFoundation);
-#endif
   }
 
   virtual void TearDown() OVERRIDE {
