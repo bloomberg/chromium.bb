@@ -33,7 +33,6 @@
 
 #include "../platform/WebCommon.h"
 #include "WebContentSecurityPolicy.h"
-#include "WebSharedWorkerConnector.h"
 
 namespace WebCore {
 class ScriptExecutionContext;
@@ -47,13 +46,24 @@ class WebSharedWorkerClient;
 class WebURL;
 
 // This is the interface to a SharedWorker thread.
-// FIXME(horo): Make WebSharedWorker independent from WebSharedWorkerConnector.
-class WebSharedWorker : public WebSharedWorkerConnector {
+class WebSharedWorker {
 public:
     // Invoked from the worker thread to instantiate a WebSharedWorker that interacts with the WebKit worker components.
     BLINK_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
 
     virtual ~WebSharedWorker() {};
+
+    virtual void startWorkerContext(
+        const WebURL& scriptURL,
+        const WebString& name,
+        const WebString& userAgent,
+        const WebString& sourceCode,
+        const WebString& contentSecurityPolicy,
+        WebContentSecurityPolicyType,
+        long long scriptResourceAppCacheID) = 0;
+
+    // Sends a connect event to the SharedWorker context.
+    virtual void connect(WebMessagePortChannel*) = 0;
 
     // Invoked to shutdown the worker when there are no more associated documents.
     virtual void terminateWorkerContext() = 0;
@@ -61,12 +71,12 @@ public:
     // Notification when the WebCommonWorkerClient is destroyed.
     virtual void clientDestroyed() = 0;
 
-    virtual void pauseWorkerContextOnStart() { }
-    virtual void resumeWorkerContext() { }
-    virtual void attachDevTools() { }
-    virtual void reattachDevTools(const WebString& savedState) { }
-    virtual void detachDevTools() { }
-    virtual void dispatchDevToolsMessage(const WebString&) { }
+    virtual void pauseWorkerContextOnStart() = 0;
+    virtual void resumeWorkerContext() = 0;
+    virtual void attachDevTools() = 0;
+    virtual void reattachDevTools(const WebString& savedState) = 0;
+    virtual void detachDevTools() = 0;
+    virtual void dispatchDevToolsMessage(const WebString&) = 0;
 };
 
 } // namespace blink

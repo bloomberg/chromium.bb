@@ -225,19 +225,10 @@ bool WebSharedWorkerImpl::postTaskForModeToWorkerGlobalScope(
     return true;
 }
 
-bool WebSharedWorkerImpl::isStarted()
-{
-    // Should not ever be called from the worker thread (this API is only called on WebSharedWorkerProxy on the renderer thread).
-    ASSERT_NOT_REACHED();
-    return workerThread();
-}
-
-void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectListener* listener)
+void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 {
     workerThread()->runLoop().postTask(
         createCallbackTask(&connectTask, adoptPtr(webChannel)));
-    if (listener)
-        listener->connected();
 }
 
 void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<WebMessagePortChannel> channel)

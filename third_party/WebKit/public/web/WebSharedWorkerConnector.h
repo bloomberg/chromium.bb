@@ -65,7 +65,7 @@ public:
     };
 
     // Sends a connect event to the SharedWorker context. The listener is invoked when this async operation completes.
-    virtual void connect(WebMessagePortChannel*, ConnectListener* = 0) = 0;
+    virtual void connect(WebMessagePortChannel*, ConnectListener*) = 0;
 };
 
 } // namespace blink
