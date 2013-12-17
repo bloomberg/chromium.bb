@@ -519,68 +519,6 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
   // We just printed a status line, reset the watchdog timer.
   watchdog_timer_.Reset();
 
-  if (test_finished_count_ == test_started_count_) {
-    if (!tests_to_retry_.empty() && retry_count_ < retry_limit_) {
-      retry_count_++;
-
-      std::vector<std::string> test_names(tests_to_retry_.begin(),
-                                          tests_to_retry_.end());
-
-      tests_to_retry_.clear();
-
-      size_t retry_started_count =
-          launcher_delegate_->RetryTests(this, test_names);
-      if (retry_started_count == 0) {
-        // Signal failure, but continue to run all requested test iterations.
-        // With the summary of all iterations at the end this is a good default.
-        run_result_ = false;
-
-        // The current iteration is done.
-        fprintf(stdout, "%" PRIuS " test%s run\n",
-                test_finished_count_,
-                test_finished_count_ > 1 ? "s" : "");
-        fflush(stdout);
-
-        results_tracker_.PrintSummaryOfCurrentIteration();
-
-        // Kick off the next iteration.
-        MessageLoop::current()->PostTask(
-            FROM_HERE,
-            Bind(&TestLauncher::RunTestIteration, Unretained(this)));
-      } else {
-        fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
-                retry_started_count,
-                retry_started_count > 1 ? "s" : "",
-                retry_count_);
-        fflush(stdout);
-
-        test_started_count_ += retry_started_count;
-      }
-    } else {
-      // The current iteration is done.
-      fprintf(stdout, "%" PRIuS " test%s run\n",
-              test_finished_count_,
-              test_finished_count_ > 1 ? "s" : "");
-      fflush(stdout);
-
-      results_tracker_.PrintSummaryOfCurrentIteration();
-
-      // When we retry tests, success is determined by having nothing more
-      // to retry (everything eventually passed), as opposed to having
-      // no failures at all.
-      if (!tests_to_retry_.empty()) {
-        // Signal failure, but continue to run all requested test iterations.
-        // With the summary of all iterations at the end this is a good default.
-        run_result_ = false;
-      }
-
-      // Kick off the next iteration.
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          Bind(&TestLauncher::RunTestIteration, Unretained(this)));
-    }
-  }
-
   // Do not waste time on timeouts. We include tests with unknown results here
   // because sometimes (e.g. hang in between unit tests) that's how a timeout
   // gets reported.
@@ -603,6 +541,50 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     MaybeSaveSummaryAsJSON();
 
     exit(1);
+  }
+
+  if (test_finished_count_ == test_started_count_) {
+    if (!tests_to_retry_.empty()) {
+      if (retry_count_ < retry_limit_ &&
+          tests_to_retry_.size() < broken_threshold) {
+        retry_count_++;
+
+        std::vector<std::string> test_names(tests_to_retry_.begin(),
+                                            tests_to_retry_.end());
+
+        tests_to_retry_.clear();
+
+        size_t retry_started_count =
+            launcher_delegate_->RetryTests(this, test_names);
+        if (retry_started_count == 0) {
+          // Signal failure, but continue to run all requested test iterations.
+          // With the summary of all iterations at the end this is a good
+          // default.
+          run_result_ = false;
+
+          OnTestIterationFinished();
+        } else {
+          fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
+                  retry_started_count,
+                  retry_started_count > 1 ? "s" : "",
+                  retry_count_);
+          fflush(stdout);
+
+          test_started_count_ += retry_started_count;
+        }
+      } else {
+        fprintf(stdout,
+                "Too many failing tests (%" PRIuS "), skipping retries.\n",
+                tests_to_retry_.size());
+        fflush(stdout);
+
+        results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
+
+        OnTestIterationFinished();
+      }
+    } else {
+      OnTestIterationFinished();
+    }
   }
 }
 
@@ -818,6 +800,30 @@ void TestLauncher::OnLaunchTestProcessFinished(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   callback.Run(exit_code, elapsed_time, was_timeout, output);
+}
+
+void TestLauncher::OnTestIterationFinished() {
+  // The current iteration is done.
+  fprintf(stdout, "%" PRIuS " test%s run\n",
+          test_finished_count_,
+          test_finished_count_ > 1 ? "s" : "");
+  fflush(stdout);
+
+  results_tracker_.PrintSummaryOfCurrentIteration();
+
+  // When we retry tests, success is determined by having nothing more
+  // to retry (everything eventually passed), as opposed to having
+  // no failures at all.
+  if (!tests_to_retry_.empty()) {
+    // Signal failure, but continue to run all requested test iterations.
+    // With the summary of all iterations at the end this is a good default.
+    run_result_ = false;
+  }
+
+  // Kick off the next iteration.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestLauncher::RunTestIteration, Unretained(this)));
 }
 
 void TestLauncher::OnOutputTimeout() {

@@ -129,6 +129,9 @@ class TestLauncher {
       bool was_timeout,
       const std::string& output);
 
+  // Called when a test iteration is finished.
+  void OnTestIterationFinished();
+
   // Called by the delay timer when no output was made for a while.
   void OnOutputTimeout();
 
