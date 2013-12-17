@@ -47,6 +47,16 @@
 
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
+#ifndef EGL_WL_create_wayland_buffer_from_image
+#define EGL_WL_create_wayland_buffer_from_image 1
+
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI struct wl_buffer * EGLAPIENTRY eglCreateWaylandBufferFromImageWL(EGLDisplay dpy, EGLImageKHR image);
+#endif
+typedef struct wl_buffer * (EGLAPIENTRYP PFNEGLCREATEWAYLANDBUFFERFROMIMAGEWL) (EGLDisplay dpy, EGLImageKHR image);
+
+#endif
+
 static int option_blit;
 
 struct nested {
