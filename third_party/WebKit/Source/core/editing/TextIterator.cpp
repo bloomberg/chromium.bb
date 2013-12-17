@@ -403,11 +403,11 @@ void TextIterator::advance()
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
                     handledNode = handleTextNode();
                 } else if (renderer && (renderer->isImage() || renderer->isWidget()
-                    || (renderer->node() && renderer->node()->isElementNode()
-                    && (toElement(renderer->node())->isFormControlElement()
-                    || toElement(renderer->node())->hasTagName(legendTag)
-                    || toElement(renderer->node())->hasTagName(meterTag)
-                    || toElement(renderer->node())->hasTagName(progressTag))))) {
+                    || (m_node && m_node->isElementNode()
+                    && (toElement(m_node)->isFormControlElement()
+                    || toElement(m_node)->hasTagName(legendTag)
+                    || toElement(m_node)->hasTagName(meterTag)
+                    || toElement(m_node)->hasTagName(progressTag))))) {
                     handledNode = handleReplacedElement();
                 } else {
                     handledNode = handleNonTextNode();
