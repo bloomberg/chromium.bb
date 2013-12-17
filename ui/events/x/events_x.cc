@@ -333,6 +333,9 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
         flags |= GetEventFlagsForButton(native_event->xbutton.button);
       return flags;
     }
+    case EnterNotify:
+    case LeaveNotify:
+      return GetEventFlagsFromXState(native_event->xcrossing.state);
     case MotionNotify:
       return GetEventFlagsFromXState(native_event->xmotion.state);
     case GenericEvent: {
