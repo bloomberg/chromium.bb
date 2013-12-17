@@ -57,12 +57,13 @@ namespace content {
 
 namespace {
 
-void DeleteDownloadedFile(const base::FilePath& path) {
+bool DeleteDownloadedFile(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Make sure we only delete files.
-  if (!base::DirectoryExists(path))
-    base::DeleteFile(path, false);
+  if (base::DirectoryExists(path))
+    return true;
+  return base::DeleteFile(path, false);
 }
 
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
@@ -407,8 +408,9 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   // Continuable interruptions leave the intermediate file around.
   if ((state_ == INTERRUPTED_INTERNAL || state_ == RESUMING_INTERNAL) &&
       !current_path_.empty()) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&DeleteDownloadedFile, current_path_));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(base::IgnoreResult(&DeleteDownloadedFile), current_path_));
     current_path_.clear();
   }
 
@@ -620,7 +622,7 @@ void DownloadItemImpl::DeleteFile() {
       file_externally_removed_) {
     return;
   }
-  BrowserThread::PostTaskAndReply(
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeleteDownloadedFile, current_path_),
       base::Bind(&DownloadItemImpl::OnDownloadedFileRemoved,
@@ -944,7 +946,9 @@ void DownloadItemImpl::NotifyRemoved() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
 }
 
-void DownloadItemImpl::OnDownloadedFileRemoved() {
+void DownloadItemImpl::OnDownloadedFileRemoved(bool success) {
+  if (!success)
+    return;
   file_externally_removed_ = true;
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
   UpdateObservers();

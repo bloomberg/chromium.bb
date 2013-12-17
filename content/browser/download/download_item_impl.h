@@ -184,7 +184,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Notify observers that this item is being removed by the user.
   virtual void NotifyRemoved();
 
-  virtual void OnDownloadedFileRemoved();
+  virtual void OnDownloadedFileRemoved(bool success);
 
   // Provide a weak pointer reference to a DownloadDestinationObserver
   // for use by download destinations.

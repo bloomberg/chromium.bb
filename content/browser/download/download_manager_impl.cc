@@ -466,7 +466,7 @@ void DownloadManagerImpl::OnFileExistenceChecked(uint32 download_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!result) {  // File does not exist.
     if (ContainsKey(downloads_, download_id))
-      downloads_[download_id]->OnDownloadedFileRemoved();
+      downloads_[download_id]->OnDownloadedFileRemoved(true);
   }
 }
 

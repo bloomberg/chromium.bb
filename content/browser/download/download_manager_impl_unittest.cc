@@ -106,7 +106,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
   MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
-  MOCK_METHOD0(OnDownloadedFileRemoved, void());
+  MOCK_METHOD1(OnDownloadedFileRemoved, void(bool));
   virtual void Start(
       scoped_ptr<DownloadFile> download_file,
       scoped_ptr<DownloadRequestHandleInterface> req_handle) OVERRIDE {
