@@ -71,8 +71,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler)
       gesture_scroll_on_impl_thread_(false),
       gesture_pinch_on_impl_thread_(false),
       fling_may_be_active_on_main_thread_(false),
-      fling_overscrolled_horizontally_(false),
-      fling_overscrolled_vertically_(false) {
+      disallow_horizontal_fling_scroll_(false),
+      disallow_vertical_fling_scroll_(false) {
   input_handler_->BindToClient(this);
 }
 
@@ -273,8 +273,10 @@ InputHandlerProxy::HandleGestureFling(
           WebFloatPoint(gesture_event.data.flingStart.velocityX,
                         gesture_event.data.flingStart.velocityY),
           blink::WebSize()));
-      fling_overscrolled_horizontally_ = false;
-      fling_overscrolled_vertically_ = false;
+      disallow_horizontal_fling_scroll_ =
+          !gesture_event.data.flingStart.velocityX;
+      disallow_vertical_fling_scroll_ =
+          !gesture_event.data.flingStart.velocityY;
       TRACE_EVENT_ASYNC_BEGIN0(
           "renderer",
           "InputHandlerProxy::HandleGestureFling::started",
@@ -332,8 +334,14 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     return;
   }
 
-  if (fling_curve_->apply(monotonic_time_sec - fling_parameters_.startTime,
-                          this)) {
+  bool fling_is_active =
+      fling_curve_->apply(monotonic_time_sec - fling_parameters_.startTime,
+                          this);
+
+  if (disallow_vertical_fling_scroll_ && disallow_horizontal_fling_scroll_)
+    fling_is_active = false;
+
+  if (fling_is_active) {
     input_handler_->ScheduleAnimation();
   } else {
     TRACE_EVENT_INSTANT0("renderer",
@@ -351,10 +359,10 @@ void InputHandlerProxy::DidOverscroll(const cc::DidOverscrollParams& params) {
   DCHECK(client_);
   if (fling_curve_) {
     static const int kFlingOverscrollThreshold = 1;
-    fling_overscrolled_horizontally_ |=
+    disallow_horizontal_fling_scroll_ |=
         std::abs(params.accumulated_overscroll.x()) >=
         kFlingOverscrollThreshold;
-    fling_overscrolled_vertically_ |=
+    disallow_vertical_fling_scroll_ |=
         std::abs(params.accumulated_overscroll.y()) >=
         kFlingOverscrollThreshold;
   }
@@ -429,9 +437,9 @@ static gfx::Vector2dF ToClientScrollIncrement(const WebFloatSize& increment) {
 
 void InputHandlerProxy::scrollBy(const WebFloatSize& increment) {
   WebFloatSize clipped_increment;
-  if (!fling_overscrolled_horizontally_)
+  if (!disallow_horizontal_fling_scroll_)
     clipped_increment.width = increment.width;
-  if (!fling_overscrolled_vertically_)
+  if (!disallow_vertical_fling_scroll_)
     clipped_increment.height = increment.height;
 
   if (clipped_increment == WebFloatSize())

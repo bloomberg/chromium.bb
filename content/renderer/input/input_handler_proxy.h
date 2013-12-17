@@ -83,9 +83,11 @@ class CONTENT_EXPORT InputHandlerProxy
   // conservative in the sense that we might not be actually flinging when it is
   // true.
   bool fling_may_be_active_on_main_thread_;
-  // The axes on which the current fling has overshot the bounds of the content.
-  bool fling_overscrolled_horizontally_;
-  bool fling_overscrolled_vertically_;
+  // The axes on which the current fling is allowed to scroll.  If a given fling
+  // has overscrolled on a particular axis, further fling scrolls on that axis
+  // will be disabled.
+  bool disallow_horizontal_fling_scroll_;
+  bool disallow_vertical_fling_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
