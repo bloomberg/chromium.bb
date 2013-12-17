@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_SERVICE_H_
 
+#include <map>
 #include <string>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -126,8 +127,8 @@ class DialServiceImpl : public DialService,
     // Creates a socket using |net_log| and |net_log_source| and binds it to
     // |bind_ip_address|.
     bool CreateAndBindSocket(const net::IPAddressNumber& bind_ip_address,
-                    net::NetLog* net_log,
-                    net::NetLog::Source net_log_source);
+                             net::NetLog* net_log,
+                             net::NetLog::Source net_log_source);
 
     // Sends a single discovery request |send_buffer| to |send_address|
     // over the socket.
@@ -195,21 +196,35 @@ class DialServiceImpl : public DialService,
     // Marks whether there is an active read callback.
     bool is_reading_;
 
+    FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestNotifyOnError);
     FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDeviceDiscovered);
     FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryRequest);
     FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestResponseParsing);
     DISALLOW_COPY_AND_ASSIGN(DialSocket);
   };
 
+  // (Interface index, Address family) uniquely indentifies a network
+  // interface. This is used to de-dupe network interfaces that are returned
+  // by |net::GetNetworkList()|.
+  typedef std::pair<uint32, net::AddressFamily> InterfaceIndexAddressFamily;
+  typedef std::map<InterfaceIndexAddressFamily, DialSocket*>
+      NetworkInterfaceDialSocketMap;
+
   // Starts the control flow for one discovery cycle.
   void StartDiscovery();
 
-  // Send the network list to IO thread.
+  // For each network interface in |list|, calls |BindAndAddSocket()|.
   void SendNetworkList(const net::NetworkInterfaceList& list);
 
   // Creates a DialSocket, binds it to |bind_ip_address| and if
-  // successful, add the DialSocket to |dial_sockets_|.
-  void BindAndAddSocket(const net::IPAddressNumber& bind_ip_address);
+  // successful, adds the DialSocket to |dial_sockets_| and returns |true|.
+  // If the binding was unsuccessful, then the socket is not added, and this
+  // function will return |false|.
+  // If there is an existing socket with the same |interface_index_addr_family|,
+  // then the new socket is not added, and this function will return |false|.
+  bool BindAndAddSocket(
+      const InterfaceIndexAddressFamily& interface_index_addr_family,
+      const net::IPAddressNumber& bind_ip_address);
 
   // Creates a DialSocket with callbacks to this object.
   scoped_ptr<DialSocket> CreateDialSocket();
@@ -230,9 +245,12 @@ class DialServiceImpl : public DialService,
   // discovery.
   void FinishDiscovery();
 
+  // Returns |true| if there are open sockets.
+  bool HasOpenSockets();
+
   // DialSockets for each network interface whose ip address was
   // successfully bound.
-  ScopedVector<DialSocket> dial_sockets_;
+  NetworkInterfaceDialSocketMap dial_sockets_;
 
   // The NetLog for this service.
   net::NetLog* net_log_;
@@ -277,6 +295,8 @@ class DialServiceImpl : public DialService,
 
   friend class DialServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestSendMultipleRequests);
+  FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestMultipleNetworkInterfaces);
+  FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestNotifyOnError);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDeviceDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryFinished);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryRequest);

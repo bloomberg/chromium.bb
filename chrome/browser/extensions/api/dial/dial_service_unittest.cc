@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +17,7 @@
 using base::Time;
 using base::TimeDelta;
 using ::testing::A;
+using ::testing::Eq;
 using ::testing::AtLeast;
 using ::testing::Return;
 
@@ -66,10 +69,71 @@ TEST_F(DialServiceTest, TestSendMultipleRequests) {
   dial_service_.discovery_active_ = true;
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(4);
   EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
-  dial_service_.BindAndAddSocket(mock_ip_);
+  dial_service_.BindAndAddSocket(
+      std::make_pair(0, net::ADDRESS_FAMILY_IPV4), mock_ip_);
+  EXPECT_EQ(1, static_cast<int>(dial_service_.dial_sockets_.size()));
   dial_service_.SendOneRequest();
   loop.RunUntilIdle();
   dial_service_.FinishDiscovery();
+}
+
+TEST_F(DialServiceTest, TestMultipleNetworkInterfaces) {
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  // Setting the finish delay to zero disables the timer that invokes
+  // FinishDiscovery().
+  dial_service_.finish_delay_ = TimeDelta::FromSeconds(0);
+  dial_service_.request_interval_ = TimeDelta::FromSeconds(0);
+  dial_service_.max_requests_ = 4;
+  dial_service_.discovery_active_ = true;
+  // 3 sockets * 4 requests per socket = 12 requests
+  EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(12);
+  EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
+  dial_service_.BindAndAddSocket(
+      std::make_pair(0, net::ADDRESS_FAMILY_IPV4), mock_ip_);
+  EXPECT_EQ(1, static_cast<int>(dial_service_.dial_sockets_.size()));
+  // A different interface index means a different network interface
+  dial_service_.BindAndAddSocket(
+      std::make_pair(1, net::ADDRESS_FAMILY_IPV4), mock_ip_);
+  EXPECT_EQ(2, static_cast<int>(dial_service_.dial_sockets_.size()));
+  // A differemt address family means a different network interface
+  dial_service_.BindAndAddSocket(
+      std::make_pair(0, net::ADDRESS_FAMILY_IPV6), mock_ip_);
+  EXPECT_EQ(3, static_cast<int>(dial_service_.dial_sockets_.size()));
+  // Same interface index + address family means same network interface even
+  // though the address might be different.
+  dial_service_.BindAndAddSocket(
+      std::make_pair(0, net::ADDRESS_FAMILY_IPV4), mock_ip_);
+  EXPECT_EQ(3, static_cast<int>(dial_service_.dial_sockets_.size()));
+  dial_service_.SendOneRequest();
+  loop.RunUntilIdle();
+  dial_service_.FinishDiscovery();
+}
+
+TEST_F(DialServiceTest, TestNotifyOnError) {
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+
+  std::pair<uint32, net::AddressFamily> index_addr_family(
+      std::make_pair(0, net::ADDRESS_FAMILY_IPV4));
+  dial_service_.BindAndAddSocket(index_addr_family, mock_ip_);
+  std::pair<uint32, net::AddressFamily> index_addr_family_2(
+      std::make_pair(1, net::ADDRESS_FAMILY_IPV4));
+  dial_service_.BindAndAddSocket(
+      index_addr_family_2, mock_ip_);
+  EXPECT_EQ(2, static_cast<int>(dial_service_.dial_sockets_.size()));
+  dial_service_.dial_sockets_[index_addr_family]->Close();
+  // Second socket is still open
+  EXPECT_TRUE(dial_service_.HasOpenSockets());
+  EXPECT_CALL(mock_observer_,
+              OnError(A<DialService*>(),
+                      Eq(DialService::DIAL_SERVICE_SOCKET_ERROR)));
+  dial_service_.NotifyOnError();
+  dial_service_.dial_sockets_[index_addr_family_2]->Close();
+  // All sockets now closed
+  EXPECT_FALSE(dial_service_.HasOpenSockets());
+  EXPECT_CALL(mock_observer_,
+              OnError(A<DialService*>(),
+                      Eq(DialService::DIAL_SERVICE_NO_INTERFACES)));
+  dial_service_.NotifyOnError();
 }
 
 TEST_F(DialServiceTest, TestOnDiscoveryRequest) {
@@ -98,7 +162,7 @@ TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
               OnDeviceDiscovered(A<DialService*>(), expected_device))
       .Times(1);
   dial_socket_->OnSocketRead(response_size);
-};
+}
 
 TEST_F(DialServiceTest, TestOnDiscoveryFinished) {
   dial_service_.discovery_active_ = true;

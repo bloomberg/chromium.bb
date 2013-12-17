@@ -5,11 +5,14 @@
 #include "chrome/browser/extensions/api/dial/dial_service.h"
 
 #include <algorithm>
+#include <map>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -135,8 +138,7 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
     net::NetLog::Source net_log_source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!socket_.get());
-  DCHECK(bind_ip_address.size() == net::kIPv4AddressSize ||
-         bind_ip_address.size() == net::kIPv6AddressSize);
+  DCHECK(bind_ip_address.size() == net::kIPv4AddressSize);
 
   net::RandIntCallback rand_cb = base::Bind(&base::RandInt);
   socket_.reset(new UDPSocket(net::DatagramSocket::RANDOM_BIND,
@@ -363,6 +365,8 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
 
 DialServiceImpl::~DialServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  STLDeleteContainerPairSecondPointers(dial_sockets_.begin(),
+                                       dial_sockets_.end());
 }
 
 void DialServiceImpl::AddObserver(Observer* observer) {
@@ -406,30 +410,34 @@ void DialServiceImpl::StartDiscovery() {
 
 void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  IPAddressNumber bind_ip_address;
-  // Returns the first IPv4 address found.  If there is a need for discovery
-  // across multiple networks, we could manage multiple sockets.
-
+  // Binds a socket to each IPv4 network interface found. Note that
+  // there may be duplicates in |networks|, so address family + interface index
+  // is used to identify unique interfaces.
   // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
   for (NetworkInterfaceList::const_iterator iter = networks.begin();
        iter != networks.end(); ++iter) {
+    net::AddressFamily addr_family =
+        net::GetAddressFamily(iter->address);
     DVLOG(1) << "Found " << iter->name << ", "
-             << net::IPAddressToString(iter->address);
-    if (iter->address.size() == net::kIPv4AddressSize) {
-      bind_ip_address = (*iter).address;
-      break;
+             << net::IPAddressToString(iter->address)
+             << ", address family: " << addr_family;
+    if (addr_family == net::ADDRESS_FAMILY_IPV4) {
+      InterfaceIndexAddressFamily interface_index_addr_family =
+          std::make_pair(iter->interface_index, addr_family);
+      BindAndAddSocket(interface_index_addr_family, iter->address);
     }
   }
 
-  if (bind_ip_address.size() == 0) {
+  if (dial_sockets_.empty()) {
     DVLOG(1) << "Could not find a valid interface to bind.";
     return;
   }
 
-  BindAndAddSocket(bind_ip_address);
   SendOneRequest();
 
   // Schedule a timer to finish the discovery process (and close the sockets).
+  // TODO(imcheng): Move this to SendOneRequest() once the implications are
+  // understood.
   if (finish_delay_ > TimeDelta::FromSeconds(0)) {
     finish_timer_.Start(FROM_HERE,
                         finish_delay_,
@@ -438,17 +446,41 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   }
 }
 
-void DialServiceImpl::BindAndAddSocket(
+bool DialServiceImpl::BindAndAddSocket(
+    const InterfaceIndexAddressFamily& interface_index_addr_family,
     const IPAddressNumber& bind_ip_address) {
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket(
-      CreateDialSocket());
-  if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
-                                       net_log_source_))
-    dial_sockets_.push_back(dial_socket.release());
+  if (dial_sockets_.find(interface_index_addr_family) == dial_sockets_.end()) {
+    scoped_ptr<DialServiceImpl::DialSocket> dial_socket(CreateDialSocket());
+    DVLOG(1) << "Created DialSocket for "
+             << net::IPAddressToString(bind_ip_address) << ": ("
+             << interface_index_addr_family.first << ", "
+             << interface_index_addr_family.second << ").";
+    if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
+                                         net_log_source_)) {
+      DCHECK(dial_sockets_.insert(
+          std::make_pair(interface_index_addr_family,
+                         dial_socket.release()))
+          .second);
+      DVLOG(1) << "Socket created and bound for "
+               << net::IPAddressToString(bind_ip_address);
+      return true;
+    } else {
+      DVLOG(1) << "CreateAndBindSocket failed for "
+               << net::IPAddressToString(bind_ip_address)
+               << ", socket not added.";
+      return false;
+    }
+  } else {
+    DVLOG(1) << "Socket not created for "
+             << net::IPAddressToString(bind_ip_address)
+             << ", because InterfaceIndexAddressFamily ("
+             << interface_index_addr_family.first << ", "
+             << interface_index_addr_family.second << ") already exists.";
+    return false;
+  }
 }
 
-scoped_ptr<DialServiceImpl::DialSocket>
-    DialServiceImpl::CreateDialSocket() {
+scoped_ptr<DialServiceImpl::DialSocket> DialServiceImpl::CreateDialSocket() {
   scoped_ptr<DialServiceImpl::DialSocket> dial_socket(
       new DialServiceImpl::DialSocket(
           base::Bind(&DialServiceImpl::NotifyOnDiscoveryRequest, AsWeakPtr()),
@@ -466,12 +498,11 @@ void DialServiceImpl::SendOneRequest() {
   num_requests_sent_++;
   VLOG(2) << "Sending request " << num_requests_sent_ << "/"
           << max_requests_;
-  for (ScopedVector<DialServiceImpl::DialSocket>::iterator iter =
-           dial_sockets_.begin();
+  for (NetworkInterfaceDialSocketMap::iterator iter = dial_sockets_.begin();
        iter != dial_sockets_.end();
        ++iter) {
-    if (!(*iter)->IsClosed()) {
-      (*iter)->SendOneRequest(send_address_, send_buffer_);
+    if (!(iter->second->IsClosed())) {
+      iter->second->SendOneRequest(send_address_, send_buffer_);
     }
   }
 }
@@ -507,7 +538,9 @@ void DialServiceImpl::NotifyOnDeviceDiscovered(
 void DialServiceImpl::NotifyOnError() {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnError(this, DIAL_SERVICE_SOCKET_ERROR));
+                    OnError(this,
+                            HasOpenSockets() ? DIAL_SERVICE_SOCKET_ERROR
+                                             : DIAL_SERVICE_NO_INTERFACES));
 }
 
 void DialServiceImpl::FinishDiscovery() {
@@ -515,12 +548,24 @@ void DialServiceImpl::FinishDiscovery() {
   DCHECK(discovery_active_);
   VLOG(2) << "Discovery finished.";
   // Close all open sockets.
+  STLDeleteContainerPairSecondPointers(dial_sockets_.begin(),
+                                       dial_sockets_.end());
   dial_sockets_.clear();
   finish_timer_.Stop();
   request_timer_.Stop();
   discovery_active_ = false;
   num_requests_sent_ = 0;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDiscoveryFinished(this));
+}
+
+bool DialServiceImpl::HasOpenSockets() {
+   for (NetworkInterfaceDialSocketMap::iterator iter = dial_sockets_.begin();
+        iter != dial_sockets_.end();
+        ++iter) {
+     if (!(iter->second->IsClosed()))
+       return true;
+   }
+   return false;
 }
 
 }  // namespace extensions
