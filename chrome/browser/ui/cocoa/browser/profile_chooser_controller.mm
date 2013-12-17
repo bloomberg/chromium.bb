@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -86,16 +87,16 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 
 // Creates a generic button with text given by |textResourceId|, an icon
 // given by |imageResourceId| and with |action|.
-- (NSButton*)makeButtonWithRect:(NSRect)rect
-                 textResourceId:(int)textResourceId
-                imageResourceId:(int)imageResourceId
-                         action:(SEL)action;
+- (NSButton*)buttonWithRect:(NSRect)rect
+             textResourceId:(int)textResourceId
+            imageResourceId:(int)imageResourceId
+                     action:(SEL)action;
 
 // Creates a generic link button with |title| and an |action| positioned at
 // |frameOrigin|.
-- (NSButton*)makeLinkButtonWithTitle:(NSString*)title
-                         frameOrigin:(NSPoint)frameOrigin
-                              action:(SEL)action;
+- (NSButton*)linkButtonWithTitle:(NSString*)title
+                     frameOrigin:(NSPoint)frameOrigin
+                          action:(SEL)action;
 
 // Creates all the subviews of the avatar bubble.
 - (void)initMenuContents;
@@ -117,9 +118,14 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 }
 
 - (IBAction)showUserManager:(id)sender {
-  // TODO(noms): This should use chrome::ShowUserManager() when the
-  // implementation is ready.
-  chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUIUserManagerURL));
+  // Only non-guest users appear in the User Manager.
+  base::FilePath profile_path;
+  // The button tag indicates whether the active profile is a non-guest profile.
+  if ([sender tag]) {
+    size_t active_index = avatarMenu_->GetActiveProfileIndex();
+    profile_path = avatarMenu_->GetItemAt(active_index).profile_path;
+  }
+  chrome::ShowUserManager(profile_path);
 }
 
 - (IBAction)switchToGuestProfile:(id)sender {
@@ -263,17 +269,17 @@ void SetWindowSize(NSWindow* window, NSSize size) {
     // the links even smaller to fit.
     const CGFloat kLinkSpacing = kSmallVerticalSpacing / 2;
     NSButton* manageAccountsLink =
-        [self makeLinkButtonWithTitle:l10n_util::GetNSString(
+        [self linkButtonWithTitle:l10n_util::GetNSString(
             IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON)
-                          frameOrigin:NSMakePoint(xOffset, yOffset)
-                               action:@selector(showAccountManagement:)];
+                      frameOrigin:NSMakePoint(xOffset, yOffset)
+                           action:@selector(showAccountManagement:)];
     yOffset = NSMaxY([manageAccountsLink frame]) + kLinkSpacing;
 
     NSButton* signOutLink =
-        [self makeLinkButtonWithTitle:l10n_util::GetNSString(
+        [self linkButtonWithTitle:l10n_util::GetNSString(
             IDS_PROFILES_PROFILE_SIGNOUT_BUTTON)
-                          frameOrigin:NSMakePoint(xOffset, yOffset)
-                               action:@selector(lockProfile:)];
+                      frameOrigin:NSMakePoint(xOffset, yOffset)
+                           action:@selector(lockProfile:)];
     yOffset = NSMaxY([signOutLink frame]) + kLinkSpacing;
 
     maxXOfLinksColumn = std::max(NSMaxX([manageAccountsLink frame]),
@@ -283,11 +289,11 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   } else {
     yOffset = kSmallVerticalSpacing;
     NSButton* signInLink =
-        [self makeLinkButtonWithTitle:l10n_util::GetNSStringFWithFixup(
+        [self linkButtonWithTitle:l10n_util::GetNSStringFWithFixup(
             IDS_SYNC_START_SYNC_BUTTON_LABEL,
             l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))
-                          frameOrigin:NSMakePoint(xOffset, yOffset)
-                               action:@selector(showSigninPage:)];
+                      frameOrigin:NSMakePoint(xOffset, yOffset)
+                           action:@selector(showSigninPage:)];
     yOffset = NSMaxY([signInLink frame]) + kSmallVerticalSpacing;
     maxXOfLinksColumn = NSMaxX([signInLink frame]);
     [container addSubview:signInLink];
@@ -352,17 +358,17 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
 
   NSButton* allUsersButton =
-      [self makeButtonWithRect:NSMakeRect(0, yOffset, 0, 0)
-                textResourceId:IDS_PROFILES_ALL_PEOPLE_BUTTON
-               imageResourceId:IDR_ICON_PROFILES_ADD_USER
-                        action:@selector(showUserManager:)];
+      [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
+            textResourceId:IDS_PROFILES_ALL_PEOPLE_BUTTON
+           imageResourceId:IDR_ICON_PROFILES_ADD_USER
+                    action:@selector(showUserManager:)];
   yOffset = NSMaxY([allUsersButton frame]) + kSmallVerticalSpacing;
 
   NSButton* addUserButton =
-      [self makeButtonWithRect:NSMakeRect(0, yOffset, 0, 0)
-                textResourceId:IDS_PROFILES_ADD_PERSON_BUTTON
-               imageResourceId:IDR_ICON_PROFILES_ADD_USER
-                        action:@selector(addNewProfile:)];
+      [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
+            textResourceId:IDS_PROFILES_ADD_PERSON_BUTTON
+           imageResourceId:IDR_ICON_PROFILES_ADD_USER
+                    action:@selector(addNewProfile:)];
   yOffset = NSMaxY([addUserButton frame]) + kSmallVerticalSpacing;
 
   int guestButtonText = isGuestView ? IDS_PROFILES_EXIT_GUEST_BUTTON :
@@ -370,10 +376,10 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   SEL guestButtonAction = isGuestView ? @selector(exitGuestProfile:) :
                                         @selector(switchToGuestProfile:);
   NSButton* guestButton =
-      [self makeButtonWithRect:NSMakeRect(0, yOffset, 0, 0)
-                textResourceId:guestButtonText
-               imageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST
-                        action:guestButtonAction];
+      [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
+            textResourceId:guestButtonText
+           imageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST
+                    action:guestButtonAction];
   yOffset = NSMaxY([guestButton frame]);
 
   [container setSubviews:@[allUsersButton, addUserButton, guestButton]];
@@ -381,10 +387,10 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   return container.autorelease();
 }
 
-- (NSButton*)makeButtonWithRect:(NSRect)rect
-                 textResourceId:(int)textResourceId
-                imageResourceId:(int)imageResourceId
-                         action:(SEL)action  {
+- (NSButton*)buttonWithRect:(NSRect)rect
+             textResourceId:(int)textResourceId
+            imageResourceId:(int)imageResourceId
+                     action:(SEL)action  {
   base::scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:rect]);
 
   // TODO(noms): Increase the spacing between the icon and the text to 10px;
@@ -400,9 +406,9 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   return button.autorelease();
 }
 
-- (NSButton*)makeLinkButtonWithTitle:(NSString*)title
-                         frameOrigin:(NSPoint)frameOrigin
-                              action:(SEL)action {
+- (NSButton*)linkButtonWithTitle:(NSString*)title
+                     frameOrigin:(NSPoint)frameOrigin
+                          action:(SEL)action {
   base::scoped_nsobject<NSButton> link(
       [[HyperlinkButtonCell buttonWithString:title] retain]);
 

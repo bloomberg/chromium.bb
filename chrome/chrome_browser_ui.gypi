@@ -1045,6 +1045,7 @@
         'browser/ui/cocoa/ui_localizer.mm',
         'browser/ui/cocoa/url_drop_target.h',
         'browser/ui/cocoa/url_drop_target.mm',
+        'browser/ui/cocoa/user_manager_mac.h',
         'browser/ui/cocoa/user_manager_mac.mm',
         'browser/ui/cocoa/validation_message_bubble_cocoa.mm',
         'browser/ui/cocoa/validation_message_bubble_controller.h',

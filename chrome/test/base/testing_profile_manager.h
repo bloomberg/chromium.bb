@@ -60,8 +60,18 @@ class TestingProfileManager {
   // Small helper for creating testing profiles. Just forwards to above.
   TestingProfile* CreateTestingProfile(const std::string& name);
 
+  // Creates a new guest TestingProfile whose data lives in the guest profile
+  // test environment directory, as specified by the profile manager.
+  // This profile will not be added to the ProfileInfoCache. This will
+  // register the TestingProfile with the profile subsystem as well.
+  // The subsystem owns the Profile and returns a weak pointer.
+  TestingProfile* CreateGuestProfile();
+
   // Deletes a TestingProfile from the profile subsystem.
   void DeleteTestingProfile(const std::string& profile_name);
+
+  // Deletes a guest TestingProfile from the profile manager.
+  void DeleteGuestProfile();
 
   // Deletes the cache instance. This is useful for testing that the cache is
   // properly persisting data.

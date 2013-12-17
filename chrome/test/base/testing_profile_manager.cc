@@ -13,6 +13,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+const std::string kGuestProfileName = "Guest";
+
 namespace testing {
 
 class ProfileManager : public ::ProfileManagerWithoutInit {
@@ -93,6 +95,25 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
                               TestingProfile::TestingFactories());
 }
 
+TestingProfile* TestingProfileManager::CreateGuestProfile() {
+  DCHECK(called_set_up_);
+
+  // Create the profile and register it.
+  TestingProfile::Builder builder;
+  builder.SetGuestSession();
+  builder.SetPath(ProfileManager::GetGuestProfilePath());
+
+  // Add the guest profile to the profile manager, but not to the info cache.
+  TestingProfile* profile = builder.Build().release();
+  profile->set_profile_name(kGuestProfileName);
+  profile_manager_->AddProfile(profile);  // Takes ownership.
+  profile_manager_->SetGuestProfilePrefs(profile);
+
+  testing_profiles_.insert(std::make_pair(kGuestProfileName, profile));
+
+  return profile;
+}
+
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   DCHECK(called_set_up_);
 
@@ -105,6 +126,15 @@ void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   cache.DeleteProfileFromCache(profile->GetPath());
 
   profile_manager_->profiles_info_.erase(profile->GetPath());
+}
+
+void TestingProfileManager::DeleteGuestProfile() {
+  DCHECK(called_set_up_);
+
+  TestingProfilesMap::iterator it = testing_profiles_.find(kGuestProfileName);
+  DCHECK(it != testing_profiles_.end());
+
+  profile_manager_->profiles_info_.erase(ProfileManager::GetGuestProfilePath());
 }
 
 void TestingProfileManager::DeleteProfileInfoCache() {

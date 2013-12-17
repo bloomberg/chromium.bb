@@ -513,8 +513,8 @@ NSImage* TaskManagerMac::GetImageForRow(int row) {
 // TaskManagerMac, public:
 
 void TaskManagerMac::WindowWasClosed() {
-  delete this;
   instance_ = NULL;
+  delete this;
 }
 
 int TaskManagerMac::RowCount() const {
