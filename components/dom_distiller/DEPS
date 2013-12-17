@@ -5,9 +5,7 @@ include_rules = [
   "+third_party/leveldatabase/src/include",
   "+net/http",
   "+net/url_request",
-  "+ui/base/android",
   "+ui/base/resource",
-  "+ui/gfx/android",
 
   # The dom distiller is a layered component; subdirectories must explicitly
   # introduce the ability to use the content layer as appropriate.

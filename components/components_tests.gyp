@@ -79,6 +79,8 @@
             '../sync/sync.gyp:sync',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/ui.gyp:ui',
 
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',

@@ -16,13 +16,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "ui/base/android/ui_base_jni_registrar.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
-#endif
 
 using::testing::Invoke;
 using::testing::Return;
@@ -131,14 +124,6 @@ ACTION_P2(CreateMockDistillerPage, list, kurl) {
 }
 
 TEST_F(DistillerTest, DistillPage) {
-#if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  gfx::android::RegisterJni(env);
-  ui::android::RegisterJni(env);
-#endif
-
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
   base::MessageLoop loop(base::MessageLoop::TYPE_UI);
   scoped_ptr<base::ListValue> list(new base::ListValue());
   list->AppendString(kTitle);
