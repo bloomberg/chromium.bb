@@ -19,6 +19,18 @@ class DriveWebContentsManager;
 // destroy itself when the initialization succeeds or fails.
 class DriveFirstRunController {
  public:
+  // This enum is used for UMA metrics. Keep the fields in the same order as
+  // the "CrosEnableDriveOfflineOutcome" enum in histograms.xml.
+  enum UMAOutcome {
+    OUTCOME_OFFLINE_ENABLED,
+    OUTCOME_WEB_CONTENTS_TIMED_OUT,
+    OUTCOME_WEB_CONTENTS_LOAD_FAILED,
+    OUTCOME_WRONG_USER_TYPE,
+    OUTCOME_APP_NOT_INSTALLED,
+    OUTCOME_BACKGROUND_PAGE_EXISTS,
+    OUTCOME_MAX,
+  };
+
   class Observer {
    public:
     // Called when enabling offline mode times out. OnCompletion will be called
@@ -53,7 +65,7 @@ class DriveFirstRunController {
  private:
   // Used as a callback to indicate whether the offline initialization
   // succeeds or fails.
-  void OnOfflineInit(bool success);
+  void OnOfflineInit(bool success, UMAOutcome outcome);
 
   // Called when timed out waiting for offline initialization to complete.
   void OnWebContentsTimedOut();

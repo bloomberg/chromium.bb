@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -48,7 +49,7 @@ int kInitialDelaySeconds = 180;
 // Time to wait for Drive app background page to come up before giving up.
 int kWebContentsTimeoutSeconds = 15;
 
-// Google Drive offline opt-in endpoint.
+// Google Drive enable offline endpoint.
 const char kDriveOfflineEndpointUrl[] =
     "https://docs.google.com/offline/autoenable";
 
@@ -93,7 +94,7 @@ void DriveOfflineNotificationDelegate::ButtonClick(int button_index) {
 ////////////////////////////////////////////////////////////////////////////////
 // DriveWebContentsManager
 
-// Manages web contents that does Google Drive offline opt-in. We create
+// Manages web contents that initializes Google Drive offline mode. We create
 // a background WebContents that loads a Drive endpoint to initialize offline
 // mode. If successful, a background page will be opened to sync the user's
 // files for offline use.
@@ -101,7 +102,8 @@ class DriveWebContentsManager : public content::WebContentsObserver,
                                 public content::WebContentsDelegate,
                                 public content::NotificationObserver {
  public:
-  typedef base::Callback<void(bool)> CompletionCallback;
+  typedef base::Callback<
+      void(bool, DriveFirstRunController::UMAOutcome)> CompletionCallback;
 
   DriveWebContentsManager(Profile* profile,
                           const std::string& app_id,
@@ -119,10 +121,12 @@ class DriveWebContentsManager : public content::WebContentsObserver,
  private:
   // Called when when offline initialization succeeds or fails and schedules
   // |RunCompletionCallback|.
-  void OnOfflineInit(bool success);
+  void OnOfflineInit(bool success,
+                     DriveFirstRunController::UMAOutcome outcome);
 
   // Runs |completion_callback|.
-  void RunCompletionCallback(bool success);
+  void RunCompletionCallback(bool success,
+                             DriveFirstRunController::UMAOutcome outcome);
 
   // content::WebContentsObserver overrides:
   virtual void DidFailProvisionalLoad(
@@ -209,7 +213,9 @@ void DriveWebContentsManager::StopLoad() {
   started_ = false;
 }
 
-void DriveWebContentsManager::OnOfflineInit(bool success) {
+void DriveWebContentsManager::OnOfflineInit(
+    bool success,
+    DriveFirstRunController::UMAOutcome outcome) {
   if (started_) {
     // We postpone notifying the controller as we may be in the middle
     // of a call stack for some routine of the contained WebContents.
@@ -217,13 +223,16 @@ void DriveWebContentsManager::OnOfflineInit(bool success) {
         FROM_HERE,
         base::Bind(&DriveWebContentsManager::RunCompletionCallback,
                    weak_ptr_factory_.GetWeakPtr(),
-                   success));
+                   success,
+                   outcome));
     StopLoad();
   }
 }
 
-void DriveWebContentsManager::RunCompletionCallback(bool success) {
-  completion_callback_.Run(success);
+void DriveWebContentsManager::RunCompletionCallback(
+    bool success,
+    DriveFirstRunController::UMAOutcome outcome) {
+  completion_callback_.Run(success, outcome);
 }
 
 void DriveWebContentsManager::DidFailProvisionalLoad(
@@ -236,7 +245,8 @@ void DriveWebContentsManager::DidFailProvisionalLoad(
     content::RenderViewHost* render_view_host) {
   if (is_main_frame) {
     LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
-    OnOfflineInit(false);
+    OnOfflineInit(false,
+                  DriveFirstRunController::OUTCOME_WEB_CONTENTS_LOAD_FAILED);
   }
 }
 
@@ -249,7 +259,8 @@ void DriveWebContentsManager::DidFailLoad(
     content::RenderViewHost* render_view_host) {
   if (is_main_frame) {
     LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
-    OnOfflineInit(false);
+    OnOfflineInit(false,
+                  DriveFirstRunController::OUTCOME_WEB_CONTENTS_LOAD_FAILED);
   }
 }
 
@@ -311,7 +322,7 @@ void DriveWebContentsManager::Observe(
         content::Details<BackgroundContentsOpenedDetails>(details)
             ->application_id);
     if (app_id == app_id_)
-      OnOfflineInit(true);
+      OnOfflineInit(true, DriveFirstRunController::OUTCOME_OFFLINE_ENABLED);
   }
 }
 
@@ -344,7 +355,7 @@ void DriveFirstRunController::EnableOfflineMode() {
   if (!UserManager::Get()->IsLoggedInAsRegularUser()) {
     LOG(ERROR) << "Attempting to enable offline access "
                   "but not logged in a regular user.";
-    OnOfflineInit(false);
+    OnOfflineInit(false, OUTCOME_WRONG_USER_TYPE);
     return;
   }
 
@@ -352,7 +363,7 @@ void DriveFirstRunController::EnableOfflineMode() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!extension_service->GetExtensionById(drive_hosted_app_id_, false)) {
     LOG(WARNING) << "Drive app is not installed.";
-    OnOfflineInit(false);
+    OnOfflineInit(false, OUTCOME_APP_NOT_INSTALLED);
     return;
   }
 
@@ -361,7 +372,7 @@ void DriveFirstRunController::EnableOfflineMode() {
   if (background_contents_service->GetAppBackgroundContents(
       UTF8ToUTF16(drive_hosted_app_id_))) {
     LOG(WARNING) << "Background page for Drive app already exists";
-    OnOfflineInit(false);
+    OnOfflineInit(false, OUTCOME_BACKGROUND_PAGE_EXISTS);
     return;
   }
 
@@ -403,9 +414,9 @@ void DriveFirstRunController::SetAppInfoForTest(
 }
 
 void DriveFirstRunController::OnWebContentsTimedOut() {
-  LOG(WARNING) << "Timed out waiting for web contents to opt-in";
+  LOG(WARNING) << "Timed out waiting for web contents.";
   FOR_EACH_OBSERVER(Observer, observer_list_, OnTimedOut());
-  OnOfflineInit(false);
+  OnOfflineInit(false, OUTCOME_WEB_CONTENTS_TIMED_OUT);
 }
 
 void DriveFirstRunController::CleanUp() {
@@ -415,10 +426,12 @@ void DriveFirstRunController::CleanUp() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void DriveFirstRunController::OnOfflineInit(bool success) {
+void DriveFirstRunController::OnOfflineInit(bool success, UMAOutcome outcome) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (success)
     ShowNotification();
+  UMA_HISTOGRAM_ENUMERATION("DriveOffline.CrosAutoEnableOutcome",
+                            outcome, OUTCOME_MAX);
   FOR_EACH_OBSERVER(Observer, observer_list_, OnCompletion(success));
   CleanUp();
 }

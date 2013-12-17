@@ -3451,6 +3451,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DriveOffline.CrosAutoEnableOutcome"
+    enum="CrosEnableDriveOfflineOutcome">
+  <summary>
+    Outcome of enabling Google Drive offline mode automatically when a user
+    first logs into a ChromeOS device. This process involves opening a hidden
+    web page in the context of the Google Drive hosted app to perform the
+    initialization of offline mode.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
   <summary>
     Time since the user logged in until the auto-enrollment protocol completed.
@@ -22418,6 +22428,15 @@ other types of suffix sets.
   <int value="8" label="Ext4"/>
   <int value="9" label="ISO9660"/>
   <int value="10" label="UDF"/>
+</enum>
+
+<enum name="CrosEnableDriveOfflineOutcome" type="int">
+  <int value="0" label="Success: Offline mode enabled"/>
+  <int value="1" label="Failure: Hosted app page timed out"/>
+  <int value="2" label="Failure: Hosted app page load failed"/>
+  <int value="3" label="Failure: Not a regular user account"/>
+  <int value="4" label="Failure: Drive app not installed"/>
+  <int value="5" label="Failure: Background page already exists"/>
 </enum>
 
 <enum name="CrosEventEnum" type="int">
