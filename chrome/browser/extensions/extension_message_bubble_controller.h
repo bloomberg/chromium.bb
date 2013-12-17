@@ -37,18 +37,19 @@ class ExtensionMessageBubbleController {
     virtual void PerformAction(const ExtensionIdList& list) = 0;
 
     // Text for various UI labels shown in the bubble.
-    virtual string16 GetTitle() const = 0;
-    virtual string16 GetMessageBody() const = 0;
-    virtual string16 GetOverflowText(const string16& overflow_count) const = 0;
-    virtual string16 GetLearnMoreLabel() const = 0;
+    virtual base::string16 GetTitle() const = 0;
+    virtual base::string16 GetMessageBody() const = 0;
+    virtual base::string16 GetOverflowText(
+        const base::string16& overflow_count) const = 0;
+    virtual base::string16 GetLearnMoreLabel() const = 0;
     virtual GURL GetLearnMoreUrl() const = 0;
-    virtual string16 GetActionButtonLabel() const = 0;
-    virtual string16 GetDismissButtonLabel() const = 0;
+    virtual base::string16 GetActionButtonLabel() const = 0;
+    virtual base::string16 GetDismissButtonLabel() const = 0;
 
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
     // The data to show in the bubble.
-    virtual std::vector<string16> GetExtensions() = 0;
+    virtual std::vector<base::string16> GetExtensions() = 0;
 
     // Record, through UMA, how many extensions were found.
     virtual void LogExtensionCount(size_t count) = 0;
@@ -63,7 +64,7 @@ class ExtensionMessageBubbleController {
   bool ShouldShow();
 
   // Obtains a list of all extensions (by name) the controller knows about.
-  std::vector<string16> GetExtensionList();
+  std::vector<base::string16> GetExtensionList();
 
   // Obtains a list of all extensions (by id) the controller knows about.
   const ExtensionIdList& GetExtensionIdList();

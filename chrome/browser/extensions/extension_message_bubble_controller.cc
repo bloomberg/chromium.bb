@@ -44,13 +44,13 @@ bool ExtensionMessageBubbleController::ShouldShow() {
   return !GetOrCreateExtensionList()->empty();
 }
 
-std::vector<string16>
+std::vector<base::string16>
 ExtensionMessageBubbleController::GetExtensionList() {
   ExtensionIdList* list = GetOrCreateExtensionList();
   if (list->empty())
-    return std::vector<string16>();
+    return std::vector<base::string16>();
 
-  std::vector<string16> return_value;
+  std::vector<base::string16> return_value;
   for (ExtensionIdList::const_iterator it = list->begin();
        it != list->end(); ++it) {
     const Extension* extension = service_->GetInstalledExtension(*it);

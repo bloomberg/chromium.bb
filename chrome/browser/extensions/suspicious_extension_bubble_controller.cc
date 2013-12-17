@@ -122,7 +122,7 @@ GURL SuspiciousExtensionBubbleController::GetLearnMoreUrl() const {
 
 base::string16
 SuspiciousExtensionBubbleController::GetActionButtonLabel() const {
-  return string16();
+  return base::string16();
 }
 
 base::string16
@@ -135,7 +135,7 @@ SuspiciousExtensionBubbleController::ShouldShowExtensionList() const {
   return true;
 }
 
-std::vector<string16>
+std::vector<base::string16>
 SuspiciousExtensionBubbleController::GetExtensions() {
   return GetExtensionList();
 }

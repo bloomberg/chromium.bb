@@ -89,22 +89,22 @@ void DevModeBubbleController::PerformAction(
     service_->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
 }
 
-string16 DevModeBubbleController::GetTitle() const {
+base::string16 DevModeBubbleController::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE);
 }
 
-string16 DevModeBubbleController::GetMessageBody() const {
+base::string16 DevModeBubbleController::GetMessageBody() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_BODY);
 }
 
-string16 DevModeBubbleController::GetOverflowText(
-    const string16& overflow_count) const {
+base::string16 DevModeBubbleController::GetOverflowText(
+    const base::string16& overflow_count) const {
   return l10n_util::GetStringFUTF16(
             IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE,
             overflow_count);
 }
 
-string16 DevModeBubbleController::GetLearnMoreLabel() const {
+base::string16 DevModeBubbleController::GetLearnMoreLabel() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
@@ -112,11 +112,11 @@ GURL DevModeBubbleController::GetLearnMoreUrl() const {
   return GURL(chrome::kChromeUIExtensionsURL);
 }
 
-string16 DevModeBubbleController::GetActionButtonLabel() const {
+base::string16 DevModeBubbleController::GetActionButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_DISABLE);
 }
 
-string16 DevModeBubbleController::GetDismissButtonLabel() const {
+base::string16 DevModeBubbleController::GetDismissButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
@@ -124,7 +124,7 @@ bool DevModeBubbleController::ShouldShowExtensionList() const {
   return false;
 }
 
-std::vector<string16> DevModeBubbleController::GetExtensions() {
+std::vector<base::string16> DevModeBubbleController::GetExtensions() {
   return GetExtensionList();
 }
 

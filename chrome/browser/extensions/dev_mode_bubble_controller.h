@@ -44,16 +44,16 @@ class DevModeBubbleController
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) OVERRIDE;
   virtual void PerformAction(const ExtensionIdList& list) OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetMessageBody() const OVERRIDE;
-  virtual string16 GetOverflowText(
-      const string16& overflow_count) const OVERRIDE;
-  virtual string16 GetLearnMoreLabel() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetMessageBody() const OVERRIDE;
+  virtual base::string16 GetOverflowText(
+      const base::string16& overflow_count) const OVERRIDE;
+  virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
   virtual GURL GetLearnMoreUrl() const OVERRIDE;
-  virtual string16 GetActionButtonLabel() const OVERRIDE;
-  virtual string16 GetDismissButtonLabel() const OVERRIDE;
+  virtual base::string16 GetActionButtonLabel() const OVERRIDE;
+  virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
   virtual bool ShouldShowExtensionList() const OVERRIDE;
-  virtual std::vector<string16> GetExtensions() OVERRIDE;
+  virtual std::vector<base::string16> GetExtensions() OVERRIDE;
   virtual void LogExtensionCount(size_t count) OVERRIDE;
   virtual void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;

@@ -42,13 +42,13 @@ class SuspiciousExtensionBubbleController
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual base::string16 GetMessageBody() const OVERRIDE;
   virtual base::string16 GetOverflowText(
-      const string16& overflow_count) const OVERRIDE;
+      const base::string16& overflow_count) const OVERRIDE;
   virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
   virtual GURL GetLearnMoreUrl() const OVERRIDE;
   virtual base::string16 GetActionButtonLabel() const OVERRIDE;
   virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
   virtual bool ShouldShowExtensionList() const OVERRIDE;
-  virtual std::vector<string16> GetExtensions() OVERRIDE;
+  virtual std::vector<base::string16> GetExtensions() OVERRIDE;
   virtual void LogExtensionCount(size_t count) OVERRIDE;
   virtual void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;

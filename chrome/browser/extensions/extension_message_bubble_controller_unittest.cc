@@ -260,7 +260,8 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
   EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2_));
 
   EXPECT_FALSE(controller->ShouldShow());
-  std::vector<string16> suspicious_extensions = controller->GetExtensionList();
+  std::vector<base::string16> suspicious_extensions =
+      controller->GetExtensionList();
   EXPECT_EQ(0U, suspicious_extensions.size());
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -325,7 +326,8 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
 
   // The list will contain one enabled unpacked extension.
   EXPECT_TRUE(controller->ShouldShow());
-  std::vector<string16> dev_mode_extensions = controller->GetExtensionList();
+  std::vector<base::string16> dev_mode_extensions =
+      controller->GetExtensionList();
   ASSERT_EQ(2U, dev_mode_extensions.size());
   EXPECT_TRUE(ASCIIToUTF16("Extension 2") == dev_mode_extensions[0]);
   EXPECT_TRUE(ASCIIToUTF16("Extension 1") == dev_mode_extensions[1]);
