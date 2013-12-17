@@ -44,7 +44,6 @@ include_rules = [
   "+chrome/common/extensions/api/app_runtime.h",
   "+chrome/common/extensions/api/app_window.h",
   "+chrome/common/extensions/extension_messages.h",
-  "+chrome/common/extensions/extension_set.h",
   "+chrome/common/extensions/manifest_handlers/icons_handler.h",
 ]
 

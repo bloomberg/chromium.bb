@@ -12,13 +12,13 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 using extensions::UnloadedExtensionInfo;
 
@@ -28,8 +28,8 @@ InternalExtensionProvider::InternalExtensionProvider(
     ExtensionService* extension_service)
     : registrar_(new content::NotificationRegistrar) {
   // Whitelist all extensions loaded so far.
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  const extensions::ExtensionSet* extensions = extension_service->extensions();
+  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     if (extensions::PluginInfo::HasPlugins(it->get()))
       SetContentSettingForExtension(it->get(), CONTENT_SETTING_ALLOW);

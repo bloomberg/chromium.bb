@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 class ExtensionServiceInterface;
-class ExtensionSet;
 class PrefService;
 class Profile;
 
@@ -34,6 +33,7 @@ namespace extensions {
 
 class ExtensionDownloader;
 class ExtensionPrefs;
+class ExtensionSet;
 class ExtensionUpdaterTest;
 
 // A class for doing auto-updates of installed Extensions. Used like this:

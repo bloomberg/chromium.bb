@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ExtensionAppProvider::ExtensionAppProvider(
@@ -153,9 +154,9 @@ void ExtensionAppProvider::RefreshAppList() {
       extension_service();
   if (!extension_service)
     return;  // During testing, there is no extension service.
-  const ExtensionSet* extensions = extension_service->extensions();
+  const extensions::ExtensionSet* extensions = extension_service->extensions();
   extension_apps_.clear();
-  for (ExtensionSet::const_iterator iter = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const extensions::Extension* app = iter->get();
     if (!app->ShouldDisplayInAppLauncher())

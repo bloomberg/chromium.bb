@@ -17,7 +17,6 @@
 #include "sync/api/syncable_service.h"
 
 class ExtensionSyncService;
-class ExtensionSet;
 
 namespace syncer {
 class SyncChangeProcessor;
@@ -27,6 +26,7 @@ class SyncErrorFactory;
 namespace extensions {
 
 class Extension;
+class ExtensionSet;
 
 // Bundle of app specific sync stuff.
 class AppSyncBundle : public SyncBundle {

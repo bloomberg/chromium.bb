@@ -34,7 +34,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -43,6 +42,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_set.h"
 #include "sync/api/string_ordinal.h"
 
 #if defined(OS_CHROMEOS)
@@ -80,10 +80,10 @@ Profile* ExtensionBrowserTest::profile() {
 
 // static
 const Extension* ExtensionBrowserTest::GetExtensionByPath(
-    const ExtensionSet* extensions, const base::FilePath& path) {
+    const extensions::ExtensionSet* extensions, const base::FilePath& path) {
   base::FilePath extension_path = base::MakeAbsoluteFilePath(path);
   EXPECT_TRUE(!extension_path.empty());
-  for (ExtensionSet::const_iterator iter = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     if ((*iter)->path() == extension_path) {
       return iter->get();
@@ -453,7 +453,8 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
             << " num after: " << base::IntToString(num_after)
             << " Installed extensions follow:";
 
-    for (ExtensionSet::const_iterator it = service->extensions()->begin();
+    for (extensions::ExtensionSet::const_iterator it =
+             service->extensions()->begin();
          it != service->extensions()->end(); ++it)
       VLOG(1) << "  " << (*it)->id();
 

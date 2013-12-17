@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
@@ -77,6 +76,7 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1045,7 +1045,8 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
     return true;
   }
 
-  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  const extensions::ExtensionSet* extensions =
+      extension_dispatcher_->extensions();
 
   // Determine if the new URL is an extension (excluding bookmark apps).
   const Extension* new_url_extension = extensions::GetNonBookmarkAppExtension(
@@ -1176,7 +1177,7 @@ void ChromeContentRendererClient::SetExtensionDispatcher(
 bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebFrame* frame,
     const GURL& new_url,
-    const ExtensionSet& extensions,
+    const extensions::ExtensionSet& extensions,
     bool is_extension_url,
     bool is_initial_navigation) {
   GURL old_url(frame->top()->document().url());

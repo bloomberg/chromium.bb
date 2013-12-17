@@ -78,6 +78,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1943,8 +1944,8 @@ void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
 }
 
 void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
-  const ExtensionSet* extensions = owner_->browser()->profile()->
-      GetExtensionService()->extensions();
+  const extensions::ExtensionSet* extensions =
+      owner_->browser()->profile()->GetExtensionService()->extensions();
   const Extension* extension =
       extensions->GetByID(page_action_->extension_id());
   window_ = owner_->browser()->window()->GetNativeWindow();

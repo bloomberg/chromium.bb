@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/gfx/image/image_skia.h"
 
 using extensions::Extension;
@@ -135,9 +135,10 @@ void ExtensionAppModelBuilder::OnShutdown() {
   }
 }
 
-void ExtensionAppModelBuilder::AddApps(const ExtensionSet* extensions,
-                                       ExtensionAppList* apps) {
-  for (ExtensionSet::const_iterator app = extensions->begin();
+void ExtensionAppModelBuilder::AddApps(
+    const extensions::ExtensionSet* extensions,
+    ExtensionAppList* apps) {
+  for (extensions::ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if (ShouldDisplayInAppLauncher(profile_, *app))
       apps->push_back(new ExtensionAppItem(profile_,
@@ -166,7 +167,7 @@ void ExtensionAppModelBuilder::BuildModel() {
 }
 
 void ExtensionAppModelBuilder::PopulateApps() {
-  ExtensionSet extensions;
+  extensions::ExtensionSet extensions;
   controller_->GetApps(profile_, &extensions);
   ExtensionAppList apps;
   AddApps(&extensions, &apps);

@@ -15,10 +15,10 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/user_script.h"
 
 namespace content {
@@ -27,10 +27,10 @@ class RenderProcessHost;
 
 class Profile;
 
+namespace extensions {
+
 typedef std::map<std::string, ExtensionSet::ExtensionPathAndDefaultLocale>
     ExtensionsInfo;
-
-namespace extensions {
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.

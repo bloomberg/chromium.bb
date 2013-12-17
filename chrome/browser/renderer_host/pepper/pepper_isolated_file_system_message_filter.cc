@@ -17,6 +17,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
@@ -141,7 +142,7 @@ int32_t PepperIsolatedFileSystemMessageFilter::OnOpenFileSystem(
 int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
     ppapi::host::HostMessageContext* context) {
   Profile* profile = GetProfile();
-  const ExtensionSet* extension_set = NULL;
+  const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
     extension_set = extensions::ExtensionSystem::Get(profile)->
         extension_service()->extensions();

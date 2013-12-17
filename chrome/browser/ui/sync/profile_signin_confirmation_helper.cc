@@ -19,9 +19,9 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -200,8 +200,9 @@ bool HasSyncedExtensions(Profile* profile) {
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile);
   if (system && system->extension_service()) {
-    const ExtensionSet* extensions = system->extension_service()->extensions();
-    for (ExtensionSet::const_iterator iter = extensions->begin();
+    const extensions::ExtensionSet* extensions =
+        system->extension_service()->extensions();
+    for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
          iter != extensions->end(); ++iter) {
       // The webstore is synced so that it stays put on the new tab
       // page, but since it's installed by default we don't want to

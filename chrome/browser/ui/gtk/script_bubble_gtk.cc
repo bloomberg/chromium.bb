@@ -16,11 +16,11 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -88,7 +88,7 @@ void ScriptBubbleGtk::BuildBubble() {
       extensions::TabHelper::FromWebContents(web_contents_);
   const std::set<std::string>& extensions_running_scripts =
       tab_helper->script_bubble_controller()->extensions_running_scripts();
-  const ExtensionSet* loaded_extensions =
+  const extensions::ExtensionSet* loaded_extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
 
   std::string heading_string =

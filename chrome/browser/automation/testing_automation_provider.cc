@@ -140,6 +140,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -3535,8 +3536,9 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* extensions_values = new ListValue;
-  const ExtensionSet* extensions = service->extensions();
-  const ExtensionSet* disabled_extensions = service->disabled_extensions();
+  const extensions::ExtensionSet* extensions = service->extensions();
+  const extensions::ExtensionSet* disabled_extensions =
+      service->disabled_extensions();
   ExtensionList all;
   all.insert(all.end(),
              extensions->begin(),

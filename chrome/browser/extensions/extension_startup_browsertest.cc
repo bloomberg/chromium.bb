@@ -26,6 +26,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "net/base/net_util.h"
 
@@ -95,7 +97,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     // Count the number of non-component extensions.
     int found_extensions = 0;
-    for (ExtensionSet::const_iterator it = service->extensions()->begin();
+    for (extensions::ExtensionSet::const_iterator it =
+             service->extensions()->begin();
          it != service->extensions()->end(); ++it)
       if ((*it)->location() != extensions::Manifest::COMPONENT)
         found_extensions++;
@@ -185,7 +188,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+  for (extensions::ExtensionSet::const_iterator it =
+           service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     if ((*it)->location() == extensions::Manifest::COMPONENT)
       continue;

@@ -16,8 +16,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
@@ -52,10 +52,10 @@ AppRestoreService::AppRestoreService(Profile* profile)
 void AppRestoreService::HandleStartup(bool should_restore_apps) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
-  const ExtensionSet* extensions = extension_service->extensions();
+  const extensions::ExtensionSet* extensions = extension_service->extensions();
   ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
 
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
       it != extensions->end(); ++it) {
     const Extension* extension = it->get();
     if (extension_prefs->IsExtensionRunning(extension->id())) {

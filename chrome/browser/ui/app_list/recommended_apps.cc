@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_list/recommended_apps_observer.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 namespace app_list {
 
@@ -70,8 +71,8 @@ void RecommendedApps::Update() {
   extensions::ExtensionPrefs* prefs = service->extension_prefs();
 
   std::vector<AppSortInfo> sorted_apps;
-  const ExtensionSet* extensions = service->extensions();
-  for (ExtensionSet::const_iterator app = extensions->begin();
+  const extensions::ExtensionSet* extensions = service->extensions();
+  for (extensions::ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if (!(*app)->ShouldDisplayInAppLauncher())
       continue;

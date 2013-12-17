@@ -3369,8 +3369,8 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   InitializeGoodInstalledExtensionService();
   service_->Init();
 
-  const ExtensionSet* extensions = service_->extensions();
-  const ExtensionSet* blacklisted_extensions =
+  const extensions::ExtensionSet* extensions = service_->extensions();
+  const extensions::ExtensionSet* blacklisted_extensions =
       service_->blacklisted_extensions();
 
   EXPECT_TRUE( extensions->Contains(good0) &&

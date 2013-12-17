@@ -32,6 +32,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
@@ -80,8 +81,8 @@ int NumberExtensionsUsingMediaGalleries(Profile* profile) {
   if (!extension_service)
     return count;
 
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator i = extensions->begin();
+  const extensions::ExtensionSet* extensions = extension_service->extensions();
+  for (extensions::ExtensionSet::const_iterator i = extensions->begin();
        i != extensions->end(); ++i) {
     if (extensions::PermissionsData::HasAPIPermission(
             *i, extensions::APIPermission::kMediaGalleries) ||

@@ -66,6 +66,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1575,10 +1576,10 @@ bool LocationBarView::IsBookmarkStarHiddenByExtension() {
   if (!extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
     return false;
 
-  const ExtensionSet* extension_set =
+  const extensions::ExtensionSet* extension_set =
       extensions::ExtensionSystem::GetForBrowserContext(profile_)
           ->extension_service()->extensions();
-  for (ExtensionSet::const_iterator i = extension_set->begin();
+  for (extensions::ExtensionSet::const_iterator i = extension_set->begin();
        i != extension_set->end(); ++i) {
     const extensions::SettingsOverrides* settings_overrides =
         extensions::SettingsOverrides::Get(i->get());

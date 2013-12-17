@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -956,7 +957,7 @@ void CookiesTreeModel::UpdateSearchResults(const base::string16& filter) {
   PopulateServerBoundCertInfoWithFilter(data_container(), &notifier, filter);
 }
 
-const ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
+const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
     const CookieTreeNode& cookie_node) {
   if (!special_storage_policy_.get())
     return NULL;

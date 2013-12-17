@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 namespace app_list {
 
@@ -73,9 +75,9 @@ void AppSearchProvider::Start(const base::string16& query) {
 
 void AppSearchProvider::Stop() {}
 
-void AppSearchProvider::AddApps(const ExtensionSet* extensions,
+void AppSearchProvider::AddApps(const extensions::ExtensionSet* extensions,
                                 ExtensionService* service) {
-  for (ExtensionSet::const_iterator iter = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const extensions::Extension* app = iter->get();
 

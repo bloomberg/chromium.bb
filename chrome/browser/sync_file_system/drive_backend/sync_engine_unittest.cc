@@ -16,6 +16,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,11 +54,11 @@ class MockExtensionService : public TestExtensionService {
   MockExtensionService() {}
   virtual ~MockExtensionService() {}
 
-  virtual const ExtensionSet* extensions() const OVERRIDE {
+  virtual const extensions::ExtensionSet* extensions() const OVERRIDE {
     return &extensions_;
   }
 
-  virtual const ExtensionSet* disabled_extensions() const OVERRIDE {
+  virtual const extensions::ExtensionSet* disabled_extensions() const OVERRIDE {
     return &disabled_extensions_;
   }
 
@@ -89,8 +90,8 @@ class MockExtensionService : public TestExtensionService {
   }
 
  private:
-  ExtensionSet extensions_;
-  ExtensionSet disabled_extensions_;
+  extensions::ExtensionSet extensions_;
+  extensions::ExtensionSet disabled_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExtensionService);
 };

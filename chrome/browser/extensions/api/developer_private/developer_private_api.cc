@@ -52,6 +52,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -130,10 +131,10 @@ bool ValidateFolderName(const base::FilePath::StringType& name) {
   return name == name_sanitized;
 }
 
-const Extension* GetExtensionByPath(const ExtensionSet* extensions,
+const Extension* GetExtensionByPath(const extensions::ExtensionSet* extensions,
                                     const base::FilePath& path) {
   base::FilePath extension_path = base::MakeAbsoluteFilePath(path);
-  for (ExtensionSet::const_iterator iter = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     if ((*iter)->path() == extension_path)
       return iter->get();
@@ -529,7 +530,7 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
   bool include_disabled = params->include_disabled;
   bool include_terminated = params->include_terminated;
 
-  ExtensionSet items;
+  extensions::ExtensionSet items;
 
   ExtensionService* service = GetProfile()->GetExtensionService();
 
@@ -546,7 +547,7 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
   std::map<std::string, ExtensionResource> id_to_icon;
   ItemInfoList item_list;
 
-  for (ExtensionSet::const_iterator iter = items.begin();
+  for (extensions::ExtensionSet::const_iterator iter = items.begin();
        iter != items.end(); ++iter) {
     const Extension& item = *iter->get();
 
@@ -1135,7 +1136,7 @@ bool DeveloperPrivateLoadProjectFunction::RunImpl() {
   ExtensionService* service = GetProfile()->GetExtensionService();
   UnpackedInstaller::Create(service)->Load(path);
 
-  const ExtensionSet* extensions = service->extensions();
+  const extensions::ExtensionSet* extensions = service->extensions();
   // Released by GetUnpackedExtension.
   AddRef();
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
@@ -1146,7 +1147,7 @@ bool DeveloperPrivateLoadProjectFunction::RunImpl() {
 
 void DeveloperPrivateLoadProjectFunction::GetUnpackedExtension(
     const base::FilePath& path,
-    const ExtensionSet* extensions) {
+    const extensions::ExtensionSet* extensions) {
   const Extension* extension = GetExtensionByPath(extensions, path);
   bool success = true;
   if (extension) {

@@ -23,10 +23,10 @@
 #include "extensions/common/manifest.h"
 
 class ExtensionService;
-class ExtensionSet;
 class Profile;
 
 namespace extensions {
+class ExtensionSet;
 class ProcessManager;
 }
 
@@ -69,7 +69,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   Profile* profile();
 
   static const extensions::Extension* GetExtensionByPath(
-      const ExtensionSet* extensions, const base::FilePath& path);
+      const extensions::ExtensionSet* extensions, const base::FilePath& path);
 
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;

@@ -15,11 +15,11 @@
 
 class AppListControllerDelegate;
 class ExtensionAppItem;
-class ExtensionSet;
 class Profile;
 
 namespace extensions {
 class Extension;
+class ExtensionSet;
 class InstallTracker;
 }
 
@@ -68,7 +68,8 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
                                app_list::AppListItemModel* item) OVERRIDE;
 
   // Adds apps in |extensions| to |apps|.
-  void AddApps(const ExtensionSet* extensions, ExtensionAppList* apps);
+  void AddApps(const extensions::ExtensionSet* extensions,
+               ExtensionAppList* apps);
 
   // Populates the model with apps.
   void PopulateApps();

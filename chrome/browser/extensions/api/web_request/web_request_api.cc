@@ -53,6 +53,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -2361,9 +2362,9 @@ void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
   bool adblock = false;
   bool adblock_plus = false;
   bool other = false;
-  const ExtensionSet* extensions =
+  const extensions::ExtensionSet* extensions =
       profile->GetExtensionService()->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     if (profile->GetExtensionService()->HasUsedWebRequest(it->get())) {
       if ((*it)->name().find("Adblock Plus") != std::string::npos) {

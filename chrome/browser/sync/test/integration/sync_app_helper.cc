@@ -12,6 +12,8 @@
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/id_util.h"
 
 namespace {
@@ -57,9 +59,9 @@ AppStateMap GetAppStates(Profile* profile) {
 
   ExtensionService* extension_service = profile->GetExtensionService();
 
-  scoped_ptr<const ExtensionSet> extensions(
+  scoped_ptr<const extensions::ExtensionSet> extensions(
       extension_service->GenerateInstalledExtensionsSet());
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     if (extensions::sync_helper::IsSyncableApp(it->get())) {
       const std::string& id = (*it)->id();

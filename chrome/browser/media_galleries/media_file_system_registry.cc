@@ -28,7 +28,6 @@
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -626,7 +626,8 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
   // |profile|.
   const ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  const ExtensionSet* extensions_set = extension_service->extensions();
+  const extensions::ExtensionSet* extensions_set =
+      extension_service->extensions();
   ExtensionGalleriesHostMap::const_iterator host_map_it =
       extension_hosts_map_.find(profile);
   DCHECK(host_map_it != extension_hosts_map_.end());

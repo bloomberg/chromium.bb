@@ -69,8 +69,8 @@
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #endif
@@ -600,10 +600,10 @@ void PolicyUIHandler::SendPolicyNames() const {
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
-  const ExtensionSet* extensions =
+  const extensions::ExtensionSet* extensions =
       extension_system->extension_service()->extensions();
 
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const extensions::Extension* extension = it->get();
     // Skip this extension if it's not an enterprise extension.
@@ -645,11 +645,11 @@ void PolicyUIHandler::SendPolicyValues() const {
   // Add extension policy values.
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
-  const ExtensionSet* extensions =
+  const extensions::ExtensionSet* extensions =
       extension_system->extension_service()->extensions();
   base::DictionaryValue* extension_values = new base::DictionaryValue;
 
-  for (ExtensionSet::const_iterator it = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const extensions::Extension* extension = it->get();
     // Skip this extension if it's not an enterprise extension.

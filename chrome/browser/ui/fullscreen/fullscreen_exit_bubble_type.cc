@@ -6,10 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -20,7 +20,8 @@ base::string16 GetLabelTextForType(FullscreenExitBubbleType type,
                                    ExtensionService* extension_service) {
   base::string16 host(UTF8ToUTF16(url.host()));
   if (extension_service) {
-    const ExtensionSet* extensions = extension_service->extensions();
+    const extensions::ExtensionSet* extensions =
+        extension_service->extensions();
     DCHECK(extensions);
     const extensions::Extension* extension =
         extensions->GetExtensionOrAppByURL(url);

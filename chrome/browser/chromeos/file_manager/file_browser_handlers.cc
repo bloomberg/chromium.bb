@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/escape.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -101,9 +102,9 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
   const GURL lowercase_url(EscapedUtf8ToLower(selected_file_url.spec()));
 
   FileBrowserHandlerList results;
-  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
-       iter != service->extensions()->end();
-       ++iter) {
+  for (extensions::ExtensionSet::const_iterator iter =
+           service->extensions()->begin();
+       iter != service->extensions()->end(); ++iter) {
     const Extension* extension = iter->get();
     if (profile->IsOffTheRecord() &&
         !extension_util::IsIncognitoEnabled(extension->id(), service))

@@ -90,7 +90,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension_process_policy.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
@@ -128,6 +127,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -1898,11 +1898,11 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
       DesktopNotificationServiceFactory::GetForProfile(profile);
   const Extension* extension = NULL;
   if (extension_info_map) {
-    ExtensionSet extensions;
+    extensions::ExtensionSet extensions;
     extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
         source_origin, render_process_id,
         extensions::APIPermission::kNotification, &extensions);
-    for (ExtensionSet::const_iterator iter = extensions.begin();
+    for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
          iter != extensions.end(); ++iter) {
       if (notification_service->IsNotifierEnabled(NotifierId(
               NotifierId::APPLICATION, (*iter)->id()))) {
@@ -1941,11 +1941,11 @@ blink::WebNotificationPresenter::Permission
   // We want to see if there is an extension that hasn't been manually disabled
   // that has the notifications permission and applies to this security origin.
   // First, get the list of extensions with permission for the origin.
-  ExtensionSet extensions;
+  extensions::ExtensionSet extensions;
   extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
       source_origin, render_process_id,
       extensions::APIPermission::kNotification, &extensions);
-  for (ExtensionSet::const_iterator iter = extensions.begin();
+  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     // Then, check to see if it's been disabled by the user.
     if (!extension_info_map->AreNotificationsDisabled((*iter)->id()))
@@ -2430,7 +2430,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     const content::SocketPermissionRequest* params) {
 #if defined(ENABLE_PLUGINS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const ExtensionSet* extension_set = NULL;
+  const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
     extension_set = extensions::ExtensionSystem::Get(profile)->
         extension_service()->extensions();
@@ -2614,7 +2614,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     const GURL& url) {
 #if defined(ENABLE_PLUGINS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const ExtensionSet* extension_set = NULL;
+  const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
     extension_set = extensions::ExtensionSystem::Get(profile)->
         extension_service()->extensions();

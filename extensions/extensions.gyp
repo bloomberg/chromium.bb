@@ -48,6 +48,8 @@
         'common/extension_paths.h',
         'common/extension_resource.cc',
         'common/extension_resource.h',
+        'common/extension_set.cc',
+        'common/extension_set.h',
         'common/extension_urls.cc',
         'common/extension_urls.h',
         'common/extensions_client.cc',

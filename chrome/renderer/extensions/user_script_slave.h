@@ -17,7 +17,6 @@
 #include "extensions/common/user_script.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
-class ExtensionSet;
 class GURL;
 
 namespace blink {
@@ -28,6 +27,7 @@ using blink::WebScriptSource;
 
 namespace extensions {
 class Extension;
+class ExtensionSet;
 
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {

@@ -21,12 +21,12 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/extension_set.h"
 
 #if defined(OS_MACOSX)
 #include "apps/app_shim/app_shim_mac.h"
@@ -186,8 +186,8 @@ void AppShortcutManager::OnceOffCreateShortcuts() {
     return;
 
   // Create an applications menu shortcut for each app in this profile.
-  const ExtensionSet* apps = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = apps->begin();
+  const extensions::ExtensionSet* apps = extension_service->extensions();
+  for (extensions::ExtensionSet::const_iterator it = apps->begin();
        it != apps->end(); ++it) {
     if (ShouldCreateShortcutFor(it->get()))
       web_app::UpdateShortcutInfoAndIconForApp(

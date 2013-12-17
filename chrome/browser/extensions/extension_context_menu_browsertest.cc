@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/test_management_policy.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/models/menu_model.h"
@@ -133,10 +134,10 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   // Returns a pointer to the currently loaded extension with |name|, or null
   // if not found.
   const extensions::Extension* GetExtensionNamed(std::string name) {
-    const ExtensionSet* extensions =
+    const extensions::ExtensionSet* extensions =
         browser()->profile()->GetExtensionService()->extensions();
-    ExtensionSet::const_iterator i;
-    for (i = extensions->begin(); i != extensions->end(); ++i) {
+    for (extensions::ExtensionSet::const_iterator i = extensions->begin();
+         i != extensions->end(); ++i) {
       if ((*i)->name() == name) {
         return i->get();
       }

@@ -65,6 +65,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -1472,10 +1473,10 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
       profile->GetOriginalProfile())->extension_service();
   if (!extension_service)
     return;
-  const ExtensionSet* extensions = extension_service->extensions();
+  const extensions::ExtensionSet* extensions = extension_service->extensions();
 
   ListValue results;
-  for (ExtensionSet::const_iterator extension(extensions->begin());
+  for (extensions::ExtensionSet::const_iterator extension(extensions->begin());
        extension != extensions->end(); ++extension) {
     if (extensions::ManifestURL::GetDevToolsPage(extension->get()).is_empty())
       continue;

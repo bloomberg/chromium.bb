@@ -19,12 +19,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/extension_set.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
@@ -428,14 +428,14 @@ std::string
     MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {
   extensions::InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile())->info_map();
-  ExtensionSet extensions;
+  extensions::ExtensionSet extensions;
   extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
       notification().origin_url(), notification().process_id(),
       extensions::APIPermission::kNotification, &extensions);
 
   DesktopNotificationService* desktop_service =
       DesktopNotificationServiceFactory::GetForProfile(profile());
-  for (ExtensionSet::const_iterator iter = extensions.begin();
+  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     if (desktop_service->IsNotifierEnabled(message_center::NotifierId(
             message_center::NotifierId::APPLICATION, (*iter)->id()))) {

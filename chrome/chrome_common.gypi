@@ -179,8 +179,6 @@
         'common/extensions/extension_messages.h',
         'common/extensions/extension_process_policy.cc',
         'common/extensions/extension_process_policy.h',
-        'common/extensions/extension_set.cc',
-        'common/extensions/extension_set.h',
         'common/extensions/features/api_feature.cc',
         'common/extensions/features/api_feature.h',
         'common/extensions/features/base_feature_provider.cc',

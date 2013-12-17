@@ -78,6 +78,7 @@
 #include "content/public/common/process_type.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/view_type.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -1748,11 +1749,11 @@ namespace {
 // as identified from a given list of extensions.  The caller takes ownership
 // of the created vector.
 std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
-    const ExtensionSet* extensions,
+    const extensions::ExtensionSet* extensions,
     ExtensionService* ext_service) {
   std::vector<DictionaryValue*>* apps_list =
       new std::vector<DictionaryValue*>();
-  for (ExtensionSet::const_iterator ext = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator ext = extensions->begin();
        ext != extensions->end(); ++ext) {
     // Only return information about extensions that are actually apps.
     if ((*ext)->is_app()) {
@@ -1819,7 +1820,7 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   }
   // Process enabled extensions.
   ListValue* apps_list = new ListValue();
-  const ExtensionSet* extensions = ext_service->extensions();
+  const extensions::ExtensionSet* extensions = ext_service->extensions();
   std::vector<DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
       extensions, ext_service);
   for (std::vector<DictionaryValue*>::const_iterator app =
@@ -1829,7 +1830,8 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   }
   delete enabled_apps;
   // Process disabled extensions.
-  const ExtensionSet* disabled_extensions = ext_service->disabled_extensions();
+  const extensions::ExtensionSet* disabled_extensions =
+      ext_service->disabled_extensions();
   std::vector<DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
       disabled_extensions, ext_service);
   for (std::vector<DictionaryValue*>::const_iterator app =
@@ -1839,7 +1841,7 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   }
   delete disabled_apps;
   // Process terminated extensions.
-  const ExtensionSet* terminated_extensions =
+  const extensions::ExtensionSet* terminated_extensions =
       ext_service->terminated_extensions();
   std::vector<DictionaryValue*>* terminated_apps = GetAppInfoFromExtensions(
       terminated_extensions, ext_service);

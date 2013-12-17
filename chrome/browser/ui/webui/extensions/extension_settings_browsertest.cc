@@ -24,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/extension_set.h"
 
 using extensions::Extension;
 
@@ -110,7 +111,8 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
             << " num after: " << base::IntToString(num_after)
             << " Installed extensions follow:";
 
-    for (ExtensionSet::const_iterator it = service->extensions()->begin();
+    for (extensions::ExtensionSet::const_iterator it =
+             service->extensions()->begin();
          it != service->extensions()->end(); ++it)
       VLOG(1) << "  " << (*it)->id();
 

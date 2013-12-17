@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -393,7 +394,8 @@ const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
       browser()->profile())->extension_service();
 
   const extensions::Extension* extension = NULL;
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+  for (extensions::ExtensionSet::const_iterator it =
+           service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     // Ignore any component extensions. They are automatically loaded into all
     // profiles and aren't the extension we're looking for here.

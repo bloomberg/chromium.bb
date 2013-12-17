@@ -30,7 +30,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -40,6 +39,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -226,9 +226,9 @@ void AddExceptionsGrantedByHostedApps(
   const ExtensionService* extension_service = profile->GetExtensionService();
   // After ExtensionSystem::Init has been called at the browser's start,
   // GetExtensionService() should not return NULL, so this is safe:
-  const ExtensionSet* extensions = extension_service->extensions();
+  const extensions::ExtensionSet* extensions = extension_service->extensions();
 
-  for (ExtensionSet::const_iterator extension = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (!app_filter(*extension->get(), profile))
       continue;

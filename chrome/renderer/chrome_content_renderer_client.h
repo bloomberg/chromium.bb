@@ -18,7 +18,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 class ChromeRenderProcessObserver;
-class ExtensionSet;
 class PrescientNetworkingDispatcher;
 class RendererNetPredictor;
 class SearchBouncer;
@@ -36,6 +35,7 @@ struct WebPluginInfo;
 namespace extensions {
 class Dispatcher;
 class Extension;
+class ExtensionSet;
 class RendererPermissionsPolicyDelegate;
 }
 
@@ -176,7 +176,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // extension app's extent.
   bool CrossesExtensionExtents(blink::WebFrame* frame,
                                const GURL& new_url,
-                               const ExtensionSet& extensions,
+                               const extensions::ExtensionSet& extensions,
                                bool is_extension_url,
                                bool is_initial_navigation);
 

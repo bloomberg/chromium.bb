@@ -10,12 +10,13 @@ using extensions::Extension;
 
 TestExtensionService::~TestExtensionService() {}
 
-const ExtensionSet* TestExtensionService::extensions() const {
+const extensions::ExtensionSet* TestExtensionService::extensions() const {
   ADD_FAILURE();
   return NULL;
 }
 
-const ExtensionSet* TestExtensionService::disabled_extensions() const {
+const extensions::ExtensionSet* TestExtensionService::disabled_extensions()
+    const {
   ADD_FAILURE();
   return NULL;
 }

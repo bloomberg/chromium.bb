@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

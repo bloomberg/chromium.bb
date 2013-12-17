@@ -46,7 +46,6 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
@@ -59,6 +58,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/net_errors.h"
@@ -853,9 +853,9 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(const ListValue* list) {
   if (extension_system) {
     ExtensionService* extension_service = extension_system->extension_service();
     if (extension_service) {
-      scoped_ptr<const ExtensionSet> extensions(
+      scoped_ptr<const extensions::ExtensionSet> extensions(
           extension_service->GenerateInstalledExtensionsSet());
-      for (ExtensionSet::const_iterator it = extensions->begin();
+      for (extensions::ExtensionSet::const_iterator it = extensions->begin();
            it != extensions->end(); ++it) {
         DictionaryValue* extension_info = new DictionaryValue();
         bool enabled = extension_service->IsExtensionEnabled((*it)->id());

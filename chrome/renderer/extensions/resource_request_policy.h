@@ -7,7 +7,6 @@
 
 #include "content/public/common/page_transition_types.h"
 
-class ExtensionSet;
 class GURL;
 
 namespace blink {
@@ -15,6 +14,8 @@ class WebFrame;
 }
 
 namespace extensions {
+
+class ExtensionSet;
 
 // Encapsulates the policy for when chrome-extension:// and
 // chrome-extension-resource:// URLs can be requested.

@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
 
 namespace {
@@ -159,7 +159,7 @@ extensions::InstallTracker* AppListControllerDelegate::GetInstallTrackerFor(
 }
 
 void AppListControllerDelegate::GetApps(Profile* profile,
-                                        ExtensionSet* out_apps) {
+                                        extensions::ExtensionSet* out_apps) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(service);

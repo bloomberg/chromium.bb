@@ -40,6 +40,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -514,11 +516,11 @@ base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
     extensions::InfoMap* extension_info_map =
         extensions::ExtensionSystem::Get(profile_)->info_map();
     if (extension_info_map) {
-      ExtensionSet extensions;
+      extensions::ExtensionSet extensions;
       extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
           origin, process_id, extensions::APIPermission::kNotification,
           &extensions);
-      for (ExtensionSet::const_iterator iter = extensions.begin();
+      for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
            iter != extensions.end(); ++iter) {
         NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
         if (IsNotifierEnabled(notifier_id))

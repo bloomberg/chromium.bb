@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,10 +67,10 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(Profile* profile)
 
   ExtensionService* extension_service = profile->GetExtensionService();
   DCHECK(extension_service);
-  const ExtensionSet* enabled_ext = extension_service->extensions();
+  const extensions::ExtensionSet* enabled_ext = extension_service->extensions();
   enabled_extensions_.reserve(enabled_ext->size());
 
-  for (ExtensionSet::const_iterator it = enabled_ext->begin();
+  for (extensions::ExtensionSet::const_iterator it = enabled_ext->begin();
        it != enabled_ext->end(); ++it)
     enabled_extensions_.push_back(std::make_pair((*it)->id(), (*it)->name()));
 

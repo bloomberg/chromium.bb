@@ -192,7 +192,8 @@ void MessageCenterSettingsController::GetNotifierList(
     comparator.reset(new NotifierComparator(collator.get()));
 
   ExtensionService* extension_service = profile->GetExtensionService();
-  const ExtensionSet* extension_set = extension_service->extensions();
+  const extensions::ExtensionSet* extension_set =
+      extension_service->extensions();
   // The extension icon size has to be 32x32 at least to load bigger icons if
   // the icon doesn't exist for the specified size, and in that case it falls
   // back to the default icon. The fetched icon will be resized in the settings
@@ -200,7 +201,7 @@ void MessageCenterSettingsController::GetNotifierList(
   // crbug.com/222931
   app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
       profile, extension_misc::EXTENSION_ICON_SMALL, this));
-  for (ExtensionSet::const_iterator iter = extension_set->begin();
+  for (extensions::ExtensionSet::const_iterator iter = extension_set->begin();
        iter != extension_set->end();
        ++iter) {
     const extensions::Extension* extension = iter->get();

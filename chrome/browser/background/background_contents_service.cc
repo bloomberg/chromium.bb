@@ -42,6 +42,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -582,10 +583,11 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
 
 void BackgroundContentsService::LoadBackgroundContentsFromManifests(
     Profile* profile) {
-  const ExtensionSet* extensions = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->extensions();
-  ExtensionSet::const_iterator iter = extensions->begin();
-  for (; iter != extensions->end(); ++iter) {
+  const extensions::ExtensionSet* extensions =
+      extensions::ExtensionSystem::Get(profile)->
+          extension_service()->extensions();
+  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end(); ++iter) {
     const Extension* extension = iter->get();
     if (extension->is_hosted_app() &&
         BackgroundInfo::HasBackgroundPage(extension)) {

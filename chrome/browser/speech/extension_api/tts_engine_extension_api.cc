@@ -23,6 +23,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "net/base/network_change_notifier.h"
 
 using extensions::EventRouter;
@@ -69,8 +70,8 @@ void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
   bool is_offline = (net::NetworkChangeNotifier::GetConnectionType() ==
                      net::NetworkChangeNotifier::CONNECTION_NONE);
 
-  const ExtensionSet* extensions = service->extensions();
-  ExtensionSet::const_iterator iter;
+  const extensions::ExtensionSet* extensions = service->extensions();
+  extensions::ExtensionSet::const_iterator iter;
   for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
     const Extension* extension = iter->get();
 

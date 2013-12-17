@@ -18,6 +18,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace remoting {
@@ -116,12 +117,13 @@ void RemoteDesktopBrowserTest::UninstallChromotingApp() {
 }
 
 void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
-  const ExtensionSet* extensions = extension_service()->extensions();
+  const extensions::ExtensionSet* extensions =
+      extension_service()->extensions();
   scoped_refptr<const extensions::Extension> extension;
-  ExtensionSet::const_iterator iter;
   bool installed = false;
 
-  for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
+  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end(); ++iter) {
     extension = *iter;
     // Is there a better way to recognize the chromoting extension
     // than name comparison?

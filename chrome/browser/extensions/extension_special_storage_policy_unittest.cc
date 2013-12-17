@@ -11,12 +11,14 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::ExtensionSet;
 using extensions::Manifest;
 using quota::SpecialStoragePolicy;
 

@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -268,11 +269,11 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       break;
   }
 
-  const ExtensionSet* protecting_apps =
+  const extensions::ExtensionSet* protecting_apps =
       node.GetModel()->ExtensionsProtectingNode(node);
   if (protecting_apps && !protecting_apps->is_empty()) {
     base::ListValue* app_infos = new base::ListValue;
-    for (ExtensionSet::const_iterator it = protecting_apps->begin();
+    for (extensions::ExtensionSet::const_iterator it = protecting_apps->begin();
          it != protecting_apps->end(); ++it) {
       base::DictionaryValue* app_info = new base::DictionaryValue();
       app_info->SetString(kKeyId, (*it)->id());

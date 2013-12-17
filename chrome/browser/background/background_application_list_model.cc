@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -88,9 +89,9 @@ class BackgroundApplicationListModel::Application
 namespace {
 void GetServiceApplications(ExtensionService* service,
                             ExtensionList* applications_result) {
-  const ExtensionSet* extensions = service->extensions();
+  const extensions::ExtensionSet* extensions = service->extensions();
 
-  for (ExtensionSet::const_iterator cursor = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator cursor = extensions->begin();
        cursor != extensions->end();
        ++cursor) {
     const Extension* extension = cursor->get();
@@ -103,7 +104,7 @@ void GetServiceApplications(ExtensionService* service,
   // Walk the list of terminated extensions also (just because an extension
   // crashed doesn't mean we should ignore it).
   extensions = service->terminated_extensions();
-  for (ExtensionSet::const_iterator cursor = extensions->begin();
+  for (extensions::ExtensionSet::const_iterator cursor = extensions->begin();
        cursor != extensions->end();
        ++cursor) {
     const Extension* extension = cursor->get();

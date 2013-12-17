@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_item_model.h"
@@ -118,7 +119,7 @@ class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
     service_->Init();
 
     // There should be 4 extensions in the test profile.
-    const ExtensionSet* extensions = service_->extensions();
+    const extensions::ExtensionSet* extensions = service_->extensions();
     ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
 
     model_.reset(new app_list::AppListModel);

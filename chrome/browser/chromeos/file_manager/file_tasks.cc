@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/common/extension_set.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -389,7 +390,8 @@ void FindFileHandlerTasks(
   if (!service)
     return;
 
-  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
+  for (extensions::ExtensionSet::const_iterator iter =
+           service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
     const Extension* extension = iter->get();

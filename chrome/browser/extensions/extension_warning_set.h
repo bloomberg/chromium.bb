@@ -17,9 +17,9 @@ namespace base {
 class FilePath;
 }
 
-class ExtensionSet;
-
 namespace extensions {
+
+class ExtensionSet;
 
 // This class is used by the ExtensionWarningService to represent warnings if
 // extensions misbehave. Note that the ExtensionWarningService deals only with

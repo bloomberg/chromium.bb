@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::Extension;
+namespace extensions {
 
 namespace {
 
@@ -40,7 +40,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(path, extensions::Manifest::INTERNAL, manifest,
+      Extension::Create(path, Manifest::INTERNAL, manifest,
                         Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
@@ -138,3 +138,5 @@ TEST(ExtensionSetTest, ExtensionSet) {
   ASSERT_FALSE(extensions.InsertAll(*to_add));  // Re-adding same set no-ops.
   EXPECT_EQ(4u, extensions.size());
 }
+
+}  // namespace extensions

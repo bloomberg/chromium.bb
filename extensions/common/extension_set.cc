@@ -1,18 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_set.h"
+#include "extensions/common/extension_set.h"
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 
-using extensions::Extension;
+namespace extensions {
 
 ExtensionSet::const_iterator::const_iterator() {}
 
@@ -73,7 +72,7 @@ void ExtensionSet::Clear() {
 }
 
 std::string ExtensionSet::GetExtensionOrAppIDByURL(const GURL& url) const {
-  if (url.SchemeIs(extensions::kExtensionScheme))
+  if (url.SchemeIs(kExtensionScheme))
     return url.host();
 
   const Extension* extension = GetExtensionOrAppByURL(url);
@@ -84,7 +83,7 @@ std::string ExtensionSet::GetExtensionOrAppIDByURL(const GURL& url) const {
 }
 
 const Extension* ExtensionSet::GetExtensionOrAppByURL(const GURL& url) const {
-  if (url.SchemeIs(extensions::kExtensionScheme))
+  if (url.SchemeIs(kExtensionScheme))
     return GetByID(url.host());
 
   return GetHostedAppByURL(url);
@@ -101,7 +100,7 @@ const Extension* ExtensionSet::GetHostedAppByURL(const GURL& url) const {
 }
 
 const Extension* ExtensionSet::GetHostedAppByOverlappingWebExtent(
-    const extensions::URLPatternSet& extent) const {
+    const URLPatternSet& extent) const {
   for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     if (iter->second->web_extent().OverlapsWith(extent))
@@ -125,8 +124,8 @@ const Extension* ExtensionSet::GetByID(const std::string& id) const {
     return NULL;
 }
 
-extensions::ExtensionIdSet ExtensionSet::GetIDs() const {
-  extensions::ExtensionIdSet ids;
+ExtensionIdSet ExtensionSet::GetIDs() const {
+  ExtensionIdSet ids;
   for (ExtensionMap::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
     ids.insert(it->first);
@@ -135,15 +134,17 @@ extensions::ExtensionIdSet ExtensionSet::GetIDs() const {
 }
 
 bool ExtensionSet::ExtensionBindingsAllowed(const GURL& url) const {
-  if (url.SchemeIs(extensions::kExtensionScheme))
+  if (url.SchemeIs(kExtensionScheme))
     return true;
 
-  ExtensionMap::const_iterator i = extensions_.begin();
-  for (; i != extensions_.end(); ++i) {
-    if (i->second->location() == extensions::Manifest::COMPONENT &&
-        i->second->web_extent().MatchesURL(url))
+  for (ExtensionMap::const_iterator it = extensions_.begin();
+       it != extensions_.end(); ++it) {
+    if (it->second->location() == Manifest::COMPONENT &&
+        it->second->web_extent().MatchesURL(url))
       return true;
   }
 
   return false;
 }
+
+}  // namespace extensions

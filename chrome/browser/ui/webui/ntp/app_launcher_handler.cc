@@ -51,6 +51,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -425,20 +426,21 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // The first time we load the apps we must add all current app to the list
   // of apps visible on the NTP.
   if (!has_loaded_apps_) {
-    const ExtensionSet* extensions = extension_service_->extensions();
-    for (ExtensionSet::const_iterator it = extensions->begin();
+    const extensions::ExtensionSet* extensions =
+        extension_service_->extensions();
+    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
       visible_apps_.insert((*it)->id());
     }
 
     extensions = extension_service_->disabled_extensions();
-    for (ExtensionSet::const_iterator it = extensions->begin();
+    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
       visible_apps_.insert((*it)->id());
     }
 
     extensions = extension_service_->terminated_extensions();
-    for (ExtensionSet::const_iterator it = extensions->begin();
+    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
       visible_apps_.insert((*it)->id());
     }

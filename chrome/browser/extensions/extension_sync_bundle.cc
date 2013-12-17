@@ -6,9 +6,9 @@
 
 #include "base/location.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 

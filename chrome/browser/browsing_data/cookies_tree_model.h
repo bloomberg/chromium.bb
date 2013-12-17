@@ -25,7 +25,6 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "net/ssl/server_bound_cert_store.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -53,6 +52,10 @@ class CookieTreeServerBoundCertsNode;
 class CookieTreeSessionStorageNode;
 class CookieTreeSessionStoragesNode;
 class ExtensionSpecialStoragePolicy;
+
+namespace extensions {
+class ExtensionSet;
+}
 
 namespace net {
 class CanonicalCookie;
@@ -641,7 +644,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // this node from deletion.
   // Returns NULL if the node doesn't represent a protected data item or the
   // special storage policy is NULL.
-  const ExtensionSet* ExtensionsProtectingNode(
+  const extensions::ExtensionSet* ExtensionsProtectingNode(
       const CookieTreeNode& cookie_node);
 
   // Manages CookiesTreeModel::Observers. This will also call

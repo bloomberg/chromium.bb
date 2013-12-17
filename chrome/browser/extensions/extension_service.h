@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,6 +33,7 @@
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/one_shot_event.h"
@@ -72,8 +72,8 @@ class ExtensionServiceInterface
     : public base::SupportsWeakPtr<ExtensionServiceInterface> {
  public:
   virtual ~ExtensionServiceInterface() {}
-  virtual const ExtensionSet* extensions() const = 0;
-  virtual const ExtensionSet* disabled_extensions() const = 0;
+  virtual const extensions::ExtensionSet* extensions() const = 0;
+  virtual const extensions::ExtensionSet* disabled_extensions() const = 0;
   virtual extensions::PendingExtensionManager* pending_extension_manager() = 0;
 
   // Install an update.  Return true if the install can be started.
@@ -158,15 +158,15 @@ class ExtensionService
   virtual ~ExtensionService();
 
   // Gets the list of currently installed extensions.
-  virtual const ExtensionSet* extensions() const OVERRIDE;
-  virtual const ExtensionSet* disabled_extensions() const OVERRIDE;
-  const ExtensionSet* terminated_extensions() const;
-  const ExtensionSet* blacklisted_extensions() const;
-  const ExtensionSet* delayed_installs() const;
+  virtual const extensions::ExtensionSet* extensions() const OVERRIDE;
+  virtual const extensions::ExtensionSet* disabled_extensions() const OVERRIDE;
+  const extensions::ExtensionSet* terminated_extensions() const;
+  const extensions::ExtensionSet* blacklisted_extensions() const;
+  const extensions::ExtensionSet* delayed_installs() const;
 
   // Returns a set of all installed, disabled, blacklisted, and terminated
   // extensions.
-  scoped_ptr<ExtensionSet> GenerateInstalledExtensionsSet() const;
+  scoped_ptr<extensions::ExtensionSet> GenerateInstalledExtensionsSet() const;
 
   // Gets the object managing the set of pending extensions.
   virtual extensions::PendingExtensionManager*
@@ -376,7 +376,7 @@ class ExtensionService
   ImportStatus SatisfyImports(const extensions::Extension* extension);
 
   // Returns a set of extensions that import a given extension.
-  scoped_ptr<const ExtensionSet> GetDependentExtensions(
+  scoped_ptr<const extensions::ExtensionSet> GetDependentExtensions(
       const extensions::Extension* extension);
 
   // Uninstalls shared modules that were only referenced by |extension|.
@@ -734,23 +734,23 @@ class ExtensionService
   ExtensionSyncService* extension_sync_service_;
 
   // The current list of installed extensions.
-  ExtensionSet extensions_;
+  extensions::ExtensionSet extensions_;
 
   // The list of installed extensions that have been disabled.
-  ExtensionSet disabled_extensions_;
+  extensions::ExtensionSet disabled_extensions_;
 
   // The list of installed extensions that have been terminated.
-  ExtensionSet terminated_extensions_;
+  extensions::ExtensionSet terminated_extensions_;
 
   // The list of installed extensions that have been blacklisted. Generally
   // these shouldn't be considered as installed by the extension platform: we
   // only keep them around so that if extensions are blacklisted by mistake
   // they can easily be un-blacklisted.
-  ExtensionSet blacklisted_extensions_;
+  extensions::ExtensionSet blacklisted_extensions_;
 
   // The list of extension installs delayed for various reasons.  The reason
   // for delayed install is stored in ExtensionPrefs.
-  ExtensionSet delayed_installs_;
+  extensions::ExtensionSet delayed_installs_;
 
   // Hold the set of pending extensions.
   extensions::PendingExtensionManager pending_extension_manager_;
