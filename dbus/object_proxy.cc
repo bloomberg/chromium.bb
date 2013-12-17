@@ -523,7 +523,9 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     RunMethod(start_time, iter->second, released_signal);
   }
 
-  return DBUS_HANDLER_RESULT_HANDLED;
+  // We don't return DBUS_HANDLER_RESULT_HANDLED for signals because other
+  // objects may be interested in them. (e.g. Signals from org.freedesktop.DBus)
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 void ObjectProxy::RunMethod(base::TimeTicks start_time,
