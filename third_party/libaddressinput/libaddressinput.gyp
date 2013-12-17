@@ -55,6 +55,7 @@
         '<(libaddressinput_dir)/cpp/include/libaddressinput/load_rules_delegate.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/localization.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/basictypes.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/move.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/scoped_ptr.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/template_util.h',
         '<(libaddressinput_dir)/cpp/src/address_field.cc',

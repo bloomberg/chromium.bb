@@ -1,9 +1,95 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// Scopers help you manage ownership of a pointer, helping you easily manage the
+// a pointer within a scope, and automatically destroying the pointer at the
+// end of a scope.  There are two main classes you will use, which correspond
+// to the operators new/delete and new[]/delete[].
 //
+// Example usage (scoped_ptr<T>):
+//   {
+//     scoped_ptr<Foo> foo(new Foo("wee"));
+//   }  // foo goes out of scope, releasing the pointer with it.
+//
+//   {
+//     scoped_ptr<Foo> foo;          // No pointer managed.
+//     foo.reset(new Foo("wee"));    // Now a pointer is managed.
+//     foo.reset(new Foo("wee2"));   // Foo("wee") was destroyed.
+//     foo.reset(new Foo("wee3"));   // Foo("wee2") was destroyed.
+//     foo->Method();                // Foo::Method() called.
+//     foo.get()->Method();          // Foo::Method() called.
+//     SomeFunc(foo.release());      // SomeFunc takes ownership, foo no longer
+//                                   // manages a pointer.
+//     foo.reset(new Foo("wee4"));   // foo manages a pointer again.
+//     foo.reset();                  // Foo("wee4") destroyed, foo no longer
+//                                   // manages a pointer.
+//   }  // foo wasn't managing a pointer, so nothing was destroyed.
+//
+// Example usage (scoped_ptr<T[]>):
+//   {
+//     scoped_ptr<Foo[]> foo(new Foo[100]);
+//     foo.get()->Method();  // Foo::Method on the 0th element.
+//     foo[10].Method();     // Foo::Method on the 10th element.
+//   }
+//
+// These scopers also implement part of the functionality of C++11 unique_ptr
+// in that they are "movable but not copyable."  You can use the scopers in
+// the parameter and return types of functions to signify ownership transfer
+// in to and out of a function.  When calling a function that has a scoper
+// as the argument type, it must be called with the result of an analogous
+// scoper's Pass() function or another function that generates a temporary;
+// passing by copy will NOT work.  Here is an example using scoped_ptr:
+//
+//   void TakesOwnership(scoped_ptr<Foo> arg) {
+//     // Do something with arg
+//   }
+//   scoped_ptr<Foo> CreateFoo() {
+//     // No need for calling Pass() because we are constructing a temporary
+//     // for the return value.
+//     return scoped_ptr<Foo>(new Foo("new"));
+//   }
+//   scoped_ptr<Foo> PassThru(scoped_ptr<Foo> arg) {
+//     return arg.Pass();
+//   }
+//
+//   {
+//     scoped_ptr<Foo> ptr(new Foo("yay"));  // ptr manages Foo("yay").
+//     TakesOwnership(ptr.Pass());           // ptr no longer owns Foo("yay").
+//     scoped_ptr<Foo> ptr2 = CreateFoo();   // ptr2 owns the return Foo.
+//     scoped_ptr<Foo> ptr3 =                // ptr3 now owns what was in ptr2.
+//         PassThru(ptr2.Pass());            // ptr2 is correspondingly NULL.
+//   }
+//
+// Notice that if you do not call Pass() when returning from PassThru(), or
+// when invoking TakesOwnership(), the code will not compile because scopers
+// are not copyable; they only implement move semantics which require calling
+// the Pass() function to signify a destructive transfer of state. CreateFoo()
+// is different though because we are constructing a temporary on the return
+// line and thus can avoid needing to call Pass().
+//
+// Pass() properly handles upcast in initialization, i.e. you can use a
+// scoped_ptr<Child> to initialize a scoped_ptr<Parent>:
+//
+//   scoped_ptr<Foo> foo(new Foo());
+//   scoped_ptr<FooParent> parent(foo.Pass());
+//
+// PassAs<>() should be used to upcast return value in return statement:
+//
+//   scoped_ptr<Foo> CreateFoo() {
+//     scoped_ptr<FooChild> result(new FooChild());
+//     return result.PassAs<Foo>();
+//   }
+//
+// Note that PassAs<>() is implemented only for scoped_ptr<T>, but not for
+// scoped_ptr<T[]>. This is because casting array pointers may not be safe.
+
 // The original source code is from:
-// https://code.google.com/p/libphonenumber/source/browse/trunk/cpp/src/phonenumbers/base/memory/scoped_ptr.h?r=621
+// http://src.chromium.org/chrome/trunk/src/base/memory/scoped_ptr.h?p=227789
+// Differences:
+// - no scoped_ptr_malloc
+// - no compiler_specific.h include
+// - namespaces are slightly rearranged
 
 #ifndef I18N_ADDRESSINPUT_UTIL_SCOPED_PTR_H_
 #define I18N_ADDRESSINPUT_UTIL_SCOPED_PTR_H_
@@ -18,10 +104,20 @@
 #include <algorithm>  // For std::swap().
 
 #include <libaddressinput/util/basictypes.h>
+#include <libaddressinput/util/move.h>
 #include <libaddressinput/util/template_util.h>
+
+// NOTE: In Chromium, this is defined in base/compiler_specific.h. Here we
+// just compile it out.
+#define WARN_UNUSED_RESULT
 
 namespace i18n {
 namespace addressinput {
+
+namespace subtle {
+class RefCountedBase;
+class RefCountedThreadSafeBase;
+}  // namespace subtle
 
 // Function object which deletes its parameter, which must be a pointer.
 // If C is an array type, invokes 'delete[]' on the parameter; otherwise,
@@ -89,6 +185,16 @@ struct FreeDeleter {
   }
 };
 
+namespace internal {
+
+template <typename T> struct IsNotRefCounted {
+  enum {
+    value = !is_convertible<T*, subtle::RefCountedBase*>::value &&
+        !is_convertible<T*, subtle::RefCountedThreadSafeBase*>::
+            value
+  };
+};
+
 // Minimal implementation of the core logic of scoped_ptr, suitable for
 // reuse in both scoped_ptr and its specializations.
 template <class T, class D>
@@ -105,7 +211,7 @@ class scoped_ptr_impl {
   scoped_ptr_impl(scoped_ptr_impl<U, V>* other)
       : data_(other->release(), other->get_deleter()) {
     // We do not support move-only deleters.  We could modify our move
-    // emulation to have base::subtle::move() and base::subtle::forward()
+    // emulation to have subtle::move() and subtle::forward()
     // functions that are imperfect emulations of their C++11 equivalents,
     // but until there's a requirement, just assume deleters are copyable.
   }
@@ -191,6 +297,8 @@ class scoped_ptr_impl {
   DISALLOW_COPY_AND_ASSIGN(scoped_ptr_impl);
 };
 
+}  // namespace internal
+
 // A scoped_ptr<T> is like a T*, except that the destructor of scoped_ptr<T>
 // automatically deletes the pointer it holds (if any).
 // That is, scoped_ptr<T> owns the T object that it points to.
@@ -209,6 +317,11 @@ class scoped_ptr_impl {
 // types.
 template <class T, class D = DefaultDeleter<T> >
 class scoped_ptr {
+  MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
+
+  COMPILE_ASSERT(internal::IsNotRefCounted<T>::value,
+                 T_is_refcounted_type_and_needs_scoped_refptr);
+
  public:
   // The element and deleter types.
   typedef T element_type;
@@ -237,6 +350,9 @@ class scoped_ptr {
   scoped_ptr(scoped_ptr<U, V> other) : impl_(&other.impl_) {
     COMPILE_ASSERT(!is_array<U>::value, U_cannot_be_an_array);
   }
+
+  // Constructor.  Move constructor for C++03 move emulation of this type.
+  scoped_ptr(RValue rvalue) : impl_(&rvalue.object->impl_) { }
 
   // operator=.  Allows assignment from a scoped_ptr rvalue for a convertible
   // type and deleter.
@@ -277,8 +393,14 @@ class scoped_ptr {
 
   // Allow scoped_ptr<element_type> to be used in boolean expressions, but not
   // implicitly convertible to a real bool (which is dangerous).
+  //
+  // Note that this trick is only safe when the == and != operators
+  // are declared explicitly, as otherwise "scoped_ptr1 ==
+  // scoped_ptr2" will compile but do the wrong thing (i.e., convert
+  // to Testable and then do the comparison).
  private:
-  typedef scoped_ptr_impl<element_type, deleter_type> scoped_ptr::*Testable;
+  typedef internal::scoped_ptr_impl<element_type, deleter_type>
+      scoped_ptr::*Testable;
 
  public:
   operator Testable() const { return impl_.get() ? &scoped_ptr::impl_ : NULL; }
@@ -299,14 +421,28 @@ class scoped_ptr {
   // If this object holds a NULL pointer, the return value is NULL.
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
-  element_type* release() {
+  element_type* release() WARN_UNUSED_RESULT {
     return impl_.release();
+  }
+
+  // C++98 doesn't support functions templates with default parameters which
+  // makes it hard to write a PassAs() that understands converting the deleter
+  // while preserving simple calling semantics.
+  //
+  // Until there is a use case for PassAs() with custom deleters, just ignore
+  // the custom deleter.
+  template <typename PassAsType>
+  scoped_ptr<PassAsType> PassAs() {
+    return scoped_ptr<PassAsType>(Pass());
   }
 
  private:
   // Needed to reach into |impl_| in the constructor.
   template <typename U, typename V> friend class scoped_ptr;
-  scoped_ptr_impl<element_type, deleter_type> impl_;
+  internal::scoped_ptr_impl<element_type, deleter_type> impl_;
+
+  // Forbidden for API compatibility with std::unique_ptr.
+  explicit scoped_ptr(int disallow_construction_from_null);
 
   // Forbid comparison of scoped_ptr types.  If U != T, it totally
   // doesn't make sense, and if U == T, it still doesn't make sense
@@ -318,6 +454,8 @@ class scoped_ptr {
 
 template <class T, class D>
 class scoped_ptr<T[], D> {
+  MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
+
  public:
   // The element and deleter types.
   typedef T element_type;
@@ -344,6 +482,15 @@ class scoped_ptr<T[], D> {
   //   NOT use implicit_cast<Base*>() to upcast the static type of the array.
   explicit scoped_ptr(element_type* array) : impl_(array) { }
 
+  // Constructor.  Move constructor for C++03 move emulation of this type.
+  scoped_ptr(RValue rvalue) : impl_(&rvalue.object->impl_) { }
+
+  // operator=.  Move operator= for C++03 move emulation of this type.
+  scoped_ptr& operator=(RValue rhs) {
+    impl_.TakeState(&rhs.object->impl_);
+    return *this;
+  }
+
   // Reset.  Deletes the currently owned array, if any.
   // Then takes ownership of a new object, if given.
   void reset(element_type* array = NULL) { impl_.reset(array); }
@@ -362,7 +509,8 @@ class scoped_ptr<T[], D> {
   // Allow scoped_ptr<element_type> to be used in boolean expressions, but not
   // implicitly convertible to a real bool (which is dangerous).
  private:
-  typedef scoped_ptr_impl<element_type, deleter_type> scoped_ptr::*Testable;
+  typedef internal::scoped_ptr_impl<element_type, deleter_type>
+      scoped_ptr::*Testable;
 
  public:
   operator Testable() const { return impl_.get() ? &scoped_ptr::impl_ : NULL; }
@@ -383,7 +531,7 @@ class scoped_ptr<T[], D> {
   // If this object holds a NULL pointer, the return value is NULL.
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
-  element_type* release() {
+  element_type* release() WARN_UNUSED_RESULT {
     return impl_.release();
   }
 
@@ -392,7 +540,7 @@ class scoped_ptr<T[], D> {
   enum { type_must_be_complete = sizeof(element_type) };
 
   // Actually hold the data.
-  scoped_ptr_impl<element_type, deleter_type> impl_;
+  internal::scoped_ptr_impl<element_type, deleter_type> impl_;
 
   // Disable initialization from any type other than element_type*, by
   // providing a constructor that matches such an initialization, but is
@@ -442,4 +590,4 @@ scoped_ptr<T> make_scoped_ptr(T* ptr) {
 }  // namespace addressinput
 }  // namespace i18n
 
-#endif  // I18N_ADDRESSINPUT_UTIL_SCOPED_PTR_H_
+#endif  // I18N_ADDRESSINPUT_MEMORY_SCOPED_PTR_H_
