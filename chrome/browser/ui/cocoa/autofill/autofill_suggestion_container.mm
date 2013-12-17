@@ -36,8 +36,8 @@ const CGFloat kInfiniteSize = 1.0e6;
 const CGFloat kLineFragmentPadding = 2.0;
 
 // Padding added on top of the label so its first line looks centered with
-// respect to the input field.
-const CGFloat kLabelTopPadding = 5.0;
+// respect to the input field. Only added when the input field is showing.
+const CGFloat kLabelWithInputTopPadding = 5.0;
 
 }
 
@@ -109,7 +109,7 @@ const CGFloat kLabelTopPadding = 5.0;
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
-  [paragraphStyle setLineHeightMultiple:1.5];
+  [paragraphStyle setLineSpacing:0.5 * [[label_ font] pointSize]];
   [label_ setDefaultParagraphStyle:paragraphStyle];
 
   inputField_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
@@ -171,11 +171,11 @@ const CGFloat kLabelTopPadding = 5.0;
 
 - (NSSize)preferredSize {
   NSSize size = [label_ bounds].size;
-  size.height += kLabelTopPadding;
 
   // Final inputField_ sizing/spacing depends on a TODO(estade) in Views code.
   if (![inputField_ isHidden]) {
-    size.height = std::max(size.height, NSHeight([inputField_ frame]));
+    size.height = std::max(size.height + kLabelWithInputTopPadding,
+                           NSHeight([inputField_ frame]));
     size.width += NSWidth([inputField_ frame])  + kAroundTextPadding;
   }
 
@@ -195,19 +195,21 @@ const CGFloat kLabelTopPadding = 5.0;
 
   NSRect labelFrame = [label_ bounds];
   labelFrame.origin.x = NSMinX(bounds);
-  labelFrame.origin.y =
-      NSMaxY(bounds) - kLabelTopPadding - NSHeight(labelFrame) - kTopPadding;
+  labelFrame.origin.y = NSMaxY(bounds) - NSHeight(labelFrame) - kTopPadding;
 
   // Position input field - top is aligned to top of label field.
   if (![inputField_ isHidden]) {
-    NSRect inputfieldFrame = [inputField_ frame];
-    inputfieldFrame.origin.x = NSMaxX(bounds) - NSWidth(inputfieldFrame);
-    inputfieldFrame.origin.y =
-        NSMaxY(labelFrame) + kLabelTopPadding - NSHeight(inputfieldFrame);
-    [inputField_ setFrameOrigin:inputfieldFrame.origin];
+    NSRect inputFieldFrame = [inputField_ frame];
+    inputFieldFrame.origin.x = NSMaxX(bounds) - NSWidth(inputFieldFrame);
+    inputFieldFrame.origin.y = NSMaxY(labelFrame) - NSHeight(inputFieldFrame);
+    [inputField_ setFrameOrigin:inputFieldFrame.origin];
+
+    // Vertically center the first line of the label with respect to the input
+    // field.
+    labelFrame.origin.y -= kLabelWithInputTopPadding;
 
     // Due to fixed width, fields are guaranteed to not overlap.
-    DCHECK_LE(NSMaxX(labelFrame), NSMinX(inputfieldFrame));
+    DCHECK_LE(NSMaxX(labelFrame), NSMinX(inputFieldFrame));
   }
 
   [spacer_ setFrame:spacerFrame];
