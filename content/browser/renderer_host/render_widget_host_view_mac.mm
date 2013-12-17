@@ -418,10 +418,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_loading_(false),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
-      pending_swap_buffers_acks_weak_factory_(this),
       underlay_view_has_drawn_(false),
       overlay_view_weak_factory_(this),
-      next_swap_ack_time_(base::Time::Now()),
       software_frame_weak_ptr_factory_(this) {
   software_frame_manager_.reset(new SoftwareFrameManager(
       software_frame_weak_ptr_factory_.GetWeakPtr()));
@@ -443,7 +441,6 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   // pointer.
   cocoa_view_ = nil;
 
-  AckPendingSwapBuffers();
   UnlockMouse();
 
   // Make sure that the layer doesn't reach into the now-invalid object.
@@ -739,10 +736,6 @@ void RenderWidgetHostViewMac::WasHidden() {
   if (render_widget_host_->is_hidden())
     return;
 
-  // Send ACKs for any pending SwapBuffers (if any) since we won't be displaying
-  // them and the GPU process is waiting.
-  AckPendingSwapBuffers();
-
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
@@ -988,8 +981,6 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::Destroy() {
-  AckPendingSwapBuffers();
-
   [[NSNotificationCenter defaultCenter]
       removeObserver:cocoa_view_
                 name:NSWindowWillCloseNotification
@@ -1384,63 +1375,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   }
 }
 
-void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::AckPendingSwapBuffers");
-
-  // Cancel any outstanding delayed calls to this function.
-  pending_swap_buffers_acks_weak_factory_.InvalidateWeakPtrs();
-
-  while (!pending_swap_buffers_acks_.empty()) {
-    if (pending_swap_buffers_acks_.front().first != 0) {
-      AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-      ack_params.sync_point = 0;
-      if (compositing_iosurface_)
-        ack_params.renderer_id = compositing_iosurface_->GetRendererID();
-      RenderWidgetHostImpl::AcknowledgeBufferPresent(
-          pending_swap_buffers_acks_.front().first,
-          pending_swap_buffers_acks_.front().second,
-          ack_params);
-      if (render_widget_host_) {
-        render_widget_host_->AcknowledgeSwapBuffersToRenderer();
-      }
-    }
-    pending_swap_buffers_acks_.erase(pending_swap_buffers_acks_.begin());
-  }
-}
-
-void RenderWidgetHostViewMac::ThrottledAckPendingSwapBuffers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Send VSync parameters to the renderer's compositor thread.
-  base::TimeTicks vsync_timebase;
-  base::TimeDelta vsync_interval;
-  GetVSyncParameters(&vsync_timebase, &vsync_interval);
-  if (render_widget_host_ && compositing_iosurface_)
-    render_widget_host_->UpdateVSyncParameters(vsync_timebase, vsync_interval);
-
-  // If the render widget host is responsible for throttling swaps to vsync rate
-  // then don't ack the swapbuffers until a full vsync has passed since the last
-  // ack was sent.
-  bool throttle_swap_ack =
-      render_widget_host_ &&
-      !render_widget_host_->is_threaded_compositing_enabled() &&
-      compositing_iosurface_context_ &&
-      !compositing_iosurface_context_->is_vsync_disabled();
-  base::Time now = base::Time::Now();
-  if (throttle_swap_ack && next_swap_ack_time_ > now) {
-    base::TimeDelta next_swap_ack_delay = next_swap_ack_time_ - now;
-    next_swap_ack_time_ += vsync_interval;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RenderWidgetHostViewMac::AckPendingSwapBuffers,
-                   pending_swap_buffers_acks_weak_factory_.GetWeakPtr()),
-        next_swap_ack_delay);
-  } else {
-    next_swap_ack_time_ = now + vsync_interval;
-    AckPendingSwapBuffers();
-  }
-}
-
 bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   CHECK(!use_core_animation_);
   CHECK(compositing_iosurface_);
@@ -1504,7 +1438,6 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
-  AckPendingSwapBuffers();
   DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
   // The existing GL contexts may be in a bad state, so don't re-use any of the
   // existing ones anymore, rather, allocate new ones.
@@ -1538,29 +1471,6 @@ void RenderWidgetHostViewMac::RemoveOverlayView() {
   }
   [cocoa_view_ setNeedsDisplay:YES];
   [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
-}
-
-void RenderWidgetHostViewMac::GetVSyncParameters(
-  base::TimeTicks* timebase, base::TimeDelta* interval) {
-  if (compositing_iosurface_) {
-    uint32 numerator = 0;
-    uint32 denominator = 0;
-    compositing_iosurface_->GetVSyncParameters(
-        timebase, &numerator, &denominator);
-    if (numerator > 0 && denominator > 0) {
-      int64 interval_micros =
-          1000000 * static_cast<int64>(numerator) / denominator;
-      *interval = base::TimeDelta::FromMicroseconds(interval_micros);
-      return;
-    }
-  }
-
-  // Pass reasonable default values if unable to get the actual ones
-  // (e.g. CVDisplayLink failed to return them because the display is
-  // in sleep mode).
-  static const int64 kOneOverSixtyMicroseconds = 16669;
-  *timebase = base::TimeTicks::Now(),
-  *interval = base::TimeDelta::FromMicroseconds(kOneOverSixtyMicroseconds);
 }
 
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
@@ -1695,15 +1605,19 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  pending_swap_buffers_acks_.push_back(std::make_pair(params.route_id,
-                                                      gpu_host_id));
-
   CompositorSwapBuffers(params.surface_handle,
                         params.size,
                         params.scale_factor,
                         params.latency_info);
 
-  ThrottledAckPendingSwapBuffers();
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  ack_params.renderer_id = compositing_iosurface_ ?
+      compositing_iosurface_->GetRendererID() : 0;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
+                                                 gpu_host_id,
+                                                 ack_params);
+  render_widget_host_->AcknowledgeSwapBuffersToRenderer();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
@@ -1713,15 +1627,19 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  pending_swap_buffers_acks_.push_back(std::make_pair(params.route_id,
-                                                      gpu_host_id));
-
   CompositorSwapBuffers(params.surface_handle,
                         params.surface_size,
                         params.surface_scale_factor,
                         params.latency_info);
 
-  ThrottledAckPendingSwapBuffers();
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  ack_params.renderer_id = compositing_iosurface_ ?
+      compositing_iosurface_->GetRendererID() : 0;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
+                                                 gpu_host_id,
+                                                 ack_params);
+  render_widget_host_->AcknowledgeSwapBuffersToRenderer();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
@@ -1747,10 +1665,6 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
                    desired_size));
   }
   return false;
-}
-
-void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {
-  AckPendingSwapBuffers();
 }
 
 void RenderWidgetHostViewMac::OnSwapCompositorFrame(
@@ -1913,8 +1827,6 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
   if (last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = false;
-
-    AckPendingSwapBuffers();
 
     // If overlapping views are allowed, then don't unbind the context
     // from the view (that is, don't call clearDrawble -- just delete the

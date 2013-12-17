@@ -305,7 +305,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
   virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
@@ -471,9 +470,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
 
-  void GetVSyncParameters(
-      base::TimeTicks* timebase, base::TimeDelta* interval);
-
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
   // deleted it will delete this out from under the caller.
@@ -504,27 +500,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Called when a software DIB is received.
   void GotSoftwareFrame();
 
-  // Ack pending SwapBuffers requests, if any, to unblock the GPU process. Has
-  // no effect if there are no pending requests.
-  void AckPendingSwapBuffers();
-
-  // Ack pending SwapBuffers requests, but no more frequently than the vsync
-  // rate if the renderer is not throttling the swap rate.
-  void ThrottledAckPendingSwapBuffers();
-
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
-  CONTENT_EXPORT void OnAcceleratedSurfaceSetIOSurface(
-      gfx::PluginWindowHandle window,
-      int32 width,
-      int32 height,
-      uint64 mach_port);
-  void OnAcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
-                                           int32 width,
-                                           int32 height,
-                                           TransportDIB::Handle transport_dib);
-  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
-                                          uint64 surface_handle);
 
   // Convert |rect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin) and scale for HiDPI displays.
@@ -556,14 +533,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Our parent host view, if this is fullscreen.  NULL otherwise.
   RenderWidgetHostViewMac* fullscreen_parent_host_view_;
 
-  // List of pending swaps for deferred acking:
-  //   pairs of (route_id, gpu_host_id).
-  std::list<std::pair<int32, int32> > pending_swap_buffers_acks_;
-
-  // Factory used to cancel outstanding throttled AckPendingSwapBuffers calls.
-  base::WeakPtrFactory<RenderWidgetHostViewMac>
-      pending_swap_buffers_acks_weak_factory_;
-
   // The overlay view which is rendered above this one in the same
   // accelerated IOSurface.
   // Overlay view has |underlay_view_| set to this view.
@@ -584,11 +553,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Factory used to safely reference overlay view set in SetOverlayView.
   base::WeakPtrFactory<RenderWidgetHostViewMac>
       overlay_view_weak_factory_;
-
-  // The earliest time at which the next swap ack may be sent. Only relevant
-  // when swaps are not being throttled by the renderer (when threaded
-  // compositing is off).
-  base::Time next_swap_ack_time_;
 
   // The current composition character range and its bounds.
   gfx::Range composition_range_;

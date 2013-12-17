@@ -502,10 +502,6 @@ void RenderWidgetHostViewGuest::StopSpeaking() {
   platform_view_->StopSpeaking();
 }
 
-void RenderWidgetHostViewGuest::AboutToWaitForBackingStoreMsg() {
-  NOTREACHED();
-}
-
 bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
     const NativeWebKeyboardEvent& event) {
   return false;

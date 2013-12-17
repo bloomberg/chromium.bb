@@ -145,7 +145,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void AcceleratedSurfaceRelease() OVERRIDE {}
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
 #if defined(OS_MACOSX)
-  virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #elif defined(OS_ANDROID)

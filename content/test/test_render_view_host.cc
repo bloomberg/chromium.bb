@@ -156,9 +156,6 @@ bool TestRenderWidgetHostView::HasAcceleratedSurface(
 
 #if defined(OS_MACOSX)
 
-void TestRenderWidgetHostView::AboutToWaitForBackingStoreMsg() {
-}
-
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }

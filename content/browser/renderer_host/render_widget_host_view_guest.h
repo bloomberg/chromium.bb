@@ -161,7 +161,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void StopSpeaking() OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
-  virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif  // defined(OS_MACOSX)

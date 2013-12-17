@@ -318,9 +318,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void DidReceiveRendererFrame() = 0;
 
 #if defined(OS_MACOSX)
-  // Called just before GetBackingStore blocks for an updated frame.
-  virtual void AboutToWaitForBackingStoreMsg() = 0;
-
   // Does any event handling necessary for plugin IME; should be called after
   // the plugin has already had a chance to process the event. If plugin IME is
   // not enabled, this is a no-op, so it is always safe to call.
