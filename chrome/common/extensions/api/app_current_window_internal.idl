@@ -35,7 +35,7 @@
     static void restore();
     static void drawAttention();
     static void clearAttention();
-    static void show();
+    static void show(optional boolean focused);
     static void hide();
     static void setBounds(Bounds bounds);
     static void setMinWidth(optional long minWidth);

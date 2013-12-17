@@ -19,6 +19,7 @@
 namespace app_current_window_internal =
     extensions::api::app_current_window_internal;
 
+namespace Show = app_current_window_internal::Show;
 namespace SetBounds = app_current_window_internal::SetBounds;
 namespace SetMinWidth = app_current_window_internal::SetMinWidth;
 namespace SetMinHeight = app_current_window_internal::SetMinHeight;
@@ -114,7 +115,12 @@ bool AppCurrentWindowInternalClearAttentionFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalShowFunction::RunWithWindow(
     ShellWindow* window) {
-  window->Show(ShellWindow::SHOW_ACTIVE);
+  scoped_ptr<Show::Params> params(Show::Params::Create(*args_));
+  CHECK(params.get());
+  if (params->focused && !*params->focused)
+    window->Show(ShellWindow::SHOW_INACTIVE);
+  else
+    window->Show(ShellWindow::SHOW_ACTIVE);
   return true;
 }
 

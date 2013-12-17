@@ -178,4 +178,3 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
   geometry_listener.Reply("");
   ASSERT_TRUE(catcher.GetNextResult());
 }
-

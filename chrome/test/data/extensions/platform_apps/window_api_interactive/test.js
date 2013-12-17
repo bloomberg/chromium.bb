@@ -107,12 +107,19 @@ function testCreate() {
             // This test fails on Linux GTK, see http://crbug.com/325219
             // And none of those tests run on Linux Aura, see
             // http://crbug.com/325142
+            // We remove this and disable the entire test for Linux GTK when the
+            // test will run on other platforms, see http://crbug.com/328829
             if (navigator.platform.indexOf('Linux') != 0)
               testWindowGetsFocus(win);
           }));
         });
       }));
     },
+  ]);
+}
+
+function testShow() {
+  chrome.test.runTests([
     function createUnfocusThenShow() {
       chrome.app.window.create('test.html', {
         id: 'createUnfocusThenShow', focused: false,
@@ -123,6 +130,37 @@ function testCreate() {
           // This test fails on Linux GTK, see http://crbug.com/325219
           // And none of those tests run on Linux Aura, see
           // http://crbug.com/325142
+          // We remove this and disable the entire test for Linux GTK when the
+          // test will run on other platforms, see http://crbug.com/328829
+          if (navigator.platform.indexOf('Linux') != 0)
+            testWindowGetsFocus(win);
+        });
+      }));
+    },
+    function createUnfocusThenShowUnfocused() {
+      chrome.app.window.create('test.html', {
+        id: 'createUnfocusThenShowUnfocused', focused: false,
+        bounds: { width: 200, height: 200 }
+      }, callbackPass(function(win) {
+        win.contentWindow.onload = callbackPass(function() {
+          win.show(false);
+          testWindowNeverGetsFocus(win);
+        });
+      }));
+    },
+    function createUnfocusThenShowFocusedThenShowUnfocused() {
+      chrome.app.window.create('test.html', {
+        id: 'createUnfocusThenShowFocusedThenShowUnfocused', focused: false,
+        bounds: { width: 200, height: 200 }
+      }, callbackPass(function(win) {
+        win.contentWindow.onload = callbackPass(function() {
+          win.show(true);
+          win.show(false);
+          // This test fails on Linux GTK, see http://crbug.com/325219
+          // And none of those tests run on Linux Aura, see
+          // http://crbug.com/325142
+          // We remove this and disable the entire test for Linux GTK when the
+          // test will run on other platforms, see http://crbug.com/328829
           if (navigator.platform.indexOf('Linux') != 0)
             testWindowGetsFocus(win);
         });

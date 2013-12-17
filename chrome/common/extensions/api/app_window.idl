@@ -172,7 +172,8 @@ namespace app.window {
     static void close();
 
     // Show the window. Does nothing if the window is already visible.
-    static void show();
+    // Focus the window if |focused| is set to true or omitted.
+    static void show(optional boolean focused);
 
     // Hide the window. Does nothing if the window is already hidden.
     static void hide();
