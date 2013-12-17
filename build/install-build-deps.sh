@@ -83,8 +83,8 @@ fi
 chromeos_dev_list="libbluetooth-dev"
 
 # Packages needed for development
-dev_list="apache2.2-bin bison curl elfutils fakeroot flex g++ git-core gperf
-          language-pack-da language-pack-fr language-pack-he
+dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex g++ git-core
+          gperf language-pack-da language-pack-fr language-pack-he
           language-pack-zh-hant libapache2-mod-php5 libasound2-dev libbrlapi-dev
           libbz2-dev libcairo2-dev libcap-dev libcups2-dev libcurl4-gnutls-dev
           libdrm-dev libelf-dev libgconf2-dev libgl1-mesa-dev libglib2.0-dev
