@@ -168,13 +168,7 @@ void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 void TrayPower::OnPowerStatusChanged() {
   RecordChargerType();
 
-  // TODO(jennyz): Enable showing spring charger dialog on locked screen after
-  // crbug.com/328593 is fixed.
-  user::LoginStatus login_status =
-      Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
-  if (PowerStatus::Get()->IsOriginalSpringChargerConnected() &&
-      (login_status != user::LOGGED_IN_NONE &&
-       login_status != user::LOGGED_IN_LOCKED)) {
+  if (PowerStatus::Get()->IsOriginalSpringChargerConnected()) {
     ash::Shell::GetInstance()->system_tray_delegate()->
         ShowSpringChargerReplacementDialog();
   }
