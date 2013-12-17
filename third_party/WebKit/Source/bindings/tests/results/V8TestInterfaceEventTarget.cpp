@@ -36,6 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/TraceEvent.h"
@@ -69,6 +70,56 @@ namespace TestInterfaceEventTargetV8Internal {
 template <typename T> void V8_USE(T) { }
 
 } // namespace TestInterfaceEventTargetV8Internal
+
+const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::derefObject, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+
+static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("Name", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        return;
+    }
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+
+    Document* document = currentDocument();
+    ASSERT(document);
+
+    // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceEventTarget instance
+    // may end up being the only node in the map and get garbage-collected prematurely.
+    toV8(document, info.Holder(), info.GetIsolate());
+
+    RefPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(*document);
+    v8::Handle<v8::Object> wrapper = info.Holder();
+
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventTarget>(impl.release(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
+}
+
+v8::Handle<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey;
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    v8::Local<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
+    if (!result.IsEmpty())
+        return result;
+
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+    v8::EscapableHandleScope scope(isolate);
+    result = v8::FunctionTemplate::New(isolate, V8TestInterfaceEventTargetConstructorCallback);
+
+    v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount(V8TestInterfaceEventTarget::internalFieldCount);
+    result->SetClassName(v8::String::NewFromUtf8(isolate, "TestInterfaceEventTarget", v8::String::kInternalizedString));
+    result->Inherit(V8TestInterfaceEventTarget::domTemplate(isolate, currentWorldType));
+    data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
+
+    return scope.Escape(result);
+}
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceEventTargetTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {

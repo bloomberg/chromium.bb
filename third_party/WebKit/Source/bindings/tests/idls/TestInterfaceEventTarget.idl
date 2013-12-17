@@ -29,6 +29,6 @@
  */
 
 [
-    // FIXME: NamedConstructor=Name(),
+    NamedConstructor=Name(),
 ] interface TestInterfaceEventTarget : EventTarget {
 };
