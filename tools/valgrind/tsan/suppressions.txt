@@ -1147,3 +1147,42 @@
   fun:ClientHintsTest_HintsWellFormattedWithNonEnLocale_Test::TestBody
   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
+{
+  bug_328521a
+  ThreadSanitizer:Race
+  fun:PR_Lock
+  fun:pk11_getKeyFromList
+  fun:pk11_CreateSymKey
+  fun:pk11_ImportSymKeyWithTempl
+  fun:PK11_ImportSymKey
+  fun:crypto::HMAC::Init
+  fun:crypto::HMAC::Init
+  fun:crypto::HMAC::Init
+  fun:crypto::HMAC::Init
+  fun:remoting::protocol::AuthenticationMethod::ApplyHashFunction
+  fun:remoting::MakeHostPinHash
+  fun:`anonymous namespace'::VerifyGetPinHashResponse
+  fun:`anonymous namespace'::VerifyGetPinHashResponse
+  fun:`anonymous namespace'::VerifyGetPinHashResponse
+  fun:`anonymous namespace'::VerifyGetPinHashResponse
+  fun:remoting::Me2MeNativeMessagingHostTest_All_Test::TestBody
+}
+{
+  bug_328521b
+  ThreadSanitizer:Race
+  fun:PR_Lock
+  fun:sftk_SessionFromHandle
+  fun:NSC_GenerateKeyPair
+  fun:PK11_GenerateKeyPairWithOpFlags
+  fun:PK11_GenerateKeyPairWithFlags
+  fun:PK11_GenerateKeyPair
+  fun:crypto::RSAPrivateKey::CreateWithParams
+  fun:crypto::RSAPrivateKey::CreateWithParams
+  fun:crypto::RSAPrivateKey::Create
+  fun:crypto::RSAPrivateKey::Create
+  fun:remoting::RsaKeyPair::Generate
+  fun:remoting::Me2MeNativeMessagingHost::ProcessGenerateKeyPair
+  fun:remoting::Me2MeNativeMessagingHost::ProcessMessage
+  fun:remoting::Me2MeNativeMessagingHost::ProcessMessage
+  fun:base::internal::RunnableAdapter::Run
+}
