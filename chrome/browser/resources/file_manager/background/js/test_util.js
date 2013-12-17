@@ -259,17 +259,32 @@ test.util.async.waitForElement = function(
     var doc = test.util.sync.getDocument_(contentWindow, iframeQuery);
     if (!doc)
       return false;
+
     var element = doc.querySelector(targetQuery);
-    if (!element)
-      return !!opt_inverse;
-    var attributes = {};
-    for (var i = 0; i < element.attributes.length; i++) {
-      attributes[element.attributes[i].nodeName] =
-          element.attributes[i].nodeValue;
+
+    if (opt_inverse) {
+      // Inversed condition: Success when the element dose NOT exist.
+      if (!element) {
+        callback({});
+        return true;
+      } else {
+        return false;
+      }
     }
-    var text = element.textContent;
-    callback({attributes: attributes, text: text});
-    return !opt_inverse;
+
+    // Non-inversed condition: Success when the element DOSE exist.
+    if (element) {
+      var attributes = {};
+      for (var i = 0; i < element.attributes.length; i++) {
+        attributes[element.attributes[i].nodeName] =
+            element.attributes[i].nodeValue;
+      }
+      var text = element.textContent;
+      callback({attributes: attributes, text: text});
+      return true;
+    } else {
+      return false;
+    }
   });
 };
 
