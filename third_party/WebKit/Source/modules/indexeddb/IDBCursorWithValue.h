@@ -52,11 +52,7 @@ private:
     IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 };
 
-inline IDBCursorWithValue* toIDBCursorWithValue(IDBCursor* cursor)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!cursor || cursor->isCursorWithValue());
-    return static_cast<IDBCursorWithValue*>(cursor);
-}
+DEFINE_TYPE_CASTS(IDBCursorWithValue, IDBCursor, cursor, cursor->isCursorWithValue(), cursor.isCursorWithValue());
 
 } // namespace WebCore
 

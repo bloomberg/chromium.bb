@@ -236,7 +236,7 @@ WebPluginContainer* WebNode::pluginContainer() const
         if (object && object->isWidget()) {
             Widget* widget = WebCore::toRenderWidget(object)->widget();
             if (widget && widget->isPluginContainer())
-                return toPluginContainerImpl(widget);
+                return toWebPluginContainerImpl(widget);
         }
     }
     return 0;

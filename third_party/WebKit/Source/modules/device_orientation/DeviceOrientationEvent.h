@@ -62,11 +62,7 @@ private:
     RefPtr<DeviceOrientationData> m_orientation;
 };
 
-inline DeviceOrientationEvent* toDeviceOrientationEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->interfaceName() == EventNames::DeviceOrientationEvent);
-    return static_cast<DeviceOrientationEvent*>(event);
-}
+DEFINE_TYPE_CASTS(DeviceOrientationEvent, Event, event, event->interfaceName() == EventNames::DeviceOrientationEvent, event.interfaceName() == EventNames::DeviceOrientationEvent);
 
 } // namespace WebCore
 

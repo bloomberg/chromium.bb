@@ -227,11 +227,7 @@ private:
 };
 #endif
 
-inline ChromeClientImpl* toChromeClientImpl(WebCore::ChromeClient& client)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(client.isChromeClientImpl());
-    return static_cast<ChromeClientImpl*>(&client);
-}
+DEFINE_TYPE_CASTS(ChromeClientImpl, WebCore::ChromeClient, client, client->isChromeClientImpl(), client.isChromeClientImpl());
 
 } // namespace blink
 

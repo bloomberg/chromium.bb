@@ -707,8 +707,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     Page* page = parentView->frame().page();
     if (!page)
         return;
-    ChromeClientImpl* chromeClient = toChromeClientImpl(page->chrome().client());
-    chromeClient->setCursorForPlugin(cursorInfo);
+    toChromeClientImpl(page->chrome().client()).setCursorForPlugin(cursorInfo);
 }
 
 void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)

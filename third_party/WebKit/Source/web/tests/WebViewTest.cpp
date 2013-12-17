@@ -779,7 +779,7 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst)
 TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("hello_world.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html");
     webViewImpl->resize(WebSize(640, 480));
     webViewImpl->layout();
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
@@ -833,7 +833,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 {
     EnterFullscreenWebViewClient client;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("hello_world.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html", true, 0, &client));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html", true, 0, &client);
     webViewImpl->settings()->setFullScreenEnabled(true);
     webViewImpl->resize(WebSize(640, 480));
     webViewImpl->layout();
@@ -1184,7 +1184,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange)
 TEST_F(WebViewTest, ShadowRoot)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("shadow_dom_test.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initializeAndLoad(m_baseURL + "shadow_dom_test.html", true));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "shadow_dom_test.html", true);
 
     WebDocument document = webViewImpl->mainFrame()->document();
     {
@@ -1204,7 +1204,7 @@ TEST_F(WebViewTest, ShadowRoot)
 TEST_F(WebViewTest, HelperPlugin)
 {
     HelperPluginCreatingWebViewClient client;
-    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initialize(true, 0, &client));
+    WebViewImpl* webViewImpl = m_webViewHelper.initialize(true, 0, &client);
 
     WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
     client.setWebFrameClient(frame->client());
@@ -1250,7 +1250,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
 {
     ViewCreatingWebViewClient client;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
-    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initialize(true, 0, &client));
+    WebViewImpl* webViewImpl = m_webViewHelper.initialize(true, 0, &client);
     webViewImpl->page()->settings().setJavaScriptCanOpenWindowsAutomatically(true);
     WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
     frame->setName("_start");
@@ -1319,7 +1319,7 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser)
     DateTimeChooserWebViewClient client;
     std::string url = m_baseURL + "date_time_chooser.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "date_time_chooser.html");
-    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initializeAndLoad(url, true, 0, &client));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
 
     WebCore::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
 

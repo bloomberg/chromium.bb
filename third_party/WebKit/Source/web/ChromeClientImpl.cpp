@@ -578,7 +578,7 @@ void ChromeClientImpl::mouseDidMoveOverElement(
         if (object && object->isWidget()) {
             Widget* widget = toRenderWidget(object)->widget();
             if (widget && widget->isPluginContainer()) {
-                WebPluginContainerImpl* plugin = toPluginContainerImpl(widget);
+                WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
                 url = plugin->plugin()->linkAtPosition(result.roundedPointInInnerNodeFrame());
             }
         }

@@ -196,20 +196,7 @@ private:
     float scrollableAreaCurrentPos() const;
 };
 
-inline Scrollbar* toScrollbar(Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isScrollbar());
-    return static_cast<Scrollbar*>(widget);
-}
-
-inline const Scrollbar* toScrollbar(const Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isScrollbar());
-    return static_cast<const Scrollbar*>(widget);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toScrollbar(const Scrollbar*);
+DEFINE_TYPE_CASTS(Scrollbar, Widget, widget, widget->isScrollbar(), widget.isScrollbar());
 
 } // namespace WebCore
 

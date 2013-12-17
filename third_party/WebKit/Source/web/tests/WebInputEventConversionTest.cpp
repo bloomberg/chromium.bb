@@ -97,7 +97,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = toWebViewImpl(webViewHelper.initializeAndLoad(baseURL + fileName, true));
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
     webViewImpl->settings()->setViewportEnabled(true);
     int pageWidth = 640;
     int pageHeight = 480;
@@ -297,7 +297,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = toWebViewImpl(webViewHelper.initializeAndLoad(baseURL + fileName, true));
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
     webViewImpl->settings()->setViewportEnabled(true);
     int pageWidth = 640;
     int pageHeight = 480;

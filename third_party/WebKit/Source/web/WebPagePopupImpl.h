@@ -96,18 +96,10 @@ private:
     friend class PagePopupChromeClient;
 };
 
-inline WebPagePopupImpl* toWebPagePopupImpl(WebWidget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPagePopup());
-    return static_cast<WebPagePopupImpl*>(widget);
-}
-
-inline WebPagePopupImpl* toWebPagePopupImpl(WebCore::PagePopup* popup)
-{
-    // WebPagePopupImpl is the only implementation of WebCore::PagePopup, so
-    // no further checking required.
-    return static_cast<WebPagePopupImpl*>(popup);
-}
+DEFINE_TYPE_CASTS(WebPagePopupImpl, WebWidget, widget, widget->isPagePopup(), widget.isPagePopup());
+// WebPagePopupImpl is the only implementation of WebCore::PagePopup, so no
+// further checking required.
+DEFINE_TYPE_CASTS(WebPagePopupImpl, WebCore::PagePopup, popup, true, true);
 
 } // namespace blink
 #endif // WebPagePopupImpl_h

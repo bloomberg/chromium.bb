@@ -86,11 +86,7 @@ private:
     friend class HelperPluginChromeClient;
 };
 
-inline WebHelperPluginImpl* toWebHelperPluginImpl(WebWidget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isHelperPlugin());
-    return static_cast<WebHelperPluginImpl*>(widget);
-}
+DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebWidget, widget, widget->isHelperPlugin(), widget.isHelperPlugin());
 
 } // namespace blink
 

@@ -166,11 +166,7 @@ private:
     WebFrameImpl* m_webFrame;
 };
 
-inline FrameLoaderClientImpl* toFrameLoaderClientImpl(WebCore::FrameLoaderClient* client)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!client || client->isFrameLoaderClientImpl());
-    return static_cast<FrameLoaderClientImpl*>(client);
-}
+DEFINE_TYPE_CASTS(FrameLoaderClientImpl, WebCore::FrameLoaderClient, client, client->isFrameLoaderClientImpl(), client.isFrameLoaderClientImpl());
 
 } // namespace blink
 

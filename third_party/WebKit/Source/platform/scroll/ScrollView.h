@@ -341,20 +341,7 @@ private:
     int pageStep(ScrollbarOrientation) const;
 }; // class ScrollView
 
-inline ScrollView* toScrollView(Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isScrollView());
-    return static_cast<ScrollView*>(widget);
-}
-
-inline const ScrollView* toScrollView(const Widget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isScrollView());
-    return static_cast<const ScrollView*>(widget);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toScrollView(const ScrollView*);
+DEFINE_TYPE_CASTS(ScrollView, Widget, widget, widget->isScrollView(), widget.isScrollView());
 
 } // namespace WebCore
 

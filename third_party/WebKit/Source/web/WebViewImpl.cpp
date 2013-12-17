@@ -3190,7 +3190,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
     if (object && object->isWidget()) {
         Widget* widget = toRenderWidget(object)->widget();
         if (widget && widget->isPluginContainer()) {
-            WebPluginContainerImpl* plugin = toPluginContainerImpl(widget);
+            WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
             switch (action.type) {
             case WebPluginAction::Rotate90Clockwise:
                 plugin->plugin()->rotateView(WebPlugin::RotationType90Clockwise);

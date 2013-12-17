@@ -134,18 +134,10 @@ public:
     WebCore::FramelessScrollView* m_widget;
 };
 
-inline WebPopupMenuImpl* toWebPopupMenuImpl(WebWidget* widget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPopupMenu());
-    return static_cast<WebPopupMenuImpl*>(widget);
-}
-
-inline WebPopupMenuImpl* toWebPopupMenuImpl(WebCore::FramelessScrollViewClient* client)
-{
-    // WebPopupMenuImpl is the only implementation of FramelessScrollViewClient,
-    // so no need for further checking.
-    return static_cast<WebPopupMenuImpl*>(client);
-}
+DEFINE_TYPE_CASTS(WebPopupMenuImpl, WebWidget, widget, widget->isPopupMenu(), widget.isPopupMenu());
+// WebPopupMenuImpl is the only implementation of FramelessScrollViewClient, so
+// no need for further checking.
+DEFINE_TYPE_CASTS(WebPopupMenuImpl, WebCore::FramelessScrollViewClient, client, true, true);
 
 } // namespace blink
 

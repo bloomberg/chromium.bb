@@ -274,7 +274,7 @@ WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(Frame* frame)
     if (!frame->document() || !frame->document()->isPluginDocument())
         return 0;
     PluginDocument* pluginDocument = toPluginDocument(frame->document());
-    return toPluginContainerImpl(pluginDocument->pluginWidget());
+    return toWebPluginContainerImpl(pluginDocument->pluginWidget());
 }
 
 WebPluginContainerImpl* WebFrameImpl::pluginContainerFromNode(WebCore::Frame* frame, const WebNode& node)
@@ -282,7 +282,7 @@ WebPluginContainerImpl* WebFrameImpl::pluginContainerFromNode(WebCore::Frame* fr
     WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame);
     if (pluginContainer)
         return pluginContainer;
-    return toPluginContainerImpl(node.pluginContainer());
+    return toWebPluginContainerImpl(node.pluginContainer());
 }
 
 // Simple class to override some of PrintContext behavior. Some of the methods
@@ -1385,7 +1385,7 @@ int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& c
         pluginContainer = pluginContainerFromFrame(frame());
     } else {
         // We only support printing plugin nodes for now.
-        pluginContainer = toPluginContainerImpl(constrainToNode.pluginContainer());
+        pluginContainer = toWebPluginContainerImpl(constrainToNode.pluginContainer());
     }
 
     if (pluginContainer && pluginContainer->supportsPaginatedPrint())
@@ -1431,7 +1431,7 @@ void WebFrameImpl::printEnd()
 
 bool WebFrameImpl::isPrintScalingDisabledForPlugin(const WebNode& node)
 {
-    WebPluginContainerImpl* pluginContainer =  node.isNull() ? pluginContainerFromFrame(frame()) : toPluginContainerImpl(node.pluginContainer());
+    WebPluginContainerImpl* pluginContainer =  node.isNull() ? pluginContainerFromFrame(frame()) : toWebPluginContainerImpl(node.pluginContainer());
 
     if (!pluginContainer || !pluginContainer->supportsPaginatedPrint())
         return false;
