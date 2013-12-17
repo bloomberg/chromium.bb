@@ -15232,11 +15232,8 @@ Do you accept?
     <message name="IDS_RESET_PROFILE_SETTINGS_EXTENSIONS" desc="Extensions tag in the feedback details of the Reset Profile Settings dialog">
       Extensions
     </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_SHORTCUTS" desc="List of Chrome shortcuts in the feedback details of the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
-      Shortcut targets
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_SHORTCUTS" desc="A placeholder for the actual shortcuts in the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
-      Processing shortcuts...
+    <message name="IDS_RESET_PROFILE_SETTINGS_SHORTCUTS" desc="List of Chrome shortcuts in the feedback details of the Reset Profile Settings dialog">
+      Shortcuts
     </message>
 
     <!-- Identity internals strings -->
