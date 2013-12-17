@@ -690,6 +690,9 @@ const char kEnableNetworkTime[]             = "enable-network-time";
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 
+// Enable auto-reload of error pages if offline.
+const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
+
 // Enables omnibox auto-completion when IME is active.  The auto-completion for
 // IME is shown in the same style as the normal(non-IME) auto-completion.
 const char kEnableOmniboxAutoCompletionForIme[] =

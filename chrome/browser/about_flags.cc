@@ -1502,6 +1502,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableOfflineCacheAccess)
   },
   {
+    "enable-offline-auto-reload",
+    IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME,
+    IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableOfflineAutoReload)
+  },
+  {
     "default-tile-width",
     IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME,
     IDS_FLAGS_DEFAULT_TILE_WIDTH_DESCRIPTION,
