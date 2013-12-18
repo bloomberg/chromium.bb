@@ -34,12 +34,22 @@ class GnomeKeyringLoader {
 
 // Call a given parameter with the name of each function we use from GNOME
 // Keyring. Make sure to adjust the unit test if you change these.
-#define GNOME_KEYRING_FOR_EACH_FUNC(F)          \
-  F(is_available)                               \
-  F(store_password)                             \
-  F(delete_password)                            \
-  F(find_itemsv)                                \
+// The list of functions is divided into those we plan to mock in the unittest,
+// and those which we use without mocking in the test.
+#define GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(F)      \
+  F(is_available)                                  \
+  F(store_password)                                \
+  F(delete_password)                               \
+  F(find_items)                                    \
   F(result_to_message)
+#define GNOME_KEYRING_FOR_EACH_NON_MOCKED_FUNC(F)  \
+  F(attribute_list_free)                           \
+  F(attribute_list_new)                            \
+  F(attribute_list_append_string)                  \
+  F(attribute_list_append_uint32)
+#define GNOME_KEYRING_FOR_EACH_FUNC(F)             \
+  GNOME_KEYRING_FOR_EACH_NON_MOCKED_FUNC(F)        \
+  GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(F)
 
 // Declare the actual function pointers that we'll use in client code.
 #define GNOME_KEYRING_DECLARE_POINTER(name) \

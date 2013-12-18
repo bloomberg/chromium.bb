@@ -185,31 +185,30 @@ gpointer mock_gnome_keyring_delete_password(
   return NULL;
 }
 
-gpointer mock_gnome_keyring_find_itemsv(
+gpointer mock_gnome_keyring_find_items(
     GnomeKeyringItemType type,
+    GnomeKeyringAttributeList* attributes,
     GnomeKeyringOperationGetListCallback callback,
     gpointer data,
-    GDestroyNotify destroy_data,
-    ...) {
+    GDestroyNotify destroy_data) {
   MockKeyringItem::attribute_query query;
-  va_list ap;
-  va_start(ap, destroy_data);
-  char* name;
-  while ((name = va_arg(ap, gchar*))) {
-    // Really a GnomeKeyringAttributeType, but promoted to int through ...
-    if (va_arg(ap, int) == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
-      query.push_back(make_pair(std::string(name),
-          MockKeyringItem::ItemAttribute(va_arg(ap, gchar*))));
-      VLOG(1) << "Querying with item attribute " << name
+  for (size_t i = 0; i < attributes->len; ++i) {
+    GnomeKeyringAttribute attribute =
+        g_array_index(attributes, GnomeKeyringAttribute, i);
+    if (attribute.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
+      query.push_back(
+          make_pair(std::string(attribute.name),
+                    MockKeyringItem::ItemAttribute(attribute.value.string)));
+      VLOG(1) << "Querying with item attribute " << attribute.name
               << ", value '" << query.back().second.value_string << "'";
     } else {
-      query.push_back(make_pair(std::string(name),
-          MockKeyringItem::ItemAttribute(va_arg(ap, uint32_t))));
-      VLOG(1) << "Querying with item attribute " << name
-              << ", value " << query.back().second.value_uint32;
+      query.push_back(
+          make_pair(std::string(attribute.name),
+                    MockKeyringItem::ItemAttribute(attribute.value.integer)));
+      VLOG(1) << "Querying with item attribute " << attribute.name << ", value "
+              << query.back().second.value_uint32;
     }
   }
-  va_end(ap);
   // Find matches and add them to a list of results.
   GList* results = NULL;
   for (size_t i = 0; i < mock_keyring_items.size(); ++i) {
@@ -262,9 +261,11 @@ const gchar* mock_gnome_keyring_result_to_message(GnomeKeyringResult res) {
 class MockGnomeKeyringLoader : public GnomeKeyringLoader {
  public:
   static bool LoadMockGnomeKeyring() {
+    if (!LoadGnomeKeyring())
+      return false;
 #define GNOME_KEYRING_ASSIGN_POINTER(name) \
   gnome_keyring_##name = &mock_gnome_keyring_##name;
-    GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
+    GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
 #undef GNOME_KEYRING_ASSIGN_POINTER
     keyring_loaded = true;
     // Reset the state of the mock library.
@@ -286,7 +287,7 @@ class NativeBackendGnomeTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(db_thread_.Start());
 
-    MockGnomeKeyringLoader::LoadMockGnomeKeyring();
+    ASSERT_TRUE(MockGnomeKeyringLoader::LoadMockGnomeKeyring());
 
     form_google_.origin = GURL("http://www.google.com/");
     form_google_.action = GURL("http://www.google.com/login");

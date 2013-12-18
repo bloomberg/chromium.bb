@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -137,8 +138,8 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
 // the consumer.
 void ConvertFormList(GList* found,
                      NativeBackendGnome::PasswordFormList* forms) {
-  GList* element = g_list_first(found);
-  while (element != NULL) {
+  for (GList* element = g_list_first(found); element != NULL;
+       element = g_list_next(element)) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
     GnomeKeyringAttributeList* attrs = data->attributes;
 
@@ -153,8 +154,6 @@ void ConvertFormList(GList* found,
     } else {
       LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
     }
-
-    element = g_list_next(element);
   }
 }
 
@@ -219,6 +218,27 @@ class GKRMethod : public GnomeKeyringLoader {
   GnomeKeyringResult WaitResult(PasswordFormList* forms);
 
  private:
+  struct GnomeKeyringAttributeListFreeDeleter {
+    inline void operator()(void* list) const {
+      gnome_keyring_attribute_list_free(
+          static_cast<GnomeKeyringAttributeList*>(list));
+    }
+  };
+
+  typedef scoped_ptr<GnomeKeyringAttributeList,
+                     GnomeKeyringAttributeListFreeDeleter> ScopedAttributeList;
+
+  // Helper methods to abbreviate Gnome Keyring long API names.
+  static void AppendString(ScopedAttributeList* list,
+                           const char* name,
+                           const char* value);
+  static void AppendString(ScopedAttributeList* list,
+                           const char* name,
+                           const std::string& value);
+  static void AppendUint32(ScopedAttributeList* list,
+                           const char* name,
+                           guint32 value);
+
   // All these callbacks are called on UI thread.
   static void OnOperationDone(GnomeKeyringResult result, gpointer data);
 
@@ -265,50 +285,37 @@ void GKRMethod::AddLoginSearch(const PasswordForm& form,
                                const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords to update.
-  gnome_keyring_find_itemsv(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      OnOperationGetList,
-      this,  // data
-      NULL,  // destroy_data
-      "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.origin.spec().c_str(),
-      "username_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.username_element).c_str(),
-      "username_value", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.username_value).c_str(),
-      "password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.password_element).c_str(),
-      "submit_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.submit_element).c_str(),
-      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.signon_realm.c_str(),
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      app_string,
-      NULL);
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  AppendString(&attrs, "origin_url", form.origin.spec());
+  AppendString(&attrs, "username_element", UTF16ToUTF8(form.username_element));
+  AppendString(&attrs, "username_value", UTF16ToUTF8(form.username_value));
+  AppendString(&attrs, "password_element", UTF16ToUTF8(form.password_element));
+  AppendString(&attrs, "submit_element", UTF16ToUTF8(form.submit_element));
+  AppendString(&attrs, "signon_realm", form.signon_realm);
+  AppendString(&attrs, "application", app_string);
+  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
+                           attrs.get(),
+                           OnOperationGetList,
+                           /*data=*/this,
+                           /*destroy_data=*/NULL);
 }
 
 void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
                                   const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords to update.
-  gnome_keyring_find_itemsv(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      OnOperationGetList,
-      this,  // data
-      NULL,  // destroy_data
-      "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.origin.spec().c_str(),
-      "username_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.username_element).c_str(),
-      "username_value", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.username_value).c_str(),
-      "password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.password_element).c_str(),
-      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.signon_realm.c_str(),
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      app_string,
-      NULL);
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  AppendString(&attrs, "origin_url", form.origin.spec());
+  AppendString(&attrs, "username_element", UTF16ToUTF8(form.username_element));
+  AppendString(&attrs, "username_value", UTF16ToUTF8(form.username_value));
+  AppendString(&attrs, "password_element", UTF16ToUTF8(form.password_element));
+  AppendString(&attrs, "signon_realm", form.signon_realm);
+  AppendString(&attrs, "application", app_string);
+  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
+                           attrs.get(),
+                           OnOperationGetList,
+                           /*data=*/this,
+                           /*destroy_data=*/NULL);
 }
 
 void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
@@ -333,46 +340,41 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
 void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
-  gnome_keyring_find_itemsv(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      OnOperationGetList,
-      this,  // data
-      NULL,  // destroy_data
-      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.signon_realm.c_str(),
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      app_string,
-      NULL);
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  AppendString(&attrs, "signon_realm", form.signon_realm);
+  AppendString(&attrs, "application", app_string);
+  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
+                           attrs.get(),
+                           OnOperationGetList,
+                           /*data=*/this,
+                           /*destroy_data=*/NULL);
 }
 
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
                               const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
-  gnome_keyring_find_itemsv(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      OnOperationGetList,
-      this,  // data
-      NULL,  // destroy_data
-      "blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32,
-      blacklisted_by_user,
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      app_string,
-      NULL);
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  AppendUint32(&attrs, "blacklisted_by_user", blacklisted_by_user);
+  AppendString(&attrs, "application", app_string);
+  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
+                           attrs.get(),
+                           OnOperationGetList,
+                           /*data=*/this,
+                           /*destroy_data=*/NULL);
 }
 
 void GKRMethod::GetAllLogins(const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
-  gnome_keyring_find_itemsv(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      OnOperationGetList,
-      this,  // data
-      NULL,  // destroy_data
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      app_string,
-      NULL);
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  AppendString(&attrs, "application", app_string);
+  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
+                           attrs.get(),
+                           OnOperationGetList,
+                           /*data=*/this,
+                           /*destroy_data=*/NULL);
 }
 
 GnomeKeyringResult GKRMethod::WaitResult() {
@@ -393,6 +395,27 @@ GnomeKeyringResult GKRMethod::WaitResult(PasswordFormList* forms) {
     forms_.clear();
   }
   return result_;
+}
+
+// static
+void GKRMethod::AppendString(GKRMethod::ScopedAttributeList* list,
+                             const char* name,
+                             const char* value) {
+  gnome_keyring_attribute_list_append_string(list->get(), name, value);
+}
+
+// static
+void GKRMethod::AppendString(GKRMethod::ScopedAttributeList* list,
+                             const char* name,
+                             const std::string& value) {
+  AppendString(list, name, value.c_str());
+}
+
+// static
+void GKRMethod::AppendUint32(GKRMethod::ScopedAttributeList* list,
+                             const char* name,
+                             guint32 value) {
+  gnome_keyring_attribute_list_append_uint32(list->get(), name, value);
 }
 
 // static
