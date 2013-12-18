@@ -39,14 +39,14 @@ class PPAPI_PROXY_EXPORT NaClMessageScanner {
                    std::vector<SerializedHandle>* handles,
                    scoped_ptr<IPC::Message>* new_msg_ptr);
 
-  // This method informs NaClMessageScanner that a sync message is being sent
-  // so that it can associate reply messages with their type.
-  //
-  // Users of NaClMessageScanner must call this when they send a synchronous
-  // message, otherwise NaClMessageScanner won't scan replies.
-  void RegisterSyncMessageForReply(const IPC::Message& msg);
+  // Scans an untrusted message for items that require special handling. If the
+  // message had to be rewritten, sets |new_msg_ptr| to the new message.
+  void ScanUntrustedMessage(const IPC::Message& untrusted_msg,
+                            scoped_ptr<IPC::Message>* new_msg_ptr);
 
  private:
+  void RegisterSyncMessageForReply(const IPC::Message& msg);
+
   // When we send a synchronous message (from untrusted to trusted), we store
   // its type here, so that later we can associate the reply with its type
   // for scanning.

@@ -285,9 +285,16 @@ bool NaClMessageScanner::ScanMessage(
   return true;
 }
 
-void NaClMessageScanner::RegisterSyncMessageForReply(const IPC::Message& msg) {
-  DCHECK(msg.is_sync());
+void NaClMessageScanner::ScanUntrustedMessage(
+    const IPC::Message& untrusted_msg,
+    scoped_ptr<IPC::Message>* new_msg_ptr) {
+  if (untrusted_msg.is_sync())
+    RegisterSyncMessageForReply(untrusted_msg);
+  // TODO(bbudge) Add message auditing for FileSystem and FileIO resources when
+  // we implement Write on the plugin side of the proxy. See crbug.com/194304.
+}
 
+void NaClMessageScanner::RegisterSyncMessageForReply(const IPC::Message& msg) {
   int msg_id = IPC::SyncMessage::GetMessageId(msg);
   DCHECK(pending_sync_msgs_.find(msg_id) == pending_sync_msgs_.end());
 

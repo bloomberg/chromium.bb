@@ -538,8 +538,11 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
     return false;
   }
 
-  if (msg->is_sync())
-    locked_data_.nacl_msg_scanner_.RegisterSyncMessageForReply(*msg);
+  // Scan all untrusted messages.
+  scoped_ptr<IPC::Message> new_msg;
+  locked_data_.nacl_msg_scanner_.ScanUntrustedMessage(*msg, &new_msg);
+  if (new_msg)
+    msg.reset(new_msg.release());
 
   // Actual send must be done on the I/O thread.
   task_runner_->PostTask(FROM_HERE,
