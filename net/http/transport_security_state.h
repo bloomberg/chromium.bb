@@ -95,10 +95,16 @@ class NET_EXPORT TransportSecurityState
 
     UpgradeMode upgrade_mode;
 
-    // The absolute time (UTC) when this DomainState was first created.
+    // The absolute time (UTC) when the |upgrade_mode| was observed.
     //
-    // Static entries do not have a created time.
-    base::Time created;
+    // TODO(palmer): Perhaps static entries should have an "observed" time.
+    base::Time sts_observed;
+
+    // The absolute time (UTC) when the |dynamic_spki_hashes| (and other
+    // |dynamic_*| state) were observed.
+    //
+    // TODO(palmer): Perhaps static entries should have an "observed" time.
+    base::Time pkp_observed;
 
     // The absolute time (UTC) when the |upgrade_mode|, if set to
     // UPGRADE_ALWAYS, downgrades to UPGRADE_NEVER.

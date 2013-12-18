@@ -79,6 +79,8 @@ const char kStrict[] = "strict";
 const char kDefault[] = "default";
 const char kPinningOnly[] = "pinning-only";
 const char kCreated[] = "created";
+const char kStsObserved[] = "sts_observed";
+const char kPkpObserved[] = "pkp_observed";
 
 std::string LoadState(const base::FilePath& path) {
   std::string result;
@@ -148,7 +150,8 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
                            domain_state.sts_include_subdomains);
     serialized->SetBoolean(kPkpIncludeSubdomains,
                            domain_state.pkp_include_subdomains);
-    serialized->SetDouble(kCreated, domain_state.created.ToDoubleT());
+    serialized->SetDouble(kStsObserved, domain_state.sts_observed.ToDoubleT());
+    serialized->SetDouble(kPkpObserved, domain_state.pkp_observed.ToDoubleT());
     serialized->SetDouble(kExpiry, domain_state.upgrade_expiry.ToDoubleT());
     serialized->SetDouble(kDynamicSPKIHashesExpiry,
                           domain_state.dynamic_spki_hashes_expiry.ToDoubleT());
@@ -211,7 +214,6 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     }
 
     std::string mode_string;
-    double created;
     double expiry;
     double dynamic_spki_hashes_expiry = 0.0;
     TransportSecurityState::DomainState domain_state;
@@ -271,13 +273,27 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     domain_state.upgrade_expiry = base::Time::FromDoubleT(expiry);
     domain_state.dynamic_spki_hashes_expiry =
         base::Time::FromDoubleT(dynamic_spki_hashes_expiry);
-    if (parsed->GetDouble(kCreated, &created)) {
-      domain_state.created = base::Time::FromDoubleT(created);
+
+    double sts_observed;
+    double pkp_observed;
+    if (parsed->GetDouble(kStsObserved, &sts_observed)) {
+      domain_state.sts_observed = base::Time::FromDoubleT(sts_observed);
+    } else if (parsed->GetDouble(kCreated, &sts_observed)) {
+      // kCreated is a legacy synonym for both kStsObserved and kPkpObserved.
+      domain_state.sts_observed = base::Time::FromDoubleT(sts_observed);
     } else {
-      // We're migrating an old entry with no creation date. Make sure we
+      // We're migrating an old entry with no observation date. Make sure we
       // write the new date back in a reasonable time frame.
       dirtied = true;
-      domain_state.created = base::Time::Now();
+      domain_state.sts_observed = base::Time::Now();
+    }
+    if (parsed->GetDouble(kPkpObserved, &pkp_observed)) {
+      domain_state.pkp_observed = base::Time::FromDoubleT(pkp_observed);
+    } else if (parsed->GetDouble(kCreated, &pkp_observed)) {
+      domain_state.pkp_observed = base::Time::FromDoubleT(pkp_observed);
+    } else {
+      dirtied = true;
+      domain_state.pkp_observed = base::Time::Now();
     }
 
     if (domain_state.upgrade_expiry <= current_time &&

@@ -118,6 +118,8 @@ var HSTSView = (function() {
       var s = addNode(this.queryOutputDiv_, 'span');
       s.innerHTML = '<b>Found</b>: mode: ';
 
+      // TODO(palmer): Combine these 2-line pairs into 1:
+      // addNodeWithText(this.queryOutputDiv_, 'tt', results.sts_observed);
       var t = addNode(this.queryOutputDiv_, 'tt');
       t.textContent = modeToString(result.mode);
 
@@ -130,6 +132,16 @@ var HSTSView = (function() {
 
       t = addNode(this.queryOutputDiv_, 'tt');
       t.textContent = result.pkp_subdomains;
+
+      addTextNode(this.queryOutputDiv_, ' sts_observed:');
+
+      t = addNode(this.queryOutputDiv_, 'tt');
+      t.textContent = result.sts_observed;
+
+      addTextNode(this.queryOutputDiv_, ' pkp_observed:');
+
+      t = addNode(this.queryOutputDiv_, 'tt');
+      t.textContent = result.pkp_observed;
 
       addTextNode(this.queryOutputDiv_, ' domain:');
 

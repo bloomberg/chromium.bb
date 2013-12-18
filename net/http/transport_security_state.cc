@@ -199,15 +199,22 @@ void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
   DCHECK(CalledOnValidThread());
 
   bool dirtied = false;
-
   DomainStateMap::iterator i = enabled_hosts_.begin();
   while (i != enabled_hosts_.end()) {
-    if (i->second.created >= time) {
+    if (i->second.sts_observed >= time && i->second.pkp_observed >= time) {
       dirtied = true;
       enabled_hosts_.erase(i++);
-    } else {
-      i++;
+      continue;
     }
+
+    if (i->second.sts_observed >= time) {
+      dirtied = true;
+      i->second.upgrade_mode = DomainState::MODE_DEFAULT;
+    } else if (i->second.pkp_observed >= time) {
+      dirtied = true;
+      i->second.dynamic_spki_hashes.clear();
+    }
+    ++i;
   }
 
   if (dirtied)
@@ -614,7 +621,7 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
       domain_state.upgrade_mode = DomainState::MODE_DEFAULT;
     else
       domain_state.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
-    domain_state.created = now;
+    domain_state.sts_observed = now;
     domain_state.upgrade_expiry = now + max_age;
     EnableHost(host, domain_state);
     return true;
@@ -635,7 +642,7 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
                       &max_age, &domain_state.pkp_include_subdomains,
                       &domain_state.dynamic_spki_hashes)) {
     // TODO(palmer): http://crbug.com/243865 handle max-age == 0.
-    domain_state.created = now;
+    domain_state.pkp_observed = now;
     domain_state.dynamic_spki_hashes_expiry = now + max_age;
     EnableHost(host, domain_state);
     return true;
@@ -657,7 +664,7 @@ bool TransportSecurityState::AddHSTS(const std::string& host,
   if (i != enabled_hosts_.end())
     domain_state = i->second;
 
-  domain_state.created = base::Time::Now();
+  domain_state.sts_observed = base::Time::Now();
   domain_state.sts_include_subdomains = include_subdomains;
   domain_state.upgrade_expiry = expiry;
   domain_state.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
@@ -680,7 +687,7 @@ bool TransportSecurityState::AddHPKP(const std::string& host,
   if (i != enabled_hosts_.end())
     domain_state = i->second;
 
-  domain_state.created = base::Time::Now();
+  domain_state.pkp_observed = base::Time::Now();
   domain_state.pkp_include_subdomains = include_subdomains;
   domain_state.dynamic_spki_hashes_expiry = expiry;
   domain_state.dynamic_spki_hashes = hashes;
@@ -825,9 +832,11 @@ void TransportSecurityState::AddOrUpdateEnabledHosts(
 
 TransportSecurityState::DomainState::DomainState()
     : upgrade_mode(MODE_DEFAULT),
-      created(base::Time::Now()),
       sts_include_subdomains(false),
       pkp_include_subdomains(false) {
+  base::Time now(base::Time::Now());
+  sts_observed = now;
+  pkp_observed = now;
 }
 
 TransportSecurityState::DomainState::~DomainState() {

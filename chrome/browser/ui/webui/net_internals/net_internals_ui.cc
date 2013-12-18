@@ -1225,6 +1225,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
         result->SetInteger("mode", static_cast<int>(state.upgrade_mode));
         result->SetBoolean("sts_subdomains", state.sts_include_subdomains);
         result->SetBoolean("pkp_subdomains", state.pkp_include_subdomains);
+        result->SetDouble("sts_observed", state.sts_observed.ToDoubleT());
+        result->SetDouble("pkp_observed", state.pkp_observed.ToDoubleT());
         result->SetString("domain", state.domain);
         result->SetDouble("expiry", state.upgrade_expiry.ToDoubleT());
         result->SetDouble("dynamic_spki_hashes_expiry",
