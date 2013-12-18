@@ -95,13 +95,26 @@ def CheckX86Image(api_level=DEFAULT_ANDROID_API_LEVEL):
 
 
 def CheckKVM():
-  """Check if KVM is enabled.
+  """Quickly check whether KVM is enabled.
 
   Returns:
-    True if kvm-ok returns 0 (already enabled)
+    True iff /dev/kvm exists (Linux only).
+  """
+  return os.path.exists('/dev/kvm')
+
+
+def RunKvmOk():
+  """Run kvm-ok as root to check that KVM is properly enabled after installation
+     of the required packages.
+
+  Returns:
+    True iff KVM is enabled (/dev/kvm exists). On failure, returns False
+    but also print detailed information explaining why KVM isn't enabled
+    (e.g. CPU doesn't support it, or BIOS disabled it).
   """
   try:
-    return not cmd_helper.RunCmd(['kvm-ok'])
+    # Note: kvm-ok is in /usr/sbin, so always use 'sudo' to run it.
+    return not cmd_helper.RunCmd(['sudo', 'kvm-ok'])
   except OSError:
     logging.info('kvm-ok not installed')
     return False
@@ -136,11 +149,10 @@ def InstallKVM():
   # TODO(navabi): Use modprobe kvm-amd on AMD processors.
   rc = cmd_helper.RunCmd(['sudo', 'modprobe', 'kvm-intel'])
   if rc:
-    logging.critical('ERROR: Did not add KVM module to Linux Kernal. Make sure '
+    logging.critical('ERROR: Did not add KVM module to Linux Kernel. Make sure '
                      'hardware virtualization is enabled in BIOS.')
   # Now check to ensure KVM acceleration can be used.
-  rc = cmd_helper.RunCmd(['kvm-ok'])
-  if rc:
+  if not RunKvmOk():
     logging.critical('ERROR: Can not use KVM acceleration. Make sure hardware '
                      'virtualization is enabled in BIOS (i.e. Intel VT-x or '
                      'AMD SVM).')
