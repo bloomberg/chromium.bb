@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -21,6 +22,7 @@
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -45,12 +47,64 @@ const base::FilePath::CharType kServiceLogin[] =
 const char kAuthHeaderBearer[] = "Bearer ";
 const char kAuthHeaderOAuth[] = "OAuth ";
 
+typedef std::map<std::string, std::string> CookieMap;
+
+// Parses cookie name-value map our of |request|.
+CookieMap GetRequestCookies(const HttpRequest& request) {
+  CookieMap result;
+  std::map<std::string, std::string>::const_iterator iter =
+           request.headers.find("Cookie");
+  if (iter != request.headers.end()) {
+    std::vector<std::string> cookie_nv_pairs;
+    base::SplitString(iter->second, ' ', &cookie_nv_pairs);
+    for(std::vector<std::string>::const_iterator cookie_line =
+            cookie_nv_pairs.begin();
+        cookie_line != cookie_nv_pairs.end();
+        ++cookie_line) {
+      std::vector<std::string> name_value;
+      base::SplitString(*cookie_line, '=', &name_value);
+      if (name_value.size() != 2)
+        continue;
+
+      std::string value = name_value[1];
+      if (value.size() && value[value.size() - 1] == ';')
+        value = value.substr(0, value.size() -1);
+
+      result.insert(std::make_pair(name_value[0], value));
+    }
+  }
+  return result;
+}
+
+// Extracts the |access_token| from authorization header of |request|.
+bool GetAccessToken(const HttpRequest& request,
+                    const char* auth_token_prefix,
+                    std::string* access_token) {
+  std::map<std::string, std::string>::const_iterator auth_header_entry =
+      request.headers.find("Authorization");
+  if (auth_header_entry != request.headers.end()) {
+    if (StartsWithASCII(auth_header_entry->second, auth_token_prefix, true)) {
+      *access_token = auth_header_entry->second.substr(
+          strlen(auth_token_prefix));
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }
 
 FakeGaia::AccessTokenInfo::AccessTokenInfo()
   : expires_in(3600) {}
 
 FakeGaia::AccessTokenInfo::~AccessTokenInfo() {}
+
+FakeGaia::MergeSessionParams::MergeSessionParams() {
+}
+
+FakeGaia::MergeSessionParams::~MergeSessionParams() {
+}
 
 FakeGaia::FakeGaia() {
   base::FilePath source_root_dir;
@@ -62,18 +116,9 @@ FakeGaia::FakeGaia() {
 
 FakeGaia::~FakeGaia() {}
 
-void FakeGaia::SetAuthTokens(const std::string& auth_code,
-                             const std::string& refresh_token,
-                             const std::string& access_token,
-                             const std::string& gaia_uber_token,
-                             const std::string& session_sid_cookie,
-                             const std::string& session_lsid_cookie) {
-  fake_auth_code_ = auth_code;
-  fake_refresh_token_ = refresh_token;
-  fake_access_token_ = access_token;
-  fake_gaia_uber_token_ = gaia_uber_token;
-  fake_session_sid_cookie_ = session_sid_cookie;
-  fake_session_lsid_cookie_ = session_lsid_cookie;
+void FakeGaia::SetMergeSessionParams(
+    const MergeSessionParams& params) {
+  merge_session_params_ = params;
 }
 
 void FakeGaia::Initialize() {
@@ -117,18 +162,36 @@ void FakeGaia::Initialize() {
 void FakeGaia::HandleProgramaticAuth(
     const HttpRequest& request,
     BasicHttpResponse* http_response) {
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+  if (merge_session_params_.auth_code.empty()) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
+  }
+
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   std::string scope;
   if (!GetQueryParameter(request.content, "scope", &scope) ||
       gaia_urls->oauth1_login_scope() != scope) {
-    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
+  }
+
+  CookieMap cookies = GetRequestCookies(request);
+  CookieMap::const_iterator sid_iter = cookies.find("SID");
+  if (sid_iter == cookies.end() ||
+      sid_iter->second != merge_session_params_.auth_sid_cookie) {
+    LOG(ERROR) << "/o/oauth2/programmatic_auth missing SID cookie";
+    return;
+  }
+  CookieMap::const_iterator lsid_iter = cookies.find("LSID");
+  if (lsid_iter == cookies.end() ||
+      lsid_iter->second != merge_session_params_.auth_lsid_cookie) {
+    LOG(ERROR) << "/o/oauth2/programmatic_auth missing LSID cookie";
     return;
   }
 
   std::string client_id;
   if (!GetQueryParameter(request.content, "client_id", &client_id) ||
       gaia_urls->oauth2_chrome_client_id() != client_id) {
-    http_response->set_code(net::HTTP_BAD_REQUEST);
     return;
   }
 
@@ -136,7 +199,7 @@ void FakeGaia::HandleProgramaticAuth(
       "Set-Cookie",
       base::StringPrintf(
           "oauth_code=%s; Path=/o/GetOAuth2Token; Secure; HttpOnly;",
-          fake_auth_code_.c_str()));
+          merge_session_params_.auth_code.c_str()));
   http_response->set_code(net::HTTP_OK);
   http_response->set_content_type("text/html");
 }
@@ -150,7 +213,12 @@ void FakeGaia::HandleServiceLogin(const HttpRequest& request,
 
 void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
                                 BasicHttpResponse* http_response) {
-  http_response->set_code(net::HTTP_BAD_REQUEST);
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+  if (merge_session_params_.gaia_uber_token.empty()) {
+    http_response->set_code(net::HTTP_FORBIDDEN);
+    return;
+  }
+
   std::string access_token;
   if (!GetAccessToken(request, kAuthHeaderOAuth, &access_token)) {
     LOG(ERROR) << "/OAuthLogin missing access token in the header";
@@ -169,7 +237,7 @@ void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
   std::string issue_uberauth;
   if (GetQueryParameter(request_query, "issueuberauth", &issue_uberauth) &&
       issue_uberauth == "1") {
-    http_response->set_content(fake_gaia_uber_token_);
+    http_response->set_content(merge_session_params_.gaia_uber_token);
     http_response->set_code(net::HTTP_OK);
     // Issue GAIA uber token.
   } else {
@@ -179,11 +247,16 @@ void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
 
 void FakeGaia::HandleMergeSession(const HttpRequest& request,
                                   BasicHttpResponse* http_response) {
-  http_response->set_code(net::HTTP_BAD_REQUEST);
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+  if (merge_session_params_.session_sid_cookie.empty() ||
+      merge_session_params_.session_lsid_cookie.empty()) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
+  }
 
   std::string uber_token;
   if (!GetQueryParameter(request.content, "uberauth", &uber_token) ||
-      uber_token != fake_gaia_uber_token_) {
+      uber_token != merge_session_params_.gaia_uber_token) {
     LOG(ERROR) << "Missing or invalid 'uberauth' param in /MergeSession call";
     return;
   }
@@ -203,9 +276,13 @@ void FakeGaia::HandleMergeSession(const HttpRequest& request,
   http_response->AddCustomHeader(
       "Set-Cookie",
       base::StringPrintf(
-          "SID=%s; LSID=%s; Path=/; Secure; HttpOnly;",
-          fake_session_sid_cookie_.c_str(),
-          fake_session_lsid_cookie_.c_str()));
+          "SID=%s; Path=/; HttpOnly;",
+          merge_session_params_.session_sid_cookie.c_str()));
+  http_response->AddCustomHeader(
+      "Set-Cookie",
+      base::StringPrintf(
+          "LSID=%s; Path=/; HttpOnly;",
+          merge_session_params_.session_lsid_cookie.c_str()));
   // TODO(zelidrag): Not used now.
   http_response->set_content("OK");
   http_response->set_code(net::HTTP_OK);
@@ -227,6 +304,20 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
     url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
     url = net::AppendQueryParameter(url, "RelayState", continue_url);
     redirect_url = url.spec();
+  }
+
+  if (!merge_session_params_.auth_sid_cookie.empty() &&
+      !merge_session_params_.auth_lsid_cookie.empty()) {
+    http_response->AddCustomHeader(
+        "Set-Cookie",
+        base::StringPrintf(
+            "SID=%s; Path=/; HttpOnly;",
+            merge_session_params_.auth_sid_cookie.c_str()));
+    http_response->AddCustomHeader(
+        "Set-Cookie",
+        base::StringPrintf(
+            "LSID=%s; Path=/; HttpOnly;",
+            merge_session_params_.auth_lsid_cookie.c_str()));
   }
 
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -260,7 +351,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
 
   if (grant_type == "authorization_code") {
     if (!GetQueryParameter(request.content, "code", &auth_code) ||
-        auth_code != fake_auth_code_) {
+        auth_code != merge_session_params_.auth_code) {
       http_response->set_code(net::HTTP_BAD_REQUEST);
       LOG(ERROR) << "No 'code' param in /o/oauth2/token";
       return;
@@ -273,8 +364,10 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
     }
 
     base::DictionaryValue response_dict;
-    response_dict.SetString("refresh_token", fake_refresh_token_);
-    response_dict.SetString("access_token", fake_access_token_);
+    response_dict.SetString("refresh_token",
+                            merge_session_params_.refresh_token);
+    response_dict.SetString("access_token",
+                            merge_session_params_.access_token);
     response_dict.SetInteger("expires_in", 3600);
     FormatJSONResponse(response_dict, http_response);
   } else if (GetQueryParameter(request.content,
@@ -352,7 +445,6 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
   }
 }
 
-
 scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
   // The scheme and host of the URL is actually not important but required to
   // get a valid GURL in order to parse |request.relative_url|.
@@ -421,21 +513,4 @@ bool FakeGaia::GetQueryParameter(const std::string& query,
   // for parsing.
   GURL query_url("http://localhost?" + query);
   return net::GetValueForKeyInQuery(query_url, key, value);
-}
-
-// static
-bool FakeGaia::GetAccessToken(const HttpRequest& request,
-                              const char* auth_token_prefix,
-                              std::string* access_token) {
-  std::map<std::string, std::string>::const_iterator auth_header_entry =
-      request.headers.find("Authorization");
-  if (auth_header_entry != request.headers.end()) {
-    if (StartsWithASCII(auth_header_entry->second, auth_token_prefix, true)) {
-      *access_token = auth_header_entry->second.substr(
-          strlen(auth_token_prefix));
-      return true;
-    }
-  }
-
-  return false;
 }

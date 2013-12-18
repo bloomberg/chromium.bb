@@ -36,6 +36,8 @@ namespace chromeos {
 
 namespace {
 
+const char kTestAuthSIDCookie[] = "fake-auth-SID-cookie";
+const char kTestAuthLSIDCookie[] = "fake-auth-LSID-cookie";
 const char kTestAuthCode[] = "fake-auth-code";
 const char kTestGaiaUberToken[] = "fake-uber-token";
 const char kTestAuthLoginAccessToken[] = "fake-access-token";
@@ -175,12 +177,16 @@ class SamlTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    fake_gaia_.SetAuthTokens(kTestAuthCode,
-                             kTestRefreshToken,
-                             kTestAuthLoginAccessToken,
-                             kTestGaiaUberToken,
-                             kTestSessionSIDCookie,
-                             kTestSessionLSIDCookie);
+    FakeGaia::MergeSessionParams params;
+    params.auth_sid_cookie = kTestAuthSIDCookie;
+    params.auth_lsid_cookie = kTestAuthLSIDCookie;
+    params.auth_code = kTestAuthCode;
+    params.refresh_token = kTestRefreshToken;
+    params.access_token = kTestAuthLoginAccessToken;
+    params.gaia_uber_token = kTestGaiaUberToken;
+    params.session_sid_cookie = kTestSessionSIDCookie;
+    params.session_lsid_cookie = kTestSessionLSIDCookie;
+    fake_gaia_.SetMergeSessionParams(params);
 
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
