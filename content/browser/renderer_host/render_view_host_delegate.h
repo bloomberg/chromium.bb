@@ -173,6 +173,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // A redirect was received while requesting a resource.
   virtual void DidGetRedirectForResourceRequest(
+      RenderViewHost* render_view_host,
       const ResourceRedirectDetails& details) {}
 
   // The RenderView was navigated to a different page.
@@ -327,9 +328,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                                 const net::LoadStateWithParam& load_state,
                                 uint64 upload_position,
                                 uint64 upload_size) {}
-
-  // Notification that a worker process has crashed.
-  virtual void WorkerCrashed() {}
 
   // The page wants the hosting window to activate/deactivate itself (it
   // called the JavaScript window.focus()/blur() method).

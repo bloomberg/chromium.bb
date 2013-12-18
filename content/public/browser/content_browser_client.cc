@@ -145,14 +145,14 @@ bool ContentBrowserClient::AllowWorkerDatabase(
     const base::string16& display_name,
     unsigned long estimated_size,
     ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   return true;
 }
 
 bool ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   return true;
 }
 
@@ -160,7 +160,7 @@ bool ContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     const base::string16& name,
     ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   return true;
 }
 

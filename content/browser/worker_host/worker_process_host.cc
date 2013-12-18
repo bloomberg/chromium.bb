@@ -23,6 +23,8 @@
 #include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/message_port_message_filter.h"
@@ -80,11 +82,11 @@ class WorkerSandboxedProcessLauncherDelegate
 }  // namespace
 
 // Notifies RenderViewHost that one or more worker objects crashed.
-void WorkerCrashCallback(int render_process_unique_id, int render_view_id) {
-  RenderViewHostImpl* host =
-      RenderViewHostImpl::FromID(render_process_unique_id, render_view_id);
+void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
+  RenderFrameHostImpl* host =
+      RenderFrameHostImpl::FromID(render_process_unique_id, render_frame_id);
   if (host)
-    host->GetDelegate()->WorkerCrashed();
+    host->delegate()->WorkerCrashed();
 }
 
 WorkerProcessHost::WorkerProcessHost(
@@ -109,7 +111,7 @@ WorkerProcessHost::~WorkerProcessHost() {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&WorkerCrashCallback, parent_iter->render_process_id(),
-                     parent_iter->render_view_id()));
+                     parent_iter->render_frame_id()));
     }
     WorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
         this, i->worker_route_id());
@@ -378,14 +380,14 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerDatabase(
       url, name, display_name, estimated_size, resource_context_,
-      GetRenderViewIDsForWorker(worker_route_id));
+      GetRenderFrameIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
                                           const GURL& url,
                                           bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerFileSystem(
-      url, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
+      url, resource_context_, GetRenderFrameIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::OnAllowIndexedDB(int worker_route_id,
@@ -393,7 +395,8 @@ void WorkerProcessHost::OnAllowIndexedDB(int worker_route_id,
                                          const base::string16& name,
                                          bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerIndexedDB(
-      url, name, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
+      url, name, resource_context_,
+      GetRenderFrameIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::OnForceKillWorkerProcess() {
@@ -539,7 +542,7 @@ const ChildProcessData& WorkerProcessHost::GetData() {
   return process_->GetData();
 }
 
-std::vector<std::pair<int, int> > WorkerProcessHost::GetRenderViewIDsForWorker(
+std::vector<std::pair<int, int> > WorkerProcessHost::GetRenderFrameIDsForWorker(
     int worker_route_id) {
   std::vector<std::pair<int, int> > result;
   WorkerProcessHost::Instances::const_iterator i;
@@ -551,7 +554,7 @@ std::vector<std::pair<int, int> > WorkerProcessHost::GetRenderViewIDsForWorker(
     for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
          documents.begin(); doc != documents.end(); ++doc) {
       result.push_back(
-          std::make_pair(doc->render_process_id(), doc->render_view_id()));
+          std::make_pair(doc->render_process_id(), doc->render_frame_id()));
     }
     break;
   }
@@ -685,15 +688,15 @@ bool WorkerProcessHost::WorkerInstance::HasFilter(
   return false;
 }
 
-bool WorkerProcessHost::WorkerInstance::RendererIsParent(
-    int render_process_id, int render_view_id) const {
+bool WorkerProcessHost::WorkerInstance::FrameIsParent(
+    int render_process_id, int render_frame_id) const {
   const WorkerDocumentSet::DocumentInfoSet& parents =
       worker_document_set()->documents();
   for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
            parents.begin();
        parent_iter != parents.end(); ++parent_iter) {
     if (parent_iter->render_process_id() == render_process_id &&
-        parent_iter->render_view_id() == render_view_id) {
+        parent_iter->render_frame_id() == render_frame_id) {
       return true;
     }
   }

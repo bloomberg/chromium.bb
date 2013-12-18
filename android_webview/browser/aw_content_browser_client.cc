@@ -289,7 +289,7 @@ bool AwContentBrowserClient::AllowWorkerDatabase(
     const string16& display_name,
     unsigned long estimated_size,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   // Android WebView does not yet support web workers.
   return false;
 }
@@ -297,7 +297,7 @@ bool AwContentBrowserClient::AllowWorkerDatabase(
 bool AwContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   // Android WebView does not yet support web workers.
   return false;
 }
@@ -306,7 +306,7 @@ bool AwContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     const string16& name,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   // Android WebView does not yet support web workers.
   return false;
 }

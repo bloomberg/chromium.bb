@@ -391,8 +391,11 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // The ID of the parent document (unique within parent renderer).
   IPC_STRUCT_MEMBER(unsigned long long, document_id)
 
-  // RenderView routing id used to send messages back to the parent.
+  // RenderView routing id.
   IPC_STRUCT_MEMBER(int, render_view_route_id)
+
+  // RenderFrame routing id used to send messages back to the parent.
+  IPC_STRUCT_MEMBER(int, render_frame_route_id)
 
   // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
   // a new unique ID is created and assigned to the worker.

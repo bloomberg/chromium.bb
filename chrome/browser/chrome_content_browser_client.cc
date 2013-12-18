@@ -1672,7 +1672,7 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
     const base::string16& display_name,
     unsigned long estimated_size,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
@@ -1680,7 +1680,7 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
 
   // Record access to database for potential display in UI.
   std::vector<std::pair<int, int> >::const_iterator i;
-  for (i = render_views.begin(); i != render_views.end(); ++i) {
+  for (i = render_frames.begin(); i != render_frames.end(); ++i) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::WebDatabaseAccessed,
@@ -1693,7 +1693,7 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
 bool ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
@@ -1701,7 +1701,7 @@ bool ChromeContentBrowserClient::AllowWorkerFileSystem(
 
   // Record access to file system for potential display in UI.
   std::vector<std::pair<int, int> >::const_iterator i;
-  for (i = render_views.begin(); i != render_views.end(); ++i) {
+  for (i = render_frames.begin(); i != render_frames.end(); ++i) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
@@ -1715,7 +1715,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     const base::string16& name,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_views) {
+    const std::vector<std::pair<int, int> >& render_frames) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
@@ -1723,7 +1723,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
 
   // Record access to IndexedDB for potential display in UI.
   std::vector<std::pair<int, int> >::const_iterator i;
-  for (i = render_views.begin(); i != render_views.end(); ++i) {
+  for (i = render_frames.begin(); i != render_frames.end(); ++i) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::IndexedDBAccessed,

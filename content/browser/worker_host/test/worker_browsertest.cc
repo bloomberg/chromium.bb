@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitPerPage) {
 #else
 IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
 #endif
-  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
+  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerFrameWhenSeparate;
   std::string query = base::StringPrintf("?count=%d", max_workers_per_tab + 1);
 
   GURL url = GetTestURL("many_shared_workers.html", query);
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
     return;
   }
 
-  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
+  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerFrameWhenSeparate;
   int total_workers = WorkerServiceImpl::kMaxWorkersWhenSeparate;
 
   std::string query = base::StringPrintf("?count=%d", max_workers_per_tab);
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerClose) {
 IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when shared
   // workers shut down.
-  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
+  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerFrameWhenSeparate;
   std::string query = base::StringPrintf("?count=%d", max_workers_per_tab);
   RunTest("queued_shared_worker_shutdown.html", query);
   ASSERT_TRUE(WaitForWorkerProcessCount(max_workers_per_tab));
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
 IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
   // Tests to make sure that only one instance of queued shared workers are
   // started up even when those instances are on multiple tabs.
-  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
+  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerFrameWhenSeparate;
   std::string query = base::StringPrintf("?count=%d", max_workers_per_tab + 1);
   GURL url = GetTestURL("many_shared_workers.html", query);
   NavigateToURL(shell(), url);
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
 IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
-  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
+  int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerFrameWhenSeparate;
   std::string query = base::StringPrintf("?count=%d", max_workers_per_tab + 1);
   GURL url = GetTestURL("many_shared_workers.html", query);
   NavigateToURL(shell(), url);

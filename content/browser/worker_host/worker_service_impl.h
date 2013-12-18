@@ -80,7 +80,7 @@ class CONTENT_EXPORT WorkerServiceImpl
 
   // Used when we run each worker in a separate process.
   static const int kMaxWorkersWhenSeparate;
-  static const int kMaxWorkersPerTabWhenSeparate;
+  static const int kMaxWorkersPerFrameWhenSeparate;
 
  private:
   friend struct DefaultSingletonTraits<WorkerServiceImpl>;
@@ -96,11 +96,11 @@ class CONTENT_EXPORT WorkerServiceImpl
   bool CanCreateWorkerProcess(
       const WorkerProcessHost::WorkerInstance& instance);
 
-  // Checks if the tab associated with the passed RenderView can create a
+  // Checks if the frame associated with the passed RenderFrame can create a
   // worker process based on the process limit when we're using a strategy of
   // one worker per process.
-  bool TabCanCreateWorkerProcess(
-      int render_process_id, int render_route_id, bool* hit_total_worker_limit);
+  bool FrameCanCreateWorkerProcess(
+      int render_process_id, int render_frame_id, bool* hit_total_worker_limit);
 
   // Tries to see if any of the queued workers can be created.
   void TryStartingQueuedWorker();

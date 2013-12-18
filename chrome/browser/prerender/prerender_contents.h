@@ -234,6 +234,7 @@ class PrerenderContents : public content::NotificationObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetRedirectForResourceRequest(
+      content::RenderViewHost* render_view_host,
       const content::ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidUpdateFaviconURL(int32 page_id,
       const std::vector<content::FaviconURL>& urls) OVERRIDE;

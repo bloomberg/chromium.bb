@@ -29,6 +29,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Informs the delegate whenever a RenderFrameHost is deleted.
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
 
+  // Notification that a worker process has crashed.
+  virtual void WorkerCrashed() {}
+
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.
   virtual WebContents* GetAsWebContents();

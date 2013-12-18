@@ -156,12 +156,6 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
-
-  // TODO(jam): remove this once WorkerProcessHost knows the RenderFrame IDs for
-  // a shared worker, which needs SharedWorkerRepository to be per frame.
-  if (!settings)
-    settings = Get(render_process_id, render_frame_id);
-
   if (settings)
     settings->OnWebDatabaseAccessed(url, name, display_name, blocked_by_policy);
 }
@@ -189,12 +183,6 @@ void TabSpecificContentSettings::IndexedDBAccessed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
-
-  // TODO(jam): remove this once WorkerProcessHost knows the RenderFrame IDs for
-  // a shared worker, which needs SharedWorkerRepository to be per frame.
-  if (!settings)
-    settings = Get(render_process_id, render_frame_id);
-
   if (settings)
     settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
 }
@@ -207,12 +195,6 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
-
-  // TODO(jam): remove this once WorkerProcessHost knows the RenderFrame IDs for
-  // a shared worker, which needs SharedWorkerRepository to be per frame.
-  if (!settings)
-    settings = Get(render_process_id, render_frame_id);
-
   if (settings)
     settings->OnFileSystemAccessed(url, blocked_by_policy);
 }

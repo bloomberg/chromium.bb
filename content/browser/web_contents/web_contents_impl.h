@@ -287,6 +287,7 @@ class CONTENT_EXPORT WebContentsImpl
                                  const IPC::Message& message) OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void WorkerCrashed() OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
@@ -320,6 +321,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidGetResourceResponseStart(
       const ResourceRequestDetails& details) OVERRIDE;
   virtual void DidGetRedirectForResourceRequest(
+      RenderViewHost* render_view_host,
       const ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
@@ -397,7 +399,6 @@ class CONTENT_EXPORT WebContentsImpl
                                 const net::LoadStateWithParam& load_state,
                                 uint64 upload_position,
                                 uint64 upload_size) OVERRIDE;
-  virtual void WorkerCrashed() OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual void LostCapture() OVERRIDE;

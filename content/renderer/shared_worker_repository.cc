@@ -6,18 +6,22 @@
 
 #include "content/child/child_thread.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace content {
 
-SharedWorkerRepository::SharedWorkerRepository(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view) {
-  render_view->GetWebView()->setSharedWorkerRepositoryClient(this);
+SharedWorkerRepository::SharedWorkerRepository(RenderFrameImpl* render_frame)
+    : RenderFrameObserver(render_frame) {
 }
 
 SharedWorkerRepository::~SharedWorkerRepository() {}
+
+void SharedWorkerRepository::WebFrameCreated(blink::WebFrame* frame) {
+  frame->setSharedWorkerRepositoryClient(this);
+}
 
 blink::WebSharedWorkerConnector*
 SharedWorkerRepository::createSharedWorkerConnector(
@@ -31,7 +35,8 @@ SharedWorkerRepository::createSharedWorkerConnector(
   params.url = url;
   params.name = name;
   params.document_id = document_id;
-  params.render_view_route_id = render_view()->GetRoutingID();
+  params.render_view_route_id = render_frame()->GetRenderView()->GetRoutingID();
+  params.render_frame_route_id = render_frame()->GetRoutingID();
   params.route_id = MSG_ROUTING_NONE;
   params.script_resource_appcache_id = 0;
   Send(new ViewHostMsg_LookupSharedWorker(
@@ -43,7 +48,8 @@ SharedWorkerRepository::createSharedWorkerConnector(
                                   document_id,
                                   exists,
                                   route_id,
-                                  render_view()->GetRoutingID());
+                                  params.render_view_route_id,
+                                  params.render_frame_route_id);
 }
 
 void SharedWorkerRepository::documentDetached(DocumentID document) {

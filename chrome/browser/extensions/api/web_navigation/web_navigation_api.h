@@ -94,6 +94,9 @@ class WebNavigationTabObserver
       int error_code,
       const base::string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidGetRedirectForResourceRequest(
+      content::RenderViewHost* render_view_host,
+      const content::ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidOpenRequestedURL(content::WebContents* new_contents,
                                    const GURL& url,
                                    const content::Referrer& referrer,

@@ -306,8 +306,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool AllowSaveLocalState(ResourceContext* context);
 
   // Allow the embedder to control if access to web database by a shared worker
-  // is allowed. |render_views| is a vector of pairs of
-  // RenderProcessID/RenderViewID of RenderViews that are using this worker.
+  // is allowed. |render_frame| is a vector of pairs of
+  // RenderProcessID/RenderFrameID of RenderFrame that are using this worker.
   // This is called on the IO thread.
   virtual bool AllowWorkerDatabase(
       const GURL& url,
@@ -315,7 +315,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::string16& display_name,
       unsigned long estimated_size,
       ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_views);
+      const std::vector<std::pair<int, int> >& render_frames);
 
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
@@ -323,7 +323,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool AllowWorkerFileSystem(
       const GURL& url,
       ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_views);
+      const std::vector<std::pair<int, int> >& render_frames);
 
   // Allow the embedder to control if access to IndexedDB by a shared worker
   // is allowed.
@@ -332,7 +332,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& url,
       const base::string16& name,
       ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_views);
+      const std::vector<std::pair<int, int> >& render_frames);
 
   // Allow the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns NULL to indicate the

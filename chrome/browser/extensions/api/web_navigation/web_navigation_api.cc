@@ -254,9 +254,6 @@ WebNavigationTabObserver::WebNavigationTabObserver(
       pending_render_view_host_(NULL) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
   registrar_.Add(this,
-                 content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-                 content::Source<content::WebContents>(web_contents));
-  registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
                  content::NotificationService::AllSources());
 }
@@ -288,36 +285,6 @@ void WebNavigationTabObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-      content::ResourceRedirectDetails* resource_redirect_details =
-          content::Details<content::ResourceRedirectDetails>(details).ptr();
-      ResourceType::Type resource_type =
-          resource_redirect_details->resource_type;
-      if (resource_type == ResourceType::MAIN_FRAME ||
-          resource_type == ResourceType::SUB_FRAME) {
-        content::RenderViewHost* render_view_host = NULL;
-        if (render_view_host_ &&
-            resource_redirect_details->origin_child_id ==
-                render_view_host_->GetProcess()->GetID() &&
-            resource_redirect_details->origin_route_id ==
-                render_view_host_->GetRoutingID()) {
-          render_view_host = render_view_host_;
-        } else if (pending_render_view_host_ &&
-                   resource_redirect_details->origin_child_id ==
-                       pending_render_view_host_->GetProcess()->GetID() &&
-                   resource_redirect_details->origin_route_id ==
-                       pending_render_view_host_->GetRoutingID()) {
-          render_view_host = pending_render_view_host_;
-        }
-        if (!render_view_host)
-          return;
-        FrameNavigationState::FrameID frame_id(
-            resource_redirect_details->frame_id, render_view_host);
-        navigation_state_.SetIsServerRedirected(frame_id);
-      }
-      break;
-    }
-
     case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
       // The RenderView is technically not yet deleted, but the RenderViewHost
       // already starts to filter out some IPCs. In order to not get confused,
@@ -615,6 +582,13 @@ void WebNavigationTabObserver::DidFailLoad(
         error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(frame_id);
+}
+
+void WebNavigationTabObserver::DidGetRedirectForResourceRequest(
+    content::RenderViewHost* render_view_host,
+    const content::ResourceRedirectDetails& details) {
+  FrameNavigationState::FrameID frame_id(details.frame_id, render_view_host);
+  navigation_state_.SetIsServerRedirected(frame_id);
 }
 
 void WebNavigationTabObserver::DidOpenRequestedURL(

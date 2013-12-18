@@ -8,18 +8,21 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerRepositoryClient.h"
 
 namespace content {
 
-class RenderViewImpl;
+class RenderFrameImpl;
 
-class SharedWorkerRepository : public RenderViewObserver,
+class SharedWorkerRepository : public RenderFrameObserver,
                                public blink::WebSharedWorkerRepositoryClient {
  public:
-  explicit SharedWorkerRepository(RenderViewImpl* render_view);
+  explicit SharedWorkerRepository(RenderFrameImpl* render_frame);
   virtual ~SharedWorkerRepository();
+
+  // RenderFrameObserver overrides.
+  virtual void WebFrameCreated(blink::WebFrame* frame) OVERRIDE;
 
   // WebSharedWorkerRepositoryClient overrides.
   virtual blink::WebSharedWorkerConnector* createSharedWorkerConnector(

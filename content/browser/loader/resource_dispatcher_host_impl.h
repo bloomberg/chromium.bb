@@ -271,14 +271,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   virtual void DidReceiveResponse(ResourceLoader* loader) OVERRIDE;
   virtual void DidFinishLoading(ResourceLoader* loader) OVERRIDE;
 
-  // Extracts the render view/process host's identifiers from the given request
-  // and places them in the given out params (both required). If there are no
-  // such IDs associated with the request (such as non-page-related requests),
-  // this function will return false and both out params will be -1.
-  static bool RenderViewForRequest(const net::URLRequest* request,
-                                   int* render_process_host_id,
-                                   int* render_view_host_id);
-
   // An init helper that runs on the IO thread.
   void OnInit();
 

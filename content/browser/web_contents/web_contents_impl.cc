@@ -2809,6 +2809,11 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
                     RenderFrameDeleted(render_frame_host));
 }
 
+void WebContentsImpl::WorkerCrashed() {
+  if (delegate_)
+    delegate_->WorkerCrashed(this);
+}
+
 WebContents* WebContentsImpl::GetAsWebContents() {
   return this;
 }
@@ -2945,11 +2950,14 @@ void WebContentsImpl::DidGetResourceResponseStart(
 }
 
 void WebContentsImpl::DidGetRedirectForResourceRequest(
+  RenderViewHost* render_view_host,
   const ResourceRedirectDetails& details) {
   controller_.ssl_manager()->DidReceiveResourceRedirect(details);
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidGetRedirectForResourceRequest(details));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver,
+      observers_,
+      DidGetRedirectForResourceRequest(render_view_host, details));
 
   // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
@@ -3579,11 +3587,6 @@ void WebContentsImpl::LoadStateChanged(
   if (IsLoading()) {
     NotifyNavigationStateChanged(INVALIDATE_TYPE_LOAD | INVALIDATE_TYPE_TAB);
   }
-}
-
-void WebContentsImpl::WorkerCrashed() {
-  if (delegate_)
-    delegate_->WorkerCrashed(this);
 }
 
 void WebContentsImpl::BeforeUnloadFiredFromRenderManager(

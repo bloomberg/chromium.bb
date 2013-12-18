@@ -25,11 +25,13 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   class DocumentInfo {
    public:
     DocumentInfo(WorkerMessageFilter* filter, unsigned long long document_id,
-                 int renderer_process_id, int render_view_id);
+                 int renderer_process_id, int render_view_id,
+                 int render_frame_id);
     WorkerMessageFilter* filter() const { return filter_; }
     unsigned long long document_id() const { return document_id_; }
     int render_process_id() const { return render_process_id_; }
     int render_view_id() const { return render_view_id_; }
+    int render_frame_id() const { return render_frame_id_; }
 
     // Define operator "<", which is used to determine uniqueness within
     // the set.
@@ -50,6 +52,7 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
     unsigned long long document_id_;
     int render_process_id_;
     int render_view_id_;
+    int render_frame_id_;
   };
 
   // Adds a document to a shared worker's document set. Also includes the
@@ -58,7 +61,8 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   void Add(WorkerMessageFilter* parent,
            unsigned long long document_id,
            int render_process_id,
-           int render_view_id);
+           int render_view_id,
+           int render_frame_id);
 
   // Checks to see if a document is in a shared worker's document set.
   bool Contains(WorkerMessageFilter* parent,

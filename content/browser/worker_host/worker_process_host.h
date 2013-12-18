@@ -79,7 +79,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     void RemoveFilter(WorkerMessageFilter* filter, int route_id);
     void RemoveFilters(WorkerMessageFilter* filter);
     bool HasFilter(WorkerMessageFilter* filter, int route_id) const;
-    bool RendererIsParent(int render_process_id, int render_view_id) const;
+    bool FrameIsParent(int render_process_id, int render_frame_id) const;
     int NumFilters() const { return filters_.size(); }
     // Returns the single filter (must only be one).
     FilterInfo GetFilter() const;
@@ -222,9 +222,9 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   // Updates the title shown in the task manager.
   void UpdateTitle();
 
-  // Return a vector of all the render process/render view IDs that use the
+  // Return a vector of all the render process/render frame  IDs that use the
   // given worker.
-  std::vector<std::pair<int, int> > GetRenderViewIDsForWorker(int route_id);
+  std::vector<std::pair<int, int> > GetRenderFrameIDsForWorker(int route_id);
 
   // Callbacks for ResourceMessageFilter and SocketStreamDispatcherHost.
   void GetContexts(const ResourceHostMsg_Request& request,
