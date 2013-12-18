@@ -393,6 +393,46 @@ class InvalidOSMacroNamesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
+class String16Test(unittest.TestCase):
+  def testUnprefixedGivesWarnings(self):
+    lines = ['string16 GetName() const;',
+             'void SetName(const string16& name) OVERRIDE {}',
+             'const string16& GetNameRef() const = 0;',
+             'string16 name;',
+             'string16 foo = ASCIIToUTF16("bar");',
+             'string16 blah(ASCIIToUTF16("blee"));',
+             'std::vector<string16> names;',
+             'string16 var_with_string16_in_name;']
+    warnings = PRESUBMIT._CheckForString16InFile(
+        MockInputApi(), MockFile('chrome/browser/name_getter_bad.cc', lines))
+    self.assertEqual(len(lines), len(warnings))
+
+  def testPrefixedSkipped(self):
+    lines = ['#include "base/strings/string16.h"',
+             'void SetName(const base::string16& name) OVERRIDE {}',
+             'const base::string16& GetNameRef() const = 0;',
+             'base::string16 name;',
+             'base::string16 foo = ASCIIToUTF16("bar");',
+             'base::string16 blah(ASCIIToUTF16("blee"));',
+             'std::vector<base::string16> names;',
+             'base::string16 var_with_string16_in_name;']
+    warnings = PRESUBMIT._CheckForString16InFile(
+        MockInputApi(), MockFile('chrome/browser/name_getter_good.cc', lines))
+    self.assertEqual(0, len(warnings))
+
+  def testUsingYieldsNoWarnings(self):
+    lines = ['#include "base/strings/string16.h',
+             'namespace {',
+             'using base::string16;',
+             'string16 SayHiOnlyToEd(const string16& name) {',
+             '  string16 first = name.substr(0, 2);  // Only "Ed" gets a "Hi".',
+             '  return first == "Ed" ? first : string16();',
+             '}']
+    warnings = PRESUBMIT._CheckForString16InFile(
+        MockInputApi(), MockFile('chrome/browser/say_hi_to_ed.cc', lines))
+    self.assertEqual(0, len(warnings))
+
+
 class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
   def testDepsFilesToCheck(self):
     changed_lines = [
