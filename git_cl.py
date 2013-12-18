@@ -654,7 +654,7 @@ or verify this branch is set up to track another (via the --track argument to
                  'this command again.') % issue)
           else:
             DieWithError(
-                '\nFailed to fetch issue description. HTTP error ' + e.code)
+                '\nFailed to fetch issue description. HTTP error %d' % e.code)
       self.has_description = True
     if pretty:
       wrapper = textwrap.TextWrapper()
