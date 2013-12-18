@@ -25,25 +25,6 @@
     ]],
   },
   'conditions': [
-    # NOTE: We do not support untrusted gyp build on arm yet.
-    ['target_arch!="arm"', {
-      'targets': [
-        {
-          'target_name': 'weak_ref_lib',
-          'type': 'none',
-          'variables': {
-            'nlib_target': 'libweak_ref.a',
-            'nso_target': 'libweak_ref.so',
-            'build_glibc': 1,
-            'build_newlib': 1,
-            'sources': ['weak_ref.cc'],
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
-        },
-      ],
-    }],
     ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
@@ -61,6 +42,21 @@
     }],
   ],
   'targets': [
+    {
+      'target_name': 'weak_ref_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libweak_ref.a',
+        'nso_target': 'libweak_ref.so',
+        'build_glibc': 1,
+        'build_newlib': 1,
+        'build_pnacl_newlib': 1,
+        'sources': ['weak_ref.cc'],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
     {
       'target_name': 'weak_ref',
       'type': 'static_library', # 'dynamic_library', ?!?

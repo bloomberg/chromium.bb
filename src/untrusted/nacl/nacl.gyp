@@ -288,6 +288,7 @@
         'nso_target': 'libimc_syscalls.so',
         'build_glibc': 1,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
         'build_irt': 1,
       },
       'sources': ['<@(imc_syscalls)'],

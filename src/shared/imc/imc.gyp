@@ -67,27 +67,23 @@
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
       ],
     },
+    {
+      'target_name': 'imc_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libimc.a',
+        'nso_target': 'libimc.so',
+        'build_glibc': 1,
+        'build_newlib': 1,
+        'build_pnacl_newlib': 1,
+        'sources': ['nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
   ],
   'conditions': [
-    ['target_arch!="arm"', {
-      'targets': [
-        # NOTE: we do not support untrusted gyp build on arm yet.
-        {
-          'target_name': 'imc_lib',
-          'type': 'none',
-          'variables': {
-            'nlib_target': 'libimc.a',
-            'nso_target': 'libimc.so',
-            'build_glibc': 1,
-            'build_newlib': 1,
-            'sources': ['nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
-        },
-      ],
-    }],
     ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         # ---------------------------------------------------------------------
