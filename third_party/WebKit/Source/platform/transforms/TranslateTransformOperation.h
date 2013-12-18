@@ -73,7 +73,7 @@ private:
 
     virtual bool dependsOnBoxSize() const OVERRIDE
     {
-        return m_x.type() == Percent || m_y.type() == Percent;
+        return m_x.isPercent() || m_y.isPercent();
     }
 
     TranslateTransformOperation(const Length& tx, const Length& ty, const Length& tz, OperationType type)

@@ -272,6 +272,12 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
     ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
+
+    TransformOperations ops2;
+    Length calcLength = Length(100, WebCore::Percent).blend(Length(100, WebCore::Fixed), 0.5, WebCore::ValueRangeAll);
+    ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, WebCore::Fixed), TransformOperation::TranslateX));
+    RefPtr<Keyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops2).get());
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe2.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationCustomFilter)
