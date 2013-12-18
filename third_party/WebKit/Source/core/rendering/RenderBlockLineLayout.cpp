@@ -1398,7 +1398,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
     LayoutSize logicalOffsetFromShapeContainer;
     ShapeInsideInfo* shapeInsideInfo = layoutShapeInsideInfo();
     if (shapeInsideInfo) {
-        ASSERT(shapeInsideInfo->owner() == this || allowsShapeInsideInfoSharing());
+        ASSERT(shapeInsideInfo->owner() == this || allowsShapeInsideInfoSharing(shapeInsideInfo->owner()));
         if (shapeInsideInfo != this->shapeInsideInfo()) {
             // FIXME Bug 100284: If subsequent LayoutStates are pushed, we will have to add
             // their offsets from the original shape-inside container.

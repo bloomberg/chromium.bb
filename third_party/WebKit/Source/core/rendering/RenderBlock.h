@@ -379,7 +379,7 @@ public:
         m_rareData->m_shapeInsideInfo = value;
     }
     ShapeInsideInfo* layoutShapeInsideInfo() const;
-    bool allowsShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
+    bool allowsShapeInsideInfoSharing(const RenderBlock* other) const;
     LayoutSize logicalOffsetFromShapeAncestorContainer(const RenderBlock* container) const;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
@@ -715,6 +715,18 @@ protected:
     // member variables out of RenderBlock and into RenderBlockFlow.
     friend class RenderBlockFlow;
 };
+
+
+inline bool RenderBlock::allowsShapeInsideInfoSharing(const RenderBlock* other) const
+{
+    if (!other)
+        return false;
+    for (const RenderBlock* current = this; current && current != other && !current->isRenderFlowThread(); current = current->containingBlock()) {
+        if (current->isInline() || current->isFloating())
+            return false;
+    }
+    return true;
+}
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
 
