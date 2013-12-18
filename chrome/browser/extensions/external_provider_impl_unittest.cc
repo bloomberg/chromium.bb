@@ -109,11 +109,13 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 TEST_F(ExternalProviderImplTest, InAppPayments) {
   InitServiceWithExternalProviders();
 
-  service_->CheckForExternalUpdates();
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources()).Wait();
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  service_->set_external_updates_finished_callback_for_test(
+      runner->QuitClosure());
 
+  service_->CheckForExternalUpdates();
+  runner->Run();
 
   EXPECT_TRUE(service_->GetInstalledExtension(
       extension_misc::kInAppPaymentsSupportAppId));

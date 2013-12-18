@@ -603,6 +603,13 @@ class ExtensionService
     install_updates_when_idle_ = value;
   }
 
+  // Set a callback to be called when all external providers are ready and their
+  // extensions have been installed.
+  void set_external_updates_finished_callback_for_test(
+      const base::Closure& callback) {
+    external_updates_finished_callback_ = callback;
+  }
+
   // Adds/Removes update observers.
   void AddUpdateObserver(extensions::UpdateObserver* observer);
   void RemoveUpdateObserver(extensions::UpdateObserver* observer);
@@ -812,6 +819,11 @@ class ExtensionService
   // OnAllExternalProvidersReady() to determine if an update check is needed to
   // install pending extensions.
   bool update_once_all_providers_are_ready_;
+
+  // A callback to be called when all external providers are ready and their
+  // extensions have been installed. Normally this is a null callback, but
+  // is used in external provider related tests.
+  base::Closure external_updates_finished_callback_;
 
   // Set when the browser is terminating. Prevents us from installing or
   // updating additional extensions and allows in-progress installations to

@@ -1382,7 +1382,9 @@ void ExtensionService::OnAllExternalProvidersReady() {
   // Install any pending extensions.
   if (update_once_all_providers_are_ready_ && updater()) {
     update_once_all_providers_are_ready_ = false;
-    updater()->CheckNow(extensions::ExtensionUpdater::CheckParams());
+    extensions::ExtensionUpdater::CheckParams params;
+    params.callback = external_updates_finished_callback_;
+    updater()->CheckNow(params);
   }
 
   // Uninstall all the unclaimed extensions.
