@@ -407,8 +407,6 @@
         'filters/wsola_internals.h',
         'midi/midi_manager.cc',
         'midi/midi_manager.h',
-        'midi/midi_manager_linux.cc',
-        'midi/midi_manager_linux.h',
         'midi/midi_manager_mac.cc',
         'midi/midi_manager_mac.h',
         'midi/midi_message_queue.cc',

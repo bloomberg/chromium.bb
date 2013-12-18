@@ -9,8 +9,8 @@
 
 namespace media {
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// TODO(toyoshim): implement MIDIManager for other platforms.
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
+// TODO(crogers): implement MIDIManager for other platforms.
 MIDIManager* MIDIManager::Create() {
   return NULL;
 }
