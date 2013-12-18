@@ -93,7 +93,17 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     toV8(document, info.Holder(), info.GetIsolate());
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), info.GetIsolate());
-    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, exceptionState);
+    if (UNLIKELY(info.Length() < 1)) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);
+    V8TRYCATCH_VOID(bool, defaultUndefinedOptionalBooleanArg, info[1]->BooleanValue());
+    V8TRYCATCH_VOID(int, defaultUndefinedOptionalLongArg, toInt32(info[2]));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[3]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultNullStringOptionalstringArg, argumentOrNull(info, 4));
+    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;

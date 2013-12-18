@@ -104,8 +104,7 @@ def generate_interface(interface):
     # [CustomConstructor]
     custom_constructors = [{  # Only needed for computing interface length
         'number_of_required_arguments':
-            len([argument for argument in constructor.arguments
-                 if not argument.is_optional]),
+            number_of_required_arguments(constructor),
     } for constructor in interface.custom_constructors]
 
     # [EventConstructor]
@@ -339,8 +338,7 @@ def generate_constructor(interface, constructor):
         'is_constructor': True,
         'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
-            len([argument for argument in constructor.arguments
-                 if not argument.is_optional]),
+            number_of_required_arguments(constructor),
     }
 
 
@@ -395,18 +393,21 @@ def generate_named_constructor(interface):
     # FIXME: parser should return named constructor separately;
     # included in constructors (and only name stored in extended attribute)
     # for Perl compatibility
-    return {
-        'argument_list': named_constructor_argument_list(interface),
-        'name': extended_attributes['NamedConstructor'],
-    }
+    idl_constructor = interface.constructors[0]
+    constructor = generate_constructor(interface, idl_constructor)
+    constructor['argument_list'].insert(0, '*document')
+    constructor.update({
+        'constructor_name': extended_attributes['NamedConstructor'],  # avoid collision with 'name' (used in exception throwing)
+        # FIXME: this is inconsistent: it should throw failedToConstruct
+        'is_constructor': False,  # Named constructor treated as regular method
+        'name': 'NamedConstructor',
+    })
+    return constructor
 
 
-def named_constructor_argument_list(interface):
-    arguments = ['*document']
-    # [RaisesException=Constructor]
-    if interface.extended_attributes.get('RaisesException') == 'Constructor':
-        arguments.append('exceptionState')
-    return arguments
+def number_of_required_arguments(constructor):
+    return len([argument for argument in constructor.arguments
+                if not argument.is_optional])
 
 
 def interface_length(interface, constructors):

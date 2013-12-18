@@ -336,7 +336,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
 static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("{{constructor.name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("{{constructor.constructor_name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;
     }
 
@@ -355,6 +355,22 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% if is_constructor_raises_exception %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if constructor.number_of_required_arguments %}
+    if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
+        {% if is_constructor_raises_exception %}
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{constructor.number_of_required_arguments}}, info.Length()));
+        exceptionState.throwIfNeeded();
+        {% else %}
+        {{throw_type_error(constructor,
+              'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
+                  constructor.number_of_required_arguments)}}
+        {% endif %}
+        return;
+    }
+    {% endif %}
+    {% for argument in constructor.arguments %}
+    {{generate_argument(constructor, argument) | indent}}
+    {% endfor %}
     RefPtr<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
     {% if is_constructor_raises_exception %}
