@@ -123,6 +123,21 @@ class OneClickSigninHelper
                                     int child_id,
                                     int route_id);
 
+  // Handles cross account sign in error. If the supplied |email| does not match
+  // the last signed in email of the current profile, then Chrome will show a
+  // confirmation dialog before starting sync. It returns true if there is a
+  // cross ccount error, and false otherwise.
+  static bool HandleCrossAccountError(
+      content::WebContents* contents,
+      const std::string& session_index,
+      const std::string& email,
+      const std::string& password,
+      const std::string& oauth_code,
+      OneClickSigninHelper::AutoAccept auto_accept,
+      signin::Source source,
+      OneClickSigninSyncStarter::StartSyncMode start_mode,
+      OneClickSigninSyncStarter::Callback sync_callback);
+
   // If the |source| is not settings page/webstore, redirects to
   // the NTP/Apps page.
   static void RedirectToNtpOrAppsPageIfNecessary(
