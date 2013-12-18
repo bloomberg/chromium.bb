@@ -86,7 +86,7 @@ void AshKeyboardControllerProxy::OnRequest(
 }
 
 content::BrowserContext* AshKeyboardControllerProxy::GetBrowserContext() {
-  return ProfileManager::GetActiveUserProfileOrOffTheRecord();
+  return ProfileManager::GetActiveUserProfile();
 }
 
 ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {

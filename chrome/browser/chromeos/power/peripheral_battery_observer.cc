@@ -228,7 +228,7 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
 
   notification_manager->Add(
       notification,
-      ProfileManager::GetPrimaryUserProfileOrOffTheRecord());
+      ProfileManager::GetPrimaryUserProfile());
 
   return true;
 }
