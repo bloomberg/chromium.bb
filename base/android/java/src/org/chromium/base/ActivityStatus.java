@@ -248,4 +248,12 @@ public class ActivityStatus {
         int state = getState();
         return state != STOPPED && state != DESTROYED;
     }
+
+    /**
+     * Checks to see if there are any active Activity instances being watched by ActivityStatus.
+     * @return True if all Activities have been destroyed.
+     */
+    public static boolean isEveryActivityDestroyed() {
+        return sActivityStates.isEmpty();
+    }
 }
