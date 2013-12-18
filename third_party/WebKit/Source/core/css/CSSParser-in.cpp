@@ -2671,7 +2671,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueNone) {
             validPrimitive = true;
         } else if (value->unit == CSSParserValue::Function) {
-            return parseBasicShape(propId, important);
+            parsedValue = parseBasicShape();
         } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
             parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI);
             addProperty(propId, parsedValue.release(), important);
@@ -2680,20 +2680,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     case CSSPropertyShapeInside:
     case CSSPropertyShapeOutside:
-        if (!RuntimeEnabledFeatures::cssShapesEnabled())
-            return false;
-        if (id == CSSValueAuto)
-            validPrimitive = true;
-        else if (id == CSSValueContentBox || id == CSSValuePaddingBox || id == CSSValueBorderBox || id == CSSValueMarginBox)
-            validPrimitive = true;
-        else if (propId == CSSPropertyShapeInside && id == CSSValueOutsideShape)
-            validPrimitive = true;
-        else if (value->unit == CSSParserValue::Function)
-            return parseBasicShape(propId, important);
-        else if (value->unit == CSSPrimitiveValue::CSS_URI) {
-            parsedValue = CSSImageValue::create(completeURL(value->string));
-            m_valueList->next();
-        }
+        parsedValue = parseShapeProperty(propId);
         break;
     case CSSPropertyShapeMargin:
     case CSSPropertyShapePadding:
@@ -5322,14 +5309,88 @@ PassRefPtr<CSSBasicShape> CSSParser::parseBasicShapePolygon(CSSParserValueList* 
     return shape;
 }
 
-bool CSSParser::parseBasicShape(CSSPropertyID propId, bool important)
+static bool isBoxValue(CSSValueID valueId)
+{
+    switch (valueId) {
+    case CSSValueContentBox:
+    case CSSValuePaddingBox:
+    case CSSValueBorderBox:
+    case CSSValueMarginBox:
+        return true;
+    default:
+        break;
+    }
+
+    return false;
+}
+
+PassRefPtr<CSSValue> CSSParser::parseShapeProperty(CSSPropertyID propId)
+{
+    if (!RuntimeEnabledFeatures::cssShapesEnabled())
+        return 0;
+
+    CSSParserValue* value = m_valueList->current();
+    CSSValueID valueId = value->id;
+    RefPtr<CSSPrimitiveValue> boxValue;
+    RefPtr<CSSPrimitiveValue> shapeValue;
+
+    if (valueId == CSSValueAuto
+        || (valueId == CSSValueOutsideShape && propId == CSSPropertyShapeInside)) {
+        RefPtr<CSSPrimitiveValue> keywordValue = parseValidPrimitive(valueId, value);
+        m_valueList->next();
+        return keywordValue.release();
+    }
+
+    if (value->unit == CSSPrimitiveValue::CSS_URI) {
+        RefPtr<CSSImageValue> imageValue = CSSImageValue::create(completeURL(value->string));
+        m_valueList->next();
+        return imageValue.release();
+    }
+
+    if (value->unit == CSSParserValue::Function) {
+        shapeValue = parseBasicShape();
+        if (!shapeValue)
+            return 0;
+    } else if (isBoxValue(valueId)) {
+        boxValue = parseValidPrimitive(valueId, value);
+        m_valueList->next();
+    } else {
+        return 0;
+    }
+
+    ASSERT(shapeValue || boxValue);
+    value = m_valueList->current();
+
+    if (value) {
+        valueId = value->id;
+        if (boxValue && value->unit == CSSParserValue::Function) {
+            shapeValue = parseBasicShape();
+            if (!shapeValue)
+                return 0;
+        } else if (shapeValue && isBoxValue(valueId)) {
+            boxValue = parseValidPrimitive(valueId, value);
+            m_valueList->next();
+        } else {
+            return 0;
+        }
+
+        ASSERT(shapeValue && boxValue);
+        shapeValue->getShapeValue()->setLayoutBox(boxValue.release());
+    }
+
+    if (shapeValue)
+        return shapeValue.release();
+    return boxValue.release();
+}
+
+PassRefPtr<CSSPrimitiveValue> CSSParser::parseBasicShape()
 {
     CSSParserValue* value = m_valueList->current();
     ASSERT(value->unit == CSSParserValue::Function);
     CSSParserValueList* args = value->function->args.get();
 
     if (!args)
-        return false;
+        return 0;
 
     RefPtr<CSSBasicShape> shape;
     if (equalIgnoringCase(value->function->name, "rectangle("))
@@ -5344,11 +5405,10 @@ bool CSSParser::parseBasicShape(CSSPropertyID propId, bool important)
         shape = parseBasicShapeInsetRectangle(args);
 
     if (!shape)
-        return false;
+        return 0;
 
-    addProperty(propId, cssValuePool().createValue(shape.release()), important);
     m_valueList->next();
-    return true;
+    return cssValuePool().createValue(shape.release());
 }
 
 // [ 'font-style' || 'font-variant' || 'font-weight' ]? 'font-size' [ / 'line-height' ]? 'font-family'

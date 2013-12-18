@@ -30,6 +30,7 @@
 #ifndef BasicShapes_h
 #define BasicShapes_h
 
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Length.h"
 #include "platform/graphics/WindRule.h"
 #include "wtf/RefCounted.h"
@@ -62,8 +63,18 @@ public:
     virtual bool operator==(const BasicShape&) const = 0;
 
     virtual Type type() const = 0;
+
+    LayoutBox layoutBox() const { return m_layoutBox; }
+    void setLayoutBox(LayoutBox layoutBox) { m_layoutBox = layoutBox; }
+
 protected:
-    BasicShape() { }
+    BasicShape()
+        : m_layoutBox(BoxMissing)
+    {
+    }
+
+private:
+    LayoutBox m_layoutBox;
 };
 
 #define DEFINE_BASICSHAPE_TYPE_CASTS(thisType) \

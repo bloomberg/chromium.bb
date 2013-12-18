@@ -86,6 +86,9 @@ public:
                 logicalHeight -= m_renderer->borderAndPaddingLogicalHeight();
                 logicalWidth -= m_renderer->borderAndPaddingLogicalWidth();
                 break;
+            case BoxMissing:
+                // A non-missing box value must be supplied.
+                ASSERT_NOT_REACHED();
             }
         } else if (m_renderer->style()->boxSizing() == CONTENT_BOX) {
             logicalHeight -= m_renderer->borderAndPaddingLogicalHeight();
@@ -141,6 +144,9 @@ protected:
                 return m_renderer->borderBefore();
             case ContentBox:
                 return m_renderer->borderAndPaddingBefore();
+            case BoxMissing:
+                // A non-missing box value must be supplied.
+                ASSERT_NOT_REACHED();
             }
         }
         return m_renderer->style()->boxSizing() == CONTENT_BOX ? m_renderer->borderAndPaddingBefore() : LayoutUnit();
@@ -158,6 +164,9 @@ protected:
                 return m_renderer->borderStart();
             case ContentBox:
                 return m_renderer->borderAndPaddingStart();
+            case BoxMissing:
+                // A non-missing box value must be supplied.
+                ASSERT_NOT_REACHED();
             }
         }
         return (m_renderer->style()->boxSizing() == CONTENT_BOX && !m_renderer->isRenderRegion()) ? m_renderer->borderAndPaddingStart() : LayoutUnit();

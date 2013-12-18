@@ -4963,6 +4963,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LayoutBox layoutBox)
     case ContentBox:
         m_value.valueID = CSSValueContentBox;
         break;
+    case BoxMissing:
+        // The missing box should convert to a null primitive value.
+        ASSERT_NOT_REACHED();
     }
 }
 

@@ -25,7 +25,17 @@ var validShapeValues = [
     "content-box",
     "padding-box",
     "border-box",
-    "margin-box"
+    "margin-box",
+
+    "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) content-box",
+    "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) padding-box",
+    "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) border-box",
+    "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) margin-box",
+
+    ["content-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) content-box"],
+    ["padding-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) padding-box"],
+    ["border-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) border-box"],
+    ["margin-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "polygon(nonzero, 10px 10px, 20px 20px, 30px 30px) margin-box"]
 ];
 
 // Invalid values for both shape-inside and shape-outside. When an invalid shape value is specified, the
@@ -69,6 +79,17 @@ var invalidShapeValues = [
     "polygon(nonzero,10px)",
     "polygon(evenodd,12px)",
     "polygon(10px, 20px, 30px, 40px, 40px, 50px)",
+
+    "content-box content-box",
+    "polygon(nonzero, 0 0 ,10px 10px, 10px 0) polygon(nonzero, 0 0, 10px 10px, 10px 0)",
+    "auto content-box",
+    "content-box auto",
+    "polygon(auto) content-box",
+    "content-box polygon(auto)",
+    "circle(50px) auto",
+    "auto circle(50px)",
+    "url('shape.svg') content-box",
+    "url('shape.svg') polygon(nonzero, 0 0, 10px 10px, 10px 0)"
 ];
 
 // Valid length values for shape-margin and shape-padding.
