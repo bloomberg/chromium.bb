@@ -1299,6 +1299,8 @@ void InspectorDOMAgent::focus(ErrorString* errorString, int nodeId)
     Element* element = assertElement(errorString, nodeId);
     if (!element)
         return;
+
+    element->document().updateLayoutIgnorePendingStylesheets();
     if (!element->isFocusable()) {
         *errorString = "Element is not focusable";
         return;

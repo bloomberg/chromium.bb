@@ -1382,4 +1382,18 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser)
 }
 #endif
 
+TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), "focus_blur_events.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "focus_blur_events.html", true, 0);
+
+    webView->setFocus(true);
+    webView->setFocus(false);
+    webView->setFocus(true);
+
+    WebElement element = webView->mainFrame()->document().getElementById("message");
+    // Expect not to see duplication of events.
+    EXPECT_STREQ("blurfocus", element.innerText().utf8().data());
+}
+
 }
