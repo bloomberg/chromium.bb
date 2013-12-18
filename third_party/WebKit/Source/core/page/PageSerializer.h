@@ -55,11 +55,15 @@ class StyleRuleFontFace;
 
 struct SerializedResource;
 
+// This hash map is used to map resource URL of original link to its local
+// file path.
+typedef HashMap<String, String> LinkLocalPathMap;
+
 // This class is used to serialize a page contents back to text (typically HTML).
 // It serializes all the page frames and retrieves resources such as images and CSS stylesheets.
 class PageSerializer {
 public:
-    explicit PageSerializer(Vector<SerializedResource>*);
+    PageSerializer(Vector<SerializedResource>*, LinkLocalPathMap* = 0, String directory = "");
 
     // Initiates the serialization of the frame's page. All serialized content and retrieved
     // resources are added to the Vector passed to the constructor. The first resource in that
@@ -87,6 +91,8 @@ private:
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;
     HashMap<Frame*, KURL> m_blankFrameURLs;
+    LinkLocalPathMap* m_URLs;
+    String m_directory;
     unsigned m_blankFrameCounter;
 };
 

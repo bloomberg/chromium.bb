@@ -89,19 +89,11 @@ public:
     // The parameter localDirectoryName is relative path of directory which
     // contain all saved auxiliary files included all sub frames and resources.
     BLINK_EXPORT static bool serialize(WebFrame*,
-                                        bool recursive,
-                                        WebPageSerializerClient*,
-                                        const WebVector<WebURL>& links,
-                                        const WebVector<WebString>& localPaths,
-                                        const WebString& localDirectoryName);
-
-    // Retrieve all the resource for the passed view, including the main frame
-    // and sub-frames. Returns true if all resources were retrieved
-    // successfully.
-    BLINK_EXPORT static bool retrieveAllResources(WebView*,
-                                                   const WebVector<WebCString>& supportedSchemes,
-                                                   WebVector<WebURL>* resources,
-                                                   WebVector<WebURL>* frames);
+                                       bool recursive,
+                                       WebPageSerializerClient*,
+                                       const WebVector<WebURL>& links,
+                                       const WebVector<WebString>& localPaths,
+                                       const WebString& localDirectoryName);
 
     // FIXME: The following are here for unit testing purposes. Consider
     // changing the unit tests instead.
