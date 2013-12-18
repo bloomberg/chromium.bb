@@ -344,6 +344,44 @@ TEST_F(TooltipControllerTest, HideOnExit) {
   EXPECT_FALSE(helper_->IsTooltipVisible());
 }
 
+TEST_F(TooltipControllerTest, ReshowOnClickAfterEnterExit) {
+  // Owned by |view_|.
+  TooltipTestView* v1 = new TooltipTestView;
+  TooltipTestView* v2 = new TooltipTestView;
+  view_->AddChildView(v1);
+  view_->AddChildView(v2);
+  gfx::Rect view_bounds(view_->GetLocalBounds());
+  view_bounds.set_height(view_bounds.height() / 2);
+  v1->SetBoundsRect(view_bounds);
+  view_bounds.set_y(view_bounds.height());
+  v2->SetBoundsRect(view_bounds);
+  const base::string16 v1_tt(ASCIIToUTF16("v1"));
+  const base::string16 v2_tt(ASCIIToUTF16("v2"));
+  v1->set_tooltip_text(v1_tt);
+  v2->set_tooltip_text(v2_tt);
+
+  gfx::Point v1_point(1, 1);
+  View::ConvertPointToWidget(v1, &v1_point);
+  generator_->MoveMouseRelativeTo(GetWindow(), v1_point);
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  EXPECT_EQ(v1_tt, helper_->GetTooltipText());
+
+  // Press the mouse, move to v2 and back to v1.
+  generator_->ClickLeftButton();
+
+  gfx::Point v2_point(1, 1);
+  View::ConvertPointToWidget(v2, &v2_point);
+  generator_->MoveMouseRelativeTo(GetWindow(), v2_point);
+  generator_->MoveMouseRelativeTo(GetWindow(), v1_point);
+
+  helper_->FireTooltipTimer();
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  EXPECT_EQ(v1_tt, helper_->GetTooltipText());
+}
+
 namespace {
 
 // Returns the index of |window| in its parent's children.

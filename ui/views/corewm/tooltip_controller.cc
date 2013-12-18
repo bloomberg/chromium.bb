@@ -133,6 +133,18 @@ void TooltipController::UpdateTooltip(aura::Window* target) {
   if (tooltip_window_ == target && tooltip_->IsVisible())
     UpdateIfRequired();
 
+  // Reset |tooltip_window_at_mouse_press_| if the moving within the same window
+  // but over a region that has different tooltip text. By resetting
+  // |tooltip_window_at_mouse_press_| we ensure the next time the timer fires
+  // we'll requery for the tooltip text.
+  // This handles the case of clicking on a view, moving within the same window
+  // but over a different view, than back to the original.
+  if (tooltip_window_at_mouse_press_ &&
+      target == tooltip_window_at_mouse_press_ &&
+      aura::client::GetTooltipText(target) != tooltip_text_at_mouse_press_) {
+    tooltip_window_at_mouse_press_ = NULL;
+  }
+
   // If we had stopped the tooltip timer for some reason, we must restart it if
   // there is a change in the tooltip.
   if (!tooltip_timer_.IsRunning()) {
