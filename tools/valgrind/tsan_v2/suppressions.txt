@@ -158,3 +158,6 @@ race:blink::currentTimeFunction
 
 # http://crbug.com/329460
 race:extensions::InfoMap::AddExtension
+
+# http://crbug.com/329530
+race:media::AesDecryptor::UpdateSession
