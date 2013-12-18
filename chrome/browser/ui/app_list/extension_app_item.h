@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/gfx/image/image_skia.h"
@@ -34,6 +35,7 @@ class ExtensionAppItem : public app_list::AppListItemModel,
                          public app_list::AppContextMenuDelegate {
  public:
   ExtensionAppItem(Profile* profile,
+                   const app_list::AppListSyncableService::SyncItem* sync_item,
                    const std::string& extension_id,
                    const std::string& extension_name,
                    const gfx::ImageSkia& installing_icon,
@@ -53,6 +55,7 @@ class ExtensionAppItem : public app_list::AppListItemModel,
   void Move(const ExtensionAppItem* prev, const ExtensionAppItem* next);
 
   const std::string& extension_id() const { return extension_id_; }
+  const std::string& extension_name() const { return extension_name_; }
 
   static const char kAppType[];
 

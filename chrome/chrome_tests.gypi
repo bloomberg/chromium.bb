@@ -2318,6 +2318,7 @@
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
         '../sync/sync.gyp:test_support_sync_testserver',
+        '../ui/app_list/app_list.gyp:app_list_test_support',
       ],
       'include_dirs': [
         '..',
@@ -2362,6 +2363,8 @@
         'browser/sync/test/integration/status_change_checker.h',
         'browser/sync/test/integration/sync_app_helper.cc',
         'browser/sync/test/integration/sync_app_helper.h',
+        'browser/sync/test/integration/sync_app_list_helper.cc',
+        'browser/sync/test/integration/sync_app_list_helper.h',
         'browser/sync/test/integration/sync_datatype_helper.cc',
         'browser/sync/test/integration/sync_datatype_helper.h',
         'browser/sync/test/integration/sync_extension_helper.cc',
@@ -2383,7 +2386,13 @@
             'browser/sync/test/integration/dictionary_load_observer.h',
           ],
         }],
-      ],
+        ['enable_app_list==0', {
+          'sources!': [
+            'browser/sync/test/integration/sync_app_list_helper.cc',
+            'browser/sync/test/integration/sync_app_list_helper.h',
+          ],
+        }],
+      ]
     },
     {
       'target_name': 'sync_integration_tests',
@@ -2431,6 +2440,7 @@
         'browser/sync/test/integration/multiple_client_preferences_sync_test.cc',
         'browser/sync/test/integration/multiple_client_sessions_sync_test.cc',
         'browser/sync/test/integration/multiple_client_typed_urls_sync_test.cc',
+        'browser/sync/test/integration/single_client_app_list_sync_test.cc',
         'browser/sync/test/integration/single_client_apps_sync_test.cc',
         'browser/sync/test/integration/single_client_bookmarks_sync_test.cc',
         'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
@@ -2445,6 +2455,7 @@
         'browser/sync/test/integration/sync_auth_test.cc',
         'browser/sync/test/integration/sync_errors_test.cc',
         'browser/sync/test/integration/sync_exponential_backoff_test.cc',
+        'browser/sync/test/integration/two_client_app_list_sync_test.cc',
         'browser/sync/test/integration/two_client_apps_sync_test.cc',
         'browser/sync/test/integration/two_client_autofill_sync_test.cc',
         'browser/sync/test/integration/two_client_bookmarks_sync_test.cc',
@@ -2530,6 +2541,12 @@
         ['enable_printing!=0', {
           'dependencies': [
             '../printing/printing.gyp:printing',
+          ],
+        }],
+        ['enable_app_list==0', {
+          'sources!': [
+            'browser/sync/test/integration/single_client_app_list_sync_test.cc',
+            'browser/sync/test/integration/two_client_app_list_sync_test.cc',
           ],
         }],
       ],

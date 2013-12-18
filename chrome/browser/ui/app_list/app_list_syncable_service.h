@@ -19,6 +19,7 @@
 #include "sync/api/syncable_service.h"
 #include "sync/protocol/app_list_specifics.pb.h"
 
+class ExtensionAppItem;
 class ExtensionAppModelBuilder;
 class ExtensionService;
 class Profile;
@@ -48,6 +49,8 @@ class AppListSyncableService : public syncer::SyncableService,
     std::string parent_id;
     syncer::StringOrdinal page_ordinal;
     syncer::StringOrdinal item_ordinal;
+
+    std::string ToString() const;
   };
 
   // Create an empty model. Then, if |extension_service| is non-NULL and ready,
@@ -56,13 +59,22 @@ class AppListSyncableService : public syncer::SyncableService,
 
   virtual ~AppListSyncableService();
 
-  // TODO(stevenjb): Implement specific Add and Update methods for
-  // ExtensionAppItem, etc.
+  // Adds |item| to |sync_items_| and |model_|. Does noting if a sync item
+  // already exists.
+  void AddExtensionAppItem(ExtensionAppItem* item);
+
+  // Updates existing entry in |sync_items_| from |item|.
+  void UpdateExtensionAppItem(ExtensionAppItem* item);
 
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);
 
+  // Returns the existing sync item matching |id| or NULL.
+  const SyncItem* GetSyncItem(const std::string& id) const;
+
+  Profile* profile() { return profile_; }
   AppListModel* model() { return model_.get(); }
+  size_t GetNumSyncItemsForTest() { return sync_items_.size(); }
 
   // syncer::SyncableService
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
@@ -88,15 +100,19 @@ class AppListSyncableService : public syncer::SyncableService,
   // Builds the model once ExtensionService is ready.
   void BuildModel();
 
-  // Returns true if sync has started, otherwise creates and runs |flare_|.
+  // Creates a new Appitem from |sync_item| and adds it to the model.
+  void CreateAppItemFromSyncItem(SyncItem* sync_item);
+
+  // Returns true if sync has restarted, otherwise runs |flare_|.
   bool SyncStarted();
 
-  // Common functionality for adding items.
+  // Creates a SyncItem entry and adds |item| to the model.
   SyncItem* AddItem(sync_pb::AppListSpecifics::AppListItemType type,
                     AppListItemModel* item);
 
-  // Common functionality for updating items.
-  void UpdateItem(AppListItemModel* item);
+  // Sends ADD or CHANGED for sync item.
+  void SendSyncChange(SyncItem* sync_item,
+                      syncer::SyncChange::SyncChangeType sync_change_type);
 
   // Returns an existing SyncItem corresponding to |item_id| or NULL.
   SyncItem* FindSyncItem(const std::string& item_id);

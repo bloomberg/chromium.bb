@@ -70,11 +70,13 @@ const color_utils::HSL shift = {-1, 0, 0.6};
 
 }  // namespace
 
-ExtensionAppItem::ExtensionAppItem(Profile* profile,
-                                   const std::string& extension_id,
-                                   const std::string& extension_name,
-                                   const gfx::ImageSkia& installing_icon,
-                                   bool is_platform_app)
+ExtensionAppItem::ExtensionAppItem(
+    Profile* profile,
+    const app_list::AppListSyncableService::SyncItem* sync_item,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon,
+    bool is_platform_app)
     : app_list::AppListItemModel(extension_id),
       profile_(profile),
       extension_id_(extension_id),
@@ -85,6 +87,11 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                                           shift)),
       is_platform_app_(is_platform_app) {
   Reload();
+  if (sync_item && sync_item->item_ordinal.IsValid()) {
+    // An existing synced position exists, use that.
+    set_position(sync_item->item_ordinal);
+    return;
+  }
   GetAppSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                syncer::StringOrdinal());
   UpdatePositionFromExtensionOrdering();

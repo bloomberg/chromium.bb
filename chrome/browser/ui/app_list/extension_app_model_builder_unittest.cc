@@ -124,8 +124,8 @@ class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
 
     model_.reset(new app_list::AppListModel);
     controller_.reset(new TestAppListControllerDelegate);
-    builder_.reset(new ExtensionAppModelBuilder(
-        profile_.get(), model_.get(), controller_.get()));
+    builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
+    builder_->InitializeWithProfile(profile_.get(), model_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -170,8 +170,8 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
 
   // Web stores should be present in the AppListModel.
   app_list::AppListModel model1;
-  ExtensionAppModelBuilder builder1(
-      profile_.get(), &model1, controller_.get());
+  ExtensionAppModelBuilder builder1(controller_.get());
+  builder1.InitializeWithProfile(profile_.get(), &model1);
   std::string content = GetModelContent(&model1);
   EXPECT_NE(std::string::npos, content.find("webstore"));
   EXPECT_NE(std::string::npos, content.find("enterprise_webstore"));
@@ -181,8 +181,8 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
 
   // Web stores should NOT be in the AppListModel.
   app_list::AppListModel model2;
-  ExtensionAppModelBuilder builder2(
-      profile_.get(), &model2, controller_.get());
+  ExtensionAppModelBuilder builder2(controller_.get());
+  builder2.InitializeWithProfile(profile_.get(), &model2);
   content = GetModelContent(&model2);
   EXPECT_EQ(std::string::npos, content.find("webstore"));
   EXPECT_EQ(std::string::npos, content.find("enterprise_webstore"));
@@ -289,8 +289,8 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
       base::Value::CreateStringValue("a corrupted ordinal"));
 
   // This should not assert or crash.
-  ExtensionAppModelBuilder builder1(
-      profile_.get(), model_.get(), controller_.get());
+  ExtensionAppModelBuilder builder1(controller_.get());
+  builder1.InitializeWithProfile(profile_.get(), model_.get());
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
@@ -309,8 +309,8 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   sorting->SetAppLaunchOrdinal(kPackagedApp2Id, conflict_ordinal);
 
   // This should not assert or crash.
-  ExtensionAppModelBuilder builder1(
-      profile_.get(), model_.get(), controller_.get());
+  ExtensionAppModelBuilder builder1(controller_.get());
+  builder1.InitializeWithProfile(profile_.get(), model_.get());
 
   // By default, conflicted items are sorted by their app ids (= order added).
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),

@@ -17,6 +17,10 @@ class AppListControllerDelegate;
 class ExtensionAppItem;
 class Profile;
 
+namespace app_list {
+class AppListSyncableService;
+}
+
 namespace extensions {
 class Extension;
 class ExtensionSet;
@@ -32,10 +36,15 @@ class ImageSkia;
 class ExtensionAppModelBuilder : public extensions::InstallObserver,
                                  public app_list::AppListItemListObserver {
  public:
-  ExtensionAppModelBuilder(Profile* profile,
-                           app_list::AppListModel* model,
-                           AppListControllerDelegate* controller);
+  explicit ExtensionAppModelBuilder(AppListControllerDelegate* controller);
   virtual ~ExtensionAppModelBuilder();
+
+  // Initialize to use app-list sync and sets |service_| to |service|.
+  void InitializeWithService(app_list::AppListSyncableService* service);
+
+  // Initialize to use extension sync and sets |service_| to NULL. Used in
+  // tests and when AppList sync is not enabled.
+  void InitializeWithProfile(Profile* profile, app_list::AppListModel* model);
 
  private:
   typedef std::vector<ExtensionAppItem*> ExtensionAppList;
@@ -67,6 +76,11 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
                                size_t to_index,
                                app_list::AppListItemModel* item) OVERRIDE;
 
+  ExtensionAppItem* CreateAppItem(const std::string& extension_id,
+                                  const std::string& extension_name,
+                                  const gfx::ImageSkia& installing_icon,
+                                  bool is_platform_app);
+
   // Adds apps in |extensions| to |apps|.
   void AddApps(const extensions::ExtensionSet* extensions,
                ExtensionAppList* apps);
@@ -93,6 +107,8 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   // Returns app instance matching |extension_id| or NULL.
   ExtensionAppItem* GetExtensionAppItem(const std::string& extension_id);
 
+  // Unowned pointers to the service that owns this and associated profile.
+  app_list::AppListSyncableService* service_;
   Profile* profile_;
 
   // Unowned pointer to the app list controller.
