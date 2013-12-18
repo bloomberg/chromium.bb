@@ -303,7 +303,10 @@ class PortTest(unittest.TestCase):
         "!= test-2.html test-notref.html # more comments",
         "== test-3.html test-ref.html",
         "== test-3.html test-ref2.html",
-        "!= test-3.html test-notref.html"])
+        "!= test-3.html test-notref.html",
+        "fuzzy(80,500) == test-3 test-ref.html"])
+
+        # Note that we don't support the syntax in the last line; the code should ignore it, rather than crashing.
 
         reftest_list = Port._parse_reftest_list(port.host.filesystem, 'bar')
         self.assertEqual(reftest_list, {'bar/test.html': [('==', 'bar/test-ref.html')],

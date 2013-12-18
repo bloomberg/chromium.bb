@@ -685,6 +685,10 @@ class Port(object):
         for line in reftest_list_file.split('\n'):
             line = re.sub('#.+$', '', line)
             split_line = line.split()
+            if len(split_line) == 4:
+                # FIXME: Probably one of mozilla's extensions in the reftest.list format. Do we need to support this?
+                _log.warning("unsupported reftest.list line '%s' in %s" % (line, reftest_list_path))
+                continue
             if len(split_line) < 3:
                 continue
             expectation_type, test_file, ref_file = split_line
