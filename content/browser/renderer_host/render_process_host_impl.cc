@@ -1570,6 +1570,10 @@ bool RenderProcessHostImpl::IsSuitableHost(
   if (host->GetBrowserContext() != browser_context)
     return false;
 
+  // Do not allow sharing of guest hosts. This is to prevent bugs where guest
+  // and non-guest storage gets mixed. In the future, we might consider enabling
+  // the sharing of guests, in this case this check should be removed and
+  // InSameStoragePartition should handle the possible sharing.
   if (host->IsGuest())
     return false;
 
