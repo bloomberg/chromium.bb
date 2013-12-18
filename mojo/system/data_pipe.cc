@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
@@ -270,7 +271,9 @@ DataPipe::DataPipe(bool has_local_producer,
       consumer_waiter_list_(has_local_consumer ? new WaiterList() : NULL),
       producer_in_two_phase_write_(false),
       consumer_in_two_phase_read_(false) {
-//FIXME
+  // Check that the passed in options actually are validated.
+  MojoCreateDataPipeOptions unused ALLOW_UNUSED = { 0 };
+  DCHECK_EQ(ValidateOptions(&validated_options, &unused), MOJO_RESULT_OK);
 }
 
 DataPipe::~DataPipe() {

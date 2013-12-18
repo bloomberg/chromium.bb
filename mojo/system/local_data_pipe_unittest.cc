@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/data_pipe.h"
+#include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -174,12 +175,90 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
   EXPECT_EQ(0u, num_bytes);
 
-  // TODO(vtl): More: discard (with/without "all or none"). More "all or none"
-  // tests.
-
   dp->ProducerClose();
   dp->ConsumerClose();
 }
+
+// TODO(vtl): BasicProducerWaiting
+
+TEST(LocalDataPipeTest, BasicConsumerWaiting) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    1000 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+    Waiter waiter;
+
+    // Never writable.
+    waiter.Init();
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 12));
+
+    // Not yet readable.
+    waiter.Init();
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 34));
+    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+    dp->ConsumerRemoveWaiter(&waiter);
+
+    // Write two elements.
+    int32_t elements[2] = { 123, 456 };
+    uint32_t num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerWriteData(elements, &num_bytes, true));
+
+    // Should already be readable.
+    waiter.Init();
+    EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+              dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 56));
+
+    // Discard one element.
+    num_bytes = static_cast<uint32_t>(sizeof(elements[0]));
+    EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerDiscardData(&num_bytes, true));
+    EXPECT_EQ(static_cast<uint32_t>(sizeof(elements[0])), num_bytes);
+
+    // Should still be readable.
+    waiter.Init();
+    EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+              dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 78));
+
+    // Discard another element.
+    num_bytes = static_cast<uint32_t>(sizeof(elements[0]));
+    EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerDiscardData(&num_bytes, true));
+    EXPECT_EQ(static_cast<uint32_t>(sizeof(elements[0])), num_bytes);
+
+    // Adding a waiter should now succeed.
+    waiter.Init();
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 90));
+
+    // Write one element.
+    num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerWriteData(elements, &num_bytes, true));
+
+    // Waiting should now succeed.
+    EXPECT_EQ(90, waiter.Wait(1000));
+    dp->ConsumerRemoveWaiter(&waiter);
+
+//FIXME
+
+//FIXME
+    dp->ProducerClose();
+    dp->ConsumerClose();
+  }
+
+}
+
+// TODO(vtl): More: discard (with/without "all or none"). More "all or none"
+// tests.
 
 // TODO(vtl): More.
 

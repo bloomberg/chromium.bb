@@ -44,7 +44,7 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
   DCHECK_GT(*num_bytes, 0u);
 
   // TODO(vtl): This implementation may write less than requested, even if room
-  // is available. Fix this.
+  // is available. Fix this. Note to self: Don't forget to wake up waiters.
   void* buffer = NULL;
   uint32_t buffer_num_bytes = *num_bytes;
   MojoResult rv = ProducerBeginWriteDataImplNoLock(&buffer,
@@ -97,9 +97,15 @@ MojoResult LocalDataPipe::ProducerEndWriteDataImplNoLock(
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
+  bool was_empty = (current_num_bytes_ == 0);
+
   current_num_bytes_ += num_bytes_written;
   DCHECK_LE(current_num_bytes_, capacity_num_bytes());
   two_phase_max_num_bytes_written_ = 0;  // For safety.
+
+  if (was_empty && num_bytes_written > 0)
+    AwakeConsumerWaitersForStateChangeNoLock();
+
   return MOJO_RESULT_OK;
 }
 
@@ -131,7 +137,7 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
   DCHECK_GT(*num_bytes, 0u);
 
   // TODO(vtl): This implementation may write less than requested, even if room
-  // is available. Fix this.
+  // is available. Fix this. Note to self: Don't forget to wake up waiters.
   const void* buffer = NULL;
   uint32_t buffer_num_bytes = *num_bytes;
   MojoResult rv = ConsumerBeginReadDataImplNoLock(&buffer, &buffer_num_bytes,
@@ -165,13 +171,15 @@ MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
   if (current_num_bytes_ == 0)
     return MOJO_RESULT_NOT_FOUND;
 
+  bool was_full = (current_num_bytes_ == capacity_num_bytes());
+
   size_t num_bytes_to_discard =
       std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
   start_index_ = (start_index_ + num_bytes_to_discard) % capacity_num_bytes();
   current_num_bytes_ -= num_bytes_to_discard;
 
-  AwakeProducerWaitersForStateChangeNoLock();
-  AwakeConsumerWaitersForStateChangeNoLock();
+  if (was_full && num_bytes_to_discard > 0)
+    AwakeProducerWaitersForStateChangeNoLock();
 
   *num_bytes = static_cast<uint32_t>(num_bytes_to_discard);
   return MOJO_RESULT_OK;
@@ -211,12 +219,18 @@ MojoResult LocalDataPipe::ConsumerEndReadDataImplNoLock(
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
+  bool was_full = (current_num_bytes_ == capacity_num_bytes());
+
   start_index_ += num_bytes_read;
   DCHECK_LE(start_index_, capacity_num_bytes());
   start_index_ %= capacity_num_bytes();
   DCHECK_LE(num_bytes_read, current_num_bytes_);
   current_num_bytes_ -= num_bytes_read;
   two_phase_max_num_bytes_read_ = 0;  // For safety.
+
+  if (was_full && num_bytes_read > 0)
+    AwakeProducerWaitersForStateChangeNoLock();
+
   return MOJO_RESULT_OK;
 }
 
