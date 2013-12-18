@@ -2097,7 +2097,10 @@ def CMDtry(parser, args):
     parser.error('No default try builder to try, use --bot')
 
   builders_and_tests = {}
-  for bot in options.bot:
+  old_style = filter(lambda x: isinstance(x, basestring), options.bot)
+  new_style = filter(lambda x: isinstance(x, tuple), options.bot)
+
+  for bot in old_style:
     if ':' in bot:
       builder, tests = bot.split(':', 1)
       builders_and_tests.setdefault(builder, []).extend(tests.split(','))
@@ -2105,6 +2108,9 @@ def CMDtry(parser, args):
       parser.error('Specify one bot per --bot flag')
     else:
       builders_and_tests.setdefault(bot, []).append('defaulttests')
+
+  for bot, tests in new_style:
+    builders_and_tests.setdefault(bot, []).extend(tests)
 
   if options.testfilter:
     forced_tests = sum((t.split(',') for t in options.testfilter), [])
