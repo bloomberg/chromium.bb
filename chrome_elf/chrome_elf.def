@@ -5,4 +5,4 @@
 LIBRARY  "chrome_elf.dll"
 
 EXPORTS
-  SignalChromeElf
+  InitChromeElf

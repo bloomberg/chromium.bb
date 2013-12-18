@@ -128,8 +128,9 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;
 
-  // Signal Chrome Elf that Chrome has begun to start.
-  SignalChromeElf();
+  // The purpose of this call is to force the addition of an entry in the IAT
+  // for chrome_elf.dll to force a load time dependency.
+  InitChromeElf();
 
   MetroDriver metro_driver;
   if (metro_driver.in_metro_mode())

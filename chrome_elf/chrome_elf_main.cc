@@ -6,21 +6,15 @@
 
 #include "chrome_elf/chrome_elf_main.h"
 
-#include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/ntdll_cache.h"
 
-void SignalChromeElf() {
-  blacklist::ClearBeacon();
+void InitChromeElf() {
+  // This method is a no-op which may be called to force a load-time dependency
+  // on chrome_elf.dll.
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
-  if (reason == DLL_PROCESS_ATTACH) {
+  if (reason == DLL_PROCESS_ATTACH)
     InitCache();
-    blacklist::Initialize(false);  // Don't force, abort if beacon is present.
-
-    // TODO(csharp): Move additions to the DLL blacklist to a sane place.
-    // blacklist::AddDllToBlacklist(L"foo.dll");
-  }
-
   return TRUE;
 }

@@ -8,7 +8,6 @@
   'includes': [
     '../build/win_precompile.gypi',
     '../chrome/version.gypi',
-    'blacklist.gypi',
   ],
   'targets': [
     {
@@ -23,7 +22,6 @@
         'chrome_elf_main.h',
       ],
       'dependencies': [
-        'blacklist',
         'chrome_elf_lib',
       ],
       'msvs_settings': {
@@ -31,14 +29,6 @@
           'BaseAddress': '0x01c20000',
           # Set /SUBSYSTEM:WINDOWS for chrome_elf.dll (for consistency).
           'SubSystem': '2',
-          # Exclude explicitly unwanted libraries from the link line.
-          'IgnoreAllDefaultLibraries': 'true',
-          'AdditionalDependencies!': [
-            'user32.lib',
-          ],
-          'IgnoreDefaultLibraryNames': [
-            'user32.lib',
-          ],
         },
       },
     },
@@ -46,7 +36,6 @@
       'target_name': 'chrome_elf_unittests',
       'type': 'executable',
       'sources': [
-        'blacklist/test/blacklist_test.cc',
         'ntdll_cache_unittest.cc',
       ],
       'include_dirs': [
@@ -54,16 +43,8 @@
       ],
       'dependencies': [
         'chrome_elf_lib',
-        '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
-        '../base/base.gyp:test_support_base',
-        '../sandbox/sandbox.gyp:sandbox',
-        '../testing/gtest.gyp:gtest',
-        'blacklist',
-        'blacklist_test_dll_1',
-        'blacklist_test_dll_2',
-        'blacklist_test_dll_3',
-        'blacklist_test_main_dll',
+        '<(DEPTH)/base/base.gyp:run_all_unittests',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
     },
     {

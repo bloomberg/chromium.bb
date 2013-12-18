@@ -5,6 +5,6 @@
 #ifndef CHROME_ELF_CHROME_ELF_MAIN_H_
 #define CHROME_ELF_CHROME_ELF_MAIN_H_
 
-extern "C" void SignalChromeElf();
+extern "C" void InitChromeElf();
 
 #endif  // CHROME_ELF_CHROME_ELF_MAIN_H_
