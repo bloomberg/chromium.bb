@@ -1184,7 +1184,7 @@ def _CheckForString16InFile(input_api, f):
 
 def _CheckForString16(input_api, output_api):
   file_filter = lambda f: input_api.FilterSourceFile(f,
-      white_list=(r'^chrome[\\\/]browser[\\\/]', ),
+      white_list=(r'^chrome[\\\/]browser[\\\/]', r'^net[\\\/]'),
       black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
 
