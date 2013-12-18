@@ -118,13 +118,7 @@ def generate_interface(interface):
             includes.add('bindings/v8/SerializedScriptValue.h')
 
     # [NamedConstructor]
-    if 'NamedConstructor' in extended_attributes:
-        # FIXME: parser should return named constructor separately;
-        # included in constructors (and only name stored in extended attribute)
-        # for Perl compatibility
-        named_constructor = {'name': extended_attributes['NamedConstructor']}
-    else:
-        named_constructor = None
+    named_constructor = generate_named_constructor(interface)
 
     if (constructors or custom_constructors or has_event_constructor or
         named_constructor):
@@ -391,6 +385,28 @@ def generate_constructor_overloads(constructors):
             'overload_resolution_expression':
                 overload_resolution_expression(constructor),
         })
+
+
+# [NamedConstructor]
+def generate_named_constructor(interface):
+    extended_attributes = interface.extended_attributes
+    if 'NamedConstructor' not in extended_attributes:
+        return None
+    # FIXME: parser should return named constructor separately;
+    # included in constructors (and only name stored in extended attribute)
+    # for Perl compatibility
+    return {
+        'argument_list': named_constructor_argument_list(interface),
+        'name': extended_attributes['NamedConstructor'],
+    }
+
+
+def named_constructor_argument_list(interface):
+    arguments = ['*document']
+    # [RaisesException=Constructor]
+    if interface.extended_attributes.get('RaisesException') == 'Constructor':
+        arguments.append('exceptionState')
+    return arguments
 
 
 def interface_length(interface, constructors):

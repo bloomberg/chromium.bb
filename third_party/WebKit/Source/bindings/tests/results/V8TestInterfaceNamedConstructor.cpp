@@ -92,8 +92,11 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     // may end up being the only node in the map and get garbage-collected prematurely.
     toV8(document, info.Holder(), info.GetIsolate());
 
-    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document);
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), info.GetIsolate());
+    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
+    if (exceptionState.throwIfNeeded())
+        return;
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);

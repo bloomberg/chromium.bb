@@ -352,10 +352,15 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     // may end up being the only node in the map and get garbage-collected prematurely.
     toV8(document, info.Holder(), info.GetIsolate());
 
-    {# FIXME: arguments #}
-    {% set argument_list = ['*document'] %}
-    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{argument_list | join(', ')}});
+    {% if is_constructor_raises_exception %}
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
+    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
+    {% if is_constructor_raises_exception %}
+    if (exceptionState.throwIfNeeded())
+        return;
+    {% endif %}
 
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}Constructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);

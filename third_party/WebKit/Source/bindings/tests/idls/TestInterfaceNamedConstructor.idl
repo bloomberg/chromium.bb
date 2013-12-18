@@ -31,5 +31,6 @@
 [
     ActiveDOMObject,
     NamedConstructor=Audio(),
+    RaisesException=Constructor,
 ] interface TestInterfaceNamedConstructor {
 };
