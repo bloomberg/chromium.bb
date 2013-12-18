@@ -86,6 +86,7 @@
 #include <utility>
 #include <vector>
 
+#include "common/basictypes.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/memory.h"
 #include "client/linux/log/log.h"
@@ -574,7 +575,7 @@ bool ExceptionHandler::WriteMinidump() {
     // Reposition the FD to its beginning and resize it to get rid of the
     // previous minidump info.
     lseek(minidump_descriptor_.fd(), 0, SEEK_SET);
-    static_cast<void>(ftruncate(minidump_descriptor_.fd(), 0));
+    ignore_result(ftruncate(minidump_descriptor_.fd(), 0));
   }
 
   // Allow this process to be dumped.
