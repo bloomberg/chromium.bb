@@ -51,12 +51,9 @@ ui::ContextFactory* NoTransportImageTransportFactory::AsContextFactory() {
 }
 
 gfx::GLSurfaceHandle
-NoTransportImageTransportFactory::CreateSharedSurfaceHandle() {
+NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
   return gfx::GLSurfaceHandle();
 }
-
-void NoTransportImageTransportFactory::DestroySharedSurfaceHandle(
-    gfx::GLSurfaceHandle surface) {}
 
 scoped_refptr<ui::Texture>
 NoTransportImageTransportFactory::CreateTransportClient(

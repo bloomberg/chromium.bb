@@ -278,13 +278,11 @@ struct GLSurfaceHandle {
   GLSurfaceHandle()
       : handle(kNullPluginWindow),
         transport_type(EMPTY),
-        parent_gpu_process_id(0),
         parent_client_id(0) {
   }
   GLSurfaceHandle(PluginWindowHandle handle_, SurfaceType transport_)
       : handle(handle_),
         transport_type(transport_),
-        parent_gpu_process_id(0),
         parent_client_id(0) {
     DCHECK(!is_null() || handle == kNullPluginWindow);
     DCHECK(transport_type != TEXTURE_TRANSPORT ||
@@ -297,7 +295,6 @@ struct GLSurfaceHandle {
   }
   PluginWindowHandle handle;
   SurfaceType transport_type;
-  int parent_gpu_process_id;
   uint32 parent_client_id;
 };
 

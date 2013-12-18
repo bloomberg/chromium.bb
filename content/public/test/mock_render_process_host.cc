@@ -250,9 +250,6 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
   return base::TimeDelta::FromMilliseconds(0);
 }
 
-void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
-}
-
 void MockRenderProcessHost::ResumeRequestsForView(int route_id) {
 }
 

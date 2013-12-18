@@ -39,10 +39,6 @@ class GpuMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // Signals that the handle for a surface id was updated, and it may be time to
-  // unblock existing CreateViewCommandBuffer requests using that surface.
-  void SurfaceUpdated(int32 surface_id);
-
   // This set of API is used to subscribe to frame presentation events.
   // See RenderWidgetHostViewFrameSubscriber for more details.
   void BeginFrameSubscription(
@@ -84,7 +80,6 @@ class GpuMessageFilter : public BrowserMessageFilter {
   bool share_contexts_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
-  std::vector<linked_ptr<CreateViewCommandBufferRequest> > pending_requests_;
 
   base::WeakPtrFactory<GpuMessageFilter> weak_ptr_factory_;
 

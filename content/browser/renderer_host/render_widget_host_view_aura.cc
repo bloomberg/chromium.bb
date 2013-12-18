@@ -487,6 +487,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #if defined(OS_WIN)
   plugin_parent_window_ = NULL;
 #endif
+  ImageTransportFactory::GetInstance()->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2140,13 +2141,7 @@ void RenderWidgetHostViewAura::OnAccessibilityEvents(
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  if (shared_surface_handle_.is_null()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    shared_surface_handle_ = factory->CreateSharedSurfaceHandle();
-    if (!shared_surface_handle_.is_null())
-      factory->AddObserver(this);
-  }
-  return shared_surface_handle_;
+  return ImageTransportFactory::GetInstance()->GetSharedSurfaceHandle();
 }
 
 bool RenderWidgetHostViewAura::LockMouse() {
@@ -3208,12 +3203,6 @@ void RenderWidgetHostViewAura::OnLostResources() {
   // are using is becoming invalid. This sends pending ACKs and needs to happen
   // after calling UpdateExternalTexture() which syncs with the impl thread.
   RunOnCommitCallbacks();
-
-  DCHECK(!shared_surface_handle_.is_null());
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->DestroySharedSurfaceHandle(shared_surface_handle_);
-  shared_surface_handle_ = factory->CreateSharedSurfaceHandle();
-  host_->CompositingSurfaceUpdated();
   host_->ScheduleComposite();
 }
 
@@ -3225,11 +3214,9 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     paint_observer_->OnViewDestroyed();
   if (touch_editing_client_)
     touch_editing_client_->OnViewDestroyed();
-  if (!shared_surface_handle_.is_null()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    factory->DestroySharedSurfaceHandle(shared_surface_handle_);
-    factory->RemoveObserver(this);
-  }
+
+  ImageTransportFactory::GetInstance()->RemoveObserver(this);
+
   window_observer_.reset();
   if (window_->GetDispatcher())
     window_->GetDispatcher()->RemoveRootWindowObserver(this);
