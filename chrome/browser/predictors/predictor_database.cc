@@ -81,7 +81,8 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {
   // The connection pointer needs to be deleted on the DB thread since there
   // might be a task in progress on the DB thread which uses this connection.
-  BrowserThread::DeleteSoon(BrowserThread::DB, FROM_HERE, db_.release());
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
+    BrowserThread::DeleteSoon(BrowserThread::DB, FROM_HERE, db_.release());
 }
 
 void PredictorDatabaseInternal::Initialize() {
