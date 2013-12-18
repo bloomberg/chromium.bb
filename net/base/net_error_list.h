@@ -307,6 +307,9 @@ NET_ERROR(SSL_SERVER_CERT_CHANGED, -156)
 // performed.
 NET_ERROR(SSL_INAPPROPRIATE_FALLBACK, -157)
 
+// Certificate Transparency: All Signed Certificate Timestamps failed to verify.
+NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -158)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
@@ -414,10 +417,6 @@ NET_ERROR(CERT_NAME_CONSTRAINT_VIOLATION, -212)
 
 // The value immediately past the last certificate error code.
 NET_ERROR(CERT_END, -213)
-
-// Certificate Transparency: All Signed Certificate Timestamps failed to verify.
-// XXX(eranm): Move this error to a more appropriate category.
-NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -299)
 
 // The URL is invalid.
 NET_ERROR(INVALID_URL, -300)
