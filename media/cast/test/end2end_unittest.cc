@@ -564,8 +564,14 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
   EXPECT_EQ(100, test_receiver_audio_callback_->number_times_called());
 }
 
+// TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
+#if defined(OS_WIN)
+#define MAYBE_LoopNoLossOpus DISABLED_LoopNoLossOpus
+#else
+#define MAYBE_LoopNoLossOpus LoopNoLossOpus
+#endif
 // This tests our Opus audio codec without video.
-TEST_F(End2EndTest, LoopNoLossOpus) {
+TEST_F(End2EndTest, MAYBE_LoopNoLossOpus) {
   SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
 
@@ -833,7 +839,13 @@ TEST_F(End2EndTest, CryptoVideo) {
             test_receiver_video_callback_->number_times_called());
 }
 
-TEST_F(End2EndTest, CryptoAudio) {
+// TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
+#if defined(OS_WIN)
+#define MAYBE_CryptoAudio DISABLED_CryptoAudio
+#else
+#define MAYBE_CryptoAudio CryptoAudio
+#endif
+TEST_F(End2EndTest, MAYBE_CryptoAudio) {
   SetupConfig(kPcm16, 32000, false, 1);
 
   audio_sender_config_.aes_iv_mask =
@@ -956,9 +968,15 @@ TEST_F(End2EndTest, VideoLogging) {
   EXPECT_EQ(3u, event_log.size());
 }
 
+// TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
+#if defined(OS_WIN)
+#define MAYBE_AudioLogging DISABLED_AudioLogging
+#else
+#define MAYBE_AudioLogging AudioLogging
+#endif
 // Audio test without packet loss; This test is targeted at testing the logging
 // aspects of the end2end, but is basically equivalent to LoopNoLossPcm16.
-TEST_F(End2EndTest, AudioLogging) {
+TEST_F(End2EndTest, MAYBE_AudioLogging) {
   SetupConfig(kPcm16, 32000, false, 1);
   Create();
 
