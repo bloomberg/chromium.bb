@@ -6030,12 +6030,6 @@
    Memcheck:Uninitialized
    fun:_ZN4base17MD5DigestToBase16ERKNS_9MD5DigestE
    fun:_ZN7content16WebKitTestRunner11CaptureDumpEv
-   fun:_ZN7content16WebKitTestRunner12testFinishedEv
-   fun:_ZN13WebTestRunner10TestRunner18completeNotifyDoneEv
-   fun:_ZN13WebTestRunner10TestRunner10notifyDoneERKSt6vectorINS_10CppVariantESaIS2_EEPS2_
-   fun:_ZN13WebTestRunner13CppBoundClass14MemberCallbackINS_10TestRunnerEE3runERKSt6vectorINS_10CppVariantESaIS5_EEPS5_
-   fun:_ZN13WebTestRunner13CppBoundClass6invokeEPvPK10_NPVariantmPS2_
-   fun:_ZN13WebTestRunner11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS4_
 }
 {
    bug_290559a
