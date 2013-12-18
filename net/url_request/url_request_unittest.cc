@@ -3871,7 +3871,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     LoadStateWithParam load_state = url_request_->GetLoadState();
     EXPECT_EQ(expected_third_load_state_, load_state.state);
     if (expected_second_load_state_ == LOAD_STATE_WAITING_FOR_DELEGATE)
-      EXPECT_EQ(string16(), load_state.param);
+      EXPECT_EQ(base::string16(), load_state.param);
     callback_.Run();
   }
 
@@ -4063,7 +4063,7 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
                  &context);
     LoadStateWithParam load_state = r.GetLoadState();
     EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
-    EXPECT_EQ(string16(), load_state.param);
+    EXPECT_EQ(base::string16(), load_state.param);
 
     AsyncDelegateLogger::Run(
         &r,
@@ -4111,7 +4111,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
                  &context);
     LoadStateWithParam load_state = r.GetLoadState();
     EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
-    EXPECT_EQ(string16(), load_state.param);
+    EXPECT_EQ(base::string16(), load_state.param);
 
     r.Start();
     base::RunLoop().Run();
@@ -4164,7 +4164,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
                  &context);
     LoadStateWithParam load_state = r.GetLoadState();
     EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
-    EXPECT_EQ(string16(), load_state.param);
+    EXPECT_EQ(base::string16(), load_state.param);
 
     r.Start();
     base::RunLoop().Run();
@@ -4242,7 +4242,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
                  &context);
     LoadStateWithParam load_state = r.GetLoadState();
     EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
-    EXPECT_EQ(string16(), load_state.param);
+    EXPECT_EQ(base::string16(), load_state.param);
 
     r.Start();
     base::RunLoop().Run();
