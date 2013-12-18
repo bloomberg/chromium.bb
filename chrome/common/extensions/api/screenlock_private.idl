@@ -17,10 +17,17 @@ namespace screenlockPrivate {
 
     // Show a message to the user on the unlock UI if the screen is locked.
     static void showMessage(DOMString message);
+
+    // Show a button icon on the unlock UI if the screen is locked.
+    static void showButton(DOMString icon);
   };
 
   interface Events {
     // Fires whenever the screen is locked or unlocked.
     static void onChanged(boolean locked);
+
+    // Fires when the user presses the button on the unlock UI shown by
+    // $ref:showButton().
+    static void onButtonClicked();
   };
 };

@@ -45,19 +45,36 @@ class ScreenlockPrivateShowMessageFunction
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowMessageFunction );
 };
 
+class ScreenlockPrivateShowButtonFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showButton",
+                             SCREENLOCKPRIVATE_SHOWBUTTON)
+  ScreenlockPrivateShowButtonFunction();
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  virtual ~ScreenlockPrivateShowButtonFunction();
+  void OnImageLoaded(const gfx::Image& image);
+  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowButtonFunction );
+};
+
 class ScreenlockPrivateEventRouter
     : public extensions::ProfileKeyedAPI,
       public chromeos::SessionManagerClient::Observer {
  public:
   explicit ScreenlockPrivateEventRouter(Profile* profile);
   virtual ~ScreenlockPrivateEventRouter();
-  virtual void ScreenIsLocked() OVERRIDE;
-  virtual void ScreenIsUnlocked() OVERRIDE;
+
+  void OnButtonClicked();
 
   // ProfileKeyedAPI
   static extensions::ProfileKeyedAPIFactory<ScreenlockPrivateEventRouter>*
     GetFactoryInstance();
   virtual void Shutdown() OVERRIDE;
+
+  // chromeos::SessionManagerClient::Observer
+  virtual void ScreenIsLocked() OVERRIDE;
+  virtual void ScreenIsUnlocked() OVERRIDE;
 
  private:
   friend class extensions::ProfileKeyedAPIFactory<ScreenlockPrivateEventRouter>;

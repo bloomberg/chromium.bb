@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/browser/event_router.h"
@@ -63,13 +64,50 @@ bool ScreenlockPrivateShowMessageFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
+  if (locker)
+    locker->ShowBannerMessage(params->message);
+  SendResponse(error_.empty());
+  return true;
+}
+
+static const int kMaxButtonIconSize = 40;
+
+ScreenlockPrivateShowButtonFunction::
+  ScreenlockPrivateShowButtonFunction() {}
+
+ScreenlockPrivateShowButtonFunction::
+  ~ScreenlockPrivateShowButtonFunction() {}
+
+bool ScreenlockPrivateShowButtonFunction::RunImpl() {
+  scoped_ptr<screenlock::ShowButton::Params> params(
+      screenlock::ShowButton::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  chromeos::ScreenLocker* locker =
+      chromeos::ScreenLocker::default_screen_locker();
   if (!locker) {
     SendResponse(error_.empty());
     return true;
   }
-  locker->ShowBannerMessage(params->message);
-  SendResponse(error_.empty());
+  extensions::ImageLoader* loader = extensions::ImageLoader::Get(GetProfile());
+  loader->LoadImageAsync(
+      GetExtension(), GetExtension()->GetResource(params->icon),
+      gfx::Size(kMaxButtonIconSize, kMaxButtonIconSize),
+      base::Bind(&ScreenlockPrivateShowButtonFunction::OnImageLoaded, this));
   return true;
+}
+
+void ScreenlockPrivateShowButtonFunction::OnImageLoaded(
+    const gfx::Image& image) {
+  chromeos::ScreenLocker* locker =
+      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockPrivateEventRouter* router =
+    ScreenlockPrivateEventRouter::GetFactoryInstance()->GetForProfile(
+        GetProfile());
+  locker->ShowUserPodButton(
+      GetProfile()->GetProfileName(), image,
+      base::Bind(&ScreenlockPrivateEventRouter::OnButtonClicked,
+                 base::Unretained(router)));
+  SendResponse(error_.empty());
 }
 
 ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(Profile* profile)
@@ -96,7 +134,8 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     base::Value* arg) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(arg);
+  if (arg)
+    args->Append(arg);
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
@@ -118,6 +157,10 @@ void ScreenlockPrivateEventRouter::Shutdown() {
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   if (session_manager->HasObserver(this))
     session_manager->RemoveObserver(this);
+}
+
+void ScreenlockPrivateEventRouter::OnButtonClicked() {
+  DispatchEvent(screenlock::OnButtonClicked::kEventName, NULL);
 }
 
 }  // namespace extensions
