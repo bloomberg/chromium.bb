@@ -110,7 +110,6 @@ class OmniboxViewViews
   virtual int GetWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
   virtual bool IsImeShowingPopup() const OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,

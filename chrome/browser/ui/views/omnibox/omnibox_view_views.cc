@@ -687,11 +687,6 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #endif
 }
 
-int OmniboxViewViews::OnPerformDrop(const ui::DropTargetEvent& event) {
-  NOTIMPLEMENTED();
-  return ui::DragDropTypes::DRAG_NONE;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::TextfieldController implementation:
 

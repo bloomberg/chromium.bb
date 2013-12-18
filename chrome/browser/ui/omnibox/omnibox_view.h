@@ -33,21 +33,6 @@ namespace content {
 class WebContents;
 }
 
-#if defined(TOOLKIT_VIEWS)
-// TODO(beng): Move all views-related code to a views-specific sub-interface.
-namespace gfx {
-class Font;
-}
-
-namespace views {
-class View;
-}
-
-namespace ui {
-class DropTargetEvent;
-}
-#endif
-
 class OmniboxView {
  public:
   virtual ~OmniboxView();
@@ -230,11 +215,6 @@ class OmniboxView {
   // corpus (e.g. Images) rather than start a new Web search.  This method will
   // only ever return true on mobile ports.
   virtual bool IsIndicatingQueryRefinement() const;
-
-#if defined(TOOLKIT_VIEWS)
-  // Performs the drop of a drag and drop operation on the view.
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) = 0;
-#endif
 
   // Returns |text| with any leading javascript schemas stripped.
   static base::string16 StripJavascriptSchemas(const base::string16& text);

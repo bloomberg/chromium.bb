@@ -138,12 +138,6 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual void Layout() OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& acc) OVERRIDE;

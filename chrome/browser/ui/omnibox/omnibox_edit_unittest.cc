@@ -81,11 +81,6 @@ class TestingOmniboxView : public OmniboxView {
   virtual int GetTextWidth() const OVERRIDE { return 0; }
   virtual int GetWidth() const OVERRIDE { return 0; }
   virtual bool IsImeComposing() const OVERRIDE { return false; }
-#if defined(TOOLKIT_VIEWS)
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
-    return 0;
-  }
-#endif
   virtual int GetOmniboxTextLength() const OVERRIDE { return 0; }
   virtual void EmphasizeURLComponents() OVERRIDE { }
 

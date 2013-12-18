@@ -645,34 +645,6 @@ void ToolbarView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(gfx::Rect(0, height() - 1, width(), 1), SK_ColorBLACK);
 }
 
-// Note this method is ignored on Windows, but needs to be implemented for
-// linux, where it is called before CanDrop().
-bool ToolbarView::GetDropFormats(
-    int* formats,
-    std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
-  return true;
-}
-
-bool ToolbarView::CanDrop(const ui::OSExchangeData& data) {
-  // To support loading URLs by dropping into the toolbar, we need to support
-  // dropping URLs and/or text.
-  return data.HasURL() || data.HasString();
-}
-
-int ToolbarView::OnDragUpdated(const ui::DropTargetEvent& event) {
-  if (event.source_operations() & ui::DragDropTypes::DRAG_COPY) {
-    return ui::DragDropTypes::DRAG_COPY;
-  } else if (event.source_operations() & ui::DragDropTypes::DRAG_LINK) {
-    return ui::DragDropTypes::DRAG_LINK;
-  }
-  return ui::DragDropTypes::DRAG_NONE;
-}
-
-int ToolbarView::OnPerformDrop(const ui::DropTargetEvent& event) {
-  return location_bar_->GetOmniboxView()->OnPerformDrop(event);
-}
-
 void ToolbarView::OnThemeChanged() {
   LoadImages();
 }
