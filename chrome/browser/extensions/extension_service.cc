@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -2242,7 +2243,7 @@ void ExtensionService::MaybeFinishDelayedInstallation(
   // only used for idle updates.
   if ((reason == extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE ||
        reason == extensions::ExtensionPrefs::DELAY_REASON_NONE) &&
-       is_ready() && !IsExtensionIdle(extension_id))
+       is_ready() && !extension_util::IsExtensionIdle(extension_id, system_))
     return;
 
   const Extension* extension = delayed_installs_.GetByID(extension_id);
@@ -2716,23 +2717,6 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
   return true;
 }
 
-bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
-  extensions::ProcessManager* process_manager = system_->process_manager();
-  DCHECK(process_manager);
-  extensions::ExtensionHost* host =
-      process_manager->GetBackgroundHostForExtension(extension_id);
-  if (host)
-    return false;
-
-  content::SiteInstance* site_instance = process_manager->GetSiteInstanceForURL(
-      Extension::GetBaseURLFromExtensionId(extension_id));
-  if (site_instance && site_instance->HasProcess()) {
-    return false;
-  }
-
-  return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
-}
-
 bool ExtensionService::ShouldDelayExtensionUpdate(
     const std::string& extension_id,
     bool wait_for_idle) const {
@@ -2755,7 +2739,7 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
         extension_id, kOnUpdateAvailableEvent);
   } else {
     // Delay installation if the extension is not idle.
-    return !IsExtensionIdle(extension_id);
+    return !extension_util::IsExtensionIdle(extension_id, system_);
   }
 }
 

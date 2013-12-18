@@ -9,6 +9,7 @@
 
 namespace extensions {
 class Extension;
+class ExtensionSystem;
 }
 
 class ExtensionService;
@@ -52,6 +53,11 @@ bool IsAppLaunchable(const std::string& extension_id,
 // Whether an app can be launched without being enabled first.
 bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
                                     const ExtensionService* service);
+
+// Whether an extension is idle and whether it is safe to perform actions
+// such as updating.
+bool IsExtensionIdle(const std::string& extension_id,
+                     extensions::ExtensionSystem* extension_system);
 
 }  // namespace extension_util
 

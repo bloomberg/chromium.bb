@@ -8,8 +8,10 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "content/public/browser/site_instance.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -135,6 +137,26 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
   const Extension* launchable_extension = service->GetExtensionById(
       extension_id, ExtensionService::INCLUDE_ENABLED);
   return launchable_extension != NULL;
+}
+
+bool IsExtensionIdle(const std::string& extension_id,
+                     extensions::ExtensionSystem* extension_system) {
+  DCHECK(extension_system);
+  extensions::ProcessManager* process_manager =
+      extension_system->process_manager();
+  DCHECK(process_manager);
+  extensions::ExtensionHost* host =
+      process_manager->GetBackgroundHostForExtension(extension_id);
+  if (host)
+    return false;
+
+  content::SiteInstance* site_instance = process_manager->GetSiteInstanceForURL(
+      Extension::GetBaseURLFromExtensionId(extension_id));
+  if (site_instance && site_instance->HasProcess()) {
+    return false;
+  }
+
+  return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
 }
 
 }  // namespace extension_util
