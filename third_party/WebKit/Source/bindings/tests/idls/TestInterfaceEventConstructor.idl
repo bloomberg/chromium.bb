@@ -39,7 +39,7 @@
     [InitializedByEventConstructor] readonly attribute Uint8Array initializedByEventConstructorReadonlyUint8ArrayAttribute;
     [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute;
     [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty[] initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute;
-    // [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty? initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute; // FIXME: implement getters for nullable interface type attributes
+    [InitializedByEventConstructor] readonly attribute TestInterfaceEmpty? initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute;
 
     [DeprecateAs=initializedByEventConstructorReadonlyStringAttribute, InitializedByEventConstructor] readonly attribute DOMString deprecatedInitializedByEventConstructorReadonlyStringAttribute;
     [ImplementedAs=implementedAsName, InitializedByEventConstructor] readonly attribute DOMString implementedAsInitializedByEventConstructorReadonlyStringAttribute;

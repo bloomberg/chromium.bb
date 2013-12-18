@@ -194,6 +194,32 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribut
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceEventConstructor* imp = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    bool isNull = false;
+    RefPtr<TestInterfaceEmpty> jsValue = imp->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute(isNull);
+    if (isNull) {
+        v8SetReturnValueNull(info);
+        return;
+    }
+    RefPtr<TestInterfaceEmpty> result = jsValue;
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", wrapper);
+        v8SetReturnValue(info, wrapper);
+    }
+}
+
+static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceEventConstructor* imp = V8TestInterfaceEventConstructor::toNative(info.Holder());
@@ -281,6 +307,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceEventCons
     {"initializedByEventConstructorReadonlyUint8ArrayAttribute", TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute", TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute", TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", TestInterfaceEventConstructorV8Internal::initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"deprecatedInitializedByEventConstructorReadonlyStringAttribute", TestInterfaceEventConstructorV8Internal::deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"implementedAsInitializedByEventConstructorReadonlyStringAttribute", TestInterfaceEventConstructorV8Internal::implementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", TestInterfaceEventConstructorV8Internal::deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -303,6 +330,8 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
     if (!options.convert(conversionContext.setConversionType("TestInterfaceEmpty", false), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute", eventInit.initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute))
         return false;
     if (!options.convert(conversionContext.setConversionType("TestInterfaceEmpty[]", false), "initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute", eventInit.initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute))
+        return false;
+    if (!options.convert(conversionContext.setConversionType("TestInterfaceEmpty", true), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", eventInit.initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute))
         return false;
     if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
         if (options.hasProperty("deprecatedInitializedByEventConstructorReadonlyStringAttribute"))

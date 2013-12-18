@@ -1587,6 +1587,7 @@ END
             $code .= "    " . ConvertToV8StringResource($attribute, $nativeType, "cppValue", $getterString) . ";\n";
         } else {
             $code .= "    $nativeType jsValue = $getterString;\n";
+            $getterString = "jsValue";
         }
 
         if ($isNullable) {
