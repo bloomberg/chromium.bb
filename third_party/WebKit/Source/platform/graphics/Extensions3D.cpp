@@ -234,4 +234,14 @@ void Extensions3D::loseContextCHROMIUM(GC3Denum current, GC3Denum other)
     m_context->webContext()->loseContextCHROMIUM(current, other);
 }
 
+void Extensions3D::renderbufferStorageMultisampleEXT(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height)
+{
+    m_context->webContext()->renderbufferStorageMultisampleEXT(target, samples, internalformat, width, height);
+}
+
+void Extensions3D::framebufferTexture2DMultisampleEXT(GC3Denum target, GC3Denum attachment, GC3Denum textarget, Platform3DObject texture, GC3Dint level, GC3Dsizei samples)
+{
+    m_context->webContext()->framebufferTexture2DMultisampleEXT(target, attachment, textarget, texture, level, samples);
+}
+
 } // namespace WebCore

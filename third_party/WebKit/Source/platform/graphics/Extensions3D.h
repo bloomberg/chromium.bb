@@ -312,6 +312,10 @@ public:
     // GL_CHROMIUM_lose_context
     void loseContextCHROMIUM(GC3Denum, GC3Denum);
 
+    // GL_EXT_multisampled_render_to_texture
+    void framebufferTexture2DMultisampleEXT(GC3Denum target, GC3Denum attachment, GC3Denum textarget, Platform3DObject, GC3Dint level, GC3Dsizei samples);
+    void renderbufferStorageMultisampleEXT(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height);
+
 private:
     // Instances of this class are strictly owned by the GraphicsContext3D implementation and do not
     // need to be instantiated by any other code.
