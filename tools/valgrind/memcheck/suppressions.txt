@@ -425,6 +425,17 @@
    fun:_ZNSt12_Vector_base*_M_allocate*
 }
 
+# Externally allocated objects referenced by V8 objects can currently
+# be diagnosed as (false) leaks, since memcheck does not know how to
+# handle V8 leaks. More detailed discussion in http://crbug.com/328552
+{
+   bug_328552
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10StringImpl19createUninitializedEjRPh
+}
+
+
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
