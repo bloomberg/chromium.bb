@@ -48,7 +48,6 @@ _WEBRTC_ISOLATE_FILE_PATHS = {
       'modules/audio_coding/neteq4/audio_decoder_unittests.isolate',
     'common_audio_unittests': 'common_audio/common_audio_unittests.isolate',
     'common_video_unittests': 'common_video/common_video_unittests.isolate',
-    'metrics_unittests': 'test/metrics_unittests.isolate',
     'modules_tests': 'modules/modules_tests.isolate',
     'modules_unittests': 'modules/modules_unittests.isolate',
     'neteq_unittests': 'modules/audio_coding/neteq/neteq_unittests.isolate',
