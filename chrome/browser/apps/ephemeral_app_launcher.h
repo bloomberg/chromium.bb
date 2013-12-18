@@ -99,6 +99,9 @@ class EphemeralAppLauncher
   gfx::NativeWindow parent_window_;
   scoped_ptr<content::WebContents> dummy_web_contents_;
 
+  // Created in CheckInstallValid().
+  scoped_refptr<extensions::Extension> extension_;
+
   DISALLOW_COPY_AND_ASSIGN(EphemeralAppLauncher);
 };
 

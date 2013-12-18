@@ -10,10 +10,12 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -22,6 +24,7 @@ using extensions::WebstoreInstaller;
 
 namespace {
 
+const char kInvalidManifestError[] = "Invalid manifest";
 const char kExtensionTypeError[] = "Ephemeral extensions are not permitted";
 
 Profile* ProfileForWebContents(content::WebContents* contents) {
@@ -154,6 +157,15 @@ WebContents* EphemeralAppLauncher::GetWebContents() const {
 
 scoped_ptr<ExtensionInstallPrompt::Prompt>
 EphemeralAppLauncher::CreateInstallPrompt() const {
+  DCHECK(extension_.get() != NULL);
+
+  // Skip the prompt by returning null if the app does not need to display
+  // permission warnings.
+  extensions::PermissionMessages permissions =
+      extensions::PermissionsData::GetPermissionMessages(extension_.get());
+  if (permissions.empty())
+    return scoped_ptr<ExtensionInstallPrompt::Prompt>();
+
   return make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
       ExtensionInstallPrompt::LAUNCH_PROMPT));
 }
@@ -175,10 +187,21 @@ bool EphemeralAppLauncher::CheckRequestorPermitted(
 bool EphemeralAppLauncher::CheckInstallValid(
     const base::DictionaryValue& manifest,
     std::string* error) {
-  extensions::Manifest extension_manifest(
+  extension_ = Extension::Create(
+      base::FilePath(),
       extensions::Manifest::INTERNAL,
-      scoped_ptr<DictionaryValue>(manifest.DeepCopy()));
-  if (!extension_manifest.is_app()) {
+      manifest,
+      Extension::REQUIRE_KEY |
+          Extension::FROM_WEBSTORE |
+          Extension::IS_EPHEMERAL,
+      id(),
+      error);
+  if (!extension_.get()) {
+    *error = kInvalidManifestError;
+    return false;
+  }
+
+  if (!extension_->is_app()) {
     *error = kExtensionTypeError;
     return false;
   }
