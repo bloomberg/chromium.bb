@@ -771,9 +771,6 @@ const char kProcessPerTab[]                 = "process-per-tab";
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
 
-// Reduces the GPU process sandbox to be less strict.
-const char kReduceGpuSandbox[]              = "reduce-gpu-sandbox";
-
 // Enables more web features over insecure connections. Designed to be used
 // for testing purposes only.
 const char kReduceSecurityForTesting[]      = "reduce-security-for-testing";

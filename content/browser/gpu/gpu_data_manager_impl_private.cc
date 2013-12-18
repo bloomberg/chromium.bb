@@ -653,8 +653,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     CommandLine* command_line) const {
   DCHECK(command_line);
 
-  bool reduce_sandbox = false;
-
   std::string use_gl =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
   base::FilePath swiftshader_path =
@@ -709,24 +707,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
   }
 #endif
-
-#if defined(OS_WIN)
-  // DisplayLink 7.1 and earlier can cause the GPU process to crash on startup.
-  // http://crbug.com/177611
-  // Thinkpad USB Port Replicator driver causes GPU process to crash when the
-  // sandbox is enabled. http://crbug.com/181665.
-  if ((gpu_info_.display_link_version.IsValid()
-      && gpu_info_.display_link_version.IsOlderThan("7.2")) ||
-      gpu_info_.lenovo_dcute) {
-    reduce_sandbox = true;
-  }
-#endif
-
-  if (gpu_info_.optimus)
-    reduce_sandbox = true;
-
-  if (reduce_sandbox)
-    command_line->AppendSwitch(switches::kReduceGpuSandbox);
 
   // Pass GPU and driver information to GPU process. We try to avoid full GPU
   // info collection at GPU process startup, but we need gpu vendor_id,

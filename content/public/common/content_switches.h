@@ -226,7 +226,6 @@ extern const char kPpapiStartupDialog[];
 CONTENT_EXPORT extern const char kProcessPerSite[];
 CONTENT_EXPORT extern const char kProcessPerTab[];
 CONTENT_EXPORT extern const char kProcessType[];
-extern const char kReduceGpuSandbox[];
 CONTENT_EXPORT extern const char kReduceSecurityForTesting[];
 CONTENT_EXPORT extern const char kRegisterPepperPlugins[];
 CONTENT_EXPORT extern const char kRemoteDebuggingPort[];
