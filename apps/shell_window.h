@@ -104,7 +104,11 @@ class ShellWindow : public content::NotificationObserver,
 
     // Fullscreen entered by the OS. ChromeOS uses this type of fullscreen to
     // enter immersive fullscreen when the user hits the <F4> key.
-    FULLSCREEN_TYPE_OS = 1 << 2
+    FULLSCREEN_TYPE_OS = 1 << 2,
+
+    // Fullscreen mode that could not be exited by the user. ChromeOS uses
+    // this type of fullscreen to run an app in kiosk mode.
+    FULLSCREEN_TYPE_FORCED = 1 << 3,
   };
 
   class SizeConstraints {
@@ -300,6 +304,10 @@ class ShellWindow : public content::NotificationObserver,
 
   // Transitions to OS fullscreen. See FULLSCREEN_TYPE_OS for more details.
   void OSFullscreen();
+
+  // Transitions to forced fullscreen. See FULLSCREEN_TYPE_FORCED for more
+  // details.
+  void ForcedFullscreen();
 
   // Set the minimum and maximum size that this window is allowed to be.
   void SetMinimumSize(const gfx::Size& min_size);

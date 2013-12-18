@@ -308,7 +308,7 @@ bool AppWindowCreateFunction::RunImpl() {
                      create_params);
 
   if (chrome::IsRunningInForcedAppMode())
-    shell_window->Fullscreen();
+    shell_window->ForcedFullscreen();
 
   content::RenderViewHost* created_view =
       shell_window->web_contents()->GetRenderViewHost();
