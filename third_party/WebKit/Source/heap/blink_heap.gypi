@@ -42,13 +42,19 @@
     ],
     'conditions': [
       ['target_arch == "arm"', {
-       'heap_asm_files': [
-         'asm/SaveRegisters_arm.S',
-       ],
-      }, { # target_arch != "arm"
-       'heap_asm_files': [
-         'asm/SaveRegisters.asm',
-       ],
+        'heap_asm_files': [
+          'asm/SaveRegisters_arm.S',
+        ],
+      }],
+      ['target_arch == "mipsel"', {
+        'heap_asm_files': [
+          'asm/SaveRegisters_mips.S',
+        ],
+      }],
+      ['target_arch == "ia32" or target_arch == "x64"', {
+        'heap_asm_files': [
+          'asm/SaveRegisters_x86.asm',
+        ],
       }],
     ],
   },
