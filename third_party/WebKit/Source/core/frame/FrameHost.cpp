@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,61 +29,35 @@
  */
 
 #include "config.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/frame/FrameHost.h"
 
-#include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "wtf/Assertions.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 
-PassOwnPtr<DummyPageHolder> DummyPageHolder::create(const IntSize& initialViewSize)
+PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 {
-    return adoptPtr(new DummyPageHolder(initialViewSize));
+    return adoptPtr(new FrameHost(page));
 }
 
-DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
+FrameHost::FrameHost(Page& page)
+    : m_page(page)
 {
-    m_pageClients.chromeClient = &m_chromeClient;
-    m_pageClients.contextMenuClient = &m_contextMenuClient;
-    m_pageClients.editorClient = &m_editorClient;
-    m_pageClients.dragClient = &m_dragClient;
-    m_pageClients.inspectorClient = &m_inspectorClient;
-    m_pageClients.backForwardClient = &m_backForwardClient;
-
-    m_page = adoptPtr(new Page(m_pageClients));
-
-    m_frame = Frame::create(FrameInit::create(0, &m_page->frameHost(), &m_frameLoaderClient));
-    m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
-    m_frame->init();
 }
 
-DummyPageHolder::~DummyPageHolder()
+Settings& FrameHost::settings() const
 {
-    m_page.clear();
-    ASSERT(m_frame->hasOneRef());
-    m_frame.clear();
+    return m_page.settings();
 }
 
-Page& DummyPageHolder::page() const
+Chrome& FrameHost::chrome() const
 {
-    return *m_page;
+    return m_page.chrome();
 }
 
-Frame& DummyPageHolder::frame() const
+float FrameHost::deviceScaleFactor() const
 {
-    return *m_frame;
+    return m_page.deviceScaleFactor();
 }
 
-FrameView& DummyPageHolder::frameView() const
-{
-    return *m_frame->view();
 }
-
-Document& DummyPageHolder::document() const
-{
-    return *m_frame->domWindow()->document();
-}
-
-} // namespace WebCore

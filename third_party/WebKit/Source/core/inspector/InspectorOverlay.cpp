@@ -610,7 +610,7 @@ Page* InspectorOverlay::overlayPage()
     overlaySettings.setPluginsEnabled(false);
     overlaySettings.setLoadsImagesAutomatically(true);
 
-    RefPtr<Frame> frame = Frame::create(FrameInit::create(0, m_overlayPage.get(), dummyFrameLoaderClient));
+    RefPtr<Frame> frame = Frame::create(FrameInit::create(0, &m_overlayPage->frameHost(), dummyFrameLoaderClient));
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     FrameLoader& loader = frame->loader();

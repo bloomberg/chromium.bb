@@ -2142,7 +2142,10 @@ void WebFrameImpl::setWebCoreFrame(WebCore::Frame* frame)
 
 void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 {
-    m_frameInit->setPage(page);
+    // FIXME: This whole function can go away once ownerhip of WebFrame is reversed.
+    // Page should create it's main WebFrame, not have FrameLoader do it only
+    // to have to mark the frame as main later.
+    m_frameInit->setFrameHost(&page->frameHost());
     RefPtr<Frame> mainFrame = Frame::create(m_frameInit);
     setWebCoreFrame(mainFrame.get());
 
@@ -2181,7 +2184,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // of this file for more info.
     webframe->ref();
 
-    webframe->m_frameInit->setPage(frame()->page());
+    webframe->m_frameInit->setFrameHost(frame()->host());
     webframe->m_frameInit->setOwnerElement(ownerElement);
     RefPtr<Frame> childFrame = Frame::create(webframe->m_frameInit);
     webframe->setWebCoreFrame(childFrame.get());
@@ -2519,8 +2522,9 @@ void WebFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->document()->loader()->replaceDocument(scriptResult, ownerDocument.get());
 }
 
-void WebFrameImpl::willDetachPage()
+void WebFrameImpl::willDetachFrameHost()
 {
+    // FIXME: This should never be called if the Frame has already been detached?
     if (!frame() || !frame()->page())
         return;
 

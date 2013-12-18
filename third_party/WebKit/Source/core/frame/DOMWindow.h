@@ -335,7 +335,7 @@ enum PageshowEventPersistence {
         Page* page();
 
         virtual void frameDestroyed() OVERRIDE;
-        virtual void willDetachPage() OVERRIDE;
+        virtual void willDetachFrameHost() OVERRIDE;
 
         void clearDocument();
         void resetDOMWindowProperties();

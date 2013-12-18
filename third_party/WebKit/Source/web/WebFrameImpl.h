@@ -238,7 +238,7 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const;
 
     // WebCore::FrameDestructionObserver methods.
-    virtual void willDetachPage();
+    virtual void willDetachFrameHost();
 
     static WebFrameImpl* create(WebFrameClient*);
     // FIXME: Move the embedderIdentifier concept fully to the embedder and

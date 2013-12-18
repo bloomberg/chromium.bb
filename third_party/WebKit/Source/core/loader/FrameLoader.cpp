@@ -1032,13 +1032,14 @@ void FrameLoader::detachChildren()
 
 void FrameLoader::closeAndRemoveChild(Frame* child)
 {
+    // FIXME: All this code belongs up in Page!
     child->tree().detachFromParent();
 
     child->setView(0);
     if (child->ownerElement() && child->page())
         child->page()->decrementSubframeCount();
-    child->willDetachPage();
-    child->detachFromPage();
+    child->willDetachFrameHost();
+    child->detachFromFrameHost();
 
     m_frame->tree().removeChild(child);
 }
@@ -1114,13 +1115,14 @@ void FrameLoader::detachFromParent()
 
     m_progressTracker.clear();
 
+    // FIXME: All this code belongs up in Page.
     if (Frame* parent = m_frame->tree().parent()) {
         parent->loader().closeAndRemoveChild(m_frame);
         parent->loader().scheduleCheckCompleted();
     } else {
         m_frame->setView(0);
-        m_frame->willDetachPage();
-        m_frame->detachFromPage();
+        m_frame->willDetachFrameHost();
+        m_frame->detachFromFrameHost();
     }
 }
 

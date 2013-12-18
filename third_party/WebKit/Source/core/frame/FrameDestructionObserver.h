@@ -35,7 +35,7 @@ public:
     explicit FrameDestructionObserver(Frame*);
 
     virtual void frameDestroyed();
-    virtual void willDetachPage();
+    virtual void willDetachFrameHost();
 
     Frame* frame() const { return m_frame; }
 

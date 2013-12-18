@@ -32,6 +32,7 @@
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"
@@ -128,6 +129,7 @@ Page::Page(PageClients& pageClients)
     , m_isPainting(false)
 #endif
     , m_console(PageConsole::create(this))
+    , m_frameHost(FrameHost::create(*this))
 {
     ASSERT(m_editorClient);
 
@@ -149,8 +151,8 @@ Page::~Page()
     allPages->remove(this);
 
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        frame->willDetachPage();
-        frame->detachFromPage();
+        frame->willDetachFrameHost();
+        frame->detachFromFrameHost();
     }
 
     m_inspectorController->inspectedPageDestroyed();

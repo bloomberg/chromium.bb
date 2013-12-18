@@ -52,6 +52,7 @@ class DragController;
 class EditorClient;
 class FocusController;
 class Frame;
+class FrameHost;
 class FrameSelection;
 class HaltablePlugin;
 class HistoryItem;
@@ -107,6 +108,8 @@ public:
     explicit Page(PageClients&);
     ~Page();
 
+    FrameHost& frameHost() { return *m_frameHost; }
+
     void setNeedsRecalcStyleInAllFrames();
 
     ViewportDescription viewportDescription() const;
@@ -128,6 +131,7 @@ public:
     bool openedByDOM() const;
     void setOpenedByDOM();
 
+    // FIXME: PageGroup should probably just be removed, see comment in PageGroup.h
     enum PageGroupType { PrivatePageGroup, SharedPageGroup };
     void setGroupType(PageGroupType);
     void clearPageGroup();
@@ -298,6 +302,10 @@ private:
     const OwnPtr<PageConsole> m_console;
 
     HashSet<MultisamplingChangedObserver*> m_multisamplingChangedObservers;
+
+    // A pointer to all the interfaces provided to in-process Frames for this Page.
+    // FIXME: Most of the members of Page should move onto FrameHost.
+    OwnPtr<FrameHost> m_frameHost;
 };
 
 } // namespace WebCore

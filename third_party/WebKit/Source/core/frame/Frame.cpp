@@ -44,6 +44,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/animation/AnimationController.h"
@@ -102,7 +103,7 @@ static inline float parentTextZoomFactor(Frame* frame)
 }
 
 inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
-    : m_page(frameInit->page())
+    : m_host(frameInit->frameHost())
     , m_treeNode(this, parentFromOwnerElement(frameInit->ownerElement()))
     , m_loader(this, frameInit->frameLoaderClient())
     , m_navigationScheduler(this)
@@ -122,10 +123,10 @@ inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
     , m_inViewSourceMode(false)
     , m_remotePlatformLayer(0)
 {
-    ASSERT(m_page);
+    ASSERT(page());
 
     if (ownerElement()) {
-        m_page->incrementSubframeCount();
+        page()->incrementSubframeCount();
         ownerElement()->setContentFrame(*this);
     }
 
@@ -207,7 +208,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
     m_view = view;
 
     if (m_view && isMainFrame())
-        m_view->setVisibleContentScaleFactor(m_page->pageScaleFactor());
+        m_view->setVisibleContentScaleFactor(page()->pageScaleFactor());
 }
 
 #if ENABLE(ORIENTATION_EVENTS)
@@ -219,9 +220,23 @@ void Frame::sendOrientationChangeEvent(int orientation)
 }
 #endif // ENABLE(ORIENTATION_EVENTS)
 
+FrameHost* Frame::host() const
+{
+    return m_host;
+}
+
+Page* Frame::page() const
+{
+    if (m_host)
+        return &m_host->page();
+    return nullptr;
+}
+
 Settings* Frame::settings() const
 {
-    return m_page ? &m_page->settings() : 0;
+    if (m_host)
+        return &m_host->settings();
+    return nullptr;
 }
 
 void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot shouldAdjustViewSize)
@@ -331,7 +346,7 @@ void Frame::dispatchVisibilityStateChangeEvent()
         childFrames[i]->dispatchVisibilityStateChangeEvent();
 }
 
-void Frame::willDetachPage()
+void Frame::willDetachFrameHost()
 {
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInLayout());
@@ -341,8 +356,9 @@ void Frame::willDetachPage()
 
     HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
     for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
-        (*it)->willDetachPage();
+        (*it)->willDetachFrameHost();
 
+    // FIXME: Page should take care of updating focus/scrolling instead of Frame.
     // FIXME: It's unclear as to why this is called more than once, but it is,
     // so page() could be NULL.
     if (page() && page()->focusController().focusedFrame() == this)
@@ -354,11 +370,11 @@ void Frame::willDetachPage()
     script().clearScriptObjects();
 }
 
-void Frame::detachFromPage()
+void Frame::detachFromFrameHost()
 {
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInLayout());
-    m_page = 0;
+    m_host = 0;
 }
 
 void Frame::disconnectOwnerElement()
@@ -367,15 +383,16 @@ void Frame::disconnectOwnerElement()
         if (Document* doc = document())
             doc->topDocument()->clearAXObjectCache();
         ownerElement()->clearContentFrame();
-        if (m_page)
-            m_page->decrementSubframeCount();
+        if (page())
+            page()->decrementSubframeCount();
     }
     m_frameInit->setOwnerElement(0);
 }
 
 bool Frame::isMainFrame() const
 {
-    return m_page && this == m_page->mainFrame();
+    Page* page = this->page();
+    return page && this == page->mainFrame();
 }
 
 String Frame::documentTypeString() const
@@ -453,7 +470,7 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
     ScrollbarMode verticalScrollbarMode, bool verticalLock)
 {
     ASSERT(this);
-    ASSERT(m_page);
+    ASSERT(page());
 
     bool isMainFrame = this->isMainFrame();
 
@@ -576,14 +593,14 @@ void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
             count += WheelController::from(frame->document())->wheelEventHandlerCount();
     }
 
-    m_page->chrome().client().numWheelEventHandlersChanged(count);
+    m_host->chrome().client().numWheelEventHandlersChanged(count);
 }
 
 bool Frame::isURLAllowed(const KURL& url) const
 {
     // We allow one level of self-reference because some sites depend on that,
     // but we don't allow more than one.
-    if (m_page->subframeCount() >= Page::maxNumberOfFrames)
+    if (page()->subframeCount() >= Page::maxNumberOfFrames)
         return false;
     bool foundSelfReference = false;
     for (const Frame* frame = this; frame; frame = frame->tree().parent()) {
@@ -645,9 +662,8 @@ PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
     LayoutRect topLevelRect;
     IntRect paintingRect = pixelSnappedIntRect(renderer->paintingRootRect(topLevelRect));
 
-    float deviceScaleFactor = 1;
-    if (m_page)
-        deviceScaleFactor = m_page->deviceScaleFactor();
+    ASSERT(document()->isActive());
+    float deviceScaleFactor = m_host->deviceScaleFactor();
     paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
     paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
 
@@ -675,9 +691,8 @@ PassOwnPtr<DragImage> Frame::dragImageForSelection()
 
     IntRect paintingRect = enclosingIntRect(selection().bounds());
 
-    float deviceScaleFactor = 1;
-    if (m_page)
-        deviceScaleFactor = m_page->deviceScaleFactor();
+    ASSERT(document()->isActive());
+    float deviceScaleFactor = m_host->deviceScaleFactor();
     paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
     paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
 
@@ -696,10 +711,10 @@ PassOwnPtr<DragImage> Frame::dragImageForSelection()
 
 double Frame::devicePixelRatio() const
 {
-    if (!m_page)
+    if (!m_host)
         return 0;
 
-    double ratio = m_page->deviceScaleFactor();
+    double ratio = m_host->deviceScaleFactor();
     if (RuntimeEnabledFeatures::devicePixelRatioIncludesZoomEnabled())
         ratio *= pageZoomFactor();
     return ratio;

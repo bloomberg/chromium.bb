@@ -541,7 +541,7 @@ void DOMWindow::frameDestroyed()
     reset();
 }
 
-void DOMWindow::willDetachPage()
+void DOMWindow::willDetachFrameHost()
 {
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
 }

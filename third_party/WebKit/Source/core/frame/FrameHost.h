@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,62 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/testing/DummyPageHolder.h"
+#ifndef FrameHost_h
+#define FrameHost_h
 
-#include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "wtf/Assertions.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-PassOwnPtr<DummyPageHolder> DummyPageHolder::create(const IntSize& initialViewSize)
-{
-    return adoptPtr(new DummyPageHolder(initialViewSize));
+class Page;
+class Chrome;
+class Settings;
+
+// FrameHost is the set of global data shared between multiple frames
+// and is provided by the embedder to each frame when created.
+// FrameHost currently corresponds to the Page object in core/page
+// however the concept of a Page is moving up out of Blink.
+// In an out-of-process iframe world, a single Page may have
+// multiple frames in different process, thus Page becomes a
+// browser-level concept and Blink core/ only knows about its Frame (and FrameHost).
+// Separating Page from the rest of core/ through this indirection
+// allows us to slowly refactor Page without breaking the rest of core.
+class FrameHost {
+    WTF_MAKE_NONCOPYABLE(FrameHost); WTF_MAKE_FAST_ALLOCATED;
+public:
+    static PassOwnPtr<FrameHost> create(Page&);
+
+    // Careful: This function will eventually be removed.
+    Page& page() const { return m_page; }
+
+    Settings& settings() const;
+    Chrome& chrome() const;
+
+    // Corresponds to pixel density of the device where this Page is
+    // being displayed. In multi-monitor setups this can vary between pages.
+    // This value does not account for Page zoom, use Frame::devicePixelRatio instead.
+    float deviceScaleFactor() const;
+
+private:
+    explicit FrameHost(Page&);
+
+    Page& m_page;
+};
+
 }
 
-DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
-{
-    m_pageClients.chromeClient = &m_chromeClient;
-    m_pageClients.contextMenuClient = &m_contextMenuClient;
-    m_pageClients.editorClient = &m_editorClient;
-    m_pageClients.dragClient = &m_dragClient;
-    m_pageClients.inspectorClient = &m_inspectorClient;
-    m_pageClients.backForwardClient = &m_backForwardClient;
-
-    m_page = adoptPtr(new Page(m_pageClients));
-
-    m_frame = Frame::create(FrameInit::create(0, &m_page->frameHost(), &m_frameLoaderClient));
-    m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
-    m_frame->init();
-}
-
-DummyPageHolder::~DummyPageHolder()
-{
-    m_page.clear();
-    ASSERT(m_frame->hasOneRef());
-    m_frame.clear();
-}
-
-Page& DummyPageHolder::page() const
-{
-    return *m_page;
-}
-
-Frame& DummyPageHolder::frame() const
-{
-    return *m_frame;
-}
-
-FrameView& DummyPageHolder::frameView() const
-{
-    return *m_frame->view();
-}
-
-Document& DummyPageHolder::document() const
-{
-    return *m_frame->domWindow()->document();
-}
-
-} // namespace WebCore
+#endif // FrameHost_h

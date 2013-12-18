@@ -58,7 +58,7 @@ void FrameDestructionObserver::frameDestroyed()
     m_frame = 0;
 }
 
-void FrameDestructionObserver::willDetachPage()
+void FrameDestructionObserver::willDetachFrameHost()
 {
     // Subclasses should override this function to handle this notification.
 }

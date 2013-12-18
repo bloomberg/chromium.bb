@@ -199,7 +199,7 @@ bool WebPagePopupImpl::initializePage()
     static ContextFeaturesClient* pagePopupFeaturesClient =  new PagePopupFeaturesClient();
     provideContextFeaturesTo(m_page.get(), pagePopupFeaturesClient);
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
-    RefPtr<Frame> frame = Frame::create(FrameInit::create(0, m_page.get(), emptyFrameLoaderClient));
+    RefPtr<Frame> frame = Frame::create(FrameInit::create(0, &m_page->frameHost(), emptyFrameLoaderClient));
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     frame->view()->resize(m_popupClient->contentSize());
