@@ -81,7 +81,6 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
-class WebValidationMessageClient;
 class WebView;
 class WebWidget;
 struct WebColorSuggestion;
@@ -101,7 +100,6 @@ namespace WebTestRunner {
 
 class MockWebSpeechInputController;
 class MockWebSpeechRecognizer;
-class MockWebValidationMessageClient;
 class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
@@ -118,10 +116,13 @@ public:
     void reset();
 
     blink::WebSpellCheckClient *spellCheckClient() const;
-    blink::WebValidationMessageClient* validationMessageClient();
+    void* validationMessageClient();
     blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&);
     blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&, const blink::WebVector<blink::WebColorSuggestion>& suggestions);
     bool runFileChooser(const blink::WebFileChooserParams&, blink::WebFileChooserCompletion*);
+    void showValidationMessage(const blink::WebRect& anchorInRootView, const blink::WebString& mainText, const blink::WebString& supplementalText, blink::WebTextDirection);
+    void hideValidationMessage();
+    void moveValidationMessage(const blink::WebRect& anchorInRootView);
 
     std::string captureTree(bool debugRenderTree);
     SkCanvas* capturePixels();
@@ -254,7 +255,6 @@ private:
     WebScopedPtr<blink::WebMIDIClientMock> m_midiClient;
     WebScopedPtr<MockWebSpeechRecognizer> m_speechRecognizer;
     WebScopedPtr<MockWebSpeechInputController> m_speechInputController;
-    WebScopedPtr<MockWebValidationMessageClient> m_validationMessageClient;
 
     // FIXME:: We want to move away from this pattern and mark classes
     // as Noncopyable, but this class is marked as WEBTESTRUNNER_EXPORT
@@ -550,6 +550,18 @@ public:
     virtual bool runFileChooser(const blink::WebFileChooserParams& params, blink::WebFileChooserCompletion* completion)
     {
         return WebTestProxyBase::runFileChooser(params, completion);
+    }
+    virtual void showValidationMessage(const blink::WebRect& anchorInRootView, const blink::WebString& mainText, const blink::WebString& supplementalText, blink::WebTextDirection hint)
+    {
+        WebTestProxyBase::showValidationMessage(anchorInRootView, mainText, supplementalText, hint);
+    }
+    virtual void hideValidationMessage()
+    {
+        WebTestProxyBase::hideValidationMessage();
+    }
+    virtual void moveValidationMessage(const blink::WebRect& anchorInRootView)
+    {
+        WebTestProxyBase::moveValidationMessage(anchorInRootView);
     }
     virtual void postSpellCheckEvent(const blink::WebString& eventName)
     {

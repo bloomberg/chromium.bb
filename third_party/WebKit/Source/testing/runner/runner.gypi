@@ -67,8 +67,6 @@
       'MockWebSpeechInputController.h',
       'MockWebSpeechRecognizer.cpp',
       'MockWebSpeechRecognizer.h',
-      'MockWebValidationMessageClient.cpp',
-      'MockWebValidationMessageClient.h',
       'NotificationPresenter.h',
       'NotificationPresenter.cpp',
       'SpellCheckClient.cpp',

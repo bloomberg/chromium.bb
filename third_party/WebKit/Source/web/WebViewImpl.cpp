@@ -334,11 +334,9 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
         m_devToolsAgent.clear();
 }
 
-void WebViewImpl::setValidationMessageClient(WebValidationMessageClient* client)
+void WebViewImpl::setValidationMessageClient(void*)
 {
-    ASSERT(client);
-    m_validationMessage = ValidationMessageClientImpl::create(*this, client);
-    m_page->setValidationMessageClient(m_validationMessage.get());
+    // FIXME: Remove this.
 }
 
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)
@@ -457,7 +455,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
     provideDatabaseClientTo(m_page.get(), DatabaseClientImpl::create());
-    m_validationMessage = ValidationMessageClientImpl::create(*this, 0);
+    m_validationMessage = ValidationMessageClientImpl::create(*this);
     m_page->setValidationMessageClient(m_validationMessage.get());
     provideWorkerGlobalScopeProxyProviderTo(m_page.get(), WorkerGlobalScopeProxyProviderImpl::create());
 

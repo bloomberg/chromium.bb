@@ -37,16 +37,15 @@ class FrameView;
 
 namespace blink {
 
-class WebValidationMessageClient;
 class WebViewImpl;
 
 class ValidationMessageClientImpl : public WebCore::ValidationMessageClient {
 public:
-    static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&, WebValidationMessageClient*);
+    static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     virtual ~ValidationMessageClientImpl();
 
 private:
-    ValidationMessageClientImpl(WebViewImpl&, WebValidationMessageClient*);
+    ValidationMessageClientImpl(WebViewImpl&);
     void checkAnchorStatus(WebCore::Timer<ValidationMessageClientImpl>*);
     WebCore::FrameView* currentView();
 
@@ -56,7 +55,6 @@ private:
     virtual void documentDetached(const WebCore::Document&) OVERRIDE;
 
     WebViewImpl& m_webView;
-    WebValidationMessageClient* m_client;
     const WebCore::Element* m_currentAnchor;
     String m_message;
     WebCore::IntRect m_lastAnchorRectInScreen;

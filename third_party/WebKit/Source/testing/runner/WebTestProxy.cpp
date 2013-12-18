@@ -35,7 +35,6 @@
 #include "MockColorChooser.h"
 #include "MockWebSpeechInputController.h"
 #include "MockWebSpeechRecognizer.h"
-#include "MockWebValidationMessageClient.h"
 #include "SpellCheckClient.h"
 #include "TestCommon.h"
 #include "TestInterfaces.h"
@@ -395,7 +394,6 @@ WebTestProxyBase::WebTestProxyBase()
     , m_webWidget(0)
     , m_spellcheck(new SpellCheckClient(this))
     , m_chooserCount(0)
-    , m_validationMessageClient(new MockWebValidationMessageClient())
 {
     reset();
 }
@@ -415,7 +413,6 @@ void WebTestProxyBase::setDelegate(WebTestDelegate* delegate)
 {
     m_delegate = delegate;
     m_spellcheck->setDelegate(delegate);
-    m_validationMessageClient->setDelegate(delegate);
 #if ENABLE_INPUT_SPEECH
     if (m_speechInputController.get())
         m_speechInputController->setDelegate(delegate);
@@ -470,9 +467,9 @@ WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
     return m_spellcheck.get();
 }
 
-WebValidationMessageClient* WebTestProxyBase::validationMessageClient()
+void* WebTestProxyBase::validationMessageClient()
 {
-    return m_validationMessageClient.get();
+    return 0;
 }
 
 WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const blink::WebColor& color)
@@ -492,6 +489,19 @@ bool WebTestProxyBase::runFileChooser(const blink::WebFileChooserParams&, blink:
     m_delegate->printMessage("Mock: Opening a file chooser.\n");
     // FIXME: Add ability to set file names to a file upload control.
     return false;
+}
+
+void WebTestProxyBase::showValidationMessage(const WebRect&, const WebString& message, const WebString& subMessage, WebTextDirection)
+{
+    m_delegate->printMessage(std::string("ValidationMessageClient: main-message=") + std::string(message.utf8()) + " sub-message=" + std::string(subMessage.utf8()) + "\n");
+}
+
+void WebTestProxyBase::hideValidationMessage()
+{
+}
+
+void WebTestProxyBase::moveValidationMessage(const WebRect&)
+{
 }
 
 string WebTestProxyBase::captureTree(bool debugRenderTree)

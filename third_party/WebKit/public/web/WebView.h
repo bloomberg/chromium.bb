@@ -58,7 +58,6 @@ class WebSpellCheckClient;
 class WebString;
 class WebPasswordGeneratorClient;
 class WebSharedWorkerRepositoryClient;
-class WebValidationMessageClient;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
 struct WebMediaPlayerAction;
@@ -101,7 +100,8 @@ public:
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
-    virtual void setValidationMessageClient(WebValidationMessageClient*) = 0;
+    // FIXME: Remove setValidationMessageClient.
+    virtual void setValidationMessageClient(void*) = 0;
     virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) = 0;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
