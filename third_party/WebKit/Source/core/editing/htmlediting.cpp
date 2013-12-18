@@ -680,30 +680,6 @@ Node* enclosingListChild(Node *node)
     return 0;
 }
 
-static HTMLElement* embeddedSublist(Node* listItem)
-{
-    // Check the DOM so that we'll find collapsed sublists without renderers.
-    for (Node* n = listItem->firstChild(); n; n = n->nextSibling()) {
-        if (isListElement(n))
-            return toHTMLElement(n);
-    }
-
-    return 0;
-}
-
-static Node* appendedSublist(Node* listItem)
-{
-    // Check the DOM so that we'll find collapsed sublists without renderers.
-    for (Node* n = listItem->nextSibling(); n; n = n->nextSibling()) {
-        if (isListElement(n))
-            return toHTMLElement(n);
-        if (isListItem(listItem))
-            return 0;
-    }
-
-    return 0;
-}
-
 // FIXME: This method should not need to call isStartOfParagraph/isEndOfParagraph
 Node* enclosingEmptyListItem(const VisiblePosition& visiblePos)
 {
@@ -716,9 +692,6 @@ Node* enclosingEmptyListItem(const VisiblePosition& visiblePos)
     VisiblePosition lastInListChild(lastPositionInOrAfterNode(listChildNode));
 
     if (firstInListChild != visiblePos || lastInListChild != visiblePos)
-        return 0;
-
-    if (embeddedSublist(listChildNode) || appendedSublist(listChildNode))
         return 0;
 
     return listChildNode;
