@@ -92,6 +92,7 @@
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/power/power_data_collector.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -260,6 +261,9 @@ class DBusServices {
     DBusThreadManager::Initialize();
     CrosDBusService::Initialize();
 
+    // Initialize PowerDataCollector after DBusThreadManager is initialized.
+    PowerDataCollector::Initialize();
+
     LoginState::Initialize();
     SystemSaltGetter::Initialize();
     CertLoader::Initialize();
@@ -312,6 +316,9 @@ class DBusServices {
     LoginState::Shutdown();
 
     CrosDBusService::Shutdown();
+
+    // Shutdown the PowerDataCollector before shutting down DBusThreadManager.
+    PowerDataCollector::Shutdown();
 
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();
