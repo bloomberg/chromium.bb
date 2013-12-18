@@ -227,6 +227,7 @@ static bool MoveToNewNamespaces() {
        i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
        i++) {
     pid_t pid = syscall(__NR_clone, SIGCHLD | kCloneExtraFlags[i], 0, 0, 0);
+    const int clone_errno = errno;
 
     if (pid > 0) {
       if (!DropRoot()) {
@@ -278,8 +279,19 @@ static bool MoveToNewNamespaces() {
       break;
     }
 
+    // If EINVAL then the system doesn't support the requested flags, so
+    // continue to try a different set.
+    // On any other errno value the system *does* support these flags but
+    // something went wrong, hence we bail with an error message rather then
+    // provide less security.
     if (errno != EINVAL) {
-      perror("Failed to move to new PID namespace");
+      if (kCloneExtraFlags[i] & CLONE_NEWPID) {
+        fprintf(stderr, " PID namespaces supported");
+      }
+      if (kCloneExtraFlags[i] & CLONE_NEWNET) {
+        fprintf(stderr, " Network namespace supported");
+      }
+      fprintf(stderr, "but failed: errno = %s\n", strerror(clone_errno));
       return false;
     }
   }
