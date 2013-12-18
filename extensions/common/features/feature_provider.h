@@ -19,13 +19,13 @@ class FeatureProvider {
   virtual ~FeatureProvider() {}
 
   // Returns the feature with the specified name.
-  virtual Feature* GetFeature(const std::string& name) = 0;
+  virtual Feature* GetFeature(const std::string& name) const = 0;
 
   // Returns the parent feature of |feature|, or NULL if there isn't one.
-  virtual Feature* GetParent(Feature* feature) = 0;
+  virtual Feature* GetParent(Feature* feature) const = 0;
 
   // Returns all features described by this instance.
-  virtual const std::vector<std::string>& GetAllFeatureNames() = 0;
+  virtual const std::vector<std::string>& GetAllFeatureNames() const = 0;
 
   // Gets a feature provider for a specific feature type, like "permission".
   static FeatureProvider* GetByName(const std::string& name);

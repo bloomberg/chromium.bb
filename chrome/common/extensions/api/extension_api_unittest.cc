@@ -316,11 +316,15 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
         api.RegisterSchemaResource(iter.key(), 0);
     }
 
+    Feature* test_feature =
+        api_feature_provider.GetFeature(test_data[i].api_full_name);
+    ASSERT_TRUE(test_feature);
     EXPECT_EQ(test_data[i].expect_is_available,
-              api.IsAnyFeatureAvailableToContext(test_data[i].api_full_name,
+              api.IsAnyFeatureAvailableToContext(*test_feature,
                                                  test_data[i].extension,
                                                  test_data[i].context,
-                                                 test_data[i].url)) << i;
+                                                 test_data[i].url))
+        << i;
   }
 }
 
@@ -390,77 +394,60 @@ TEST(ExtensionAPITest, ExtensionWithUnprivilegedAPIs) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
-  // "runtime" has privileged parts that should not be accessed by content
-  // scripts.
-  EXPECT_FALSE(extension_api->IsAnyFeatureAvailableToContext(
-      "runtime.getBackgroundPage",
-      NULL,
-      Feature::CONTENT_SCRIPT_CONTEXT,
-      GURL()));
-  EXPECT_FALSE(extension_api->IsAnyFeatureAvailableToContext(
-      "runtime.sendNativeMessage",
-      NULL,
-      Feature::CONTENT_SCRIPT_CONTEXT,
-      GURL()));
-  // "runtime" also has unprivileged parts.
-  EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "runtime.sendMessage",
-      NULL,
-      Feature::CONTENT_SCRIPT_CONTEXT,
-      GURL()));
-  EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "runtime.id",
-      NULL,
-      Feature::CONTENT_SCRIPT_CONTEXT,
-      GURL()));
+  const FeatureProvider& api_features = *FeatureProvider::GetAPIFeatures();
 
   // "storage" is completely unprivileged.
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "storage",
+      *api_features.GetFeature("storage"),
       NULL,
       Feature::BLESSED_EXTENSION_CONTEXT,
       GURL()));
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "storage",
+      *api_features.GetFeature("storage"),
       NULL,
       Feature::UNBLESSED_EXTENSION_CONTEXT,
       GURL()));
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "storage",
+      *api_features.GetFeature("storage"),
       NULL,
       Feature::CONTENT_SCRIPT_CONTEXT,
       GURL()));
 
   // "extension" is partially unprivileged.
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "extension",
+      *api_features.GetFeature("extension"),
       NULL,
       Feature::BLESSED_EXTENSION_CONTEXT,
       GURL()));
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "extension",
+      *api_features.GetFeature("extension"),
       NULL,
       Feature::UNBLESSED_EXTENSION_CONTEXT,
       GURL()));
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "extension",
+      *api_features.GetFeature("extension"),
+      NULL,
+      Feature::CONTENT_SCRIPT_CONTEXT,
+      GURL()));
+  EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
+      *api_features.GetFeature("extension.getURL"),
       NULL,
       Feature::CONTENT_SCRIPT_CONTEXT,
       GURL()));
 
   // "history" is entirely privileged.
   EXPECT_TRUE(extension_api->IsAnyFeatureAvailableToContext(
-      "history",
+      *api_features.GetFeature("history"),
       NULL,
       Feature::BLESSED_EXTENSION_CONTEXT,
       GURL()));
   EXPECT_FALSE(extension_api->IsAnyFeatureAvailableToContext(
-      "history",
+      *api_features.GetFeature("history"),
       NULL,
       Feature::UNBLESSED_EXTENSION_CONTEXT,
       GURL()));
   EXPECT_FALSE(extension_api->IsAnyFeatureAvailableToContext(
-      "history",
+      *api_features.GetFeature("history"),
       NULL,
       Feature::CONTENT_SCRIPT_CONTEXT,
       GURL()));

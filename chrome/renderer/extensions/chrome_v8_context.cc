@@ -94,10 +94,9 @@ v8::Local<v8::Value> ChromeV8Context::CallFunction(
           function, global, argc, argv)));
 }
 
-bool ChromeV8Context::IsAnyFeatureAvailableToContext(
-    const std::string& api_name) {
+bool ChromeV8Context::IsAnyFeatureAvailableToContext(const Feature& api) {
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
-      api_name,
+      api,
       extension_.get(),
       context_type_,
       UserScriptSlave::GetDataSourceURLForFrame(web_frame_));

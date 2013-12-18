@@ -276,7 +276,7 @@ void ExtensionAPI::RegisterDependencyProvider(const std::string& name,
   dependency_providers_[name] = provider;
 }
 
-bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
+bool ExtensionAPI::IsAnyFeatureAvailableToContext(const Feature& api,
                                                   const Extension* extension,
                                                   Feature::Context context,
                                                   const GURL& url) {
@@ -290,12 +290,13 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
   for (std::vector<std::string>::const_iterator i = features.begin();
        i != features.end(); ++i) {
     const std::string& feature_name = *i;
-    if (feature_name != api_name && feature_name.find(api_name + ".") == 0) {
+    if (feature_name != api.name() &&
+        feature_name.find(api.name() + ".") == 0) {
       if (IsAvailable(feature_name, extension, context, url).is_available())
         return true;
     }
   }
-  return IsAvailable(api_name, extension, context, url).is_available();
+  return IsAvailable(api.name(), extension, context, url).is_available();
 }
 
 Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,

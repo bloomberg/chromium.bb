@@ -188,7 +188,8 @@ FeatureProvider* BaseFeatureProvider::GetByName(
   return g_static.Get().GetFeatures(name);
 }
 
-const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames() {
+const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames()
+    const {
   if (feature_names_.empty()) {
     for (FeatureMap::const_iterator iter = features_.begin();
          iter != features_.end(); ++iter) {
@@ -198,15 +199,15 @@ const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames() {
   return feature_names_;
 }
 
-Feature* BaseFeatureProvider::GetFeature(const std::string& name) {
-  FeatureMap::iterator iter = features_.find(name);
+Feature* BaseFeatureProvider::GetFeature(const std::string& name) const {
+  FeatureMap::const_iterator iter = features_.find(name);
   if (iter != features_.end())
     return iter->second.get();
   else
     return NULL;
 }
 
-Feature* BaseFeatureProvider::GetParent(Feature* feature) {
+Feature* BaseFeatureProvider::GetParent(Feature* feature) const {
   CHECK(feature);
   if (feature->no_parent())
     return NULL;

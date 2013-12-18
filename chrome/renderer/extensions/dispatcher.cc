@@ -755,7 +755,7 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         bool parent_feature_available = false;
         for (Feature* parent = api_feature_provider->GetParent(feature);
              parent != NULL; parent = api_feature_provider->GetParent(parent)) {
-          if (context->IsAnyFeatureAvailableToContext(parent->name())) {
+          if (context->IsAnyFeatureAvailableToContext(*parent)) {
             parent_feature_available = true;
             break;
           }
@@ -763,7 +763,7 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         if (parent_feature_available)
           continue;
 
-        if (context->IsAnyFeatureAvailableToContext(api_name))
+        if (context->IsAnyFeatureAvailableToContext(*feature))
           RegisterBinding(api_name, context);
       }
       break;
