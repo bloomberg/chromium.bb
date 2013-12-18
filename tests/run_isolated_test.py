@@ -3,6 +3,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import hashlib
+import json
 import logging
 import os
 import shutil
@@ -12,8 +14,11 @@ import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import run_isolated
+
+from depot_tools import auto_stub
 
 
 def write_content(filepath, content):
@@ -21,7 +26,22 @@ def write_content(filepath, content):
     f.write(content)
 
 
-class RunIsolatedTest(unittest.TestCase):
+class StorageFake(object):
+  def __init__(self, files):
+    self._files = files.copy()
+
+  def __enter__(self, *_):
+    return self
+
+  def __exit__(self, *_):
+    pass
+
+  def async_fetch(self, channel, _priority, digest, _size, sink):
+    sink([self._files[digest]])
+    channel.send_result(digest)
+
+
+class RunIsolatedTest(auto_stub.TestCase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix='run_isolated_test')
@@ -133,6 +153,26 @@ class RunIsolatedTest(unittest.TestCase):
     # deleted, but the file node is modified. This means that every hard links
     # must be reset to be read-only after deleting one of the hard link
     # directory entry.
+
+  def test_main(self):
+    self.mock(run_isolated.tools, 'disable_buffering', lambda: None)
+    isolated = json.dumps(
+        {
+          'command': ['python', '-c', 'print(\'test_main works\')'],
+        })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    def get_storage(_isolate_server, _namespace):
+      return StorageFake({isolated_hash:isolated})
+    self.mock(run_isolated.isolateserver, 'get_storage', get_storage)
+
+    cmd = [
+        '--no-log',
+        '--hash', isolated_hash,
+        '--cache', self.tempdir,
+        '--isolate-server', 'https://localhost',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
 
 
 if __name__ == '__main__':

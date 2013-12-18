@@ -654,7 +654,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
   return result
 
 
-def main():
+def main(args):
   tools.disable_buffering()
   parser = tools.OptionParserWithLogging(
       usage='%prog <options>',
@@ -707,13 +707,12 @@ def main():
            'default=%default')
   parser.add_option_group(group)
 
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(args)
 
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')
     parser.error('One and only one of --isolated or --hash is required.')
   if args:
-    logging.debug('Unsupported args %s' % ' '.join(args))
     parser.error('Unsupported args %s' % ' '.join(args))
   if not options.isolate_server:
     parser.error('--isolate-server is required.')
@@ -741,4 +740,4 @@ def main():
 if __name__ == '__main__':
   # Ensure that we are always running with the correct encoding.
   fix_encoding.fix_encoding()
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
