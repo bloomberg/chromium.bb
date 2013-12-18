@@ -5,10 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
 
 #include <sys/statvfs.h>
-#include <sys/types.h>
-#include <utime.h>
 
-#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -28,11 +25,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -43,10 +38,8 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using chromeos::disks::DiskMountManager;
-using content::BrowserContext;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
-using content::WebContents;
 using fileapi::FileSystemURL;
 
 namespace extensions {
@@ -87,10 +80,8 @@ void GetSizeStatsOnBlockingPool(const std::string& mount_path,
                                 uint64* remaining_size) {
   struct statvfs stat = {};  // Zero-clear
   if (HANDLE_EINTR(statvfs(mount_path.c_str(), &stat)) == 0) {
-    *total_size =
-        static_cast<uint64>(stat.f_blocks) * stat.f_frsize;
-    *remaining_size =
-        static_cast<uint64>(stat.f_bavail) * stat.f_frsize;
+    *total_size = static_cast<uint64>(stat.f_blocks) * stat.f_frsize;
+    *remaining_size = static_cast<uint64>(stat.f_bavail) * stat.f_frsize;
   }
 }
 

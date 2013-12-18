@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DIALOG_H_
 
 #include <vector>
+
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 
 namespace ui {

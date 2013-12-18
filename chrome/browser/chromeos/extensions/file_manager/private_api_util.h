@@ -7,16 +7,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 
-#include "base/callback_forward.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
-#include "url/gurl.h"
+#include <vector>
 
-class ExtensionFunctionDispatcher;
+#include "base/callback_forward.h"
+
+class GURL;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 class RenderViewHost;
-class WebContents;
 }
 
 namespace extensions {
@@ -44,10 +47,6 @@ void VolumeInfoToVolumeMetadata(
     const VolumeInfo& volume_info,
     extensions::api::file_browser_private::VolumeMetadata* volume_metadata);
 
-// Returns the WebContents of the tab associated with the dispatcher. Returns
-// NULL on error.
-content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher);
-
 // Returns the local FilePath associated with |url|. If the file isn't of the
 // type FileSystemBackend handles, returns an empty
 // FilePath. |render_view_host| and |profile| are needed to obtain the
@@ -55,10 +54,9 @@ content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher);
 //
 // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
 // "/special/drive/foo/bar.txt".
-base::FilePath GetLocalPathFromURL(
-    content::RenderViewHost* render_view_host,
-    Profile* profile,
-    const GURL& url);
+base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,
+                                   Profile* profile,
+                                   const GURL& url);
 
 // The callback type is used for GetSelectedFileInfo().
 typedef base::Callback<void(const std::vector<ui::SelectedFileInfo>&)>

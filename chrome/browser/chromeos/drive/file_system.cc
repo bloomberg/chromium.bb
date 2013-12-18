@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -648,9 +647,7 @@ void FileSystem::GetResourceEntryAfterLoad(
                  cache_,
                  file_path,
                  entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback,
-                 callback,
-                 base::Passed(&entry)));
+      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
 }
 
 void FileSystem::ReadDirectory(
@@ -739,8 +736,7 @@ void FileSystem::ReadDirectoryAfterRead(
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error,
-                 scoped_ptr<ResourceEntryVector>());
+    callback.Run(error, scoped_ptr<ResourceEntryVector>());
     return;
   }
   DCHECK(entries.get());  // This is valid for empty directories too.

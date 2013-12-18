@@ -163,7 +163,7 @@ void VolumeManager::Initialize() {
   // Path to mount user folders have changed several times. We need to migrate
   // the old preferences on paths to the new format when needed. For the detail,
   // see the comments in file_manager::util::MigratePathFromOldFormat,
-  // TODO(kinaba): Remove this are several rounds of releases.
+  // TODO(kinaba): Remove this after several rounds of releases.
   const char* kPathPreference[] = {
       prefs::kDownloadDefaultDirectory,
       prefs::kSelectFileLastDirectory,

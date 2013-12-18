@@ -14,7 +14,6 @@
 namespace drive {
 class FileCacheEntry;
 class ResourceEntry;
-struct DriveAppInfo;
 struct SearchResultInfo;
 }
 

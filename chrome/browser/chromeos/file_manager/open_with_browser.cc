@@ -11,22 +11,17 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "content/public/common/webplugininfo.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
@@ -41,10 +36,6 @@ const base::FilePath::CharType kSwfExtension[] = FILE_PATH_LITERAL(".swf");
 
 // List of file extensions viewable in the browser.
 const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
-#if defined(GOOGLE_CHROME_BUILD)
-  FILE_PATH_LITERAL(".pdf"),
-  FILE_PATH_LITERAL(".swf"),
-#endif
   FILE_PATH_LITERAL(".bmp"),
   FILE_PATH_LITERAL(".ico"),
   FILE_PATH_LITERAL(".jpg"),
