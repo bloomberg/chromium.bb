@@ -1418,8 +1418,10 @@ void Element::attach(const AttachContext& context)
             data->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
         }
         if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !renderer()) {
-            if (ActiveAnimations* activeAnimations = data->activeAnimations())
+            if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
                 activeAnimations->cssAnimations().cancel();
+                activeAnimations->setAnimationStyleChange(false);
+            }
         }
     }
 
@@ -1459,6 +1461,7 @@ void Element::detach(const AttachContext& context)
                     activeAnimations->cancelAnimationOnCompositor();
                 } else {
                     activeAnimations->cssAnimations().cancel();
+                    activeAnimations->setAnimationStyleChange(false);
                 }
             }
         }

@@ -357,8 +357,17 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, 
 
 void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element* element, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
+    const ActiveAnimations* activeAnimations = element->activeAnimations();
+
+#if ASSERT_DISABLED
+    // If we're in an animation style change, no animations can have started, been cancelled or changed play state.
+    // When ASSERT is enabled, we verify this optimization.
+    if (activeAnimations && activeAnimations->isAnimationStyleChange())
+        return;
+#endif
+
     const CSSAnimationDataList* animationDataList = style.animations();
-    const CSSAnimations* cssAnimations = element->activeAnimations() ? &element->activeAnimations()->cssAnimations() : 0;
+    const CSSAnimations* cssAnimations = activeAnimations ? &element->activeAnimations()->cssAnimations() : 0;
 
     HashSet<AtomicString> inactive;
     if (cssAnimations)
@@ -387,8 +396,10 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
                     for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
                         ASSERT((*iter)->paused() == isFirstPlayerPaused);
 #endif
-                    if ((animationData->playState() == AnimPlayStatePaused) != isFirstPlayerPaused)
+                    if ((animationData->playState() == AnimPlayStatePaused) != isFirstPlayerPaused) {
+                        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
                         update->toggleAnimationPaused(animationName);
+                    }
                     continue;
                 }
             }
@@ -406,14 +417,17 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
                     // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
                     animations.add(InertAnimation::create(KeyframeAnimationEffect::create(keyframesAndTimingFunctions[j].first), timing, isPaused));
                 }
+                ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
                 update->startAnimation(animationName, animations);
             }
         }
     }
 
     ASSERT(inactive.isEmpty() || cssAnimations);
-    for (HashSet<AtomicString>::const_iterator iter = inactive.begin(); iter != inactive.end(); ++iter)
+    for (HashSet<AtomicString>::const_iterator iter = inactive.begin(); iter != inactive.end(); ++iter) {
+        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
         update->cancelAnimation(*iter, cssAnimations->m_animations.get(*iter));
+    }
 }
 
 void CSSAnimations::maybeApplyPendingUpdate(Element* element)
