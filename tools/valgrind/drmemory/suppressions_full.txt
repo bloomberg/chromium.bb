@@ -1350,5 +1350,12 @@ net.dll!net::ProxyService::InitProxyResolver::DoLoop
 net.dll!net::ProxyService::InitProxyResolver::*
 
 UNINITIALIZED READ
+name=bug_329339_b
+...
+net.dll!net::ProxyScriptDecider::*
+net.dll!net::ProxyScriptDecider::DoLoop
+net.dll!net::ProxyScriptDecider::*
+
+UNINITIALIZED READ
 name=bug_329590
 net.dll!net::NetworkChangeNotifierWin::NetworkChangeNotifierWin
