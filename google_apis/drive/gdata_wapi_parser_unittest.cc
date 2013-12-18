@@ -17,8 +17,6 @@
 
 namespace google_apis {
 
-// TODO(nhiroki): Move json files to out of 'chromeos' directory
-// (http://crbug.com/149788).
 // Test document feed parsing.
 TEST(GDataWAPIParserTest, ResourceListJsonParser) {
   std::string error;
