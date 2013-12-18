@@ -37,6 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 
@@ -81,6 +82,8 @@ private:
     OwnPtr<SQLTransactionClient> m_transactionClient;
     OwnPtr<SQLTransactionCoordinator> m_transactionCoordinator;
     DatabaseTaskSynchronizer* m_cleanupSync;
+
+    mutable Mutex m_terminationRequestedMutex;
     bool m_terminationRequested;
 };
 

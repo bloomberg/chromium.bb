@@ -49,7 +49,12 @@ DatabaseThread::DatabaseThread()
 
 DatabaseThread::~DatabaseThread()
 {
-    if (!m_terminationRequested)
+    bool terminationRequested;
+    {
+        MutexLocker lock(m_terminationRequestedMutex);
+        terminationRequested = m_terminationRequested;
+    }
+    if (!terminationRequested)
         requestTermination(0);
     m_thread.clear();
 }
@@ -63,6 +68,7 @@ void DatabaseThread::start()
 
 void DatabaseThread::requestTermination(DatabaseTaskSynchronizer *cleanupSync)
 {
+    MutexLocker lock(m_terminationRequestedMutex);
     ASSERT(!m_terminationRequested);
     m_terminationRequested = true;
     m_cleanupSync = cleanupSync;
@@ -77,6 +83,7 @@ bool DatabaseThread::terminationRequested(DatabaseTaskSynchronizer* taskSynchron
         taskSynchronizer->setHasCheckedForTermination();
 #endif
 
+    MutexLocker lock(m_terminationRequestedMutex);
     return m_terminationRequested;
 }
 
@@ -112,6 +119,9 @@ void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
 
 void DatabaseThread::recordDatabaseClosed(DatabaseBackend* database)
 {
+#ifndef ASSERT_DISABLED
+    MutexLocker lock(m_terminationRequestedMutex);
+#endif
     ASSERT(isDatabaseThread());
     ASSERT(database);
     ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));
@@ -122,6 +132,7 @@ bool DatabaseThread::isDatabaseOpen(DatabaseBackend* database)
 {
     ASSERT(isDatabaseThread());
     ASSERT(database);
+    MutexLocker lock(m_terminationRequestedMutex);
     return !m_terminationRequested && m_openDatabaseSet.contains(database);
 }
 
