@@ -192,14 +192,14 @@ void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
   if (!base::CreateTemporaryDirInDir(zip_file->DirName(),
                                      FILE_PATH_LITERAL("image_writer"),
                                      &tmp_dir)) {
-    Error(error::kTempDir);
+    Error(error::kTempDirError);
     return;
   }
 
   AddCleanUpFunction(base::Bind(&RemoveTempDirectory, tmp_dir));
 
   if (!zip::Unzip(*zip_file, tmp_dir)) {
-    Error(error::kUnzip);
+    Error(error::kUnzipGenericError);
     return;
   }
 
@@ -211,12 +211,12 @@ void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
       new base::FilePath(file_enumerator.Next()));
 
   if (unzipped_file->empty()) {
-    Error(error::kEmptyUnzip);
+    Error(error::kUnzipInvalidArchive);
     return;
   }
 
   if (!file_enumerator.Next().empty()) {
-    Error(error::kMultiFileZip);
+    Error(error::kUnzipInvalidArchive);
     return;
   }
 
@@ -248,7 +248,7 @@ void Operation::GetMD5SumOfFile(
       new image_writer_utils::ImageReader());
 
   if (!reader->Open(*file_path)) {
-    Error(error::kOpenImage);
+    Error(error::kImageOpenError);
     return;
   }
   if (file_size <= 0) {
@@ -312,7 +312,7 @@ void Operation::MD5Chunk(
   } else if (len == 0) {
     if (bytes_processed + len < bytes_total) {
       reader->Close();
-      Error(error::kPrematureEndOfFile);
+      Error(error::kHashReadError);
     } else {
       base::MD5Digest digest;
       base::MD5Final(&digest, &md5_context_);
@@ -322,7 +322,7 @@ void Operation::MD5Chunk(
     }
   } else {  // len < 0
     reader->Close();
-    Error(error::kReadImage);
+    Error(error::kHashReadError);
   }
 }
 

@@ -27,7 +27,7 @@ bool ImageWriterPrivateWriteFromUrlFunction::RunImpl() {
 
   GURL url(params->image_url);
   if (!url.is_valid()) {
-    error_ = image_writer::error::kInvalidUrl;
+    error_ = image_writer::error::kUrlInvalid;
     return false;
   }
 
@@ -180,7 +180,7 @@ void ImageWriterPrivateListRemovableStorageDevicesFunction::OnDeviceListReady(
         device_list.get()->data);
     SendResponse(true);
   } else {
-    error_ = image_writer::error::kDeviceList;
+    error_ = image_writer::error::kDeviceListError;
     SendResponse(false);
   }
 }

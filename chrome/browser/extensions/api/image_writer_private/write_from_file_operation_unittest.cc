@@ -33,7 +33,7 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
   EXPECT_CALL(manager, OnError(kDummyExtensionId,
                                image_writer_api::STAGE_UNKNOWN,
                                0,
-                               error::kInvalidImage)).Times(1);
+                               error::kImageInvalid)).Times(1);
 
   op->Start();
 

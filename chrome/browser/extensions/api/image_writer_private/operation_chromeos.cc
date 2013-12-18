@@ -79,7 +79,7 @@ void Operation::OnBurnProgress(const std::string& target_path,
 }
 
 void Operation::OnBurnError() {
-  Error(error::kImageBurnerError);
+  Error(error::kChromeOSImageBurnerError);
 }
 
 }  // namespace image_writer

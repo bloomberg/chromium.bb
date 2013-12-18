@@ -29,7 +29,7 @@ void WriteFromFileOperation::Start() {
            << " to " << storage_unit_id_;
 
   if (!base::PathExists(image_path_) || base::DirectoryExists(image_path_)) {
-    Error(error::kInvalidImage);
+    Error(error::kImageInvalid);
     return;
   }
 

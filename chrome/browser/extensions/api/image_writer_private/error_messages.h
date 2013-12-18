@@ -9,38 +9,50 @@ namespace extensions {
 namespace image_writer {
 namespace error {
 
+// General operation messages.
 extern const char kAborted[];
-extern const char kCloseDevice[];
-extern const char kCloseImage[];
-extern const char kDeviceList[];
-extern const char kDeviceMD5[];
-extern const char kDownloadCancelled[];
-extern const char kDownloadHash[];
-extern const char kDownloadInterrupted[];
-extern const char kDownloadMD5[];
-extern const char kEmptyUnzip[];
-extern const char kImageBurnerError[];
-extern const char kImageMD5[];
-extern const char kImageNotFound[];
-extern const char kImageSize[];
-extern const char kInsufficientFilesystemPermissions[];
-extern const char kInvalidDevice[];
-extern const char kInvalidFileEntry[];
-extern const char kInvalidImage[];
-extern const char kInvalidUrl[];
-extern const char kMultiFileZip[];
 extern const char kNoOperationInProgress[];
-extern const char kOpenDevice[];
-extern const char kOpenImage[];
 extern const char kOperationAlreadyInProgress[];
-extern const char kPrematureEndOfFile[];
-extern const char kReadImage[];
-extern const char kTempDir[];
-extern const char kTempFile[];
 extern const char kUnsupportedOperation[];
-extern const char kUnzip[];
-extern const char kWriteHash[];
-extern const char kWriteImage[];
+
+// Device listing errors
+extern const char kDeviceListError[];
+
+// File errors
+extern const char kInvalidFileEntry[];
+
+// Download errors
+extern const char kDownloadCancelled[];
+extern const char kDownloadHashError[];
+extern const char kDownloadInterrupted[];
+extern const char kTempDirError[];
+extern const char kTempFileError[];
+extern const char kUrlInvalid[];
+
+// Unzip errors
+extern const char kUnzipGenericError[];
+extern const char kUnzipInvalidArchive[];
+
+// Write errors
+extern const char kDeviceCloseError[];
+extern const char kDeviceInvalid[];
+extern const char kDeviceHashError[];
+extern const char kDeviceOpenError[];
+extern const char kDeviceWriteError[];
+extern const char kImageCloseError[];
+extern const char kImageInvalid[];
+extern const char kImageHashError[];
+extern const char kImageNotFound[];
+extern const char kImageOpenError[];
+extern const char kImageReadError[];
+extern const char kImageSizeError[];
+
+// Verification Errors
+extern const char kHashReadError[];
+extern const char kVerificationFailed[];
+
+// Image burner catchall
+extern const char kChromeOSImageBurnerError[];
 
 } // namespace error
 } // namespace image_writer

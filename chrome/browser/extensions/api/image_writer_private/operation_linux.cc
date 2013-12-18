@@ -45,11 +45,11 @@ void Operation::WriteStart() {
   if (reader->Open(image_path_)) {
     if (!writer->Open(storage_path)) {
       reader->Close();
-      Error(error::kOpenDevice);
+      Error(error::kDeviceOpenError);
       return;
     }
   } else {
-    Error(error::kOpenImage);
+    Error(error::kImageOpenError);
     return;
   }
 
@@ -95,7 +95,7 @@ void Operation::WriteChunk(
                    bytes_written + len));
     } else {
       WriteCleanUp(reader.Pass(), writer.Pass());
-      Error(error::kWriteImage);
+      Error(error::kDeviceWriteError);
     }
   } else if (len == 0) {
     if (bytes_written == image_size) {
@@ -108,11 +108,11 @@ void Operation::WriteChunk(
       }
     } else {
       WriteCleanUp(reader.Pass(), writer.Pass());
-      Error(error::kPrematureEndOfFile);
+      Error(error::kImageReadError);
     }
   } else { // len < 0
     WriteCleanUp(reader.Pass(), writer.Pass());
-    Error(error::kReadImage);
+    Error(error::kImageReadError);
   }
 }
 
@@ -122,12 +122,12 @@ bool Operation::WriteCleanUp(
 
   bool success = true;
   if (!reader->Close()) {
-    Error(error::kCloseImage);
+    Error(error::kImageCloseError);
     success = false;
   }
 
   if (!writer->Close()) {
-    Error(error::kCloseDevice);
+    Error(error::kDeviceCloseError);
     success = false;
   }
   return success;
@@ -174,7 +174,7 @@ void Operation::VerifyWriteStage2(
   scoped_ptr<base::FilePath> device_path(new base::FilePath(storage_unit_id_));
 
   if (!base::GetFileSize(image_path_, &image_size)){
-    Error(error::kImageSize);
+    Error(error::kImageSizeError);
     return;
   }
 
@@ -194,7 +194,7 @@ void Operation::VerifyWriteCompare(
   DVLOG(1) << "Comparing hashes: " << *image_hash << " vs " << *device_hash;
 
   if (*image_hash != *device_hash) {
-    Error(error::kWriteHash);
+    Error(error::kVerificationFailed);
     return;
   }
 
