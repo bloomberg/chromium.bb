@@ -434,10 +434,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
-  // This is set when a new software frame is received and un-set when the
-  // frame's ack is sent back to the renderer.
-  bool software_frame_needs_to_send_ack_;
-
   // Whether to allow overlapping views.
   bool allow_overlapping_views_;
 
@@ -464,7 +460,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   float scale_factor() const;
 
-  void FrameSwapped();
+  void SendSoftwareLatencyInfoToHost();
 
  private:
   friend class RenderWidgetHostView;

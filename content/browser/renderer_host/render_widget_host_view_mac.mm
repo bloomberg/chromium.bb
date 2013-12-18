@@ -412,7 +412,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
-      software_frame_needs_to_send_ack_(false),
       allow_overlapping_views_(false),
       use_core_animation_(false),
       is_loading_(false),
@@ -1678,10 +1677,6 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     return;
   }
 
-  // Ack any swaps that didn't make it to the display.
-  if (software_frame_needs_to_send_ack_)
-    FrameSwapped();
-
   if (!software_frame_manager_->SwapToNewFrame(
           output_surface_id,
           frame->software_frame_data.get(),
@@ -1691,10 +1686,17 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     return;
   }
 
-  GotSoftwareFrame();
+  cc::CompositorFrameAck ack;
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      render_widget_host_->GetRoutingID(),
+      software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
+      render_widget_host_->GetProcess()->GetID(),
+      ack);
   software_latency_info_.MergeWith(frame->metadata.latency_info);
-  software_frame_needs_to_send_ack_ = true;
+  software_frame_manager_->SwapToNewFrameComplete(
+      !render_widget_host_->is_hidden());
 
+  GotSoftwareFrame();
   [cocoa_view_ setNeedsDisplay:YES];
 }
 
@@ -1948,21 +1950,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
                                              scale_factor()));
 }
 
-void RenderWidgetHostViewMac::FrameSwapped() {
-  if (software_frame_needs_to_send_ack_ &&
-      software_frame_manager_->HasCurrentFrame()) {
-    software_frame_manager_->SwapToNewFrameComplete(
-        !render_widget_host_->is_hidden());
-
-    cc::CompositorFrameAck ack;
-    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        render_widget_host_->GetRoutingID(),
-        software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
-        render_widget_host_->GetProcess()->GetID(),
-        ack);
-    software_frame_needs_to_send_ack_ = false;
-  }
-
+void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
   software_latency_info_.AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   render_widget_host_->FrameSwapped(software_latency_info_);
@@ -2900,7 +2888,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
       }
     }
 
-    renderWidgetHostView_->FrameSwapped();
+    renderWidgetHostView_->SendSoftwareLatencyInfoToHost();
 
     // Fill the remaining portion of the damagedRect with white
     [self fillBottomRightRemainderOfRect:bitmapRect
