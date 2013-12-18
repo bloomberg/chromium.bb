@@ -816,7 +816,12 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
 // Serialize XML document which has all 5 built-in entities. After
 // finishing serialization, the serialized contents should be same
 // with original XML document.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeXMLDocWithBuiltInEntities) {
+//
+// TODO(tiger@opera.com): Disabled in preparation of page serializer merge --
+// XML headers are handled differently in the merged serializer.
+// Bug: http://crbug.com/328354
+IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+                       DISABLED_SerializeXMLDocWithBuiltInEntities) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "note.html");
   base::FilePath xml_file_path = GetTestFilePath("dom_serializer", "note.xml");
@@ -919,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
 // Some attributes are handled differently in the merged serializer.
 // Bug: http://crbug.com/328354
 IN_PROC_BROWSER_TEST_F(DomSerializerTests,
-                       DISABLE_SerializeHTMLDOMWithEntitiesInAttributeValue) {
+                       DISABLED_SerializeHTMLDOMWithEntitiesInAttributeValue) {
   // Need to spin up the renderer and also navigate to a file url so that the
   // renderer code doesn't attempt a fork when it sees a load to file scheme
   // from non-file scheme.
@@ -958,7 +963,7 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
 // Base tags are handled a bit different in merged version.
 // Bug: http://crbug.com/328354
 IN_PROC_BROWSER_TEST_F(DomSerializerTests,
-                       DISABLE_SerializeHTMLDOMWithBaseTag) {
+                       DISABLED_SerializeHTMLDOMWithBaseTag) {
   base::FilePath page_file_path = GetTestFilePath(
       "dom_serializer", "html_doc_has_base_tag.htm");
 
