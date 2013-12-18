@@ -46,6 +46,7 @@ void UndoGroup::Undo() {
 
 UndoManager::UndoManager()
     : group_actions_count_(0),
+      undo_in_progress_action_(NULL),
       undo_suspended_count_(0),
       performing_undo_(false),
       performing_redo_(false) {
@@ -147,6 +148,15 @@ std::vector<UndoOperation*> UndoManager::GetAllUndoOperations() const {
         redo_actions_[i]->undo_operations();
     result.insert(result.end(), operations.begin(), operations.end());
   }
+  // Ensure that if an Undo is in progress the UndoOperations part of that
+  // UndoGroup are included in the returned set. This will ensure that any
+  // changes (such as renumbering) will be applied to any potentially
+  // unprocessed UndoOperations.
+  if (undo_in_progress_action_) {
+    const std::vector<UndoOperation*>& operations =
+        undo_in_progress_action_->undo_operations();
+    result.insert(result.end(), operations.begin(), operations.end());
+  }
 
   return result;
 }
@@ -167,6 +177,8 @@ void UndoManager::Undo(bool* performing_indicator,
 
   base::AutoReset<bool> incoming_changes(performing_indicator, true);
   scoped_ptr<UndoGroup> action(active_undo_group->back());
+  base::AutoReset<UndoGroup*> action_context(&undo_in_progress_action_,
+      action.get());
   active_undo_group->weak_erase(
       active_undo_group->begin() + active_undo_group->size() - 1);
 
