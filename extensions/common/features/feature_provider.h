@@ -24,7 +24,10 @@ class FeatureProvider {
   // Returns the parent feature of |feature|, or NULL if there isn't one.
   virtual Feature* GetParent(Feature* feature) const = 0;
 
-  // Returns all features described by this instance.
+  // Returns the features inside the |parent| namespace, recursively.
+  virtual std::vector<Feature*> GetChildren(const Feature& parent) const = 0;
+
+  // Returns all features described by this instance, in asciibetical order.
   virtual const std::vector<std::string>& GetAllFeatureNames() const = 0;
 
   // Gets a feature provider for a specific feature type, like "permission".

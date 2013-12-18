@@ -33,6 +33,8 @@ class BaseFeatureProvider : public FeatureProvider {
   // Gets the feature |feature_name|, if it exists.
   virtual Feature* GetFeature(const std::string& feature_name) const OVERRIDE;
   virtual Feature* GetParent(Feature* feature) const OVERRIDE;
+  virtual std::vector<Feature*> GetChildren(const Feature& parent) const
+      OVERRIDE;
 
   virtual const std::vector<std::string>& GetAllFeatureNames() const OVERRIDE;
 
