@@ -432,7 +432,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, info[0]);

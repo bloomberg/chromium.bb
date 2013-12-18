@@ -2513,6 +2513,7 @@ sub GenerateArgumentsCountCheck
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
+    my $isConstructor = $functionName eq "Constructor" || $functionName eq "NamedConstructor";
     my $numMandatoryParams = 0;
     my $allowNonOptional = 1;
     foreach my $param (@{$function->parameters}) {
@@ -2523,19 +2524,20 @@ sub GenerateArgumentsCountCheck
             $numMandatoryParams++;
         }
     }
+    return "" unless $numMandatoryParams;
 
     my $argumentsCountCheckString = "";
-    if ($numMandatoryParams >= 1) {
-        $argumentsCountCheckString .= "    if (UNLIKELY(info.Length() < $numMandatoryParams)) {\n";
-        if ($hasExceptionState) {
-            $argumentsCountCheckString .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length()));\n";
-            $argumentsCountCheckString .= "        exceptionState.throwIfNeeded();\n";
-        } else {
-            $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length())), info.GetIsolate());\n";
-        }
-        $argumentsCountCheckString .= "        return;\n";
-        $argumentsCountCheckString .= "    }\n";
+    $argumentsCountCheckString .= "    if (UNLIKELY(info.Length() < $numMandatoryParams)) {\n";
+    if ($hasExceptionState) {
+        $argumentsCountCheckString .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length()));\n";
+        $argumentsCountCheckString .= "        exceptionState.throwIfNeeded();\n";
+    } elsif ($isConstructor) {
+        $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length())), info.GetIsolate());\n";
+    } else {
+        $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length())), info.GetIsolate());\n";
     }
+    $argumentsCountCheckString .= "        return;\n";
+    $argumentsCountCheckString .= "    }\n";
     return $argumentsCountCheckString;
 }
 

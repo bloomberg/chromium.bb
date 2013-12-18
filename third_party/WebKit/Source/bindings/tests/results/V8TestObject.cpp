@@ -5007,7 +5007,7 @@ static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     if (info.Length() <= 0 || !info[0]->IsFunction()) {

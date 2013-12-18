@@ -678,7 +678,7 @@ static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8:
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterface", info.Holder(), info.GetIsolate());

@@ -406,12 +406,7 @@ def generate_named_constructor(interface):
     idl_constructor = interface.constructors[0]
     constructor = generate_constructor(interface, idl_constructor)
     constructor['argument_list'].insert(0, '*document')
-    constructor.update({
-        'constructor_name': extended_attributes['NamedConstructor'],  # avoid collision with 'name' (used in exception throwing)
-        # FIXME: this is inconsistent: it should throw failedToConstruct
-        'is_constructor': False,  # Named constructor treated as regular method
-        'name': 'NamedConstructor',
-    })
+    constructor['name'] = extended_attributes['NamedConstructor']
     return constructor
 
 
