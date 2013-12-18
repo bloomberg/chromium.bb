@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
-#elif defined(USE_AURA) && defined(USE_X11)
+#elif defined(USE_AURA) && defined(OS_LINUX)
 #include "ui/base/ime/input_method_auralinux.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #elif defined(OS_WIN)
@@ -24,7 +24,7 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 bool dbus_thread_manager_was_initialized = false;
-#elif defined(USE_AURA) && defined(USE_X11)
+#elif defined(USE_AURA) && defined(OS_LINUX)
 const ui::LinuxInputMethodContextFactory* g_linux_input_method_context_factory;
 #endif
 
@@ -35,7 +35,7 @@ namespace ui {
 void InitializeInputMethod() {
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Initialize();
-#elif defined(USE_AURA) && defined(USE_X11)
+#elif defined(USE_AURA) && defined(OS_LINUX)
   InputMethodAuraLinux::Initialize();
 #elif defined(OS_WIN)
   if (base::win::IsTSFAwareRequired())
@@ -64,7 +64,7 @@ void InitializeInputMethodForTesting() {
     chromeos::DBusThreadManager::InitializeWithStub();
     dbus_thread_manager_was_initialized = true;
   }
-#elif defined(USE_AURA) && defined(USE_X11)
+#elif defined(USE_AURA) && defined(OS_LINUX)
   if (!g_linux_input_method_context_factory)
     g_linux_input_method_context_factory = new FakeInputMethodContextFactory();
   const LinuxInputMethodContextFactory* factory =
@@ -94,7 +94,7 @@ void ShutdownInputMethodForTesting() {
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_was_initialized = false;
   }
-#elif defined(USE_AURA) && defined(USE_X11)
+#elif defined(USE_AURA) && defined(OS_LINUX)
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();
   CHECK(!factory || factory == g_linux_input_method_context_factory)

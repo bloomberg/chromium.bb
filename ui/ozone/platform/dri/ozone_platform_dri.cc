@@ -20,6 +20,11 @@ ui::EventFactoryOzone* OzonePlatformDri::GetEventFactoryOzone() {
   return &event_factory_ozone_;
 }
 
+ui::InputMethodContextFactoryOzone*
+OzonePlatformDri::GetInputMethodContextFactoryOzone() {
+  return &input_method_context_factory_ozone_;
+}
+
 OzonePlatform* CreateOzonePlatformDri() { return new OzonePlatformDri; }
 
 }  // namespace ui

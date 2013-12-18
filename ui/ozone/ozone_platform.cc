@@ -54,6 +54,8 @@ void OzonePlatform::Initialize() {
   // Inject ozone interfaces.
   gfx::SurfaceFactoryOzone::SetInstance(instance_->GetSurfaceFactoryOzone());
   ui::EventFactoryOzone::SetInstance(instance_->GetEventFactoryOzone());
+  ui::InputMethodContextFactoryOzone::SetInstance(
+      instance_->GetInputMethodContextFactoryOzone());
 }
 
 // static

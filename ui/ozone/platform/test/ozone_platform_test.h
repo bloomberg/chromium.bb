@@ -22,10 +22,13 @@ class OzonePlatformTest : public OzonePlatform {
 
   virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE;
   virtual ui::EventFactoryOzone* GetEventFactoryOzone() OVERRIDE;
+  virtual ui::InputMethodContextFactoryOzone*
+      GetInputMethodContextFactoryOzone() OVERRIDE;
 
  private:
   gfx::FileSurfaceFactory surface_factory_ozone_;
   ui::EventFactoryEvdev event_factory_ozone_;
+  ui::InputMethodContextFactoryOzone input_method_context_factory_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformTest);
 };
