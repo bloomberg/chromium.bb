@@ -151,7 +151,6 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
-crbug.com/307828 fast/css/font-face-woff2.html [ Pass ImageOnlyFailure ]
 
 crbug.com/313659 [ Linux Release ] fast/line-grid/line-align-left-edges.html [ Pass Timeout ]
 
