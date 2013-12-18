@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_CHROME_ELF_MAIN_H_
-#define CHROME_ELF_CHROME_ELF_MAIN_H_
+#include <windows.h>
 
-extern "C" void SignalChromeElf();
-
-#endif  // CHROME_ELF_CHROME_ELF_MAIN_H_
+BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
+  return TRUE;
+}

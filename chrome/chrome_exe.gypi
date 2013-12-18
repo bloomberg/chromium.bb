@@ -465,6 +465,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            # Note that chrome_elf must be listed first. Do not reorder it.
+            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             'chrome_dll',
             'chrome_nacl_win64',
             'chrome_process_finder',
@@ -474,7 +476,6 @@
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
-            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../components/components.gyp:breakpad_component',
             '../components/components.gyp:policy',
             '../sandbox/sandbox.gyp:sandbox',
