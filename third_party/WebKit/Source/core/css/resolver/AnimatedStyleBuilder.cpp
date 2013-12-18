@@ -230,6 +230,7 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
 // FIXME: Generate this function.
 void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, const AnimatableValue* value)
 {
+    ASSERT(CSSAnimations::isAnimatableProperty(property));
     if (value->isUnknown()) {
         StyleBuilder::applyProperty(property, state, toAnimatableUnknown(value)->toCSSValue().get());
         return;
@@ -589,7 +590,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setZoom(clampTo<float>(toAnimatableDouble(value)->toDouble(), std::numeric_limits<float>::denorm_min()));
         return;
     default:
-        ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Unable to apply AnimatableValue to RenderStyle: %s", getPropertyNameString(property).utf8().data());
         ASSERT_NOT_REACHED();
     }
 }

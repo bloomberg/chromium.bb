@@ -247,6 +247,7 @@ inline static PassRefPtr<AnimatableValue> createFromShapeValue(ShapeValue* value
 // FIXME: Generate this function.
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const RenderStyle& style)
 {
+    ASSERT(CSSAnimations::isAnimatableProperty(property));
     switch (property) {
     case CSSPropertyBackgroundColor:
         return createFromColor(property, style);
@@ -473,7 +474,6 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyZoom:
         return createFromDouble(style.zoom());
     default:
-        ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Create AnimatableValue from render style: %s", getPropertyNameString(property).utf8().data());
         ASSERT_NOT_REACHED();
         // This return value is to avoid a release crash if possible.
         return AnimatableUnknown::create(0);
