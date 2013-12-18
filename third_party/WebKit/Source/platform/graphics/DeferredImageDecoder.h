@@ -86,6 +86,8 @@ private:
 
     RefPtr<SharedBuffer> m_data;
     bool m_allDataReceived;
+    unsigned m_lastDataSize;
+    bool m_dataChanged;
     OwnPtr<ImageDecoder> m_actualDecoder;
 
     String m_filenameExtension;

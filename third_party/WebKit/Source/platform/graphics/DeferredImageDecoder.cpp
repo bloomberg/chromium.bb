@@ -49,6 +49,8 @@ bool DeferredImageDecoder::s_skiaDiscardableMemoryEnabled = false;
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
+    , m_lastDataSize(0)
+    , m_dataChanged(false)
     , m_actualDecoder(actualDecoder)
     , m_orientation(DefaultImageOrientation)
     , m_repetitionCount(cAnimationNone)
@@ -113,7 +115,11 @@ ImageFrame* DeferredImageDecoder::frameBufferAtIndex(size_t index)
 void DeferredImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
 {
     if (m_actualDecoder) {
+        const bool firstData = !m_data && data;
+        const bool moreData = data && data->size() > m_lastDataSize;
+        m_dataChanged = firstData || moreData;
         m_data = data;
+        m_lastDataSize = data->size();
         m_allDataReceived = allDataReceived;
         m_actualDecoder->setData(data, allDataReceived);
         prepareLazyDecodedFrames();
@@ -231,8 +237,17 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 
     // The last lazy decoded frame created from previous call might be
     // incomplete so update its state.
-    if (previousSize)
-        m_lazyDecodedFrames[previousSize - 1]->setStatus(m_actualDecoder->frameIsCompleteAtIndex(previousSize - 1) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
+    if (previousSize) {
+        const size_t lastFrame = previousSize - 1;
+        m_lazyDecodedFrames[lastFrame]->setStatus(m_actualDecoder->frameIsCompleteAtIndex(lastFrame) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
+
+        // If data has changed then create a new bitmap. This forces
+        // Skia to decode again.
+        if (m_dataChanged) {
+            m_dataChanged = false;
+            m_lazyDecodedFrames[lastFrame]->setSkBitmap(createBitmap(lastFrame));
+        }
+    }
 
     if (m_allDataReceived) {
         m_repetitionCount = m_actualDecoder->repetitionCount();
