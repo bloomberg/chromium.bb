@@ -127,6 +127,29 @@ class DeviceCloudPolicyManagerChromeOSTest
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
+  void LockDevice() {
+    base::RunLoop loop;
+    EnterpriseInstallAttributes::LockResult result;
+    install_attributes_->LockDevice(
+        PolicyBuilder::kFakeUsername,
+        DEVICE_MODE_ENTERPRISE,
+        PolicyBuilder::kFakeDeviceId,
+        base::Bind(&CopyLockResult, &loop, &result));
+    loop.Run();
+    ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
+  }
+
+  void VerifyPolicyPopulated() {
+    PolicyBundle bundle;
+    bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+        .Set(key::kDeviceMetricsReportingEnabled,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_MACHINE,
+             Value::CreateBooleanValue(false),
+             NULL);
+    EXPECT_TRUE(manager_->policies().Equals(bundle));
+  }
+
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -161,38 +184,67 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, FreshDevice) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
-  base::RunLoop loop;
-  EnterpriseInstallAttributes::LockResult result;
-  install_attributes_->LockDevice(PolicyBuilder::kFakeUsername,
-                                  DEVICE_MODE_ENTERPRISE,
-                                  PolicyBuilder::kFakeDeviceId,
-                                  base::Bind(&CopyLockResult, &loop, &result));
-  loop.Run();
-  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
-
+  LockDevice();
   FlushDeviceSettings();
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
   EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  VerifyPolicyPopulated();
 
+  manager_->Connect(&local_state_,
+                    &device_management_service_,
+                    scoped_ptr<CloudPolicyClient::StatusProvider>());
+  VerifyPolicyPopulated();
+
+  manager_->Shutdown();
+  VerifyPolicyPopulated();
+
+  EXPECT_EQ(manager_->GetRobotAccountId(),
+            PolicyBuilder::kFakeServiceAccountIdentity);
+}
+
+TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
+  device_policy_.policy_data().set_state(em::PolicyData::UNMANAGED);
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+
+  LockDevice();
+  FlushDeviceSettings();
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  EXPECT_FALSE(store_->is_managed());
+
+  // Policy settings should be ignored for UNMANAGED devices.
   PolicyBundle bundle;
-  bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(key::kDeviceMetricsReportingEnabled,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_MACHINE,
-           Value::CreateBooleanValue(false),
-           NULL);
   EXPECT_TRUE(manager_->policies().Equals(bundle));
 
   manager_->Connect(&local_state_,
                     &device_management_service_,
                     scoped_ptr<CloudPolicyClient::StatusProvider>());
-  EXPECT_TRUE(manager_->policies().Equals(bundle));
 
-  manager_->Shutdown();
-  EXPECT_TRUE(manager_->policies().Equals(bundle));
+  // Trigger a policy refresh.
+  MockDeviceManagementJob* policy_fetch_job = NULL;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
+      .Times(AtMost(1))
+      .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .Times(AtMost(1));
+  manager_->RefreshPolicies();
+  Mock::VerifyAndClearExpectations(&device_management_service_);
+  ASSERT_TRUE(policy_fetch_job);
 
-  EXPECT_EQ(manager_->GetRobotAccountId(),
-            PolicyBuilder::kFakeServiceAccountIdentity);
+  // Switch back to ACTIVE, service the policy fetch and let it propagate.
+  device_policy_.policy_data().set_state(em::PolicyData::ACTIVE);
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  em::DeviceManagementResponse policy_fetch_response;
+  policy_fetch_response.mutable_policy_response()->add_response()->CopyFrom(
+      device_policy_.policy());
+  policy_fetch_job->SendResponse(DM_STATUS_SUCCESS, policy_fetch_response);
+  FlushDeviceSettings();
+
+  // Policy state should now be active and the policy map should be populated.
+  EXPECT_TRUE(store_->is_managed());
+  VerifyPolicyPopulated();
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
@@ -276,14 +328,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     ASSERT_TRUE(manager_->core()->client());
     EXPECT_TRUE(manager_->core()->client()->is_registered());
 
-    PolicyBundle bundle;
-    bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .Set(key::kDeviceMetricsReportingEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_MACHINE,
-             Value::CreateBooleanValue(false),
-             NULL);
-    EXPECT_TRUE(manager_->policies().Equals(bundle));
+    VerifyPolicyPopulated();
   }
 
   void RunTest() {
@@ -436,14 +481,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, AutoEnrollment) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Reenrollment) {
-  base::RunLoop loop;
-  EnterpriseInstallAttributes::LockResult result;
-  install_attributes_->LockDevice(PolicyBuilder::kFakeUsername,
-                                  DEVICE_MODE_ENTERPRISE,
-                                  PolicyBuilder::kFakeDeviceId,
-                                  base::Bind(&CopyLockResult, &loop, &result));
-  loop.Run();
-  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
+  LockDevice();
 
   RunTest();
   ExpectSuccessfulEnrollment();

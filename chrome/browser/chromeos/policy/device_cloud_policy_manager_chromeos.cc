@@ -280,7 +280,7 @@ void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
   if (device_management_service_ &&
       local_state_ &&
       store()->is_initialized() &&
-      store()->is_managed() &&
+      store()->has_policy() &&
       !service()) {
     core()->Connect(CreateClient());
     core()->StartRefreshScheduler();
