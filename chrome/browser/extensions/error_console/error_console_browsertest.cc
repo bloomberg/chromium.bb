@@ -431,8 +431,8 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
       extension->id(),
       script_url,
       false,  // not incognito
-      "Error in event handler for browserAction.onClicked: "
-          "ReferenceError: baz is not defined",
+      "Error in event handler for browserAction.onClicked: baz is not defined\n"
+          "Stack trace: ReferenceError: baz is not defined",
       logging::LOG_ERROR,
       extension->url().Resolve(kBackgroundPageName),
       6u);

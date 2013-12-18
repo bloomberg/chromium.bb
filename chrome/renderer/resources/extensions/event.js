@@ -382,7 +382,7 @@
         console.error(
           'Error in event handler for ' +
           (privates(this).eventName ? privates(this).eventName : '(unknown)') +
-          ': ' + e.stack);
+          ': ' + e.message + '\nStack trace: ' + e.stack);
       }
     }
     if (results.length)
