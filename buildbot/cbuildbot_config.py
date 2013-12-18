@@ -1218,7 +1218,6 @@ internal_pfq_branch = internal_pfq.derive(branch=True, chroot_replace=True,
                                           trybot_list=False)
 
 internal_paladin = internal.derive(official_chrome, paladin,
-  manifest=constants.OFFICIAL_MANIFEST,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PRIVATE,
   vm_tests=None,
