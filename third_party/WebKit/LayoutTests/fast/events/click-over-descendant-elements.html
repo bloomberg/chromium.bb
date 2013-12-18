@@ -126,6 +126,14 @@ eventSender.mouseUp();
 shouldBe('lastClickTarget', 'input1');
 lastClickTarget = null;
 
+debug('Mousedown on a form control, and mouseup on an element outside:');
+eventSender.mouseMoveTo(inputRect.left + 8, (inputRect.top + inputRect.bottom) / 2);
+eventSender.mouseDown();
+eventSender.mouseMoveTo((spanRect.left + spanRect.right) / 2, spanRect.top + 1);
+eventSender.mouseUp();
+shouldBeNull('lastClickTarget');
+lastClickTarget = null;
+
 container.remove();
 button1.remove();
 input1.remove();

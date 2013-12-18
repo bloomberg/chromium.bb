@@ -995,20 +995,20 @@ bool Node::containsIncludingHostElements(const Node& node) const
     return false;
 }
 
-Node* Node::commonAncestorOverShadowBoundary(const Node& other)
+Node* Node::commonAncestor(const Node& other, Node* (*parent)(const Node&))
 {
     if (this == other)
         return this;
     if (document() != other.document())
         return 0;
     int thisDepth = 0;
-    for (Node* node = this; node; node = node->parentOrShadowHostNode()) {
+    for (Node* node = this; node; node = parent(*node)) {
         if (node == &other)
             return node;
         thisDepth++;
     }
     int otherDepth = 0;
-    for (const Node* node = &other; node; node = node->parentOrShadowHostNode()) {
+    for (const Node* node = &other; node; node = parent(*node)) {
         if (node == this)
             return this;
         otherDepth++;
@@ -1017,16 +1017,16 @@ Node* Node::commonAncestorOverShadowBoundary(const Node& other)
     const Node* otherIterator = &other;
     if (thisDepth > otherDepth) {
         for (int i = thisDepth; i > otherDepth; --i)
-            thisIterator = thisIterator->parentOrShadowHostNode();
+            thisIterator = parent(*thisIterator);
     } else if (otherDepth > thisDepth) {
         for (int i = otherDepth; i > thisDepth; --i)
-            otherIterator = otherIterator->parentOrShadowHostNode();
+            otherIterator = parent(*otherIterator);
     }
     while (thisIterator) {
         if (thisIterator == otherIterator)
             return thisIterator;
-        thisIterator = thisIterator->parentOrShadowHostNode();
-        otherIterator = otherIterator->parentOrShadowHostNode();
+        thisIterator = parent(*thisIterator);
+        otherIterator = parent(*otherIterator);
     }
     ASSERT(!otherIterator);
     return 0;

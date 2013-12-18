@@ -26,12 +26,12 @@ shadowRoot.lastChild.addEventListener('click', function(e) {
     testFailed('Click event on an anchor element should not be fired.');
 }, false);
 
-debug('Selecting from a node to another node in ShadowDOM. This should fire click event on the host.');
+debug('Selecting from a node to another node in ShadowDOM. This should not start page navigation.');
 mouseMoveTo(shadowRoot.firstChild);
 eventSender.mouseDown();
 mouseMoveTo(shadowRoot.firstChild.nextSibling);
 eventSender.mouseUp();
-shouldBe('lastClickTarget', 'host');
+shouldBeNull('lastClickTarget');
 debug('');
 
 lastClickTarget = null;

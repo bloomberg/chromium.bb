@@ -1612,6 +1612,15 @@ void EventHandler::invalidateClick()
     m_clickNode = 0;
 }
 
+static Node* parentForClickEvent(const Node& node)
+{
+    // IE doesn't dispatch click events for mousedown/mouseup events across form
+    // controls.
+    if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
+        return 0;
+    return node.parentOrShadowHostNode();
+}
+
 bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 {
     RefPtr<FrameView> protector(m_frame->view());
@@ -1676,7 +1685,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
     bool swallowClickEvent = false;
     if (m_clickCount > 0 && !contextMenuEvent && mev.targetNode() && m_clickNode) {
-        if (Node* clickTargetNode = mev.targetNode()->commonAncestorOverShadowBoundary(*m_clickNode))
+        if (Node* clickTargetNode = mev.targetNode()->commonAncestor(*m_clickNode, parentForClickEvent))
             swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, true, m_clickCount, mouseEvent, true);
     }
 
