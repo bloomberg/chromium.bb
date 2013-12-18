@@ -260,14 +260,28 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
-{% if generate_visit_dom_wrapper_function %}
+{% if reachable_node_function or set_reference_list %}
 void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     {{cpp_class}}* impl = fromInternalPointer(object);
-    if (Node* owner = impl->{{generate_visit_dom_wrapper_function}}()) {
+    {% if set_reference_list %}
+    v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
+    V8WrapperInstantiationScope scope(creationContext, isolate);
+    {% for set_reference in set_reference_list %}
+    {{set_reference.idl_type}}* {{set_reference.name}} = impl->{{set_reference.name}}();
+    if ({{set_reference.name}}) {
+        if (!DOMDataStore::containsWrapper<{{set_reference.v8_type}}>({{set_reference.name}}, isolate))
+            wrap({{set_reference.name}}, creationContext, isolate);
+        DOMDataStore::setWrapperReference<{{set_reference.v8_type}}>(wrapper, {{set_reference.name}}, isolate);
+    }
+    {% endfor %}
+    {% endif %}
+    {% if reachable_node_function %}
+    if (Node* owner = impl->{{reachable_node_function}}()) {
         setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
         return;
     }
+    {% endif %}
     setObjectGroup(object, wrapper, isolate);
 }
 

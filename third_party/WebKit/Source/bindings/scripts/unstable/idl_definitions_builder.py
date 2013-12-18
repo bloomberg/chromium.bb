@@ -362,28 +362,34 @@ def ext_attributes_node_to_extended_attributes(node):
     for attribute in attribute_list:
         name = attribute.GetName()
         children = attribute.GetChildren()
-        if name in ['Constructor', 'CustomConstructor', 'NamedConstructor']:
+        if children:
+            if len(children) > 1:
+                raise ValueError('ExtAttributes node with %s children, expected at most 1' % len(children))
+            child = children[0]
+            child_class = child.GetClass()
+        else:
             child = None
             child_class = None
-            if children:
-                if len(children) > 1:
-                    raise ValueError('ExtAttributes node with %s children, expected at most 1' % len(children))
-                child = children[0]
-                child_class = child.GetClass()
-            if name == 'Constructor':
-                if child_class and child_class != 'Arguments':
-                    raise ValueError('Constructor only supports Arguments as child, but has child of class: %s' % child_class)
-                constructors.append(child)
-            elif name == 'CustomConstructor':
-                if child_class and child_class != 'Arguments':
-                    raise ValueError('Custom Constructor only supports Arguments as child, but has child of class: %s' % child_class)
-                custom_constructors.append(child)
-            else:  # name == 'NamedConstructor'
-                if child_class and child_class != 'Call':
-                    raise ValueError('Named Constructor only supports Call as child, but has child of class: %s' % child_class)
-                extended_attributes[name] = child
+        if name == 'Constructor':
+            if child_class and child_class != 'Arguments':
+                raise ValueError('Constructor only supports Arguments as child, but has child of class: %s' % child_class)
+            constructors.append(child)
+        elif name == 'CustomConstructor':
+            if child_class and child_class != 'Arguments':
+                raise ValueError('[CustomConstructor] only supports Arguments as child, but has child of class: %s' % child_class)
+            custom_constructors.append(child)
+        elif name == 'NamedConstructor':
+            if child_class and child_class != 'Call':
+                raise ValueError('[NamedConstructor] only supports Call as child, but has child of class: %s' % child_class)
+            extended_attributes[name] = child
+        elif name == 'SetReference':
+            if not child:
+                raise ValueError('[SetReference] requires a child, but has none.')
+            if child_class != 'Arguments':
+                raise ValueError('[SetReference] only supports Arguments as child, but has child of class: %s' % child_class)
+            extended_attributes[name] = arguments_node_to_arguments(child)
         elif children:
-            raise ValueError('Non-constructor ExtAttributes node with children: %s' % name)
+            raise ValueError('ExtAttributes node with unexpected children: %s' % name)
         else:
             value = attribute.GetProperty('VALUE')
             extended_attributes[name] = value

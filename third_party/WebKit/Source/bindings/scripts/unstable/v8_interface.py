@@ -74,8 +74,8 @@ def generate_interface(interface):
         includes.add('bindings/v8/BindingSecurity.h')
 
     # [GenerateVisitDOMWrapper]
-    generate_visit_dom_wrapper_function = extended_attributes.get('GenerateVisitDOMWrapper')
-    if generate_visit_dom_wrapper_function:
+    reachable_node_function = extended_attributes.get('GenerateVisitDOMWrapper')
+    if reachable_node_function:
         includes.update(['bindings/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
@@ -83,6 +83,15 @@ def generate_interface(interface):
     is_measure_as = 'MeasureAs' in extended_attributes
     if is_measure_as:
         includes.add('core/frame/UseCounter.h')
+
+    # [SetReference]
+    set_reference_list = [{
+        'name': argument.name,
+        'idl_type': argument.idl_type,
+        'v8_type': v8_types.v8_type(argument.idl_type),
+    } for argument in extended_attributes.get('SetReference', [])]
+    for set_reference in set_reference_list:
+        v8_types.add_includes_for_type(set_reference['idl_type'])
 
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
@@ -128,7 +137,6 @@ def generate_interface(interface):
         'conditional_string': conditional_string(interface),  # [Conditional]
         'constructors': constructors,
         'cpp_class': cpp_name(interface),
-        'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_custom_constructor': bool(custom_constructors),
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
@@ -137,7 +145,7 @@ def generate_interface(interface):
         'has_visit_dom_wrapper': (
             # [Custom=Wrap], [GenerateVisitDOMWrapper]
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
-            'GenerateVisitDOMWrapper' in extended_attributes),
+            reachable_node_function or set_reference_list),
         'header_includes': header_includes,
         'interface_length':
             interface_length(interface, constructors + custom_constructors),
@@ -155,7 +163,9 @@ def generate_interface(interface):
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'named_constructor': named_constructor,
         'parent_interface': parent_interface,
+        'reachable_node_function': reachable_node_function,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
+        'set_reference_list': set_reference_list,
         'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),
     }

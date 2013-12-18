@@ -28,16 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// This is for interface extended attributes that interact with another extended
+// attribute, and thus both cannot be tested at once.
+// The more *minor* extended attribute should be put in this file.
+
 [
-    ActiveDOMObject,
-    Conditional=CONDITION,
-    Custom=LegacyCallAsFunction|ToV8,
-    ImplementedAs=TestInterfacePythonImplementation,
-    RuntimeEnabled=FeatureName,
-    SetReference(ReferencedType referencedName),
-] interface TestInterfacePython : TestInterfaceEmpty {
-    // members needed to test [ImplementedAs], as this affect attribute
-    // configuration and method configuration
-    [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
-    [PerWorldBindings] void voidMethod();
+    Custom=VisitDOMWrapper,  // Conflict with [SetReference] and [GenerateVisitDOMWrapper]
+] interface TestInterfacePython3 {
 };

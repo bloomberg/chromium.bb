@@ -33,8 +33,9 @@
 // The more *minor* extended attribute should be put in this file.
 
 [
-    Custom=VisitDOMWrapper|Wrap,  // Conflict with [GenerateVisitDOMWrapper] and [Custom=ToV8], respectively
+    Custom=Wrap,  // Conflicts with and [Custom=ToV8], respectively
     DependentLifetime,  // Covered by [ActiveDOMObject]
+    GenerateVisitDOMWrapper=ownerNode,  // Conflicts with [SetReference]
     SpecialWrapFor=Interface1|Interface2,  // Conflicts with [Custom=ToV8]
 ] interface TestInterfacePython2 {
 };

@@ -35,12 +35,11 @@
 #include "V8TestInterfacePython.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "V8ReferencedType.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
-#include "bindings/v8/V8GCController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "platform/TraceEvent.h"
 
 namespace WebCore {
@@ -156,9 +155,13 @@ static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<
 void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     TestInterfacePythonImplementation* impl = fromInternalPointer(object);
-    if (Node* owner = impl->ownerNode()) {
-        setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
-        return;
+    v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
+    V8WrapperInstantiationScope scope(creationContext, isolate);
+    ReferencedType* referencedName = impl->referencedName();
+    if (referencedName) {
+        if (!DOMDataStore::containsWrapper<V8ReferencedType>(referencedName, isolate))
+            wrap(referencedName, creationContext, isolate);
+        DOMDataStore::setWrapperReference<V8ReferencedType>(wrapper, referencedName, isolate);
     }
     setObjectGroup(object, wrapper, isolate);
 }
