@@ -176,6 +176,33 @@ class WebCoreKURLPrinter(StringPrinter):
         return WTFStringPrinter(self.val['m_string']).to_string()
 
 
+class WebCoreLayoutUnitPrinter:
+    "Print a WebCore::LayoutUnit"
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return "%gpx" % (self.val['m_value'] / 64.0)
+
+
+class WebCoreLayoutSizePrinter:
+    "Print a WebCore::LayoutSize"
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return 'LayoutSize(%s, %s)' % (WebCoreLayoutUnitPrinter(self.val['m_width']).to_string(), WebCoreLayoutUnitPrinter(self.val['m_height']).to_string())
+
+
+class WebCoreLayoutPointPrinter:
+    "Print a WebCore::LayoutPoint"
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return 'LayoutPoint(%s, %s)' % (WebCoreLayoutUnitPrinter(self.val['m_x']).to_string(), WebCoreLayoutUnitPrinter(self.val['m_y']).to_string())
+
+
 class WebCoreQualifiedNamePrinter(StringPrinter):
     "Print a WebCore::QualifiedName"
 
@@ -282,6 +309,9 @@ def add_pretty_printers():
         (re.compile("^WTF::String$"), WTFStringPrinter),
         (re.compile("^WTF::StringImpl$"), WTFStringImplPrinter),
         (re.compile("^WebCore::KURL$"), WebCoreKURLPrinter),
+        (re.compile("^WebCore::LayoutUnit$"), WebCoreLayoutUnitPrinter),
+        (re.compile("^WebCore::LayoutPoint$"), WebCoreLayoutPointPrinter),
+        (re.compile("^WebCore::LayoutSize$"), WebCoreLayoutSizePrinter),
         (re.compile("^WebCore::QualifiedName$"), WebCoreQualifiedNamePrinter),
         (re.compile("^JSC::Identifier$"), JSCIdentifierPrinter),
         (re.compile("^JSC::JSString$"), JSCJSStringPrinter),
