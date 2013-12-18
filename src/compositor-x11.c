@@ -871,6 +871,10 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.current_mode = &output->mode;
 	output->base.make = "xwayland";
 	output->base.model = "none";
+
+	if (configured_name)
+		output->base.name = strdup(configured_name);
+
 	weston_output_init(&output->base, &c->base,
 			   x, y, width, height, transform, scale);
 
