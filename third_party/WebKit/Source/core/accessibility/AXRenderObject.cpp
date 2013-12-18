@@ -638,13 +638,14 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         if (m_renderer->isBR() || !renderText->firstTextBox())
             return true;
 
-        // static text beneath TextControls is reported along with the text control text so it's ignored.
+        // Don't ignore static text in editable text controls.
         for (AXObject* parent = parentObject(); parent; parent = parent->parentObject()) {
-            if (parent->roleValue() == TextFieldRole)
-                return true;
+            if (parent->roleValue() == TextFieldRole || parent->roleValue() == TextAreaRole)
+                return false;
         }
 
         // text elements that are just empty whitespace should not be returned
+        // FIXME(dmazzoni): we probably shouldn't ignore this if the style is 'pre', or similar...
         return renderText->text().impl()->containsOnlyWhitespace();
     }
 
