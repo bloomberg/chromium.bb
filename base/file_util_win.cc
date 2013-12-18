@@ -577,9 +577,10 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
                                           CREATE_ALWAYS,
                                           0,
                                           NULL));
+  // TODO(phajdan.jr): Restore previous log levels, http://crbug.com/329478 .
   if (!file) {
-    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
-                               << filename.value();
+    LOG_GETLASTERROR(ERROR) << "CreateFile failed for path "
+                            << filename.value();
     return -1;
   }
 
@@ -590,12 +591,12 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    DLOG_GETLASTERROR(WARNING) << "writing file " << filename.value()
-                               << " failed";
+    LOG_GETLASTERROR(ERROR) << "writing file " << filename.value()
+                            << " failed";
   } else {
     // Didn't write all the bytes.
-    DLOG(WARNING) << "wrote" << written << " bytes to "
-                  << filename.value() << " expected " << size;
+    LOG(ERROR) << "wrote" << written << " bytes to "
+               << filename.value() << " expected " << size;
   }
   return -1;
 }
