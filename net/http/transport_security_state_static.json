@@ -673,6 +673,13 @@
     { "name": "api.xero.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "eff.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "mail.de", "include_subdomains": true, "mode": "force-https" },
+    { "name": "passport.yandex.ru", "mode": "force-https" },
+    { "name": "passport.yandex.com", "mode": "force-https" },
+    { "name": "passport.yandex.ua", "mode": "force-https" },
+    { "name": "passport.yandex.by", "mode": "force-https" },
+    { "name": "passport.yandex.kz", "mode": "force-https" },
+    { "name": "passport.yandex.com.tr", "mode": "force-https" },
+    { "name": "mnsure.org", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
