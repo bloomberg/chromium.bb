@@ -2156,7 +2156,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 
   // Starting a browser window should work just fine.
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  CreateBrowser(ProfileManager::GetDefaultProfile());
+  CreateBrowser(ProfileManager::GetActiveUserProfile());
   browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -2172,7 +2172,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
     return;
 #endif
 
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile);
