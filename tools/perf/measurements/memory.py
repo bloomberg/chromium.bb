@@ -40,6 +40,3 @@ class Memory(page_measurement.PageMeasurement):
           chrome.memoryBenchmarking.heapProfilerDump('browser', 'final');
         }
       """)
-
-  def DidRunTest(self, browser, results):
-    self._memory_metric.AddSummaryResults(results)

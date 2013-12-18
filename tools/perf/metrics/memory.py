@@ -38,7 +38,6 @@ class MemoryMetric(Metric):
   def CustomizeBrowserOptions(cls, options):
     options.AppendExtraBrowserArgs([
         '--enable-stats-collection-bindings',
-        '--enable-memory-benchmarking',
         # For a hard-coded set of Google pages (such as GMail), we produce
         # custom memory histograms (V8.Something_gmail) instead of the generic
         # histograms (V8.Something), if we detect that a renderer is only
@@ -77,7 +76,9 @@ class MemoryMetric(Metric):
       self._histogram_delta[h['name']] = histogram_util.SubtractHistogram(
           histogram_data, self._histogram_start[h['name']])
 
-  def AddResults(self, tab, results):
+  # Optional argument trace_name is not in base class Metric.
+  # pylint: disable=W0221
+  def AddResults(self, tab, results, trace_name=None):
     """Add results for this page to the results object."""
     assert self._histogram_delta, 'Must call Stop() first'
     for h in _HISTOGRAMS:
@@ -86,9 +87,6 @@ class MemoryMetric(Metric):
         continue
       results.Add(h['name'], h['units'], self._histogram_delta[h['name']],
                   data_type='unimportant-histogram')
-
-  def AddSummaryResults(self, results, trace_name=None):
-    """Add summary (overall) results to the results object."""
     self._memory_stats = self._browser.memory_stats
     if not self._memory_stats['Browser']:
       return
@@ -97,15 +95,15 @@ class MemoryMetric(Metric):
     if sys.platform == 'win32':
       metric = 'working_set'
 
-    def AddSummariesForProcessTypes(process_types_memory, process_type_trace):
-      """Add all summaries to the results for a given set of process types.
+    def AddResultsForProcessTypes(process_types_memory, process_type_trace):
+      """Add all results for a given set of process types.
 
       Args:
         process_types_memory: A list of process types, e.g. Browser, 'Renderer'
         process_type_trace: The name of this set of process types in the output
       """
-      def AddSummary(value_name_memory, value_name_trace):
-        """Add a summary to the results for a given statistic.
+      def AddResult(value_name_memory, value_name_trace):
+        """Add a result for a given statistic.
 
         Args:
           value_name_memory: Name of some statistic, e.g. VM, WorkingSetSize
@@ -125,30 +123,29 @@ class MemoryMetric(Metric):
           else:
             current_trace = '%s_%s' % (value_name_trace, process_type_trace)
             chart_name = current_trace
-          results.AddSummary(current_trace, 'bytes', sum(values),
-                             chart_name=chart_name, data_type='unimportant')
+          results.Add(current_trace, 'bytes', sum(values),
+                      chart_name=chart_name, data_type='unimportant')
 
-      AddSummary('VM', 'vm_final_size')
-      AddSummary('WorkingSetSize', 'vm_%s_final_size' % metric)
-      AddSummary('PrivateDirty', 'vm_private_dirty_final')
-      AddSummary('ProportionalSetSize', 'vm_proportional_set_size_final')
-      AddSummary('SharedDirty', 'vm_shared_dirty_final')
-      AddSummary('VMPeak', 'vm_peak_size')
-      AddSummary('WorkingSetSizePeak', '%s_peak_size' % metric)
+      AddResult('VM', 'vm_final_size')
+      AddResult('WorkingSetSize', 'vm_%s_final_size' % metric)
+      AddResult('PrivateDirty', 'vm_private_dirty_final')
+      AddResult('ProportionalSetSize', 'vm_proportional_set_size_final')
+      AddResult('SharedDirty', 'vm_shared_dirty_final')
+      AddResult('VMPeak', 'vm_peak_size')
+      AddResult('WorkingSetSizePeak', '%s_peak_size' % metric)
 
-    AddSummariesForProcessTypes(['Browser'], 'browser')
-    AddSummariesForProcessTypes(['Renderer'], 'renderer')
-    AddSummariesForProcessTypes(['Gpu'], 'gpu')
-    AddSummariesForProcessTypes(['Browser', 'Renderer', 'Gpu'], 'total')
+    AddResultsForProcessTypes(['Browser'], 'browser')
+    AddResultsForProcessTypes(['Renderer'], 'renderer')
+    AddResultsForProcessTypes(['Gpu'], 'gpu')
+    AddResultsForProcessTypes(['Browser', 'Renderer', 'Gpu'], 'total')
 
     end_commit_charge = self._memory_stats['SystemCommitCharge']
     commit_charge_difference = end_commit_charge - self._start_commit_charge
-    results.AddSummary(trace_name or 'commit_charge', 'kb',
-                       commit_charge_difference,
-                       chart_name='commit_charge',
-                       data_type='unimportant')
-    results.AddSummary(trace_name or 'processes', 'count',
-                       self._memory_stats['ProcessCount'],
-                       chart_name='processes',
-                       data_type='unimportant')
-
+    results.Add(trace_name or 'commit_charge', 'kb',
+                commit_charge_difference,
+                chart_name='commit_charge',
+                data_type='unimportant')
+    results.Add(trace_name or 'processes', 'count',
+                self._memory_stats['ProcessCount'],
+                chart_name='processes',
+                data_type='unimportant')

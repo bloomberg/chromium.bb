@@ -164,7 +164,6 @@ class PageCycler(page_measurement.PageMeasurement):
           tab, results, chart_name=chart_name_prefix+'speed_index')
 
   def DidRunTest(self, browser, results):
-    self._memory_metric.AddSummaryResults(results)
     io.IOMetric().AddSummaryResults(browser, results)
 
   def IsRunCold(self, url):

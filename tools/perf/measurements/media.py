@@ -27,6 +27,9 @@ class Media(page_measurement.PageMeasurement):
     """Results can vary from page to page based on media events taking place."""
     return False
 
+  def CustomizeBrowserOptions(self, options):
+    memory.MemoryMetric.CustomizeBrowserOptions(options)
+
   def DidNavigateToPage(self, page, tab):
     """Override to do operations right after the page is navigated."""
     self._media_metric = media.MediaMetric(tab)
@@ -40,9 +43,8 @@ class Media(page_measurement.PageMeasurement):
     if self._add_browser_metrics:
       self._cpu_metric = cpu.CpuMetric(tab.browser)
       self._cpu_metric.Start(page, tab)
-      # No need to start memory metric since we are only interested in Summary
-      # results.
       self._memory_metric = memory.MemoryMetric(tab.browser)
+      self._memory_metric.Start(page, tab)
 
   def MeasurePage(self, page, tab, results):
     """Measure the page's performance."""
@@ -51,4 +53,5 @@ class Media(page_measurement.PageMeasurement):
     if self._add_browser_metrics:
       self._cpu_metric.Stop(page, tab)
       self._cpu_metric.AddResults(tab, results, trace_name=trace_name)
-      self._memory_metric.AddSummaryResults(results, trace_name=trace_name)
+      self._memory_metric.Stop(page, tab)
+      self._memory_metric.AddResults(tab, results, trace_name=trace_name)
