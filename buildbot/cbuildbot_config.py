@@ -1016,7 +1016,6 @@ chrome_info_no_pdf = chrome_info.derive(
 chrome_perf = chrome_info.derive(
   vm_tests=None,
   upload_hw_test_artifacts=True,
-
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
                          timeout=90 * 60, critical=True, num=1,
                          copy_perf_results=True)],
@@ -1134,6 +1133,7 @@ _AddFullConfigs()
 _toolchain_major = _cros_sdk.add_config('toolchain-major',
   latest_toolchain=True,
   prebuilts=False,
+  trybot_list=False,
   gcc_githash='gcc.gnu.org/branches/google/main',
   description='Test next major toolchain revision',
 )
@@ -1141,6 +1141,7 @@ _toolchain_major = _cros_sdk.add_config('toolchain-major',
 _toolchain_minor = _cros_sdk.add_config('toolchain-minor',
   latest_toolchain=True,
   prebuilts=False,
+  trybot_list=False,
   gcc_githash='gcc.gnu.org/branches/google/gcc-4_8-mobile',
   description='Test next minor toolchain revision',
 )
@@ -1149,6 +1150,7 @@ incremental.add_config('x86-generic-asan',
   asan,
   boards=['x86-generic'],
   description='Build with Address Sanitizer (Clang)',
+  trybot_list=True,
 )
 
 chromium_info.add_config('x86-generic-tot-asan-informational',
@@ -1162,6 +1164,7 @@ incremental.add_config('amd64-generic-asan',
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang)',
+  trybot_list=True,
 )
 
 chromium_info.add_config('amd64-generic-tot-asan-informational',
@@ -1617,6 +1620,7 @@ _config.add_group('x86-zgb-release-group',
 ### Release PGO configs.
 
 release_pgo = _release.derive(
+  trybot_list=False,
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
                                     num=4) +
            HWTestConfig.PGOList(),
