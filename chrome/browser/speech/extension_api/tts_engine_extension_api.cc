@@ -153,6 +153,14 @@ void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
   if (options->HasKey(constants::kOnEventKey))
     options->Remove(constants::kOnEventKey, NULL);
 
+  // Add the voice name and language to the options if they're not
+  // already there, since they might have been picked by the TTS controller
+  // rather than directly by the client that requested the speech.
+  if (!options->HasKey(constants::kVoiceNameKey))
+    options->SetString(constants::kVoiceNameKey, voice.name);
+  if (!options->HasKey(constants::kLangKey))
+    options->SetString(constants::kLangKey, voice.lang);
+
   args->Set(1, options.release());
   args->Set(2, Value::CreateIntegerValue(utterance->id()));
 
