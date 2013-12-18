@@ -47,7 +47,6 @@ private:
     virtual void handleDOMActivateEvent(Event*) OVERRIDE;
     virtual bool canBeSuccessfulSubmitButton() OVERRIDE;
     virtual String defaultValue() const OVERRIDE;
-    virtual bool isSubmitButton() const OVERRIDE;
     virtual bool isTextButton() const OVERRIDE;
 };
 

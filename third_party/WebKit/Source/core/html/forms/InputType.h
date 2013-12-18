@@ -92,7 +92,6 @@ public:
     virtual bool isRadioButton() const;
     virtual bool isRangeControl() const;
     virtual bool isSearchField() const;
-    virtual bool isSubmitButton() const;
     virtual bool isTelephoneField() const;
     virtual bool isTextButton() const;
     virtual bool isTextField() const;
@@ -182,7 +181,6 @@ public:
     virtual bool canSetValue(const String&);
     virtual bool storesValueSeparateFromAttribute();
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior);
-    virtual bool shouldResetOnDocumentActivation();
     virtual bool shouldRespectListAttribute();
     virtual bool shouldRespectSpeechAttribute();
     virtual bool isEnumeratable();
@@ -201,12 +199,6 @@ public:
     // succeeds; Returns defaultValue otherwise. This function can
     // return NaN or Infinity only if defaultValue is NaN or Infinity.
     virtual Decimal parseToNumber(const String&, const Decimal& defaultValue) const;
-
-    // Parses the specified string for this InputType, and returns true if it
-    // is successfully parsed. An instance pointed by the DateComponents*
-    // parameter will have parsed values and be modified even if the parsing
-    // fails. The DateComponents* parameter may be 0.
-    virtual bool parseToDateComponents(const String&, DateComponents*) const;
 
     // Create a string representation of the specified Decimal value for the
     // input type. If NaN or Infinity is specified, this returns an empty

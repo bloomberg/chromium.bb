@@ -121,11 +121,6 @@ bool PasswordInputType::shouldUseInputMethod() const
     return false;
 }
 
-bool PasswordInputType::shouldResetOnDocumentActivation()
-{
-    return true;
-}
-
 bool PasswordInputType::shouldRespectListAttribute()
 {
     return false;

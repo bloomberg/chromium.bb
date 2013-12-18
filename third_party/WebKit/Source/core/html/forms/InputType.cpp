@@ -437,12 +437,6 @@ Decimal InputType::parseToNumberOrNaN(const String& string) const
     return parseToNumber(string, Decimal::nan());
 }
 
-bool InputType::parseToDateComponents(const String&, DateComponents*) const
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 String InputType::serialize(const Decimal&) const
 {
     ASSERT_NOT_REACHED();
@@ -619,11 +613,6 @@ String InputType::droppedFileSystemId()
     return String();
 }
 
-bool InputType::shouldResetOnDocumentActivation()
-{
-    return false;
-}
-
 bool InputType::shouldRespectListAttribute()
 {
     return false;
@@ -685,11 +674,6 @@ bool InputType::isInteractiveContent() const
 }
 
 bool InputType::isNumberField() const
-{
-    return false;
-}
-
-bool InputType::isSubmitButton() const
 {
     return false;
 }

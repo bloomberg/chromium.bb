@@ -38,7 +38,6 @@ class FileList;
 class HTMLDataListElement;
 class HTMLImageLoader;
 class HTMLOptionElement;
-class Icon;
 class InputType;
 class InputTypeView;
 class KURL;
@@ -149,9 +148,6 @@ public:
 
     String localizeValue(const String&) const;
 
-    // The value which is drawn by a renderer.
-    String visibleValue() const;
-
     const String& suggestedValue() const;
     void setSuggestedValue(const String&);
 
@@ -195,7 +191,6 @@ public:
 
     Vector<String> acceptMIMETypes();
     Vector<String> acceptFileExtensions();
-    const AtomicString& accept() const;
     const AtomicString& alt() const;
 
     void setSize(unsigned);
@@ -216,7 +211,6 @@ public:
 
     String droppedFileSystemId();
 
-    Icon* icon() const;
     // These functions are used for rendering the input active during a
     // drag-and-drop operation.
     bool canReceiveDroppedFiles() const;
@@ -345,7 +339,6 @@ private:
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
-    bool supportsMaxLength() const { return isTextType(); }
     bool isTextType() const;
     bool tooLong(const String&, NeedsToCheckDirtyFlag) const;
 
@@ -368,8 +361,6 @@ private:
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
     void updateValueIfNeeded();
-
-    bool canHaveSelection() const;
 
     // Returns null if this isn't associated with any radio button group.
     CheckedRadioButtons* checkedRadioButtons() const;

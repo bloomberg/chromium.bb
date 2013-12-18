@@ -514,11 +514,6 @@ bool HTMLInputElement::canStartSelection() const
     return HTMLTextFormControlElement::canStartSelection();
 }
 
-bool HTMLInputElement::canHaveSelection() const
-{
-    return isTextField();
-}
-
 int HTMLInputElement::selectionStartForBinding(ExceptionState& exceptionState) const
 {
     if (!m_inputType->supportsSelectionAPI()) {
@@ -1269,11 +1264,6 @@ Vector<String> HTMLInputElement::acceptFileExtensions()
     return parseAcceptAttribute(fastGetAttribute(acceptAttr), isValidFileExtension);
 }
 
-const AtomicString& HTMLInputElement::accept() const
-{
-    return fastGetAttribute(acceptAttr);
-}
-
 const AtomicString& HTMLInputElement::alt() const
 {
     return fastGetAttribute(altAttr);
@@ -1347,11 +1337,6 @@ void HTMLInputElement::setCanReceiveDroppedFiles(bool canReceiveDroppedFiles)
     m_canReceiveDroppedFiles = canReceiveDroppedFiles;
     if (renderer())
         renderer()->updateFromElement();
-}
-
-String HTMLInputElement::visibleValue() const
-{
-    return m_inputType->visibleValue();
 }
 
 String HTMLInputElement::sanitizeValue(const String& proposedValue) const
@@ -1577,11 +1562,6 @@ bool HTMLInputElement::isRangeControl() const
     return m_inputType->isRangeControl();
 }
 
-bool HTMLInputElement::isColorControl() const
-{
-    return m_inputType->isColorControl();
-}
-
 bool HTMLInputElement::isText() const
 {
     return m_inputType->isTextType();
@@ -1605,11 +1585,6 @@ bool HTMLInputElement::isImageButton() const
 bool HTMLInputElement::isNumberField() const
 {
     return m_inputType->isNumberField();
-}
-
-bool HTMLInputElement::isSubmitButton() const
-{
-    return m_inputType->isSubmitButton();
 }
 
 bool HTMLInputElement::isTelephoneField() const

@@ -80,7 +80,6 @@ public:
     static Decimal parseStep(AnyStepHandling, const StepDescription&, const String&);
     Decimal step() const { return m_step; }
     Decimal stepBase() const { return m_stepBase; }
-    int stepScaleFactor() const { return m_stepDescription.stepScaleFactor; }
     bool stepMismatch(const Decimal&) const;
 
     // Clamp the middle value according to the step
