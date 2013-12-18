@@ -548,7 +548,6 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 #if defined(ARCH_CPU_ARMEL)
   decoder_.reset(new ExynosVideoDecodeAccelerator(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-      static_cast<EGLContext>(rendering_helper_->GetGLContext()),
       client,
       weak_client,
       base::Bind(&DoNothingReturnTrue),
@@ -556,7 +555,6 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 #elif defined(ARCH_CPU_X86_FAMILY)
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
-      static_cast<GLXContext>(rendering_helper_->GetGLContext()),
       client,
       base::Bind(&DoNothingReturnTrue)));
 #endif  // ARCH_CPU_ARMEL

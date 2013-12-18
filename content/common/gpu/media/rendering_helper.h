@@ -75,9 +75,6 @@ class RenderingHelper {
   // Delete |texture_id|.
   void DeleteTexture(uint32 texture_id);
 
-  // Get the platform specific handle to the OpenGL context.
-  void* GetGLContext();
-
   // Get the platform specific handle to the OpenGL display.
   void* GetGLDisplay();
 

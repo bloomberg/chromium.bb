@@ -240,11 +240,10 @@ VaapiVideoDecodeAccelerator::TFPPicture*
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
-    Display* x_display, GLXContext glx_context,
+    Display* x_display,
     Client* client,
     const base::Callback<bool(void)>& make_context_current)
     : x_display_(x_display),
-      glx_context_(glx_context),
       make_context_current_(make_context_current),
       state_(kUninitialized),
       input_ready_(&lock_),

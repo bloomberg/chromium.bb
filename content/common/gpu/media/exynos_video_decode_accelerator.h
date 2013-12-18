@@ -61,7 +61,6 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
  public:
   ExynosVideoDecodeAccelerator(
       EGLDisplay egl_display,
-      EGLContext egl_context,
       Client* client,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
@@ -416,7 +415,6 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
 
   // EGL state
   EGLDisplay egl_display_;
-  EGLContext egl_context_;
 
   // The codec we'll be decoding for.
   media::VideoCodecProfile video_profile_;

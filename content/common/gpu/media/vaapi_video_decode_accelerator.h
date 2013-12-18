@@ -45,7 +45,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
     : public VideoDecodeAcceleratorImpl {
  public:
   VaapiVideoDecodeAccelerator(
-      Display* x_display, GLXContext glx_context,
+      Display* x_display,
       Client* client,
       const base::Callback<bool(void)>& make_context_current);
   virtual ~VaapiVideoDecodeAccelerator();
@@ -153,7 +153,6 @@ private:
 
   // Client-provided X/GLX state.
   Display* x_display_;
-  GLXContext glx_context_;
   base::Callback<bool(void)> make_context_current_;
   GLXFBConfig fb_config_;
 

@@ -180,7 +180,6 @@ ExynosVideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
     EGLDisplay egl_display,
-    EGLContext egl_context,
     Client* client,
     const base::WeakPtr<Client>& io_client,
     const base::Callback<bool(void)>& make_context_current,
@@ -213,7 +212,6 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       device_poll_interrupt_fd_(-1),
       make_context_current_(make_context_current),
       egl_display_(egl_display),
-      egl_context_(egl_context),
       video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN) {}
 
 ExynosVideoDecodeAccelerator::~ExynosVideoDecodeAccelerator() {
@@ -264,12 +262,6 @@ bool ExynosVideoDecodeAccelerator::Initialize(
 
   if (egl_display_ == EGL_NO_DISPLAY) {
     DLOG(ERROR) << "Initialize(): could not get EGLDisplay";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
-
-  if (egl_context_ == EGL_NO_CONTEXT) {
-    DLOG(ERROR) << "Initialize(): could not get EGLContext";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
