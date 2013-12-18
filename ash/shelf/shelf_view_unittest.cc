@@ -387,10 +387,10 @@ class ShelfViewTest : public AshTestBase {
       if (test_api_->GetButton(i)) {
         gfx::Rect shelf_view_bounds = shelf_view_->GetLocalBounds();
         gfx::Rect item_bounds = test_api_->GetBoundsByIndex(i);
-        EXPECT_TRUE(item_bounds.x() >= 0);
-        EXPECT_TRUE(item_bounds.y() >= 0);
-        EXPECT_TRUE(item_bounds.right() <= shelf_view_bounds.width());
-        EXPECT_TRUE(item_bounds.bottom() <= shelf_view_bounds.height());
+        EXPECT_GE(item_bounds.x(), 0);
+        EXPECT_GE(item_bounds.y(), 0);
+        EXPECT_LE(item_bounds.right(), shelf_view_bounds.width());
+        EXPECT_LE(item_bounds.bottom(), shelf_view_bounds.height());
       }
     }
   }
@@ -480,17 +480,17 @@ class ShelfViewTest : public AshTestBase {
     int total_item_count = model_->item_count();
 
     int last_visible_item_id_in_shelf =
-        model_->items()[test_api_->GetLastVisibleIndex()].id;
+        GetItemId(test_api_->GetLastVisibleIndex());
     int second_last_visible_item_id_in_shelf =
-        model_->items()[test_api_->GetLastVisibleIndex() - 1].id;
+        GetItemId(test_api_->GetLastVisibleIndex() - 1);
     int first_visible_item_id_in_overflow =
-        model_->items()[test_api_for_overflow.GetFirstVisibleIndex()].id;
+        GetItemId(test_api_for_overflow.GetFirstVisibleIndex());
     int second_last_visible_item_id_in_overflow =
-        model_->items()[test_api_for_overflow.GetLastVisibleIndex() - 1].id;
+        GetItemId(test_api_for_overflow.GetLastVisibleIndex() - 1);
 
     int drag_item_index =
         test_api_for_overflow.GetLastVisibleIndex();
-    LauncherID drag_item_id = model_->items()[drag_item_index].id;
+    LauncherID drag_item_id = GetItemId(drag_item_index);
     internal::ShelfButton* drag_button =
         test_api_for_overflow.GetButton(drag_item_index);
     gfx::Point center_point_of_drag_item =
@@ -534,31 +534,43 @@ class ShelfViewTest : public AshTestBase {
     // Compare pre-stored items' id with newly positioned items' after dragging
     // is canceled or finished.
     if (cancel) {
-      EXPECT_EQ(model_->items()[test_api_->GetLastVisibleIndex()].id,
-          last_visible_item_id_in_shelf);
-      EXPECT_EQ(model_->items()[test_api_->GetLastVisibleIndex() - 1].id,
-          second_last_visible_item_id_in_shelf);
-      EXPECT_EQ(
-          model_->items()[test_api_for_overflow.GetFirstVisibleIndex()].id,
-          first_visible_item_id_in_overflow);
-      EXPECT_EQ(
-          model_->items()[test_api_for_overflow.GetLastVisibleIndex() - 1].id,
-          second_last_visible_item_id_in_overflow);
+      EXPECT_EQ(last_visible_item_id_in_shelf,
+                GetItemId(test_api_->GetLastVisibleIndex()));
+      EXPECT_EQ(second_last_visible_item_id_in_shelf,
+                GetItemId(test_api_->GetLastVisibleIndex() - 1));
+      EXPECT_EQ(first_visible_item_id_in_overflow,
+                GetItemId(test_api_for_overflow.GetFirstVisibleIndex()));
+      EXPECT_EQ(second_last_visible_item_id_in_overflow,
+                GetItemId(test_api_for_overflow.GetLastVisibleIndex() - 1));
     } else {
-      LauncherID drop_item_id = model_->items()[drop_index].id;
-      EXPECT_EQ(drop_item_id, drag_item_id);
-      EXPECT_EQ(model_->item_count(), total_item_count);
-      EXPECT_EQ(
-          model_->items()[test_api_for_overflow.GetFirstVisibleIndex()].id,
-          last_visible_item_id_in_shelf);
-      EXPECT_EQ(model_->items()[test_api_->GetLastVisibleIndex()].id,
-          second_last_visible_item_id_in_shelf);
-      EXPECT_EQ(
-          model_->items()[test_api_for_overflow.GetFirstVisibleIndex() + 1].id,
-          first_visible_item_id_in_overflow);
-      EXPECT_EQ(model_->items()[test_api_for_overflow.GetLastVisibleIndex()].id,
-          second_last_visible_item_id_in_overflow);
+      EXPECT_EQ(drag_item_id, GetItemId(drop_index));
+      EXPECT_EQ(total_item_count, model_->item_count());
+      EXPECT_EQ(last_visible_item_id_in_shelf,
+                GetItemId(test_api_for_overflow.GetFirstVisibleIndex()));
+      EXPECT_EQ(second_last_visible_item_id_in_shelf,
+                GetItemId(test_api_->GetLastVisibleIndex()));
+      EXPECT_EQ(first_visible_item_id_in_overflow,
+                GetItemId(test_api_for_overflow.GetFirstVisibleIndex() + 1));
+      EXPECT_EQ(second_last_visible_item_id_in_overflow,
+                GetItemId(test_api_for_overflow.GetLastVisibleIndex()));
     }
+  }
+
+  // Returns the item's LauncherID at |index|.
+  LauncherID GetItemId(int index) {
+    DCHECK_GE(index, 0);
+    return model_->items()[index].id;
+  }
+
+  void ReplaceShelfDelegateForRipOffTest() {
+    // Replace ShelfDelegate.
+    test::ShellTestApi test_api(Shell::GetInstance());
+    test_api.SetShelfDelegate(NULL);
+    ShelfDelegate* delegate = new TestShelfDelegateForShelfView(model_);
+    test_api.SetShelfDelegate(delegate);
+    test::LauncherTestAPI(
+        Launcher::ForPrimaryDisplay()).SetShelfDelegate(delegate);
+    test_api_->SetShelfDelegate(delegate);
   }
 
   ShelfModel* model_;
@@ -690,8 +702,8 @@ TEST_F(ShelfViewTest, EnforceDragType) {
 // platform app button is hidden.
 TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow.
   int items_added = 0;
@@ -714,8 +726,8 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
 // is still visible.
 TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   LauncherID browser_button_id = AddPlatformApp();
 
@@ -738,8 +750,9 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
 TEST_F(ShelfViewLegacyShelfLayoutTest,
        AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
+
 
   LauncherID browser_button_id = AddPlatformApp();
 
@@ -762,8 +775,9 @@ TEST_F(ShelfViewLegacyShelfLayoutTest,
 }
 
 TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow, remember last visible platform app
   // button.
@@ -789,8 +803,9 @@ TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
 }
 
 TEST_F(ShelfViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow, remember last visible platform app
   // button.
@@ -820,8 +835,9 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
 // When there are more panels then platform app buttons we should hide panels
 // rather than platform apps.
 TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
   LauncherID platform_app = AddPlatformApp();
@@ -863,8 +879,8 @@ TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
 // chevron is gone.
 TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app buttons until overflow.
   int items_added = 0;
@@ -893,8 +909,8 @@ TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
 // Verifies that remove last overflowed button should hide overflow chevron.
 TEST_F(ShelfViewTest, RemoveLastOverflowed) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button until overflow.
   int items_added = 0;
@@ -913,8 +929,8 @@ TEST_F(ShelfViewTest, RemoveLastOverflowed) {
 // that all added buttons are visible.
 TEST_F(ShelfViewTest, AddButtonQuickly) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add a few platform buttons quickly without wait for animation.
   int added_count = 0;
@@ -1147,8 +1163,9 @@ TEST_F(ShelfViewTest, ClickOneDragAnother) {
 
 // Confirm that item status changes are reflected in the buttons.
 TEST_F(ShelfViewTest, LauncherItemStatus) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
   LauncherID last_added = AddPlatformApp();
@@ -1166,8 +1183,9 @@ TEST_F(ShelfViewTest, LauncherItemStatus) {
 
 TEST_F(ShelfViewLegacyShelfLayoutTest,
        LauncherItemPositionReflectedOnStateChanged) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add 2 items to the launcher.
   LauncherID item1_id = AddPlatformApp();
@@ -1200,8 +1218,9 @@ TEST_F(ShelfViewLegacyShelfLayoutTest,
 // Confirm that item status changes are reflected in the buttons
 // for platform apps.
 TEST_F(ShelfViewTest, LauncherItemStatusPlatformApp) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
   LauncherID last_added = AddPlatformApp();
@@ -1441,8 +1460,8 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
 // new ideal bounds.
 TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
 
   // Add buttons until overflow. Let the non-overflow add animations finish but
   // leave the last running.
@@ -1470,19 +1489,13 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
       test_api_->GetIdealBoundsByIndex(app_list_button_index);
   const gfx::Rect& app_list_bounds =
       test_api_->GetBoundsByIndex(app_list_button_index);
-  EXPECT_EQ(app_list_bounds, app_list_ideal_bounds);
+  EXPECT_EQ(app_list_ideal_bounds, app_list_bounds);
 }
 
 // Checks the overflow bubble size when an item is ripped off and re-inserted.
 TEST_F(ShelfViewTest, OverflowBubbleSize) {
-  // Replace ShelfDelegate.
-  test::ShellTestApi test_api(Shell::GetInstance());
-  test_api.SetShelfDelegate(NULL);
-  ShelfDelegate *delegate = new TestShelfDelegateForShelfView(model_);
-  test_api.SetShelfDelegate(delegate);
-  test::LauncherTestAPI(
-      Launcher::ForPrimaryDisplay()).SetShelfDelegate(delegate);
-  test_api_->SetShelfDelegate(delegate);
+  // Replace current ShelfDelegate with TestShelfDelegateForShelfView.
+  ReplaceShelfDelegateForRipOffTest();
 
   AddButtonsUntilOverflow();
 
@@ -1540,8 +1553,8 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 // first pixel and being therefore bigger then the others.
 TEST_F(ShelfViewLegacyShelfLayoutTest, CheckFittsLaw) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetButtonCount(),
+            test_api_->GetLastVisibleIndex() + 1);
   gfx::Rect ideal_bounds_0 = test_api_->GetIdealBoundsByIndex(0);
   gfx::Rect ideal_bounds_1 = test_api_->GetIdealBoundsByIndex(1);
   EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
@@ -1715,14 +1728,8 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
 // Checks various drag and drop operations from OverflowBubble to Shelf.
 TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
-  // Replace LauncherDelegate.
-  test::ShellTestApi test_api(Shell::GetInstance());
-  test_api.SetShelfDelegate(NULL);
-  ShelfDelegate *delegate = new TestShelfDelegateForShelfView(model_);
-  test_api.SetShelfDelegate(delegate);
-  test::LauncherTestAPI(
-      Launcher::ForPrimaryDisplay()).SetShelfDelegate(delegate);
-  test_api_->SetShelfDelegate(delegate);
+  // Replace current ShelfDelegate with TestShelfDelegateForShelfView.
+  ReplaceShelfDelegateForRipOffTest();
 
   AddButtonsUntilOverflow();
 
