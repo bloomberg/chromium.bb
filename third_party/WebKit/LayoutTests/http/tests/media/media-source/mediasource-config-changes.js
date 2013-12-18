@@ -35,6 +35,7 @@ function mediaSourceConfigChangeTest(directory, idA, idB, description)
                 var sourceBuffer = mediaSource.addSourceBuffer(typeA);
 
                 appendBuffer(test, sourceBuffer, dataA);
+                ++expectedResizeEventCount;
 
                 test.waitForExpectedEvents(function()
                 {

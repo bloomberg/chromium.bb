@@ -18,13 +18,17 @@
                 video.src = "resources/frame_size_change.webm";
                 video_fixed_size.src = "resources/frame_size_change.webm";
 
-                // Expect no resize event because the tag's size (the frames'
+                // Expect no resize event after the initial one because the tag's size (the frames'
                 // "natural size") doesn't change, only the internal resolution
                 // does.  Fail if this expectation is violated.
+                var expectedResizeCount = 2;  // One event per <video>.
                 video.addEventListener('resize', onresize);
                 video_fixed_size.addEventListener('resize', onresize);
                 function onresize()
                 {
+                    if (--expectedResizeCount >= 0) {
+                        return;
+                    }
                     document.body.appendChild(document.createTextNode('FAIL: unexpected resize'));
                     if (window.testRunner) {
                         testRunner.notifyDone();
@@ -36,6 +40,13 @@
                 {
                     if (++canplayCount < 2) {
                         return;
+                    }
+
+                    if (expectedResizeCount != 0) {
+                        document.body.appendChild(document.createTextNode('FAIL: missing resize event'));
+                        if (window.testRunner) {
+                            testRunner.notifyDone();
+                        }
                     }
 
                     // Make sure we render the first frame.

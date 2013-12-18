@@ -1578,6 +1578,8 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     if (m_readyState >= HAVE_METADATA && oldState < HAVE_METADATA) {
         prepareMediaFragmentURI();
         scheduleEvent(EventTypeNames::durationchange);
+        if (isVideo())
+            scheduleEvent(EventTypeNames::resize);
         scheduleEvent(EventTypeNames::loadedmetadata);
         if (hasMediaControls())
             mediaControls()->loadedMetadata();
@@ -3137,7 +3139,8 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged");
 
-    if (m_readyState > HAVE_NOTHING)
+    ASSERT(hasVideo()); // "resize" makes no sense absent video.
+    if (m_readyState > HAVE_NOTHING && isVideo())
         scheduleEvent(EventTypeNames::resize);
 
     if (renderer())
