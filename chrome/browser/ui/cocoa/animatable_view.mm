@@ -6,7 +6,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #import "chrome/browser/ui/cocoa/animatable_view.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
 // NSAnimation subclass that animates the height of an AnimatableView.  Allows
 // the caller to start and cancel the animation as desired.

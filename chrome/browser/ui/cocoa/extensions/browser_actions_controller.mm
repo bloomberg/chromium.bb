@@ -33,7 +33,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
 using extensions::Extension;
 using extensions::ExtensionList;

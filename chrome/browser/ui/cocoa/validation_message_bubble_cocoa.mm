@@ -12,7 +12,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/base_view.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/resource/resource_bundle.h"

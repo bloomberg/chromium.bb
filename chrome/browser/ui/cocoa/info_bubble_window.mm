@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
 const CGFloat kOrderInSlideOffset = 10;

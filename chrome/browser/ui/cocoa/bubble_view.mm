@@ -6,8 +6,8 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
-#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/theme_provider.h"
 
 // The roundedness of the edges of the bubble. This matches the value used on

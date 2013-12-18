@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace cocoa_l10n_util {
 

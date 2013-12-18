@@ -44,7 +44,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #import "skia/ext/skia_utils_mac.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;

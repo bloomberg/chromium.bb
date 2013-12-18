@@ -9,7 +9,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/common/service_process_util_posix.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/GTM/Foundation/GTMServiceManagement.h"
+#include "third_party/google_toolbox_for_mac/src/Foundation/GTMServiceManagement.h"
 
 using content::BrowserThread;
 

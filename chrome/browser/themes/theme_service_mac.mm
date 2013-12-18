@@ -10,7 +10,7 @@
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"

@@ -495,19 +495,8 @@
               ],
             }],
             ['OS=="mac"', {
-              'sources': [
-                '../third_party/GTM/AppKit/GTMCarbonEvent.h',
-                '../third_party/GTM/AppKit/GTMCarbonEvent.m',
-                '../third_party/GTM/DebugUtils/GTMDebugSelectorValidation.h',
-                '../third_party/GTM/DebugUtils/GTMTypeCasting.h',
-                '../third_party/GTM/Foundation/GTMObjectSingleton.h',
-                '../third_party/GTM/GTMDefines.h',
-              ],
-              'include_dirs': [
-                '../third_party/GTM',
-                '../third_party/GTM/AppKit',
-                '../third_party/GTM/DebugUtils',
-                '../third_party/GTM/Foundation',
+              'dependencies': [
+                '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
               ],
               'link_settings': {
                 'libraries': [

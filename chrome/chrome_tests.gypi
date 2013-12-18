@@ -1888,9 +1888,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'include_dirs': [
-            '../third_party/GTM',
-          ],
           # TODO(mark): We really want this for all non-static library
           # targets, but when we tried to pull it up to the common.gypi
           # level, it broke other things like the ui and startup tests. *shrug*
@@ -2182,9 +2179,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'include_dirs': [
-            '../third_party/GTM',
-          ],
           # TODO(mark): We really want this for all non-static library
           # targets, but when we tried to pull it up to the common.gypi
           # level, it broke other things like the ui and startup tests. *shrug*

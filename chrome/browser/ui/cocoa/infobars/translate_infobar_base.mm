@@ -18,7 +18,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
 #include "grit/generated_resources.h"
-#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using InfoBarUtilities::MoveControl;

@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/rect_path_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 

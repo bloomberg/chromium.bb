@@ -8,8 +8,8 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
-#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
 
 using bookmarks::kBookmarkBarMenuCornerRadius;
 

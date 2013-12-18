@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_UI_LOCALIZER_H_
 #define CHROME_BROWSER_UI_COCOA_UI_LOCALIZER_H_
 
-#import "third_party/GTM/AppKit/GTMUILocalizer.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizer.h"
 
 @class NSString;
 

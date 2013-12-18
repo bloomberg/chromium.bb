@@ -13,7 +13,7 @@
 #include "base/process/launch.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "third_party/GTM/Foundation/GTMServiceManagement.h"
+#include "third_party/google_toolbox_for_mac/src/Foundation/GTMServiceManagement.h"
 
 namespace {
 

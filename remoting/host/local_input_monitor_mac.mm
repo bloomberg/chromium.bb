@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
-#import "third_party/GTM/AppKit/GTMCarbonEvent.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMCarbonEvent.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 // Esc Key Code is 53.

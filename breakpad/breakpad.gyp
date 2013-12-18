@@ -707,6 +707,9 @@
         {
           'target_name': 'breakpad_client',
           'type': 'static_library',
+          'dependencies': [
+            '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
+          ],
           'sources': [
             'src/client/ios/Breakpad.h',
             'src/client/ios/Breakpad.mm',
@@ -756,24 +759,7 @@
             'src',
             'src/client/mac/Framework',
             'src/common/mac',
-            # For GTMLogger.
-            '<(DEPTH)/third_party/GTM',
-            '<(DEPTH)/third_party/GTM/Foundation',
           ],
-          'link_settings': {
-            # Build the version of GTMLogger.m in third_party rather than the
-            # one in src/common/mac because the former catches all exceptions
-            # whereas the latter lets them propagate, which can cause odd
-            # crashes.
-            'sources': [
-              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.h',
-              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.m',
-            ],
-            'include_dirs': [
-              '<(DEPTH)/third_party/GTM',
-              '<(DEPTH)/third_party/GTM/Foundation',
-            ],
-          },
         }
       ]
     }],

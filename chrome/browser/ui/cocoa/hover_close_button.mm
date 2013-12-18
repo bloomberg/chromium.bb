@@ -7,7 +7,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#import "third_party/GTM/AppKit/GTMKeyValueAnimation.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMKeyValueAnimation.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -5,7 +5,7 @@ include_rules = [
   "+third_party/apple_apsl",
   "+third_party/libevent",
   "+third_party/dmg_fp",
-  "+third_party/GTM",
+  "+third_party/google_toolbox_for_mac/src",
   "+third_party/mach_override",
   "+third_party/modp_b64",
   "+third_party/tcmalloc",

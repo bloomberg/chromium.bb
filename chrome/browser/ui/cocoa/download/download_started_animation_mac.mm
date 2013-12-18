@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"

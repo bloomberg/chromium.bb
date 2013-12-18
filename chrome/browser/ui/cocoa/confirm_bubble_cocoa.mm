@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 

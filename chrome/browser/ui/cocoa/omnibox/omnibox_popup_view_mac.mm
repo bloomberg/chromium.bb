@@ -19,7 +19,7 @@
 #include "chrome/common/autocomplete_match_type.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"

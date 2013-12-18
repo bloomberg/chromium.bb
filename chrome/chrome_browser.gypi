@@ -3265,6 +3265,7 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
+            '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
             '../third_party/mozilla/mozilla.gyp:mozilla',
           ],
           'sources!': [
@@ -3288,15 +3289,6 @@
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
             ],
           },
-          'sources': [
-            # Build the necessary GTM sources
-            '../third_party/GTM/Foundation/GTMServiceManagement.h',
-            '../third_party/GTM/Foundation/GTMServiceManagement.c',
-          ],
-          'include_dirs': [
-            '../third_party/GTM',
-            '../third_party/GTM/Foundation',
-          ],
         }],
         ['enable_rlz==1', {
           'dependencies': [

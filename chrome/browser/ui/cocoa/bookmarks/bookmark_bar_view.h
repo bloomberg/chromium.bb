@@ -10,7 +10,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @class BookmarkBarController;
 @class BookmarkBarItemContainer;

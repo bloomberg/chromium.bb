@@ -132,14 +132,6 @@
             'views/message_popup_bubble.h',
           ],
         }],
-        ['OS=="mac"', {
-          'dependencies': [
-            '../ui.gyp:ui_cocoa_third_party_toolkits',
-          ],
-          'include_dirs': [
-            '../../third_party/GTM',
-          ],
-        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../compositor/compositor.gyp:compositor',

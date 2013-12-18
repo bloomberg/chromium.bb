@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/GTM/Foundation/GTMRegex.h"
+#include "third_party/google_toolbox_for_mac/src/Foundation/GTMRegex.h"
 
 // Must be included after IPC_MESSAGE_LOG_ENABLED gets defined
 #import "chrome/browser/ui/cocoa/about_ipc_dialog.h"

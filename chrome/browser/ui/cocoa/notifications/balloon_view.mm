@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #import "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 
 namespace {
 

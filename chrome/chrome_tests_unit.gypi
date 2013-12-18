@@ -2414,12 +2414,9 @@
           # The test fetches resources which means Mac need the app bundle to
           # exist on disk so it can pull from it.
           'dependencies': [
-            'chrome',
+            '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
             '../third_party/ocmock/ocmock.gyp:ocmock',
-          ],
-          'include_dirs': [
-            '../third_party/GTM',
-            '../third_party/GTM/AppKit',
+            'chrome',
           ],
           'sources!': [
             'browser/ui/tabs/dock_info_unittest.cc',

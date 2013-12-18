@@ -529,11 +529,11 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
+            '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
           'include_dirs': [
             '<(DEPTH)/breakpad/src',
-            '../third_party/GTM',
           ],
           'sources!': [
             'common/child_process_logging_posix.cc',

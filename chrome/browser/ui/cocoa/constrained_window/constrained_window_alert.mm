@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 

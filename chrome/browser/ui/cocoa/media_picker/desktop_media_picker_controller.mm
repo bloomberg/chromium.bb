@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/flipped_view.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"

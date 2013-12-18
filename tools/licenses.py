@@ -140,12 +140,6 @@ SPECIAL_CASES = {
         # Absolute path here is resolved as relative to the source root.
         "License File": "/LICENSE.chromium_os",
     },
-    os.path.join('third_party', 'GTM'): {
-        "Name": "Google Toolbox for Mac",
-        "URL": "http://code.google.com/p/google-toolbox-for-mac/",
-        "License": "Apache 2.0",
-        "License File": "COPYING",
-    },
     os.path.join('third_party', 'lss'): {
         "Name": "linux-syscall-support",
         "URL": "http://code.google.com/p/linux-syscall-support/",

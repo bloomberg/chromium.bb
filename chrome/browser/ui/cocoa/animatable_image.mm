@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 
 #include "base/logging.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
 @implementation AnimatableImage
 

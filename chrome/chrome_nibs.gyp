@@ -34,11 +34,10 @@
       'target_name': 'chrome_nibs',
       'type': 'executable',
       'mac_bundle': 1,
+      'dependencies': [
+        '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
+      ],
       'sources': [
-        '../third_party/GTM/AppKit/GTMUILocalizer.h',
-        '../third_party/GTM/AppKit/GTMUILocalizer.mm',
-        '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h',
-        '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.mm',
         '../ui/base/cocoa/base_view.h',
         '../ui/base/cocoa/base_view.mm',
         '../ui/base/cocoa/controls/hyperlink_button_cell.h',

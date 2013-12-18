@@ -7,7 +7,7 @@
 
 #import "NSBezierPath+MCAdditions.h"
 
-#import "third_party/GTM/AppKit/GTMNSBezierPath+CGPath.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+CGPath.h"
 
 // remove/comment out this line of you don't want to use undocumented functions
 #define MCBEZIER_USE_PRIVATE_FUNCTION
@@ -20,7 +20,7 @@ static void CGPathCallback(void *info, const CGPathElement *element)
 {
 	NSBezierPath *path = info;
 	CGPoint *points = element->points;
-	
+
 	switch (element->type) {
 		case kCGPathElementMoveToPoint:
 		{

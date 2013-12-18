@@ -62,7 +62,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -152,10 +152,7 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
-            '../ui.gyp:ui_cocoa_third_party_toolkits',
-          ],
-          'include_dirs': [
-            '../../third_party/GTM',
+            '../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
           ],
           'link_settings': {
             'libraries': [

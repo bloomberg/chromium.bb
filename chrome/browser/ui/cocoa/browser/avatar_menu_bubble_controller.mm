@@ -17,7 +17,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/l10n/l10n_util_mac.h"

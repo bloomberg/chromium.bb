@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
-#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using autofill::PasswordForm;

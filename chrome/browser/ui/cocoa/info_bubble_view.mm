@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 
 #include "base/logging.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 
 @implementation InfoBubbleView
 

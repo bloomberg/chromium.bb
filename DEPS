@@ -28,7 +28,7 @@ vars = {
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "12526",  # native_client/DEPS: tools_rev
-  "gtm_revision": "616",
+  "google_toolbox_for_mac_revision": "616",
   "libaddressinput_revision": "176",
   "libphonenumber_revision": "621",
   "libvpx_revision": "240222",
@@ -341,9 +341,9 @@ deps_os = {
       "/trunk/deps/third_party/nacl_sdk_binaries@111576",
   },
   "ios": {
-    "src/third_party/GTM":
+    "src/third_party/google_toolbox_for_mac/src":
       (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@" +
-      Var("gtm_revision"),
+      Var("google_toolbox_for_mac_revision"),
 
     "src/third_party/nss":
       "/trunk/deps/third_party/nss@" + Var("nss_revision"),
@@ -399,11 +399,13 @@ deps_os = {
     "src/chrome/tools/test/reference_build/chrome_mac":
       "/trunk/deps/reference_builds/chrome_mac@237381",
 
-    "src/third_party/GTM":
+    "src/third_party/google_toolbox_for_mac/src":
       (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@" +
-      Var("gtm_revision"),
+      Var("google_toolbox_for_mac_revision"),
+
     "src/third_party/pdfsqueeze":
       (Var("googlecode_url") % "pdfsqueeze") + "/trunk@5",
+
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@" + Var("lighttpd_revision"),
 

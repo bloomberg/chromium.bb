@@ -3164,13 +3164,10 @@
             'browser/ui/webui/help/version_updater_basic.h',
           ],
           'dependencies': [
-            '../ui/ui.gyp:ui_cocoa_third_party_toolkits',
             '../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',
+            '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
             '../third_party/molokocacao/molokocacao.gyp:molokocacao',
             '../third_party/mozilla/mozilla.gyp:mozilla',
-          ],
-          'include_dirs': [
-            '../third_party/GTM',
           ],
           'link_settings': {
             'libraries': [
