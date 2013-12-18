@@ -9,6 +9,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
+#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -177,7 +179,35 @@ base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
   return title;
 }
 
-void RecentTabsBuilderTestHelper::RegisterRecentTabs(
+void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
+    browser_sync::SessionsSyncManager* manager) {
+  syncer::SyncChangeList changes;
+  for (int s = 0; s < GetSessionCount(); ++s) {
+    sync_pb::EntitySpecifics session_entity;
+    sync_pb::SessionSpecifics* meta = session_entity.mutable_session();
+    BuildSessionSpecifics(s, meta);
+    for (int w = 0; w < GetWindowCount(s); ++w) {
+      BuildWindowSpecifics(s, w, meta);
+      for (int t = 0; t < GetTabCount(s, w); ++t) {
+        sync_pb::EntitySpecifics entity;
+        sync_pb::SessionSpecifics* tab_base = entity.mutable_session();
+        BuildTabSpecifics(s, w, t, tab_base);
+        changes.push_back(syncer::SyncChange(
+            FROM_HERE, syncer::SyncChange::ACTION_ADD,
+            syncer::SyncData::CreateRemoteData(
+                tab_base->tab_node_id(), entity, GetTabTimestamp(s, w, t))));
+      }
+    }
+    changes.push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_ADD,
+        syncer::SyncData::CreateRemoteData(1, session_entity,
+                                          GetSessionTimestamp(s))));
+  }
+  manager->ProcessSyncChanges(FROM_HERE, changes);
+  VerifyExport(manager);
+}
+
+void RecentTabsBuilderTestHelper::ExportToSessionModelAssociator(
     browser_sync::SessionModelAssociator* associator) {
   for (int s = 0; s < GetSessionCount(); ++s) {
     sync_pb::SessionSpecifics meta;
@@ -193,15 +223,19 @@ void RecentTabsBuilderTestHelper::RegisterRecentTabs(
     }
     associator->AssociateForeignSpecifics(meta, GetSessionTimestamp(s));
   }
+  VerifyExport(associator);
+}
 
+void RecentTabsBuilderTestHelper::VerifyExport(
+    browser_sync::OpenTabsUIDelegate* delegate) {
   // Make sure data is populated correctly in SessionModelAssociator.
   std::vector<const browser_sync::SyncedSession*> sessions;
-  ASSERT_TRUE(associator->GetAllForeignSessions(&sessions));
+  ASSERT_TRUE(delegate->GetAllForeignSessions(&sessions));
   ASSERT_EQ(GetSessionCount(), static_cast<int>(sessions.size()));
   for (int s = 0; s < GetSessionCount(); ++s) {
     std::vector<const SessionWindow*> windows;
-    ASSERT_TRUE(associator->GetForeignSession(ToSessionTag(GetSessionID(s)),
-                                              &windows));
+    ASSERT_TRUE(delegate->GetForeignSession(ToSessionTag(GetSessionID(s)),
+                                            &windows));
     ASSERT_EQ(GetWindowCount(s), static_cast<int>(windows.size()));
     for (int w = 0; w < GetWindowCount(s); ++w)
       ASSERT_EQ(GetTabCount(s, w), static_cast<int>(windows[w]->tabs.size()));

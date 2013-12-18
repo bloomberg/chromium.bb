@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -51,7 +52,7 @@ void ScopedWindowMap::Reset(SessionWindowMap* windows) {
 
 bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      test()->GetProfile(index))->GetSessionModelAssociatorDeprecated()->
+      test()->GetProfile(index))->GetOpenTabsUIDelegate()->
           GetLocalSession(session);
 }
 
@@ -200,7 +201,7 @@ int GetNumForeignSessions(int index) {
   SyncedSessionVector sessions;
   if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           test()->GetProfile(index))->
-          GetSessionModelAssociatorDeprecated()->GetAllForeignSessions(
+          GetOpenTabsUIDelegate()->GetAllForeignSessions(
               &sessions)) {
     return 0;
   }
@@ -210,7 +211,7 @@ int GetNumForeignSessions(int index) {
 bool GetSessionData(int index, SyncedSessionVector* sessions) {
   if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           test()->GetProfile(index))->
-          GetSessionModelAssociatorDeprecated()->GetAllForeignSessions(
+          GetOpenTabsUIDelegate()->GetAllForeignSessions(
               sessions)) {
     return false;
   }
@@ -317,7 +318,7 @@ bool CheckForeignSessionsAgainst(
 void DeleteForeignSession(int index, std::string session_tag) {
   ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       test()->GetProfile(index))->
-      GetSessionModelAssociatorDeprecated()->DeleteForeignSession(session_tag);
+          GetOpenTabsUIDelegate()->DeleteForeignSession(session_tag);
 }
 
 }  // namespace sessions_helper

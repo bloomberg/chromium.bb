@@ -1075,12 +1075,21 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
       // First thing on an AddTab is a no-op header update for parented tab.
       EXPECT_EQ(header.SerializeAsString(),
                 data.GetSpecifics().SerializeAsString());
+      EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
     } else if (i % 6 == 1) {
       // Next, the TabNodePool should create the tab node.
       EXPECT_EQ(SyncChange::ACTION_ADD, out[i].change_type());
+      EXPECT_EQ(TabNodePool2::TabIdToTag(
+                    manager()->current_machine_tag(),
+                    data.GetSpecifics().session().tab_node_id()),
+                data.GetTag());
     } else if (i % 6 == 2) {
       // Then we see the tab update to the URL.
       EXPECT_EQ(SyncChange::ACTION_UPDATE, out[i].change_type());
+      EXPECT_EQ(TabNodePool2::TabIdToTag(
+                    manager()->current_machine_tag(),
+                    data.GetSpecifics().session().tab_node_id()),
+                data.GetTag());
       ASSERT_TRUE(specifics.has_tab());
     } else if (i % 6 == 3) {
       // The header needs to be updated to reflect the new window state.
@@ -1089,6 +1098,10 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
     } else if (i % 6 == 4) {
       // Now we move on to NavigateAndCommit.  Update the tab.
       EXPECT_EQ(SyncChange::ACTION_UPDATE, out[i].change_type());
+      EXPECT_EQ(TabNodePool2::TabIdToTag(
+                    manager()->current_machine_tag(),
+                    data.GetSpecifics().session().tab_node_id()),
+                data.GetTag());
       ASSERT_TRUE(specifics.has_tab());
     } else if (i % 6 == 5) {
       // The header needs to be updated to reflect the new window state.

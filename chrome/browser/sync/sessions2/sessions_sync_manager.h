@@ -125,6 +125,7 @@ class SessionsSyncManager : public syncer::SyncableService,
                              const SessionID::id_type tab_id,
                              const SessionTab** tab) OVERRIDE;
   virtual void DeleteForeignSession(const std::string& tag) OVERRIDE;
+  virtual bool GetLocalSession(const SyncedSession* * local_session) OVERRIDE;
 
   // LocalSessionEventHandler implementation.
   virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) OVERRIDE;

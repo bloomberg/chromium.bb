@@ -262,10 +262,9 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
 
   TabLinksMap::iterator local_tab_map_iter = local_tab_map_.find(tab_id);
   TabLink* tab_link = NULL;
-  int tab_node_id(TabNodePool2::kInvalidTabNodeID);
 
   if (local_tab_map_iter == local_tab_map_.end()) {
-    tab_node_id = tab->GetSyncId();
+    int tab_node_id = tab->GetSyncId();
     // If there is an old sync node for the tab, reuse it.  If this is a new
     // tab, get a sync node for it.
     if (!local_tab_pool_.IsUnassociatedTabNode(tab_node_id)) {
@@ -292,7 +291,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
   LocalTabDelegateToSpecifics(*tab, specifics.mutable_session());
   syncer::SyncData data = syncer::SyncData::CreateLocalData(
       TabNodePool2::TabIdToTag(current_machine_tag_,
-                               tab_node_id),
+                               tab_link->tab_node_id()),
       current_session_name_,
       specifics);
   change_output->push_back(syncer::SyncChange(
@@ -391,13 +390,65 @@ bool SessionsSyncManager::ShouldSyncWindow(
 }
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
-  NOTIMPLEMENTED();
+  sync_processor_.reset(NULL);
+  error_handler_.reset();
+  session_tracker_.Clear();
+  local_tab_map_.clear();
+  local_tab_pool_.Clear();
+  current_machine_tag_.clear();
+  current_session_name_.clear();
+  local_session_header_node_id_ = TabNodePool2::kInvalidTabNodeID;
 }
 
 syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
     syncer::ModelType type) const {
-  NOTIMPLEMENTED();
-  return syncer::SyncDataList();
+  syncer::SyncDataList list;
+  const SyncedSession* session = NULL;
+  if (!session_tracker_.LookupLocalSession(&session))
+    return syncer::SyncDataList();
+
+  // First construct the header node.
+  sync_pb::EntitySpecifics header_entity;
+  header_entity.mutable_session()->set_session_tag(current_machine_tag());
+  sync_pb::SessionHeader* header_specifics =
+      header_entity.mutable_session()->mutable_header();
+  header_specifics->MergeFrom(session->ToSessionHeader());
+  syncer::SyncData data = syncer::SyncData::CreateLocalData(
+        current_machine_tag(), current_session_name_, header_entity);
+  list.push_back(data);
+
+  SyncedSession::SyncedWindowMap::const_iterator win_iter;
+  for (win_iter = session->windows.begin();
+       win_iter != session->windows.end(); ++win_iter) {
+    std::vector<SessionTab*>::const_iterator tabs_iter;
+    for (tabs_iter = win_iter->second->tabs.begin();
+         tabs_iter != win_iter->second->tabs.end(); ++tabs_iter) {
+      sync_pb::EntitySpecifics entity;
+      sync_pb::SessionSpecifics* specifics = entity.mutable_session();
+      specifics->mutable_tab()->MergeFrom((*tabs_iter)->ToSyncData());
+      specifics->set_session_tag(current_machine_tag_);
+
+      TabLinksMap::const_iterator tab_map_iter = local_tab_map_.find(
+          (*tabs_iter)->tab_id.id());
+      DCHECK(tab_map_iter != local_tab_map_.end());
+      specifics->set_tab_node_id(tab_map_iter->second->tab_node_id());
+      syncer::SyncData data = syncer::SyncData::CreateLocalData(
+          TabNodePool2::TabIdToTag(current_machine_tag_,
+                                   specifics->tab_node_id()),
+          current_session_name_,
+          entity);
+      list.push_back(data);
+    }
+  }
+  return list;
+}
+
+bool SessionsSyncManager::GetLocalSession(
+    const SyncedSession* * local_session) {
+  if (current_machine_tag_.empty())
+    return false;
+  *local_session = session_tracker_.GetSession(current_machine_tag());
+  return true;
 }
 
 syncer::SyncError SessionsSyncManager::ProcessSyncChanges(

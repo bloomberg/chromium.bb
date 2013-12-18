@@ -45,3 +45,7 @@ ScopedVector<browser_sync::DeviceInfo>
   return devices.Pass();
 }
 
+scoped_ptr<browser_sync::DeviceInfo>
+    ProfileSyncServiceMock::GetLocalDeviceInfo() const {
+  return scoped_ptr<browser_sync::DeviceInfo>(GetLocalDeviceInfoMock()).Pass();
+}

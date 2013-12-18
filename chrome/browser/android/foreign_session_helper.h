@@ -17,7 +17,6 @@ using base::android::ScopedJavaLocalRef;
 struct SessionWindow;
 
 namespace browser_sync {
-class SessionModelAssociator;
 struct SyncedSession;
 }  // namespace browser_sync
 

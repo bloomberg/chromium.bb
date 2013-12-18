@@ -104,6 +104,17 @@ bool SyncedSessionTracker::LookupTabNodeIds(
   return true;
 }
 
+bool SyncedSessionTracker::LookupLocalSession(const SyncedSession** output)
+    const {
+  SyncedSessionMap::const_iterator it =
+      synced_session_map_.find(local_session_tag_);
+  if (it != synced_session_map_.end()) {
+    *output = it->second;
+    return true;
+  }
+  return false;
+}
+
 SyncedSession* SyncedSessionTracker::GetSession(
     const std::string& session_tag) {
   SyncedSession* synced_session = NULL;

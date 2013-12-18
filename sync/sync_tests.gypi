@@ -187,6 +187,8 @@
       'sources': [
         'api/fake_syncable_service.cc',
         'api/fake_syncable_service.h',
+        'api/fake_sync_change_processor.cc',
+        'api/fake_sync_change_processor.h',
         'api/sync_error_factory_mock.cc',
         'api/sync_error_factory_mock.h',
       ],

@@ -59,6 +59,10 @@ class SyncedSessionTracker {
                         SessionID::id_type tab_id,
                         const SessionTab** tab) const;
 
+  // Allows retrieval of existing data for the local session. Unlike GetSession
+  // this won't create-if-not-present.
+  bool LookupLocalSession(const SyncedSession** output) const;
+
   // Returns a pointer to the SyncedSession object associated with
   // |session_tag|.  If none exists, creates one. Ownership of the
   // SyncedSession remains within the SyncedSessionTracker.

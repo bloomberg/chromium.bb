@@ -110,6 +110,11 @@ struct SessionWindow {
   SessionWindow();
   ~SessionWindow();
 
+  // Convert this object into its sync protocol buffer equivalent. Note that
+  // not all fields are synced here, because they don't all make sense or
+  // translate when restoring a SessionWindow on another device.
+  sync_pb::SessionWindow ToSyncData() const;
+
   // Identifier of the window.
   SessionID window_id;
 

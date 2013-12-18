@@ -705,6 +705,8 @@ class ProfileSyncService
   void OverrideNetworkResourcesForTest(
       scoped_ptr<syncer::NetworkResources> network_resources);
 
+  virtual bool IsSessionsDataTypeControllerRunning() const;
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
@@ -874,8 +876,6 @@ class ProfileSyncService
                                     const std::string& message,
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
-
-  bool IsSessionsDataTypeControllerRunning() const;
 
   // Returns the username (in form of an email address) that should be used in
   // the credentials.

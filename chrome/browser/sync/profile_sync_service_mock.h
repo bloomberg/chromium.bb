@@ -95,14 +95,21 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(OnActionableError, void(
       const syncer::SyncProtocolError&));
   MOCK_METHOD1(SetSetupInProgress, void(bool));
+  MOCK_CONST_METHOD0(IsSessionsDataTypeControllerRunning, bool());
 
-  MOCK_METHOD0(GetOpenTabsUIDelegate,
-               browser_sync::OpenTabsUIDelegate*());
+  MOCK_METHOD0(GetSessionModelAssociatorDeprecated,
+               browser_sync::SessionModelAssociator*());
   MOCK_CONST_METHOD0(GetAllSignedInDevicesMock,
                      std::vector<browser_sync::DeviceInfo*>* ());
   // This is to get around the fact that GMOCK does not handle Scoped*.
   virtual ScopedVector<browser_sync::DeviceInfo>
       GetAllSignedInDevices() const OVERRIDE;
+
+  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
+      const OVERRIDE;
+  MOCK_CONST_METHOD0(GetLocalDeviceInfoMock,
+                     browser_sync::DeviceInfo*());
+  MOCK_CONST_METHOD0(GetLocalSyncCacheGUID, std::string());
 
   // DataTypeManagerObserver mocks.
   MOCK_METHOD0(OnConfigureBlocked, void());

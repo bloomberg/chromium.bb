@@ -47,6 +47,11 @@ class OpenTabsUIDelegate {
   virtual bool GetForeignSession(
       const std::string& tag,
       std::vector<const SessionWindow*>* windows) = 0;
+
+  // Sets |*local| to point to the sessions sync representation of the
+  // local machine.
+  virtual bool GetLocalSession(const SyncedSession** local) = 0;
+
  protected:
   virtual ~OpenTabsUIDelegate();
 };

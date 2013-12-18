@@ -145,10 +145,6 @@ class SessionModelAssociator
   // trigger a sync cycle.
   void AttemptSessionsDataRefresh() const;
 
-  // Sets |*local_session| to point to the associator's representation of the
-  // local machine. Used primarily for testing.
-  bool GetLocalSession(const SyncedSession* * local_session);
-
   // Triggers garbage collection of stale sessions (as defined by
   // |stale_session_threshold_days_|). This is called automatically every
   // time we start up (via AssociateModels).
@@ -188,6 +184,7 @@ class SessionModelAssociator
                              const SessionID::id_type tab_id,
                              const SessionTab** tab) OVERRIDE;
   virtual void DeleteForeignSession(const std::string& tag) OVERRIDE;
+  virtual bool GetLocalSession(const SyncedSession* * local_session) OVERRIDE;
 
   void SetCurrentMachineTagForTesting(const std::string& machine_tag) {
     current_machine_tag_ = machine_tag;

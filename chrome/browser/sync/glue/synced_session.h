@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "sync/protocol/session_specifics.pb.h"
 
 namespace content {
 class NavigationEntry;
@@ -78,6 +79,10 @@ struct SyncedSession {
         return std::string();
     }
   }
+
+  // Convert this object to its protocol buffer equivalent. Shallow conversion,
+  // does not create SessionTab protobufs.
+  sync_pb::SessionHeader ToSessionHeader() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedSession);

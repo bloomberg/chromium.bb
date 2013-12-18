@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -16,9 +19,12 @@
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "sync/api/fake_sync_change_processor.h"
+#include "sync/api/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -42,7 +48,17 @@ class MockWrenchMenuModel : public WrenchMenuModel {
   MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };
 
-class WrenchMenuControllerTest : public CocoaProfileTest {
+class DummyRouter : public browser_sync::LocalSessionEventRouter {
+ public:
+  virtual ~DummyRouter() {}
+  virtual void StartRoutingTo(
+      browser_sync::LocalSessionEventHandler* handler) OVERRIDE {}
+  virtual void Stop() OVERRIDE {}
+};
+
+class WrenchMenuControllerTest
+    : public CocoaProfileTest,
+      public browser_sync::SessionsSyncManager::SyncInternalApiDelegate {
  public:
   virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
@@ -50,11 +66,68 @@ class WrenchMenuControllerTest : public CocoaProfileTest {
 
     controller_.reset([[WrenchMenuController alloc] initWithBrowser:browser()]);
     fake_model_.reset(new MockWrenchMenuModel);
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSyncSessionsV2)) {
+      manager_.reset(new browser_sync::SessionsSyncManager(
+          profile(),
+          this,
+          scoped_ptr<browser_sync::LocalSessionEventRouter>(
+              new DummyRouter())));
+      manager_->MergeDataAndStartSyncing(
+          syncer::SESSIONS,
+          syncer::SyncDataList(),
+          scoped_ptr<syncer::SyncChangeProcessor>(
+              new syncer::FakeSyncChangeProcessor),
+          scoped_ptr<syncer::SyncErrorFactory>(
+              new syncer::SyncErrorFactoryMock));
+    } else {
+      ProfileSyncService* sync_service =
+          ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
+      associator_.reset(new browser_sync::SessionModelAssociator(
+          sync_service, true));
+      associator_->SetCurrentMachineTagForTesting(
+          GetLocalSyncCacheGUID());
+    }
+  }
+
+  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
+      const OVERRIDE {
+    return scoped_ptr<browser_sync::DeviceInfo>(
+        new browser_sync::DeviceInfo(GetLocalSyncCacheGUID(),
+                       "Test Machine",
+                       "Chromium 10k",
+                       "Chrome 10k",
+                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+  }
+
+  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {
+    return "WrenchMenuControllerTest";
+  }
+
+  void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSyncSessionsV2)) {
+      helper->ExportToSessionsSyncManager(manager_.get());
+    } else {
+      helper->ExportToSessionModelAssociator(associator_.get());
+    }
+  }
+
+  browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSyncSessionsV2)) {
+      return manager_.get();
+    } else {
+      return associator_.get();
+    }
   }
 
   virtual void TearDown() OVERRIDE {
     fake_model_.reset();
     controller_.reset();
+    associator_.reset();
+    manager_.reset();
     CocoaProfileTest::TearDown();
   }
 
@@ -65,6 +138,11 @@ class WrenchMenuControllerTest : public CocoaProfileTest {
   base::scoped_nsobject<WrenchMenuController> controller_;
 
   scoped_ptr<MockWrenchMenuModel> fake_model_;
+
+ private:
+  // TODO(tim): Bug 98892. Remove associator_ once sessions2 is the default.
+  scoped_ptr<browser_sync::SessionModelAssociator> associator_;
+  scoped_ptr<browser_sync::SessionsSyncManager> manager_;
 };
 
 TEST_F(WrenchMenuControllerTest, Initialized) {
@@ -85,19 +163,14 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
 }
 
 TEST_F(WrenchMenuControllerTest, RecentTabsFavIcon) {
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-  browser_sync::SessionModelAssociator associator_(sync_service, true);
-  associator_.SetCurrentMachineTagForTesting("WrenchMenuControllerTest");
-
   RecentTabsBuilderTestHelper recent_tabs_builder;
   recent_tabs_builder.AddSession();
   recent_tabs_builder.AddWindow(0);
   recent_tabs_builder.AddTab(0, 0);
-  recent_tabs_builder.RegisterRecentTabs(&associator_);
+  RegisterRecentTabs(&recent_tabs_builder);
 
   RecentTabsSubMenuModel recent_tabs_sub_menu_model(
-      NULL, browser(), &associator_);
+      NULL, browser(), GetOpenTabsDelegate());
   fake_model_->AddSubMenuWithStringId(
       IDC_RECENT_TABS_MENU, IDS_RECENT_TABS_MENU,
       &recent_tabs_sub_menu_model);
@@ -125,11 +198,6 @@ TEST_F(WrenchMenuControllerTest, RecentTabsFavIcon) {
 }
 
 TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-  browser_sync::SessionModelAssociator associator_(sync_service, true);
-  associator_.SetCurrentMachineTagForTesting("WrenchMenuControllerTest");
-
   // Add 1 session with 1 window and 2 tabs.
   RecentTabsBuilderTestHelper recent_tabs_builder;
   recent_tabs_builder.AddSession();
@@ -140,10 +208,10 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
                                           "very very very very very very long");
   recent_tabs_builder.AddTabWithInfo(0, 0,
       base::Time::Now() - base::TimeDelta::FromMinutes(10), tab2_long_title);
-  recent_tabs_builder.RegisterRecentTabs(&associator_);
+  RegisterRecentTabs(&recent_tabs_builder);
 
   RecentTabsSubMenuModel recent_tabs_sub_menu_model(
-      NULL, browser(), &associator_);
+      NULL, browser(), GetOpenTabsDelegate());
   fake_model_->AddSubMenuWithStringId(
       IDC_RECENT_TABS_MENU, IDS_RECENT_TABS_MENU,
       &recent_tabs_sub_menu_model);
