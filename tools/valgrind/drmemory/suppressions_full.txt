@@ -1335,3 +1335,9 @@ name=http://crbug.com/125807
 *!operator new
 *!TransportSecurityPersister::TransportSecurityPersister
 *!TransportSecurityPersisterTest::TransportSecurityPersisterTest
+
+UNINITIALIZED READ
+name=bug_113076
+*!media::ConvertYUVToRGB32_C
+*!media::LinearScaleYUVToRGB32RowWithRange_C
+*!media::ScaleYUVToRGB32WithRect
