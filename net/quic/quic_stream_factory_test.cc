@@ -29,6 +29,11 @@ using std::vector;
 namespace net {
 namespace test {
 
+namespace {
+const char kDefaultServerHostName[] = "www.google.com";
+const int kDefaultServerPort = 443;
+}  // namespace anonymous
+
 class QuicStreamFactoryPeer {
  public:
   static QuicCryptoClientConfig* GetOrCreateCryptoConfig(
@@ -70,7 +75,8 @@ class QuicStreamFactoryTest : public ::testing::Test {
                  base::WeakPtr<HttpServerProperties>(),
                  &crypto_client_stream_factory_,
                  &random_generator_, clock_, kDefaultMaxPacketSize),
-        host_port_proxy_pair_(HostPortPair("www.google.com", 443),
+        host_port_proxy_pair_(HostPortPair(kDefaultServerHostName,
+                                           kDefaultServerPort),
                               ProxyServer::Direct()),
         is_https_(false),
         cert_verifier_(CertVerifier::CreateDefault()) {
@@ -156,6 +162,50 @@ class QuicStreamFactoryTest : public ::testing::Test {
         ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }
 
+  int GetSourcePortForNewSession(const HostPortProxyPair& destination) {
+    // Should only be called if there is no active session for this destination.
+    EXPECT_EQ(NULL, factory_.CreateIfSessionExists(destination,
+                                                   net_log_).get());
+    size_t socket_count = socket_factory_.udp_client_sockets().size();
+
+    MockRead reads[] = {
+      MockRead(ASYNC, OK, 0)  // EOF
+    };
+    DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+    socket_data.StopAfter(1);
+    socket_factory_.AddSocketDataProvider(&socket_data);
+
+    QuicStreamRequest request(&factory_);
+    EXPECT_EQ(ERR_IO_PENDING, request.Request(destination, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+
+    EXPECT_EQ(OK, callback_.WaitForResult());
+    scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+    EXPECT_TRUE(stream.get());
+    stream.reset();
+
+    QuicClientSession* session = QuicStreamFactoryPeer::GetActiveSession(
+        &factory_, destination);
+
+    if (socket_count + 1 != socket_factory_.udp_client_sockets().size()) {
+      EXPECT_TRUE(false);
+      return 0;
+    }
+
+    IPEndPoint endpoint;
+    socket_factory_.
+        udp_client_sockets()[socket_count]->GetLocalAddress(&endpoint);
+    int port = endpoint.port();
+
+    factory_.OnSessionClosed(session);
+    EXPECT_EQ(NULL, factory_.CreateIfSessionExists(destination,
+                                                   net_log_).get());
+    EXPECT_TRUE(socket_data.at_read_eof());
+    EXPECT_TRUE(socket_data.at_write_eof());
+    return port;
+  }
+
   MockHostResolver host_resolver_;
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
@@ -206,21 +256,6 @@ TEST_F(QuicStreamFactoryTest, Create) {
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
-}
-
-TEST_F(QuicStreamFactoryTest, FailedCreate) {
-  MockConnect connect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
-  DeterministicSocketData socket_data(NULL, 0, NULL, 0);
-  socket_data.set_connect_data(connect);
-  socket_factory_.AddSocketDataProvider(&socket_data);
-  socket_data.StopAfter(1);
-
-  QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_.get(), net_log_,
-                                            callback_.callback()));
-
-  EXPECT_EQ(ERR_ADDRESS_IN_USE, callback_.WaitForResult());
 }
 
 TEST_F(QuicStreamFactoryTest, Goaway) {
@@ -276,6 +311,8 @@ TEST_F(QuicStreamFactoryTest, Goaway) {
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
 TEST_F(QuicStreamFactoryTest, MaxOpenStream) {
@@ -334,11 +371,11 @@ TEST_F(QuicStreamFactoryTest, MaxOpenStream) {
   STLDeleteElements(&streams);
 }
 
-TEST_F(QuicStreamFactoryTest, CreateError) {
+TEST_F(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   DeterministicSocketData socket_data(NULL, 0, NULL, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
-  host_resolver_.rules()->AddSimulatedFailure("www.google.com");
+  host_resolver_.rules()->AddSimulatedFailure(kDefaultServerHostName);
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
@@ -346,6 +383,24 @@ TEST_F(QuicStreamFactoryTest, CreateError) {
                                             callback_.callback()));
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback_.WaitForResult());
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_F(QuicStreamFactoryTest, ConnectErrorInCreate) {
+  MockConnect connect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
+  DeterministicSocketData socket_data(NULL, 0, NULL, 0);
+  socket_data.set_connect_data(connect);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(ERR_ADDRESS_IN_USE, callback_.WaitForResult());
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
@@ -375,6 +430,22 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_F(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
+  // Sequentially connect to the default host, then another host, and then the
+  // default host.  Verify that the default host gets a consistent ephemeral
+  // port, that is different from the other host's connection.
+
+  std::string other_server_name = "other.google.com";
+  EXPECT_NE(kDefaultServerHostName, other_server_name);
+  HostPortPair host_port_pair2(other_server_name, kDefaultServerPort);
+  HostPortProxyPair host_port_proxy_pair2(host_port_pair2,
+                                          host_port_proxy_pair_.second);
+
+  int original_port = GetSourcePortForNewSession(host_port_proxy_pair_);
+  EXPECT_NE(original_port, GetSourcePortForNewSession(host_port_proxy_pair2));
+  EXPECT_EQ(original_port, GetSourcePortForNewSession(host_port_proxy_pair_));
 }
 
 TEST_F(QuicStreamFactoryTest, CloseAllSessions) {

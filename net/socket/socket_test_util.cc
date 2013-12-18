@@ -667,6 +667,8 @@ MockClientSocketFactory::CreateDatagramClientSocket(
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
   data_provider->set_socket(socket.get());
+  if (bind_type == DatagramSocket::RANDOM_BIND)
+    socket->set_source_port(rand_int_cb.Run(1025, 65535));
   return socket.PassAs<DatagramClientSocket>();
 }
 
@@ -1099,7 +1101,8 @@ DeterministicMockUDPClientSocket::DeterministicMockUDPClientSocket(
     net::NetLog* net_log,
     DeterministicSocketData* data)
     : connected_(false),
-      helper_(net_log, data) {
+      helper_(net_log, data),
+      source_port_(123) {
 }
 
 DeterministicMockUDPClientSocket::~DeterministicMockUDPClientSocket() {}
@@ -1171,7 +1174,7 @@ int DeterministicMockUDPClientSocket::GetLocalAddress(
   IPAddressNumber ip;
   bool rv = ParseIPLiteralToNumber("192.0.2.33", &ip);
   CHECK(rv);
-  *address = IPEndPoint(ip, 123);
+  *address = IPEndPoint(ip, source_port_);
   return OK;
 }
 
@@ -1435,6 +1438,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       read_offset_(0),
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED),
       need_read_data_(true),
+      source_port_(123),
       pending_buf_(NULL),
       pending_buf_len_(0),
       net_log_(BoundNetLog::Make(net_log, net::NetLog::SOURCE_NONE)),
@@ -1446,7 +1450,8 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
 
 MockUDPClientSocket::~MockUDPClientSocket() {}
 
-int MockUDPClientSocket::Read(IOBuffer* buf, int buf_len,
+int MockUDPClientSocket::Read(IOBuffer* buf,
+                              int buf_len,
                               const CompletionCallback& callback) {
   if (!connected_)
     return ERR_UNEXPECTED;
@@ -1513,7 +1518,7 @@ int MockUDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
   IPAddressNumber ip;
   bool rv = ParseIPLiteralToNumber("192.0.2.33", &ip);
   CHECK(rv);
-  *address = IPEndPoint(ip, 123);
+  *address = IPEndPoint(ip, source_port_);
   return OK;
 }
 
@@ -1808,6 +1813,8 @@ DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
       new DeterministicMockUDPClientSocket(net_log, data_provider));
   data_provider->set_delegate(socket->AsWeakPtr());
   udp_client_sockets().push_back(socket.get());
+  if (bind_type == DatagramSocket::RANDOM_BIND)
+    socket->set_source_port(rand_int_cb.Run(1025, 65535));
   return socket.PassAs<DatagramClientSocket>();
 }
 

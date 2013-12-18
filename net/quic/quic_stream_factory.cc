@@ -471,6 +471,7 @@ int QuicStreamFactory::CreateSession(
     return rv;
   UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
                        port_suggester->call_count());
+  DCHECK_LE(1u, port_suggester->call_count());
 
   // We should adaptively set this buffer size, but for now, we'll use a size
   // that is more than large enough for a full receive window, and yet
