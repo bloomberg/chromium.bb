@@ -359,12 +359,28 @@ private:
     bool m_atEndOfInline;
 };
 
+static inline bool endOfLineHasIsolatedObjectAncestor(const InlineIterator& isolatedIterator, const InlineIterator& ancestorItertor)
+{
+    if (!isolatedIterator.object() || !isIsolated(isolatedIterator.object()->style()->unicodeBidi()))
+        return false;
+
+    RenderObject* innerIsolatedObject = isolatedIterator.object();
+    while (innerIsolatedObject && innerIsolatedObject != isolatedIterator.root()) {
+        if (innerIsolatedObject == ancestorItertor.object())
+            return true;
+        innerIsolatedObject = innerIsolatedObject->parent();
+    }
+    return false;
+}
+
 inline void InlineIterator::increment(InlineBidiResolver* resolver, IncrementRule rule)
 {
     if (!m_obj)
         return;
 
-    if (resolver && resolver->inIsolate() && rule == FastIncrementInIsolatedRenderer) {
+    if (rule == FastIncrementInIsolatedRenderer
+        && resolver && resolver->inIsolate()
+        && !endOfLineHasIsolatedObjectAncestor(resolver->endOfLine(), resolver->position())) {
         moveTo(bidiNextSkippingEmptyInlines(m_root, m_obj, resolver), 0);
         return;
     }

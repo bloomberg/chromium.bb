@@ -234,6 +234,8 @@ public:
     void setMidpointStateForIsolatedRun(Run*, const MidpointState<Iterator>&);
     MidpointState<Iterator> midpointStateForIsolatedRun(Run*);
 
+    Iterator endOfLine() const { return m_endOfLine; }
+
 protected:
     void increment() { m_current.increment(); }
     // FIXME: Instead of InlineBidiResolvers subclassing this method, we should
@@ -588,6 +590,8 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
 
     ASSERT(m_direction == OtherNeutral);
 
+    m_endOfLine = end;
+
     if (override != NoVisualOverride) {
         m_emptyRun = false;
         m_sor = m_current;
@@ -607,7 +611,6 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     m_emptyRun = true;
 
     m_eor = Iterator();
-    m_endOfLine = end;
 
     m_last = m_current;
     bool lastLineEnded = false;
