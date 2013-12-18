@@ -113,7 +113,7 @@ void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, E
         return;
 
     if (r < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, "The radius provided (" + String::number(r) + ") is negative.");
         return;
     }
 
@@ -260,7 +260,7 @@ void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, fl
         return;
 
     if (radius < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, "The radius provided (" + String::number(radius) + ") is negative.");
         return;
     }
 
@@ -283,8 +283,12 @@ void CanvasPathMethods::ellipse(float x, float y, float radiusX, float radiusY, 
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radiusX) || !std::isfinite(radiusY) || !std::isfinite(rotation) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
         return;
 
-    if (radiusX < 0 || radiusY < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+    if (radiusX < 0) {
+        exceptionState.throwDOMException(IndexSizeError, "The major-axis radius provided (" + String::number(radiusX) + ") is negative.");
+        return;
+    }
+    if (radiusY < 0) {
+        exceptionState.throwDOMException(IndexSizeError, "The minor-axis radius provided (" + String::number(radiusY) + ") is negative.");
         return;
     }
 
