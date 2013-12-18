@@ -971,8 +971,8 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
     DisableHardwareAcceleration();
   if (command_line->HasSwitch(switches::kEnableSoftwareCompositing))
     use_software_compositor_ = true;
-  //TODO(jbauman): enable for Chrome OS and Linux
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // TODO(jbauman): enable for Chrome OS
+#if (defined(USE_AURA) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
   use_software_compositor_ = true;
 #endif
 

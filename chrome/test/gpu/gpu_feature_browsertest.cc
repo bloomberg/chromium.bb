@@ -210,8 +210,8 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
   }
 };
 
-#if defined(USE_AURA)
-// Compositing is always on for Aura.
+#if defined(USE_AURA) || defined(OS_MACOSX)
+// Compositing is always on for Aura and Mac.
 #define MAYBE_AcceleratedCompositingBlocked DISABLED_AcceleratedCompositingBlocked
 #else
 #define MAYBE_AcceleratedCompositingBlocked AcceleratedCompositingBlocked
@@ -234,8 +234,8 @@ class AcceleratedCompositingTest : public GpuFeatureTest {
   }
 };
 
-#if defined(USE_AURA)
-// Compositing is always on for Aura.
+#if defined(USE_AURA) || defined(OS_MACOSX)
+// Compositing is always on for Aura and Mac.
 #define MAYBE_AcceleratedCompositingDisabled DISABLED_AcceleratedCompositingDisabled
 #else
 #define MAYBE_AcceleratedCompositingDisabled AcceleratedCompositingDisabled

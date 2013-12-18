@@ -219,18 +219,19 @@ bool IsThreadedCompositingEnabled() {
     return true;
   }
 
-#if defined(USE_AURA)
-  // We always want threaded compositing on Aura.
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  // We always want threaded compositing on Aura and Mac (the fallback is a
+  // threaded software compositor).
   return true;
 #endif
 
   if (!CanDoAcceleratedCompositing() || IsForceCompositingModeBlacklisted())
     return false;
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
   // Windows Vista+ has been shipping with TCM enabled at 100% since M24 and
-  // Mac OSX 10.8+ since M28. The blacklist check above takes care of returning
-  // false before this hits on unsupported Win/Mac versions.
+  // The blacklist check above takes care of returning false before this hits
+  // on unsupported Win versions.
   return true;
 #endif
 
