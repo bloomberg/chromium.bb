@@ -26,7 +26,9 @@ const char kCodecNameVp8[] = "VP8";
 
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = 111;
+  payload.ssrc = 1;
+  payload.feedback_ssrc = 1;
+  payload.payload_type = 127;
   payload.codec_name = kCodecNameOpus;
   payload.clock_rate = 48000;
   payload.channels = 2;
@@ -37,7 +39,9 @@ CastRtpPayloadParams DefaultOpusPayload() {
 
 CastRtpPayloadParams DefaultVp8Payload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = 100;
+  payload.ssrc = 11;
+  payload.feedback_ssrc = 12;
+  payload.payload_type = 96;
   payload.codec_name = kCodecNameVp8;
   payload.clock_rate = 90000;
   payload.width = 1280;
@@ -67,6 +71,8 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
     return false;
   const CastRtpPayloadParams& payload_params = params.payloads[0];
   config->sender_ssrc = payload_params.ssrc;
+  config->incoming_feedback_ssrc = payload_params.feedback_ssrc;
+  config->rtp_payload_type = payload_params.payload_type;
   config->use_external_encoder = false;
   config->frequency = payload_params.clock_rate;
   config->channels = payload_params.channels;
@@ -85,6 +91,8 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
     return false;
   const CastRtpPayloadParams& payload_params = params.payloads[0];
   config->sender_ssrc = payload_params.ssrc;
+  config->incoming_feedback_ssrc = payload_params.feedback_ssrc;
+  config->rtp_payload_type = payload_params.payload_type;
   config->use_external_encoder = false;
   config->width = payload_params.width;
   config->height = payload_params.height;
@@ -213,6 +221,7 @@ CastCodecSpecificParams::~CastCodecSpecificParams() {
 CastRtpPayloadParams::CastRtpPayloadParams()
     : payload_type(0),
       ssrc(0),
+      feedback_ssrc(0),
       clock_rate(0),
       max_bitrate(0),
       min_bitrate(0),

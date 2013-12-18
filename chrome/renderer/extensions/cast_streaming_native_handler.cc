@@ -57,6 +57,8 @@ void ToCastRtpPayloadParams(const RtpPayloadParams& ext_params,
   cast_params->payload_type = ext_params.payload_type;
   cast_params->codec_name = ext_params.codec_name;
   cast_params->ssrc = ext_params.ssrc ? *ext_params.ssrc : 0;
+  cast_params->feedback_ssrc =
+      ext_params.feedback_ssrc ? *ext_params.feedback_ssrc : 0;
   cast_params->clock_rate = ext_params.clock_rate ? *ext_params.clock_rate : 0;
   cast_params->min_bitrate =
       ext_params.min_bitrate ? *ext_params.min_bitrate : 0;
@@ -79,6 +81,8 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
   ext_params->codec_name = cast_params.codec_name;
   if (cast_params.ssrc)
     ext_params->ssrc.reset(new int(cast_params.ssrc));
+  if (cast_params.feedback_ssrc)
+    ext_params->feedback_ssrc.reset(new int(cast_params.feedback_ssrc));
   if (cast_params.clock_rate)
     ext_params->clock_rate.reset(new int(cast_params.clock_rate));
   if (cast_params.min_bitrate)

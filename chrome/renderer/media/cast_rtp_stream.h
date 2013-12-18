@@ -34,6 +34,9 @@ struct CastRtpPayloadParams {
   // RTP specific field to identify a stream.
   int ssrc;
 
+  // RTP specific field to idenfity the feedback stream.
+  int feedback_ssrc;
+
   // Update frequency of payload sample.
   int clock_rate;
 

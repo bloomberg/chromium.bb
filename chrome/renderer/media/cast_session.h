@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_SESSION_H_
 #define CHROME_RENDERER_MEDIA_CAST_SESSION_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -38,6 +40,7 @@ class CastSession : public base::RefCounted<CastSession> {
   typedef
   base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
   FrameInputAvailableCallback;
+  typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
 
   CastSession();
 
@@ -51,23 +54,11 @@ class CastSession : public base::RefCounted<CastSession> {
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
 
-  class P2PSocketFactory {
-   public:
-    virtual ~P2PSocketFactory();
-
-    // Called on IO thread.
-    virtual scoped_refptr<content::P2PSocketClient> Create() = 0;
-  };
-
-  // Send the socket factory to the delegate, where create will be
-  // called. The delegate will then delete the socket factory on the
-  // IO thread. We do it this way because the P2P socket needs to
-  // be created on the same thread that the callbacks will be called on.
-  // The |remote_endpoint| is the address will be used when calling
-  // SendWithDscp on the P2PSocketClient.
-  // Takes ownership of socket_factory.
-  void SetSocketFactory(scoped_ptr<P2PSocketFactory> socket_factory,
-                        const net::IPEndPoint& remote_address);
+  // Start sending packets using SendPacketCallback. Invoke the callback
+  // with a packet on the render thread. The packet will then be sent out
+  // via network.
+  void StartSending(const SendPacketCallback& callback);
+  void ReceivePacket(const std::vector<char>& packet);
 
  private:
   friend class base::RefCounted<CastSession>;

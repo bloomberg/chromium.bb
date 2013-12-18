@@ -23,33 +23,38 @@ CastSession::~CastSession() {
   CHECK(io_message_loop_proxy_->DeleteSoon(FROM_HERE, delegate_.release()));
 }
 
-CastSession::P2PSocketFactory::~P2PSocketFactory() {
-}
-
 void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
                              const FrameInputAvailableCallback& callback) {
   io_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&CastSessionDelegate::StartAudio,
-                 base::Unretained(delegate_.get()),
-                 config,
-                 media::BindToCurrentLoop(callback)));
+      base::Bind(
+          &CastSessionDelegate::StartAudio,
+          base::Unretained(delegate_.get()),
+          config,
+          media::BindToCurrentLoop(callback)));
 }
 
 void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                              const FrameInputAvailableCallback& callback) {
   io_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&CastSessionDelegate::StartVideo,
-                 base::Unretained(delegate_.get()),
-                 config,
-                 media::BindToCurrentLoop(callback)));
+      base::Bind(
+          &CastSessionDelegate::StartVideo,
+          base::Unretained(delegate_.get()),
+          config,
+          media::BindToCurrentLoop(callback)));
 }
 
-void CastSession::SetSocketFactory(scoped_ptr<P2PSocketFactory> socket_factory,
-                                   const net::IPEndPoint& remote_address) {
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&CastSessionDelegate::SetSocketFactory,
-                 base::Unretained(delegate_.get()),
-                 base::Passed(socket_factory.Pass()),
-                 remote_address));
+void CastSession::StartSending(const SendPacketCallback& callback) {
+  io_message_loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(
+          &CastSessionDelegate::StartSending,
+          base::Unretained(delegate_.get()),
+          media::BindToCurrentLoop(callback)));
+}
+
+void CastSession::ReceivePacket(const std::vector<char>& packet) {
+  io_message_loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(
+          &CastSessionDelegate::ReceivePacket,
+          base::Unretained(delegate_.get()),
+          packet));
 }

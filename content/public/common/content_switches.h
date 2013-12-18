@@ -86,7 +86,7 @@ extern const char kDisableKillAfterBadIPC[];
 CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
 extern const char kDisableNavigatorContentUtils[];
-extern const char kDisableP2PSocketSTUNFilter[];
+CONTENT_EXPORT extern const char kDisableP2PSocketSTUNFilter[];
 extern const char kDisablePepper3d[];
 CONTENT_EXPORT extern const char kDisablePinch[];
 CONTENT_EXPORT extern const char kDisablePlugins[];

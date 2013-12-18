@@ -20,6 +20,7 @@ chrome.test.runTests([
         var videoParams = rtpStream.getCaps(videoId);
         rtpStream.start(audioId, audioParams);
         rtpStream.start(videoId, videoParams);
+        udpTransport.start(udpId, {address: "127.0.0.1", port: 2344});
         window.setTimeout(function() {
           console.log("Stopping.");
           rtpStream.stop(audioId);

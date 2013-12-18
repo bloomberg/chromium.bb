@@ -31,13 +31,6 @@ CastSessionDelegate::~CastSessionDelegate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 }
 
-void CastSessionDelegate::SetSocketFactory(
-    scoped_ptr<CastSession::P2PSocketFactory> socket_factory,
-    const net::IPEndPoint& remote_address) {
-  socket_factory_ = socket_factory.Pass();
-  remote_address_ = remote_address;
-}
-
 void CastSessionDelegate::StartAudio(
     const AudioSenderConfig& config,
     const FrameInputAvailableCallback& callback) {
@@ -46,7 +39,15 @@ void CastSessionDelegate::StartAudio(
   audio_configured_ = true;
   audio_config_ = config;
   frame_input_available_callbacks_.push_back(callback);
-  MaybeStartSending();
+}
+
+void CastSessionDelegate::StartSending(const SendPacketCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  send_packet_callback_ = callback;
+  if (!audio_configured_ || !video_configured_)
+    return;
+  StartSendingInternal();
 }
 
 void CastSessionDelegate::StartVideo(
@@ -57,22 +58,13 @@ void CastSessionDelegate::StartVideo(
   video_configured_ = true;
   video_config_ = config;
   frame_input_available_callbacks_.push_back(callback);
-  MaybeStartSending();
 }
 
-void CastSessionDelegate::StartSending() {
+void CastSessionDelegate::StartSendingInternal() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (cast_environment_)
     return;
-
-  if (!socket_factory_) {
-    // TODO(hubbe): Post an error back to the user
-    return;
-  }
-
-  socket_ = socket_factory_->Create();
-  socket_->SetDelegate(this);
 
   audio_encode_thread_.Start();
   video_encode_thread_.Start();
@@ -106,14 +98,11 @@ void CastSessionDelegate::StartSending() {
   frame_input_available_callbacks_.clear();
 }
 
-  // media::cast::PacketSender Implementation
+// media::cast::PacketSender Implementation
 bool CastSessionDelegate::SendPacket(
     const media::cast::Packet& packet) {
-  // TODO(hubbe): Make sure audio and video packets gets the right DSCP.
-  socket_->SendWithDscp(
-      remote_address_,
-      *reinterpret_cast<const std::vector<char> *>(&packet),
-      net::DSCP_AF41);
+  send_packet_callback_.Run(
+      *reinterpret_cast<const std::vector<char> *>(&packet));
   return true;
 }
 
@@ -126,42 +115,11 @@ bool CastSessionDelegate::SendPackets(
   return true;
 }
 
-// content::P2PSocketClient::Delegate Implementation
-void CastSessionDelegate::OnOpen(
-    const net::IPEndPoint& address) {
-  // Called once Init completes. Ignored.
-}
-
-void CastSessionDelegate::OnIncomingTcpConnection(
-    const net::IPEndPoint& address,
-    content::P2PSocketClient* client) {
-  // We only support UDP sockets. This function should not be called
-  // for UDP sockets.
-  NOTREACHED();
-}
-
-void CastSessionDelegate::OnSendComplete() {
-  // Ignored for now.
-}
-
-void CastSessionDelegate::OnError() {
-  // TODO(hubbe): Report this back to the user.
-}
-
-void CastSessionDelegate::OnDataReceived(const net::IPEndPoint& address,
-                                         const std::vector<char>& data,
-                                         const base::TimeTicks& timestamp) {
-  uint8 *packet_copy = new uint8[data.size()];
-  memcpy(packet_copy, &data[0], data.size());
+void CastSessionDelegate::ReceivePacket(const std::vector<char>& packet) {
+  uint8 *packet_copy = new uint8[packet.size()];
+  memcpy(packet_copy, &packet[0], packet.size());
   cast_sender_->packet_receiver()->ReceivedPacket(
       packet_copy,
-      data.size(),
-      base::Bind(&media::cast::PacketReceiver::DeletePacket,
-                 packet_copy));
-}
-
-void CastSessionDelegate::MaybeStartSending() {
-  if (!audio_configured_ || !video_configured_)
-    return;
-  StartSending();
+      packet.size(),
+      base::Bind(&media::cast::PacketReceiver::DeletePacket, packet_copy));
 }

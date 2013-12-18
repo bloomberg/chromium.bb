@@ -21,6 +21,8 @@ namespace cast.streaming.rtpStream {
     // Synchronization source identifier.
     long? ssrc;
 
+    long? feedback_ssrc;
+
     long? clockRate;
 
     long? minBitrate;
