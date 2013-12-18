@@ -123,7 +123,7 @@ toolchain("32") {
   # When invoking this toolchain not as the default one, these args will be
   # passed to the build. They are ignored when this is the default toolchain.
   toolchain_args() {
-    cpu_arch = "x32"
+    cpu_arch = "x86"
   }
 }
 
