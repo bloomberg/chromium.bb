@@ -97,19 +97,10 @@ void GetDownloadFilePath(
     const base::FilePath& download_directory,
     const std::string& id,
     const base::Callback<void(const base::FilePath&)>& callback) {
-  base::FilePath directory(g_download_directory_for_tests ?
-      *g_download_directory_for_tests : download_directory);
-
-#if defined(OS_CHROMEOS)
-  // Do not use drive for extension downloads.
-  if (drive::util::IsUnderDriveMountPoint(directory))
-    directory = DownloadPrefs::GetDefaultDownloadDirectory();
-#endif
-
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
-  if (!base::DirectoryExists(directory)) {
-    if (!base::CreateDirectory(directory)) {
+  if (!base::DirectoryExists(download_directory)) {
+    if (!base::CreateDirectory(download_directory)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               base::Bind(callback, base::FilePath()));
       return;
@@ -124,7 +115,7 @@ void GetDownloadFilePath(
       base::Uint64ToString(base::RandGenerator(kuint16max));
 
   base::FilePath file =
-      directory.AppendASCII(id + "_" + random_number + ".crx");
+      download_directory.AppendASCII(id + "_" + random_number + ".crx");
 
   int uniquifier =
       file_util::GetUniquePathNumber(file, base::FilePath::StringType());
@@ -536,9 +527,20 @@ void WebstoreInstaller::DownloadCrx(
         BrowserContext::GetDownloadManager(profile_))->DownloadPath();
   }
 
+  base::FilePath download_directory(g_download_directory_for_tests ?
+      *g_download_directory_for_tests : download_path);
+
+#if defined(OS_CHROMEOS)
+  // Do not use drive for extension downloads.
+  if (drive::util::IsUnderDriveMountPoint(download_directory)) {
+    download_directory = DownloadPrefs::FromBrowserContext(
+        profile_)->GetDefaultDownloadDirectoryForProfile();
+  }
+#endif
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetDownloadFilePath, download_path, id_,
+      base::Bind(&GetDownloadFilePath, download_directory, id_,
         base::Bind(&WebstoreInstaller::StartDownload, this)));
 }
 

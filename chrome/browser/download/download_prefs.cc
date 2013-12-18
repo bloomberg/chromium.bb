@@ -34,6 +34,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #endif
 
 using content::BrowserContext;
@@ -98,6 +99,33 @@ static base::LazyInstance<DefaultDownloadDirectory>
 DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   PrefService* prefs = profile->GetPrefs();
 
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the default download directory is different for each profile.
+  // If the profile-unaware default path (from GetDefaultDownloadDirectory())
+  // is set (this happens during the initial preference registration in static
+  // RegisterProfilePrefs()), alter by GetDefaultDownloadDirectoryForProfile().
+  // file_manager::util::MigratePathFromOldFormat will do this.
+  const char* path_pref[] = {
+      prefs::kSaveFileDefaultDirectory,
+      prefs::kDownloadDefaultDirectory
+  };
+  for (size_t i = 0; i < arraysize(path_pref); ++i) {
+    const base::FilePath current = prefs->GetFilePath(path_pref[i]);
+    base::FilePath migrated;
+    if (!current.empty() &&
+        file_manager::util::MigratePathFromOldFormat(
+            profile_, current, &migrated)) {
+      prefs->SetFilePath(path_pref[i], migrated);
+    }
+  }
+
+  // Ensure that the default download directory exists.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::CreateDirectory),
+                 GetDefaultDownloadDirectoryForProfile()));
+#endif  // defined(OS_CHROMEOS)
+
   // If the download path is dangerous we forcefully reset it. But if we do
   // so we set a flag to make sure we only do it once, to avoid fighting
   // the user if he really wants it on an unsafe place such as the desktop.
@@ -106,7 +134,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
         prefs::kDownloadDefaultDirectory);
     if (DownloadPathIsDangerous(current_download_dir)) {
       prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
-                         GetDefaultDownloadDirectory());
+                         GetDefaultDownloadDirectoryForProfile());
     }
     prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
   }
@@ -157,7 +185,6 @@ void DownloadPrefs::RegisterProfilePrefs(
       content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // The default download path is userprofile\download.
   const base::FilePath& default_download_path = GetDefaultDownloadDirectory();
   registry->RegisterFilePathPref(
       prefs::kDownloadDefaultDirectory,
@@ -167,14 +194,14 @@ void DownloadPrefs::RegisterProfilePrefs(
       prefs::kSaveFileDefaultDirectory,
       default_download_path,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
 
+base::FilePath DownloadPrefs::GetDefaultDownloadDirectoryForProfile() const {
 #if defined(OS_CHROMEOS)
-  // Ensure that the download directory specified in the preferences exists.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::CreateDirectory),
-                 default_download_path));
-#endif  // defined(OS_CHROMEOS)
+  return file_manager::util::GetDownloadsFolderForProfile(profile_);
+#else
+  return GetDefaultDownloadDirectory();
+#endif
 }
 
 // static
@@ -206,7 +233,7 @@ base::FilePath DownloadPrefs::DownloadPath() const {
     drive::DriveIntegrationService* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
     if (!integration_service || !integration_service->is_enabled())
-      return GetDefaultDownloadDirectory();
+      return GetDefaultDownloadDirectoryForProfile();
   }
 #endif
   return *download_path_;

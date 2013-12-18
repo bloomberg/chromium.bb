@@ -163,21 +163,16 @@ void VolumeManager::Initialize() {
   // Path to mount user folders have changed several times. We need to migrate
   // the old preferences on paths to the new format when needed. For the detail,
   // see the comments in file_manager::util::MigratePathFromOldFormat,
-  // TODO(kinaba): Remove this after several rounds of releases.
-  const char* kPathPreference[] = {
-      prefs::kDownloadDefaultDirectory,
-      prefs::kSelectFileLastDirectory,
-      prefs::kSaveFileDefaultDirectory,
-  };
-  for (size_t i = 0; i < arraysize(kPathPreference); ++i) {
-    const base::FilePath old_path =
-        profile_->GetPrefs()->GetFilePath(kPathPreference[i]);
-    base::FilePath new_path;
-    if (!old_path.empty() &&
-        file_manager::util::MigratePathFromOldFormat(profile_,
-                                                     old_path, &new_path)) {
-      profile_->GetPrefs()->SetFilePath(kPathPreference[i], new_path);
-    }
+  // Note: Preferences related to downloads are handled in download_prefs.cc.
+  // TODO(kinaba): Remove this are several rounds of releases.
+  const base::FilePath old_path =
+      profile_->GetPrefs()->GetFilePath(prefs::kSelectFileLastDirectory);
+  base::FilePath new_path;
+  if (!old_path.empty() &&
+      file_manager::util::MigratePathFromOldFormat(profile_,
+                                                   old_path, &new_path)) {
+    profile_->GetPrefs()->SetFilePath(prefs::kSelectFileLastDirectory,
+                                      new_path);
   }
 
   // Register 'Downloads' folder for the profile to the file system.

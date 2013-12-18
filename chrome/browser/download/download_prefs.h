@@ -33,6 +33,9 @@ class DownloadPrefs {
   // Returns the default download directory.
   static const base::FilePath& GetDefaultDownloadDirectory();
 
+  // Returns the default download directory for the current profile.
+  base::FilePath GetDefaultDownloadDirectoryForProfile() const;
+
   // Returns the DownloadPrefs corresponding to the given DownloadManager
   // or BrowserContext.
   static DownloadPrefs* FromDownloadManager(
