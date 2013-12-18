@@ -272,6 +272,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   // fixed, re-enable this check for Android. crbug.com/116838
   if (verify_result->is_issued_by_known_root && IsHostnameNonUnique(hostname)) {
     verify_result->cert_status |= CERT_STATUS_NON_UNIQUE_NAME;
+    // CERT_STATUS_NON_UNIQUE_NAME will eventually become a hard error. For
+    // now treat it as a warning and do not map it to an error return value.
   }
 #endif
 
