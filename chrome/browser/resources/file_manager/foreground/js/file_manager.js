@@ -3112,7 +3112,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this);
 
     setup();
-    this.metadataCache_.get(selection.entries, 'drive', onProperties);
+
+    // TODO(mtomasz): Use Entry instead of URLs, if possible.
+    util.URLsToEntries(selection.urls, function(entries) {
+      this.metadataCache_.get(entries, 'drive', onProperties);
+    }.bind(this));
   };
 
   /**
