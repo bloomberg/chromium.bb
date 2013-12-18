@@ -35,6 +35,7 @@
 #include "core/html/HTMLImportLoaderClient.h"
 #include "core/html/HTMLImportResourceOwner.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -52,7 +53,7 @@ class HTMLImportChildClient;
 //
 class HTMLImportChild : public HTMLImport, public HTMLImportLoaderClient, public HTMLImportResourceOwner {
 public:
-    HTMLImportChild(const KURL&, HTMLImportChildClient*);
+    HTMLImportChild(const KURL&);
     virtual ~HTMLImportChild();
 
     Document* importedDocument() const;
@@ -72,7 +73,8 @@ public:
     virtual bool isDone() const OVERRIDE;
     virtual void didUnblockDocument() OVERRIDE;
 
-    void clearClient() { m_client = 0; }
+    void addClient(HTMLImportChildClient*);
+    void removeClient(HTMLImportChildClient*);
 
 private:
     // RawResourceOwner doing nothing.
@@ -88,8 +90,9 @@ private:
     void shareLoader(HTMLImportChild*);
 
     KURL m_url;
-    HTMLImportChildClient* m_client;
     RefPtr<HTMLImportLoader> m_loader;
+    Vector<HTMLImportChildClient*> m_clients;
+    bool m_traversingClients;
 };
 
 } // namespace WebCore

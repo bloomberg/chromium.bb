@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(const KURL& url, HTMLImportChildClient* client)
+HTMLImportChild::HTMLImportChild(const KURL& url)
     : m_url(url)
-    , m_client(client)
+    , m_traversingClients(false)
 {
 }
 
@@ -47,12 +47,16 @@ HTMLImportChild::~HTMLImportChild()
 {
     // importDestroyed() should be called before the destruction.
     ASSERT(!m_loader);
+    for (size_t i = 0; i < m_clients.size(); ++i) {
+        TemporaryChange<bool> traversing(m_traversingClients, true);
+        m_clients[i]->importWillBeDestroyed();
+    }
 }
 
 void HTMLImportChild::wasAlreadyLoadedAs(HTMLImportChild* found)
 {
     ASSERT(!m_loader);
-    ASSERT(m_client);
+    ASSERT(m_clients.size());
     shareLoader(found);
 }
 
@@ -76,8 +80,11 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
 
 void HTMLImportChild::didFinish()
 {
-    if (m_client)
-        m_client->didFinish();
+    for (size_t i = 0; i < m_clients.size(); ++i) {
+        TemporaryChange<bool> traversing(m_traversingClients, true);
+        m_clients[i]->didFinish();
+    }
+
     clearResource();
     root()->blockerGone();
 }
@@ -169,6 +176,21 @@ bool HTMLImportChild::isDone() const
 bool HTMLImportChild::isLoaded() const
 {
     return m_loader->isLoaded();
+}
+
+void HTMLImportChild::addClient(HTMLImportChildClient* client)
+{
+    ASSERT(!m_traversingClients);
+    ASSERT(!m_clients.contains(client));
+    m_clients.append(client);
+}
+
+void HTMLImportChild::removeClient(HTMLImportChildClient* client)
+{
+    ASSERT(!m_traversingClients);
+    size_t i = m_clients.find(client);
+    ASSERT(i != kNotFound);
+    m_clients.remove(i);
 }
 
 } // namespace WebCore

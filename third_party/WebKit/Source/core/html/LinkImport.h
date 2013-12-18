@@ -62,7 +62,7 @@ public:
 
     // HTMLImportChildClient
     virtual void didFinish() OVERRIDE;
-    virtual void loaderWillBeDestroyed() OVERRIDE;
+    virtual void importWillBeDestroyed() OVERRIDE;
 
     Document* importedDocument() const;
 

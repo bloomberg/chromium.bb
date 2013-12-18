@@ -96,7 +96,7 @@ void LinkImport::clear()
 {
     m_owner = 0;
     if (m_loader) {
-        m_loader->clearClient();
+        m_loader->removeClient(this);
         m_loader = 0;
     }
 }
@@ -113,7 +113,7 @@ void LinkImport::didFinish()
     m_owner->scheduleEvent();
 }
 
-void LinkImport::loaderWillBeDestroyed()
+void LinkImport::importWillBeDestroyed()
 {
     clear();
 }

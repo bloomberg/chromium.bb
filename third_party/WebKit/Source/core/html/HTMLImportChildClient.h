@@ -37,7 +37,7 @@ class HTMLImportChildClient {
 public:
     virtual ~HTMLImportChildClient() { }
     virtual void didFinish() = 0;
-    virtual void loaderWillBeDestroyed() = 0;
+    virtual void importWillBeDestroyed() = 0;
 };
 
 } // namespace WebCore
