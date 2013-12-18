@@ -2721,6 +2721,21 @@ TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   helper.WaitUntilCacheIoFinished(1);
 }
 
+TEST_F(DiskCacheBackendTest, TimerNotCreated) {
+  ASSERT_TRUE(CopyTestCache("wrong_version"));
+
+  scoped_ptr<disk_cache::BackendImpl> cache;
+  cache.reset(new disk_cache::BackendImpl(
+      cache_path_, base::MessageLoopProxy::current().get(), NULL));
+  ASSERT_TRUE(NULL != cache.get());
+  cache->SetUnitTestMode();
+  ASSERT_NE(net::OK, cache->SyncInit());
+
+  ASSERT_TRUE(NULL == cache->GetTimerForTest());
+
+  DisableIntegrityCheck();
+}
+
 TEST_F(DiskCacheBackendTest, Backend_UsageStats) {
   InitCache();
   disk_cache::Entry* entry;

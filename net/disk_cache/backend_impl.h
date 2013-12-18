@@ -246,6 +246,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   // entries. This method should be called directly on the cache thread.
   void TrimDeletedListForTest(bool empty);
 
+  // Only intended for testing
+  base::RepeatingTimer<BackendImpl>* GetTimerForTest();
+
   // Performs a simple self-check, and returns the number of dirty items
   // or an error code (negative value).
   int SelfCheck();
