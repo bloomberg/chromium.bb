@@ -54,6 +54,7 @@ CHROMEOS_EXPORT extern const char kFileManagerShowCheckboxes[];
 CHROMEOS_EXPORT extern const char kFileManagerEnableWebstoreIntegration[];
 CHROMEOS_EXPORT extern const char kFirstExecAfterBoot[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
+CHROMEOS_EXPORT extern const char kGpuSandboxFailuresNonfatal[];
 CHROMEOS_EXPORT extern const char kGuestSession[];
 CHROMEOS_EXPORT extern const char kHasChromeOSDiamondKey[];
 CHROMEOS_EXPORT extern const char kHasChromeOSKeyboard[];
