@@ -113,55 +113,41 @@ FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
 /**
  * Returns the file path extension for a given file.
  *
- * @param {string|Entry} file Reference to the file.
- *     Can be a name, a path, a url or a File API Entry.
+ * @param {Entry} entry Reference to the file.
  * @return {string} The extension including a leading '.', or empty string if
  *     not found.
  */
-FileType.getExtension = function(file) {
-  var fileName;
-  if (typeof file == 'object') {
-    if (file.isDirectory) {
-      // No extension for a directory.
-      return '';
-    } else {
-      fileName = file.name;
-    }
-  } else {
-    fileName = file;
-  }
+FileType.getExtension = function(entry) {
+  // No extension for a directory.
+  if (entry.isDirectory)
+    return '';
 
-  var extensionStartIndex = fileName.lastIndexOf('.');
-  if (extensionStartIndex == -1 || extensionStartIndex == fileName.length - 1) {
+  var extensionStartIndex = entry.name.lastIndexOf('.');
+  if (extensionStartIndex === -1 ||
+      extensionStartIndex === entry.name.length - 1) {
     return '';
   }
-  return fileName.substr(extensionStartIndex);
+
+  return entry.name.substr(extensionStartIndex);
 };
 
 /**
- * Get the file type object for a given file.
+ * Gets the file type object for a given file name (base name). Use getType()
+ * if possible, since this method can't recognize directories.
  *
- * @param {string|Entry} file Reference to the file.
- *     Can be a name, a path, a url or a File API Entry.
+ * @param {string} name Name of the file.
  * @return {Object} The matching file type object or an empty object.
  */
-FileType.getType = function(file) {
-  if (typeof file == 'object') {
-    if (file.isDirectory)
-      return FileType.DIRECTORY;
-    else
-      file = file.name;
-  }
+FileType.getTypeForName = function(name) {
   var types = FileType.types;
   for (var i = 0; i < types.length; i++) {
-    if (types[i].pattern.test(file)) {
+    if (types[i].pattern.test(name))
       return types[i];
-    }
   }
 
   // Unknown file type.
-  var extension = FileType.getExtension(file);
-  if (extension == '') {
+  var extension = PathUtil.splitExtension(name)[1];
+  if (extension === '') {
     return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
   }
   // subtype is the extension excluding the first dot.
@@ -170,12 +156,35 @@ FileType.getType = function(file) {
 };
 
 /**
- * @param {string|Entry} file Reference to the file.
- *     Can be a name, a path, a url or a File API Entry.
+ * Gets the file type object for a given file.
+ * @param {Entry} entry Reference to the file.
+ * @return {Object} The matching file type object or an empty object.
+ */
+FileType.getType = function(entry) {
+  if (entry.isDirectory)
+    return FileType.DIRECTORY;
+
+  var types = FileType.types;
+  for (var i = 0; i < types.length; i++) {
+    if (types[i].pattern.test(entry.name))
+      return types[i];
+  }
+
+  // Unknown file type.
+  var extension = FileType.getExtension(entry);
+  if (extension === '') {
+    return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
+  }
+  // subtype is the extension excluding the first dot.
+  return { name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
+           subtype: extension.substr(1).toUpperCase(), icon: '' };
+};
+
+/**
+ * @param {Object} fileType Type object returned by FileType.getType().
  * @return {string} Localized string representation of file type.
  */
-FileType.getTypeString = function(file) {
-  var fileType = FileType.getType(file);
+FileType.typeToString = function(fileType) {
   if (fileType.subtype)
     return strf(fileType.name, fileType.subtype);
   else
@@ -183,112 +192,66 @@ FileType.getTypeString = function(file) {
 };
 
 /**
- * Pattern for urls pointing to Google Drive files.
- */
-FileType.DRIVE_URL_PATTERN =
-    new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/drive/(.*)');
-
-/**
- * Pattern for file paths pointing to Google Drive files.
- */
-FileType.DRIVE_PATH_PATTERN =
-    new RegExp('^/drive/');
-
-/**
- * @param {string|Entry} file The url string or entry.
- * @return {boolean} Whether this provider supports the url.
- */
-FileType.isOnDrive = function(file) {
-  return typeof file == 'string' ?
-      FileType.DRIVE_URL_PATTERN.test(file) :
-      FileType.DRIVE_PATH_PATTERN.test(file.fullPath);
-};
-
-
-/**
- * Get the media type for a given file.
+ * Gets the media type for a given file.
  *
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {string} The value of 'type' property from one of the elements in
- *   FileType.types or undefined.
+ *     FileType.types or undefined.
  */
-FileType.getMediaType = function(file) {
-  return FileType.getType(file).type;
+FileType.getMediaType = function(entry) {
+  return FileType.getType(entry).type;
 };
 
 /**
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {boolean} True if audio file.
  */
-FileType.isAudio = function(file) {
-  return FileType.getMediaType(file) == 'audio';
+FileType.isAudio = function(entry) {
+  return FileType.getMediaType(entry) === 'audio';
 };
 
 /**
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {boolean} True if image file.
  */
-FileType.isImage = function(file) {
-  return FileType.getMediaType(file) == 'image';
+FileType.isImage = function(entry) {
+  return FileType.getMediaType(entry) === 'image';
 };
 
 /**
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {boolean} True if video file.
  */
-FileType.isVideo = function(file) {
-  return FileType.getMediaType(file) == 'video';
+FileType.isVideo = function(entry) {
+  return FileType.getMediaType(entry) === 'video';
 };
 
 
 /**
  * Files with more pixels won't have preview.
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {boolean} True if image or video.
  */
-FileType.isImageOrVideo = function(file) {
-  var type = FileType.getMediaType(file);
-  return type == 'image' || type == 'video';
+FileType.isImageOrVideo = function(entry) {
+  var type = FileType.getMediaType(entry);
+  return type === 'image' || type === 'video';
 };
 
 /**
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {boolean} Returns true if the file is hosted.
  */
-FileType.isHosted = function(file) {
-  return FileType.getType(file).type === 'hosted';
+FileType.isHosted = function(entry) {
+  return FileType.getType(entry).type === 'hosted';
 };
 
 /**
- * @param {string|Entry} file Reference to the file.
- * @return {boolean} Returns true if the file is not hidden, and we should
- *     display it.
- */
-FileType.isVisible = function(file) {
-  if (typeof file == 'object') {
-    file = file.name;
-  }
-
-  var path = util.extractFilePath(file);
-  if (path) file = path;
-
-  file = file.split('/').pop();
-  return file.indexOf('.') != 0 && !(file in FileType.HIDDEN_NAMES);
-};
-
-/**
- * File/directory names that we know are usually hidden.
- */
-FileType.HIDDEN_NAMES = {
-  'RECYCLED': true
-};
-
-/**
- * @param {string|Entry} file Reference to the file.
+ * @param {Entry} entry Reference to the file.
  * @return {string} Returns string that represents the file icon.
- *                  It refers to a file 'images/filetype_' + icon + '.png'.
+ *     It refers to a file 'images/filetype_' + icon + '.png'.
  */
-FileType.getIcon = function(file) {
-  var fileType = FileType.getType(file);
+FileType.getIcon = function(entry) {
+  var fileType = FileType.getType(entry);
   return fileType.icon || fileType.type || 'unknown';
 };
+

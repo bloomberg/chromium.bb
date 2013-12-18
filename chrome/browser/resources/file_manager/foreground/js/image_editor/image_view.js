@@ -331,7 +331,7 @@ ImageView.prototype.load = function(entry, metadata, effect,
     var videoPreview = !!(metadata.thumbnail && metadata.thumbnail.url);
     if (videoPreview) {
       var thumbnailLoader = new ThumbnailLoader(
-          metadata.thumbnail.url,
+          entry,
           ThumbnailLoader.LoaderType.CANVAS,
           metadata);
       thumbnailLoader.loadDetachedImage(function(success) {
@@ -388,7 +388,7 @@ ImageView.prototype.load = function(entry, metadata, effect,
       // Only show thumbnails if there is no effect or the effect is Slide.
       // Also no thumbnail if the image is too large to be loaded.
       var thumbnailLoader = new ThumbnailLoader(
-          metadata.thumbnail.url,
+          entry,
           ThumbnailLoader.LoaderType.CANVAS,
           metadata);
       thumbnailLoader.loadDetachedImage(function(success) {

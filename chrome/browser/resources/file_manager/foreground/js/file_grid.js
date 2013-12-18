@@ -149,7 +149,8 @@ FileGrid.decorateThumbnailBox = function(
 
   var metadataTypes = 'thumbnail|filesystem';
 
-  if (FileType.isOnDrive(entry)) {
+  // TODO(mtomasz): Use Entry instead of paths.
+  if (PathUtil.isDriveBasedPath(entry.fullPath)) {
     metadataTypes += '|drive';
   } else {
     // TODO(dgozman): If we ask for 'media' for a Drive file we fall into an
@@ -166,7 +167,8 @@ FileGrid.decorateThumbnailBox = function(
       useEmbedded = ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
       break;
     case FileGrid.ThumbnailQuality.HIGH:
-      useEmbedded = FileType.isOnDrive(entry) ?
+      // TODO(mtomasz): Use Entry instead of paths.
+      useEmbedded = PathUtil.isDriveBasedPath(entry.fullPath) ?
           ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
           ThumbnailLoader.UseEmbedded.NO_EMBEDDED;
       break;
@@ -174,7 +176,7 @@ FileGrid.decorateThumbnailBox = function(
 
   metadataCache.get(entry, metadataTypes,
       function(metadata) {
-        new ThumbnailLoader(entry.toURL(),
+        new ThumbnailLoader(entry,
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata,
                             undefined,  // opt_mediaType
@@ -242,7 +244,7 @@ FileGrid.prototype.setBottomMarginForPanel = function(margin) {
  */
 FileGrid.prototype.shouldStartDragSelection = function(event) {
   var pos = DragSelector.getScrolledPosition(this, event);
-  return this.getHitElements(pos.x, pos.y).length == 0;
+  return this.getHitElements(pos.x, pos.y).length === 0;
 };
 
 /**

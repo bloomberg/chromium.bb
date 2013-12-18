@@ -210,10 +210,10 @@ FileTransferController.prototype = {
                           this.currentDirectoryContentPath;
     // effectAllowed set in copy/paste handlers stay uninitialized. DnD handlers
     // work fine.
-    var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
+    var effectAllowed = dataTransfer.effectAllowed !== 'uninitialized' ?
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
-    var toMove = effectAllowed == 'move' ||
-        (effectAllowed == 'copyMove' && opt_effect == 'move');
+    var toMove = effectAllowed === 'move' ||
+        (effectAllowed === 'copyMove' && opt_effect === 'move');
 
     // Start the pasting operation.
     this.fileOperationManager_.paste(sourcePaths, destinationPath, toMove);
@@ -235,7 +235,7 @@ FileTransferController.prototype = {
         entry,
         metadataTypes,
         function(metadata) {
-          new ThumbnailLoader(entry.toURL(),
+          new ThumbnailLoader(entry,
                               ThumbnailLoader.LoaderType.IMAGE,
                               metadata).
               load(thumbnailContainer,
@@ -373,7 +373,7 @@ FileTransferController.prototype = {
     this.lastEnteredTarget_ = event.target;
     var item = list.getListItemAncestor(event.target);
     item = item && list.isItem(item) ? item : null;
-    if (item == this.dropTarget_)
+    if (item === this.dropTarget_)
       return;
 
     var entry = item && list.dataModel.item(item.listIndex);
@@ -398,7 +398,7 @@ FileTransferController.prototype = {
       item = item.parentNode;
     }
 
-    if (item == this.dropTarget_)
+    if (item === this.dropTarget_)
       return;
 
     var entry = item && item.entry;
@@ -420,7 +420,7 @@ FileTransferController.prototype = {
     this.lastEnteredTarget_ = event.target;
     var item = list.getListItemAncestor(event.target);
     item = item && list.isItem(item) ? item : null;
-    if (item == this.dropTarget_)
+    if (item === this.dropTarget_)
       return;
 
     var path = item && list.dataModel.item(item.listIndex).path;
@@ -438,11 +438,11 @@ FileTransferController.prototype = {
   onDragLeave_: function(list, event) {
     // If mouse moves from one element to another the 'dragenter'
     // event for the new element comes before the 'dragleave' event for
-    // the old one. In this case event.target != this.lastEnteredTarget_
+    // the old one. In this case event.target !== this.lastEnteredTarget_
     // and handler of the 'dragenter' event has already caried of
-    // drop target. So event.target == this.lastEnteredTarget_
+    // drop target. So event.target === this.lastEnteredTarget_
     // could only be if mouse goes out of listened element.
-    if (event.target == this.lastEnteredTarget_) {
+    if (event.target === this.lastEnteredTarget_) {
       this.clearDropTarget_();
       this.lastEnteredTarget_ = null;
     }
@@ -477,7 +477,7 @@ FileTransferController.prototype = {
    */
   setDropTarget_: function(domElement, isDirectory, dataTransfer,
                            destinationPath) {
-    if (this.dropTarget_ == domElement)
+    if (this.dropTarget_ === domElement)
       return;
 
     // Remove the old drop target.
@@ -541,8 +541,8 @@ FileTransferController.prototype = {
    *     currently active. Otherwise, returns true.
    */
   isDocumentWideEvent_: function() {
-    return this.document_.activeElement.nodeName.toLowerCase() != 'input' ||
-        this.document_.activeElement.type.toLowerCase() != 'text';
+    return this.document_.activeElement.nodeName.toLowerCase() !== 'input' ||
+        this.document_.activeElement.type.toLowerCase() !== 'text';
   },
 
   /**
@@ -631,7 +631,7 @@ FileTransferController.prototype = {
 
     // On cut, we clear the clipboard after the file is pasted/moved so we don't
     // try to move/delete the original file again.
-    if (effect == 'move') {
+    if (effect === 'move') {
       this.simulateCommand_('cut', function(event) {
         event.preventDefault();
         event.clipboardData.setData('fs/clear', '');
@@ -666,20 +666,20 @@ FileTransferController.prototype = {
     if (this.directoryModel_.isPathReadOnly(destinationPath)) {
       return false;
     }
-    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1) {
+    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') === -1) {
       return false;  // Unsupported type of content.
     }
-    if (dataTransfer.getData('fs/tag') == '') {
+    if (dataTransfer.getData('fs/tag') === '') {
       // Data protected. Other checks are not possible but it makes sense to
       // let the user try.
       return true;
     }
 
     var directories = dataTransfer.getData('fs/directories').split('\n').
-                      filter(function(d) { return d != ''; });
+                      filter(function(d) { return d !== ''; });
 
     for (var i = 0; i < directories.length; i++) {
-      if (destinationPath.substr(0, directories[i].length) == directories[i])
+      if (destinationPath.substr(0, directories[i].length) === directories[i])
         return false;  // recursive paste.
     }
 
@@ -737,7 +737,7 @@ FileTransferController.prototype = {
         fileEntries.push(entries[i]);
     }
 
-    if (entries.length == 1) {
+    if (entries.length === 1) {
       // For single selection, the dragged element is created in advance,
       // otherwise an image may not be loaded at the time the 'dragstart' event
       // comes.
@@ -761,8 +761,8 @@ FileTransferController.prototype = {
         // We consider directories not available offline for the purposes of
         // file transfer since we cannot afford to recursive traversal.
         this.allDriveFilesAvailable =
-            entries.filter(function(e) {return e.isDirectory}).length == 0 &&
-            props.filter(function(p) {return !p.availableOffline}).length == 0;
+            entries.filter(function(e) {return e.isDirectory}).length === 0 &&
+            props.filter(function(p) {return !p.availableOffline}).length === 0;
         // |Copy| is the only menu item affected by allDriveFilesAvailable.
         // It could be open right now, update its UI.
         this.copyCommand_.disabled = !this.canCopyOrDrag_();
@@ -826,7 +826,7 @@ FileTransferController.prototype = {
     });
 
     // TODO(serya): Diagnostics for http://crbug/129642
-    if (entries.indexOf(undefined) != -1) {
+    if (entries.indexOf(undefined) !== -1) {
       var index = entries.indexOf(undefined);
       entries = entries.filter(function(e) { return !!e; });
       console.error('Invalid selection found: list items: ', list.length,
@@ -845,13 +845,13 @@ FileTransferController.prototype = {
     if (!destinationPath ||
         this.directoryModel_.isPathReadOnly(destinationPath))
       return 'none';
-    if (event.dataTransfer.effectAllowed == 'copyMove' &&
+    if (event.dataTransfer.effectAllowed === 'copyMove' &&
         this.getSourceRoot_(event.dataTransfer) ==
             PathUtil.getRootPath(destinationPath) &&
         !event.ctrlKey) {
       return 'move';
     }
-    if (event.dataTransfer.effectAllowed == 'copyMove' &&
+    if (event.dataTransfer.effectAllowed === 'copyMove' &&
         event.shiftKey) {
       return 'move';
     }

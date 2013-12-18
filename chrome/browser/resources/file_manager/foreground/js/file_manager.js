@@ -1221,7 +1221,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             ThumbnailLoader.LoaderType.CANVAS,
             metadata,
             undefined,  // Media type.
-            FileType.isOnDrive(entry) ?
+            // TODO(mtomasz): Use Entry instead of paths.
+            PathUtil.isDriveBasedPath(entry.fullPath) ?
                 ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
                 ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
             10);  // Very low priority.
@@ -1242,15 +1243,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       option.value = 0;
     }
 
-    for (var i = 0; i < this.fileTypes_.length; i++) {
+    for (var i = 0; i !== this.fileTypes_.length; i++) {
       var fileType = this.fileTypes_[i];
       var option = this.document_.createElement('option');
       var description = fileType.description;
       if (!description) {
         // See if all the extensions in the group have the same description.
-        for (var j = 0; j != fileType.extensions.length; j++) {
-          var currentDescription =
-              FileType.getTypeString('.' + fileType.extensions[j]);
+        for (var j = 0; j !== fileType.extensions.length; j++) {
+          var currentDescription = FileType.typeToString(
+              FileType.getTypeForName('.' + fileType.extensions[j]));
           if (!description)  // Set the first time.
             description = currentDescription;
           else if (description != currentDescription) {
@@ -1544,10 +1545,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }
 
-    if (this.dialogType == DialogType.FULL_PAGE) {
+    if (this.dialogType === DialogType.FULL_PAGE) {
       // In the FULL_PAGE mode if the restored path points to a file we might
       // have to invoke a task after selecting it.
-      if (this.params_.action == 'select')
+      if (this.params_.action === 'select')
         return;
 
       var task = null;
@@ -1566,13 +1567,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         // We call the appropriate methods of FileTasks directly as we do
         // not need any of the preparations that |execute| method does.
         // TODO(mtomasz): Change Entry.fullPath to Entry.
-        var mediaType = FileType.getMediaType(opt_selectionEntry.fullPath);
-        if (mediaType == 'image' || mediaType == 'video') {
+        var mediaType = FileType.getMediaType(opt_selectionEntry);
+        if (mediaType === 'image' || mediaType === 'video') {
           task = function() {
             // TODO(mtomasz): Replace the url with an entry.
             new FileTasks(this, this.params_).openGallery([opt_selectionEntry]);
           }.bind(this);
-        } else if (mediaType == 'archive') {
+        } else if (mediaType === 'archive') {
           task = function() {
             new FileTasks(this, this.params_).mountArchives(
                 [opt_selectionEntry]);
@@ -1589,7 +1590,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         }.bind(this);
         this.directoryModel_.addEventListener('scan-completed', listener);
       }
-    } else if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
+    } else if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
       this.filenameInput_.value = opt_suggestedName || '';
       this.selectDefaultPathInFilenameInput_();
     }
@@ -1644,11 +1645,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.dailyUpdateModificationTime_ = function() {
-    var fileList = this.directoryModel_.getFileList();
-    var entries = [];
-    for (var i = 0; i < fileList.length; i++) {
-      entries.push(fileList.item(i));
-    }
+    var entries = this.directoryModel_.getFileList().slice();
     this.metadataCache_.get(
         entries,
         'filesystem',

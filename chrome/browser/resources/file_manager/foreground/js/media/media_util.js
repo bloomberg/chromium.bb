@@ -9,7 +9,7 @@
  * are attached as <canvas> element, while in IMAGE mode as <img>.
  * <canvas> renders faster than <img>, however has bigger memory overhead.
  *
- * @param {string} url File URL.
+ * @param {FileEntry} entry File entry.
  * @param {ThumbnailLoader.LoaderType=} opt_loaderType Canvas or Image loader,
  *     default: IMAGE.
  * @param {Object=} opt_metadata Metadata object.
@@ -19,18 +19,18 @@
  * @param {number=} opt_priority Priority, the highest is 0. default: 2.
  * @constructor
  */
-function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType,
+function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     opt_useEmbedded, opt_priority) {
   opt_useEmbedded = opt_useEmbedded || ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
 
-  this.mediaType_ = opt_mediaType || FileType.getMediaType(url);
+  this.mediaType_ = opt_mediaType || FileType.getMediaType(entry);
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
   this.metadata_ = opt_metadata;
   this.priority_ = (opt_priority !== undefined) ? opt_priority : 2;
   this.transform_ = null;
 
   if (!opt_metadata) {
-    this.thumbnailUrl_ = url;  // Use the URL directly.
+    this.thumbnailUrl_ = entry.toURL();  // Use the URL directly.
     return;
   }
 
@@ -50,12 +50,12 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType,
   }
 
   if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&
-      opt_useEmbedded == ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
+      opt_useEmbedded === ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
     this.transform_ = driveTransform !== undefined ? driveTransform :
         opt_metadata.thumbnail.transform;
-  } else if (FileType.isImage(url)) {
-    this.thumbnailUrl_ = url;
+  } else if (FileType.isImage(entry)) {
+    this.thumbnailUrl_ = entry.toURL();
     this.transform_ = driveTransform !== undefined ? driveTransform :
         opt_metadata.media && opt_metadata.media.imageTransform;
   } else if (this.fallbackUrl_) {
@@ -162,13 +162,9 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
     if (opt_onError)
       opt_onError();
     if (this.fallbackUrl_) {
-      new ThumbnailLoader(this.fallbackUrl_,
-                          this.loaderType_,
-                          null,  // No metadata.
-                          this.mediaType_,
-                          undefined,  // Default value for use-embedded.
-                          this.priority_).
-          load(box, fillMode, opt_optimizationMode, opt_onSuccess);
+      this.thumbnailUrl_ = this.fallbackUrl_;
+      this.fallbackUrl_ = null;
+      this.load(box, fillMode, opt_optimizationMode, opt_onSuccess);
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
     }
@@ -228,7 +224,7 @@ ThumbnailLoader.prototype.hasValidImage = function() {
  * @private
  */
 ThumbnailLoader.prototype.isRotated_ = function() {
-  return this.transform_ && (this.transform_.rotate90 % 2 == 1);
+  return this.transform_ && (this.transform_.rotate90 % 2 === 1);
 };
 
 /**
@@ -283,7 +279,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
  * @private
  */
 ThumbnailLoader.prototype.renderMedia_ = function() {
-  if (this.loaderType_ != ThumbnailLoader.LoaderType.CANVAS)
+  if (this.loaderType_ !== ThumbnailLoader.LoaderType.CANVAS)
     return;
 
   if (!this.canvas_)
@@ -312,13 +308,13 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
 
   this.renderMedia_();
   util.applyTransform(container, this.transform_);
-  var attachableMedia = this.loaderType_ == ThumbnailLoader.LoaderType.CANVAS ?
+  var attachableMedia = this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ?
       this.canvas_ : this.image_;
 
   ThumbnailLoader.centerImage_(
       container, attachableMedia, fillMode, this.isRotated_());
 
-  if (attachableMedia.parentNode != container) {
+  if (attachableMedia.parentNode !== container) {
     container.textContent = '';
     container.appendChild(attachableMedia);
   }
@@ -335,7 +331,7 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
  */
 ThumbnailLoader.prototype.getImage = function() {
   this.renderMedia_();
-  return this.loaderType_ == ThumbnailLoader.LoaderType.CANVAS ? this.canvas_ :
+  return this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ? this.canvas_ :
       this.image_;
 };
 
@@ -393,7 +389,7 @@ ThumbnailLoader.centerImage_ = function(box, img, fillMode, rotate) {
         Math.max(fitScaleX, fitScaleY) :
         Math.min(fitScaleX, fitScaleY);
 
-    if (fillMode != ThumbnailLoader.FillMode.OVER_FILL)
+    if (fillMode !== ThumbnailLoader.FillMode.OVER_FILL)
         scale = Math.min(scale, 1);  // Never overscale.
 
     fractionX = imageWidth * scale / boxWidth;
@@ -404,7 +400,7 @@ ThumbnailLoader.centerImage_ = function(box, img, fillMode, rotate) {
     // First try vertical fit or horizontal fill.
     fractionX = imageWidth / imageHeight;
     fractionY = 1;
-    if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
+    if ((fractionX < 1) === !!fill) {  // Vertical fill or horizontal fit.
       fractionY = 1 / fractionX;
       fractionX = 1;
     }

@@ -434,7 +434,7 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 
   // If the pointed item is already selected, it should not start the drag
   // selection.
-  if (this.lastSelection_.indexOf(itemIndex) != -1)
+  if (this.lastSelection_.indexOf(itemIndex) !== -1)
     return false;
 
   // If the horizontal value is not hit to column, it should start the drag
@@ -470,8 +470,8 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 FileTable.prototype.updateSelectAllCheckboxState_ = function(checkbox) {
   // TODO(serya): introduce this.selectionModel.selectedCount.
   checkbox.checked = this.dataModel.length > 0 &&
-      this.dataModel.length == this.selectionModel.selectedIndexes.length;
-  checkbox.disabled = this.dataModel.length == 0;
+      this.dataModel.length === this.selectionModel.selectedIndexes.length;
+  checkbox.disabled = this.dataModel.length === 0;
 };
 
 /**
@@ -560,9 +560,9 @@ FileTable.prototype.renderSize_ = function(entry, columnId, table) {
 FileTable.prototype.updateSize_ = function(div, entry, filesystemProps) {
   if (!filesystemProps) {
     div.textContent = '...';
-  } else if (filesystemProps.size == -1) {
+  } else if (filesystemProps.size === -1) {
     div.textContent = '--';
-  } else if (filesystemProps.size == 0 &&
+  } else if (filesystemProps.size === 0 &&
              FileType.isHosted(entry)) {
     div.textContent = '--';
   } else {
@@ -582,7 +582,7 @@ FileTable.prototype.updateSize_ = function(div, entry, filesystemProps) {
 FileTable.prototype.renderType_ = function(entry, columnId, table) {
   var div = this.ownerDocument.createElement('div');
   div.className = 'type';
-  div.textContent = FileType.getTypeString(entry);
+  div.textContent = FileType.typeToString(FileType.getType(entry));
   return div;
 };
 
@@ -673,14 +673,14 @@ FileTable.prototype.updateListItemsMetadata = function(type, propsMap) {
       }
     }
   }.bind(this);
-  if (type == 'filesystem') {
+  if (type === 'filesystem') {
     forEachCell('.table-row-cell > .date', function(item, entry, props) {
       this.updateDate_(item, props);
     });
     forEachCell('.table-row-cell > .size', function(item, entry, props) {
       this.updateSize_(item, entry, props);
     });
-  } else if (type == 'drive') {
+  } else if (type === 'drive') {
     // The cell name does not matter as the entire list item is needed.
     forEachCell('.table-row-cell > .date',
                 function(item, entry, props, listItem) {
@@ -737,7 +737,7 @@ FileTable.prototype.compareSize_ = function(a, b) {
   var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
   var bSize = bCachedFilesystem ? bCachedFilesystem.size : 0;
 
-  if (aSize != bSize) return aSize - bSize;
+  if (aSize !== bSize) return aSize - bSize;
     return this.collator_.compare(a.name, b.name);
 };
 
@@ -750,14 +750,14 @@ FileTable.prototype.compareSize_ = function(a, b) {
  */
 FileTable.prototype.compareType_ = function(a, b) {
   // Directories precede files.
-  if (a.isDirectory != b.isDirectory)
+  if (a.isDirectory !== b.isDirectory)
     return Number(b.isDirectory) - Number(a.isDirectory);
 
-  var aType = FileType.getTypeString(a);
-  var bType = FileType.getTypeString(b);
+  var aType = FileType.typeToString(FileType.getType(a));
+  var bType = FileType.typeToString(FileType.getType(b));
 
   var result = this.collator_.compare(aType, bType);
-  if (result != 0)
+  if (result !== 0)
     return result;
 
   return this.collator_.compare(a.name, b.name);
@@ -929,7 +929,7 @@ filelist.decorateSelectionCheckbox = function(input, entry, list) {
     var listIndex = list.getListItemAncestor(this).listIndex;
     sm.setIndexSelected(listIndex, this.checked);
     sm.leadIndex = listIndex;
-    if (sm.anchorIndex == -1)
+    if (sm.anchorIndex === -1)
       sm.anchorIndex = listIndex;
 
   });
@@ -957,7 +957,8 @@ filelist.decorateSelectionCheckbox = function(input, entry, list) {
  */
 filelist.decorateListItem = function(li, entry, metadataCache) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
-  if (FileType.isOnDrive(entry)) {
+  // TODO(mtomasz): Use Entry instead of paths.
+  if (PathUtil.isDriveBasedPath(entry.fullPath)) {
     // The metadata may not yet be ready. In that case, the list item will be
     // updated when the metadata is ready via updateListItemsMetadata.
     var driveProps = metadataCache.getCached(entry, 'drive');

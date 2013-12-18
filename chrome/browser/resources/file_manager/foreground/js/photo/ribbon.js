@@ -312,7 +312,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
   util.createChild(thumbnail, 'image-wrapper');
 
   this.metadataCache_.get(item.getEntry(), Gallery.METADATA_TYPE,
-      this.setThumbnailImage_.bind(this, thumbnail, url));
+      this.setThumbnailImage_.bind(this, thumbnail, item.getEntry()));
 
   // TODO: Implement LRU eviction.
   // Never evict the thumbnails that are currently in the DOM because we rely
@@ -325,12 +325,12 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  * Set the thumbnail image.
  *
  * @param {Element} thumbnail Thumbnail element.
- * @param {string} url Image url.
+ * @param {FileEntry} entry Image Entry.
  * @param {Object} metadata Metadata.
  * @private
  */
-Ribbon.prototype.setThumbnailImage_ = function(thumbnail, url, metadata) {
-  new ThumbnailLoader(url, ThumbnailLoader.LoaderType.IMAGE, metadata).load(
+Ribbon.prototype.setThumbnailImage_ = function(thumbnail, entry, metadata) {
+  new ThumbnailLoader(entry, ThumbnailLoader.LoaderType.IMAGE, metadata).load(
       thumbnail.querySelector('.image-wrapper'),
       ThumbnailLoader.FillMode.FILL /* fill */,
       ThumbnailLoader.OptimizationMode.NEVER_DISCARD);
@@ -348,7 +348,7 @@ Ribbon.prototype.onContentChange_ = function(event) {
 
   var thumbnail = this.renderCache_[url];
   if (thumbnail && event.metadata)
-    this.setThumbnailImage_(thumbnail, url, event.metadata);
+    this.setThumbnailImage_(thumbnail, event.item.getEntry(), event.metadata);
 };
 
 /**

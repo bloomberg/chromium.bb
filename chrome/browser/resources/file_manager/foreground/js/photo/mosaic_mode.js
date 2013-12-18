@@ -83,7 +83,7 @@ function Mosaic(document, dataModel, selectionModel, metadataCache) {
 }
 
 /**
- * Inherit from HTMLDivElement.
+ * Inherits from HTMLDivElement.
  */
 Mosaic.prototype.__proto__ = HTMLDivElement.prototype;
 
@@ -103,7 +103,7 @@ Mosaic.LAYOUT_DELAY = 200;
 Mosaic.ANIMATED_SCROLL_DURATION = 500;
 
 /**
- * Decorate a Mosaic instance.
+ * Decorates a Mosaic instance.
  *
  * @param {Mosaic} self Self pointer.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
@@ -122,7 +122,7 @@ Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache) {
 };
 
 /**
- * Initialize the mosaic element.
+ * Initializes the mosaic element.
  */
 Mosaic.prototype.init = function() {
   if (this.tiles_)
@@ -135,7 +135,7 @@ Mosaic.prototype.init = function() {
       new Mosaic.SelectionController(this.selectionModel_, this.layoutModel_);
 
   this.tiles_ = [];
-  for (var i = 0; i != this.dataModel_.length; i++)
+  for (var i = 0; i !== this.dataModel_.length; i++)
     this.tiles_.push(new Mosaic.Tile(this, this.dataModel_.item(i)));
 
   this.selectionModel_.selectedIndexes.forEach(function(index) {
@@ -156,7 +156,7 @@ Mosaic.prototype.isInitialized = function() {
 };
 
 /**
- * Start listening to events.
+ * Starts listening to events.
  *
  * We keep listening to events even when the mosaic is hidden in order to
  * keep the layout up to date.
@@ -218,10 +218,10 @@ Mosaic.prototype.animatedScrollTo = function(targetPosition) {
     var oldScrollLeft = this.scrollLeft;
     var newScrollLeft = Math.round(scrollOffset);
 
-    if (oldScrollLeft != newScrollLeft)
+    if (oldScrollLeft !== newScrollLeft)
       this.scrollLeft = newScrollLeft;
 
-    if (step == 0 || this.scrollLeft != newScrollLeft) {
+    if (step === 0 || this.scrollLeft !== newScrollLeft) {
       this.scrollAnimation_ = null;
       // Release the hovering lock after a safe delay to avoid hovering
       // a tile because of altering |this.scrollLeft|.
@@ -288,9 +288,9 @@ Mosaic.prototype.initTiles_ = function(tiles, opt_callback) {
     }
     var chunkSize = Math.min(tiles.length, MAX_CHUNK_SIZE);
     var loaded = 0;
-    for (var i = 0; i != chunkSize; i++) {
+    for (var i = 0; i !== chunkSize; i++) {
       this.initTile_(tiles.shift(), function() {
-        if (++loaded == chunkSize) {
+        if (++loaded === chunkSize) {
           this.layout();
           loadChunk();
         }
@@ -317,7 +317,7 @@ Mosaic.prototype.initTile_ = function(tile, callback) {
 };
 
 /**
- * Reload all tiles.
+ * Reloads all tiles.
  */
 Mosaic.prototype.reload = function() {
   this.layoutModel_.reset_();
@@ -326,7 +326,7 @@ Mosaic.prototype.reload = function() {
 };
 
 /**
- * Layout the tiles in the order of their indices.
+ * Layouts the tiles in the order of their indices.
  *
  * Starts where it last stopped (at #0 the first time).
  * Stops when all tiles are processed or when the next tile is still loading.
@@ -338,18 +338,18 @@ Mosaic.prototype.layout = function() {
   }
   while (true) {
     var index = this.layoutModel_.getTileCount();
-    if (index == this.tiles_.length)
+    if (index === this.tiles_.length)
       break; // All tiles done.
     var tile = this.tiles_[index];
     if (!tile.isInitialized())
       break;  // Next layout will try to restart from here.
-    this.layoutModel_.add(tile, index + 1 == this.tiles_.length);
+    this.layoutModel_.add(tile, index + 1 === this.tiles_.length);
   }
   this.loadVisibleTiles_();
 };
 
 /**
- * Schedule the layout.
+ * Schedules the layout.
  *
  * @param {number=} opt_delay Delay in ms.
  */
@@ -384,12 +384,12 @@ Mosaic.prototype.onMouseEvent_ = function(event) {
   if (!this.suppressHovering_)
     this.classList.add('hover-visible');
 
-  if (event.type == 'mousemove')
+  if (event.type === 'mousemove')
     return;
 
   var index = -1;
   for (var target = event.target;
-       target && (target != this);
+       target && (target !== this);
        target = target.parentNode) {
     if (target.classList.contains('mosaic-tile')) {
       index = this.dataModel_.indexOf(target.getItem());
@@ -416,7 +416,7 @@ Mosaic.prototype.onScroll_ = function() {
  * @private
  */
 Mosaic.prototype.onSelection_ = function(event) {
-  for (var i = 0; i != event.changes.length; i++) {
+  for (var i = 0; i !== event.changes.length; i++) {
     var change = event.changes[i];
     var tile = this.tiles_[change.index];
     if (tile) tile.select(change.selected);
@@ -424,7 +424,7 @@ Mosaic.prototype.onSelection_ = function(event) {
 };
 
 /**
- * Lead item change handler.
+ * Leads item change handler.
  *
  * @param {Event} event Event.
  * @private
@@ -448,7 +448,7 @@ Mosaic.prototype.onSplice_ = function(event) {
   this.layoutModel_.invalidateFromTile_(index);
 
   if (event.removed.length) {
-    for (var t = 0; t != event.removed.length; t++)
+    for (var t = 0; t !== event.removed.length; t++)
       this.removeChild(this.tiles_[index + t]);
 
     this.tiles_.splice(index, event.removed.length);
@@ -457,14 +457,14 @@ Mosaic.prototype.onSplice_ = function(event) {
 
   if (event.added.length) {
     var newTiles = [];
-    for (var t = 0; t != event.added.length; t++)
+    for (var t = 0; t !== event.added.length; t++)
       newTiles.push(new Mosaic.Tile(this, this.dataModel_.item(index + t)));
 
     this.tiles_.splice.apply(this.tiles_, [index, 0].concat(newTiles));
     this.initTiles_(newTiles);
   }
 
-  if (this.tiles_.length != this.dataModel_.length)
+  if (this.tiles_.length !== this.dataModel_.length)
     console.error('Mosaic is out of sync');
 };
 
@@ -482,7 +482,7 @@ Mosaic.prototype.onContentChange_ = function(event) {
     return; // Thumbnail unchanged, nothing to do.
 
   var index = this.dataModel_.indexOf(event.item);
-  if (index != this.selectionModel_.selectedIndex)
+  if (index !== this.selectionModel_.selectedIndex)
     console.error('Content changed for unselected item');
 
   this.layoutModel_.invalidateFromTile_(index);
@@ -517,7 +517,7 @@ Mosaic.prototype.canZoom = function() {
 };
 
 /**
- * Show the mosaic.
+ * Shows the mosaic.
  */
 Mosaic.prototype.show = function() {
   var duration = ImageView.MODE_TRANSITION_DURATION;
@@ -539,10 +539,10 @@ Mosaic.prototype.show = function() {
 };
 
 /**
- * Hide the mosaic.
+ * Hides the mosaic.
  */
 Mosaic.prototype.hide = function() {
-  if (this.showingTimeoutID_ != null) {
+  if (this.showingTimeoutID_ !== null) {
     clearTimeout(this.showingTimeoutID_);
     this.showingTimeoutID_ = null;
   }
@@ -629,7 +629,7 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
 };
 
 /**
- * Apply or reset the zoom transform.
+ * Applies reset the zoom transform.
  *
  * @param {Rect} tileRect Tile rectangle. Reset the transform if null.
  * @param {Rect} imageRect Large image rectangle. Reset the transform if null.
@@ -759,7 +759,7 @@ Mosaic.Layout.MODE_TENTATIVE = 'tentative';
 Mosaic.Layout.MODE_DRY_RUN = 'dry_run';
 
 /**
- * Reset the layout.
+ * Resets the layout.
  *
  * @private
  */
@@ -767,7 +767,7 @@ Mosaic.Layout.prototype.reset_ = function() {
   this.columns_ = [];
   this.newColumn_ = null;
   this.density_ = Mosaic.Density.createLowest();
-  if (this.mode_ != Mosaic.Layout.MODE_DRY_RUN)  // DRY_RUN is sticky.
+  if (this.mode_ !== Mosaic.Layout.MODE_DRY_RUN)  // DRY_RUN is sticky.
     this.mode_ = Mosaic.Layout.MODE_TENTATIVE;
 };
 
@@ -830,7 +830,7 @@ Mosaic.Layout.prototype.getLaidOutTileCount = function() {
 };
 
 /**
- * Add a tile to the layout.
+ * Adds a tile to the layout.
  *
  * @param {Mosaic.Tile} tile The tile to be added.
  * @param {boolean} isLast True if this tile is the last.
@@ -878,7 +878,7 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
     this.columns_.push(this.newColumn_);
     this.newColumn_ = null;
 
-    if (this.mode_ == Mosaic.Layout.MODE_FINAL) {
+    if (this.mode_ === Mosaic.Layout.MODE_FINAL) {
       this.getLastColumn_().layout();
       continue;
     }
@@ -887,7 +887,7 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
       // Viewport completely filled.
       if (this.density_.equals(this.maxDensity_)) {
         // Max density reached, commit if tentative, just continue if dry run.
-        if (this.mode_ == Mosaic.Layout.MODE_TENTATIVE)
+        if (this.mode_ === Mosaic.Layout.MODE_TENTATIVE)
           this.commit_();
         continue;
       }
@@ -899,7 +899,7 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
       continue;
     }
 
-    if (isFinalColumn && this.mode_ == Mosaic.Layout.MODE_TENTATIVE) {
+    if (isFinalColumn && this.mode_ === Mosaic.Layout.MODE_TENTATIVE) {
       // The complete tentative layout fits into the viewport.
       var stretched = this.findHorizontalLayout_();
       if (stretched)
@@ -912,23 +912,23 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
 };
 
 /**
- * Commit the tentative layout.
+ * Commits the tentative layout.
  *
  * @param {number=} opt_offsetX Horizontal offset.
  * @param {number=} opt_offsetY Vertical offset.
  * @private
  */
 Mosaic.Layout.prototype.commit_ = function(opt_offsetX, opt_offsetY) {
-  console.assert(this.mode_ != Mosaic.Layout.MODE_FINAL,
+  console.assert(this.mode_ !== Mosaic.Layout.MODE_FINAL,
       'Did not expect final layout');
-  for (var i = 0; i != this.columns_.length; i++) {
+  for (var i = 0; i !== this.columns_.length; i++) {
     this.columns_[i].layout(opt_offsetX, opt_offsetY);
   }
   this.mode_ = Mosaic.Layout.MODE_FINAL;
 };
 
 /**
- * Find the most horizontally stretched layout built from the same tiles.
+ * Finds the most horizontally stretched layout built from the same tiles.
  *
  * The main layout algorithm fills the entire available viewport height.
  * If there is too few tiles this results in a layout that is unnaturally
@@ -948,7 +948,7 @@ Mosaic.Layout.prototype.findHorizontalLayout_ = function() {
     return null;
 
   var tiles = this.getTiles();
-  if (tiles.length == 1)
+  if (tiles.length === 1)
     return null;  // Single tile layout is always the same.
 
   var tileHeights = tiles.map(function(t) { return t.getMaxContentHeight() });
@@ -958,8 +958,8 @@ Mosaic.Layout.prototype.findHorizontalLayout_ = function() {
     var layout = new Mosaic.Layout(
         Mosaic.Layout.MODE_DRY_RUN, this.density_.clone());
     layout.setViewportSize(this.viewportWidth_, h);
-    for (var t = 0; t != tiles.length; t++)
-      layout.add(tiles[t], t + 1 == tiles.length);
+    for (var t = 0; t !== tiles.length; t++)
+      layout.add(tiles[t], t + 1 === tiles.length);
 
     if (layout.getWidth() <= this.viewportWidth_)
       return layout;
@@ -969,7 +969,7 @@ Mosaic.Layout.prototype.findHorizontalLayout_ = function() {
 };
 
 /**
- * Invalidate the layout after the given tile was modified (added, deleted or
+ * Invalidates the layout after the given tile was modified (added, deleted or
  * changed dimensions).
  *
  * @param {number} index Tile index.
@@ -984,7 +984,7 @@ Mosaic.Layout.prototype.invalidateFromTile_ = function(index) {
     // The columns to the right cover the entire viewport width, so there is no
     // chance that the modified layout would fit into the viewport.
     // No point in restarting the entire layout, keep the columns to the right.
-    console.assert(this.mode_ == Mosaic.Layout.MODE_FINAL,
+    console.assert(this.mode_ === Mosaic.Layout.MODE_FINAL,
         'Expected FINAL layout mode');
     this.columns_ = this.columns_.slice(0, columnIndex);
     this.newColumn_ = null;
@@ -996,7 +996,7 @@ Mosaic.Layout.prototype.invalidateFromTile_ = function(index) {
 };
 
 /**
- * Get the index of the tile to the left or to the right from the given tile.
+ * Gets the index of the tile to the left or to the right from the given tile.
  *
  * @param {number} index Tile index.
  * @param {number} direction -1 for left, 1 for right.
@@ -1021,7 +1021,7 @@ Mosaic.Layout.prototype.getHorizontalAdjacentIndex = function(
     return sameRowNeighbourIndex;
 
   var adjacentColumn = column + direction;
-  if (adjacentColumn < 0 || adjacentColumn == this.columns_.length)
+  if (adjacentColumn < 0 || adjacentColumn === this.columns_.length)
     return -1;
 
   return this.columns_[adjacentColumn].
@@ -1029,7 +1029,7 @@ Mosaic.Layout.prototype.getHorizontalAdjacentIndex = function(
 };
 
 /**
- * Get the index of the tile to the top or to the bottom from the given tile.
+ * Gets the index of the tile to the top or to the bottom from the given tile.
  *
  * @param {number} index Tile index.
  * @param {number} direction -1 for above, 1 for below.
@@ -1071,10 +1071,10 @@ Mosaic.Layout.prototype.getVerticalAdjacentIndex = function(
     var closestIndex = -1;
     var closestDistance;
     var adjacentRowTiles = adjacentRow.getTiles();
-    for (var t = 0; t != adjacentRowTiles.length; t++) {
+    for (var t = 0; t !== adjacentRowTiles.length; t++) {
       var distance =
           Math.abs(adjacentRowTiles[t].getCenterX() - previousTileCenterX);
-      if (closestIndex == -1 || distance < closestDistance) {
+      if (closestIndex === -1 || distance < closestDistance) {
         closestIndex = adjacentRow.getEdgeTileIndex_(-1) + t;
         closestDistance = distance;
       }
@@ -1089,7 +1089,7 @@ Mosaic.Layout.prototype.getVerticalAdjacentIndex = function(
  * @private
  */
 Mosaic.Layout.prototype.getColumnIndexByTile_ = function(index) {
-  for (var c = 0; c != this.columns_.length; c++) {
+  for (var c = 0; c !== this.columns_.length; c++) {
     if (this.columns_[c].hasTile(index))
       return c;
   }
@@ -1097,7 +1097,7 @@ Mosaic.Layout.prototype.getColumnIndexByTile_ = function(index) {
 };
 
 /**
- * Scale the given array of size values to satisfy 3 conditions:
+ * Scales the given array of size values to satisfy 3 conditions:
  * 1. The new sizes must be integer.
  * 2. The new sizes must sum up to the given |total| value.
  * 3. The relative proportions of the sizes should be as close to the original
@@ -1110,14 +1110,14 @@ Mosaic.Layout.rescaleSizesToNewTotal = function(sizes, newTotal) {
   var total = 0;
 
   var partialTotals = [0];
-  for (var i = 0; i != sizes.length; i++) {
+  for (var i = 0; i !== sizes.length; i++) {
     total += sizes[i];
     partialTotals.push(total);
   }
 
   var scale = newTotal / total;
 
-  for (i = 0; i != sizes.length; i++) {
+  for (i = 0; i !== sizes.length; i++) {
     sizes[i] = Math.round(partialTotals[i + 1] * scale) -
         Math.round(partialTotals[i] * scale);
   }
@@ -1188,16 +1188,16 @@ Mosaic.Density.prototype.clone = function() {
  * @return {boolean} True if equal.
  */
 Mosaic.Density.prototype.equals = function(that) {
-  return this.horizontal == that.horizontal &&
-         this.vertical == that.vertical;
+  return this.horizontal === that.horizontal &&
+         this.vertical === that.vertical;
 };
 
 /**
- * Increase the density to the next level.
+ * Increases the density to the next level.
  */
 Mosaic.Density.prototype.increase = function() {
-  if (this.horizontal == Mosaic.Density.MIN_HORIZONTAL ||
-      this.vertical == Mosaic.Density.MAX_VERTICAL) {
+  if (this.horizontal === Mosaic.Density.MIN_HORIZONTAL ||
+      this.vertical === Mosaic.Density.MAX_VERTICAL) {
     console.assert(this.horizontal < Mosaic.Density.MAX_HORIZONTAL);
     this.horizontal++;
     this.vertical = Mosaic.Density.MIN_VERTICAL;
@@ -1207,7 +1207,7 @@ Mosaic.Density.prototype.increase = function() {
 };
 
 /**
- * Decrease horizontal density.
+ * Decreases horizontal density.
  */
 Mosaic.Density.prototype.decreaseHorizontal = function() {
   console.assert(this.horizontal > Mosaic.Density.MIN_HORIZONTAL);
@@ -1220,7 +1220,7 @@ Mosaic.Density.prototype.decreaseHorizontal = function() {
  * @return {boolean} True if the row is complete.
  */
 Mosaic.Density.prototype.isRowComplete = function(tileCount, rowIndex) {
-  return (tileCount == this.horizontal) || (rowIndex % this.vertical) == 0;
+  return (tileCount === this.horizontal) || (rowIndex % this.vertical) === 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1249,7 +1249,7 @@ Mosaic.Column = function(index, firstRowIndex, firstTileIndex, left, maxHeight,
 };
 
 /**
- * Reset the layout.
+ * Resets the layout.
  * @private
  */
 Mosaic.Column.prototype.reset_ = function() {
@@ -1311,7 +1311,7 @@ Mosaic.Column.prototype.getEdgeTileIndex_ = function(y, direction) {
  * @return {Mosaic.Row} The row containing the tile with a given index.
  */
 Mosaic.Column.prototype.getRowByTileIndex = function(index) {
-  for (var r = 0; r != this.rows_.length; r++)
+  for (var r = 0; r !== this.rows_.length; r++)
     if (this.rows_[r].hasTile(index))
       return this.rows_[r];
 
@@ -1319,7 +1319,7 @@ Mosaic.Column.prototype.getRowByTileIndex = function(index) {
 };
 
 /**
- * Add a tile to the column.
+ * Adds a tile to the column.
  *
  * @param {Mosaic.Tile} tile The tile to add.
  */
@@ -1339,7 +1339,7 @@ Mosaic.Column.prototype.add = function(tile) {
 };
 
 /**
- * Prepare the column layout.
+ * Prepares the column layout.
  *
  * @param {boolean=} opt_force True if the layout must be performed even for an
  *   incomplete column.
@@ -1351,7 +1351,7 @@ Mosaic.Column.prototype.prepareLayout = function(opt_force) {
     this.newRow_ = null;
   }
 
-  if (this.rows_.length == 0)
+  if (this.rows_.length === 0)
     return false;
 
   this.width_ = Math.min.apply(
@@ -1360,7 +1360,7 @@ Mosaic.Column.prototype.prepareLayout = function(opt_force) {
   this.height_ = 0;
 
   this.rowHeights_ = [];
-  for (var r = 0; r != this.rows_.length; r++) {
+  for (var r = 0; r !== this.rows_.length; r++) {
     var rowHeight = this.rows_[r].getHeightForWidth(this.width_);
     this.height_ += rowHeight;
     this.rowHeights_.push(rowHeight);
@@ -1381,7 +1381,7 @@ Mosaic.Column.prototype.prepareLayout = function(opt_force) {
 };
 
 /**
- * Retry the column layout with less tiles per row.
+ * Retries the column layout with less tiles per row.
  */
 Mosaic.Column.prototype.retryWithLowerDensity = function() {
   this.density_.decreaseHorizontal();
@@ -1406,7 +1406,7 @@ Mosaic.Column.prototype.getRight = function() {
 Mosaic.Column.prototype.getHeight = function() { return this.height_ };
 
 /**
- * Perform the column layout.
+ * Performs the column layout.
  * @param {number=} opt_offsetX Horizontal offset.
  * @param {number=} opt_offsetY Vertical offset.
  */
@@ -1414,7 +1414,7 @@ Mosaic.Column.prototype.layout = function(opt_offsetX, opt_offsetY) {
   opt_offsetX = opt_offsetX || 0;
   opt_offsetY = opt_offsetY || 0;
   var rowTop = Mosaic.Layout.PADDING_TOP;
-  for (var r = 0; r != this.rows_.length; r++) {
+  for (var r = 0; r !== this.rows_.length; r++) {
     this.rows_[r].layout(
         opt_offsetX + this.left_,
         opt_offsetY + rowTop,
@@ -1425,7 +1425,7 @@ Mosaic.Column.prototype.layout = function(opt_offsetX, opt_offsetY) {
 };
 
 /**
- * Check if the column layout is too ugly to be displayed.
+ * Checks if the column layout is too ugly to be displayed.
  *
  * @return {boolean} True if the layout is suboptimal.
  */
@@ -1434,7 +1434,7 @@ Mosaic.Column.prototype.isSuboptimal = function() {
       this.rows_.map(function(row) { return row.getTileCount() });
 
   var maxTileCount = Math.max.apply(null, tileCounts);
-  if (maxTileCount == 1)
+  if (maxTileCount === 1)
     return false;  // Every row has exactly 1 tile, as optimal as it gets.
 
   var sizes =
@@ -1447,7 +1447,7 @@ Mosaic.Column.prototype.isSuboptimal = function() {
 
   // Ugly layout #2: all images are large and none occupies an entire row.
   var allLarge = Math.min.apply(null, sizes) > Mosaic.Tile.SMALL_IMAGE_SIZE;
-  var allCombined = Math.min.apply(null, tileCounts) != 1;
+  var allCombined = Math.min.apply(null, tileCounts) !== 1;
   if (allLarge && allCombined)
     return true;
 
@@ -1485,7 +1485,7 @@ Mosaic.Row.prototype.add = function(tile) {
 Mosaic.Row.prototype.getTiles = function() { return this.tiles_ };
 
 /**
- * Get a tile by index.
+ * Gets a tile by index.
  * @param {number} index Tile index.
  * @return {Mosaic.Tile} Requested tile or null if not found.
  */
@@ -1526,7 +1526,7 @@ Mosaic.Row.prototype.getCenterY = function() {
 };
 
 /**
- * Get the first or the last tile.
+ * Gets the first or the last tile.
  *
  * @param {number} direction -1 for the first tile, 1 for the last tile.
  * @return {number} Tile index.
@@ -1545,7 +1545,7 @@ Mosaic.Row.prototype.getEdgeTileIndex_ = function(direction) {
  */
 Mosaic.Row.prototype.getTotalContentAspectRatio_ = function() {
   var sum = 0;
-  for (var t = 0; t != this.tiles_.length; t++)
+  for (var t = 0; t !== this.tiles_.length; t++)
     sum += this.tiles_[t].getAspectRatio();
   return sum;
 };
@@ -1574,7 +1574,7 @@ Mosaic.Row.prototype.getMaxWidth = function() {
 };
 
 /**
- * Compute the height that best fits the supplied row width given
+ * Computes the height that best fits the supplied row width given
  * aspect ratios of the tiles in this row.
  *
  * @param {number} width Row width.
@@ -1588,7 +1588,7 @@ Mosaic.Row.prototype.getHeightForWidth = function(width) {
 };
 
 /**
- * Position the row in the mosaic.
+ * Positions the row in the mosaic.
  *
  * @param {number} left Left position.
  * @param {number} top Top position.
@@ -1608,7 +1608,7 @@ Mosaic.Row.prototype.layout = function(left, top, width, height) {
   Mosaic.Layout.rescaleSizesToNewTotal(tileContentWidth, contentWidth);
 
   var tileLeft = left;
-  for (var t = 0; t != this.tiles_.length; t++) {
+  for (var t = 0; t !== this.tiles_.length; t++) {
     var tileWidth = tileContentWidth[t] + Mosaic.Layout.SPACING;
     this.tiles_[t].layout(tileLeft, top, tileWidth, height);
     tileLeft += tileWidth;
@@ -1749,7 +1749,7 @@ Mosaic.Tile.prototype.isLoading = function(opt_loadMode) {
 };
 
 /**
- * Mark the tile as not loaded to prevent it from participating in the layout.
+ * Marks the tile as not loaded to prevent it from participating in the layout.
  */
 Mosaic.Tile.prototype.markUnloaded = function() {
   this.maxContentHeight_ = 0;
@@ -1777,9 +1777,11 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   var priority = this.getAttribute('selected') ? 2 : 3;
 
   // Use embedded thumbnails on Drive, since they have higher resolution.
-  var hidpiEmbedded = FileType.isOnDrive(this.getItem().getEntry());
+  // TODO(mtomasz): Use Entry instead of paths.
+  var hidpiEmbedded =
+      PathUtil.isDriveBasedPath(this.getItem().getEntry().fullPath);
   this.thumbnailLoader_ = new ThumbnailLoader(
-      this.getItem().getEntry().toURL(),
+      this.getItem().getEntry(),
       ThumbnailLoader.LoaderType.CANVAS,
       metadata,
       undefined,  // Media type.
@@ -1791,7 +1793,7 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   // for preloading.
   if (!hidpiEmbedded) {
     this.thumbnailPreloader_ = new ThumbnailLoader(
-        this.getItem().getEntry().toURL(),
+        this.getItem().getEntry(),
         ThumbnailLoader.LoaderType.CANVAS,
         metadata,
         undefined,  // Media type.
@@ -1891,7 +1893,7 @@ Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
   // Load the high-dpi image only when it is requested, or the low-dpi is not
   // available.
   if (!this.imageLoading_ &&
-      (loadMode == Mosaic.Tile.LoadMode.HIGH_DPI || !this.imagePreloading_)) {
+      (loadMode === Mosaic.Tile.LoadMode.HIGH_DPI || !this.imagePreloading_)) {
     this.imageLoading_ = true;
     this.thumbnailLoader_.loadDetachedImage(function(success) {
       // Cancel preloading, since the hi-dpi image is ready.
@@ -1919,7 +1921,7 @@ Mosaic.Tile.prototype.unload = function() {
 };
 
 /**
- * Select/unselect the tile.
+ * Selects/unselects the tile.
  *
  * @param {boolean} on True if selected.
  */
@@ -1931,7 +1933,7 @@ Mosaic.Tile.prototype.select = function(on) {
 };
 
 /**
- * Position the tile in the mosaic.
+ * Positions the tile in the mosaic.
  *
  * @param {number} left Left position.
  * @param {number} top Top position.
@@ -1969,7 +1971,7 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
  *     default: true.
  */
 Mosaic.Tile.prototype.scrollIntoView = function(opt_animated) {
-  if (this.left_ == null)  // Not laid out.
+  if (this.left_ === null)  // Not laid out.
     return;
 
   var targetPosition;
@@ -1996,7 +1998,7 @@ Mosaic.Tile.prototype.scrollIntoView = function(opt_animated) {
  *   relative to the viewport.
  */
 Mosaic.Tile.prototype.getImageRect = function() {
-  if (this.left_ == null)  // Not laid out.
+  if (this.left_ === null)  // Not laid out.
     return null;
 
   var margin = Mosaic.Layout.SPACING / 2;
