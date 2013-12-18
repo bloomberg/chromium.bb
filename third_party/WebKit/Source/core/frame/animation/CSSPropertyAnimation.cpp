@@ -380,6 +380,21 @@ public:
         (dst->*m_setter)(blendFunc(anim, (a->*PropertyWrapperGetter<T*>::m_getter)(), (b->*PropertyWrapperGetter<T*>::m_getter)(), progress));
     }
 
+    virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
+    {
+        if (a == b)
+            return true;
+        if (!a || !b)
+            return false;
+        const T* aValue = (a->*this->m_getter)();
+        const T* bValue = (b->*this->m_getter)();
+        if (aValue == bValue)
+            return true;
+        if (!aValue || !bValue)
+            return false;
+        return *aValue == *bValue;
+    }
+
 protected:
     void (RenderStyle::*m_setter)(PassRefPtr<T>);
 };

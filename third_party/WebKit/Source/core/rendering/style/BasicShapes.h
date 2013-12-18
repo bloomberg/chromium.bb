@@ -54,15 +54,20 @@ public:
     };
 
     bool canBlend(const BasicShape*) const;
+    bool isSameType(const BasicShape& other) const { return type() == other.type(); }
 
     virtual void path(Path&, const FloatRect&) = 0;
     virtual WindRule windRule() const { return RULE_NONZERO; }
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const = 0;
+    virtual bool operator==(const BasicShape&) const = 0;
 
     virtual Type type() const = 0;
 protected:
     BasicShape() { }
 };
+
+#define DEFINE_BASICSHAPE_TYPE_CASTS(thisType) \
+    DEFINE_TYPE_CASTS(thisType, BasicShape, value, value->type() == BasicShape::thisType##Type, value.type() == BasicShape::thisType##Type)
 
 class BasicShapeRectangle : public BasicShape {
 public:
@@ -90,6 +95,7 @@ public:
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
 
     virtual Type type() const { return BasicShapeRectangleType; }
 private:
@@ -102,6 +108,8 @@ private:
     Length m_cornerRadiusX;
     Length m_cornerRadiusY;
 };
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeRectangle);
 
 class BasicShapeCircle : public BasicShape {
 public:
@@ -117,6 +125,7 @@ public:
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
 
     virtual Type type() const { return BasicShapeCircleType; }
 private:
@@ -126,6 +135,8 @@ private:
     Length m_centerY;
     Length m_radius;
 };
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeCircle);
 
 class BasicShapeEllipse : public BasicShape {
 public:
@@ -143,6 +154,7 @@ public:
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
 
     virtual Type type() const { return BasicShapeEllipseType; }
 private:
@@ -153,6 +165,8 @@ private:
     Length m_radiusX;
     Length m_radiusY;
 };
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeEllipse);
 
 class BasicShapePolygon : public BasicShape {
 public:
@@ -167,6 +181,7 @@ public:
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
 
     virtual WindRule windRule() const { return m_windRule; }
 
@@ -179,6 +194,8 @@ private:
     WindRule m_windRule;
     Vector<Length> m_values;
 };
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapePolygon);
 
 class BasicShapeInsetRectangle : public BasicShape {
 public:
@@ -206,6 +223,7 @@ public:
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
 
     virtual Type type() const { return BasicShapeInsetRectangleType; }
 private:
@@ -218,5 +236,8 @@ private:
     Length m_cornerRadiusX;
     Length m_cornerRadiusY;
 };
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeInsetRectangle);
+
 }
 #endif

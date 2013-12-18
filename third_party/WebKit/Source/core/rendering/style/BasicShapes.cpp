@@ -39,7 +39,7 @@ namespace WebCore {
 bool BasicShape::canBlend(const BasicShape* other) const
 {
     // FIXME: Support animations between different shapes in the future.
-    if (type() != other->type())
+    if (!other || !isSameType(*other))
         return false;
 
     // Just polygons with same number of vertices can be animated.
@@ -69,7 +69,7 @@ void BasicShapeRectangle::path(Path& path, const FloatRect& boundingBox)
 
 PassRefPtr<BasicShape> BasicShapeRectangle::blend(const BasicShape* other, double progress) const
 {
-    ASSERT(type() == other->type());
+    ASSERT(other && isSameType(*other));
 
     const BasicShapeRectangle* o = static_cast<const BasicShapeRectangle*>(other);
     RefPtr<BasicShapeRectangle> result =  BasicShapeRectangle::create();
@@ -80,6 +80,14 @@ PassRefPtr<BasicShape> BasicShapeRectangle::blend(const BasicShape* other, doubl
     result->setCornerRadiusX(m_cornerRadiusX.blend(o->cornerRadiusX(), progress, ValueRangeNonNegative));
     result->setCornerRadiusY(m_cornerRadiusY.blend(o->cornerRadiusY(), progress, ValueRangeNonNegative));
     return result.release();
+}
+
+bool BasicShapeRectangle::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const BasicShapeRectangle& other = toBasicShapeRectangle(o);
+    return m_y == other.m_y && m_x == other.m_x && m_width == other.m_width && m_height == other.m_height && m_cornerRadiusX == other.m_cornerRadiusX && m_cornerRadiusY == other.m_cornerRadiusY;
 }
 
 void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
@@ -99,7 +107,7 @@ void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
 
 PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other, double progress) const
 {
-    ASSERT(type() == other->type());
+    ASSERT(other && isSameType(*other));
 
     const BasicShapeCircle* o = static_cast<const BasicShapeCircle*>(other);
     RefPtr<BasicShapeCircle> result =  BasicShapeCircle::create();
@@ -107,6 +115,14 @@ PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other, double p
     result->setCenterY(m_centerY.blend(o->centerY(), progress, ValueRangeAll));
     result->setRadius(m_radius.blend(o->radius(), progress, ValueRangeNonNegative));
     return result.release();
+}
+
+bool BasicShapeCircle::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const BasicShapeCircle& other = toBasicShapeCircle(o);
+    return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radius == other.m_radius;
 }
 
 void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox)
@@ -126,7 +142,7 @@ void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox)
 
 PassRefPtr<BasicShape> BasicShapeEllipse::blend(const BasicShape* other, double progress) const
 {
-    ASSERT(type() == other->type());
+    ASSERT(other && isSameType(*other));
 
     const BasicShapeEllipse* o = static_cast<const BasicShapeEllipse*>(other);
     RefPtr<BasicShapeEllipse> result =  BasicShapeEllipse::create();
@@ -135,6 +151,14 @@ PassRefPtr<BasicShape> BasicShapeEllipse::blend(const BasicShape* other, double 
     result->setRadiusX(m_radiusX.blend(o->radiusX(), progress, ValueRangeNonNegative));
     result->setRadiusY(m_radiusY.blend(o->radiusY(), progress, ValueRangeNonNegative));
     return result.release();
+}
+
+bool BasicShapeEllipse::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const BasicShapeEllipse& other = toBasicShapeEllipse(o);
+    return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radiusX == other.m_radiusX && m_radiusY == other.m_radiusY;
 }
 
 void BasicShapePolygon::path(Path& path, const FloatRect& boundingBox)
@@ -157,7 +181,7 @@ void BasicShapePolygon::path(Path& path, const FloatRect& boundingBox)
 
 PassRefPtr<BasicShape> BasicShapePolygon::blend(const BasicShape* other, double progress) const
 {
-    ASSERT(type() == other->type());
+    ASSERT(other && isSameType(*other));
 
     const BasicShapePolygon* o = static_cast<const BasicShapePolygon*>(other);
     ASSERT(m_values.size() == o->values().size());
@@ -176,6 +200,14 @@ PassRefPtr<BasicShape> BasicShapePolygon::blend(const BasicShape* other, double 
     }
 
     return result.release();
+}
+
+bool BasicShapePolygon::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const BasicShapePolygon& other = toBasicShapePolygon(o);
+    return m_windRule == other.m_windRule && m_values == other.m_values;
 }
 
 void BasicShapeInsetRectangle::path(Path& path, const FloatRect& boundingBox)
@@ -199,7 +231,7 @@ void BasicShapeInsetRectangle::path(Path& path, const FloatRect& boundingBox)
 
 PassRefPtr<BasicShape> BasicShapeInsetRectangle::blend(const BasicShape* other, double progress) const
 {
-    ASSERT(type() == other->type());
+    ASSERT(other && isSameType(*other));
 
     const BasicShapeInsetRectangle* o = static_cast<const BasicShapeInsetRectangle*>(other);
     RefPtr<BasicShapeInsetRectangle> result =  BasicShapeInsetRectangle::create();
@@ -210,5 +242,13 @@ PassRefPtr<BasicShape> BasicShapeInsetRectangle::blend(const BasicShape* other, 
     result->setCornerRadiusX(m_cornerRadiusX.blend(o->cornerRadiusX(), progress, ValueRangeNonNegative));
     result->setCornerRadiusY(m_cornerRadiusY.blend(o->cornerRadiusY(), progress, ValueRangeNonNegative));
     return result.release();
+}
+
+bool BasicShapeInsetRectangle::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const BasicShapeInsetRectangle& other = toBasicShapeInsetRectangle(o);
+    return m_right == other.m_right && m_top == other.m_top && m_bottom == other.m_bottom && m_left == other.m_left && m_cornerRadiusX == other.m_cornerRadiusX && m_cornerRadiusY == other.m_cornerRadiusY;
 }
 }

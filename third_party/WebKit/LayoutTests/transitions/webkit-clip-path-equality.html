@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<style>
+#target {
+  -webkit-clip-path: circle(0px, 0px, 0px);
+  transition: -webkit-clip-path 1s;
+}
+</style>
+This test must be run under the test harness.
+<div id="target"></div>
+<script>
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+var target = document.getElementById('target');
+onload = function() {
+  target.style.webkitClipPath = getComputedStyle(target).webkitClipPath;
+  target.offsetTop;
+  var result = '';
+  if (window.internals) {
+    result = (internals.numberOfActiveAnimations() == 0) ?
+        'PASS - No transition started.' :
+        'FAIL - Unexpected transition started.';
+  }
+  target.style.webkitClipPath = 'circle(0px, 0px, 200px)';
+  target.offsetTop;
+  if (window.internals) {
+    result += (internals.numberOfActiveAnimations() == 1) ?
+        '\nPASS - Transition started.' :
+        '\nFAIL - Transition did not start.';
+    document.documentElement.style.whiteSpace = 'pre';
+    document.documentElement.textContent = result;
+  }
+  if (window.testRunner) {
+    testRunner.notifyDone();
+  }
+}
+</script>

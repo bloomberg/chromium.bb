@@ -111,10 +111,7 @@ public:
     }
 
 private:
-    virtual bool operator==(const ClipPathOperation& o) const OVERRIDE
-    {
-        return isSameType(o) && m_shape == static_cast<const ShapeClipPathOperation&>(o).m_shape;
-    }
+    virtual bool operator==(const ClipPathOperation&) const OVERRIDE;
 
     ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
         : ClipPathOperation(SHAPE)
@@ -127,6 +124,11 @@ private:
 };
 
 DEFINE_TYPE_CASTS(ShapeClipPathOperation, ClipPathOperation, op, op->type() == ClipPathOperation::SHAPE, op.type() == ClipPathOperation::SHAPE);
+
+inline bool ShapeClipPathOperation::operator==(const ClipPathOperation& o) const
+{
+    return isSameType(o) && *m_shape == *toShapeClipPathOperation(o).m_shape;
+}
 
 }
 
