@@ -1796,6 +1796,9 @@ const char kDevToolsEditedFiles[] = "devtools.edited_files";
 // List of file system paths added in DevTools.
 const char kDevToolsFileSystemPaths[] = "devtools.file_system_paths";
 
+// Integer location of the horizontal split bar in the browser view.
+const char kDevToolsHSplitLocation[] = "devtools.split_location";
+
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";
 
@@ -1815,6 +1818,9 @@ const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 // A boolean specifying whether remote dev tools debugging is enabled.
 const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
 #endif
+
+// Integer location of the vertical split bar in the browser view.
+const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // A boolean specifying whether a SPDY proxy is enabled.

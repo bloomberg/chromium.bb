@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
-#include "chrome/browser/ui/views/frame/contents_layout_manager.h"
+#include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -135,9 +135,9 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
         tab_strip_(NULL),
         toolbar_(NULL),
         infobar_container_(NULL),
+        contents_split_(NULL),
         contents_container_(NULL),
-        contents_web_view_(NULL),
-        devtools_web_view_(NULL) {}
+        active_web_view_(NULL) {}
   virtual ~BrowserViewLayoutTest() {}
 
   BrowserViewLayout* layout() { return layout_.get(); }
@@ -147,7 +147,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   TabStrip* tab_strip() { return tab_strip_; }
   MockView* toolbar() { return toolbar_; }
   InfoBarContainerView* infobar_container() { return infobar_container_; }
-  MockView* contents_container() { return contents_container_; }
+  MockView* contents_split() { return contents_split_; }
+  ContentsContainer* contents_container() { return contents_container_; }
 
   // BrowserWithTestWindowTest overrides:
   virtual void SetUp() OVERRIDE {
@@ -167,18 +168,11 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     infobar_container_ = new InfoBarContainerView(NULL);
     root_view_->AddChildView(infobar_container_);
 
-    contents_web_view_ = new MockView(gfx::Size(800, 600));
-    devtools_web_view_ = new MockView(gfx::Size(800, 600));
-    devtools_web_view_->SetVisible(false);
-
-    contents_container_ = new MockView(gfx::Size(800, 600));
-    contents_container_->AddChildView(devtools_web_view_);
-    contents_container_->AddChildView(contents_web_view_);
-    ContentsLayoutManager* contents_layout_manager =
-        new ContentsLayoutManager(devtools_web_view_, contents_web_view_);
-    contents_container_->SetLayoutManager(contents_layout_manager);
-
-    root_view_->AddChildView(contents_container_);
+    contents_split_ = new MockView(gfx::Size(800, 600));
+    active_web_view_ = new MockView(gfx::Size(800, 600));
+    contents_container_ = new ContentsContainer(active_web_view_);
+    contents_split_->AddChildView(contents_container_);
+    root_view_->AddChildView(contents_split_);
 
     // TODO(jamescook): Attach |layout_| to |root_view_|?
     layout_.reset(new BrowserViewLayout);
@@ -190,8 +184,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
                   tab_strip_,
                   toolbar_,
                   infobar_container_,
+                  contents_split_,
                   contents_container_,
-                  contents_layout_manager,
                   immersive_mode_controller_.get());
   }
 
@@ -205,9 +199,9 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   TabStrip* tab_strip_;
   MockView* toolbar_;
   InfoBarContainerView* infobar_container_;
-  MockView* contents_container_;
-  MockView* contents_web_view_;
-  MockView* devtools_web_view_;
+  MockView* contents_split_;
+  ContentsContainer* contents_container_;
+  MockView* active_web_view_;
 
   scoped_ptr<MockImmersiveModeController> immersive_mode_controller_;
 
@@ -234,7 +228,7 @@ TEST_F(BrowserViewLayoutTest, Layout) {
   EXPECT_EQ("0,0 800x0", toolbar()->bounds().ToString());
   EXPECT_EQ("0,0 800x0", infobar_container()->bounds().ToString());
   // Contents split fills the window.
-  EXPECT_EQ("0,0 800x600", contents_container()->bounds().ToString());
+  EXPECT_EQ("0,0 800x600", contents_split()->bounds().ToString());
 
   // Turn on the toolbar, like in a pop-up window.
   delegate()->set_toolbar_visible(true);
@@ -244,7 +238,7 @@ TEST_F(BrowserViewLayoutTest, Layout) {
   EXPECT_EQ("0,0 0x0", tab_strip()->bounds().ToString());
   EXPECT_EQ("0,0 800x30", toolbar()->bounds().ToString());
   EXPECT_EQ("0,30 800x0", infobar_container()->bounds().ToString());
-  EXPECT_EQ("0,30 800x570", contents_container()->bounds().ToString());
+  EXPECT_EQ("0,30 800x570", contents_split()->bounds().ToString());
 
   // TODO(jamescook): Tab strip and bookmark bar.
 }
