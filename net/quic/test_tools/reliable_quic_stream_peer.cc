@@ -22,5 +22,10 @@ void ReliableQuicStreamPeer::SetStreamBytesWritten(
   stream->stream_bytes_written_ = stream_bytes_written;
 }
 
+// static
+void ReliableQuicStreamPeer::CloseReadSide(ReliableQuicStream* stream) {
+  stream->CloseReadSide();
+}
+
 }  // namespace test
 }  // namespace net

@@ -502,37 +502,6 @@ class NET_EXPORT_PRIVATE QuicConnection
     Force forced;
   };
 
-  struct RetransmissionInfo {
-    RetransmissionInfo(QuicPacketSequenceNumber sequence_number,
-                       QuicSequenceNumberLength sequence_number_length,
-                       QuicTime sent_time)
-        : sequence_number(sequence_number),
-          sequence_number_length(sequence_number_length),
-          sent_time(sent_time),
-          number_nacks(0),
-          number_retransmissions(0) {
-    }
-
-    QuicPacketSequenceNumber sequence_number;
-    QuicSequenceNumberLength sequence_number_length;
-    QuicTime sent_time;
-    size_t number_nacks;
-    size_t number_retransmissions;
-  };
-
-  struct RetransmissionTime {
-    RetransmissionTime(QuicPacketSequenceNumber sequence_number,
-                       const QuicTime& scheduled_time,
-                       bool for_fec)
-        : sequence_number(sequence_number),
-          scheduled_time(scheduled_time),
-          for_fec(for_fec) { }
-
-    QuicPacketSequenceNumber sequence_number;
-    QuicTime scheduled_time;
-    bool for_fec;
-  };
-
   struct PendingWrite {
     PendingWrite(QuicPacketSequenceNumber sequence_number,
                  TransmissionType transmission_type,
@@ -555,27 +524,12 @@ class NET_EXPORT_PRIVATE QuicConnection
     size_t length;
   };
 
-  class RetransmissionTimeComparator {
-   public:
-    bool operator()(const RetransmissionTime& lhs,
-                    const RetransmissionTime& rhs) const {
-      DCHECK(lhs.scheduled_time.IsInitialized() &&
-             rhs.scheduled_time.IsInitialized());
-      return lhs.scheduled_time > rhs.scheduled_time;
-    }
-  };
-
   typedef std::list<QueuedPacket> QueuedPacketList;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
-  typedef std::priority_queue<RetransmissionTime,
-                              std::vector<RetransmissionTime>,
-                              RetransmissionTimeComparator>
-      RetransmissionTimeouts;
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
 
-  void SetupRetransmissionAlarm(QuicPacketSequenceNumber sequence_number);
   bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
 
   void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);

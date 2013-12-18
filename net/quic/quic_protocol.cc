@@ -210,10 +210,10 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
 }
 
 ReceivedPacketInfo::ReceivedPacketInfo()
-    : largest_observed(0),
+    : entropy_hash(0),
+      largest_observed(0),
       delta_time_largest_observed(QuicTime::Delta::Infinite()),
-      is_truncated(false) {
-}
+      is_truncated(false) {}
 
 ReceivedPacketInfo::~ReceivedPacketInfo() {}
 
@@ -231,7 +231,9 @@ void InsertMissingPacketsBetween(ReceivedPacketInfo* received_info,
   }
 }
 
-SentPacketInfo::SentPacketInfo() {}
+SentPacketInfo::SentPacketInfo()
+    : entropy_hash(0),
+      least_unacked(0) {}
 
 SentPacketInfo::~SentPacketInfo() {}
 

@@ -41,7 +41,7 @@ class InterArrivalSenderTest : public ::testing::Test {
       QuicByteCount bytes_in_packet = kDefaultMaxPacketSize;
       sent_packets_[sequence_number_] =
           new class SendAlgorithmInterface::SentPacket(
-              bytes_in_packet, send_clock_.Now(), HAS_RETRANSMITTABLE_DATA);
+              bytes_in_packet, send_clock_.Now());
 
       sender_.OnPacketSent(send_clock_.Now(), sequence_number_, bytes_in_packet,
                            NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);

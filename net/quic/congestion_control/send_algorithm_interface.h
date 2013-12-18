@@ -24,19 +24,13 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   class SentPacket {
    public:
-    SentPacket(QuicByteCount bytes,
-               QuicTime timestamp,
-               HasRetransmittableData has_retransmittable_data)
+    SentPacket(QuicByteCount bytes, QuicTime timestamp)
         : bytes_sent_(bytes),
           send_timestamp_(timestamp),
-          has_retransmittable_data_(has_retransmittable_data),
           nack_count_(0) {
     }
     QuicByteCount bytes_sent() const { return bytes_sent_; }
     const QuicTime& send_timestamp() const { return send_timestamp_; }
-    HasRetransmittableData has_retransmittable_data() const {
-      return has_retransmittable_data_;
-    }
     size_t nack_count() const { return nack_count_; }
 
     void Nack(size_t min_nacks) {
@@ -46,7 +40,6 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
    private:
     QuicByteCount bytes_sent_;
     QuicTime send_timestamp_;
-    HasRetransmittableData has_retransmittable_data_;
     size_t nack_count_;
   };
 

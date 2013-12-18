@@ -10,6 +10,7 @@
 
 namespace net {
 
+class QuicDataStream;
 class QuicSession;
 class ReliableQuicStream;
 
@@ -21,6 +22,8 @@ class QuicSessionPeer {
   static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
   static WriteBlockedList<QuicStreamId>* GetWriteblockedStreams(
       QuicSession* session);
+  static QuicDataStream* GetIncomingReliableStream(QuicSession* session,
+                                                   QuicStreamId stream_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);

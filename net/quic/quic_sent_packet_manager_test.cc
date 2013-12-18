@@ -96,12 +96,19 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         &manager_, new_sequence_number));
   }
 
-  SerializedPacket CreatePacket(QuicPacketSequenceNumber sequence_number) {
+  SerializedPacket CreateDataPacket(QuicPacketSequenceNumber sequence_number) {
+    return CreatePacket(sequence_number, true);
+  }
+
+  SerializedPacket CreatePacket(QuicPacketSequenceNumber sequence_number,
+                                bool retransmittable) {
     packets_.push_back(QuicPacket::NewDataPacket(
         NULL, 0, false, PACKET_8BYTE_GUID, false,
         PACKET_6BYTE_SEQUENCE_NUMBER));
-    return SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0u, new RetransmittableFrames());
+    return SerializedPacket(
+        sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
+        packets_.back(), 0u,
+        retransmittable ? new RetransmittableFrames() : NULL);
   }
 
   SerializedPacket CreateFecPacket(QuicPacketSequenceNumber sequence_number) {
@@ -115,9 +122,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, sequence_number, _, _, _))
                     .Times(1).WillOnce(Return(true));
-    SerializedPacket packet(CreatePacket(sequence_number));
+    SerializedPacket packet(CreateDataPacket(sequence_number));
     manager_.OnSerializedPacket(packet);
-    manager_.OnPacketSent(sequence_number, clock_.ApproximateNow(),
+    manager_.OnPacketSent(sequence_number, clock_.Now(),
                           packet.packet->length(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
   }
@@ -148,7 +155,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 TEST_F(QuicSentPacketManagerTest, IsUnacked) {
   VerifyUnackedPackets(NULL, 0);
 
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
 
@@ -159,7 +166,7 @@ TEST_F(QuicSentPacketManagerTest, IsUnacked) {
 }
 
 TEST_F(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   RetransmitPacket(1, 2);
@@ -172,7 +179,7 @@ TEST_F(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   RetransmitPacket(1, 2);
@@ -189,7 +196,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   QuicSentPacketManagerPeer::MarkForRetransmission(
@@ -210,7 +217,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   RetransmitPacket(1, 2);
@@ -234,7 +241,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   RetransmitPacket(1, 2);
@@ -259,7 +266,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
 }
 
 TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   RetransmitPacket(1, 2);
@@ -282,9 +289,9 @@ TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
 }
 
 TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
-  manager_.OnSerializedPacket(CreatePacket(1));
-  manager_.OnSerializedPacket(CreatePacket(2));
-  manager_.OnSerializedPacket(CreatePacket(3));
+  manager_.OnSerializedPacket(CreateDataPacket(1));
+  manager_.OnSerializedPacket(CreateDataPacket(2));
+  manager_.OnSerializedPacket(CreateDataPacket(3));
 
   {
     // Ack packets 1 and 3.
@@ -299,8 +306,8 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
   }
 
-  manager_.OnSerializedPacket(CreatePacket(4));
-  manager_.OnSerializedPacket(CreatePacket(5));
+  manager_.OnSerializedPacket(CreateDataPacket(4));
+  manager_.OnSerializedPacket(CreateDataPacket(5));
 
   {
     // Ack packets 5.
@@ -316,8 +323,8 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
   }
 
-  manager_.OnSerializedPacket(CreatePacket(6));
-  manager_.OnSerializedPacket(CreatePacket(7));
+  manager_.OnSerializedPacket(CreateDataPacket(6));
+  manager_.OnSerializedPacket(CreateDataPacket(7));
 
   {
     // Ack packets 7.
@@ -335,8 +342,8 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
   }
 
   RetransmitPacket(2, 8);
-  manager_.OnSerializedPacket(CreatePacket(9));
-  manager_.OnSerializedPacket(CreatePacket(10));
+  manager_.OnSerializedPacket(CreateDataPacket(9));
+  manager_.OnSerializedPacket(CreateDataPacket(10));
 
   {
     // Ack packet 10.
@@ -357,8 +364,8 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
 
 
   RetransmitPacket(4, 11);
-  manager_.OnSerializedPacket(CreatePacket(12));
-  manager_.OnSerializedPacket(CreatePacket(13));
+  manager_.OnSerializedPacket(CreateDataPacket(12));
+  manager_.OnSerializedPacket(CreateDataPacket(13));
 
   {
     // Ack packet 13.
@@ -380,8 +387,8 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
   }
 
   RetransmitPacket(6, 14);
-  manager_.OnSerializedPacket(CreatePacket(15));
-  manager_.OnSerializedPacket(CreatePacket(16));
+  manager_.OnSerializedPacket(CreateDataPacket(15));
+  manager_.OnSerializedPacket(CreateDataPacket(16));
 
   {
     // Ack packet 16.
@@ -411,7 +418,7 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacket) {
 }
 
 TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketUnacked) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
@@ -425,7 +432,7 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketUnackedFec) {
 }
 
 TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketDiscardUnacked) {
-  SerializedPacket serialized_packet(CreatePacket(1));
+  SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
   manager_.DiscardUnackedPacket(1u);
@@ -498,10 +505,7 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit1Packet) {
   const size_t kNumSentPackets = 4;
   // Transmit 4 packets.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Nack the first packet 3 times with increasing largest observed.
@@ -516,9 +520,10 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit1Packet) {
       EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
       EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
     }
-    SequenceNumberSet retransmissions =
-        manager_.OnIncomingAckFrame(received_info, clock_.Now());
-    EXPECT_EQ(i == 3 ? 1u : 0u, retransmissions.size());
+    manager_.OnIncomingAck(received_info, clock_.Now());
+    EXPECT_EQ(
+        i == 3 ? 1u : 0u,
+        QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
     EXPECT_EQ(i, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
   }
 }
@@ -529,10 +534,7 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit1PacketWith1StretchAck) {
   const size_t kNumSentPackets = 4;
   // Transmit 4 packets.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Nack the first packet 3 times in a single StretchAck.
@@ -544,21 +546,18 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit1PacketWith1StretchAck) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _, _)).Times(3);
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  SequenceNumberSet retransmissions =
-      manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(1u, retransmissions.size());
+  manager_.OnIncomingAck(received_info, clock_.Now());
+  EXPECT_EQ(
+      1u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   EXPECT_EQ(3u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
 // Ack a packet 3 packets ahead, causing a retransmit.
 TEST_F(QuicSentPacketManagerTest, NackRetransmit1PacketSingleAck) {
-  const size_t kNumSentPackets = 4;
-  // Transmit 4 packets.
+  const size_t kNumSentPackets = 5;
+  // Transmit 5 packets.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Nack the first packet 3 times in an AckFrame with three missing packets.
@@ -568,13 +567,13 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit1PacketSingleAck) {
   received_info.missing_packets.insert(1);
   received_info.missing_packets.insert(2);
   received_info.missing_packets.insert(3);
-  received_info.largest_observed = kNumSentPackets;
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(kNumSentPackets, _, _)).Times(1);
+  received_info.largest_observed = 4;
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  SequenceNumberSet retransmissions =
-      manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(1u, retransmissions.size());
+  manager_.OnIncomingAck(received_info, clock_.Now());
+  EXPECT_EQ(
+      1u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   EXPECT_EQ(3u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
@@ -582,10 +581,7 @@ TEST_F(QuicSentPacketManagerTest, EarlyRetransmit1Packet) {
   const size_t kNumSentPackets = 2;
   // Transmit 2 packets.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Early retransmit when the final packet gets acked and the first is nacked.
@@ -597,19 +593,16 @@ TEST_F(QuicSentPacketManagerTest, EarlyRetransmit1Packet) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(kNumSentPackets, _, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  SequenceNumberSet retransmissions =
-      manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(1u, retransmissions.size());
+  manager_.OnIncomingAck(received_info, clock_.Now());
+  EXPECT_EQ(
+      1u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   EXPECT_EQ(1u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
 TEST_F(QuicSentPacketManagerTest, DontEarlyRetransmitPacket) {
-  const size_t kNumSentPackets = 4;
+  const size_t kNumSentPackets = 5;
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Fast retransmit when the final packet gets acked, but don't early
@@ -621,24 +614,22 @@ TEST_F(QuicSentPacketManagerTest, DontEarlyRetransmitPacket) {
   received_info.missing_packets.insert(1);
   received_info.missing_packets.insert(2);
   received_info.missing_packets.insert(3);
+  received_info.missing_packets.insert(4);
   received_info.largest_observed = kNumSentPackets;
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(kNumSentPackets, _, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  SequenceNumberSet retransmissions =
-      manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(1u, retransmissions.size());
-  EXPECT_EQ(3u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  manager_.OnIncomingAck(received_info, clock_.Now());
+  EXPECT_EQ(
+      2u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
+  EXPECT_EQ(4u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
 TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
   const size_t kNumSentPackets = 20;
   // Transmit 20 packets.
   for (QuicPacketSequenceNumber i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Nack the first 19 packets 3 times.
@@ -653,9 +644,9 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
               OnPacketAcked(kNumSentPackets, _, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
-  SequenceNumberSet retransmissions =
-      manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(2u, retransmissions.size());
+  manager_.OnIncomingAck(received_info, clock_.Now());
+  EXPECT_EQ(
+      2u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   for (size_t i = 1; i < kNumSentPackets; ++i) {
     EXPECT_EQ(kNumSentPackets - i,
               QuicSentPacketManagerPeer::GetNackCount(&manager_, i));
@@ -669,6 +660,8 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
   for (QuicPacketSequenceNumber i = 1; i <= kNumSentPackets; ++i) {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
                     .Times(1).WillOnce(Return(i % 2 == 0 ? false : true));
+    SerializedPacket packet(CreatePacket(i, i % 2 == 1));
+    manager_.OnSerializedPacket(packet);
     manager_.OnPacketSent(
         i, clock_.Now(), 1000, NOT_RETRANSMISSION,
         i % 2 == 0 ? NO_RETRANSMITTABLE_DATA : HAS_RETRANSMITTABLE_DATA);
@@ -686,9 +679,9 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
   // not saved.
   EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
-  SequenceNumberSet retransmissions =
-      manager_.OnIncomingAckFrame(received_info, clock_.Now());
-  EXPECT_EQ(2u, retransmissions.size());
+  manager_.OnIncomingAck(received_info, clock_.Now());
+  ASSERT_EQ(
+      2u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   // Only non-ack packets have a nack count.
   for (size_t i = 1; i < kNumSentPackets; i += 2) {
     EXPECT_EQ(kNumSentPackets - i,
@@ -697,19 +690,15 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
 
   // Ensure only the odd packets were retransmitted, since the others were not
   // retransmittable(ie: acks).
-  for (SequenceNumberSet::const_iterator it = retransmissions.begin();
-       it != retransmissions.end(); ++it) {
-    EXPECT_EQ(1u, *it % 2);
-  }
+  EXPECT_EQ(1u, manager_.NextPendingRetransmission().sequence_number);
+  manager_.OnRetransmittedPacket(1u, kNumSentPackets + 1);
+  EXPECT_EQ(3u, manager_.NextPendingRetransmission().sequence_number);
 }
 
 TEST_F(QuicSentPacketManagerTest, NackTwiceThenAck) {
   // Transmit 4 packets.
   for (QuicPacketSequenceNumber i = 1; i <= 4; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                    .Times(1).WillOnce(Return(true));
-    manager_.OnPacketSent(i, clock_.Now(), 1000,
-                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    SendDataPacket(i);
   }
 
   // Nack the first packet 2 times, then ack it.
@@ -724,9 +713,8 @@ TEST_F(QuicSentPacketManagerTest, NackTwiceThenAck) {
         QuicTime::Delta::FromMilliseconds(5);
     EXPECT_CALL(*send_algorithm_,
                 OnPacketAcked(_, _, _)).Times(i == 3 ? 2 : 1);
-    SequenceNumberSet retransmissions =
-        manager_.OnIncomingAckFrame(received_info, clock_.Now());
-    EXPECT_EQ(0u, retransmissions.size());
+    manager_.OnIncomingAck(received_info, clock_.Now());
+    EXPECT_FALSE(manager_.HasPendingRetransmissions());
     // The nack count remains at 2 when the packet is acked.
     EXPECT_EQ(i == 3 ? 2u : i,
               QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
@@ -736,21 +724,16 @@ TEST_F(QuicSentPacketManagerTest, NackTwiceThenAck) {
 TEST_F(QuicSentPacketManagerTest, Rtt) {
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(15);
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                               .Times(1).WillOnce(Return(true));
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketAcked(sequence_number, _, expected_rtt)).Times(1);
-
-  manager_.OnPacketSent(sequence_number, clock_.Now(), 1000,
-                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+  SendDataPacket(sequence_number);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketAcked(sequence_number, _, expected_rtt)).Times(1);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = sequence_number;
   received_info.delta_time_largest_observed =
       QuicTime::Delta::FromMilliseconds(5);
-  manager_.OnIncomingAckFrame(received_info, clock_.Now());
+  manager_.OnIncomingAck(received_info, clock_.Now());
   EXPECT_EQ(expected_rtt, QuicSentPacketManagerPeer::rtt(&manager_));
 }
 
@@ -760,21 +743,16 @@ TEST_F(QuicSentPacketManagerTest, RttWithInvalidDelta) {
   // and is hence invalid.
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(10);
+  SendDataPacket(sequence_number);
+  clock_.AdvanceTime(expected_rtt);
 
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                               .Times(1).WillOnce(Return(true));
   EXPECT_CALL(*send_algorithm_,
-              OnPacketAcked(sequence_number, _, expected_rtt)).Times(1);
-
-  manager_.OnPacketSent(sequence_number, clock_.Now(), 1000,
-                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
-
+               OnPacketAcked(sequence_number, _, expected_rtt)).Times(1);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = sequence_number;
   received_info.delta_time_largest_observed =
       QuicTime::Delta::FromMilliseconds(11);
-  manager_.OnIncomingAckFrame(received_info, clock_.Now());
+  manager_.OnIncomingAck(received_info, clock_.Now());
   EXPECT_EQ(expected_rtt, QuicSentPacketManagerPeer::rtt(&manager_));
 }
 
@@ -783,20 +761,15 @@ TEST_F(QuicSentPacketManagerTest, RttWithInfiniteDelta) {
   // delta_time_largest_observed is infinite, and is hence invalid.
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(10);
+  SendDataPacket(sequence_number);
+  clock_.AdvanceTime(expected_rtt);
 
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                               .Times(1).WillOnce(Return(true));
   EXPECT_CALL(*send_algorithm_,
               OnPacketAcked(sequence_number, _, expected_rtt)).Times(1);
-
-  manager_.OnPacketSent(sequence_number, clock_.Now(), 1000,
-                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
-
   ReceivedPacketInfo received_info;
   received_info.largest_observed = sequence_number;
   received_info.delta_time_largest_observed = QuicTime::Delta::Infinite();
-  manager_.OnIncomingAckFrame(received_info, clock_.Now());
+  manager_.OnIncomingAck(received_info, clock_.Now());
   EXPECT_EQ(expected_rtt, QuicSentPacketManagerPeer::rtt(&manager_));
 }
 
@@ -805,20 +778,15 @@ TEST_F(QuicSentPacketManagerTest, RttZeroDelta) {
   // delta_time_largest_observed is zero.
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(10);
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-                               .Times(1).WillOnce(Return(true));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(sequence_number, _, expected_rtt))
-      .Times(1);
-
-  manager_.OnPacketSent(sequence_number, clock_.Now(), 1000,
-                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+  SendDataPacket(sequence_number);
   clock_.AdvanceTime(expected_rtt);
 
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(sequence_number, _, expected_rtt))
+      .Times(1);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = sequence_number;
   received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
-  manager_.OnIncomingAckFrame(received_info, clock_.Now());
+  manager_.OnIncomingAck(received_info, clock_.Now());
   EXPECT_EQ(expected_rtt, QuicSentPacketManagerPeer::rtt(&manager_));
 }
 
@@ -835,6 +803,10 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
       .WillOnce(Return(QuicTime::Delta::FromMilliseconds(1)));
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
   manager_.OnRetransmissionTimeout();
+}
+
+TEST_F(QuicSentPacketManagerTest, GetTransmissionTime) {
+  EXPECT_EQ(QuicTime::Zero(), manager_.GetRetransmissionTime());
 }
 
 TEST_F(QuicSentPacketManagerTest, GetTransmissionDelayMin) {

@@ -506,12 +506,10 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   if (reset_retransmission_alarm) {
     retransmission_alarm_->Cancel();
-    // Reset the RTO and FEC alarms if the are unacked packets.
-    if (sent_packet_manager_.HasUnackedPackets()) {
-      QuicTime::Delta retransmission_delay =
-          sent_packet_manager_.GetRetransmissionDelay();
-      retransmission_alarm_->Set(
-          clock_->ApproximateNow().Add(retransmission_delay));
+    QuicTime retransmission_time =
+        sent_packet_manager_.GetRetransmissionTime();
+    if (retransmission_time != QuicTime::Zero()) {
+      retransmission_alarm_->Set(retransmission_time);
     }
   }
 }
@@ -1084,25 +1082,6 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
   return true;
 }
 
-void QuicConnection::SetupRetransmissionAlarm(
-    QuicPacketSequenceNumber sequence_number) {
-  if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
-    DVLOG(1) << ENDPOINT << "Will not retransmit packet " << sequence_number;
-    return;
-  }
-
-  // Do not set the retransmission alarm if we're already handling one, since
-  // it will be reset when OnRetransmissionTimeout completes.
-  if (retransmission_alarm_->IsSet()) {
-    return;
-  }
-
-  QuicTime::Delta retransmission_delay =
-      sent_packet_manager_.GetRetransmissionDelay();
-  retransmission_alarm_->Set(
-      clock_->ApproximateNow().Add(retransmission_delay));
-}
-
 bool QuicConnection::WritePacket(EncryptionLevel level,
                                  QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
@@ -1297,13 +1276,6 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   DVLOG(1) << ENDPOINT << "time of last sent packet: "
            << now.ToDebuggingValue();
 
-  // Set the retransmit alarm only when we have sent the packet to the client
-  // and not when it goes to the pending queue, otherwise we will end up adding
-  // an entry to retransmission_timeout_ every time we attempt a write.
-  if (retransmittable == HAS_RETRANSMITTABLE_DATA || is_fec_packet) {
-    SetupRetransmissionAlarm(sequence_number);
-  }
-
   // TODO(ianswett): Change the sequence number length and other packet creator
   // options by a more explicit API than setting a struct value directly.
   packet_creator_.UpdateSequenceNumberLength(
@@ -1313,6 +1285,19 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
 
   sent_packet_manager_.OnPacketSent(sequence_number, now, length,
                                     transmission_type, retransmittable);
+
+  // Set the retransmit alarm only when we have sent the packet to the client
+  // and not when it goes to the pending queue, otherwise we will end up adding
+  // an entry to retransmission_timeout_ every time we attempt a write.
+  // Do not set the retransmission alarm if we're already handling one, since
+  // it will be reset when OnRetransmissionTimeout completes.
+  if ((retransmittable == HAS_RETRANSMITTABLE_DATA || is_fec_packet) &&
+      !retransmission_alarm_->IsSet()) {
+    QuicTime retransmission_time =
+        sent_packet_manager_.GetRetransmissionTime();
+    DCHECK(retransmission_time != QuicTime::Zero());
+    retransmission_alarm_->Set(retransmission_time);
+  }
 
   stats_.bytes_sent += result.bytes_written;
   ++stats_.packets_sent;
@@ -1399,11 +1384,11 @@ void QuicConnection::OnRetransmissionTimeout() {
   WriteIfNotBlocked();
 
   // Ensure the retransmission alarm is always set if there are unacked packets.
-  if (sent_packet_manager_.HasUnackedPackets() && !HasQueuedData() &&
-      !retransmission_alarm_->IsSet()) {
-    QuicTime rto_timeout = clock_->ApproximateNow().Add(
-        sent_packet_manager_.GetRetransmissionDelay());
-    retransmission_alarm_->Set(rto_timeout);
+  if (!HasQueuedData() && !retransmission_alarm_->IsSet()) {
+    QuicTime rto_timeout = sent_packet_manager_.GetRetransmissionTime();
+    if (rto_timeout != QuicTime::Zero()) {
+      retransmission_alarm_->Set(rto_timeout);
+    }
   }
 }
 

@@ -2070,7 +2070,7 @@ bool QuicFramer::AppendGoAwayFramePayload(const QuicGoAwayFrame& frame,
 }
 
 bool QuicFramer::RaiseError(QuicErrorCode error) {
-  DVLOG(1) << detailed_error_;
+  DVLOG(1) << "Error detail: " << detailed_error_;
   set_error(error);
   visitor_->OnError(this);
   reader_.reset(NULL);

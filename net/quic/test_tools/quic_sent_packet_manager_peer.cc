@@ -28,6 +28,12 @@ size_t QuicSentPacketManagerPeer::GetNackCount(
 }
 
 // static
+size_t QuicSentPacketManagerPeer::GetPendingRetransmissionCount(
+    const QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->pending_retransmissions_.size();
+}
+
+// static
 QuicTime QuicSentPacketManagerPeer::GetSentTime(
     const QuicSentPacketManager* sent_packet_manager,
     QuicPacketSequenceNumber sequence_number) {

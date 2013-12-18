@@ -94,7 +94,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Discards any information for the packet corresponding to |sequence_number|.
   // If this packet has been retransmitted, information on those packets
-  // will be discarded as well.
+  // will be discarded as well.  Also discards it from the congestion window if
+  // it is present.
   void DiscardUnackedPacket(QuicPacketSequenceNumber sequence_number);
 
   // Returns true if the non-FEC packet |sequence_number| is unacked.
@@ -133,15 +134,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns true if |sequence_number| is a previous transmission of packet.
   bool IsPreviousTransmission(QuicPacketSequenceNumber sequence_number) const;
 
-  // TODO(ianswett): Combine the congestion control related methods below with
-  // some of the methods above and cleanup the resulting code.
-  // Called when we have received an ack frame from peer.
-  // Returns a set containing all the sequence numbers to be nack retransmitted
-  // as a result of the ack.
-  virtual SequenceNumberSet OnIncomingAckFrame(
-      const ReceivedPacketInfo& received_info,
-      const QuicTime& ack_receive_time);
-
   // Called when a congestion feedback frame is received from peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame,
@@ -175,6 +167,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns amount of time for delayed ack timer.
   const QuicTime::Delta DelayedAckTime();
 
+  // Returns the current delay for the retransmission timer, which may send
+  // either a tail loss probe or do a full RTO.  Retrans QuicTime::Zero() if
+  // there are no outstanding packets to abandon or retransmit.
+  const QuicTime GetRetransmissionTime() const;
+
   // Returns the current RTO delay.
   const QuicTime::Delta GetRetransmissionDelay() const;
 
@@ -199,6 +196,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
+
+  enum ReceivedByPeer {
+    RECEIVED_BY_PEER,
+    NOT_RECEIVED_BY_PEER,
+  };
 
   struct TransmissionInfo {
     TransmissionInfo()
@@ -227,8 +229,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                           TransmissionInfo> UnackedPacketMap;
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
-  typedef base::hash_map<QuicPacketSequenceNumber, SequenceNumberSet*>
-                         PreviousTransmissionMap;
 
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const ReceivedPacketInfo& received_info);
@@ -237,19 +237,25 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MaybeUpdateRTT(const ReceivedPacketInfo& received_info,
                       const QuicTime& ack_receive_time);
 
-  // Marks |sequence_number| as having been seen by the peer.  Returns an
-  // iterator to the next remaining unacked packet.
-  UnackedPacketMap::iterator MarkPacketReceivedByPeer(
-      QuicPacketSequenceNumber sequence_number);
+  // Chooses whether to nack retransmit any packets based on the receipt info.
+  // All acks have been handled before this method is invoked.
+  void MaybeRetransmitOnAckFrame(const ReceivedPacketInfo& received_info,
+                                 const QuicTime& ack_receive_time);
 
-  // Simply removes the entries, if any, from the unacked packet map
-  // and the retransmission map.
+  // Marks |sequence_number| as being fully handled, either due to receipt
+  // by the peer, or having been discarded as indecipherable.  Returns an
+  // iterator to the next remaining unacked packet.
+  UnackedPacketMap::iterator MarkPacketHandled(
+      QuicPacketSequenceNumber sequence_number,
+      ReceivedByPeer received_by_peer);
+
+  // Removes entries from the unacked packet map.
   void DiscardPacket(QuicPacketSequenceNumber sequence_number);
 
   // Request that |sequence_number| be retransmitted after the other pending
-  // retransmissions.  Returns false if there are no retransmittable frames for
-  // |sequence_number| and true if it will be retransmitted.
-  bool MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
+  // retransmissions.  Does not add it to the retransmissions if it's already
+  // a pending retransmission.
+  void MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
                              TransmissionType transmission_type);
 
   // Returns the length of the serialized sequence number for
