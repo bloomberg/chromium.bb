@@ -47,7 +47,8 @@ MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(
   if (!VerifyUserPointer<void>(elements, *num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return data_pipe_->ProducerWriteData(elements, num_bytes, flags);
+  return data_pipe_->ProducerWriteData(
+      elements, num_bytes, (flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 }
 
 MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
@@ -61,7 +62,8 @@ MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
   if (!VerifyUserPointer<uint32_t>(buffer_num_bytes, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return data_pipe_->ProducerBeginWriteData(buffer, buffer_num_bytes, flags);
+  return data_pipe_->ProducerBeginWriteData(
+      buffer, buffer_num_bytes, (flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 }
 
 MojoResult DataPipeProducerDispatcher::EndWriteDataImplNoLock(

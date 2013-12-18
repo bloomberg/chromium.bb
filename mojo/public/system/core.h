@@ -239,7 +239,7 @@ MOJO_COMPILE_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
 // and |MojoBeginWriteData()|.
 //   |MOJO_WRITE_DATA_FLAG_NONE| - No flags; default mode.
-//   |MOJO_WRITE_DATA_FLAG_ALL_OR_NOTHING| - Write either all the elements
+//   |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| - Write either all the elements
 //       requested or none of them.
 
 typedef uint32_t MojoWriteDataFlags;

@@ -20,6 +20,9 @@ namespace system {
 // protection provided by |DataPipe|'s |lock_|.
 class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
  public:
+  // |validated_options| should be the output of |DataPipe::ValidateOptions()|.
+  // In particular: |struct_size| is ignored (so |validated_options| must be the
+  // current version of the struct) and |capacity_num_bytes| must be nonzero.
   explicit LocalDataPipe(const MojoCreateDataPipeOptions& validated_options);
 
  private:
@@ -28,30 +31,27 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
 
   // |DataPipe| implementation:
   virtual void ProducerCloseImplNoLock() OVERRIDE;
-  virtual MojoResult ProducerWriteDataImplNoLock(
-      const void* elements,
-      uint32_t* num_bytes,
-      MojoWriteDataFlags flags) OVERRIDE;
+  virtual MojoResult ProducerWriteDataImplNoLock(const void* elements,
+                                                 uint32_t* num_bytes,
+                                                 bool all_or_none) OVERRIDE;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       void** buffer,
       uint32_t* buffer_num_bytes,
-      MojoWriteDataFlags flags) OVERRIDE;
+      bool all_or_none) OVERRIDE;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) OVERRIDE;
   virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() OVERRIDE;
   virtual MojoWaitFlags ProducerSatisfiableFlagsNoLock() OVERRIDE;
   virtual void ConsumerCloseImplNoLock() OVERRIDE;
-  virtual MojoResult ConsumerReadDataImplNoLock(
-      void* elements,
-      uint32_t* num_bytes,
-      MojoReadDataFlags flags) OVERRIDE;
-  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_bytes,
-                                               bool all_or_none) OVERRIDE;
-  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_bytes) OVERRIDE;
-  virtual MojoResult ConsumerBeginReadDataImplNoLock(
-      const void** buffer,
-      uint32_t* buffer_num_bytes,
-      MojoReadDataFlags flags) OVERRIDE;
+  virtual MojoResult ConsumerReadDataImplNoLock(void* elements,
+                                                uint32_t* num_bytes,
+                                                bool all_or_none) OVERRIDE;
+  virtual MojoResult ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
+                                                   bool all_or_none) OVERRIDE;
+  virtual MojoResult ConsumerQueryDataImplNoLock(uint32_t* num_bytes) OVERRIDE;
+  virtual MojoResult ConsumerBeginReadDataImplNoLock(const void** buffer,
+                                                     uint32_t* buffer_num_bytes,
+                                                     bool all_or_none) OVERRIDE;
   virtual MojoResult ConsumerEndReadDataImplNoLock(
       uint32_t num_bytes_read) OVERRIDE;
   virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() OVERRIDE;

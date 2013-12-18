@@ -42,11 +42,11 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // a multiple of |element_num_bytes_|.
   MojoResult ProducerWriteData(const void* elements,
                                uint32_t* num_bytes,
-                               MojoWriteDataFlags flags);
+                               bool all_or_none);
   // This does not validate its arguments.
   MojoResult ProducerBeginWriteData(void** buffer,
                                     uint32_t* buffer_num_bytes,
-                                    MojoWriteDataFlags flags);
+                                    bool all_or_none);
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
   MojoResult ProducerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
@@ -61,11 +61,14 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // a multiple of |element_num_bytes_|.
   MojoResult ConsumerReadData(void* elements,
                               uint32_t* num_bytes,
-                              MojoReadDataFlags flags);
+                              bool all_or_none);
+  MojoResult ConsumerDiscardData(uint32_t* num_bytes,
+                                 bool all_or_none);
+  MojoResult ConsumerQueryData(uint32_t* num_bytes);
   // This does not validate its arguments.
   MojoResult ConsumerBeginReadData(const void** buffer,
                                    uint32_t* buffer_num_bytes,
-                                   MojoReadDataFlags flags);
+                                   bool all_or_none);
   MojoResult ConsumerEndReadData(uint32_t num_bytes_read);
   MojoResult ConsumerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
@@ -87,11 +90,11 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
   virtual MojoResult ProducerWriteDataImplNoLock(const void* elements,
                                                  uint32_t* num_bytes,
-                                                 MojoWriteDataFlags flags) = 0;
+                                                 bool all_or_none) = 0;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       void** buffer,
       uint32_t* buffer_num_bytes,
-      MojoWriteDataFlags flags) = 0;
+      bool all_or_none) = 0;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) = 0;
   virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() = 0;
@@ -101,15 +104,14 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
   virtual MojoResult ConsumerReadDataImplNoLock(void* elements,
                                                 uint32_t* num_bytes,
-                                                MojoReadDataFlags flags) = 0;
-  virtual MojoResult ConsumerDiscardDataNoLock(uint32_t* num_bytes,
-                                               bool all_or_none) = 0;
+                                                bool all_or_none) = 0;
+  virtual MojoResult ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
+                                                   bool all_or_none) = 0;
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ConsumerQueryDataNoLock(uint32_t* num_bytes) = 0;
-  virtual MojoResult ConsumerBeginReadDataImplNoLock(
-      const void** buffer,
-      uint32_t* buffer_num_bytes,
-      MojoReadDataFlags flags) = 0;
+  virtual MojoResult ConsumerQueryDataImplNoLock(uint32_t* num_bytes) = 0;
+  virtual MojoResult ConsumerBeginReadDataImplNoLock(const void** buffer,
+                                                     uint32_t* buffer_num_bytes,
+                                                     bool all_or_none) = 0;
   virtual MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) = 0;
   virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() = 0;
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;

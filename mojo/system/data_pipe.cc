@@ -76,7 +76,7 @@ void DataPipe::ProducerClose() {
 
 MojoResult DataPipe::ProducerWriteData(const void* elements,
                                        uint32_t* num_bytes,
-                                       MojoWriteDataFlags flags) {
+                                       bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
@@ -90,21 +90,20 @@ MojoResult DataPipe::ProducerWriteData(const void* elements,
   if (*num_bytes == 0)
     return MOJO_RESULT_OK;  // Nothing to do.
 
-  return ProducerWriteDataImplNoLock(elements, num_bytes, flags);
+  return ProducerWriteDataImplNoLock(elements, num_bytes, all_or_none);
 }
 
 MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
                                             uint32_t* buffer_num_bytes,
-                                            MojoWriteDataFlags flags) {
+                                            bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
   if (producer_in_two_phase_write_)
     return MOJO_RESULT_BUSY;
 
-  MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer,
-                                                   buffer_num_bytes,
-                                                   flags);
+  MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer, buffer_num_bytes,
+                                                   all_or_none);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
@@ -163,7 +162,40 @@ void DataPipe::ConsumerClose() {
 
 MojoResult DataPipe::ConsumerReadData(void* elements,
                                       uint32_t* num_bytes,
-                                      MojoReadDataFlags flags) {
+                                      bool all_or_none) {
+  base::AutoLock locker(lock_);
+  DCHECK(has_local_consumer_no_lock());
+
+  if (consumer_in_two_phase_read_)
+    return MOJO_RESULT_BUSY;
+
+  if (*num_bytes % element_num_bytes_ != 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (*num_bytes == 0)
+    return MOJO_RESULT_OK;  // Nothing to do.
+
+  return ConsumerReadDataImplNoLock(elements, num_bytes, all_or_none);
+}
+
+MojoResult DataPipe::ConsumerDiscardData(uint32_t* num_bytes,
+                                         bool all_or_none) {
+  base::AutoLock locker(lock_);
+  DCHECK(has_local_consumer_no_lock());
+
+  if (consumer_in_two_phase_read_)
+    return MOJO_RESULT_BUSY;
+
+  if (*num_bytes % element_num_bytes_ != 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (*num_bytes == 0)
+    return MOJO_RESULT_OK;  // Nothing to do.
+
+  return ConsumerDiscardDataImplNoLock(num_bytes, all_or_none);
+}
+
+MojoResult DataPipe::ConsumerQueryData(uint32_t* num_bytes) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
@@ -171,35 +203,20 @@ MojoResult DataPipe::ConsumerReadData(void* elements,
     return MOJO_RESULT_BUSY;
 
   // Note: Don't need to validate |*num_bytes| for query.
-  if ((flags & MOJO_READ_DATA_FLAG_QUERY))
-    return ConsumerQueryDataNoLock(num_bytes);
-
-  if (*num_bytes % element_num_bytes_ != 0)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  if (*num_bytes == 0)
-    return MOJO_RESULT_OK;  // Nothing to do (for read or for discard).
-
-  if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
-    return ConsumerDiscardDataNoLock(num_bytes,
-                                     (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));
-  }
-
-  return ConsumerReadDataImplNoLock(elements, num_bytes, flags);
+  return ConsumerQueryDataImplNoLock(num_bytes);
 }
 
 MojoResult DataPipe::ConsumerBeginReadData(const void** buffer,
                                            uint32_t* buffer_num_bytes,
-                                           MojoReadDataFlags flags) {
+                                           bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
   if (consumer_in_two_phase_read_)
     return MOJO_RESULT_BUSY;
 
-  MojoResult rv = ConsumerBeginReadDataImplNoLock(buffer,
-                                                  buffer_num_bytes,
-                                                  flags);
+  MojoResult rv = ConsumerBeginReadDataImplNoLock(buffer, buffer_num_bytes,
+                                                  all_or_none);
   if (rv != MOJO_RESULT_OK)
     return rv;
 

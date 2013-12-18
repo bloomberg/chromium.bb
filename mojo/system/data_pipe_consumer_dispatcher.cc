@@ -44,21 +44,28 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
 
   if (!VerifyUserPointer<uint32_t>(num_bytes, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  // These flags are mutally exclusive.
-  if ((flags & MOJO_READ_DATA_FLAG_DISCARD) &&
-      (flags & MOJO_READ_DATA_FLAG_QUERY))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
-      (flags & MOJO_READ_DATA_FLAG_QUERY)) {
-    DVLOG_IF(2, elements) << "Discard/query mode: ignoring non-null |elements|";
-    elements = NULL;  // Null it out for safety.
-  } else {
-    // Only verify |elements| if we're neither discarding nor querying.
-    if (!VerifyUserPointer<void>(elements, *num_bytes))
+
+  if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
+    // These flags are mutally exclusive.
+    if ((flags & MOJO_READ_DATA_FLAG_QUERY))
       return MOJO_RESULT_INVALID_ARGUMENT;
+    DVLOG_IF(2, elements) << "Discard mode: ignoring non-null |elements|";
+    return data_pipe_->ConsumerDiscardData(
+        num_bytes, (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));
   }
 
-  return data_pipe_->ConsumerReadData(elements, num_bytes, flags);
+  if ((flags & MOJO_READ_DATA_FLAG_QUERY)) {
+    DCHECK(!(flags & MOJO_READ_DATA_FLAG_DISCARD));  // Handled above.
+    DVLOG_IF(2, elements) << "Query mode: ignoring non-null |elements|";
+    return data_pipe_->ConsumerQueryData(num_bytes);
+  }
+
+  // Only verify |elements| if we're neither discarding nor querying.
+  if (!VerifyUserPointer<void>(elements, *num_bytes))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return data_pipe_->ConsumerReadData(
+      elements, num_bytes, (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 }
 
 MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
@@ -76,7 +83,8 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
       (flags & MOJO_READ_DATA_FLAG_QUERY))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return data_pipe_->ConsumerBeginReadData(buffer, buffer_num_bytes, flags);
+  return data_pipe_->ConsumerBeginReadData(
+      buffer, buffer_num_bytes, (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 }
 
 MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
