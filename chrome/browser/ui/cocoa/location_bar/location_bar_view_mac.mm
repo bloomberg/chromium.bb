@@ -89,18 +89,18 @@ class IsPageActionViewRightAligned {
       : extension_service_(extension_service) {}
 
   bool operator()(PageActionDecoration* page_action_decoration) {
-    const extensions::Extension* extension =
+    return extensions::PermissionsData::HasAPIPermission(
         extension_service_->GetExtensionById(
             page_action_decoration->page_action()->extension_id(),
-            false);
-
-    return extensions::PermissionsData::HasAPIPermission(
-        extension,
+            false),
         extensions::APIPermission::kBookmarkManagerPrivate);
   }
 
  private:
   ExtensionService* extension_service_;
+
+  // NOTE: Can't DISALLOW_COPY_AND_ASSIGN as we pass this object by value to
+  // std::stable_partition().
 };
 
 }
@@ -759,8 +759,8 @@ bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
 
 bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() {
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::GetForBrowserContext(profile_)
-          ->extension_service();
+      extensions::ExtensionSystem::GetForBrowserContext(
+          profile_)->extension_service();
   // Extension service may be NULL during unit test execution.
   if (!extension_service)
     return false;
@@ -771,18 +771,13 @@ bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() {
        i != extension_set->end(); ++i) {
     const extensions::SettingsOverrides* settings_overrides =
         extensions::SettingsOverrides::Get(i->get());
-    const bool manifest_hides_bookmark_button = settings_overrides &&
-        settings_overrides->RequiresHideBookmarkButtonPermission();
-
-    if (!manifest_hides_bookmark_button)
-      continue;
-
-    if (extensions::PermissionsData::HasAPIPermission(
+    if (settings_overrides &&
+        settings_overrides->RequiresHideBookmarkButtonPermission() &&
+        (extensions::PermissionsData::HasAPIPermission(
             *i,
-            extensions::APIPermission::kBookmarkManagerPrivate))
-      return true;
-
-    if (extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
+            extensions::APIPermission::kBookmarkManagerPrivate) ||
+         extensions::FeatureSwitch::enable_override_bookmarks_ui()->
+             IsEnabled()))
       return true;
   }
 

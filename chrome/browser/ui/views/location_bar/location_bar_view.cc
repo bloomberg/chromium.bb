@@ -163,18 +163,18 @@ class IsPageActionViewRightAligned {
       : extension_service_(extension_service) {}
 
   bool operator()(PageActionWithBadgeView* page_action_view) {
-    const extensions::Extension* extension =
+    return extensions::PermissionsData::HasAPIPermission(
         extension_service_->GetExtensionById(
             page_action_view->image_view()->page_action()->extension_id(),
-            false);
-
-    return extensions::PermissionsData::HasAPIPermission(
-        extension,
+            false),
         extensions::APIPermission::kBookmarkManagerPrivate);
   }
 
  private:
   ExtensionService* extension_service_;
+
+  // NOTE: Can't DISALLOW_COPY_AND_ASSIGN as we pass this object by value to
+  // std::stable_partition().
 };
 
 }  // namespace
@@ -1429,15 +1429,13 @@ bool LocationBarView::RefreshPageActionViews() {
     page_actions_.swap(new_page_actions);
     DeletePageActionViews();  // Delete the old views (if any).
 
-    page_action_views_.resize(page_actions_.size());
     // Create the page action views.
-    PageActionViews::iterator dest = page_action_views_.begin();
     for (PageActions::const_iterator i = page_actions_.begin();
-         i != page_actions_.end(); ++i, ++dest) {
+         i != page_actions_.end(); ++i) {
       PageActionWithBadgeView* page_action_view = new PageActionWithBadgeView(
           delegate_->CreatePageActionImageView(this, *i));
       page_action_view->SetVisible(false);
-      *dest = page_action_view;
+      page_action_views_.push_back(page_action_view);
     }
 
     // Move rightmost extensions to the start.
@@ -1454,12 +1452,12 @@ bool LocationBarView::RefreshPageActionViews() {
       right_anchor = script_bubble_icon_view_;
     DCHECK(right_anchor);
 
-    // Use reverse (i.e. left-right) ordering for the page action views for
-    // accessibility.
+    // |page_action_views_| are ordered right-to-left.  Add them as children in
+    // reverse order so the logical order and visual order match for
+    // accessibility purposes.
     for (PageActionViews::reverse_iterator i = page_action_views_.rbegin();
-         i != page_action_views_.rend(); ++i) {
+         i != page_action_views_.rend(); ++i)
       AddChildViewAt(*i, GetIndexOf(right_anchor));
-    }
   }
 
   if (!page_action_views_.empty() && contents) {
@@ -1612,8 +1610,8 @@ void LocationBarView::AccessibilitySetValue(const base::string16& new_value) {
 
 bool LocationBarView::IsBookmarkStarHiddenByExtension() {
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::GetForBrowserContext(profile_)
-          ->extension_service();
+      extensions::ExtensionSystem::GetForBrowserContext(
+          profile_)->extension_service();
   // Extension service may be NULL during unit test execution.
   if (!extension_service)
     return false;
@@ -1624,18 +1622,13 @@ bool LocationBarView::IsBookmarkStarHiddenByExtension() {
        i != extension_set->end(); ++i) {
     const extensions::SettingsOverrides* settings_overrides =
         extensions::SettingsOverrides::Get(i->get());
-    const bool manifest_hides_bookmark_button = settings_overrides &&
-        settings_overrides->RequiresHideBookmarkButtonPermission();
-
-    if (!manifest_hides_bookmark_button)
-      continue;
-
-    if (extensions::PermissionsData::HasAPIPermission(
+    if (settings_overrides &&
+        settings_overrides->RequiresHideBookmarkButtonPermission() &&
+        (extensions::PermissionsData::HasAPIPermission(
             *i,
-            extensions::APIPermission::kBookmarkManagerPrivate))
-      return true;
-
-    if (extensions::FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())
+            extensions::APIPermission::kBookmarkManagerPrivate) ||
+         extensions::FeatureSwitch::enable_override_bookmarks_ui()->
+             IsEnabled()))
       return true;
   }
 
