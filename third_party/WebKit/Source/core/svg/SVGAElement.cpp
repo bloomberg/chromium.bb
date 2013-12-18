@@ -234,7 +234,7 @@ bool SVGAElement::childShouldCreateRenderer(const Node& child) const
     if (parentNode() && parentNode()->isSVGElement())
         return parentNode()->childShouldCreateRenderer(child);
 
-    return SVGElement::childShouldCreateRenderer(child);
+    return SVGGraphicsElement::childShouldCreateRenderer(child);
 }
 
 bool SVGAElement::willRespondToMouseClickEvents()
