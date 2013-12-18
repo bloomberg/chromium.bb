@@ -135,7 +135,7 @@ void AddMessage(content::RenderView* render_view,
       break;
   }
   web_view->mainFrame()->addMessageToConsole(
-      blink::WebConsoleMessage(target_level, ASCIIToUTF16(message)));
+      blink::WebConsoleMessage(target_level, UTF8ToUTF16(message)));
 }
 
 void Debug(v8::Handle<v8::Context> context, const std::string& message) {
