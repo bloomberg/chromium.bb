@@ -92,6 +92,7 @@
       'dependencies': [
         'generated_messages',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/third_party/re2/re2.gyp:re2',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

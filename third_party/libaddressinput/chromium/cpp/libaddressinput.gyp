@@ -54,6 +54,7 @@
       'dependencies': [
         'grit.gyp:generated_messages',
         'rapidjson.gyp:rapidjson',
+        're2.gyp:re2',
       ],
     },
     {
