@@ -31,6 +31,7 @@
 #ifndef FastTextAutosizer_h
 #define FastTextAutosizer_h
 
+#include "core/rendering/RenderObject.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -57,12 +58,14 @@ public:
         return adoptPtr(new FastTextAutosizer(document));
     }
 
-    void record(const RenderBlock*);
-    void destroy(const RenderBlock*);
+    void prepareForLayout();
+
+    void record(RenderBlock*);
+    void destroy(RenderBlock*);
     void inflate(RenderBlock*);
 
 private:
-    // TODO: make a proper API for this class?
+    // FIXME(crbug.com/327811): make a proper API for this class.
     struct Cluster {
         explicit Cluster(AtomicString fingerprint)
             : m_fingerprint(fingerprint)
@@ -71,19 +74,35 @@ private:
         }
 
         AtomicString m_fingerprint;
-        WTF::HashSet<const RenderBlock*> m_blocks;
+        WTF::HashSet<RenderBlock*> m_blocks;
         float m_multiplier;
+        const RenderObject* m_clusterRoot;
+
+        void addBlock(RenderBlock* block)
+        {
+            m_blocks.add(block);
+            setNeedsClusterRecalc();
+        }
+
+        void setNeedsClusterRecalc() { m_multiplier = 0; m_clusterRoot = 0; }
+        bool needsClusterRecalc() const { return !m_clusterRoot || m_multiplier <= 0; }
     };
 
     explicit FastTextAutosizer(Document*);
 
+    bool updateWindowWidth();
+
     AtomicString fingerprint(const RenderBlock*);
-    float computeMultiplier(const Cluster*);
+    void recalcClusterIfNeeded(Cluster*);
+
+    int m_windowWidth;
 
     Document* m_document;
 
-    WTF::HashMap<const RenderBlock*, Cluster*> m_clusterForBlock;
-    WTF::HashMap<AtomicString, OwnPtr<Cluster> > m_clusterForFingerprint;
+    typedef WTF::HashMap<const RenderBlock*, Cluster*> BlockToClusterMap;
+    typedef WTF::HashMap<AtomicString, OwnPtr<Cluster> > FingerprintToClusterMap;
+    BlockToClusterMap m_clusterForBlock;
+    FingerprintToClusterMap m_clusterForFingerprint;
 };
 
 } // namespace WebCore

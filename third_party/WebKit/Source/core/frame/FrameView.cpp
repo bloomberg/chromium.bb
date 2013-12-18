@@ -56,6 +56,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -864,6 +865,9 @@ void FrameView::performPreLayoutTasks()
     // the layout beats any sort of style recalc update that needs to occur.
     TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
     document->updateStyleIfNeeded();
+
+    if (FastTextAutosizer* textAutosizer = document->fastTextAutosizer())
+        textAutosizer->prepareForLayout();
 }
 
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)

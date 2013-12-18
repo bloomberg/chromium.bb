@@ -1709,8 +1709,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
 
 void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom)
 {
-    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
-    if (textAutosizer)
+    if (FastTextAutosizer* textAutosizer = document().fastTextAutosizer())
         textAutosizer->inflate(this);
 
     setLogicalHeight(borderBefore() + paddingBefore());

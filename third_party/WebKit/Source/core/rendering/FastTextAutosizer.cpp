@@ -32,10 +32,15 @@
 #include "core/rendering/FastTextAutosizer.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/TextAutosizer.h"
+
+using namespace std;
 
 namespace WebCore {
 
@@ -44,7 +49,56 @@ FastTextAutosizer::FastTextAutosizer(Document* document)
 {
 }
 
-void FastTextAutosizer::record(const RenderBlock* block)
+void FastTextAutosizer::prepareForLayout()
+{
+    if (!m_document->settings()
+        || !m_document->settings()->textAutosizingEnabled()
+        || m_document->printing()
+        || !m_document->page())
+        return;
+    bool windowWidthChanged = updateWindowWidth();
+
+    // If needed, set existing clusters as needing their multiplier recalculated.
+    for (FingerprintToClusterMap::iterator it = m_clusterForFingerprint.begin(), end = m_clusterForFingerprint.end(); it != end; ++it) {
+        Cluster* cluster = it->value.get();
+        ASSERT(cluster);
+        WTF::HashSet<RenderBlock*>& blocks = cluster->m_blocks;
+
+        if (windowWidthChanged) {
+            // Clusters depend on the window width. Changes to the width should cause all clusters to recalc.
+            cluster->setNeedsClusterRecalc();
+        } else {
+            // If any of the cluster's blocks need a layout, mark the entire cluster as needing a recalc.
+            for (WTF::HashSet<RenderBlock*>::iterator block = blocks.begin(); block != blocks.end(); ++block) {
+                if ((*block)->needsLayout()) {
+                    cluster->setNeedsClusterRecalc();
+                    break;
+                }
+            }
+        }
+
+        // If the cluster needs a recalc, mark all blocks as needing a layout so they pick up the new cluster info.
+        if (cluster->needsClusterRecalc()) {
+            for (WTF::HashSet<RenderBlock*>::iterator block = blocks.begin(); block != blocks.end(); ++block)
+                (*block)->setNeedsLayout();
+        }
+    }
+}
+
+bool FastTextAutosizer::updateWindowWidth()
+{
+    int originalWindowWidth = m_windowWidth;
+
+    Frame* mainFrame = m_document->page()->mainFrame();
+    IntSize windowSize = m_document->settings()->textAutosizingWindowSizeOverride();
+    if (windowSize.isEmpty())
+        windowSize = mainFrame->view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
+    m_windowWidth = windowSize.width();
+
+    return m_windowWidth != originalWindowWidth;
+}
+
+void FastTextAutosizer::record(RenderBlock* block)
 {
     if (!m_document->settings()
         || !m_document->settings()->textAutosizingEnabled()
@@ -63,12 +117,12 @@ void FastTextAutosizer::record(const RenderBlock* block)
         result.iterator->value = adoptPtr(new Cluster(blockFingerprint));
 
     Cluster* cluster = result.iterator->value.get();
-    cluster->m_blocks.add(block);
+    cluster->addBlock(block);
 
     m_clusterForBlock.set(block, cluster);
 }
 
-void FastTextAutosizer::destroy(const RenderBlock* block)
+void FastTextAutosizer::destroy(RenderBlock* block)
 {
     Cluster* cluster = m_clusterForBlock.take(block);
     if (!cluster)
@@ -79,13 +133,17 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
         m_clusterForFingerprint.remove(cluster->m_fingerprint);
         return;
     }
-    cluster->m_multiplier = 0;
+    cluster->setNeedsClusterRecalc();
 }
 
 static void applyMultiplier(RenderObject* renderer, float multiplier)
 {
+    RenderStyle* currentStyle  = renderer->style();
+    if (currentStyle->textAutosizingMultiplier() == multiplier)
+        return;
+
     // We need to clone the render style to avoid breaking style sharing.
-    RefPtr<RenderStyle> style = RenderStyle::clone(renderer->style());
+    RefPtr<RenderStyle> style = RenderStyle::clone(currentStyle);
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
     renderer->setStyleInternal(style.release());
@@ -100,12 +158,12 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     }
     if (!cluster)
         return;
-    if (!cluster->m_multiplier)
-        cluster->m_multiplier = computeMultiplier(cluster);
-    if (cluster->m_multiplier == 1)
-        return;
+
+    recalcClusterIfNeeded(cluster);
 
     applyMultiplier(block, cluster->m_multiplier);
+
+    // FIXME: Add an optimization to not do this walk if it's not needed.
     for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
         RenderObject* inlineObj = walker.current();
         if (inlineObj->isRenderBlock() && m_clusterForBlock.contains(toRenderBlock(inlineObj)))
@@ -121,19 +179,53 @@ AtomicString FastTextAutosizer::fingerprint(const RenderBlock* block)
     return String::number((unsigned long long) block);
 }
 
-float FastTextAutosizer::computeMultiplier(const FastTextAutosizer::Cluster* cluster)
+void FastTextAutosizer::recalcClusterIfNeeded(FastTextAutosizer::Cluster* cluster)
 {
-    const WTF::HashSet<const RenderBlock*>& blocks = cluster->m_blocks;
+    ASSERT(m_windowWidth > 0);
+    if (!cluster->needsClusterRecalc())
+        return;
+
+    WTF::HashSet<RenderBlock*>& blocks = cluster->m_blocks;
 
     bool shouldAutosize = false;
-    for (WTF::HashSet<const RenderBlock*>::iterator it = blocks.begin(); it != blocks.end(); ++it)
+    for (WTF::HashSet<RenderBlock*>::iterator it = blocks.begin(); it != blocks.end(); ++it)
         shouldAutosize |= TextAutosizer::containerShouldBeAutosized(*it);
 
-    if (!shouldAutosize)
-        return 1.0f;
+    if (!shouldAutosize) {
+        cluster->m_multiplier = 1.0f;
+        return;
+    }
 
-    // FIXME(crbug.com/322344): Implement multiplier computation.
-    return 1.5f;
+    // Find the lowest common ancestor of blocks.
+    // Note: this could be improved to not be O(b*h) for b blocks and tree height h.
+    cluster->m_clusterRoot = 0;
+    HashCountedSet<const RenderObject*> ancestors;
+    for (WTF::HashSet<RenderBlock*>::iterator it = blocks.begin(); !cluster->m_clusterRoot && it != blocks.end(); ++it) {
+        const RenderObject* renderer = (*it);
+        while (renderer && (renderer = renderer->parent())) {
+            ancestors.add(renderer);
+            // The first ancestor that has all of the blocks as children wins and is crowned the cluster root.
+            if (ancestors.count(renderer) == blocks.size()) {
+                cluster->m_clusterRoot = renderer->isRenderBlock() ? renderer : renderer->containingBlock();
+                break;
+            }
+        }
+    }
+
+    ASSERT(cluster->m_clusterRoot);
+    bool horizontalWritingMode = isHorizontalWritingMode(cluster->m_clusterRoot->style()->writingMode());
+
+    // Largest area of block that can be visible at once (assuming the main
+    // frame doesn't get scaled to less than overview scale), in CSS pixels.
+    IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();
+    float layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
+
+    // Cluster root layout width, in CSS pixels.
+    float rootWidth = toRenderBlock(cluster->m_clusterRoot)->contentLogicalWidth();
+
+    // FIXME: incorporate font scale factor.
+    float multiplier = min(rootWidth, layoutWidth) / m_windowWidth;
+    cluster->m_multiplier = max(multiplier, 1.0f);
 }
 
 } // namespace WebCore
