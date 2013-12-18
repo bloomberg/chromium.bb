@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -405,6 +406,16 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/serverRedirect"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
+  DownloadTestObserverNotInProgress download_observer(
+      content::BrowserContext::GetDownloadManager(profile()), 1);
+  download_observer.StartObserving();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("webnavigation/download"))
+      << message_;
+  download_observer.WaitForFinished();
 }
 
 // http://crbug.com/235171

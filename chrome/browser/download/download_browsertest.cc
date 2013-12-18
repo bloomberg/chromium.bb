@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -220,32 +221,6 @@ class DownloadTestObserverResumable : public content::DownloadTestObserver {
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverResumable);
 };
 
-// DownloadTestObserver subclass that observes a download until it transitions
-// from IN_PROGRESS to another state, but only after StartObserving() is called.
-class DownloadTestObserverNotInProgress : public content::DownloadTestObserver {
- public:
-  DownloadTestObserverNotInProgress(DownloadManager* download_manager,
-                                    size_t count)
-      : DownloadTestObserver(download_manager, count,
-                             ON_DANGEROUS_DOWNLOAD_FAIL),
-        started_observing_(false) {
-    Init();
-  }
-  virtual ~DownloadTestObserverNotInProgress() {}
-
-  void StartObserving() {
-    started_observing_ = true;
-  }
-
- private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE {
-    return started_observing_ &&
-        download->GetState() != DownloadItem::IN_PROGRESS;
-  }
-
-  bool started_observing_;
-};
-
 // IDs and paths of CRX files used in tests.
 const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const base::FilePath kGoodCrxPath(FILE_PATH_LITERAL("extensions/good.crx"));
@@ -379,6 +354,26 @@ bool HasDataAndName(const history::DownloadRow& row) {
 }
 
 }  // namespace
+
+DownloadTestObserverNotInProgress::DownloadTestObserverNotInProgress(
+    DownloadManager* download_manager,
+    size_t count)
+    : DownloadTestObserver(download_manager, count, ON_DANGEROUS_DOWNLOAD_FAIL),
+      started_observing_(false) {
+  Init();
+}
+
+DownloadTestObserverNotInProgress::~DownloadTestObserverNotInProgress() {}
+
+void DownloadTestObserverNotInProgress::StartObserving() {
+  started_observing_ = true;
+}
+
+bool DownloadTestObserverNotInProgress::IsDownloadInFinalState(
+    DownloadItem* download) {
+  return started_observing_ &&
+         download->GetState() != DownloadItem::IN_PROGRESS;
+}
 
 class HistoryObserver : public DownloadHistory::Observer {
  public:

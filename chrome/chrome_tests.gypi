@@ -1079,6 +1079,7 @@
         'browser/devtools/devtools_sanity_browsertest.cc',
         'browser/do_not_track_browsertest.cc',
         'browser/download/download_browsertest.cc',
+        'browser/download/download_browsertest.h',
         'browser/download/download_danger_prompt_browsertest.cc',
         'browser/download/download_started_animation_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
