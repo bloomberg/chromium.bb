@@ -60,6 +60,22 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
 })
 
+// Note: currently not run on PNaCl because crash throttling causes the last few
+// tests to fail for the wrong reasons.  Enabling this test would also require
+// creating a new set of manifests because shared NaCl/PNaCl manifests are not
+// allowed.  Also not run on GLibc because it's a large test that is at risk of
+// causing timeouts.
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, Bad) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_bad.html"));
+}
+
+// partially_invalid.c does not have an ARM version of its asm.
+#if !defined(__arm__)
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, BadNative) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_bad_native.html"));
+}
+#endif
+
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_Crash, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash.html"));
 })
