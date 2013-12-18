@@ -28,6 +28,7 @@
 #include "chrome/browser/android/uma_bridge.h"
 #include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/android/url_utilities.h"
+#include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
@@ -136,6 +137,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
   { "UmaBridge", RegisterUmaBridge },
   { "UrlUtilities", RegisterUrlUtilities },
+  { "VoiceSearchTabHelper", RegisterVoiceSearchTabHelper },
   { "WebsiteSettingsPopupAndroid",
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
