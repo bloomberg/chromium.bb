@@ -266,6 +266,9 @@ class ChromeTests:
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
 
+  def TestCast(self):
+    return self.SimpleTest("chrome", "cast_unittests")
+
   def TestChromeOS(self):
     return self.SimpleTest("chromeos", "chromeos_unittests")
 
@@ -537,6 +540,7 @@ class ChromeTests:
     "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
+    "cast": TestCast,            "cast_unittests": TestCast,
     "chromeos": TestChromeOS,    "chromeos_unittests": TestChromeOS,
     "components": TestComponents,"components_unittests": TestComponents,
     "compositor": TestCompositor,"compositor_unittests": TestCompositor,
