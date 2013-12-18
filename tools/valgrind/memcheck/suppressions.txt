@@ -787,7 +787,7 @@
    Memcheck:Param
    write(buf)
    ...
-   fun:_ZN26SandboxedUnpacker17RewriteImageFilesEv
+   fun:_ZN17SandboxedUnpacker17RewriteImageFilesEv
 }
 {
    bug_30704c
@@ -1147,8 +1147,8 @@
    ...
    obj:/usr/lib/libpangocairo-1.0.so.0.2002.3
    ...
-   fun:_ZN3gfx10Canvas13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiiii
-   fun:_ZN3gfx10Canvas13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiii
+   fun:_ZN3gfx6Canvas13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiiii
+   fun:_ZN3gfx6Canvas13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiii
 }
 {
    bug_51590a
@@ -1176,7 +1176,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN23MessageService16AddEventListenerERKSsi
+   fun:_ZN14MessageService16AddEventListenerERKSsi
    fun:_ZN24BrowserRenderProcessHost22OnExtensionAddListenerERKSs
 }
 {
@@ -1644,7 +1644,7 @@
    fun:pango_layout_get_extents_internal
    fun:pango_layout_get_pixel_extents
    fun:pango_layout_get_pixel_size
-   fun:_ZN3gfx10Canvas13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
+   fun:_ZN3gfx6Canvas13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
 }
 {
    bug_71152
@@ -4264,9 +4264,9 @@
    bug_145712
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN5blink25NotificationPresenterImpl17requestPermissionEPN7WebCore22Scri ptExecutionContextEN3WTF10PassRefPtrINS1_12VoidCallbackEEE
-   fun:_ZN7WebCore18NotificationCenter17requestPermissionEN3WTF10PassRefPtrINS_1 2VoidCallbackEEE
-   fun:_ZN7WebCore20V8NotificationCenter25requestPermissionCallbackERKN2v89Argum entsE
+   fun:_ZN5blink25NotificationPresenterImpl17requestPermissionEPN7WebCore22ScriptExecutionContextEN3WTF10PassRefPtrINS1_12VoidCallbackEEE
+   fun:_ZN7WebCore18NotificationCenter17requestPermissionEN3WTF10PassRefPtrINS_12VoidCallbackEEE
+   fun:_ZN7WebCore20V8NotificationCenter25requestPermissionCallbackERKN2v89ArgumentsE
 }
 {
    bug_145723
