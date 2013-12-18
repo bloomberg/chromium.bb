@@ -91,6 +91,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -2539,7 +2540,7 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
 }
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton() {
-  if (profiles::IsNewProfileManagementEnabled()) {
+  if (switches::IsNewProfileManagement()) {
     NewAvatarButton* button = frame_->GetNewAvatarMenuButton();
     if (button) {
       gfx::Point origin;

@@ -4,11 +4,10 @@
 
 #include "chrome/browser/profiles/profile_list_desktop.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -44,8 +43,7 @@ void ProfileListDesktop::RebuildMenu() {
         profile_info_->GetGAIAPictureOfProfileAtIndex(i);
 
     gfx::Image icon = profile_info_->GetAvatarIconOfProfileAtIndex(i);
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kNewProfileManagement)) {
+    if (!switches::IsNewProfileManagement()) {
       // old avatar menu uses resized-small images
       icon = profiles::GetAvatarIconForMenu(icon, is_gaia_picture);
     }

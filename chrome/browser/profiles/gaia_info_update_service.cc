@@ -4,7 +4,6 @@
 
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -12,8 +11,8 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -68,10 +67,8 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
     return false;
 
   // To enable this feature for testing pass "--google-profile-info".
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kGoogleProfileInfo)) {
+  if (switches::IsGoogleProfileInfo())
     return true;
-  }
 
   // This feature is disable by default.
   return false;

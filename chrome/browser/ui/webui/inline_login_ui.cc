@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -137,8 +137,7 @@ class InlineLoginUIHandler : public GaiaAuthConsumer,
     GaiaUrls* gaiaUrls = GaiaUrls::GetInstance();
     params.SetString("gaiaUrl", gaiaUrls->gaia_url().spec());
 
-    bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableInlineSignin);
+    bool enable_inline = switches::IsEnableInlineSignin();
     params.SetInteger("authMode",
         enable_inline ? kInlineAuthMode : kDefaultAuthMode);
 

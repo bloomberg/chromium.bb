@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -29,8 +28,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -585,10 +584,8 @@ void SigninManager::OnSignedIn(const std::string& username) {
 
 #if !defined(OS_ANDROID)
   // Don't store password hash except for users of new profile features.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNewProfileManagement)) {
+  if (switches::IsNewProfileManagement())
     chrome::SetLocalAuthCredentials(profile_, password_);
-  }
 #endif
 
   password_.clear();  // Don't need it anymore.

@@ -111,6 +111,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -354,7 +355,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   // signed out, then we should show the user manager instead. By switching
   // the active profile to the guest profile we ensure that no
   // browser windows will be opened for the guest profile.
-  if (profiles::IsNewProfileManagementEnabled() && !profile->IsGuestSession()) {
+  if (switches::IsNewProfileManagement() && !profile->IsGuestSession()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);

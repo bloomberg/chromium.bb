@@ -17,9 +17,6 @@ namespace profiles {
 // Checks if multiple profiles is enabled.
 bool IsMultipleProfilesEnabled();
 
-// Checks if new profile management is enabled.
-bool IsNewProfileManagementEnabled();
-
 // Returns the path to the default profile directory, based on the given
 // user data directory.
 base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir);

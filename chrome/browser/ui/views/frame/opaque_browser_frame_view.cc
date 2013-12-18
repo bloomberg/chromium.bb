@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,8 +23,8 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -142,7 +141,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   AddChildView(window_title_);
 
   if (browser_view->IsRegularOrGuestSession() &&
-      profiles::IsNewProfileManagementEnabled())
+      switches::IsNewProfileManagement())
     UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
   else
     UpdateAvatarInfo();
@@ -396,7 +395,7 @@ void OpaqueBrowserFrameView::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       if (browser_view() ->IsRegularOrGuestSession() &&
-          profiles::IsNewProfileManagementEnabled())
+          switches::IsNewProfileManagement())
         UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
       else
         UpdateAvatarInfo();

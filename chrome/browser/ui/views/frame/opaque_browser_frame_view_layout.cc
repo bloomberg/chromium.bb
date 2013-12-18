@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
+#include "chrome/common/profile_management_switches.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -371,7 +372,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
-  DCHECK(profiles::IsNewProfileManagementEnabled());
+  DCHECK(switches::IsNewProfileManagement());
   if (!new_avatar_button_)
     return;
 
@@ -654,7 +655,7 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   leading_button_start_++;
 
   if (delegate_->IsRegularOrGuestSession() &&
-      profiles::IsNewProfileManagementEnabled())
+      switches::IsNewProfileManagement())
     LayoutNewStyleAvatar(host);
   else
     LayoutAvatar(host);

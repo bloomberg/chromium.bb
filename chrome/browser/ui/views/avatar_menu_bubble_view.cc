@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -23,7 +22,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -726,8 +725,7 @@ void AvatarMenuBubbleView::InitMenuContents(
     item_views_.push_back(item_view);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement)) {
+  if (switches::IsNewProfileManagement()) {
     separator_ = new views::Separator(views::Separator::HORIZONTAL);
     AddChildView(separator_);
     buttons_view_ = new ActionButtonView(this, browser_->profile());

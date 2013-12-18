@@ -7,11 +7,10 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -74,10 +73,8 @@ void AppendMirrorRequestHeaderIfPossible(
   // available.
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
-  bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInlineSignin);
-  bool is_gaia_signin = enable_inline &&
-      profiles::IsNewProfileManagementEnabled() &&
+  bool is_gaia_signin = !switches::IsEnableInlineSignin() &&
+      switches::IsNewProfileManagement() &&
       gaia::IsGaiaSignonRealm(origin);
   if (!is_gaia_signin && !IsDriveOrigin(origin))
     return;
@@ -108,7 +105,7 @@ void ProcessMirrorResponseHeaderIfExists(
 
   if (gaia::IsGaiaSignonRealm(request->url().GetOrigin()) &&
       request->response_headers()->HasHeader(kChromeManageAccountsHeader)) {
-    DCHECK(profiles::IsNewProfileManagementEnabled() &&
+    DCHECK(switches::IsNewProfileManagement() &&
            !io_data->is_incognito());
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,

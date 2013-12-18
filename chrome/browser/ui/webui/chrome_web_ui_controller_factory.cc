@@ -56,6 +56,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/dom_distiller_constants.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -447,9 +448,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   if (url.host() == chrome::kChromeUIUserManagerHost &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNewProfileManagement))
+      switches::IsNewProfileManagement()) {
     return &NewWebUI<UserManagerUI>;
+  }
 #endif
 
   if (url.host() == chrome::kChromeUIChromeURLsHost ||

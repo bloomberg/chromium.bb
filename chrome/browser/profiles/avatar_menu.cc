@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -101,7 +102,7 @@ bool AvatarMenu::ShouldShowAvatarMenu() {
            ChromeShellDelegate::instance() &&
            ChromeShellDelegate::instance()->IsMultiProfilesEnabled();
 #else
-    return profiles::IsNewProfileManagementEnabled() ||
+    return switches::IsNewProfileManagement() ||
            (g_browser_process->profile_manager() &&
             g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif
@@ -119,7 +120,7 @@ void AvatarMenu::SwitchToProfile(size_t index, bool always_create) {
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
 
-  if (profiles::IsNewProfileManagementEnabled()) {
+  if (switches::IsNewProfileManagement()) {
     // Don't open a browser window for signed-out profiles.
     if (item.signin_required) {
       chrome::ShowUserManager(item.profile_path);

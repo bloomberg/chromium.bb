@@ -96,6 +96,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -923,10 +924,8 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #if defined(OS_ANDROID)
   host->AddFilter(new EncryptedMediaMessageFilterAndroid());
 #endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement)) {
+  if (switches::IsNewProfileManagement())
     host->AddFilter(new PrincipalsMessageFilter(id));
-  }
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

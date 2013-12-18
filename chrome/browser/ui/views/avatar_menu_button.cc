@@ -11,12 +11,12 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
@@ -105,7 +105,7 @@ void AvatarMenuButton::ShowAvatarBubble() {
   gfx::Rect bounds(origin, size());
   views::BubbleBorder::Arrow arrow = button_on_right_ ?
       views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::TOP_LEFT;
-  if (profiles::IsNewProfileManagementEnabled()) {
+  if (switches::IsNewProfileManagement()) {
     ProfileChooserView::ShowBubble(
         this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
         browser_);

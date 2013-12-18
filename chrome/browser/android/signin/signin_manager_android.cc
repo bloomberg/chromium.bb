@@ -17,7 +17,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/google_auto_login_helper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "jni/SigninManager_jni.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -209,7 +209,7 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
 }
 
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
-  if (profiles::IsNewProfileManagementEnabled()) {
+  if (switches::IsNewProfileManagement()) {
     // New Mirror code path that just fires the events and let the
     // Account Reconcilor handles everything.
     AndroidProfileOAuth2TokenService* token_service =

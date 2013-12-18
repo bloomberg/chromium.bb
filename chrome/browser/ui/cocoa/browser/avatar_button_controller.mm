@@ -23,6 +23,7 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -224,7 +225,7 @@ class Observer : public content::NotificationObserver {
   point = [[anchor window] convertBaseToScreen:point];
 
   // |menuController_| will automatically release itself on close.
-  if (profiles::IsNewProfileManagementEnabled()) {
+  if (switches::IsNewProfileManagement()) {
     menuController_ =
       [[ProfileChooserController alloc] initWithBrowser:browser_
                                              anchoredAt:point];

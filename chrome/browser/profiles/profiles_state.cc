@@ -4,7 +4,6 @@
 
 #include "chrome/browser/profiles/profiles_state.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,11 +33,6 @@ bool IsMultipleProfilesEnabled() {
 #endif
 
   return true;
-}
-
-bool IsNewProfileManagementEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement);
 }
 
 base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -146,7 +147,7 @@ TEST_F(BrowserCommandControllerTest, OldAvatarMenuDisabledWhenOnlyOneProfile) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  EXPECT_FALSE(profiles::IsNewProfileManagementEnabled());
+  EXPECT_FALSE(switches::IsNewProfileManagement());
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -179,7 +180,7 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledWhenOnlyOneProfile) {
   // The command line is reset at the end of every test by the test suite.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kNewProfileManagement);
-  EXPECT_TRUE(profiles::IsNewProfileManagementEnabled());
+  EXPECT_TRUE(switches::IsNewProfileManagement());
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -203,7 +204,7 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledInGuestMode) {
   // The command line is reset at the end of every test by the test suite.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kNewProfileManagement);
-  EXPECT_TRUE(profiles::IsNewProfileManagementEnabled());
+  EXPECT_TRUE(switches::IsNewProfileManagement());
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -262,14 +263,14 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   const CommandUpdater* command_updater = command_controller.command_updater();
 
   // The old style avatar menu should be disabled.
-  EXPECT_FALSE(profiles::IsNewProfileManagementEnabled());
+  EXPECT_FALSE(switches::IsNewProfileManagement());
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 
   // The new style avatar menu should also be disabled.
   // The command line is reset at the end of every test by the test suite.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kNewProfileManagement);
-  EXPECT_TRUE(profiles::IsNewProfileManagementEnabled());
+  EXPECT_TRUE(switches::IsNewProfileManagement());
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 }
 

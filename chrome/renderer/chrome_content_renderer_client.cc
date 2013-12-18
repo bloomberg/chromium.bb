@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/benchmarking_extension.h"
@@ -286,7 +287,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   // TODO(guohui): needs to forward the new-profile-management switch to
   // renderer processes.
-  if (command_line->HasSwitch(switches::kNewProfileManagement))
+  if (switches::IsNewProfileManagement())
     thread->RegisterExtension(extensions_v8::PrincipalsExtension::Get());
 
   // chrome:, chrome-search:, and chrome-devtools: pages should not be

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/signin_promo.h"
 
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -22,9 +21,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/url_data_source.h"
@@ -181,9 +180,7 @@ GURL GetPromoURL(Source source, bool auto_close) {
 GURL GetPromoURL(Source source, bool auto_close, bool is_constrained) {
   DCHECK_NE(SOURCE_UNKNOWN, source);
 
-  bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInlineSignin);
-  if (enable_inline) {
+  if (switches::IsEnableInlineSignin()) {
     std::string url(chrome::kChromeUIChromeSigninURL);
     base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeySource, source);
     if (auto_close)

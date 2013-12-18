@@ -60,7 +60,6 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
@@ -77,6 +76,7 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -252,7 +252,7 @@ void BrowserProcessImpl::StartTearDown() {
                  "BrowserProcessImpl::StartTearDown:ProfileManager");
     // The desktop User Manager needs to be closed before the guest profile
     // can be destroyed.
-    if (profiles::IsNewProfileManagementEnabled())
+    if (switches::IsNewProfileManagement())
       chrome::HideUserManager();
     profile_manager_.reset();
   }

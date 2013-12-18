@@ -43,6 +43,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -847,7 +848,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   StartupTaskRunnerServiceFactory::GetForProfile(profile)->
       StartDeferredTaskRunners();
 
-  if (profiles::IsNewProfileManagementEnabled())
+  if (switches::IsNewProfileManagement())
     AccountReconcilorFactory::GetForProfile(profile);
 }
 

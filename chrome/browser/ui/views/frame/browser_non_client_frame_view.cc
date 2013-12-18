@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/ui/views/new_avatar_button.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -47,7 +46,7 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
   // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
   // once the window is visible.
   if (!browser_view_->IsRegularOrGuestSession() ||
-      !profiles::IsNewProfileManagementEnabled())
+      !switches::IsNewProfileManagement())
     UpdateAvatarInfo();
 }
 
@@ -142,7 +141,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
 void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
     views::ButtonListener* listener,
     const NewAvatarButton::AvatarButtonStyle style) {
-  DCHECK(profiles::IsNewProfileManagementEnabled());
+  DCHECK(switches::IsNewProfileManagement());
   // This should never be called in incognito mode.
   DCHECK(browser_view_->IsRegularOrGuestSession());
 
