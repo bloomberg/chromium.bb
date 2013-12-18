@@ -11,9 +11,6 @@
 
 #include <gtest/gtest.h>
 
-namespace i18n {
-namespace addressinput {
-
 namespace {
 
 class ConDecLogger {
@@ -113,8 +110,5 @@ TEST(ScopedPtrTest, ScopedPtr) {
   }
   EXPECT_EQ(0, constructed);
 }
-
-}  // namespace addressinput
-}  // namespace i18n
 
 }  // namespace

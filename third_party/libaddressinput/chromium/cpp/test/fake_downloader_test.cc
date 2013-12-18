@@ -29,7 +29,6 @@ namespace {
 using i18n::addressinput::Downloader;
 using i18n::addressinput::FakeDownloader;
 using i18n::addressinput::RegionDataConstants;
-using i18n::addressinput::scoped_ptr;
 
 // Tests for FakeDownloader object.
 class FakeDownloaderTest : public testing::TestWithParam<std::string> {

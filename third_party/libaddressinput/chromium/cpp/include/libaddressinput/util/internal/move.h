@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef I18N_ADDRESSINPUT_MOVE_H_
-#define I18N_ADDRESSINPUT_MOVE_H_
+#ifndef I18N_ADDRESSINPUT_UTIL_INTERNAL_MOVE_H_
+#define I18N_ADDRESSINPUT_UTIL_INTERNAL_MOVE_H_
 
 // Macro with the boilerplate that makes a type move-only in C++03.
 //
@@ -215,4 +215,4 @@
   typedef void MoveOnlyTypeForCPP03; \
  private:
 
-#endif  // I18N_ADDRESSINPUT_MOVE_H_
+#endif  // I18N_ADDRESSINPUT_UTIL_INTERNAL_MOVE_H_

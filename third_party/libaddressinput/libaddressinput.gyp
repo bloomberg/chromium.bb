@@ -14,6 +14,10 @@
         },
       }],
     ],
+    'defines': [
+      'CUSTOM_BASICTYPES="base/basictypes.h"',
+      'CUSTOM_SCOPED_PTR="base/memory/scoped_ptr.h"',
+    ],
   },
   'targets': [
     {
@@ -55,9 +59,11 @@
         '<(libaddressinput_dir)/cpp/include/libaddressinput/load_rules_delegate.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/localization.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/basictypes.h',
-        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/move.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/basictypes.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/move.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/scoped_ptr.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/template_util.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/scoped_ptr.h',
-        '<(libaddressinput_dir)/cpp/include/libaddressinput/util/template_util.h',
         '<(libaddressinput_dir)/cpp/src/address_field.cc',
         '<(libaddressinput_dir)/cpp/src/address_field_util.cc',
         '<(libaddressinput_dir)/cpp/src/address_field_util.h',
@@ -105,6 +111,7 @@
       'target_name': 'libaddressinput_unittests',
       'type': '<(gtest_target_type)',
       'include_dirs': [
+        '<(DEPTH)',
         '<(libaddressinput_dir)/cpp/src/',
         '<(DEPTH)/testing/gtest/include/',
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',

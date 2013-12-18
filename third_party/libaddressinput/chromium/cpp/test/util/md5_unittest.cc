@@ -21,7 +21,6 @@ using i18n::addressinput::MD5Digest;
 using i18n::addressinput::MD5Init;
 using i18n::addressinput::MD5String;
 using i18n::addressinput::MD5Update;
-using i18n::addressinput::scoped_ptr;
 
 TEST(MD5, DigestToBase16) {
   MD5Digest digest;

@@ -5,13 +5,10 @@
 // The original source code is from:
 // https://code.google.com/p/libphonenumber/source/browse/trunk/cpp/src/phonenumbers/base/template_util.h?r=621
 
-#ifndef I18N_ADDRESSINPUT_UTIL_TEMPLATE_UTIL_H_
-#define I18N_ADDRESSINPUT_UTIL_TEMPLATE_UTIL_H_
+#ifndef I18N_ADDRESSINPUT_UTIL_INTERNAL_TEMPLATE_UTIL_H_
+#define I18N_ADDRESSINPUT_UTIL_INTERNAL_TEMPLATE_UTIL_H_
 
 #include <cstddef>  // For size_t.
-
-namespace i18n {
-namespace addressinput {
 
 // template definitions from tr1
 
@@ -105,7 +102,4 @@ struct is_class
                             sizeof(internal::YesType)> {
 };
 
-}  // namespace addressinput
-}  // namespace i18n
-
-#endif  // I18N_ADDRESSINPUT_UTIL_TEMPLATE_UTIL_H_
+#endif  // I18N_ADDRESSINPUT_UTIL_INTERNAL_TEMPLATE_UTIL_H_

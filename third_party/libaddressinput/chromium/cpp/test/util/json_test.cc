@@ -23,7 +23,6 @@
 namespace {
 
 using i18n::addressinput::Json;
-using i18n::addressinput::scoped_ptr;
 
 // Tests for Json object.
 class JsonTest : public testing::Test {

@@ -25,7 +25,6 @@
 namespace {
 
 using i18n::addressinput::FakeStorage;
-using i18n::addressinput::scoped_ptr;
 using i18n::addressinput::Storage;
 
 // Tests for FakeStorage object.
