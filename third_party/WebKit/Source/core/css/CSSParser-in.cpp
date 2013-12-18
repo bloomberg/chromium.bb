@@ -2036,14 +2036,15 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = (!id && validUnit(value, FLength | FPercent));
         break;
 
-    case CSSPropertyZIndex:              // auto | <integer> | inherit
-        if (id == CSSValueAuto) {
-            validPrimitive = true;
-            break;
-        }
-        /* nobreak */
     case CSSPropertyOrphans: // <integer> | inherit | auto (We've added support for auto for backwards compatibility)
     case CSSPropertyWidows: // <integer> | inherit | auto (Ditto)
+        if (id == CSSValueAuto)
+            validPrimitive = true;
+        else
+            validPrimitive = (!id && validUnit(value, FPositiveInteger, HTMLQuirksMode));
+        break;
+
+    case CSSPropertyZIndex: // auto | <integer> | inherit
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
