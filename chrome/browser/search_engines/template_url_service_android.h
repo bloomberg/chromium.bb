@@ -34,6 +34,10 @@ class TemplateUrlServiceAndroid {
       JNIEnv* env,
       jobject obj,
       jstring jquery);
+  base::android::ScopedJavaLocalRef<jstring> GetUrlForVoiceSearchQuery(
+      JNIEnv* env,
+      jobject obj,
+      jstring jquery);
   base::android::ScopedJavaLocalRef<jstring> ReplaceSearchTermsInUrl(
       JNIEnv* env,
       jobject obj,

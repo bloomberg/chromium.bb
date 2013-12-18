@@ -10,12 +10,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/util.h"
 #include "jni/TemplateUrlService_jni.h"
+#include "net/base/url_util.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
@@ -149,6 +153,23 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(JNIEnv* env,
       default_provider->url_ref().SupportsReplacement() && !query.empty()) {
     url = default_provider->url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(query));
+  }
+
+  return ConvertUTF8ToJavaString(env, url);
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(JNIEnv* env,
+                                                     jobject obj,
+                                                     jstring jquery) {
+  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
+  std::string url;
+
+  if (!query.empty()) {
+    GURL gurl = GetDefaultSearchURLForSearchTerms(GetOriginalProfile(), query);
+    if (google_util::IsGoogleSearchUrl(gurl))
+      gurl = net::AppendQueryParameter(gurl, "inm", "vs");
+    url = gurl.spec();
   }
 
   return ConvertUTF8ToJavaString(env, url);
