@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"> </script>
+    <title> PPAPI bad manifest/nexe URLs, glibc. </title>
+  </head>
+  <body id="body">
+    <embed id="partly_invalid"
+      class="naclModule"
+      width=100 height=20
+      src="partly_invalid.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+  <script type="text/javascript">
+  //<![CDATA[
+  var tester = new Tester($('body'));
+  tester.loadErrorsAreOK();
+  // This is a dummy test so that we can check output of runnable-ld.so
+  // using golden file.
+  tester.addAsyncTest('load_finished', function(status) {
+    status.expectEvent($('partly_invalid'), 'load', function(event) {
+      status.fail();
+    });
+    status.expectEvent($('partly_invalid'), 'loadend', function(event) {
+      status.pass();
+    });
+  });
+  tester.run();
+  //]]>
+  </script>
+  </body>
+</html>

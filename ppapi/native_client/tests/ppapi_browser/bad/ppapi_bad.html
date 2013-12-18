@@ -2,7 +2,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <!--
-  Copyright 2013 The Chromium Authors. All rights reserved.
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
   -->
@@ -42,7 +42,8 @@ function couldNotLoadNexe(is_pnacl) {
 }
 
 function declareTests(tester) {
-  var is_pnacl = getTestArguments()['pnacl'] !== undefined;
+  var test_args = getTestArguments({'is_pnacl': '0'});
+  var is_pnacl = parseInt(test_args['is_pnacl']);
   var mime_type = "application/x-nacl";
   if (is_pnacl) {
     mime_type = "application/x-pnacl";
@@ -54,9 +55,23 @@ function declareTests(tester) {
       'bad_magic',
       'ppapi_bad_magic.nmf',
       mime_type,
-      is_pnacl
-        ? 'NaCl module load failed: PnaclCoordinator: PNaCl Translator Error: Invalid PNaCl bitcode header'
-        : 'NaCl module load failed: Bad ELF header magic number');
+      'NaCl module load failed: Bad ELF header magic number');
+
+  // 'cross_origin' loads a manifest, then tries to load a cross-origin nexe.
+  badLoadTest(
+      tester,
+      'cross_origin',
+      'ppapi_bad_crossorigin.nmf',
+      mime_type,
+      couldNotAccessNexe(is_pnacl));
+
+  // 'cross_manifest' tries to load a cross-origin manifest.
+  badLoadTest(
+      tester,
+      'cross_manifest',
+      'http://www.google.com/crossorigin.manifest',
+      mime_type,
+      'NaCl module load failed: access to manifest url was denied.');
 
   // 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe.
   badLoadTest(
@@ -107,9 +122,7 @@ function declareTests(tester) {
       'bad_manifest_nexe_arch',
       'ppapi_bad_manifest_nexe_arch.nmf',
       mime_type,
-      is_pnacl
-        ? 'NaCl module load failed: manifest: no version of program given for portable.'
-        : 'NaCl module load failed: manifest: no version of program given for current arch and no portable version found.');
+      'NaCl module load failed: manifest: no version of program given for current arch and no portable version found.');
 
   //////////////////////////////////////
   // Initialization errors begin here //

@@ -1,0 +1,131 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Tests fatal errors that occur during loading.
+# (See ppapi_browser/crash for fatal errors that occur after loading).
+# TODO(polina): rename the directory and browser test to bad_load
+#
+# Manual testing with localhost:5103/scons-out/.../staging/ppapi_bad.html:
+#   scons --mode=nacl ppapi_bad
+# Automatic testing:
+#   scons run_ppapi_bad_browser_test
+#
+
+Import('env')
+
+# TODO(robertm): those should not be necessary once we go -std=c99
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'bad')
+
+ppapi_bad_files = [
+  'ppapi_bad.html',
+  'ppapi_bad.js',
+  'ppapi_bad_crossorigin.nmf',
+  'ppapi_bad_doesnotexist.nmf',
+  'ppapi_bad_magic.nmf',
+  'ppapi_bad_manifest_uses_nexes.nmf',
+  'ppapi_bad_manifest_bad_files.nmf',
+  'ppapi_bad_manifest_nexe_arch.nmf',
+  env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+  ]
+ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
+
+nmf_names = []
+# Compile all nexes embedded into the above html
+# TODO(bbudge) Re-enable tests as the IPC proxy gets equivalent error reporting
+# or delete them after the proxy switch if they're specific to SRPC.
+# http://crbug.com/160076
+for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
+              'no_ppp_instance', 'get_ppp_instance_crash',
+              #'get_ppp_messaging_crash', 'get_ppp_printing_crash',
+              'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
+              #'event_replay_crash'
+            ]:
+  bad_nmf = 'ppapi_bad_%s' % kind
+  bad_nexe = env.ProgramNameForNmf('ppapi_bad_%s' % kind)
+  env.ComponentProgram(bad_nexe,
+                       ['ppapi_bad_%s.cc' % kind],
+                       EXTRA_LIBS=['ppapi',
+                                   'platform',
+                                   'pthread',
+                                   'gio'])
+  nmf_names.append(bad_nmf)
+  ppapi_bad_files.extend(env.ExtractPublishedFiles(bad_nexe))
+  env.Depends(ppapi_bad, env.Alias(bad_nexe))
+
+# "scons --mode=nacl ppapi_bad" will publish the html and all of its
+# dependencies to scons-out.
+env.Alias('ppapi_bad', ppapi_bad)
+
+node = env.PPAPIBrowserTester(
+    'ppapi_bad_browser_test.out',
+    url='ppapi_bad.html',
+    nmf_names=nmf_names,
+    test_args=[('is_pnacl', int(env.Bit('pnacl_generate_pexe')))],
+    files=[env.File(f) for f in ppapi_bad_files],
+    args=['--allow_404'])
+
+# This test is failing on Windows:
+#   crbug.com/98720
+# This test is failing on Valgrind because of multiple nexes.
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_bad_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('host_windows') or
+                                 env.Bit('running_on_valgrind'))
+
+
+# Bad nexe tests that won't work in PNaCl (native)
+# For example, partly_invalid.nexe has inline assembly in its source files.
+# Just bail out here for PNaCl, since the NMF will require the .nexe
+# to be built.
+if env.Bit('bitcode'):
+  Return()
+
+nacltest_js = env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/' +
+                       'nacltest.js')
+partly_invalid = env.File('${STAGING_DIR}/partly_invalid${PROGSUFFIX}')
+nmf = '${TEST_DIR}/partly_invalid.nmf'
+if not env.Bit('nacl_glibc'):
+  ppapi_bad_native_files = [
+      env.File('ppapi_bad_native.html'),
+      env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser/' +
+               'progress_event_listener.js'),
+      nacltest_js]
+  replicated_files = env.Replicate('${STAGING_DIR}', ppapi_bad_native_files)
+  env.Alias('all_programs', replicated_files)
+  ppapi_bad_native_files.append(partly_invalid)
+
+  node = env.PPAPIBrowserTester(
+      'ppapi_bad_native_test.out',
+      url='ppapi_bad_native.html',
+      nmfs=[nmf],
+      files=ppapi_bad_native_files,
+      )
+else:
+  ppapi_bad_native_files = [
+      env.File('${TEST_DIR}/ppapi_bad_native_glibc.html'),
+      nacltest_js]
+  replicated_files = env.Replicate('${STAGING_DIR}', ppapi_bad_native_files)
+  env.Alias('all_programs', replicated_files)
+  ppapi_bad_native_files.append(partly_invalid)
+
+  node = env.PPAPIBrowserTester(
+      'ppapi_bad_native_test.out',
+      url='ppapi_bad_native_glibc.html',
+      nmfs=[nmf],
+      files=ppapi_bad_native_files,
+      nacl_exe_stderr={
+          'file': '${TARGET_ROOT}/test_results/ppapi_bad_native_test.log',
+          'golden': '${TEST_DIR}/ppapi_bad_native_glibc.stderr'}
+      )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_bad_native_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

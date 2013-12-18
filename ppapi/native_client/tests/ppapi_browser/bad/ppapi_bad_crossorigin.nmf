@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "http://www.google.com/crossorigin.nexe"},
+    "x86-64": {"url": "http://www.google.com/crossorigin.nexe"},
+    "arm": {"url": "http://www.google.com/crossorigin.nexe"}
+  }
+}
