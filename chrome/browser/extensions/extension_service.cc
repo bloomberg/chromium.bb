@@ -383,7 +383,8 @@ ExtensionService::ExtensionService(Profile* profile,
   component_loader_.reset(
       new extensions::ComponentLoader(this,
                                       profile->GetPrefs(),
-                                      g_browser_process->local_state()));
+                                      g_browser_process->local_state(),
+                                      profile));
 
   if (extensions_enabled_) {
     extensions::ExternalProviderImpl::CreateExternalProviders(

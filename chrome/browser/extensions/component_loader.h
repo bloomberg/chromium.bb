@@ -15,6 +15,10 @@
 class ExtensionServiceInterface;
 class PrefService;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 // For registering, loading, and unloading component extensions.
@@ -22,7 +26,8 @@ class ComponentLoader {
  public:
   ComponentLoader(ExtensionServiceInterface* extension_service,
                   PrefService* prefs,
-                  PrefService* local_state);
+                  PrefService* local_state,
+                  content::BrowserContext* browser_context);
   virtual ~ComponentLoader();
 
   size_t registered_extensions_count() const {
@@ -132,6 +137,7 @@ class ComponentLoader {
 
   PrefService* profile_prefs_;
   PrefService* local_state_;
+  content::BrowserContext* browser_context_;
 
   ExtensionServiceInterface* extension_service_;
 

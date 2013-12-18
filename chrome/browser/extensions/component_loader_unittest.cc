@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -82,7 +83,10 @@ class ComponentLoaderTest : public testing::Test {
   ComponentLoaderTest()
       // Note: we pass the same pref service here, to stand in for both
       // user prefs and local state.
-      : component_loader_(&extension_service_, &prefs_, &local_state_) {
+      : component_loader_(&extension_service_,
+                          &prefs_,
+                          &local_state_,
+                          &profile_) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -108,6 +112,7 @@ class ComponentLoaderTest : public testing::Test {
   MockExtensionService extension_service_;
   TestingPrefServiceSyncable prefs_;
   TestingPrefServiceSimple local_state_;
+  TestingProfile profile_;
   ComponentLoader component_loader_;
 
   // The root directory of the text extension.

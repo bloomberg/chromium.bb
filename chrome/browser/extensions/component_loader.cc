@@ -44,12 +44,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #endif
 
@@ -112,9 +110,11 @@ ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
                                  PrefService* profile_prefs,
-                                 PrefService* local_state)
+                                 PrefService* local_state,
+                                 content::BrowserContext* browser_context)
     : profile_prefs_(profile_prefs),
       local_state_(local_state),
+      browser_context_(browser_context),
       extension_service_(extension_service) {}
 
 ComponentLoader::~ComponentLoader() {
@@ -482,14 +482,17 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
         // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
         // Quickoffice. It doesn't work without temporary file system access.
-        Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-        ExtensionService* service =
-            extensions::ExtensionSystem::Get(profile)->extension_service();
-        GURL site = service->GetSiteForExtensionId(id);
-        fileapi::FileSystemContext* context =
-            content::BrowserContext::GetStoragePartitionForSite(profile, site)->
-                GetFileSystemContext();
-        context->EnableTemporaryFileSystemInIncognito();
+        // Make sure temporary file system is enabled in the off the record
+        // browser context (as that is the one used in guest session).
+        content::BrowserContext* off_the_record_context =
+            ExtensionsBrowserClient::Get()->GetOffTheRecordContext(
+                browser_context_);
+        GURL site = content::SiteInstance::GetSiteForURL(
+            off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
+        fileapi::FileSystemContext* file_system_context =
+            content::BrowserContext::GetStoragePartitionForSite(
+                off_the_record_context, site)->GetFileSystemContext();
+        file_system_context->EnableTemporaryFileSystemInIncognito();
       }
     }
 #endif  // defined(GOOGLE_CHROME_BUILD)
