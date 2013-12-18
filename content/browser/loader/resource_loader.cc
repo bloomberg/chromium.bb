@@ -162,13 +162,15 @@ void ResourceLoader::ReportUploadProgress() {
 }
 
 void ResourceLoader::MarkAsTransferring(const GURL& target_url) {
-  CHECK_EQ(GetRequestInfo()->GetResourceType(), ResourceType::MAIN_FRAME)
-      << "Cannot transfer non-main frame navigations";
+  CHECK(ResourceType::IsFrame(GetRequestInfo()->GetResourceType()))
+      << "Can only transfer for navigations";
   is_transferring_ = true;
 
   // When transferring a request to another process, the renderer doesn't get
   // a chance to update the cookie policy URL. Do it here instead.
-  request()->set_first_party_for_cookies(target_url);
+  // TODO(creis): Remove this in https://codereview.chromium.org/117623003/.
+  if (GetRequestInfo()->GetResourceType() == ResourceType::MAIN_FRAME)
+    request()->set_first_party_for_cookies(target_url);
 }
 
 void ResourceLoader::CompleteTransfer() {

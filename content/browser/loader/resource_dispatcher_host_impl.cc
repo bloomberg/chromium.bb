@@ -1156,10 +1156,16 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
   // Install a CrossSiteResourceHandler for all main frame requests.  This will
   // let us check whether a transfer is required and pause for the unload
   // handler either if so or if a cross-process navigation is already under way.
- if (request_data.resource_type == ResourceType::MAIN_FRAME &&
-     process_type == PROCESS_TYPE_RENDERER) {
-    handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
+  bool is_swappable_navigation =
+      request_data.resource_type == ResourceType::MAIN_FRAME;
+  // If we are using --site-per-process, install it for subframes as well.
+  if (!is_swappable_navigation &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    is_swappable_navigation =
+        request_data.resource_type == ResourceType::SUB_FRAME;
   }
+  if (is_swappable_navigation && process_type == PROCESS_TYPE_RENDERER)
+    handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
 
   // Insert a buffered event handler before the actual one.
   handler.reset(

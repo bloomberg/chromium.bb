@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -17,7 +19,9 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/url_constants.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
@@ -118,6 +122,28 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   bool should_transfer =
       GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
           info->GetContext(), request()->original_url(), request()->url());
+
+  // When the --site-per-process flag is passed, we transfer processes for
+  // cross-site subframe navigations.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    GURL referrer(request()->referrer());
+    // We skip this for WebUI processes for now, since pages like the NTP host
+    // cross-site WebUI iframes but don't have referrers.
+    bool is_webui_process = ChildProcessSecurityPolicyImpl::GetInstance()->
+        HasWebUIBindings(info->GetChildID());
+
+    // TODO(creis): This shouldn't rely on the referrer to determine the parent
+    // frame's URL.  This also doesn't work for hosted apps, due to passing NULL
+    // to IsSameWebSite.  It should be possible to always send the navigation to
+    // the UI thread to make a policy decision, which could let us eliminate the
+    // renderer-side check in RenderViewImpl::decidePolicyForNavigation as well.
+    if (info->GetResourceType() == ResourceType::SUB_FRAME &&
+        !is_webui_process &&
+        !SiteInstance::IsSameWebSite(NULL, request()->url(), referrer)) {
+      should_transfer = true;
+    }
+  }
+
   bool swap_needed = should_transfer ||
       CrossSiteRequestManager::GetInstance()->
           HasPendingCrossSiteRequest(info->GetChildID(), info->GetRouteID());
