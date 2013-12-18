@@ -76,6 +76,7 @@
         'test/util/json_test.cc',
         'test/util/md5_unittest.cc',
         'test/util/scoped_ptr_unittest.cc',
+        'test/util/stl_util_unittest.cc',
         'test/util/string_split_unittest.cc',
         'test/validating_storage_test.cc',
         'test/validating_util_test.cc',

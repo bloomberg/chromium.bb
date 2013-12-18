@@ -1,19 +1,21 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// The original source code is from:
+// http://src.chromium.org/viewvc/chrome/trunk/src/base/stl_util.h?revision=221067
 
 // Derived from google3/util/gtl/stl_util.h
 
-#ifndef BASE_STL_UTIL_H_
-#define BASE_STL_UTIL_H_
+#ifndef I18N_ADDRESSINPUT_UTIL_STL_UTIL_H_
+#define I18N_ADDRESSINPUT_UTIL_STL_UTIL_H_
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <iterator>
 #include <string>
 #include <vector>
-
-#include "base/logging.h"
 
 // Clears internal memory of an STL object.
 // STL clear()/reserve(0) does not always free internal memory allocated
@@ -196,7 +198,8 @@ bool ContainsKey(const Collection& collection, const Key& key) {
   return collection.find(key) != collection.end();
 }
 
-namespace base {
+namespace i18n {
+namespace addressinput {
 
 // Returns true if the container is sorted.
 template <typename Container>
@@ -209,8 +212,8 @@ bool STLIsSorted(const Container& cont) {
 // Returns a new ResultType containing the difference of two sorted containers.
 template <typename ResultType, typename Arg1, typename Arg2>
 ResultType STLSetDifference(const Arg1& a1, const Arg2& a2) {
-  DCHECK(STLIsSorted(a1));
-  DCHECK(STLIsSorted(a2));
+  assert(STLIsSorted(a1));
+  assert(STLIsSorted(a2));
   ResultType difference;
   std::set_difference(a1.begin(), a1.end(),
                       a2.begin(), a2.end(),
@@ -218,6 +221,7 @@ ResultType STLSetDifference(const Arg1& a1, const Arg2& a2) {
   return difference;
 }
 
-}  // namespace base
+}  // namespace addressinput
+}  // namespace i18n
 
-#endif  // BASE_STL_UTIL_H_
+#endif  // I18N_ADDRESSINPUT_UTIL_STL_UTIL_H_

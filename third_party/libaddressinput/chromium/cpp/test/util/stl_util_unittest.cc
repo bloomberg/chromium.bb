@@ -1,15 +1,21 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// The original source code is from:
+// http://src.chromium.org/viewvc/chrome/trunk/src/base/stl_util_unittest.cc?revision=171321
 
-#include "base/stl_util.h"
+#include "util/stl_util.h"
 
 #include <set>
+#include <vector>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include <gtest/gtest.h>
 
-namespace base {
 namespace {
+
+using i18n::addressinput::STLIsSorted;
+using i18n::addressinput::STLSetDifference;
 
 TEST(STLUtilTest, STLIsSorted) {
   {
@@ -79,4 +85,3 @@ TEST(STLUtilTest, STLSetDifference) {
 }
 
 }  // namespace
-}  // namespace base
