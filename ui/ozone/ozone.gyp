@@ -31,10 +31,6 @@
       },
       'sources': [
         '<(platform_list_file)',
-        'ime/fake_input_method_context_ozone.cc',
-        'ime/fake_input_method_context_ozone.h',
-        'ime/input_method_context_factory_ozone.cc',
-        'ime/input_method_context_factory_ozone.h',
         'ozone_platform.cc',
         'ozone_platform.h',
         'ozone_switches.cc',
@@ -44,6 +40,9 @@
         'platform/test/ozone_platform_test.cc',
         'platform/test/ozone_platform_test.h',
         '<@(external_ozone_platform_files)',
+      ],
+      'includes': [
+        'ime/ime.gypi',
       ],
       'actions': [
         {
