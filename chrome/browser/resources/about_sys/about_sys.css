@@ -96,7 +96,6 @@ html[dir='rtl'] #header h1 {
   padding: 0 0.5em;
   padding-top: 0.35em;
   vertical-align: top;
-  white-space: pre;
 }
 
 .list tr td:nth-last-child(1),
@@ -130,6 +129,7 @@ html[dir='rtl'] #header h1 {
 .number-expanded,
 .number-collapsed  {
   text-align: left;
+  text-overflow: ellipsis;
   width: 80%;
 }
 
@@ -146,6 +146,11 @@ tr > *:nth-child(2) {
 .name {
   background-position: 5em center;
   background-repeat: no-repeat;
+}
+
+.stat-value {
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
 }
 
 html[dir='rtl'] #details .name {

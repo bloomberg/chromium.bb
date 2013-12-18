@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
 
-namespace chromeos {
+namespace system_logs {
 
 void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
@@ -21,4 +21,4 @@ void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
   callback.Run(response.get());
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

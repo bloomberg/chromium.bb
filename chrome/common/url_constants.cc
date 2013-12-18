@@ -219,6 +219,7 @@ const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncFileSystemInternalsHost[] = "syncfs-internals";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
+const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUIThemeHost[] = "theme";
@@ -272,7 +273,6 @@ const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISlowHost[] = "slow";
 const char kChromeUISlowTraceHost[] = "slow_trace";
-const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIUserImageHost[] = "userimage";
 
 const char kChromeUIMenu[] = "menu";
@@ -560,6 +560,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUISignInInternalsHost,
   kChromeUIStatsHost,
   kChromeUISyncInternalsHost,
+  kChromeUISystemInfoHost,
   kChromeUITermsHost,
   kChromeUITranslateInternalsHost,
   kChromeUIUberHost,
@@ -597,7 +598,6 @@ const char* const kChromeHostURLs[] = {
   kChromeUIOobeHost,
   kChromeUIOSCreditsHost,
   kChromeUIProxySettingsHost,
-  kChromeUISystemInfoHost,
   kChromeUITaskManagerHost,
 #endif
 #if !defined(DISABLE_NACL)

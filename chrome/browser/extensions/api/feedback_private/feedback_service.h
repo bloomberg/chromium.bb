@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/browser/feedback/feedback_data.h"
+#include "chrome/browser/feedback/system_logs/scrubbed_system_logs_fetcher.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 
 class Profile;
@@ -30,27 +31,21 @@ class FeedbackService {
 
   // Creates a platform-specific FeedbackService instance.
   static FeedbackService* CreateInstance();
-  // Convenience method for populating a SystemInformationList structure
-  // with a key/value pair.
-  static void PopulateSystemInfo(SystemInformationList* sys_info_list,
-                                 const std::string& key,
-                                 const std::string& value);
 
   virtual ~FeedbackService();
 
   // Sends a feedback report.
-  virtual void SendFeedback(Profile* profile,
-                            scoped_refptr<FeedbackData> feedback_data,
-                            const SendFeedbackCallback& callback);
+  void SendFeedback(Profile* profile,
+                    scoped_refptr<FeedbackData> feedback_data,
+                    const SendFeedbackCallback& callback);
+
+  // Start to gather system information.
+  // The |callback| will be invoked once the query is completed.
+  void GetSystemInformation(const GetSystemInformationCallback& callback);
 
   // Platform specific methods:
   // Gets the email address of the logged in user.
   virtual std::string GetUserEmail() = 0;
-
-  // Start to gather system information.
-  // The |callback| will be invoked once the query is completed.
-  virtual void GetSystemInformation(
-      const GetSystemInformationCallback& callback) = 0;
 
   // Gets the histograms in JSON.
   virtual void GetHistograms(std::string* histograms) = 0;
@@ -68,6 +63,10 @@ class FeedbackService {
   // Checks if we have read all the blobs we need to; signals the feedback
   // data object once all the requisite data has been populated.
   void CompleteSendFeedback();
+
+ private:
+  void OnSystemLogsFetchComplete(
+      scoped_ptr<system_logs::SystemLogsResponse> sys_info);
 
   GetSystemInformationCallback system_information_callback_;
   SendFeedbackCallback send_feedback_callback_;

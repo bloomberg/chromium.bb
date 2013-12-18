@@ -25,7 +25,7 @@ const char kModemStatusKeyName[] = "modem-status";
 const char kWiMaxStatusKeyName[] = "wimax-status";
 const char kUserLogFileKeyName[] = "user_log_files";
 
-namespace chromeos {
+namespace system_logs {
 
 DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
     : response_(new SystemLogsResponse()),
@@ -41,7 +41,8 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(callback_.is_null());
 
   callback_ = callback;
-  DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
+  chromeos::DebugDaemonClient* client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 
   client->GetRoutes(true,   // Numeric
                     false,  // No IPv6
@@ -188,4 +189,4 @@ void DebugDaemonLogSource::RequestCompleted() {
   callback_.Run(response_.get());
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

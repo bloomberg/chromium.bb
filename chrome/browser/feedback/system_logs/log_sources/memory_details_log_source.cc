@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_logs/memory_details_log_source.h"
+#include "chrome/browser/feedback/system_logs/log_sources/memory_details_log_source.h"
 
 #include "chrome/browser/memory_details.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chromeos {
+namespace system_logs {
 
 // Reads Chrome memory usage.
 class SystemLogsMemoryHandler : public MemoryDetails {
@@ -42,4 +42,4 @@ void MemoryDetailsLogSource::Fetch(const SysLogsSourceCallback& callback) {
   handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

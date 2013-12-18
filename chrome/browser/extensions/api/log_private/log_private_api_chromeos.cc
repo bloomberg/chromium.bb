@@ -11,11 +11,10 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/system_logs/about_system_logs_fetcher.h"
-#include "chrome/browser/chromeos/system_logs/scrubbed_system_logs_fetcher.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/api/log_private/syslog_parser.h"
+#include "chrome/browser/feedback/system_logs/scrubbed_system_logs_fetcher.h"
 #include "chrome/common/extensions/api/log_private.h"
 #include "extensions/browser/extension_function.h"
 
@@ -33,11 +32,10 @@ scoped_ptr<LogParser> CreateLogParser(const std::string& log_type) {
 
 void CollectLogInfo(
     FilterHandler* filter_handler,
-    chromeos::SystemLogsResponse* logs,
+    system_logs::SystemLogsResponse* logs,
     std::vector<linked_ptr<api::log_private::LogEntry> >* output) {
-  for (chromeos::SystemLogsResponse::const_iterator request_it = logs->begin();
-       request_it != logs->end();
-       ++request_it) {
+  for (system_logs::SystemLogsResponse::const_iterator
+      request_it = logs->begin(); request_it != logs->end(); ++request_it) {
     if (!filter_handler->IsValidSource(request_it->first)) {
       continue;
     }
@@ -63,11 +61,11 @@ bool LogPrivateGetHistoricalFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   filter_handler_.reset(new FilterHandler(params->filter));
 
-  chromeos::SystemLogsFetcherBase* fetcher;
+  system_logs::SystemLogsFetcherBase* fetcher;
   if ((params->filter).scrub) {
-    fetcher = new chromeos::ScrubbedSystemLogsFetcher();
+    fetcher = new system_logs::ScrubbedSystemLogsFetcher();
   } else {
-    fetcher = new chromeos::AboutSystemLogsFetcher();
+    fetcher = new system_logs::AboutSystemLogsFetcher();
   }
   fetcher->Fetch(
       base::Bind(&LogPrivateGetHistoricalFunction::OnSystemLogsLoaded, this));
@@ -76,7 +74,7 @@ bool LogPrivateGetHistoricalFunction::RunImpl() {
 }
 
 void LogPrivateGetHistoricalFunction::OnSystemLogsLoaded(
-    scoped_ptr<chromeos::SystemLogsResponse> sys_info) {
+    scoped_ptr<system_logs::SystemLogsResponse> sys_info) {
   std::vector<linked_ptr<api::log_private::LogEntry> > data;
 
   CollectLogInfo(filter_handler_.get(), sys_info.get(), &data);

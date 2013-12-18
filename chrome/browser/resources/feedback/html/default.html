@@ -52,13 +52,13 @@
       <label id="screenshot-label" i18n-content="screenshot"></label>
       <img id="screenshot-image" alt="screenshot">
     </div>
-<if expr="pp_ifdef('chromeos')">
     <!-- System Information -->
     <div class="checkbox-field-container">
       <input id="sys-info-checkbox" type="checkbox" aria-labelledby="sys-info-label" checked>
       <label id="sys-info-label" i18n-values=".innerHTML:sys-info"></label>
       </span>
     </div>
+<if expr="pp_ifdef('chromeos')">
     <!-- Performance Feedback -->
     <div id="performance-info-area" hidden>
       <input id="performance-info-checkbox" type="checkbox">

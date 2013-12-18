@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher_base.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
 class Profile;
 
-namespace chromeos {
+namespace system_logs {
 
 // Gathers log data from Debug Daemon.
 class DebugDaemonLogSource : public SystemLogsSource {
@@ -65,6 +65,6 @@ class DebugDaemonLogSource : public SystemLogsSource {
 };
 
 
-}  // namespace chromeos
+}  // namespace system_logs
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DEBUG_DAEMON_LOG_SOURCE_H_

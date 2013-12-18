@@ -8,7 +8,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chromeos {
+namespace system_logs {
 
 const char kNetworkEventLogEntry[] = "network_event_log";
 
@@ -18,12 +18,13 @@ void NetworkEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
   const int kMaxNetworkEventsForAboutSystem = 400;
-  (*response)[kNetworkEventLogEntry] = network_event_log::GetAsString(
-      network_event_log::OLDEST_FIRST,
-      "time,file,desc",
-      network_event_log::kDefaultLogLevel,
-      kMaxNetworkEventsForAboutSystem);
+  (*response)[kNetworkEventLogEntry] =
+      chromeos::network_event_log::GetAsString(
+          chromeos::network_event_log::OLDEST_FIRST,
+          "time,file,desc",
+          chromeos::network_event_log::kDefaultLogLevel,
+          kMaxNetworkEventsForAboutSystem);
   callback.Run(response.get());
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

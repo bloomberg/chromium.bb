@@ -49,12 +49,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/shell.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
-#endif
-
 namespace {
 
 void DispatchFeedback(Profile* profile, std::string* post_body, int64 delay);

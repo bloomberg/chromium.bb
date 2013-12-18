@@ -1,17 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_logs/chrome_internal_log_source.h"
+#include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
@@ -23,10 +24,13 @@ namespace {
 const char kSyncDataKey[] = "about_sync_data";
 const char kExtensionsListKey[] = "extensions";
 const char kChromeVersionTag[] = "CHROME VERSION";
+#if !defined(OS_CHROMEOS)
+const char kOsVersionTag[] = "OS VERSION";
+#endif
 
 }  // namespace
 
-namespace chromeos {
+namespace system_logs {
 
 void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -36,6 +40,13 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   chrome::VersionInfo version_info;
   response[kChromeVersionTag] =  version_info.CreateVersionString();
+
+#if !defined(OS_CHROMEOS)
+  // On ChromeOS, this will be pulled in from the LSB_RELEASE.
+  std::string os_version = base::SysInfo::OperatingSystemName() + ": " +
+                           base::SysInfo::OperatingSystemVersion();
+  response[kOsVersionTag] =  os_version;
+#endif
 
   PopulateSyncLogs(&response);
   PopulateExtensionInfoLogs(&response);
@@ -83,10 +94,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
 
 void ChromeInternalLogSource::PopulateExtensionInfoLogs(
     SystemLogsResponse* response) {
-  bool reporting_enabled = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &reporting_enabled);
-  if (!reporting_enabled)
+  if (!CrashesUI::CrashReportingUIEnabled())
     return;
 
   Profile* primary_profile =
@@ -108,12 +116,14 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
     if (extensions_list.empty()) {
       extensions_list = extension->name();
     } else {
-      extensions_list += ", " + extension->name();
+      extensions_list += ",\n" + extension->name();
     }
   }
+  if (!extensions_list.empty())
+    extensions_list += "\n";
 
   if (!extensions_list.empty())
     (*response)[kExtensionsListKey] = extensions_list;
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

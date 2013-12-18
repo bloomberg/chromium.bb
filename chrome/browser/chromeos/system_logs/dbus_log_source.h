@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DBUS_LOG_SOURCE_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DBUS_LOG_SOURCE_H_
 
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher_base.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
-namespace chromeos {
+namespace system_logs {
 
 // Fetches memory usage details.
 class DBusLogSource : public SystemLogsSource {
@@ -22,6 +22,6 @@ class DBusLogSource : public SystemLogsSource {
   DISALLOW_COPY_AND_ASSIGN(DBusLogSource);
 };
 
-}  // namespace chromeos
+}  // namespace system_logs
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DBUS_LOG_SOURCE_H_

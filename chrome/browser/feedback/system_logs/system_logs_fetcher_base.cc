@@ -2,23 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher_base.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/system_logs/chrome_internal_log_source.h"
-#include "chrome/browser/chromeos/system_logs/command_line_log_source.h"
-#include "chrome/browser/chromeos/system_logs/dbus_log_source.h"
-#include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
-#include "chrome/browser/chromeos/system_logs/lsb_release_log_source.h"
-#include "chrome/browser/chromeos/system_logs/memory_details_log_source.h"
-#include "chrome/browser/chromeos/system_logs/network_event_log_source.h"
-#include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
-namespace chromeos {
+namespace system_logs {
 
 SystemLogsFetcherBase::SystemLogsFetcherBase()
     : response_(new SystemLogsResponse),
@@ -58,4 +50,4 @@ void SystemLogsFetcherBase::AddResponse(SystemLogsResponse* response) {
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

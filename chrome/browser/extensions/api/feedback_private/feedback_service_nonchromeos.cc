@@ -6,21 +6,10 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_version_info.h"
-
-using extensions::api::feedback_private::SystemInformation;
-
-namespace {
-
-const char kChromeVersionTag[] = "CHROME VERSION";
-const char kOsVersionTag[] = "OS VERSION";
-
-}
 
 namespace extensions {
 
@@ -32,8 +21,6 @@ class FeedbackServiceImpl
   virtual ~FeedbackServiceImpl();
 
   virtual std::string GetUserEmail() OVERRIDE;
-  virtual void GetSystemInformation(
-      const GetSystemInformationCallback& callback) OVERRIDE;
   virtual void GetHistograms(std::string* histograms) OVERRIDE;
 
  private:
@@ -63,24 +50,6 @@ std::string FeedbackServiceImpl::GetUserEmail() {
     return std::string();
 
   return signin->GetAuthenticatedUsername();
-}
-
-void FeedbackServiceImpl::GetSystemInformation(
-    const GetSystemInformationCallback& callback) {
-  system_information_callback_ = callback;
-
-  SystemInformationList sys_info_list;
-
-  chrome::VersionInfo version_info;
-  FeedbackService::PopulateSystemInfo(
-      &sys_info_list, kChromeVersionTag, version_info.CreateVersionString());
-
-  std::string os_version = base::SysInfo::OperatingSystemName() + ": " +
-                           base::SysInfo::OperatingSystemVersion();
-  FeedbackService::PopulateSystemInfo(
-      &sys_info_list, kOsVersionTag, os_version);
-
-  system_information_callback_.Run(sys_info_list);
 }
 
 void FeedbackServiceImpl::GetHistograms(std::string* histograms) {

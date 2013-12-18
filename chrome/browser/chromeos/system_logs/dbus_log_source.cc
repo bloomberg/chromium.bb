@@ -10,7 +10,7 @@
 const char kDBusLogEntryShort[] = "dbus_summary";
 const char kDBusLogEntryLong[] = "dbus_details";
 
-namespace chromeos {
+namespace system_logs {
 
 void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -26,4 +26,4 @@ void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
   callback.Run(&response);
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

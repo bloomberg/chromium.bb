@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
+#include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/browser/ui/webui/version_ui.h"
@@ -114,7 +115,6 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
-#include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #endif
 
 #if defined(USE_AURA)
@@ -360,6 +360,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SuggestionsInternalsUI>;
   if (url.host() == chrome::kChromeUISyncFileSystemInternalsHost)
     return &NewWebUI<SyncFileSystemInternalsUI>;
+  if (url.host() == chrome::kChromeUISystemInfoHost)
+    return &NewWebUI<SystemInfoUI>;
   // Uber frame is not used on Android.
   if (url.host() == chrome::kChromeUIUberFrameHost)
     return &NewWebUI<UberFrameUI>;
@@ -408,8 +410,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SlowUI>;
   if (url.host() == chrome::kChromeUISlowTraceHost)
     return &NewWebUI<chromeos::SlowTraceController>;
-  if (url.host() == chrome::kChromeUISystemInfoHost)
-    return &NewWebUI<chromeos::SystemInfoUI>;
   if (url.host() == chrome::kChromeUINetworkHost)
     return &NewWebUI<chromeos::NetworkUI>;
 #endif  // defined(OS_CHROMEOS)

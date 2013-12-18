@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
+#ifndef CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
+#define CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
 
 #include <map>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 
-namespace chromeos {
+namespace system_logs {
 
 typedef std::map<std::string, std::string> SystemLogsResponse;
 
@@ -74,7 +74,6 @@ class SystemLogsFetcherBase
   DISALLOW_COPY_AND_ASSIGN(SystemLogsFetcherBase);
 };
 
-}  // namespace chromeos
+}  // namespace system_logs
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
-
+#endif  // CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_

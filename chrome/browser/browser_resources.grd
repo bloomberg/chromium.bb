@@ -86,6 +86,7 @@
       <include name="IDR_ABOUT_NACL_JS" file="resources\about_nacl.js" type="BINDATA" />
       <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_STATS_JS" file="resources\about_stats.js" type="BINDATA" />
+      <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_JS" file="resources\about_version.js" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_CSS" file="resources\about_version.css" type="BINDATA" />
       <if expr="is_android">
@@ -300,7 +301,6 @@
       <include name="IDR_GAIA_AUTH_SAML_MANIFEST" file="resources\gaia_auth\manifest_saml.json" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_INLINE_MANIFEST" file="resources\gaia_auth\manifest_inline.json" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
-        <include name="IDR_ABOUT_SYS_HTML" file="resources\chromeos\about_sys.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_BACKLOADER_MANIFEST" file="resources\backloader\manifest.json" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_HTML" file="resources\chromeos\choose_mobile_network.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_JS" file="resources\chromeos\choose_mobile_network.js" type="BINDATA" />

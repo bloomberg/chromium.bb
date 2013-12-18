@@ -18,7 +18,7 @@ namespace {
 
 const char kHUDLogDataKey[] = "hud_log";
 
-void GetTouchLogs(chromeos::SystemLogsResponse* response) {
+void GetTouchLogs(system_logs::SystemLogsResponse* response) {
   scoped_ptr<DictionaryValue> dictionary =
       ash::internal::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
@@ -53,7 +53,7 @@ void GetTouchLogs(chromeos::SystemLogsResponse* response) {
 
 }  // namespace
 
-namespace chromeos {
+namespace system_logs {
 
 TouchLogSource::TouchLogSource() {
 }
@@ -72,4 +72,4 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
       base::Bind(callback, base::Owned(response)));
 }
 
-}  // namespace chromeos
+}  // namespace system_logs

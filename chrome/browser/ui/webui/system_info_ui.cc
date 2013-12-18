@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
+#include "chrome/browser/ui/webui/system_info_ui.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,7 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system_logs/about_system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -39,8 +39,8 @@
 
 using content::WebContents;
 using content::WebUIMessageHandler;
-
-namespace chromeos {
+using system_logs::SystemLogsResponse;
+using system_logs::AboutSystemLogsFetcher;
 
 class SystemInfoUIHTMLSource : public content::URLDataSource{
  public:
@@ -193,5 +193,3 @@ SystemInfoUI::SystemInfoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(profile, html_source);
 }
-
-}  // namespace chromeos

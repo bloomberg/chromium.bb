@@ -75,10 +75,11 @@ function expandAll() {
  */
 function collapseMultiLineStrings() {
   var valueDivs = document.getElementsByClassName('stat-value');
+  var nameDivs = document.getElementsByClassName('stat-name');
   for (var i = 0; i < valueDivs.length; i++) {
     var button = getButtonForValueDiv(valueDivs[i]);
     button.onclick = changeCollapsedStatus;
-    if (valueDivs[i].textContent.split('\n').length > 1) {
+    if (valueDivs[i].scrollHeight > (nameDivs[i].scrollHeight * 2)) {
       button.className = '';
       button.textContent = localStrings.getString('expandBtn');
       valueDivs[i].parentNode.className = 'number-collapsed';
