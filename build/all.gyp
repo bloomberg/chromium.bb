@@ -258,6 +258,7 @@
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../jingle/jingle.gyp:jingle_unittests',
+            '../media/cast/cast.gyp:cast_unittests',
             '../media/media.gyp:media_unittests',
             '../mojo/mojo.gyp:mojo',
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
