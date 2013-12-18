@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_strings.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,8 +41,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #endif
-
-using ::testing::_;
 
 namespace {
 

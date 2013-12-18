@@ -704,7 +704,6 @@
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
-        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
