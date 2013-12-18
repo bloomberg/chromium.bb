@@ -2438,7 +2438,7 @@
         'test/data/resource.rc',
         'browser/sync/test/integration/cross_platform_sync_test.cc',
         'browser/sync/test/integration/enable_disable_test.cc',
-        'browser/sync/test/integration/migration_errors_test.cc',
+        'browser/sync/test/integration/migration_test.cc',
         'browser/sync/test/integration/multiple_client_bookmarks_sync_test.cc',
         'browser/sync/test/integration/multiple_client_dictionary_sync_test.cc',
         'browser/sync/test/integration/multiple_client_passwords_sync_test.cc',
