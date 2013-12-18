@@ -205,5 +205,10 @@ void QuicConnectionPeer::SetWriter(QuicConnection* connection,
   connection->writer_ = writer;
 }
 
+// static
+void QuicConnectionPeer::CloseConnection(QuicConnection* connection) {
+  connection->connected_ = false;
+}
+
 }  // namespace test
 }  // namespace net

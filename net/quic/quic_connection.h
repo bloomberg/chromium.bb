@@ -712,11 +712,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // This is checked later on validating a data or version negotiation packet.
   bool address_migrating_;
 
-  // An AckNotifier can register to be informed when ACKs have been received for
-  // all packets that a given block of data was sent in. The AckNotifierManager
-  // maintains the currently active notifiers.
-  AckNotifierManager ack_notifier_manager_;
-
   // If non-empty this contains the set of versions received in a
   // version negotiation packet.
   QuicVersionVector server_supported_versions_;

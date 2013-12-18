@@ -104,6 +104,7 @@ class QuicConnectionPeer {
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);
   static void SetWriter(QuicConnection* connection, QuicTestWriter* writer);
+  static void CloseConnection(QuicConnection* connection);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

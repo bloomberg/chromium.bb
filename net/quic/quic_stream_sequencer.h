@@ -75,6 +75,9 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // be processed.
   void FlushBufferedFrames();
 
+  // Blocks processing of frames until |FlushBufferedFrames| is called.
+  void SetBlockedUntilFlush();
+
  private:
   friend class test::QuicStreamSequencerPeer;
 
@@ -93,6 +96,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // The offset, if any, we got a stream termination for.  When this many bytes
   // have been processed, the sequencer will be closed.
   QuicStreamOffset close_offset_;
+  bool blocked_;
 };
 
 }  // namespace net

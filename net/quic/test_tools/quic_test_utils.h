@@ -63,6 +63,9 @@ size_t GetMinStreamFrameSize(QuicVersion version);
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();
 
+// Returns a version vector consisting of |version|.
+QuicVersionVector SupportedVersions(QuicVersion version);
+
 template<typename SaveType>
 class ValueRestore {
  public:
@@ -254,12 +257,13 @@ class MockConnection : public QuicConnection {
   explicit MockConnection(bool is_server);
 
   // Uses a MockHelper, GUID of 42.
-  MockConnection(IPEndPoint address,
-                 bool is_server);
+  MockConnection(IPEndPoint address, bool is_server);
 
   // Uses a MockHelper, and 127.0.0.1:123
-  MockConnection(QuicGuid guid,
-                 bool is_server);
+  MockConnection(QuicGuid guid, bool is_server);
+
+  // Uses a Mock helper, GUID of 42, and 127.0.0.1:123.
+  MockConnection(bool is_server, const QuicVersionVector& supported_versions);
 
   virtual ~MockConnection();
 
@@ -301,6 +305,10 @@ class MockConnection : public QuicConnection {
 class PacketSavingConnection : public MockConnection {
  public:
   explicit PacketSavingConnection(bool is_server);
+
+  PacketSavingConnection(bool is_server,
+                         const QuicVersionVector& supported_versions);
+
   virtual ~PacketSavingConnection();
 
   virtual bool SendOrQueuePacket(EncryptionLevel level,
@@ -334,6 +342,13 @@ class MockSession : public QuicSession {
                                 QuicStreamOffset offset,
                                 bool fin,
                                 QuicAckNotifier::DelegateInterface*));
+  MOCK_METHOD2(OnStreamHeaders, void(QuicStreamId stream_id,
+                                     base::StringPiece headers_data));
+  MOCK_METHOD2(OnStreamHeadersPriority, void(QuicStreamId stream_id,
+                                             QuicPriority priority));
+  MOCK_METHOD3(OnStreamHeadersComplete, void(QuicStreamId stream_id,
+                                             bool fin,
+                                             size_t frame_len));
   MOCK_METHOD0(IsHandshakeComplete, bool());
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 

@@ -373,7 +373,7 @@ class SpdyFrameVisitor;
 // Intermediate representation for SPDY frames.
 // TODO(hkhalil): Rename this class to SpdyFrame when the existing SpdyFrame is
 // gone.
-class SpdyFrameIR {
+class NET_EXPORT_PRIVATE SpdyFrameIR {
  public:
   virtual ~SpdyFrameIR() {}
 
@@ -388,7 +388,7 @@ class SpdyFrameIR {
 
 // Abstract class intended to be inherited by IRs that have a stream associated
 // to them.
-class SpdyFrameWithStreamIdIR : public SpdyFrameIR {
+class NET_EXPORT_PRIVATE SpdyFrameWithStreamIdIR : public SpdyFrameIR {
  public:
   virtual ~SpdyFrameWithStreamIdIR() {}
   SpdyStreamId stream_id() const { return stream_id_; }
@@ -410,7 +410,7 @@ class SpdyFrameWithStreamIdIR : public SpdyFrameIR {
 
 // Abstract class intended to be inherited by IRs that have the option of a FIN
 // flag. Implies SpdyFrameWithStreamIdIR.
-class SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
+class NET_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
  public:
   virtual ~SpdyFrameWithFinIR() {}
   bool fin() const { return fin_; }
@@ -521,7 +521,7 @@ class NET_EXPORT_PRIVATE SpdySynStreamIR
   DISALLOW_COPY_AND_ASSIGN(SpdySynStreamIR);
 };
 
-class SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
+class NET_EXPORT_PRIVATE SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdySynReplyIR(SpdyStreamId stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id) {}
@@ -532,7 +532,7 @@ class SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
   DISALLOW_COPY_AND_ASSIGN(SpdySynReplyIR);
 };
 
-class SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
+class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
  public:
   SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status)
       : SpdyFrameWithStreamIdIR(stream_id) {
@@ -555,7 +555,7 @@ class SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyRstStreamIR);
 };
 
-class SpdySettingsIR : public SpdyFrameIR {
+class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
  public:
   // Associates flags with a value.
   struct Value {
@@ -598,7 +598,7 @@ class SpdySettingsIR : public SpdyFrameIR {
   DISALLOW_COPY_AND_ASSIGN(SpdySettingsIR);
 };
 
-class SpdyPingIR : public SpdyFrameIR {
+class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
  public:
   explicit SpdyPingIR(SpdyPingId id) : id_(id) {}
   SpdyPingId id() const { return id_; }
@@ -611,7 +611,7 @@ class SpdyPingIR : public SpdyFrameIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyPingIR);
 };
 
-class SpdyGoAwayIR : public SpdyFrameIR {
+class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
  public:
   SpdyGoAwayIR(SpdyStreamId last_good_stream_id, SpdyGoAwayStatus status) {
     set_last_good_stream_id(last_good_stream_id);
@@ -638,7 +638,7 @@ class SpdyGoAwayIR : public SpdyFrameIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyGoAwayIR);
 };
 
-class SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
+class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdyHeadersIR(SpdyStreamId stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id) {}
@@ -649,7 +649,7 @@ class SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
 };
 
-class SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
+class NET_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
  public:
   SpdyWindowUpdateIR(SpdyStreamId stream_id, int32 delta)
       : SpdyFrameWithStreamIdIR(stream_id) {
@@ -670,7 +670,7 @@ class SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyWindowUpdateIR);
 };
 
-class SpdyCredentialIR : public SpdyFrameIR {
+class NET_EXPORT_PRIVATE SpdyCredentialIR : public SpdyFrameIR {
  public:
   typedef std::vector<std::string> CertificateList;
 
@@ -713,7 +713,8 @@ class NET_EXPORT_PRIVATE SpdyBlockedIR
    DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
 };
 
-class SpdyPushPromiseIR : public SpdyFrameWithNameValueBlockIR {
+class NET_EXPORT_PRIVATE SpdyPushPromiseIR
+    : public SpdyFrameWithNameValueBlockIR {
  public:
   SpdyPushPromiseIR(SpdyStreamId stream_id, SpdyStreamId promised_stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id),

@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_headers_stream.h"
 #include "net/ssl/ssl_info.h"
 
 using base::StringPiece;
@@ -96,6 +97,15 @@ QuicSession::QuicSession(QuicConnection* connection,
     connection_->SetOverallConnectionTimeout(
         config_.max_time_before_crypto_handshake());
   }
+  if (connection_->version() > QUIC_VERSION_12) {
+    headers_stream_.reset(new QuicHeadersStream(this));
+    if (!is_server()) {
+      // For version above QUIC v12, the headers stream is stream 3, so the
+      // next available local stream ID should be 5.
+      DCHECK_EQ(kHeadersStreamId, next_stream_id_);
+      next_stream_id_ += 2;
+    }
+  }
 }
 
 QuicSession::~QuicSession() {
@@ -162,11 +172,49 @@ bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
   return true;
 }
 
+void QuicSession::OnStreamHeaders(QuicStreamId stream_id,
+                                  StringPiece headers_data) {
+  QuicDataStream* stream = GetDataStream(stream_id);
+  if (!stream) {
+    // It's quite possible to receive headers after a stream has been reset.
+    return;
+  }
+  stream->OnStreamHeaders(headers_data);
+}
+
+void QuicSession::OnStreamHeadersPriority(QuicStreamId stream_id,
+                                          QuicPriority priority) {
+  QuicDataStream* stream = GetDataStream(stream_id);
+  if (!stream) {
+    // It's quite possible to receive headers after a stream has been reset.
+    return;
+  }
+  stream->OnStreamHeadersPriority(priority);
+}
+
+void QuicSession::OnStreamHeadersComplete(QuicStreamId stream_id,
+                                          bool fin,
+                                          size_t frame_len) {
+  QuicDataStream* stream = GetDataStream(stream_id);
+  if (!stream) {
+    // It's quite possible to receive headers after a stream has been reset.
+    return;
+  }
+  stream->OnStreamHeadersComplete(fin, frame_len);
+}
+
 void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   if (frame.stream_id == kCryptoStreamId) {
     connection()->SendConnectionCloseWithDetails(
         QUIC_INVALID_STREAM_ID,
         "Attempt to reset the crypto stream");
+    return;
+  }
+  if (frame.stream_id == kHeadersStreamId &&
+      connection()->version() > QUIC_VERSION_12) {
+    connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_STREAM_ID,
+        "Attempt to reset the headers stream");
     return;
   }
   QuicDataStream* stream = GetDataStream(frame.stream_id);
@@ -183,9 +231,11 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     AddPrematurelyClosedStream(frame.stream_id);
     return;
   }
-  if (stream->stream_bytes_read() > 0 && !stream->headers_decompressed()) {
-    connection()->SendConnectionClose(
-        QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+  if (connection()->version() <= QUIC_VERSION_12) {
+    if (stream->stream_bytes_read() > 0 && !stream->headers_decompressed()) {
+      connection()->SendConnectionClose(
+          QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+    }
   }
   stream->OnStreamReset(frame.error_code);
 }
@@ -261,6 +311,16 @@ QuicConsumedData QuicSession::WritevData(
                                      ack_notifier_delegate);
 }
 
+size_t QuicSession::WriteHeaders(QuicStreamId id,
+                               const SpdyHeaderBlock& headers,
+                               bool fin) {
+  DCHECK_LT(QUIC_VERSION_12, connection()->version());
+  if (connection()->version() <= QUIC_VERSION_12) {
+    return 0;
+  }
+  return headers_stream_->WriteHeaders(id, headers, fin);
+}
+
 void QuicSession::SendRstStream(QuicStreamId id,
                                 QuicRstStreamErrorCode error) {
   connection_->SendRstStream(id, error);
@@ -286,7 +346,8 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
     return;
   }
   QuicDataStream* stream = it->second;
-  if (connection_->connected() && !stream->headers_decompressed()) {
+  if (connection_->version() <= QUIC_VERSION_12 &&
+      connection_->connected() && !stream->headers_decompressed()) {
     // If the stream is being closed locally (for example a client cancelling
     // a request before receiving the response) then we need to make sure that
     // we keep the stream alive long enough to process any response or
@@ -338,6 +399,9 @@ void QuicSession::CloseZombieStream(QuicStreamId stream_id) {
 }
 
 void QuicSession::AddPrematurelyClosedStream(QuicStreamId stream_id) {
+  if (connection()->version() > QUIC_VERSION_12) {
+    return;
+  }
   if (prematurely_closed_streams_.size() ==
       kMaxPrematurelyClosedStreamsTracked) {
     prematurely_closed_streams_.erase(prematurely_closed_streams_.begin());
@@ -411,12 +475,21 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
   if (stream_id == kCryptoStreamId) {
     return GetCryptoStream();
   }
+  if (stream_id == kHeadersStreamId &&
+      connection_->version() > QUIC_VERSION_12) {
+    return headers_stream_.get();
+  }
   return GetDataStream(stream_id);
 }
 
 QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
   if (stream_id == kCryptoStreamId) {
     DLOG(FATAL) << "Attempt to call GetDataStream with the crypto stream id";
+    return NULL;
+  }
+  if (stream_id == kHeadersStreamId &&
+      connection_->version() > QUIC_VERSION_12) {
+    DLOG(FATAL) << "Attempt to call GetDataStream with the headers stream id";
     return NULL;
   }
 
@@ -432,7 +505,9 @@ QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
   if (stream_id % 2 == next_stream_id_ % 2) {
     // We've received a frame for a locally-created stream that is not
     // currently active.  This is an error.
-    connection()->SendConnectionClose(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
+    if (connection()->connected()) {
+      connection()->SendConnectionClose(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
+    }
     return NULL;
   }
 
@@ -459,7 +534,11 @@ QuicDataStream* QuicSession::GetIncomingReliableStream(
       return NULL;
     }
     if (largest_peer_created_stream_id_ == 0) {
-      largest_peer_created_stream_id_= 1;
+      if (is_server() && connection()->version() > QUIC_VERSION_12) {
+        largest_peer_created_stream_id_= 3;
+      } else {
+        largest_peer_created_stream_id_= 1;
+      }
     }
     for (QuicStreamId id = largest_peer_created_stream_id_ + 2;
          id < stream_id;
@@ -480,6 +559,11 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
   DCHECK_NE(0u, id);
   if (id == kCryptoStreamId) {
     return false;
+  }
+  if (connection()->version() > QUIC_VERSION_12) {
+    if (id == kHeadersStreamId) {
+      return false;
+    }
   }
   if (ContainsKey(zombie_streams_, id)) {
     return true;
@@ -523,6 +607,7 @@ bool QuicSession::HasQueuedData() const {
 
 void QuicSession::MarkDecompressionBlocked(QuicHeaderId header_id,
                                            QuicStreamId stream_id) {
+  DCHECK_GE(QUIC_VERSION_12, connection()->version());
   decompression_blocked_streams_[header_id] = stream_id;
 }
 

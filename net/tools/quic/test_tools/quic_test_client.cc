@@ -413,8 +413,9 @@ void QuicTestClient::OnClose(QuicDataStream* stream) {
   response_headers_complete_ = stream_->headers_decompressed();
   headers_.CopyFrom(stream_->headers());
   stream_error_ = stream_->stream_error();
-  bytes_read_ = stream_->stream_bytes_read();
-  bytes_written_ = stream_->stream_bytes_written();
+  bytes_read_ = stream_->stream_bytes_read() + stream_->header_bytes_read();
+  bytes_written_ =
+      stream_->stream_bytes_written() + stream_->header_bytes_written();
   response_header_size_ = headers_.GetSizeForWriteBuffer();
   response_body_size_ = stream_->data().size();
   stream_ = NULL;

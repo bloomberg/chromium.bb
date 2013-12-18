@@ -11,8 +11,8 @@
 namespace net {
 
 class QuicDataStream;
+class QuicHeadersStream;
 class QuicSession;
-class ReliableQuicStream;
 
 namespace test {
 
@@ -20,6 +20,7 @@ class QuicSessionPeer {
  public:
   static void SetNextStreamId(QuicSession* session, QuicStreamId id);
   static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
+  static QuicHeadersStream* GetHeadersStream(QuicSession* session);
   static WriteBlockedList<QuicStreamId>* GetWriteblockedStreams(
       QuicSession* session);
   static QuicDataStream* GetIncomingReliableStream(QuicSession* session,

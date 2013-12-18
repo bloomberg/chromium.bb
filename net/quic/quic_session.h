@@ -16,6 +16,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_headers_stream.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_spdy_compressor.h"
@@ -71,6 +72,21 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual bool OnCanWrite() OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;
 
+  // Called by the headers stream when headers have been received for a stream.
+  virtual void OnStreamHeaders(QuicStreamId stream_id,
+                               base::StringPiece headers_data);
+  // Called by the headers stream when headers with a priority have been
+  // received for this stream.  This method will only be called for server
+  // streams.
+  virtual void OnStreamHeadersPriority(QuicStreamId stream_id,
+                                       QuicPriority priority);
+  // Called by the headers stream when headers have been completely received
+  // for a stream.  |fin| will be true if the fin flag was set in the headers
+  // frame.
+  virtual void OnStreamHeadersComplete(QuicStreamId stream_id,
+                                       bool fin,
+                                       size_t frame_len);
+
   // Called by streams when they want to write data to the peer.
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
@@ -86,6 +102,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       QuicStreamOffset offset,
       bool fin,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
+
+  // Writes |headers| for the stream |id| to the dedicated headers stream.
+  // If |fin| is true, then no more data will be sent for the stream |id|.
+  size_t WriteHeaders(QuicStreamId id,
+                      const SpdyHeaderBlock& headers,
+                      bool fin);
 
   // Called by streams when they want to close the stream in both directions.
   virtual void SendRstStream(QuicStreamId id, QuicRstStreamErrorCode error);
@@ -244,6 +266,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   void AddPrematurelyClosedStream(QuicStreamId stream_id);
 
   scoped_ptr<QuicConnection> connection_;
+
+  scoped_ptr<QuicHeadersStream> headers_stream_;
 
   // Tracks the last 20 streams which closed without decompressing headers.
   // This is for best-effort detection of an unrecoverable compression context.

@@ -121,9 +121,13 @@ void QuicSpdyServerStream:: SendHeadersAndBody(
   SpdyHeaderBlock header_block =
       SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
 
-  string headers_string =
-      session()->compressor()->CompressHeaders(header_block);
+  if (version() > QUIC_VERSION_12) {
+    WriteHeaders(header_block, body.empty());
+  } else {
+    string headers_string =
+        session()->compressor()->CompressHeaders(header_block);
     WriteOrBufferData(headers_string, body.empty());
+  }
 
   if (!body.empty()) {
     WriteOrBufferData(body, true);

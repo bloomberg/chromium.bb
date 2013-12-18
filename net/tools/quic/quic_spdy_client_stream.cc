@@ -20,7 +20,9 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
                                            QuicClientSession* session)
     : QuicDataStream(id, session),
       read_buf_(new GrowableIOBuffer()),
-      response_headers_received_(false) {
+      response_headers_received_(false),
+      header_bytes_read_(0),
+      header_bytes_written_(0) {
 }
 
 QuicSpdyClientStream::~QuicSpdyClientStream() {
@@ -35,22 +37,30 @@ bool QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   return QuicDataStream::OnStreamFrame(frame);
 }
 
-uint32 QuicSpdyClientStream::ProcessData(const char* data, uint32 length) {
-  uint32 total_bytes_processed = 0;
+void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
+                                                   size_t frame_len) {
+  header_bytes_read_ = frame_len;
+  QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
+}
+
+uint32 QuicSpdyClientStream::ProcessData(const char* data,
+                                         uint32 data_len) {
+  int total_bytes_processed = 0;
 
   // Are we still reading the response headers.
   if (!response_headers_received_) {
     // Grow the read buffer if necessary.
-    if (read_buf_->RemainingCapacity() < (int)length) {
+    if (read_buf_->RemainingCapacity() < (int)data_len) {
       read_buf_->SetCapacity(read_buf_->capacity() + kHeaderBufInitialSize);
     }
-    memcpy(read_buf_->data(), data, length);
-    read_buf_->set_offset(read_buf_->offset() + length);
+    memcpy(read_buf_->data(), data, data_len);
+    read_buf_->set_offset(read_buf_->offset() + data_len);
     ParseResponseHeaders();
   } else {
-    data_.append(data + total_bytes_processed, length - total_bytes_processed);
+    data_.append(data + total_bytes_processed,
+                 data_len - total_bytes_processed);
   }
-  return length;
+  return data_len;
 }
 
 void QuicSpdyClientStream::OnFinRead() {
@@ -71,15 +81,23 @@ ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
       SpdyUtils::RequestHeadersToSpdyHeaders(headers);
 
   bool send_fin_with_headers = fin && body.empty();
-  string headers_string = session()->compressor()->CompressHeadersWithPriority(
-      priority(), header_block);
-  WriteOrBufferData(headers_string, send_fin_with_headers);
+  size_t bytes_sent = body.size();
+  if (version() > QUIC_VERSION_12) {
+    header_bytes_written_ = WriteHeaders(header_block, send_fin_with_headers);
+    bytes_sent += header_bytes_written_;
+  } else {
+    string headers_string =
+        session()->compressor()->CompressHeadersWithPriority(
+            priority(), header_block);
+    WriteOrBufferData(headers_string, send_fin_with_headers);
+    bytes_sent += headers_string.length();
+  }
 
   if (!body.empty()) {
     WriteOrBufferData(body, fin);
   }
 
-  return headers_string.size() + body.size();
+  return bytes_sent;
 }
 
 int QuicSpdyClientStream::ParseResponseHeaders() {

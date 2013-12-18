@@ -19,7 +19,8 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
     : stream_(quic_stream),
       num_bytes_consumed_(0),
       max_frame_memory_(numeric_limits<size_t>::max()),
-      close_offset_(numeric_limits<QuicStreamOffset>::max()) {
+      close_offset_(numeric_limits<QuicStreamOffset>::max()),
+      blocked_(false) {
 }
 
 QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
@@ -27,7 +28,8 @@ QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
     : stream_(quic_stream),
       num_bytes_consumed_(0),
       max_frame_memory_(max_frame_memory),
-      close_offset_(numeric_limits<QuicStreamOffset>::max()) {
+      close_offset_(numeric_limits<QuicStreamOffset>::max()),
+      blocked_(false) {
   if (max_frame_memory < kMaxPacketSize) {
     LOG(DFATAL) << "Setting max frame memory to " << max_frame_memory
                 << ".  Some frames will be impossible to handle.";
@@ -92,7 +94,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
 
   IOVector data;
   data.AppendIovec(frame.data.iovec(), frame.data.Size());
-  if (byte_offset == num_bytes_consumed_) {
+  if (!blocked_ && byte_offset == num_bytes_consumed_) {
     DVLOG(1) << "Processing byte offset " << byte_offset;
     size_t bytes_consumed = 0;
     for (size_t i = 0; i < data.Size(); ++i) {
@@ -143,19 +145,21 @@ void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
 }
 
 bool QuicStreamSequencer::MaybeCloseStream() {
-  if (IsClosed()) {
+  if (!blocked_ && IsClosed()) {
     DVLOG(1) << "Passing up termination, as we've processed "
              << num_bytes_consumed_ << " of " << close_offset_
              << " bytes.";
     // Technically it's an error if num_bytes_consumed isn't exactly
     // equal, but error handling seems silly at this point.
     stream_->OnFinRead();
+    frames_.clear();
     return true;
   }
   return false;
 }
 
 int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) {
+  DCHECK(!blocked_);
   FrameMap::iterator it = frames_.begin();
   size_t index = 0;
   QuicStreamOffset offset = num_bytes_consumed_;
@@ -174,6 +178,7 @@ int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) {
 }
 
 int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
+  DCHECK(!blocked_);
   FrameMap::iterator it = frames_.begin();
   size_t iov_index = 0;
   size_t iov_offset = 0;
@@ -216,6 +221,7 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
 }
 
 void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
+  DCHECK(!blocked_);
   size_t end_offset = num_bytes_consumed_ + num_bytes_consumed;
   while (!frames_.empty() && end_offset != num_bytes_consumed_) {
     FrameMap::iterator it = frames_.begin();
@@ -264,7 +270,12 @@ bool QuicStreamSequencer::IsDuplicate(const QuicStreamFrame& frame) const {
       frames_.find(frame.offset) != frames_.end();
 }
 
+void QuicStreamSequencer::SetBlockedUntilFlush() {
+  blocked_ = true;
+}
+
 void QuicStreamSequencer::FlushBufferedFrames() {
+  blocked_ = false;
   FrameMap::iterator it = frames_.find(num_bytes_consumed_);
   while (it != frames_.end()) {
     DVLOG(1) << "Flushing buffered packet at offset " << it->first;
@@ -288,6 +299,7 @@ void QuicStreamSequencer::FlushBufferedFrames() {
       return;
     }
   }
+  MaybeCloseStream();
 }
 
 }  // namespace net

@@ -20,6 +20,7 @@
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/quic_test_writer.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
@@ -98,19 +99,24 @@ struct TestParams {
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
-
   for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
+    // TODO(rch): since 13 is not 0-RTT compatible with 12, we can not
+    // have the client support both at the same time.
+#if 0
     // Add an entry for server and client supporting all versions.
     params.push_back(TestParams(all_supported_versions,
                                 all_supported_versions,
                                 all_supported_versions[0],
                                 use_pacing != 0));
+#endif
 
     // Test client supporting 1 version and server supporting all versions.
     // Simulate an old client and exercise version downgrade in the server.
     // No protocol negotiation should occur. Skip the i = 0 case because it
     // is essentially the same as the default case.
-    for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+    // TODO(rch): When QUIC_VERSION_12 is removed, change the intialization
+    // of i from 0 back to 1.
+    for (size_t i = 0; i < all_supported_versions.size(); ++i) {
       QuicVersionVector client_supported_versions;
       client_supported_versions.push_back(all_supported_versions[i]);
       params.push_back(TestParams(client_supported_versions,
@@ -119,6 +125,9 @@ vector<TestParams> GetTestParams() {
                                   use_pacing != 0));
     }
 
+    // TODO(rch): since 13 is not 0-RTT compatible with 12, we can not
+    // have the client support both at the same time.
+#if 0
     // Test client supporting all versions and server supporting 1 version.
     // Simulate an old server and exercise version downgrade in the client.
     // Protocol negotiation should occur. Skip the i = 0 case because it is
@@ -131,6 +140,7 @@ vector<TestParams> GetTestParams() {
                                   server_supported_versions[0],
                                   use_pacing != 0));
     }
+#endif
   }
   return params;
 }

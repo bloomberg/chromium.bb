@@ -20,8 +20,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using net::tools::test::MockConnection;
 using net::test::MockSession;
+using net::test::SupportedVersions;
+using net::tools::test::MockConnection;
 using std::string;
 using testing::_;
 using testing::AnyNumber;
@@ -57,14 +58,32 @@ class QuicSpdyServerStreamPeer : public QuicSpdyServerStream {
   BalsaHeaders* mutable_headers() {
     return &headers_;
   }
+
+  static void SendResponse(QuicSpdyServerStream* stream) {
+    stream->SendResponse();
+  }
+
+  static void SendErrorResponse(QuicSpdyServerStream* stream) {
+    stream->SendResponse();
+  }
+
+  static const string& body(QuicSpdyServerStream* stream) {
+    return stream->body_;
+  }
+
+  static const BalsaHeaders& headers(QuicSpdyServerStream* stream) {
+    return stream->headers_;
+  }
 };
 
 namespace {
 
-class QuicSpdyServerStreamTest : public ::testing::Test {
+class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicSpdyServerStreamTest()
-      : session_(new MockConnection(true)),
+      : connection_(new StrictMock<MockConnection>(
+            true, SupportedVersions(GetParam()))),
+        session_(connection_),
         body_("hello world") {
     BalsaHeaders request_headers;
     request_headers.SetRequestFirstlineFromStringPieces(
@@ -130,8 +149,17 @@ class QuicSpdyServerStreamTest : public ::testing::Test {
     cache->AddResponse(request_headers, response_headers, body);
   }
 
+  const string& StreamBody() {
+    return QuicSpdyServerStreamPeer::body(stream_.get());
+  }
+
+  const BalsaHeaders& StreamHeaders() {
+    return QuicSpdyServerStreamPeer::headers(stream_.get());
+  }
+
   BalsaHeaders response_headers_;
   EpollServer eps_;
+  StrictMock<MockConnection>* connection_;
   StrictMock<MockSession> session_;
   scoped_ptr<QuicSpdyServerStreamPeer> stream_;
   string headers_string_;
@@ -152,20 +180,23 @@ QuicConsumedData ConsumeAllData(
   return QuicConsumedData(consumed_length, fin);
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestFraming) {
+INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyServerStreamTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicSpdyServerStreamTest, TestFraming) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
       headers_string_.c_str(), headers_string_.size()));
   EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
-  EXPECT_EQ(11u, stream_->headers().content_length());
-  EXPECT_EQ("https://www.google.com/", stream_->headers().request_uri());
-  EXPECT_EQ("POST", stream_->headers().request_method());
-  EXPECT_EQ(body_, stream_->body());
+  EXPECT_EQ(11u, StreamHeaders().content_length());
+  EXPECT_EQ("https://www.google.com/", StreamHeaders().request_uri());
+  EXPECT_EQ("POST", StreamHeaders().request_method());
+  EXPECT_EQ(body_, StreamBody());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestFramingOnePacket) {
+TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
@@ -173,14 +204,13 @@ TEST_F(QuicSpdyServerStreamTest, TestFramingOnePacket) {
 
   EXPECT_EQ(message.size(), stream_->ProcessData(
       message.c_str(), message.size()));
-  EXPECT_EQ(11u, stream_->headers().content_length());
-  EXPECT_EQ("https://www.google.com/",
-            stream_->headers().request_uri());
-  EXPECT_EQ("POST", stream_->headers().request_method());
-  EXPECT_EQ(body_, stream_->body());
+  EXPECT_EQ(11u, StreamHeaders().content_length());
+  EXPECT_EQ("https://www.google.com/", StreamHeaders().request_uri());
+  EXPECT_EQ("POST", StreamHeaders().request_method());
+  EXPECT_EQ(body_, StreamBody());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestFramingExtraData) {
+TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
@@ -192,12 +222,12 @@ TEST_F(QuicSpdyServerStreamTest, TestFramingExtraData) {
   // Content length is still 11.  This will register as an error and we won't
   // accept the bytes.
   stream_->ProcessData(large_body.c_str(), large_body.size());
-  EXPECT_EQ(11u, stream_->headers().content_length());
-  EXPECT_EQ("https://www.google.com/", stream_->headers().request_uri());
-  EXPECT_EQ("POST", stream_->headers().request_method());
+  EXPECT_EQ(11u, StreamHeaders().content_length());
+  EXPECT_EQ("https://www.google.com/", StreamHeaders().request_uri());
+  EXPECT_EQ("POST", StreamHeaders().request_method());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
+TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
   BalsaHeaders* request_headers = stream_->mutable_headers();
   request_headers->SetRequestFirstlineFromStringPieces(
       "GET",
@@ -209,40 +239,49 @@ TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
-      .WillOnce(WithArgs<1>(Invoke(
-          this, &QuicSpdyServerStreamTest::ValidateHeaders)));
+  if (GetParam() > QUIC_VERSION_12) {
+    EXPECT_CALL(session_,
+                WritevData(kHeadersStreamId, _, _, 0, false, NULL));
+  } else {
+    EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
+        .WillOnce(WithArgs<1>(Invoke(
+            this, &QuicSpdyServerStreamTest::ValidateHeaders)));
+  }
 
   EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
-  stream_->SendResponse();
+  QuicSpdyServerStreamPeer::SendResponse(stream_.get());
   EXPECT_TRUE(stream_->read_side_closed());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestSendErrorResponse) {
+TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   response_headers_.SetResponseFirstlineFromStringPieces(
       "HTTP/1.1", "500", "Server Error");
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
-      .WillOnce(WithArgs<1>(Invoke(
-          this, &QuicSpdyServerStreamTest::ValidateHeaders)));
+  if (GetParam() > QUIC_VERSION_12) {
+    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, 0, false, NULL));
+  } else {
+    EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
+        .WillOnce(WithArgs<1>(Invoke(
+            this, &QuicSpdyServerStreamTest::ValidateHeaders)));
+  }
 
   EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
-  stream_->SendErrorResponse();
+  QuicSpdyServerStreamPeer::SendErrorResponse(stream_.get());
   EXPECT_TRUE(stream_->read_side_closed());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
+TEST_P(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
   char arr[] = {
-    0x00, 0x00, 0x00, 0x05,  // ....
-    0x00, 0x00, 0x00, 0x05,  // ....
+    0x05, 0x00, 0x00, 0x00,  // ....
+    0x05, 0x00, 0x00, 0x00,  // ....
     0x3a, 0x68, 0x6f, 0x73,  // :hos
     0x74, 0x00, 0x00, 0x00,  // t...
     0x00, 0x00, 0x00, 0x00,  // ....
@@ -265,8 +304,9 @@ TEST_F(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
     0x54, 0x54, 0x50, 0x2f,  // TTP/
     0x31, 0x2e, 0x31,        // 1.1
   };
-  QuicStreamFrame frame(
-      stream_->id(), true, 0, MakeIOVector(StringPiece(arr, arraysize(arr))));
+  size_t start = GetParam() > QUIC_VERSION_12 ? 8 : 0;
+  StringPiece data(arr + start, arraysize(arr) - start);
+  QuicStreamFrame frame(stream_->id(), true, 0, MakeIOVector(data));
   // Verify that we don't crash when we get a invalid headers in stream frame.
   stream_->OnStreamFrame(frame);
 }

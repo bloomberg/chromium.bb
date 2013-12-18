@@ -16,6 +16,7 @@
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::PacketSavingConnection;
+using net::test::SupportedVersions;
 using testing::_;
 
 namespace net {
@@ -25,10 +26,12 @@ namespace {
 
 const char kServerHostname[] = "www.example.com";
 
-class ToolsQuicClientSessionTest : public ::testing::Test {
+class ToolsQuicClientSessionTest
+    : public ::testing::TestWithParam<QuicVersion> {
  protected:
   ToolsQuicClientSessionTest()
-      : connection_(new PacketSavingConnection(false)) {
+      : connection_(new PacketSavingConnection(false,
+                                               SupportedVersions(GetParam()))) {
     crypto_config_.SetDefaults();
     session_.reset(new QuicClientSession(kServerHostname, DefaultQuicConfig(),
                                          connection_, &crypto_config_));
@@ -46,11 +49,14 @@ class ToolsQuicClientSessionTest : public ::testing::Test {
   QuicCryptoClientConfig crypto_config_;
 };
 
-TEST_F(ToolsQuicClientSessionTest, CryptoConnect) {
+INSTANTIATE_TEST_CASE_P(Tests, ToolsQuicClientSessionTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_F(ToolsQuicClientSessionTest, MaxNumStreams) {
+TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
   session_->config()->set_max_streams_per_connection(1, 1);
   // FLAGS_max_streams_per_connection = 1;
   // Initialize crypto before the client session will create a stream.
@@ -67,7 +73,7 @@ TEST_F(ToolsQuicClientSessionTest, MaxNumStreams) {
   EXPECT_TRUE(stream);
 }
 
-TEST_F(ToolsQuicClientSessionTest, GoAwayReceived) {
+TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
   CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing

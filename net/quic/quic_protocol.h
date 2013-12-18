@@ -93,8 +93,10 @@ const QuicStreamId kMaxStreamIdDelta = 100;
 const QuicHeaderId kMaxHeaderIdDelta = 100;
 
 // Reserved ID for the crypto stream.
-// TODO(rch): ensure that this is not usable by any other streams.
 const QuicStreamId kCryptoStreamId = 1;
+
+// Reserved ID for the headers stream.
+const QuicStreamId kHeadersStreamId = 3;
 
 // This is the default network timeout a for connection till the crypto
 // handshake succeeds and the negotiated timeout from the handshake is received.
@@ -239,7 +241,8 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_12 = 12,  // Current version.
+  QUIC_VERSION_12 = 12,
+  QUIC_VERSION_13 = 13,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -402,7 +405,8 @@ enum QuicErrorCode {
   QUIC_PACKET_READ_ERROR = 51,
   // We received a STREAM_FRAME with no data and no fin flag set.
   QUIC_INVALID_STREAM_FRAME = 50,
-
+  // We received invalid data on the headers stream.
+  QUIC_INVALID_HEADERS_STREAM_DATA = 56,
 
   // Crypto errors.
 
@@ -458,7 +462,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 56,
+  QUIC_LAST_ERROR = 57,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

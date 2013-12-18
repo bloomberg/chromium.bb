@@ -73,7 +73,7 @@ class QuicClient : public EpollCallbackInterface,
   // each to complete.
   void SendRequestsAndWaitForResponse(const CommandLine::StringVector& args);
 
-  // Returns a newly created CreateReliableClientStream, owned by the
+  // Returns a newly created QuicSpdyClientStream, owned by the
   // QuicClient.
   QuicSpdyClientStream* CreateReliableClientStream();
 
@@ -140,6 +140,11 @@ class QuicClient : public EpollCallbackInterface,
   // given ChannelID. This object takes ownership of |signer|.
   void SetChannelIDSigner(ChannelIDSigner* signer) {
     crypto_config_.SetChannelIDSigner(signer);
+  }
+
+  void SetSupportedVersions(const QuicVersionVector& versions) {
+    DCHECK(!session_.get());
+    supported_versions_ = versions;
   }
 
  protected:

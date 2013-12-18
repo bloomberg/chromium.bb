@@ -188,6 +188,37 @@ TEST_F(QuicStreamSequencerTest, FullFrameConsumed) {
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
 }
 
+TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameConsumed) {
+  sequencer_->SetBlockedUntilFlush();
+
+  EXPECT_TRUE(sequencer_->OnFrame(0, "abc"));
+  EXPECT_EQ(1u, sequencer_->frames()->size());
+  EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
+
+  EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
+  sequencer_->FlushBufferedFrames();
+  EXPECT_EQ(0u, sequencer_->frames()->size());
+  EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
+
+  EXPECT_CALL(stream_, ProcessRawData(StrEq("def"), 3)).WillOnce(Return(3));
+  EXPECT_CALL(stream_, OnFinRead());
+  EXPECT_TRUE(sequencer_->OnFinFrame(3, "def"));
+}
+
+TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
+  sequencer_->SetBlockedUntilFlush();
+
+  EXPECT_TRUE(sequencer_->OnFinFrame(0, "abc"));
+  EXPECT_EQ(1u, sequencer_->frames()->size());
+  EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
+
+  EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
+  EXPECT_CALL(stream_, OnFinRead());
+  sequencer_->FlushBufferedFrames();
+  EXPECT_EQ(0u, sequencer_->frames()->size());
+  EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
+}
+
 TEST_F(QuicStreamSequencerTest, EmptyFrame) {
   EXPECT_CALL(stream_,
               CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _));

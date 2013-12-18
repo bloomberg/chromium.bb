@@ -361,6 +361,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static QuicSequenceNumberLength GetMinSequenceNumberLength(
       QuicPacketSequenceNumber sequence_number);
 
+  void SetSupportedVersions(const QuicVersionVector& versions) {
+    supported_versions_ = versions;
+    quic_version_ = versions[0];
+  }
+
  private:
   friend class test::QuicFramerPeer;
 

@@ -16,21 +16,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::DefaultQuicConfig;
+using net::test::SupportedVersions;
 using testing::TestWithParam;
+using testing::StrictMock;
 
 namespace net {
 namespace tools {
 namespace test {
 namespace {
 
-class QuicSpdyClientStreamTest : public ::testing::Test {
+class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
  public:
   QuicSpdyClientStreamTest()
-      : session_("example.com", DefaultQuicConfig(),
-                 new MockConnection(false),
+      : connection_(new StrictMock<MockConnection>(
+            false, SupportedVersions(GetParam()))),
+        session_("example.com", DefaultQuicConfig(), connection_,
                  &crypto_config_),
         body_("hello world") {
-    session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
 
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
@@ -40,6 +42,7 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
     stream_.reset(new QuicSpdyClientStream(3, &session_));
   }
 
+  StrictMock<MockConnection>* connection_;
   QuicClientSession session_;
   scoped_ptr<QuicSpdyClientStream> stream_;
   BalsaHeaders headers_;
@@ -48,7 +51,10 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
   QuicCryptoClientConfig crypto_config_;
 };
 
-TEST_F(QuicSpdyClientStreamTest, TestFraming) {
+INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyClientStreamTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicSpdyClientStreamTest, TestFraming) {
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
       headers_string_.c_str(), headers_string_.size()));
   EXPECT_EQ(body_.size(),
@@ -57,7 +63,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFraming) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_F(QuicSpdyClientStreamTest, TestFramingOnePacket) {
+TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   string message = headers_string_ + body_;
 
   EXPECT_EQ(message.size(), stream_->ProcessData(
@@ -66,7 +72,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
+TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -75,12 +81,14 @@ TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(200u, stream_->headers().parsed_response_code());
 
+  EXPECT_CALL(*connection_,
+              SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
   stream_->ProcessData(large_body.c_str(), large_body.size());
 
   EXPECT_NE(QUIC_STREAM_NO_ERROR, stream_->stream_error());
 }
 
-TEST_F(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
+TEST_P(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
   QuicStreamFrame frame(3, false, 3, MakeIOVector("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());

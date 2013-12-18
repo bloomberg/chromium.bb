@@ -29,6 +29,7 @@ class SimpleFramerVisitor;
 class SimpleQuicFramer {
  public:
   SimpleQuicFramer();
+  explicit SimpleQuicFramer(const QuicVersionVector& supported_versions);
   ~SimpleQuicFramer();
 
   bool ProcessPacket(const QuicEncryptedPacket& packet);

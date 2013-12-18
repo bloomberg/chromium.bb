@@ -262,6 +262,17 @@ MockConnection::MockConnection(QuicGuid guid,
       helper_(helper()) {
 }
 
+MockConnection::MockConnection(bool is_server,
+                               const QuicVersionVector& supported_versions)
+    : QuicConnection(kTestGuid,
+                     IPEndPoint(Loopback4(), kTestPort),
+                     new testing::NiceMock<MockHelper>(),
+                     new testing::NiceMock<MockPacketWriter>(),
+                     is_server, supported_versions),
+      writer_(QuicConnectionPeer::GetWriter(this)),
+      helper_(helper()) {
+}
+
 MockConnection::~MockConnection() {
 }
 
@@ -271,6 +282,12 @@ void MockConnection::AdvanceTime(QuicTime::Delta delta) {
 
 PacketSavingConnection::PacketSavingConnection(bool is_server)
     : MockConnection(is_server) {
+}
+
+PacketSavingConnection::PacketSavingConnection(
+    bool is_server,
+    const QuicVersionVector& supported_versions)
+    : MockConnection(is_server, supported_versions) {
 }
 
 PacketSavingConnection::~PacketSavingConnection() {
@@ -510,6 +527,12 @@ QuicConfig DefaultQuicConfig() {
   QuicConfig config;
   config.SetDefaults();
   return config;
+}
+
+QuicVersionVector SupportedVersions(QuicVersion version) {
+  QuicVersionVector versions;
+  versions.push_back(version);
+  return versions;
 }
 
 bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {

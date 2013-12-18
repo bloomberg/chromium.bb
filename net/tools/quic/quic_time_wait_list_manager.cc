@@ -175,8 +175,13 @@ void QuicTimeWaitListManager::OnError(QuicFramer* framer) {
 
 bool QuicTimeWaitListManager::OnProtocolVersionMismatch(
     QuicVersion received_version) {
-  // Drop such packets whose version don't match.
-  return false;
+  if (!framer_.IsSupportedVersion(received_version)) {
+    // Drop such packets whose version don't match.
+    return false;
+  }
+  // Allow the framer to continue processing this packet.
+  framer_.set_version(received_version);
+  return true;
 }
 
 bool QuicTimeWaitListManager::OnUnauthenticatedHeader(

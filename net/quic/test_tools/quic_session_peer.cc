@@ -22,6 +22,11 @@ void QuicSessionPeer::SetMaxOpenStreams(QuicSession* session,
 }
 
 // static
+QuicHeadersStream* QuicSessionPeer::GetHeadersStream(QuicSession* session) {
+  return session->headers_stream_.get();
+}
+
+// static
 WriteBlockedList<QuicStreamId>* QuicSessionPeer::GetWriteblockedStreams(
     QuicSession* session) {
   return &session->write_blocked_streams_;

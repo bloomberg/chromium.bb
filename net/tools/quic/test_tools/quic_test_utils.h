@@ -50,12 +50,13 @@ class MockConnection : public QuicConnection {
   explicit MockConnection(bool is_server);
 
   // Uses a MockHelper, GUID of 42.
-  MockConnection(IPEndPoint address,
-                 bool is_server);
+  MockConnection(IPEndPoint address, bool is_server);
 
   // Uses a MockHelper, and 127.0.0.1:123
-  MockConnection(QuicGuid guid,
-                 bool is_server);
+  MockConnection(QuicGuid guid, bool is_server);
+
+  // Uses a Mock helper, GUID of 42, and 127.0.0.1:123.
+  MockConnection(bool is_server, const QuicVersionVector& supported_versions);
 
   virtual ~MockConnection();
 

@@ -33,6 +33,9 @@ class QuicSpdyClientStream : public QuicDataStream {
   // SPDY/HTTP does not support bidirectional streaming.
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
 
+  // Override the base class to store the size of the headers.
+  virtual void OnStreamHeadersComplete(bool fin, size_t frame_len) OVERRIDE;
+
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
@@ -54,6 +57,10 @@ class QuicSpdyClientStream : public QuicDataStream {
   // Returns whatever headers have been received for this stream.
   const BalsaHeaders& headers() { return headers_; }
 
+  size_t header_bytes_read() const { return header_bytes_read_; }
+
+  size_t header_bytes_written() const { return header_bytes_written_; }
+
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
   using QuicDataStream::set_priority;
@@ -66,6 +73,8 @@ class QuicSpdyClientStream : public QuicDataStream {
 
   scoped_refptr<GrowableIOBuffer> read_buf_;
   bool response_headers_received_;
+  size_t header_bytes_read_;
+  size_t header_bytes_written_;
 };
 
 }  // namespace tools

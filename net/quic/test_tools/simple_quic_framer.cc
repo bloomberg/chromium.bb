@@ -143,6 +143,10 @@ SimpleQuicFramer::SimpleQuicFramer()
     : framer_(QuicSupportedVersions(), QuicTime::Zero(), true) {
 }
 
+SimpleQuicFramer::SimpleQuicFramer(const QuicVersionVector& supported_versions)
+    : framer_(supported_versions, QuicTime::Zero(), true) {
+}
+
 SimpleQuicFramer::~SimpleQuicFramer() {
 }
 
