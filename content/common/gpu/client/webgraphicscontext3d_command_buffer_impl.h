@@ -83,6 +83,10 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
+  // The following 3 IDs let one uniquely identify this context.
+  // Gets the GPU process ID for this context.
+  int GetGPUProcessID();
+
   CommandBufferProxyImpl* GetCommandBufferProxy() {
     return command_buffer_.get();
   }

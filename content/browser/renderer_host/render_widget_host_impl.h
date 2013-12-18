@@ -493,6 +493,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ParentChanged(gfx::NativeViewId new_parent);
 #endif
 
+  // Signals that the compositing surface was updated, e.g. after a lost context
+  // event.
+  void CompositingSurfaceUpdated();
+
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;
   }

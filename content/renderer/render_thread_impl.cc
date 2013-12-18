@@ -1213,7 +1213,8 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   io_message_loop_proxy_ = ChildProcess::current()->io_message_loop_proxy();
   shutdown_event_ = ChildProcess::current()->GetShutDownEvent();
 
-  gpu_channel_ = GpuChannelHost::Create(this, gpu_info, channel_handle);
+  gpu_channel_ = GpuChannelHost::Create(
+      this, 0, gpu_info, channel_handle);
   return gpu_channel_.get();
 }
 

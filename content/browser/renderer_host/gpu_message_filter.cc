@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/gpu/gpu_data_manager_impl_private.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -95,6 +94,24 @@ bool GpuMessageFilter::OnMessageReceived(
   return handled;
 }
 
+void GpuMessageFilter::SurfaceUpdated(int32 surface_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  typedef std::vector<linked_ptr<CreateViewCommandBufferRequest> > RequestList;
+  RequestList retry_requests;
+  retry_requests.swap(pending_requests_);
+  for (RequestList::iterator it = retry_requests.begin();
+      it != retry_requests.end(); ++it) {
+    if ((*it)->surface_id != surface_id) {
+      pending_requests_.push_back(*it);
+    } else {
+      linked_ptr<CreateViewCommandBufferRequest> request = *it;
+      OnCreateViewCommandBuffer(request->surface_id,
+                                request->init_params,
+                                request->reply.release());
+    }
+  }
+}
+
 void GpuMessageFilter::BeginFrameSubscription(
     int route_id,
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
@@ -175,10 +192,16 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
                 << " tried to access a surface for renderer " << renderer_id;
   }
 
-  if (compositing_surface.parent_client_id &&
-      !GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
-    // For the renderer to fall back to software also.
-    compositing_surface = gfx::GLSurfaceHandle();
+  if (compositing_surface.parent_gpu_process_id &&
+      compositing_surface.parent_gpu_process_id != gpu_process_id_) {
+    // If the current handle for the surface is using a different (older) gpu
+    // host, it means the GPU process died and we need to wait until the UI
+    // re-allocates the surface in the new process.
+    linked_ptr<CreateViewCommandBufferRequest> request(
+        new CreateViewCommandBufferRequest(
+            surface_id, init_params, reply.Pass()));
+    pending_requests_.push_back(request);
+    return;
   }
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);

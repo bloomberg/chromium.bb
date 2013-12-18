@@ -674,6 +674,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::Size last_swapped_surface_size_;
   float last_swapped_surface_scale_factor_;
 
+  gfx::GLSurfaceHandle shared_surface_handle_;
+
   // If non-NULL we're in OnPaint() and this is the supplied canvas.
   gfx::Canvas* paint_canvas_;
 

@@ -283,13 +283,23 @@ ui::ContextFactory* GpuProcessTransportFactory::AsContextFactory() {
   return this;
 }
 
-gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
+gfx::GLSurfaceHandle GpuProcessTransportFactory::CreateSharedSurfaceHandle() {
+  scoped_refptr<cc::ContextProvider> provider =
+      SharedMainThreadContextProvider();
+  if (!provider.get())
+    return gfx::GLSurfaceHandle();
+  typedef WebGraphicsContext3DCommandBufferImpl WGC3DCBI;
+  WGC3DCBI* context = static_cast<WGC3DCBI*>(provider->Context3d());
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
+  handle.parent_gpu_process_id = context->GetGPUProcessID();
   handle.parent_client_id =
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;
 }
+
+void GpuProcessTransportFactory::DestroySharedSurfaceHandle(
+    gfx::GLSurfaceHandle surface) {}
 
 scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateTransportClient(
     float device_scale_factor) {
