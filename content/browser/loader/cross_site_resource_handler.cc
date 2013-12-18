@@ -289,8 +289,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
     frame_id = info->GetFrameID();
 
-    ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(
-        global_id, transfer_url_chain.front());
+    ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(global_id);
   }
   BrowserThread::PostTask(
       BrowserThread::UI,

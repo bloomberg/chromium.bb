@@ -39,7 +39,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void ReportUploadProgress();
 
   bool is_transferring() const { return is_transferring_; }
-  void MarkAsTransferring(const GURL& target_url);
+  void MarkAsTransferring();
   void CompleteTransfer();
 
   net::URLRequest* request() { return request_.get(); }

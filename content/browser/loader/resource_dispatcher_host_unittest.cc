@@ -2059,8 +2059,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 
 
   GlobalRequestID global_request_id(filter_->child_id(), request_id);
-  host_.MarkAsTransferredNavigation(global_request_id,
-                                    GURL("http://example.com/blah"));
+  host_.MarkAsTransferredNavigation(global_request_id);
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);

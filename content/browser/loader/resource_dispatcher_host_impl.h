@@ -131,8 +131,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Marks the request as "parked". This happens if a request is
   // redirected cross-site and needs to be resumed by a new render view.
-  void MarkAsTransferredNavigation(const GlobalRequestID& id,
-                                   const GURL& target_url);
+  void MarkAsTransferredNavigation(const GlobalRequestID& id);
 
   // Resumes the request without transferring it to a new render view.
   void ResumeDeferredNavigation(const GlobalRequestID& id);
