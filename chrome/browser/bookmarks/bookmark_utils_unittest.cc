@@ -47,7 +47,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
 
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
-  query.word_phrase_query.reset(new string16);
+  query.word_phrase_query.reset(new base::string16);
   *query.word_phrase_query = ASCIIToUTF16("foo");
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(2U, nodes.size());
@@ -86,7 +86,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
 
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
-  query.url.reset(new string16);
+  query.url.reset(new base::string16);
   *query.url = ASCIIToUTF16("https://www.google.com/");
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
@@ -123,7 +123,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
 
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
-  query.title.reset(new string16);
+  query.title.reset(new base::string16);
   *query.title = ASCIIToUTF16("Google");
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
@@ -163,20 +163,20 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   QueryFields query;
 
   // Test all fields matching.
-  query.word_phrase_query.reset(new string16(ASCIIToUTF16("www")));
-  query.url.reset(new string16(ASCIIToUTF16("https://www.google.com/")));
-  query.title.reset(new string16(ASCIIToUTF16("Google")));
+  query.word_phrase_query.reset(new base::string16(ASCIIToUTF16("www")));
+  query.url.reset(new base::string16(ASCIIToUTF16("https://www.google.com/")));
+  query.title.reset(new base::string16(ASCIIToUTF16("Google")));
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node1);
   nodes.clear();
 
-  scoped_ptr<string16>* fields[] = {
+  scoped_ptr<base::string16>* fields[] = {
     &query.word_phrase_query, &query.url, &query.title };
 
   // Test two fields matching.
   for (size_t i = 0; i < arraysize(fields); i++) {
-    scoped_ptr<string16> original_value(fields[i]->release());
+    scoped_ptr<base::string16> original_value(fields[i]->release());
     GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
     ASSERT_EQ(1U, nodes.size());
     EXPECT_TRUE(nodes[0] == node1);
@@ -186,8 +186,8 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
 
   // Test two fields matching with one non-matching field.
   for (size_t i = 0; i < arraysize(fields); i++) {
-    scoped_ptr<string16> original_value(fields[i]->release());
-    fields[i]->reset(new string16(ASCIIToUTF16("fjdkslafjkldsa")));
+    scoped_ptr<base::string16> original_value(fields[i]->release());
+    fields[i]->reset(new base::string16(ASCIIToUTF16("fjdkslafjkldsa")));
     GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
     ASSERT_EQ(0U, nodes.size());
     nodes.clear();

@@ -441,7 +441,7 @@ bool BookmarksSearchFunction::RunImpl() {
   if (params->query.as_string) {
     bookmark_utils::QueryFields query;
     query.word_phrase_query.reset(
-        new string16(UTF8ToUTF16(*params->query.as_string)));
+        new base::string16(UTF8ToUTF16(*params->query.as_string)));
     bookmark_utils::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
@@ -453,12 +453,14 @@ bool BookmarksSearchFunction::RunImpl() {
     const bookmarks::Search::Params::Query::Object& object =
         *params->query.as_object;
     bookmark_utils::QueryFields query;
-    if (object.query)
-      query.word_phrase_query.reset(new string16(UTF8ToUTF16(*object.query)));
+    if (object.query) {
+      query.word_phrase_query.reset(
+          new base::string16(UTF8ToUTF16(*object.query)));
+    }
     if (object.url)
-      query.url.reset(new string16(UTF8ToUTF16(*object.url)));
+      query.url.reset(new base::string16(UTF8ToUTF16(*object.url)));
     if (object.title)
-      query.title.reset(new string16(UTF8ToUTF16(*object.title)));
+      query.title.reset(new base::string16(UTF8ToUTF16(*object.title)));
     bookmark_utils::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,

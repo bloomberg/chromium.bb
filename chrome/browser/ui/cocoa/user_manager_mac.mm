@@ -148,8 +148,8 @@ void UserManagerMac::Show(const base::FilePath& profile_path_to_focus) {
       ProfileManager::GetGuestProfilePath(),
       base::Bind(&UserManagerMac::OnGuestProfileCreated,
                  profile_path_to_focus),
-      string16(),
-      string16(),
+      base::string16(),
+      base::string16(),
       std::string());
 }
 
