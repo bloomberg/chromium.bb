@@ -238,6 +238,9 @@ class InputMethodEngineInterface {
                                      int offset,
                                      size_t number_of_chars,
                                      std::string* error) = 0;
+
+  // Hides the input view window (from API call).
+  virtual void HideInputView() = 0;
 };
 
 }  // namespace chromeos

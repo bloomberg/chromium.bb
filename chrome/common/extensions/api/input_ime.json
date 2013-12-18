@@ -216,6 +216,12 @@
         ]
       },
       {
+        "name": "hideInputView",
+        "type": "function",
+        "description": "Hides the input view window, which is popped up automatically by system. If the input view window is already hidden, this function will do nothing.",
+        "parameters": []
+      },
+      {
         "name": "setCandidateWindowProperties",
         "type": "function",
         "description": "Sets the properties of the candidate window. This fails if the extension doesn't own the active IME",

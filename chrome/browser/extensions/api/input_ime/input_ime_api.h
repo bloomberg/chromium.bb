@@ -201,6 +201,18 @@ class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class InputImeHideInputViewFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.hideInputView",
+                             INPUT_IME_HIDEINPUTVIEW)
+
+ protected:
+  virtual ~InputImeHideInputViewFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class InputImeAPI : public ProfileKeyedAPI,
                     public content::NotificationObserver {
  public:

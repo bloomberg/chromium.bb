@@ -24343,6 +24343,7 @@ other types of suffix sets.
   <int value="648" label="WEBVIEW_CAPTUREVISIBLEREGION"/>
   <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
+  <int value="651" label="INPUT_IME_HIDEINPUTVIEW"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

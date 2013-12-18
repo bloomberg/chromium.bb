@@ -23,6 +23,7 @@ namespace DeleteSurroundingText =
     extensions::api::input_ime::DeleteSurroundingText;
 namespace UpdateMenuItems = extensions::api::input_ime::UpdateMenuItems;
 namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
+namespace HideInputView = extensions::api::input_ime::HideInputView;
 namespace SetMenuItems = extensions::api::input_ime::SetMenuItems;
 namespace SetCursorPosition = extensions::api::input_ime::SetCursorPosition;
 namespace SetCandidates = extensions::api::input_ime::SetCandidates;
@@ -497,6 +498,16 @@ bool InputImeCommitTextFunction::RunImpl() {
 
   SetResult(new base::FundamentalValue(
       engine->CommitText(params.context_id, params.text.c_str(), &error_)));
+  return true;
+}
+
+bool InputImeHideInputViewFunction::RunImpl() {
+  InputMethodEngineInterface* engine =
+      InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
+  if (!engine) {
+    return true;
+  }
+  engine->HideInputView();
   return true;
 }
 

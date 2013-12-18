@@ -386,6 +386,15 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
   return true;
 }
 
+void InputMethodEngine::HideInputView() {
+  keyboard::KeyboardController* keyboard_controller =
+    ash::Shell::GetInstance()->keyboard_controller();
+  if (keyboard_controller) {
+    keyboard_controller->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_MANUAL);
+  }
+}
+
 void InputMethodEngine::FocusIn(
     const IBusEngineHandlerInterface::InputContext& input_context) {
   focused_ = true;

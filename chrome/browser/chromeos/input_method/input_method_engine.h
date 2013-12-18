@@ -91,6 +91,7 @@ class InputMethodEngine : public InputMethodEngineInterface,
   virtual void CandidateClicked(uint32 index) OVERRIDE;
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) OVERRIDE;
+  virtual void HideInputView() OVERRIDE;
 
  private:
   // Converts MenuItem to InputMethodProperty.
