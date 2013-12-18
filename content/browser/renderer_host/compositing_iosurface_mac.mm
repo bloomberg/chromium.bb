@@ -450,7 +450,8 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   }
 
   const bool workaround_needed =
-      drawing_context->IsVendorIntel() && !base::mac::IsOSMountainLionOrLater();
+      drawing_context->IsVendorIntel() &&
+      (!base::mac::IsOSMountainLionOrLater() || base::mac::IsOSMavericks());
   const bool use_glfinish_workaround =
       (workaround_needed || force_on_workaround) && !force_off_workaround;
 
@@ -459,8 +460,10 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     // http://crbug.com/123409 : work around bugs in graphics driver on
     // MacBook Air with Intel HD graphics, and possibly on other models,
     // by forcing the graphics pipeline to be completely drained at this
-    // point.
-    // This workaround is not necessary on Mountain Lion.
+    // point. This workaround is not necessary on Mountain Lion.
+    // http://crbug.com/318877 : work around a bug where the window does
+    // not finish rendering its contents before displaying them on Mavericks
+    // on Retina MacBook Pro when using the Intel HD graphics GPU.
     glFinish();
   }
 
