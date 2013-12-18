@@ -122,9 +122,12 @@ class WebCryptoImplTest : public testing::Test {
                                           usage,
                                           &key));
 
-    EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
+    EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+    EXPECT_EQ(algorithm.id(), key.algorithm().id());
+    EXPECT_EQ(extractable, key.extractable());
+    EXPECT_EQ(usage, key.usages());
     return key;
   }
 
@@ -1616,6 +1619,89 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
       encrypted_data.byteLength(),
       &decrypted_data));
   ExpectArrayBufferMatchesHex(message_hex_str, decrypted_data);
+}
+
+TEST_F(WebCryptoImplTest, MAYBE(AesKwKeyImport)) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoAlgorithm algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  // Import a 128-bit Key Encryption Key (KEK)
+  std::string key_raw_hex_in = "025a8cf3f08b4f6c5f33bbc76a471939";
+  ASSERT_TRUE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                HexStringToBytes(key_raw_hex_in),
+                                algorithm,
+                                true,
+                                blink::WebCryptoKeyUsageWrapKey,
+                                &key));
+  blink::WebArrayBuffer key_raw_out;
+  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                key,
+                                &key_raw_out));
+  ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
+
+  // Import a 192-bit KEK
+  key_raw_hex_in = "c0192c6466b2370decbb62b2cfef4384544ffeb4d2fbc103";
+  ASSERT_TRUE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                HexStringToBytes(key_raw_hex_in),
+                                algorithm,
+                                true,
+                                blink::WebCryptoKeyUsageWrapKey,
+                                &key));
+  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                key,
+                                &key_raw_out));
+  ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
+
+  // Import a 256-bit Key Encryption Key (KEK)
+  key_raw_hex_in =
+      "e11fe66380d90fa9ebefb74e0478e78f95664d0c67ca20ce4a0b5842863ac46f";
+  ASSERT_TRUE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                HexStringToBytes(key_raw_hex_in),
+                                algorithm,
+                                true,
+                                blink::WebCryptoKeyUsageWrapKey,
+                                &key));
+  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                key,
+                                &key_raw_out));
+  ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
+
+  // Fail import of 0 length key
+  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                 HexStringToBytes(""),
+                                 algorithm,
+                                 true,
+                                 blink::WebCryptoKeyUsageWrapKey,
+                                 &key));
+
+  // Fail import of 124-bit KEK
+  key_raw_hex_in = "3e4566a2bdaa10cb68134fa66c15ddb";
+  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                 HexStringToBytes(key_raw_hex_in),
+                                 algorithm,
+                                 true,
+                                 blink::WebCryptoKeyUsageWrapKey,
+                                 &key));
+
+  // Fail import of 200-bit KEK
+  key_raw_hex_in = "0a1d88608a5ad9fec64f1ada269ebab4baa2feeb8d95638c0e";
+  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                 HexStringToBytes(key_raw_hex_in),
+                                 algorithm,
+                                 true,
+                                 blink::WebCryptoKeyUsageWrapKey,
+                                 &key));
+
+  // Fail import of 260-bit KEK
+  key_raw_hex_in =
+      "72d4e475ff34215416c9ad9c8281247a4d730c5f275ac23f376e73e3bce8d7d5a";
+  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                 HexStringToBytes(key_raw_hex_in),
+                                 algorithm,
+                                 true,
+                                 blink::WebCryptoKeyUsageWrapKey,
+                                 &key));
 }
 
 }  // namespace content

@@ -260,6 +260,7 @@ bool ImportKeyInternalRaw(
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdHmac:
     case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesKw:
       type = blink::WebCryptoKeyTypeSecret;
       break;
     // TODO(bryaneyler): Support more key types.
@@ -267,8 +268,6 @@ bool ImportKeyInternalRaw(
       return false;
   }
 
-  // TODO(bryaneyler): Need to split handling for symmetric and asymmetric keys.
-  // Currently only supporting symmetric.
   CK_MECHANISM_TYPE mechanism = CKM_INVALID_MECHANISM;
   // Flags are verified at the Blink layer; here the flags are set to all
   // possible operations for this key type.
@@ -293,6 +292,11 @@ bool ImportKeyInternalRaw(
     case blink::WebCryptoAlgorithmIdAesCbc: {
       mechanism = CKM_AES_CBC;
       flags |= CKF_ENCRYPT | CKF_DECRYPT;
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdAesKw: {
+      mechanism = CKM_NSS_AES_KEY_WRAP;
+      flags |= CKF_WRAP | CKF_WRAP;
       break;
     }
     default:
