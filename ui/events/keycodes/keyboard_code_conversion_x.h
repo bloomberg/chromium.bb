@@ -27,7 +27,8 @@ EVENTS_BASE_EXPORT int XKeysymForWindowsKeyCode(KeyboardCode keycode,
                                                 bool shift);
 
 // Converts an X keycode into an X KeySym.
-unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int keycode);
+EVENTS_BASE_EXPORT unsigned int DefaultXKeysymFromHardwareKeycode(
+    unsigned int keycode);
 
 }  // namespace ui
 
