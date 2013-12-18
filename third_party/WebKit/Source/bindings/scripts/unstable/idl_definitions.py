@@ -178,6 +178,7 @@ class IdlInterface(BaseIdl):
         self.operations = operations or []
         self.is_callback = is_callback
         self.is_partial = is_partial
+        self.is_exception = False
         self.name = name
         self.parent = parent
 
@@ -201,7 +202,7 @@ class IdlInterface(BaseIdl):
             'domInterface::customConstructors': self.custom_constructors,
             'domInterface::extendedAttributes': none_to_value_is_missing(self.extended_attributes),
             'domInterface::functions': self.operations,
-            'domInterface::isException': None,
+            'domInterface::isException': false_to_none(self.is_exception),
             'domInterface::isCallback': boolean_to_perl(false_to_none(self.is_callback)),
             'domInterface::isPartial': false_to_none(self.is_partial),
             'domInterface::name': self.name,
@@ -216,6 +217,13 @@ class IdlException(BaseIdl):
         self.extended_attributes = extended_attributes or {}
         self.operations = operations or []
         self.name = name
+        # These values don't vary for exceptions, but are needed because
+        # exceptions are treated as interfaces by the code generator
+        self.constructors = []
+        self.custom_constructors = []
+        self.is_callback = False
+        self.is_exception = True
+        self.parent = None
 
     def resolve_typedefs(self, typedefs):
         for constant in self.constants:
@@ -234,12 +242,12 @@ class IdlException(BaseIdl):
             'domInterface::extendedAttributes': none_to_value_is_missing(self.extended_attributes),
             'domInterface::functions': self.operations,
             # These values don't vary for exceptions
-            'domInterface::constructors': [],
-            'domInterface::customConstructors': [],
-            'domInterface::isException': 1,
-            'domInterface::isCallback': None,
+            'domInterface::constructors': self.constructors,
+            'domInterface::customConstructors': self.custom_constructors,
+            'domInterface::isException': boolean_to_perl(self.is_exception),
+            'domInterface::isCallback': false_to_none(self.is_callback),
             'domInterface::isPartial': None,
-            'domInterface::parent': None,
+            'domInterface::parent': self.parent,
             }
 
 

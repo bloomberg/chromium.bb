@@ -68,23 +68,50 @@ namespace TestExceptionV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void nameAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedShortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestException* imp = V8TestException::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->name(), info.GetIsolate());
+    v8SetReturnValueUnsigned(info, imp->readonlyUnsignedShortAttribute());
 }
 
-static void nameAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestExceptionV8Internal::nameAttributeGetter(info);
+    TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestException* imp = V8TestException::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->readonlyStringAttribute(), info.GetIsolate());
+}
+
+static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestExceptionV8Internal::readonlyStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestException* imp = V8TestException::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->toString(), info.GetIsolate());
+}
+
+static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestExceptionV8Internal::toStringMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 } // namespace TestExceptionV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestExceptionAttributes[] = {
-    {"name", TestExceptionV8Internal::nameAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyUnsignedShortAttribute", TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyStringAttribute", TestExceptionV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExceptionTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -99,6 +126,11 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExceptionTemplate(v8::Han
         isolate, currentWorldType);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
+    static const V8DOMConfiguration::ConstantConfiguration V8TestExceptionConstants[] = {
+        {"UNSIGNED_SHORT_CONSTANT", 1},
+    };
+    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestExceptionConstants, WTF_ARRAY_LENGTH(V8TestExceptionConstants), isolate);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestExceptionV8Internal::toStringMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());

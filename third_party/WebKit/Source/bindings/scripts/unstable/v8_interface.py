@@ -159,6 +159,7 @@ def generate_interface(interface):
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'is_event_target': inherits_interface(interface, 'EventTarget'),
+        'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'named_constructor': named_constructor,
