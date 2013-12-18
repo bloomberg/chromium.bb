@@ -799,12 +799,6 @@ void MetricsLog::RecordEnvironment(
   if (perf_provider_.GetPerfData(&perf_data_proto))
     uma_proto()->add_perf_data()->Swap(&perf_data_proto);
 
-  // BluetoothAdapterFactory::GetAdapter is synchronous on Chrome OS; if that
-  // changes this will fail at the DCHECK().
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&MetricsLog::SetBluetoothAdapter,
-                 base::Unretained(this)));
-  DCHECK(adapter_.get());
   WriteBluetoothProto(hardware);
   UpdateMultiProfileUserCount();
 #endif
@@ -956,6 +950,13 @@ void MetricsLog::SetBluetoothAdapter(
 void MetricsLog::WriteBluetoothProto(
     SystemProfileProto::Hardware* hardware) {
 #if defined(OS_CHROMEOS)
+  // BluetoothAdapterFactory::GetAdapter is synchronous on Chrome OS; if that
+  // changes this will fail at the DCHECK().
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&MetricsLog::SetBluetoothAdapter,
+                 base::Unretained(this)));
+  DCHECK(adapter_.get());
+
   SystemProfileProto::Hardware::Bluetooth* bluetooth =
       hardware->mutable_bluetooth();
 

@@ -19,13 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
-#include "chromeos/dbus/fake_bluetooth_device_client.h"
-#include "chromeos/dbus/fake_bluetooth_input_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
-#endif  // OS_CHROMEOS
-
 namespace {
 
 class TestMetricsService : public MetricsService {
@@ -60,6 +53,10 @@ class TestMetricsLog : public MetricsLog {
     return 1;
   }
 
+  virtual void WriteBluetoothProto(
+      metrics::SystemProfileProto::Hardware* hardware) OVERRIDE {
+  }
+
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 
@@ -67,26 +64,9 @@ class MetricsServiceTest : public testing::Test {
  public:
   MetricsServiceTest()
       : testing_local_state_(TestingBrowserProcess::GetGlobal()) {
-#if defined(OS_CHROMEOS)
-    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
-        new chromeos::FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetBluetoothAdapterClient(
-        scoped_ptr<chromeos::BluetoothAdapterClient>(
-            new chromeos::FakeBluetoothAdapterClient));
-    fake_dbus_thread_manager->SetBluetoothDeviceClient(
-        scoped_ptr<chromeos::BluetoothDeviceClient>(
-            new chromeos::FakeBluetoothDeviceClient));
-    fake_dbus_thread_manager->SetBluetoothInputClient(
-        scoped_ptr<chromeos::BluetoothInputClient>(
-            new chromeos::FakeBluetoothInputClient));
-    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
-#endif  // OS_CHROMEOS
   }
 
   virtual ~MetricsServiceTest() {
-#if defined(OS_CHROMEOS)
-    chromeos::DBusThreadManager::Shutdown();
-#endif  // OS_CHROMEOS
     MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
   }
 

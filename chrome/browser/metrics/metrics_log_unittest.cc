@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
@@ -43,10 +43,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
-#include "chromeos/dbus/fake_bluetooth_device_client.h"
-#include "chromeos/dbus/fake_bluetooth_input_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #endif  // OS_CHROMEOS
 
 using base::TimeDelta;
@@ -163,6 +159,10 @@ class TestMetricsLog : public MetricsLog {
     return kScreenCount;
   }
 
+  virtual void WriteBluetoothProto(
+      metrics::SystemProfileProto::Hardware* hardware) OVERRIDE {
+  }
+
   // Scoped PrefsService, which may not be used if |prefs_ != &scoped_prefs|.
   TestingPrefServiceSimple scoped_prefs_;
   // Weak pointer to the PrefsService used by this log.
@@ -177,24 +177,11 @@ class TestMetricsLog : public MetricsLog {
 
 class MetricsLogTest : public testing::Test {
  public:
-  MetricsLogTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
+  MetricsLogTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
-        new chromeos::FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetBluetoothAdapterClient(
-        scoped_ptr<chromeos::BluetoothAdapterClient>(
-            new chromeos::FakeBluetoothAdapterClient));
-    fake_dbus_thread_manager->SetBluetoothDeviceClient(
-        scoped_ptr<chromeos::BluetoothDeviceClient>(
-            new chromeos::FakeBluetoothDeviceClient));
-    fake_dbus_thread_manager->SetBluetoothInputClient(
-        scoped_ptr<chromeos::BluetoothInputClient>(
-            new chromeos::FakeBluetoothInputClient));
-    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
-
     // Enable multi-profiles.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
     field_trial_list_.reset(new base::FieldTrialList(
@@ -202,17 +189,6 @@ class MetricsLogTest : public testing::Test {
     base::FieldTrialList::CreateTrialsFromString(
         "ChromeOSUseMultiProfiles/Enable/",
         base::FieldTrialList::ACTIVATE_TRIALS);
-#endif  // OS_CHROMEOS
-  }
-
-  virtual void TearDown() OVERRIDE {
-    // Drain the blocking pool from PostTaskAndReply executed by
-    // MetrticsLog.network_observer_.
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    content::RunAllPendingInMessageLoop();
-
-#if defined(OS_CHROMEOS)
-    chromeos::DBusThreadManager::Shutdown();
 #endif  // OS_CHROMEOS
   }
 
@@ -256,9 +232,7 @@ class MetricsLogTest : public testing::Test {
   }
 
  private:
-  // This is necessary because eventually some tests call base::RepeatingTimer
-  // functions and a message loop is required for that.
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<base::FieldTrialList> field_trial_list_;

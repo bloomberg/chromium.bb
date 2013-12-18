@@ -182,7 +182,8 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes info about paired Bluetooth devices on this system.
   // This is a no-op if called on a non-Chrome OS platform.
-  void WriteBluetoothProto(metrics::SystemProfileProto::Hardware* hardware);
+  virtual void WriteBluetoothProto(
+      metrics::SystemProfileProto::Hardware* hardware);
 
 #if defined(OS_CHROMEOS)
   // Update the number of users logged into a multi-profile session.
