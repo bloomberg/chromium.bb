@@ -75,6 +75,16 @@ void expectDoubleValue(double expectedValue, PassRefPtr<AnimatableValue> value)
     EXPECT_FLOAT_EQ(static_cast<float>(expectedValue), actualValue);
 }
 
+const AnimationEffect::CompositableValue* findValue(const AnimationEffect::CompositableValueList& values, CSSPropertyID id)
+{
+    for (size_t i = 0; i < values.size(); ++i) {
+        const std::pair<CSSPropertyID, RefPtr<AnimationEffect::CompositableValue> >& value = values.at(i);
+        if (value.first == id)
+            return value.second.get();
+    }
+    return 0;
+}
+
 
 TEST(AnimationKeyframeEffectModel, BasicOperation)
 {
@@ -314,11 +324,13 @@ TEST(AnimationKeyframeEffectModel, MultipleProperties)
 
     RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
     OwnPtr<AnimationEffect::CompositableValueList> values = effect->sample(0, 0.6);
-    ASSERT_EQ(2UL, values->size());
-    EXPECT_TRUE(values->at(0).first == CSSPropertyLeft);
-    expectDoubleValue(5.0, values->at(0).second->compositeOnto(unknownAnimatableValue(7.0)));
-    EXPECT_TRUE(values->at(1).first == CSSPropertyRight);
-    expectDoubleValue(6.0, values->at(1).second->compositeOnto(unknownAnimatableValue(7.0)));
+    EXPECT_EQ(2UL, values->size());
+    const AnimationEffect::CompositableValue* leftValue = findValue(*values.get(), CSSPropertyLeft);
+    ASSERT_TRUE(leftValue);
+    expectDoubleValue(5.0, leftValue->compositeOnto(unknownAnimatableValue(7.0)));
+    const AnimationEffect::CompositableValue* rightValue = findValue(*values.get(), CSSPropertyRight);
+    ASSERT_TRUE(rightValue);
+    expectDoubleValue(6.0, rightValue->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
 TEST(AnimationKeyframeEffectModel, RecompositeCompositableValue)
