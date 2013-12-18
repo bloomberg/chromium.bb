@@ -136,9 +136,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual void UpdateWindowMinMaxSize() OVERRIDE;
 
   // WebContentsObserver implementation.
-  virtual void RenderViewHostChanged(
-      content::RenderViewHost* old_host,
-      content::RenderViewHost* new_host) OVERRIDE;
+  virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;
 
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
 

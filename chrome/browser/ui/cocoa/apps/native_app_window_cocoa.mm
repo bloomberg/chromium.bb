@@ -546,7 +546,7 @@ void NativeAppWindowCocoa::Show() {
   }
 
   [window_controller_ showWindow:nil];
-  [window() makeKeyAndOrderFront:window_controller_];
+  Activate();
 }
 
 void NativeAppWindowCocoa::ShowInactive() {
@@ -821,10 +821,9 @@ bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
   return [window() level] == AlwaysOnTopWindowLevel();
 }
 
-void NativeAppWindowCocoa::RenderViewHostChanged(
-    content::RenderViewHost* old_host,
-    content::RenderViewHost* new_host) {
-  web_contents()->GetView()->Focus();
+void NativeAppWindowCocoa::RenderViewCreated(content::RenderViewHost* rvh) {
+  if (IsActive())
+    web_contents()->GetView()->RestoreFocus();
 }
 
 bool NativeAppWindowCocoa::IsFrameless() const {
@@ -887,6 +886,8 @@ void NativeAppWindowCocoa::WindowDidBecomeKey() {
   if (rwhv)
     rwhv->SetActive(true);
   shell_window_->OnNativeWindowActivated();
+
+  web_contents()->GetView()->RestoreFocus();
 }
 
 void NativeAppWindowCocoa::WindowDidResignKey() {
@@ -896,6 +897,8 @@ void NativeAppWindowCocoa::WindowDidResignKey() {
   // lose key window status.
   if ([NSApp isActive] && ([NSApp keyWindow] == window()))
     return;
+
+  web_contents()->GetView()->StoreFocus();
 
   content::RenderWidgetHostView* rwhv =
       web_contents()->GetRenderWidgetHostView();
