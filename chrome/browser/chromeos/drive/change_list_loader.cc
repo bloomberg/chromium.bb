@@ -308,6 +308,29 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
   DISALLOW_COPY_AND_ASSIGN(FastFetchFeedFetcher);
 };
 
+FileError AddMyDriveIfNeeded(
+    ResourceMetadata* resource_metadata,
+    scoped_ptr<google_apis::AboutResource> about_resource,
+    base::FilePath* changed_directory_path) {
+  DCHECK(about_resource);
+
+  ResourceEntry entry;
+  FileError error = resource_metadata->GetResourceEntryByPath(
+      util::GetDriveMyDriveRootPath(), &entry);
+  if (error != FILE_ERROR_NOT_FOUND)
+    return error;
+
+  std::string local_id;
+  error = resource_metadata->AddEntry(
+      util::CreateMyDriveRootEntry(about_resource->root_folder_id()),
+      &local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  *changed_directory_path = util::GetDriveGrandRootPath();
+  return FILE_ERROR_OK;
+}
+
 }  // namespace
 
 ChangeListLoader::ChangeListLoader(
@@ -727,15 +750,12 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
     // directories. It should have two directories; <other> and mydrive root.
     // <other> directory should always exist, but mydrive root should be
     // created by root resource id retrieved from the server.
-    // Here, we check if mydrive root exists, and if not, create it.
-    resource_metadata_->GetResourceEntryByPathOnUIThread(
-        base::FilePath(util::GetDriveMyDriveRootPath()),
-        base::Bind(
-            &ChangeListLoader
-                ::DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath,
-            weak_ptr_factory_.GetWeakPtr(),
-            directory_fetch_info,
-            callback));
+    GetAboutResource(base::Bind(
+        &ChangeListLoader::
+            DoLoadGrandRootDirectoryFromServerAfterGetAboutResource,
+        weak_ptr_factory_.GetWeakPtr(),
+        directory_fetch_info,
+        callback));
     return;
   }
 
@@ -751,32 +771,6 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
                  directory_fetch_info,
                  callback,
                  fetcher));
-}
-
-void
-ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK_EQ(directory_fetch_info.resource_id(), util::kDriveGrandRootLocalId);
-
-  if (error == FILE_ERROR_OK) {
-    // MyDrive root already exists. Just return success.
-    callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
-  // Fetch root resource id from the server.
-  GetAboutResource(
-      base::Bind(
-          &ChangeListLoader
-              ::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource,
-          weak_ptr_factory_.GetWeakPtr(),
-          directory_fetch_info,
-          callback));
 }
 
 void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
@@ -796,36 +790,19 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
   }
 
   // Add "My Drive".
-  const std::string& root_resource_id = about_resource->root_folder_id();
-  std::string* local_id = new std::string;
+  base::FilePath* changed_directory_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&ResourceMetadata::AddEntry,
-                 base::Unretained(resource_metadata_),
-                 util::CreateMyDriveRootEntry(root_resource_id),
-                 local_id),
-      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive,
+      base::Bind(&AddMyDriveIfNeeded,
+                 resource_metadata_,
+                 base::Passed(&about_resource),
+                 changed_directory_path),
+      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback,
-                 base::Owned(local_id)));
-}
-
-void ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback,
-    std::string* local_id,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK_EQ(directory_fetch_info.resource_id(), util::kDriveGrandRootLocalId);
-
-  const base::FilePath changed_directory_path(util::GetDriveGrandRootPath());
-  DoLoadDirectoryFromServerAfterRefresh(directory_fetch_info,
-                                        callback,
-                                        &changed_directory_path,
-                                        error);
+                 base::Owned(changed_directory_path)));
 }
 
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
@@ -877,7 +854,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
   DVLOG(1) << "Directory loaded: " << directory_fetch_info.ToString();
   callback.Run(error);
   // Also notify the observers.
-  if (error == FILE_ERROR_OK) {
+  if (error == FILE_ERROR_OK && !directory_path->empty()) {
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(*directory_path));
   }
