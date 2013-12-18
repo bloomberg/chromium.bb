@@ -78,10 +78,12 @@ protected:
     {
         SkBitmap bitmap;
         bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-        if (!discardable)
+        if (!discardable) {
             bitmap.allocPixels();
-        else
-            bitmap.setPixelRef(new MockDiscardablePixelRef())->unref();
+        } else {
+            MockDiscardablePixelRef::Allocator mockDiscardableAllocator;
+            bitmap.allocPixels(&mockDiscardableAllocator, 0);
+        }
         return ScaledImageFragment::createComplete(size, index, bitmap);
     }
 
@@ -89,10 +91,12 @@ protected:
     {
         SkBitmap bitmap;
         bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-        if (!discardable)
+        if (!discardable) {
             bitmap.allocPixels();
-        else
-            bitmap.setPixelRef(new MockDiscardablePixelRef())->unref();
+        } else {
+            MockDiscardablePixelRef::Allocator mockDiscardableAllocator;
+            bitmap.allocPixels(&mockDiscardableAllocator, 0);
+        }
         return ScaledImageFragment::createPartial(size, 0, generation, bitmap);
     }
 
