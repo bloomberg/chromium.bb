@@ -429,6 +429,7 @@ public:
 
     // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
     // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
+    virtual bool isSVG() const { return false; }
     virtual bool isSVGRoot() const { return false; }
     virtual bool isSVGContainer() const { return false; }
     virtual bool isSVGTransformableContainer() const { return false; }
@@ -452,7 +453,6 @@ public:
     // to inherit from RenderSVGObject -> RenderObject (some need RenderBlock inheritance for instance)
     virtual void setNeedsTransformUpdate() { }
     virtual void setNeedsBoundariesUpdate();
-    virtual bool needsBoundariesUpdate() { return false; }
 
     // Per SVG 1.1 objectBoundingBox ignores clipping, masking, filter effects, opacity and stroke-width.
     // This is used for all computation of objectBoundingBox relative units and by SVGLocatable::getBBox().

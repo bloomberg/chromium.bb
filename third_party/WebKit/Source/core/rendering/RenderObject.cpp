@@ -2646,7 +2646,8 @@ void RenderObject::willBeRemovedFromTree()
         containerFlowThread->removeFlowChild(this);
 
     // Update cached boundaries in SVG renderers if a child is removed.
-    parent()->setNeedsBoundariesUpdate();
+    if (parent()->isSVG())
+        parent()->setNeedsBoundariesUpdate();
 }
 
 void RenderObject::removeFromRenderFlowThread()

@@ -67,6 +67,8 @@ public:
 
     SVGElement* element() const { return toSVGElement(RenderObject::node()); }
 
+    virtual bool isSVG() const OVERRIDE FINAL { return true; }
+
 protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE;
     virtual void willBeDestroyed();

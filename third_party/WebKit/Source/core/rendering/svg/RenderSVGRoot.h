@@ -50,7 +50,6 @@ public:
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
     virtual void setNeedsBoundariesUpdate() { m_needsBoundariesOrTransformUpdate = true; }
-    virtual bool needsBoundariesUpdate() OVERRIDE { return m_needsBoundariesOrTransformUpdate; }
     virtual void setNeedsTransformUpdate() { m_needsBoundariesOrTransformUpdate = true; }
 
     IntSize containerSize() const { return m_containerSize; }
@@ -67,8 +66,9 @@ private:
     virtual RenderObjectChildList* virtualChildren() { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const { return children(); }
 
-    virtual bool isSVGRoot() const { return true; }
     virtual const char* renderName() const { return "RenderSVGRoot"; }
+    virtual bool isSVGRoot() const OVERRIDE FINAL { return true; }
+    virtual bool isSVG() const OVERRIDE FINAL { return true; }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const OVERRIDE;
     virtual LayoutUnit computeReplacedLogicalHeight() const;

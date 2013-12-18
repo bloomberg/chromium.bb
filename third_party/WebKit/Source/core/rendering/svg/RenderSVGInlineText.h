@@ -52,7 +52,8 @@ private:
 
     virtual FloatRect objectBoundingBox() const { return floatLinesBoundingBox(); }
 
-    virtual bool isSVGInlineText() const { return true; }
+    virtual bool isSVGInlineText() const OVERRIDE FINAL { return true; }
+    virtual bool isSVG() const OVERRIDE FINAL { return true; }
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);

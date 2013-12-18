@@ -38,7 +38,6 @@ public:
 
     bool updateImageViewport();
     virtual void setNeedsBoundariesUpdate() { m_needsBoundariesUpdate = true; }
-    virtual bool needsBoundariesUpdate() OVERRIDE { return m_needsBoundariesUpdate; }
     virtual void setNeedsTransformUpdate() { m_needsTransformUpdate = true; }
 
     RenderImageResource* imageResource() { return m_imageResource.get(); }
@@ -47,8 +46,8 @@ public:
     void paintForeground(PaintInfo&);
 
 private:
-    virtual const char* renderName() const { return "RenderSVGImage"; }
-    virtual bool isSVGImage() const OVERRIDE { return true; }
+    virtual const char* renderName() const OVERRIDE FINAL { return "RenderSVGImage"; }
+    virtual bool isSVGImage() const OVERRIDE FINAL { return true; }
 
     virtual const AffineTransform& localToParentTransform() const { return m_localTransform; }
 

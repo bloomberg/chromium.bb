@@ -38,7 +38,8 @@ protected:
 private:
     virtual void updateFromStyle() OVERRIDE FINAL;
 
-    virtual bool isRenderSVGBlock() const OVERRIDE FINAL { return true; };
+    virtual bool isRenderSVGBlock() const OVERRIDE FINAL { return true; }
+    virtual bool isSVG() const OVERRIDE FINAL { return true; }
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 

@@ -51,7 +51,6 @@ public:
 
     void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }
     virtual void setNeedsBoundariesUpdate() OVERRIDE FINAL { m_needsBoundariesUpdate = true; }
-    virtual bool needsBoundariesUpdate() OVERRIDE FINAL { return m_needsBoundariesUpdate; }
     virtual void setNeedsTransformUpdate() OVERRIDE FINAL { m_needsTransformUpdate = true; }
     virtual void fillShape(GraphicsContext*) const;
     virtual void strokeShape(GraphicsContext*) const;

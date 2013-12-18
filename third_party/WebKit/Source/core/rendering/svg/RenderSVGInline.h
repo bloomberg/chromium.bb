@@ -32,6 +32,7 @@ public:
     virtual const char* renderName() const { return "RenderSVGInline"; }
     virtual bool requiresLayer() const OVERRIDE FINAL { return false; }
     virtual bool isSVGInline() const OVERRIDE FINAL { return true; }
+    virtual bool isSVG() const OVERRIDE FINAL { return true; }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
