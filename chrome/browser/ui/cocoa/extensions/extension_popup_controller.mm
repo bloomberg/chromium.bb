@@ -345,11 +345,14 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // animation will continue after this frame is set, reverting the frame to
   // what it was when the animation started.
   NSWindow* window = [self window];
-  if ([window isVisible] && [[window animator] alphaValue] < 1.0) {
+  id animator = [window animator];
+  if ([window isVisible] &&
+      ([animator alphaValue] < 1.0 ||
+       !NSEqualRects([window frame], [animator frame]))) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
-    [[window animator] setAlphaValue:1.0];
-    [[window animator] setFrame:frame display:YES];
+    [animator setAlphaValue:1.0];
+    [animator setFrame:frame display:YES];
     [NSAnimationContext endGrouping];
   } else {
     [window setFrame:frame display:YES];
