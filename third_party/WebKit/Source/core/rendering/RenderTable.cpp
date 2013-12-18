@@ -570,7 +570,8 @@ void RenderTable::layout()
 
     bool didFullRepaint = repainter.repaintAfterLayout();
     // Repaint with our new bounds if they are different from our old bounds.
-    if (!didFullRepaint && sectionMoved) {
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
+        && !didFullRepaint && sectionMoved) {
         if (style()->isHorizontalWritingMode())
             repaintRectangle(LayoutRect(visualOverflowRect().x(), movedSectionLogicalTop, visualOverflowRect().width(), visualOverflowRect().maxY() - movedSectionLogicalTop));
         else

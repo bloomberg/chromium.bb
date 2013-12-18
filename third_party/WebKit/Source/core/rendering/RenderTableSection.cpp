@@ -753,6 +753,8 @@ void RenderTableSection::layout()
             if (!cell || current.inColSpan)
                 continue;
 
+            LayoutRectRecorder cellRecorder(*cell);
+
             unsigned endCol = startColumn;
             unsigned cspan = cell->colSpan();
             while (cspan && endCol < cols) {
@@ -910,6 +912,8 @@ void RenderTableSection::layoutRows()
             if (!cell || cs.inColSpan)
                 continue;
 
+            LayoutRectRecorder cellRecorder(*cell);
+
             int rowIndex = cell->rowIndex();
             int rHeight = m_rowPos[rowIndex + cell->rowSpan()] - m_rowPos[rowIndex] - vspacing;
 
@@ -995,7 +999,8 @@ void RenderTableSection::layoutRows()
                 // If the child moved, we have to repaint it as well as any floating/positioned
                 // descendants.  An exception is if we need a layout.  In this case, we know we're going to
                 // repaint ourselves (and the child) anyway.
-                if (!table()->selfNeedsLayout() && cell->checkForRepaintDuringLayout())
+                if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
+                    && !table()->selfNeedsLayout() && cell->checkForRepaintDuringLayout())
                     cell->repaintDuringLayoutIfMoved(oldCellRect);
             }
         }
