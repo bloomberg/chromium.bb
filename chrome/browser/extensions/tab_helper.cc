@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/favicon_downloader.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
@@ -282,6 +284,71 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void TabHelper::CreateHostedApp() {
+  // Add urls from the WebApplicationInfo.
+  std::vector<GURL> web_app_info_icon_urls;
+  for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
+           web_app_info_.icons.begin();
+       it != web_app_info_.icons.end(); ++it) {
+    if (it->url.is_valid())
+      web_app_info_icon_urls.push_back(it->url);
+  }
+
+  favicon_downloader_.reset(
+      new FaviconDownloader(web_contents(),
+                            web_app_info_icon_urls,
+                            base::Bind(&TabHelper::FinishCreateHostedApp,
+                                       base::Unretained(this))));
+  favicon_downloader_->Start();
+}
+
+void TabHelper::FinishCreateHostedApp(
+    bool success,
+    const std::map<GURL, std::vector<SkBitmap> >& bitmaps) {
+  // The tab has navigated away during the icon download. Cancel the hosted app
+  // creation.
+  if (!success) {
+    favicon_downloader_.reset();
+    return;
+  }
+
+  WebApplicationInfo install_info(web_app_info_);
+  if (install_info.app_url.is_empty())
+    install_info.app_url = web_contents()->GetURL();
+
+  if (install_info.title.empty())
+    install_info.title = web_contents()->GetTitle();
+  if (install_info.title.empty())
+    install_info.title = UTF8ToUTF16(install_info.app_url.spec());
+
+  install_info.urls.push_back(install_info.app_url);
+  install_info.is_bookmark_app = true;
+
+  // Add the downloaded icons.
+  for (FaviconDownloader::FaviconMap::const_iterator map_it = bitmaps.begin();
+       map_it != bitmaps.end(); ++map_it) {
+    for (std::vector<SkBitmap>::const_iterator bitmap_it =
+             map_it->second.begin();
+         bitmap_it != map_it->second.end(); ++bitmap_it) {
+      if (!bitmap_it->empty()) {
+        WebApplicationInfo::IconInfo icon_info;
+        icon_info.data = *bitmap_it;
+        icon_info.width = icon_info.data.width();
+        icon_info.height = icon_info.data.height();
+        install_info.icons.push_back(icon_info);
+      }
+    }
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::CreateSilent(profile->GetExtensionService()));
+  installer->set_error_on_unsupported_requirements(true);
+  installer->InstallWebApp(install_info);
+  favicon_downloader_.reset();
+}
+
 void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
                                          WebContents* new_web_contents) {
   // When the WebContents that this is attached to is cloned, give the new clone
@@ -312,7 +379,7 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
       break;
     }
     case CREATE_HOSTED_APP: {
-      CreateHostedApp(info);
+      CreateHostedApp();
       break;
     }
     case UPDATE_SHORTCUT: {
@@ -329,39 +396,6 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
   if (pending_web_app_action_ != CREATE_HOSTED_APP)
     pending_web_app_action_ = NONE;
 #endif
-}
-
-void TabHelper::CreateHostedApp(const WebApplicationInfo& info) {
-  ShellIntegration::ShortcutInfo shortcut_info;
-  web_app::GetShortcutInfoForTab(web_contents(), &shortcut_info);
-  WebApplicationInfo web_app_info;
-
-  web_app_info.is_bookmark_app = true;
-  web_app_info.app_url = shortcut_info.url;
-  web_app_info.title = shortcut_info.title;
-  web_app_info.urls.push_back(web_app_info.app_url);
-
-  // TODO(calamity): this should attempt to download the best icon that it can
-  // from |info.icons| rather than just using the favicon as it scales up badly.
-  // Fix this once |info.icons| gets populated commonly.
-
-  // Get the smallest icon in the icon family (should have only 1).
-  const gfx::Image* icon = shortcut_info.favicon.GetBest(0, 0);
-  SkBitmap bitmap = icon ? icon->AsBitmap() : SkBitmap();
-
-  if (!icon->IsEmpty()) {
-    WebApplicationInfo::IconInfo icon_info;
-    icon_info.data = bitmap;
-    icon_info.width = icon_info.data.width();
-    icon_info.height = icon_info.data.height();
-    web_app_info.icons.push_back(icon_info);
-  }
-
-  ExtensionService* service = profile_->GetExtensionService();
-  scoped_refptr<extensions::CrxInstaller> installer(
-      extensions::CrxInstaller::CreateSilent(service));
-  installer->set_error_on_unsupported_requirements(true);
-  installer->InstallWebApp(web_app_info);
 }
 
 void TabHelper::OnInlineWebstoreInstall(

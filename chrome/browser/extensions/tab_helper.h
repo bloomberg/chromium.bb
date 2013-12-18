@@ -23,6 +23,8 @@
 #include "extensions/common/stack_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class FaviconDownloader;
+
 namespace content {
 struct LoadCommittedDetails;
 }
@@ -99,8 +101,6 @@ class TabHelper : public content::WebContentsObserver,
   void CreateHostedAppFromWebContents();
   bool CanCreateApplicationShortcuts() const;
 
-  void CreateHostedApp(const WebApplicationInfo& info);
-
   void set_pending_web_app_action(WebAppAction action) {
     pending_web_app_action_ = action;
   }
@@ -169,6 +169,12 @@ class TabHelper : public content::WebContentsObserver,
  private:
   explicit TabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabHelper>;
+
+  // Creates a hosted app for the current tab. Requires the |web_app_info_| to
+  // be populated.
+  void CreateHostedApp();
+  void FinishCreateHostedApp(
+      bool success, const std::map<GURL, std::vector<SkBitmap> >& bitmaps);
 
   // content::WebContentsObserver overrides.
   virtual void RenderViewCreated(
@@ -268,6 +274,8 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
   scoped_ptr<ScriptBubbleController> script_bubble_controller_;
+
+  scoped_ptr<FaviconDownloader> favicon_downloader_;
 
   Profile* profile_;
 

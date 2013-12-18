@@ -800,6 +800,8 @@
         'browser/extensions/external_provider_impl.h',
         'browser/extensions/external_registry_loader_win.cc',
         'browser/extensions/external_registry_loader_win.h',
+        'browser/extensions/favicon_downloader.cc',
+        'browser/extensions/favicon_downloader.h',
         'browser/extensions/global_shortcut_listener.cc',
         'browser/extensions/global_shortcut_listener.h',
         'browser/extensions/global_shortcut_listener_chromeos.cc',

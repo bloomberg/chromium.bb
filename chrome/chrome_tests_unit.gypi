@@ -911,6 +911,7 @@
         'browser/extensions/external_policy_loader_unittest.cc',
         'browser/extensions/external_provider_impl_unittest.cc',
         'browser/extensions/external_provider_impl_chromeos_unittest.cc',
+        'browser/extensions/favicon_downloader_unittest.cc',
         'browser/extensions/image_loader_unittest.cc',
         'browser/extensions/menu_manager_unittest.cc',
         'browser/extensions/pack_extension_unittest.cc',

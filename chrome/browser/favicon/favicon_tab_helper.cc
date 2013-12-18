@@ -175,6 +175,7 @@ void FaviconTabHelper::DidStartNavigationToPendingEntry(
 void FaviconTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  favicon_urls_.clear();
   // Get the favicon, either from history or request it from the net.
   FetchFavicon(details.entry->GetURL());
 }
@@ -182,6 +183,9 @@ void FaviconTabHelper::DidNavigateMainFrame(
 void FaviconTabHelper::DidUpdateFaviconURL(
     int32 page_id,
     const std::vector<content::FaviconURL>& candidates) {
+  DCHECK(!candidates.empty());
+  favicon_urls_ = candidates;
+
   favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
   if (touch_icon_handler_.get())
     touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);

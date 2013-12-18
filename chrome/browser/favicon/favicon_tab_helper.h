@@ -51,6 +51,12 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavicon();
 
+  // Returns the current tab's favicon urls. If this is empty,
+  // DidUpdateFaviconURL has not yet been called for the current navigation.
+  const std::vector<content::FaviconURL>& favicon_urls() const {
+    return favicon_urls_;
+  }
+
   // Allows the client to determine if they want to fetch the Favicons as
   // they are discovered.
   void set_should_fetch_icons(bool fetch) {
@@ -93,6 +99,8 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   Profile* profile_;
   bool should_fetch_icons_;
+
+  std::vector<content::FaviconURL> favicon_urls_;
 
   scoped_ptr<FaviconHandler> favicon_handler_;
 
