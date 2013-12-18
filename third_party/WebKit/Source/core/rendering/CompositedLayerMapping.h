@@ -163,12 +163,7 @@ public:
 
     // GraphicsLayerClient interface
     virtual void notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime) OVERRIDE;
-
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) OVERRIDE;
-
-    virtual void didCommitChangesForLayer(const GraphicsLayer*) const OVERRIDE;
-    virtual bool getCurrentTransform(const GraphicsLayer*, TransformationMatrix&) const OVERRIDE;
-
     virtual bool isTrackingRepaints() const OVERRIDE;
 
     PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;

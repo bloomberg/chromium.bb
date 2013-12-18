@@ -177,8 +177,6 @@ public:
 
     String layerTreeAsText(LayerTreeFlags);
 
-    virtual void didCommitChangesForLayer(const GraphicsLayer*) const OVERRIDE;
-
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }

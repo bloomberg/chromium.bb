@@ -1925,22 +1925,6 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
 #endif
 }
 
-void CompositedLayerMapping::didCommitChangesForLayer(const GraphicsLayer* layer) const
-{
-}
-
-bool CompositedLayerMapping::getCurrentTransform(const GraphicsLayer* graphicsLayer, TransformationMatrix& transform) const
-{
-    if (graphicsLayer != m_graphicsLayer.get())
-        return false;
-
-    if (m_owningLayer->hasTransform()) {
-        transform = m_owningLayer->currentTransform(RenderStyle::ExcludeTransformOrigin);
-        return true;
-    }
-    return false;
-}
-
 bool CompositedLayerMapping::isTrackingRepaints() const
 {
     GraphicsLayerClient* client = compositor();

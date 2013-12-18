@@ -2126,11 +2126,6 @@ bool RenderLayerCompositor::isTrackingRepaints() const
     return m_isTrackingRepaints;
 }
 
-void RenderLayerCompositor::didCommitChangesForLayer(const GraphicsLayer*) const
-{
-    // Nothing to do here yet.
-}
-
 static bool shouldCompositeOverflowControls(FrameView* view)
 {
     if (Page* page = view->frame().page()) {
