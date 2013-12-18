@@ -291,7 +291,18 @@ void ImageLoader::notifyFinished(Resource* resource)
         updatedHasPendingEvent();
         return;
     }
+    if (resource->errorOccurred()) {
+        loadEventSender().cancelEvent(this);
+        m_hasPendingLoadEvent = false;
 
+        m_hasPendingErrorEvent = true;
+        errorEventSender().dispatchEventSoon(this);
+
+        // Only consider updating the protection ref-count of the Element immediately before returning
+        // from this function as doing so might result in the destruction of this ImageLoader.
+        updatedHasPendingEvent();
+        return;
+    }
     loadEventSender().dispatchEventSoon(this);
 }
 
