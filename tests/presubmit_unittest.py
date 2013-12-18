@@ -923,7 +923,11 @@ def CheckChangeOnCommit(input_api, output_api):
     starts_with_space_result = ['  starts_with_space']
     not_list_result1 = "'foo'"
     not_list_result2 = "('a', 'tuple')"
-    for result in starts_with_space_result, not_list_result1, not_list_result2:
+    mixed_old_and_new = ['bot', ('bot2', set(['test']))]
+    not_set = [('bot2', ['test'])]
+    for result in (
+        starts_with_space_result, not_list_result1, not_list_result2,
+        mixed_old_and_new, not_set):
       self.assertRaises(presubmit.PresubmitFailure,
                         executer.ExecPresubmitScript,
                         self.presubmit_tryslave % result, '', '', change)
@@ -932,7 +936,9 @@ def CheckChangeOnCommit(input_api, output_api):
     expected_result = ['1', '2', '3']
     empty_result = []
     space_in_name_result = ['foo bar', '1\t2 3']
-    for result in expected_result, empty_result, space_in_name_result:
+    new_style = [('bot', set(['cool', 'tests']))]
+    for result in (
+        expected_result, empty_result, space_in_name_result, new_style):
       self.assertEqual(
           result,
           executer.ExecPresubmitScript(

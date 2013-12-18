@@ -381,14 +381,14 @@ def _GenTSBotSpec(checkouts, change, changed_files, options):
         options.verbose,
         sys.stdout)
     if trybots:
-      if isinstance(trybots[0], basestring):
-        # PRESUBMIT.py sent us an old-style string list of bots.
-        # _ParseBotList's testfilter is set to None otherwise it will complain.
-        bot_spec = _ApplyTestFilter(options.testfilter,
-                                    _ParseBotList(trybots, None))
-      else:
-        # PRESUBMIT.py sent us a new-style (bot, set()) specification.
-        bot_spec = _ApplyTestFilter(options.testfilter, trybots)
+      old_style = filter(lambda x: isinstance(x, basestring), trybots)
+      new_style = filter(lambda x: isinstance(x, tuple), trybots)
+
+      # _ParseBotList's testfilter is set to None otherwise it will complain.
+      bot_spec = _ApplyTestFilter(options.testfilter,
+                                  _ParseBotList(old_style, None))
+
+      bot_spec.extend(_ApplyTestFilter(options.testfilter, new_style))
 
   except ImportError:
     pass

@@ -1055,6 +1055,22 @@ class GetTrySlavesExecuter(object):
               'Do not use \',\' separated builder or test names: %s' % botname)
     else:
       result = []
+
+    def valid_oldstyle(result):
+      return all(isinstance(i, basestring) for i in result)
+
+    def valid_newstyle(result):
+      return (all(isinstance(i, tuple) for i in result) and
+              all(len(i) == 2 for i in result) and
+              all(isinstance(i[0], basestring) for i in result) and
+              all(isinstance(i[1], set) for i in result)
+             )
+
+    # Ensure it's either all old-style or all new-style.
+    if not valid_oldstyle(result) and not valid_newstyle(result):
+      raise PresubmitFailure(
+          'PRESUBMIT.py returned invalid trybot specification!')
+
     return result
 
 
@@ -1083,35 +1099,35 @@ def DoGetTrySlaves(change,
     output_stream.write("Warning, no presubmit.py found.\n")
   results = []
   executer = GetTrySlavesExecuter()
+
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
     fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
-    results += executer.ExecPresubmitScript(
-        default_presubmit, fake_path, project, change)
+    results.extend(executer.ExecPresubmitScript(
+        default_presubmit, fake_path, project, change))
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
       output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results += executer.ExecPresubmitScript(
-        presubmit_script, filename, project, change)
+    results.extend(executer.ExecPresubmitScript(
+        presubmit_script, filename, project, change))
 
-  if all(isinstance(i, tuple) for i in results):
-    # New-style [('bot', set(['tests']))] format.
-    slave_dict = {}
-    for result in results:
-      slave_dict.setdefault(result[0], set()).update(result[1])
-    slaves = list(slave_dict.iteritems())
-  elif all(isinstance(i, basestring) for i in results):
-    # Old-style ['bot'] format.
-    slaves = list(set(results))
-  else:
-    raise ValueError('PRESUBMIT.py returned invalid trybot specification!')
+
+  slave_dict = {}
+  old_style = filter(lambda x: isinstance(x, basestring), results)
+  new_style = filter(lambda x: isinstance(x, tuple), results)
+
+  for result in new_style:
+    slave_dict.setdefault(result[0], set()).update(result[1])
+  slaves = list(slave_dict.items())
+
+  slaves.extend(set(old_style))
 
   if slaves and verbose:
-    output_stream.write(', '.join(slaves))
+    output_stream.write(', '.join((str(x) for x in slaves)))
     output_stream.write('\n')
   return slaves
 
