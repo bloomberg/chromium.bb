@@ -445,7 +445,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
 #else
               iter->descriptor().fd,
 #endif
-              TranslatePepperFileReadWriteOpenFlags(iter->open_flag()))));
+              TranslatePepperFileReadWriteOpenFlags(iter->open_flags()))));
           break;
         case ppapi::proxy::SerializedHandle::INVALID: {
           // Nothing to do. TODO(dmichael): Should we log this? Or is it

@@ -601,7 +601,7 @@ bool PepperFileIOHost::AddFileToReplyContext(
   if (transit_file == IPC::InvalidPlatformFileForTransit())
     return false;
   ppapi::proxy::SerializedHandle file_handle;
-  file_handle.set_file_handle(transit_file, open_flags);
+  file_handle.set_file_handle(transit_file, open_flags, 0 /* file_io */);
   reply_context->params.AppendHandle(file_handle);
   return true;
 }

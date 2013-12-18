@@ -280,7 +280,7 @@ bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(const Message* m,
     case ppapi::proxy::SerializedHandle::FILE: {
       IPC::PlatformFileForTransit desc;
       if (ParamTraits<IPC::PlatformFileForTransit>::Read(m, iter, &desc)) {
-        r->set_file_handle(desc, header.open_flag);
+        r->set_file_handle(desc, header.open_flags, header.file_io);
         return true;
       }
       break;
