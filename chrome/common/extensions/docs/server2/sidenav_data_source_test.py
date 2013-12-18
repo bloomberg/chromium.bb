@@ -5,12 +5,13 @@
 
 import json
 import unittest
+import copy
 
 from extensions_paths import JSON_TEMPLATES
 from mock_file_system import MockFileSystem
 from server_instance import ServerInstance
 from servlet import Request
-from sidenav_data_source import SidenavDataSource, _AddLevels, _AddSelected
+from sidenav_data_source import SidenavDataSource, _AddLevels, _AddAnnotations
 from test_file_system import TestFileSystem
 from test_util import CaptureLogging
 
@@ -38,35 +39,30 @@ class SamplesDataSourceTest(unittest.TestCase):
     _AddLevels(sidenav_json, 1)
     self.assertEqual(expected, sidenav_json)
 
-  def testAddSelected(self):
-    sidenav_json = [
-      { 'href': '/AH2.html' },
-      {
-        'href': '/H2.html',
-        'items': [{
-          'href': '/H3.html'
-        }]
-      }
-    ]
+  def testAddAnnotations(self):
+    item1 = { 'href': '/H1.html' }
+    item2_1 = { 'href': '/H2_1.html' }
+    item2_2 = { 'href': '/H2_2.html' }
+    item2 = { 'href': '/H2.html', 'items': [item2_1, item2_2] }
+    
+    expected = [ item1, item2 ]
 
-    expected = [
-      { 'href': '/AH2.html' },
-      {
-        'child_selected': True,
-        'href': '/H2.html',
-        'items': [{
-          'href': '/H3.html',
-          'selected': True
-        }]
-      }
-    ]
+    sidenav_json = copy.deepcopy(expected)
 
-    _AddSelected(sidenav_json, '/H3.html')
+    item2['child_selected'] = True
+    item2_1['selected'] = True
+    item2_1['related'] = True
+    item2_1['parent'] = { 'title': item2.get('title', None), 
+                          'href': item2.get('href', None) }
+    
+    item2_2['related'] = True
+ 
+    self.assertTrue(_AddAnnotations(sidenav_json, item2_1['href']))
     self.assertEqual(expected, sidenav_json)
 
   def testWithDifferentBasePath(self):
     file_system = TestFileSystem({
-      'apps_sidenav.json': json.dumps([
+      'chrome_sidenav.json': json.dumps([
         { 'href': '/H1.html' },
         { 'href': '/H2.html' },
         { 'href': '/base/path/H2.html' },
@@ -81,14 +77,14 @@ class SamplesDataSourceTest(unittest.TestCase):
     }, relative_to=JSON_TEMPLATES)
 
     expected = [
-      {'href': '/base/path/H1.html', 'level': 2},
-      {'href': '/base/path/H2.html', 'level': 2, 'selected': True},
-      {'href': '/base/path/base/path/H2.html', 'level': 2},
-      {'href': 'https://qualified/X1.html', 'level': 2},
+      {'href': '/base/path/H1.html', 'level': 2, 'related': True},
+      {'href': '/base/path/H2.html', 'level': 2, 'selected': True, 'related': True},
+      {'href': '/base/path/base/path/H2.html', 'level': 2, 'related': True},
+      {'href': 'https://qualified/X1.html', 'level': 2, 'related': True},
       {'items': [
         {'href': '/base/path/H4.html', 'level': 3}
       ],
-      'href': '/base/path/H3.html', 'level': 2}
+      'href': '/base/path/H3.html', 'level': 2, 'related': True}
     ]
 
     server_instance = ServerInstance.ForTest(file_system,
@@ -97,12 +93,12 @@ class SamplesDataSourceTest(unittest.TestCase):
                                             Request.ForTest('/H2.html'))
 
     log_output = CaptureLogging(
-        lambda: self.assertEqual(expected, sidenav_data_source.get('apps')))
+        lambda: self.assertEqual(expected, sidenav_data_source.get('chrome')))
     self.assertEqual(2, len(log_output))
 
   def testSidenavDataSource(self):
     file_system = MockFileSystem(TestFileSystem({
-      'apps_sidenav.json': json.dumps([{
+      'chrome_sidenav.json': json.dumps([{
         'title': 'H1',
         'href': 'H1.html',
         'items': [{
@@ -120,8 +116,10 @@ class SamplesDataSourceTest(unittest.TestCase):
       'items': [{
         'level': 3,
         'selected': True,
+        'related': True,
         'title': 'H2',
-        'href': '/H2.html'
+        'href': '/H2.html',
+        'parent': { 'href': '/H1.html', 'title': 'H1'}
       }]
     }]
 
@@ -130,7 +128,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     self.assertTrue(*file_system.CheckAndReset())
 
     log_output = CaptureLogging(
-        lambda: self.assertEqual(expected, sidenav_data_source.get('apps')))
+        lambda: self.assertEqual(expected, sidenav_data_source.get('chrome')))
 
     self.assertEqual(1, len(log_output))
     self.assertTrue(
@@ -143,8 +141,7 @@ class SamplesDataSourceTest(unittest.TestCase):
 
   def testCron(self):
     file_system = TestFileSystem({
-      'apps_sidenav.json': '[{ "title": "H1" }]' ,
-      'extensions_sidenav.json': '[{ "title": "H2" }]'
+      'chrome_sidenav.json': '[{ "title": "H1" }]'
     }, relative_to=JSON_TEMPLATES)
 
     # Ensure Cron doesn't rely on request.
@@ -152,11 +149,11 @@ class SamplesDataSourceTest(unittest.TestCase):
         ServerInstance.ForTest(file_system), request=None)
     sidenav_data_source.Cron().Get()
 
-    # If Cron fails, apps_sidenav.json will not be cached, and the _cache_data
+    # If Cron fails, chrome_sidenav.json will not be cached, and the _cache_data
     # access will fail.
     # TODO(jshumway): Make a non hack version of this check.
     sidenav_data_source._cache._file_object_store.Get(
-        '%s/apps_sidenav.json' % JSON_TEMPLATES).Get()._cache_data
+        '%s/chrome_sidenav.json' % JSON_TEMPLATES).Get()._cache_data
 
 
 if __name__ == '__main__':

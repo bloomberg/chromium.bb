@@ -41,6 +41,13 @@
 //    this to true. Otherwise, it's safer and more efficient to omit it.
 
 {
+  "cr-chrome-docs-home": {
+    "chromium": {
+      "dir": "chrome/docs"
+    },
+    "serveFrom": "home",
+    "supportsTemplates": true
+  },
   "cr-extensions-examples": {
     "chromium": {
       "dir": "chrome/common/extensions/docs/examples"

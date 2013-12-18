@@ -1,225 +1,188 @@
 [
   {
-    "title": "DEVTOOLS",
+    "title": "Devtools",
     "items": [
       {
-        "title": "OVERVIEW",
+        "title": "Learn Basics",
         "items": [
           {
-            "title": "Getting Started",
-            "items": [
-              {
-                "title": "What Are Chrome DevTools?",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Authoring & Development Workflow",
-                "href": "/devtools/index.html"
-              },
-              {  
-                "title": "Using the Console",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Tips & Tricks",
-                "href": "/devtools/index.html"
-              }
-            ]
+            "title": "Overview",
+            "href": "/devtools/index.html"
           },
           {
-            "title": "Inspecting & Tweaking",
-            "items": [
-              {
-                "title": "Editing Styles & DOM",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Editing Styles",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Working with CSS Preprocessors",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Managing Application Storage",
-                "href": "/devtools/index.html"
-              }
-            ]
+            "title": "Authoring & Development Workflow",
+            "href": "/devtools/docs/authoring-development-workflow.html"
           },
           {
-            "title": "Network Performance & Profiling",
-            "items": [
-              {
-                "title": "Evaluating Network Performance",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Performance Profiling with Timeline",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Demo: Finding Forced Synchronoush Layouts",
-                "href": "/devtools/index.html"
-              }
-            ]
+            "title": "Using the Console",
+            "href": "/devtools/docs/console.html"
           },
           {
-            "title": "Working with Mobile",
-            "items": [
-              {
-                "title": "Mobile Emulation",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Remote Debugging on Android",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Remote Debugging Protocol",
-                "href": "/devtools/index.html"
-              }
-            ]
+            "title": "Tips & Tricks",
+            "href": "/devtools/docs/tips-and-tricks.html"
           },
           {
             "title": "Additional Resources",
+            "href": "/devtools/docs/videos.html",
             "items": [
               {
-                "title": "Creating Clean Testing Environment",
-                "href": "/devtools/index.html"
-              },
-              {
                 "title": "Videos",
-                "href": "/devtools/index.html"
+                "href": "/devtools/docs/videos.html"
               },
               {
-                "title": "Blogposts",
-                "href": "/devtools/index.html"
+                "title": "Blog Posts",
+                "href": "/devtools/docs/blog-posts.html"
               },
-              {
+              {  
                 "title": "Mailing List",
-                "href": "/devtools/index.html"
+                "href": "https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools"
               },
               {
                 "title": "Contributing to DevTools",
-                "href": "/devtools/index.html"
+                "href": "/devtools/docs/contributing.html"
               }
             ]
           }
         ]
       },
       {
-        "title": "WORKING WITH JAVASCRIPT",
+        "title": "Use Tools",
         "items": [
           {
-            "title": "Debugging & Profiling",
+            "title": "Inspecting & Tweaking",
+            "href": "/devtools/docs/elements.html",
             "items": [
               {
-                "title": "Debugging JavaScript",
-                "href": "/devtools/index.html"
+                "title": "Editing Styles & DOM",
+                "href": "/devtools/docs/elements.html"
               },
               {
-                "title": "Profiling JavaScript Performance",
-                "href": "/devtools/index.html"
+                "title": "Working with CSS Preprocessors",
+                "href": "/devtools/docs/css-preprocessors.html"
               },
               {
-                "title": "JavaScript Memory Profiling",
-                "href": "/devtools/index.html"
+                "title": "Managing Application Storage",
+                "href": "/devtools/docs/resource-panel.html"
               }
             ]
           },
           { 
-            "title": "Heap Profiler Demos",
-            "items": [
-              {
-                "title": "Gathering Scattered Objects",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Verifying Action Cleanness",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Exploring the Heap Contents",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Uncovering DOM Leaks",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Finding Accumulation Points",
-                "href": "/devtools/index.html"
-              }
-            ]
+            "title": "Debugging JavaScript",
+            "href": "/devtools/docs/javascript-debugging.html"
+          },
+          {
+            "title": "Mobile Emulation",
+            "href": "/devtools/docs/mobile-emulation.html"
+          },
+          {
+            "title": "Remote Debugging on Android",
+            "href": "/devtools/docs/remote-debugging.html"
           }
         ]
       },
       {
-        "title": "INTEGRATING WITH DEVTOOLS",
+        "title": "Performance & Profiling",
         "items": [
           {
-            "title": "DevTools Extensions",
-            "items": [
-              {
-                "title": "Sample DevTools Extensions",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Sample Debugging Protocol Clients",
-                "href": "/devtools/index.html"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "REFERENCE",
-        "items": [
+            "title": "Evaluating Network Performance",
+            "href": "/devtools/docs/network.html"
+          },          
           {
-            "title": "API",
+            "title": "Using the Timeline",
+            "href": "/devtools/docs/timeline.html"
+          }, 
+          {
+            "title": "Timeline Demo: Finding Forced Synchronous Layouts",
+            "href": "/devtools/docs/demos/too-much-layout/index.html"
+          }, 
+          {
+            "title": "Profiling JavaScript Performance",
+            "href": "/devtools/docs/cpu-profiling.html"
+          }, 
+          {
+            "title": "JavaScripting Performance Flame Chart",
+            "href": "/devtools/docs/flame-chart.html"
+          }, 
+          {
+            "title": "JavaScript Memory Profiling",
+            "href": "/devtools/docs/javascript-memory-profiling.html",
             "items": [
               {
-                "title": "Console API Reference",
-                "href": "/devtools/index.html"
+                "title": "JavaScript Memory Profiling",
+                "href": "/devtools/docs/javascript-memory-profiling.html"
               },
               {
-                "title": "Command Line API Reference",
-                "href": "/devtools/index.html"
+                "title": "Demos",
+                "href": "/devtools/docs/heap-profiling-summary.html"
               }
             ]
           },
           {
-            "title": "Shortcuts & Settings",
+            "title": "Setting Up a Clean Testing Environment",
+            "href": "/devtools/docs/clean-testing-environment.html"
+          }
+        ]
+      },
+      {
+        "title": "Reference",
+        "items": [
+          {
+            "title": "Console API Reference",
+            "href": "/devtools/docs/console-api.html"
+          },
+          {
+            "title": "Command Line API Reference",
+            "href": "/devtools/docs/commandline-api.html"
+          },
+          {
+            "title": "DevTools Extensions API",
+            "href": "/devtools/docs/integrating.html",
             "items": [
               {
-                "title": "Console API Reference",
-                "href": "/devtools/index.html"
+                "title": "Integrating with DevTools",
+                "href": "/devtools/docs/integrating.html"
               },
               {
-                "title": "Command Line API Reference",
-                "href": "/devtools/index.html"
+                "title": "Sample DevTools Extensions",
+                "href": "/devtools/docs/sample-extensions.html"
+              },
+              {
+                "title": "Sample DevTools Protocol Clients",
+                "href": "/devtools/docs/debugging-clients.html"
               }
             ]
+          },
+          {
+            "title": "Keyboard Shortcuts",
+            "href": "/devtools/docs/shortcuts.html"
+          },
+          {
+            "title": "Settings",
+            "href": "/devtools/docs/settings.html"
           },
           {
             "title": "Remote Debugging Protocol",
+            "href": "/devtools/docs/debugger-protocol.html",
             "items": [
               {
+                "title": "Remote Debugging Protocol",
+                "href": "/devtools/docs/debugger-protocol.html"
+              },
+              {
                 "title": "Version 1.1",
-                "href": "/devtools/index.html"
+                "href": "/devtools/docs/protocol/1.1/index.html"
               },
               {
                 "title": "Version 1.0",
-                "href": "/devtools/index.html"
+                "href": "/devtools/docs/protocol/1.0/index.html"
               },
               {
                 "title": "Version .1",
-                "href": "/devtools/index.html"
+                "href": "/devtools/docs/protocol/0.1/index.html"
               },
               {
                 "title": "Tip-of-tree",
-                "href": "/devtools/index.html"
+                "href": "/devtools/docs/protocol/tot/index.html"
               }
             ]
           }
@@ -228,125 +191,106 @@
     ]
   },
   {
-    "title": "MULTIDEVICE",
+    "title": "Multi-device",
     "items": [
       {
-        "title": "OVERVIEW",
+        "title": "Getting Started",
         "items": [
           {
-            "title": "Getting Started",
-            "items": [
-              {
-                "title": "Develop Apps for Chrome Mobile Browsers",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Data Compression Proxy",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "User Agents",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Develop Apps for Chrome Mobile Browsers",
-                "href": "/multidevice/index.html"
-              }
-            ]
+            "title": "Develop Apps for Chrome Mobile",
+            "href": "/multidevice/index.html"
           },
           {
-            "title": "Chrome for Android",
-            "items": [
-              {
-                "title": "Overview",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Android Intents with Chrome",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Add to Hoomescreen",
-                "href": "/multidevice/index.html"
-              }
-            ]   
+            "title": "Data Compression Proxy",
+            "href": "/multidevice/data-compression.html"
           },
           {
-            "title": "Chrome for iOS",
-            "items": [
-              { 
-                "title": "Overview",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Opening Links in Chrome",
-                "href": "/multidevice/index.html"
-              }
-            ]
+            "title": "User Agents",
+            "href": "/multidevice/user-agent.html"
           },
           {
-            "title": "Case Studies",
-            "items": [
-              { 
-                "title": "Overview",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Pocket",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Feedly",
-                "href": "/multidevice/index.html"
-              }
-            ]
+            "title": "Mobile Emulation",
+            "href": "/devtools/docs/mobile-emulation.html"
           },
           {
-            "title": "Related DevTools Content",
-            "items": [
-              { 
-                "title": "Mobile Emulation",
-                "href": "/devtools/index.html"
-              },
-              {
-                "title": "Remote Debugging",
-                "href": "/devtools/index.html"
-              }
-            ]
+            "title": "Remote Debugging",
+            "href": "/devtools/docs/remote-debugging.html"
+          },
+          {
+            "title": "FAQ",
+            "href": "/multidevice/faq.html"
           }
         ]
       },
-      {   
-        "title": "CHROME WEBVIEW",
+      {
+        "title": "Chrome for Android",
         "items": [
           {
             "title": "Overview",
-            "items": [
-              {
-                "title": "WebView for Android",
-                "href": "/multidevice/index.html"
-              },
-              {
-                "title": "Getting Started",
-                "href": "/multidevice/index.html"
-              }
-            ]
+            "href": "/multidevice/android/overview.html"
           },
           {
-            "title": "Design & Develop",
+            "title": "Android Intents with Chrome",
+            "href": "/multidevice/android/intents.html"
+          },
+          {
+            "title": "Add to Homescreen",
+            "href": "/multidevice/android/installtohomescreen.html"
+          }
+        ]   
+      },
+      {   
+        "title": "Chrome WebView",
+        "items": [
+          {
+            "title": "WebView for Android",
+            "href": "/multidevice/webview/overview.html"
+          },
+          {
+            "title": "Getting Started",
+            "href": "/multidevice/webview/gettingstarted.html"
+          },
+          {
+            "title": "Pixel-Perfect UI",
+            "href": "/multidevice/webview/pixelperfect.html"
+          },
+          {
+            "title": "WebView Workflow",
+            "href": "/multidevice/webview/workflow.html"
+          },
+          {
+            "title": "Tips & Tricks",
+            "href": "/multidevice/webview/tipsandtricks.html"
+          } 
+        ]
+      },
+      {
+        "title": "Chrome for iOS",
+        "items": [
+          {    
+            "title": "Overview",
+            "href": "/multidevice/ios/overview.html"
+          },
+          {
+            "title": "Opening Links in Chrome",
+            "href": "/multidevice/ios/links.html"
+          },
+          {
+            "title": "Case Studies",
+            "href": "/multidevice/ios/case-studies.html",
             "items": [
               {
-                "title": "Pixel-Perfect UI",
-                "href": "/multidevice/index.html"
+                "title": "Case Studies",
+                "href": "/multidevice/ios/case-studies.html"
               },
               {
-                "title": "WebView Workflow",
-                "href": "/multidevice/index.html"
+                "title": "Pocket",
+                "href": "/multidevice/ios/pocket.html"
               },
               {
-                "title": "Tips & Tricks",
-                "href": "/multidevice/index.html"
-              } 
+                "title": "Feedly",
+                "href": "/multidevice/ios/feedly.html"
+              }
             ]
           }
         ]
@@ -354,18 +298,15 @@
     ]
   },
   {
-    "title": "PLATFORM",
+    "title": "Platform",
     "items": [
       {
-        "title": "APPS",
+        "title": "Apps",
         "items": [
           {
-            "title": "Discover",
+            "title": "Learn Basics",
+            "href": "/apps/first_app.html",
             "items": [
-              {
-                "title": "What are Chrome Apps?",
-                "href": "/apps/about_apps.html"
-              },
               {
                 "title": "Create Your First App",
                 "href": "/apps/first_app.html"
@@ -379,18 +320,15 @@
                 "href": "/apps/app_lifecycle.html"
               },
               {
-                "title": "Samples",
-                "href": "/apps/samples.html"
+                "title": "Content Security Policy",
+                "href": "/apps/contentSecurityPolicy.html"
               }
             ]
           },
           {
-            "title": "Chrome Apps Codelab",
+            "title": "Learn with Codelab",
+            "href": "/apps/app_codelab1_setup.html",
             "items": [
-              {
-                "title": "Learn with a Codelab",
-                "href": "/apps/app_codelab.html"
-              },
               {
                 "title": "1 - Set Up Development Environment",
                 "href": "/apps/app_codelab1_setup.html"
@@ -426,8 +364,13 @@
             ]
           },
           {
-            "title": "Develop",
-            "items": [
+            "title": "Samples",
+            "href": "/apps/samples.html"
+          },
+          {
+            "title": "Develop in the Cloud",
+            "href": "/apps/offline_apps.html",
+      "items": [
               {
                 "title": "Offline First",
                 "href": "/apps/offline_apps.html"
@@ -437,15 +380,7 @@
                 "href": "/apps/app_external.html"
               },
               {
-                "title": "Content Security Policy",
-                "href": "/apps/contentSecurityPolicy.html"
-              },
-              {
-                "title": "User Authentication",
-                "href": "/apps/app_identity.html"
-              },
-              {
-                "title": "Storing Data in the Cloud",
+                "title": "Storing Data",
                 "href": "/apps/app_storage.html"
               },
               {
@@ -453,13 +388,14 @@
                 "href": "/apps/cloudMessaging.html"
               },
               {
-                "title": "Rich Notifications",
-                "href": "/apps/desktop_notifications.html"
+                "title": "User Authentication",
+                "href": "/apps/app_identity.html"
               }
             ]
           }, 
           {
             "title": "User Low-Level System Services",
+            "href": "/apps/app_usb.html",
             "items": [
               {
                 "title": "USB",
@@ -477,7 +413,8 @@
           },
           {
             "title": "MVC Architecture & Frameworks",
-            "items": [
+            "href": "/apps/app_frameworks.html",
+      "items": [
               {
                 "title": "About MVC Architecture",
                 "href": "/apps/app_frameworks.html"
@@ -493,7 +430,8 @@
             ]
           },
           {   
-            "title": "Distribute",
+            "title": "Distribute Apps",
+            "href": "/apps/publish_app.html",
             "items": [
               {
                 "title": "Publish Your App",
@@ -511,6 +449,7 @@
           },
           {
             "title": "Reference",
+            "href": "/apps/api_index.html",
             "items": [
               {
                 "title": "Chrome Platform APIs",
@@ -536,6 +475,7 @@
           },
           {
             "title": "Help",
+            "href": "/apps/faq.html",
             "items": [
               {
                 "title": "FAQ",
@@ -554,19 +494,16 @@
         ]
       },
       {
-        "title": "EXTENSIONS",
+        "title": "Extensions",
         "items": [
           {
-            "title": "Discover",
+            "title": "Learn Basics",
+            "href": "/extensions/overview.html",
             "items": [
-              {
-                "title": "Getting Started",
-                "href": "/extensions/getstarted.html"
-              },
               {
                 "title": "Overview",
                 "href": "/extensions/overview.html"
-              },
+              },              
               {
                 "title": "Event Pages",
                 "href": "/extensions/event_pages.html"
@@ -578,85 +515,20 @@
               {
                 "title": "activeTab Permission",
                 "href": "/extensions/activeTab.html"
-              },
-              {
-                "title": "What's New",
-                "href": "/extensions/whats_new.html"
-              },
-              {
-                "title": "Samples",
-                "href": "/extensions/samples.html"
               }
             ]
           },
           {
-            "title": "Browser UI",
-            "items": [
-              {
-                "title": "Browser Actions",
-                "href": "/extensions/browserAction.html"
-              },
-              {
-                "title": "Context Menus",
-                "href": "/extensions/contextMenus.html"
-              },
-              {
-                "title": "Desktop Notifications",
-                "href": "/extensions/desktop_notifications.html"
-              },
-              {
-                "title": "Omnibox",
-                "href": "/extensions/omnibox.html"
-              },
-              {
-                "title": "Options Pages",
-                "href": "/extensions/options.html"
-              },
-              {
-                "title": "Override Pages",
-                "href": "/extensions/override.html"
-              },
-              {
-                "title": "Page Actions",
-                "href": "/extensions/pageAction.html"
-              }
-            ]
+            "title": "Getting Started Tutorial",
+            "href": "/extensions/getstarted.html"
           },
           {
-            "title": "Browser Interaction",
-            "items": [
-              {
-                "title": "Bookmarks",
-                "href": "/extensions/bookmarks.html"
-              },
-              {
-                "title": "Cookies",
-                "href": "/extensions/cookies.html"
-              },
-              {
-                "title": "Events",
-                "href": "/extensions/events.html"
-              },
-              {
-                "title": "History",
-                "href": "/extensions/history.html"
-              },
-              {
-                "title": "Management",
-                "href": "/extensions/management.html"
-              },
-              {
-                "title": "Tabs",
-                "href": "/extensions/tabs.html"
-              },
-              {
-                "title": "Windows",
-                "href": "/extensions/windows.html"
-              }
-            ]
+            "title": "Samples",
+            "href": "/extensions/samples.html"
           },
           {
-            "title": "Develop",
+            "title": "Develop Extensions",
+            "href": "/extensions/tut_migration_to_manifest_v2.html",
             "items": [
               {
                 "title": "Accessibility",
@@ -675,14 +547,6 @@
                 "href": "/extensions/tut_debugging.html"
               },
               {
-                "title": "Extending DevTools",
-                "href": "/extensions/devtools.html"
-              },
-              {
-                "title": "Google Analytics",
-                "href": "/extensions/tut_analytics.html"
-              },
-              {
                 "title": "Internationalization",
                 "href": "/extensions/i18n.html"
               },
@@ -691,13 +555,18 @@
                 "href": "/extensions/messaging.html"
               },
               {
+                "title": "Migrate to Manifest 2",
+                "href": "/extensions/tut_migration_to_manifest_v2.html"
+              },
+              {
                 "title": "OAuth",
                 "href": "/extensions/tut_oauth.html"
               }
             ]
           },
           {
-            "title": "Distribute",
+            "title": "Distribute Extensions",
+            "href": "/extensions/hosting.html",
             "items": [
               {
                 "title": "Hosting",
@@ -714,12 +583,25 @@
               {
                 "title": "Other Deployment Options",
                 "href": "/extensions/external_extensions.html"
+              },
+              {
+                "title": "Google Analytics",
+                "href": "/extensions/tut_analytics.html"
+              },
+              {
+                "title": "Publishing Themes",
+                "href": "/extensions/themes.html"
               }
             ]
           },
           {
             "title": "Reference",
+            "href": "/extensions/whats_new.html",
             "items": [
+              {
+                "title": "What's New?",
+                "href": "/extensions/whats_new.html"
+              },
               {
                 "title": "Chrome Platform APIs",
                 "href": "/extensions/api_index.html"
@@ -731,10 +613,6 @@
               {
                 "title": "Manifest File Format",
                 "href": "/extensions/manifest.html"
-              },
-              {
-                "title": "Migrate to Manifest 2",
-                "href": "/extensions/tut_migration_to_manifest_v2.html"
               },
               {
                 "title": "Permission Warnings",
@@ -752,10 +630,15 @@
           },
           {
             "title": "Help",
+            "href": "/extensions/faq.html",
             "items": [
               {
                 "title": "FAQ",
                 "href": "/extensions/faq.html"
+              },
+              {  
+                "title": "Google Groups",
+                "href": "https://groups.google.com/a/chromium.org/forum/#!forum/chromium-extensions"
               },
               {
                 "title": "Stack Overflow",
@@ -766,341 +649,318 @@
         ]
       },
       {
-        "title": "STORE",
+        "title": "Native Client",
         "items": [
           {
-            "title": "Discover",
+            "title": "Learn Basics",
+            "href": "/native-client/index.html",
             "items": [
               {
-                "title": "What Is the Chrome Web Store?",
-                "href": "/webstore/index.html"
+                "title": "What Is Native Client?",
+                "href": "/native-client/index.html"
               },
               {
-                "title": "What Can You Publish?",
-                "href": "/webstore/index.html"
-              },
-              {
-                "title": "Tutorial: Getting Started",
-                "href": "/webstore/index.html"
-              },
-              {
-                "title": "Best Practices",
-                "href": "/webstore/index.html"
-              },
-              {
-                "title": "Samples",
-                "href": "/webstore/index.html"
+                "title": "NaCl and PNaCl",
+                "href": "/native-client/nacl-and-pnacl.html"
               }
             ]
           },
           {
-            "title": "Branding",
+            "title": "SDK",
+            "href": "/native-client/sdk/download.html",
             "items": [
               {
-                "title": "Branding Guidelines",
-                "href": "/webstore/index.html"
+                "title": "Download SDK",
+                "href": "/native-client/sdk/download.html"
               },
               {
-                "title": "Supplying Images",
-                "href": "/webstore/index.html"
+                "title": "SDK Release Notes",
+                "href": "/native-client/sdk/release-notes.html"
               }
             ]
           },
           {
-            "title": "Monetizing",
+            "title": "Tutorial",
+            "href": "/native-client/devguide/tutorial/tutorial-part1.html",
             "items": [
               {
-                "title": "Seller Options",
-                "href": "/webstore/index.html"
+                "title": "Part 1: Simple PNaCl Web App",
+                "href": "/native-client/devguide/tutorial/tutorial-part1.html"
               },
               {
-                "title": "Using Google Accounts",
-                "href": "/webstore/index.html"
-              },
-              {
-                "title": "Checking for Payment",
-                "href": "/webstore/index.html"
-              },
-              {
-                "title": "Payments: Regions, Fees, & Tiers",
-                "href": "/webstore/index.html"
+                "title": "Part 2: SDK Build System and Chrome Apps",
+                "href": "/native-client/devguide/tutorial/tutorial-part2.html"
               }
             ]
           },
           {
-            "title": "Publishing",
+            "title": "Development Cycle",
+            "href": "/native-client/devguide/devcycle/building.html",
             "items": [
               {
-                "title": "Step-by-step Tutorial",
-                "href": "/webstore/index.html"
+                "title": "Building",
+                "href": "/native-client/devguide/devcycle/building.html"
               },
               {
-                "title": "Using Inline Installation",
-                "href": "/webstore/index.html"
+                "title": "Running",
+                "href": "/native-client/devguide/devcycle/running.html"
               },
               {
-                "title": "Terms of Service",
-                "href": "/webstore/index.html"
+                "title": "Debugging",
+                "href": "/native-client/devguide/devcycle/debugging.html"
+              },
+              {
+                "title": "Debugging with Visual Studio",
+                "href": "/native-client/devguide/devcycle/vs-addin.html"
+              },
+              {
+                "title": "Dynamic Linking and Loading with glibc",
+                "href": "/native-client/devguide/devcycle/dynamic-loading.html"
+              }
+            ]
+          },
+          {
+            "title": "Coding Your Application",
+            "href": "/native-client/devguide/coding/application-structure.html",
+            "items": [
+              {
+                "title": "Application Structure",
+                "href": "/native-client/devguide/coding/application-structure.html"
+              },
+              {
+                "title": "Native Client Modules",
+                "href": "/native-client/devguide/coding/native-client-modules.html"
+              },
+              {
+                "title": "3D Graphics",
+                "href": "/native-client/devguide/coding/3D-graphics.html"
+              },
+              {
+                "title": "Audio",
+                "href": "/native-client/devguide/coding/audio.html"
+              },
+              {
+                "title": "File I/O",
+                "href": "/native-client/devguide/coding/file-io.html"
+              },
+              {
+                "title": "The nacl_io Library",
+                "href": "/native-client/devguide/coding/nacl_io.html"
+              },
+              {
+                "title": "Messaging System",
+                "href": "/native-client/devguide/coding/message-system.html"
+              },
+              {
+                "title": "Progress Events",
+                "href": "/native-client/devguide/coding/progress-events.html"
+              },
+              {
+                "title": "URL Loading",
+                "href": "/native-client/devguide/coding/url-loading.html"
+              },
+              {
+                "title": "View Change, Focus, & Input Events",
+                "href": "/native-client/devguide/coding/view-focus-input-events.html"
+              }
+            ]
+          },
+          {
+            "title": "Distribute Your Apps",
+            "href": "/native-client/devguide/distributing.html"
+          },
+          {
+            "title": "Pepper API Reference",
+            "href": "/native-client/index.html",
+            "items": [
+              {
+                "title": "Structures",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Functions",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Enums",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Typedefs",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Macros",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Files",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Pepper C++ Classes",
+                "href": "/native-client/index.html"
+              },
+              {
+                "title": "Pepper C++ Files",
+                "href": "/native-client/index.html"
+              }
+            ]
+          },
+          {
+            "title": "Additional Reference & Versions",
+            "href": "/native-client/version.html",
+            "items": [
+              {
+                "title": "Glossary",
+                "href": "/native-client/glossary.html"
+              },
+              {
+                "title": "Native Client Manifest (nmf) Format",
+                "href": "/native-client/reference/nacl-manifest-format.html"
+              },
+              {
+                "title": "PNaCl Bitcode Reference Manual",
+                "href": "/native-client/reference/pnacl-bitcode-abi.html"
+              },
+              {
+                "title": "PNaCl C/C++ Language Support",
+                "href": "/native-client/reference/pnacl-c-cpp-language-support.html"
+              },
+              {
+                "title": "Previous Versions",
+                "href": "/native-client/version.html"
               }
             ]
           },
           {
             "title": "Help",
+            "href": "/native-client/faq.html",
             "items": [
               {
                 "title": "FAQ",
-                "href": "/webstore/index.html"
+                "href": "/native-client/faq.html"
               },
               {
-                "title": "Google Groups",
-                "href": "/webstore/index.html"
+                "title": "Forums & Issues Tracker",
+                "href": "/native-client/help.html"
               },
               {
-                "title": "Articles",
-                "href": "/webstore/index.html"
-              }
-            ]
-          },
-          {
-            "title": "Related Content",
-            "items": [
-              {
-                "title": "Develop Chrome Apps",
-                "href": "/webstore/index.html"
+                "title": "Publications & Presentations",
+                "href": "/native-client/publications-and-presentations.html"
               },
               {
-                "title": "Develop Chrome Extensions",
-                "href": "/webstore/index.html"
-              },
-              {
-                "title": "Develop Chrome Themes",
-                "href": "/webstore/index.html"
+                "title": "Security Contest Archive",
+                "href": "/native-client/community/security-content/index.html"
               }
             ]
           }
         ]
       },
       {
-        "title": "NATIVE CLIENT",
+        "title": "Store",
         "items": [
           {
-            "title": "Discover",
+            "title": "What Is the Chrome Web Store?",
+            "href": "/webstore/index.html"
+          },
+          {
+            "title": "What Can You Publish?",
+            "href": "/webstore/overview.html"
+          },
+          {
+            "title": "Tutorial: Getting Started",
+            "href": "/webstore/get_started_simple.html"
+          },
+          {
+            "title": "Samples",
+            "href": "/webstore/samples.html"
+          },
+          {
+            "title": "Branding",
+            "href": "/webstore/branding.html",
             "items": [
               {
-                "title": "What Is Native Client?",
-                "href": "/nacl/index.html"
+                "title": "Branding Guidelines",
+                "href": "/webstore/branding.html"
               },
               {
-                "title": "NaCl and PNaCl",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Demos",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Download SDK",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "SDK Examples",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "SDK Release Notes",
-                "href": "/nacl/index.html"
+                "title": "Supplying Images",
+                "href": "/webstore/images.html"
               }
             ]
           },
           {
-            "title": "Getting Started Tutorial",
+            "title": "Monetizing",
+            "href": "/webstore/money.html",            
             "items": [
               {
-                "title": "Part 1: Simple PNaCl Web App",
-                "href": "/nacl/index.html"
+                "title": "Monetizing Your App",
+                "href": "/webstore/money.html"
               },
               {
-                "title": "Part 2: SDK Build System and Chrome Apps",
-                "href": "/nacl/index.html"
+                "title": "Using Google Accounts",
+                "href": "/webstore/identify_user.html"
+              },
+              {
+                "title": "Checking for Payment",
+                "href": "/webstore/check_for_payment.html"
+              },
+              {
+                "title": "Pricing",
+                "href": "/webstore/pricing.html"
               }
             ]
           },
           {
-            "title": "Development Cycle",
+            "title": "Publishing",
+            "href": "/webstore/publish.html",
             "items": [
               {
-                "title": "Building",
-                "href": "/nacl/index.html"
+                "title": "Publishing Tutorial",
+                "href": "/webstore/publish.html"
               },
               {
-                "title": "Running",
-                "href": "/nacl/index.html"
+                "title": "Internationalizing Your App",
+                "href": "/webstore/i18n.html"
               },
               {
-                "title": "Debugging",
-                "href": "/nacl/index.html"
+                "title": "Using Inline Installation",
+                "href": "/webstore/inline_installation.html"
               },
               {
-                "title": "Debugging with Visual Studio",
-                "href": "/nacl/index.html"
+                "title": "Rating Guidelines",
+                "href": "/webstore/rating.html"
               },
               {
-                "title": "Dynamic Linking and Loading with glibc",
-                "href": "/nacl/index.html"
-              }
-            ]
-          },
-          {
-            "title": "Coding Your Application",
-            "items": [
-              {
-                "title": "Application Structure",
-                "href": "/nacl/index.html"
+                "title": "Program Policies",
+                "href": "/webstore/program_policies.html"
               },
               {
-                "title": "Native Client Modules",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "3D Graphics",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Audio",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "File I/O",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "The nacl_io Library",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Messaging System",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Progress Events",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "URL Loading",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "View Change, Focus, & Input Events",
-                "href": "/nacl/index.html"
-              }
-            ]
-          },
-          {
-            "title": "Distribute",
-            "items": [
-              {
-                "title": "Portable Native Client",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Non-portable Native Client",
-                "href": "/nacl/index.html"
-              }
-            ]
-          },
-          {
-            "title": "Pepper API Reference",
-            "items": [
-              {
-                "title": "Structures",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Functions",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Enums",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Typedefs",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Macros",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Files",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Pepper C++ Classes",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Pepper C++ Files",
-                "href": "/nacl/index.html"
-              }
-            ]
-          },
-          {
-            "title": "Additional Reference",
-            "items": [
-              {
-                "title": "Glossary",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Native Client Manifest (nmf) Format",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "PNaCl Bitcode Reference Manual",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "PNaCl C/C++ Language Support",
-                "href": "/nacl/index.html"
+                "title": "Terms of Service",
+                "href": "/webstore/terms.html"
               }
             ]
           },
           {
             "title": "Help",
+            "href": "/webstore/best_practices.html",
             "items": [
+              {
+                "title": "Best Practices",
+                "href": "/webstore/best_practices.html"
+              },
               {
                 "title": "FAQ",
-                "href": "/nacl/index.html"
+                "href": "/webstore/faq.html"
               },
               {
-                "title": "Forums & Issues Tracker",
-                "href": "/nacl/index.html"
+                "title": "Google Groups",
+                "href": "https://groups.google.com/a/chromium.org/forum/#!forum/chromium-apps"
               },
               {
-                "title": "Publications & Presentations",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Security Contest Archive",
-                "href": "/nacl/index.html"
-              }
-            ]
-          },
-          {
-            "title": "Previous Versions",
-            "items": [
-              {
-                "title": "Beta (Pepper 30)",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Stable (Pepper 29)",
-                "href": "/nacl/index.html"
-              },
-              {
-                "title": "Deprecated",
-                "href": "/nacl/index.html"
+                "title": "Articles",
+                "href": "/webstore/articles.html"
               }
             ]
           }
