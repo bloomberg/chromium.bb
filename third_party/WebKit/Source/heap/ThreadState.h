@@ -37,6 +37,58 @@
 
 namespace WebCore {
 
+class HeapContainsCache;
+
+// A HeapStats structure keeps track of the amount of memory allocated
+// for a Blink heap and how much of that memory is used for actual
+// Blink objects. These stats are used in the heuristics to determine
+// when to perform garbage collections.
+class HeapStats {
+public:
+    size_t totalObjectSpace() const { return m_totalObjectSpace; }
+    size_t totalAllocatedSpace() const { return m_totalAllocatedSpace; }
+
+    void add(HeapStats* other)
+    {
+        m_totalObjectSpace += other->m_totalObjectSpace;
+        m_totalAllocatedSpace += other->m_totalAllocatedSpace;
+    }
+
+    void inline increaseObjectSpace(size_t newObjectSpace)
+    {
+        m_totalObjectSpace += newObjectSpace;
+    }
+
+    void inline decreaseObjectSpace(size_t deadObjectSpace)
+    {
+        m_totalObjectSpace -= deadObjectSpace;
+    }
+
+    void inline increaseAllocatedSpace(size_t newAllocatedSpace)
+    {
+        m_totalAllocatedSpace += newAllocatedSpace;
+    }
+
+    void inline decreaseAllocatedSpace(size_t deadAllocatedSpace)
+    {
+        m_totalAllocatedSpace -= deadAllocatedSpace;
+    }
+
+    void clear()
+    {
+        m_totalObjectSpace = 0;
+        m_totalAllocatedSpace = 0;
+    }
+
+    bool operator==(const HeapStats& other);
+
+private:
+    size_t m_totalObjectSpace; // Actually contains objects that may be live, not including headers.
+    size_t m_totalAllocatedSpace; // Allocated from the OS.
+
+    friend class HeapTester;
+};
+
 class ThreadState {
 public:
     // Initialize threading infrastructure. Should be called from the main
@@ -66,6 +118,11 @@ public:
         ASSERT(m_thread == currentThread());
     }
 
+    HeapContainsCache* heapContainsCache() { return m_heapContainsCache; }
+
+    HeapStats& stats() { return m_stats; }
+    HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
+
 private:
     explicit ThreadState(intptr_t* startOfStack);
     ~ThreadState();
@@ -86,6 +143,9 @@ private:
 
     ThreadIdentifier m_thread;
     intptr_t* m_startOfStack;
+    HeapContainsCache* m_heapContainsCache;
+    HeapStats m_stats;
+    HeapStats m_statsAfterLastGC;
 };
 
 }

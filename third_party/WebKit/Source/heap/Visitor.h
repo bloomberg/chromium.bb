@@ -44,7 +44,10 @@ namespace WebCore {
 
 typedef void (*FinalizationCallback)(void*);
 
+class FinalizedHeapObjectHeader;
+class HeapObjectHeader;
 class Visitor;
+
 typedef void (*VisitorCallback)(Visitor*, void* self);
 typedef VisitorCallback TraceCallback;
 typedef VisitorCallback WeakPointerCallback;
@@ -66,6 +69,37 @@ struct GCInfo {
 #if TRACE_GC_USING_CLASSOF
     ClassOfCallback m_classOf;
 #endif
+};
+
+// Visitor is used to traverse the Blink object graph. Used for the
+// marking phase of the mark-sweep garbage collector.
+//
+// Pointers are marked and pushed on the marking stack by calling the
+// |mark| method with the pointer as an argument.
+//
+// Pointers within objects are traced by calling the |trace| methods
+// with the object as an argument. Tracing objects will mark all of the
+// contained pointers and push them on the marking stack.
+class Visitor {
+public:
+    template<typename T>
+    void mark(T* t)
+    {
+        // FIXME: Implement.
+        ASSERT_NOT_REACHED();
+    }
+
+    // This method marks an object and adds it to the set of objects
+    // that should have their trace method called. Since not all
+    // objects have vtables we have to have the callback as an
+    // explicit argument, but we can use the templated one-argument
+    // mark method above to automatically provide the callback
+    // function.
+    virtual void mark(const void*, TraceCallback) = 0;
+
+    // Used to mark objects during conservative scanning.
+    virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
+    virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
 };
 
 }
