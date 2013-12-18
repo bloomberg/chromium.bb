@@ -181,10 +181,10 @@ bool FloatPolygon::containsNonZero(const FloatPoint& point) const
         const FloatPoint& vertex2 = edgeAt(i).vertex2();
         if (isPointOnLineSegment(vertex1, vertex2, point))
             return true;
-        if (vertex2.y() < point.y()) {
+        if (vertex2.y() <= point.y()) {
             if ((vertex1.y() > point.y()) && (leftSide(vertex1, vertex2, point) > 0))
                 ++windingNumber;
-        } else if (vertex2.y() > point.y()) {
+        } else if (vertex2.y() >= point.y()) {
             if ((vertex1.y() <= point.y()) && (leftSide(vertex1, vertex2, point) < 0))
                 --windingNumber;
         }

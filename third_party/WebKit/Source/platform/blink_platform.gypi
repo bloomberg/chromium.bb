@@ -890,6 +890,7 @@
       'animation/UnitBezierTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
       'fonts/FontTest.cpp',
+      'geometry/FloatPolygonTest.cpp',
       'geometry/FloatRoundedRectTest.cpp',
       'geometry/RegionTest.cpp',
       'geometry/RoundedRectTest.cpp',
