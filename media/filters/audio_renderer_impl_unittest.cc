@@ -798,4 +798,30 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   Preroll(1000, PIPELINE_OK);
 }
 
+TEST_F(AudioRendererImplTest, StopDuringFlush) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  WaitForPendingRead();
+
+  Pause();
+
+  EXPECT_TRUE(IsReadPending());
+
+  // Start flushing.
+  WaitableMessageLoopEvent flush_event;
+  renderer_->Flush(flush_event.GetClosure());
+
+  SatisfyPendingRead(kDataSize);
+
+  // Request a Stop() before the flush completes.
+  WaitableMessageLoopEvent stop_event;
+  renderer_->Stop(stop_event.GetClosure());
+  stop_event.RunAndWait();
+}
+
 }  // namespace media

@@ -163,6 +163,9 @@ void AudioRendererImpl::ResetDecoder() {
 
 void AudioRendererImpl::ResetDecoderDone() {
   base::AutoLock auto_lock(lock_);
+  if (state_ == kStopped)
+    return;
+
   DCHECK_EQ(state_, kPaused);
   DCHECK(!flush_cb_.is_null());
 
@@ -198,6 +201,7 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
     init_cb_.Reset();
     underflow_cb_.Reset();
     time_cb_.Reset();
+    flush_cb_.Reset();
   }
 
   callback.Run();
