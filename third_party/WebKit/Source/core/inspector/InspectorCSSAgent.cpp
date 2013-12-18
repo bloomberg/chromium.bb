@@ -1095,7 +1095,7 @@ void InspectorCSSAgent::getAllStyleSheets(ErrorString*, RefPtr<TypeBuilder::Arra
         styleInfos->addItem(styleSheets.at(i)->buildObjectForStyleSheetInfo());
 }
 
-void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& styleSheetId, RefPtr<TypeBuilder::CSS::CSSStyleSheetBody>& styleSheetObject)
+void InspectorCSSAgent::getStyleSheetRules(ErrorString* errorString, const String& styleSheetId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> >& rulesObject)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet)
@@ -1105,13 +1105,7 @@ void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& st
     if (!doc)
         return;
 
-    RefPtr<TypeBuilder::CSS::CSSStyleSheetBody> result = TypeBuilder::CSS::CSSStyleSheetBody::create()
-        .setStyleSheetId(styleSheetId)
-        .setRules(buildArrayForRuleList(inspectorStyleSheet->pageStyleSheet()->rules().get(), doc->ensureStyleResolver()));
-
-    bool success = inspectorStyleSheet->fillObjectForStyleSheet(result);
-    if (success)
-        styleSheetObject = result;
+    rulesObject = buildArrayForRuleList(inspectorStyleSheet->pageStyleSheet()->rules().get(), doc->ensureStyleResolver());
 }
 
 void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String& styleSheetId, String* result)

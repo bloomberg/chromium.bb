@@ -190,7 +190,6 @@ public:
     CSSStyleRule* addRule(const String& selector, ExceptionState&);
     bool deleteRule(const InspectorCSSId&, ExceptionState&);
     CSSStyleRule* ruleForId(const InspectorCSSId&) const;
-    bool fillObjectForStyleSheet(PassRefPtr<TypeBuilder::CSS::CSSStyleSheetBody>);
     PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo() const;
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*, PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> >);
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle(CSSStyleDeclaration*);

@@ -17,23 +17,34 @@ body.mainpage {
 
 function test()
 {
-    var foundStyleSheet;
+    var foundStyleSheetHeader;
+    var foundStyleSheetText;
 
-    CSSAgent.getAllStyleSheets(findStyleSheet);
+    findStyleSheet();
 
-    function findStyleSheet(error, styleSheetInfos)
+    function findStyleSheet()
     {
-        function callback(styleSheet)
+        var styleSheetHeaders = WebInspector.cssModel.styleSheetHeaders();
+        for (var i = 0; i < styleSheetHeaders.length; ++i) {
+            styleSheetHeader = styleSheetHeaders[i];
+            if (styleSheetHeader.sourceURL.indexOf("get-set-stylesheet-text.css") >= 0) {
+                foundStyleSheetHeader = styleSheetHeader;
+                foundStyleSheetHeader.requestContent(callback);
+            }
+            if (!foundStyleSheetHeader)
+                WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
+        }
+
+        function callback(content)
         {
-            foundStyleSheet = styleSheet;
+            foundStyleSheetText = content;
             InspectorTest.runTestSuite([ testSetText, testNewElementStyles ]);
         }
 
-        for (var i = 0; i < styleSheetInfos.length; ++i) {
-            if (styleSheetInfos[i].sourceURL.indexOf("get-set-stylesheet-text.css") >= 0) {
-                foundStyleSheetInfo = styleSheetInfos[i];
-                WebInspector.CSSStyleSheet.createForId(foundStyleSheetInfo.styleSheetId, callback);
-            }
+        function styleSheetAdded()
+        {
+            WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
+            findStyleSheet();
         }
     }
 
@@ -48,9 +59,9 @@ function test()
         }
 
         InspectorTest.addResult("=== Original stylesheet text: ===");
-        InspectorTest.addResult(foundStyleSheet.getText());
+        InspectorTest.addResult(foundStyleSheetText);
         WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, next, this);
-        foundStyleSheet.setText("h1 { COLOR: Red; }", true, callback);
+        WebInspector.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true, callback);
     }
 
     function testNewElementStyles()
