@@ -42,5 +42,8 @@ per-file search_types.*=brettw@chromium.org
 per-file search_types.*=jered@chromium.org
 per-file search_types.*=samarth@chromium.org
 
-# Debugging crash keys.
+# Other stuff.
+per-file autocomplete_match_type.*=mpearson@chromium.org
+per-file autocomplete_match_type.*=pkasting@chromium.org
+per-file autocomplete_match_type.*=sky@chromium.org
 per-file crash_keys.*=rsesek@chromium.org
