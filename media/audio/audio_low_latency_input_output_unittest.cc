@@ -214,7 +214,6 @@ class FullDuplexAudioSinkSource
     }
   }
 
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
   virtual void OnError(AudioInputStream* stream) OVERRIDE {}
 
   // AudioOutputStream::AudioSourceCallback.

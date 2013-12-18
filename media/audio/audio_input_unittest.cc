@@ -38,7 +38,6 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
       EXPECT_GE(value, 0);
     }
   }
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
   virtual void OnError(AudioInputStream* stream) OVERRIDE {
     ++had_error_;
   }

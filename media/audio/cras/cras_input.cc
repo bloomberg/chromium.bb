@@ -86,15 +86,12 @@ bool CrasInputStream::Open() {
 }
 
 void CrasInputStream::Close() {
+  Stop();
+
   if (client_) {
     cras_client_stop(client_);
     cras_client_destroy(client_);
     client_ = NULL;
-  }
-
-  if (callback_) {
-    callback_->OnClose(this);
-    callback_ = NULL;
   }
 
   // Signal to the manager that we're closed and can be removed.
@@ -177,6 +174,7 @@ void CrasInputStream::Stop() {
   cras_client_rm_stream(client_, stream_id_);
 
   started_ = false;
+  callback_ = NULL;
 }
 
 // Static callback asking for samples.  Run on high priority thread.

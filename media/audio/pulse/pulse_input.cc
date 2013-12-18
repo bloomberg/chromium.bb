@@ -105,6 +105,7 @@ void PulseAudioInputStream::Stop() {
   operation = pa_stream_cork(handle_, 1, &pulse::StreamSuccessCallback,
                              pa_mainloop_);
   WaitForOperationCompletion(pa_mainloop_, operation);
+  callback_ = NULL;
 }
 
 void PulseAudioInputStream::Close() {
@@ -124,9 +125,6 @@ void PulseAudioInputStream::Close() {
       handle_ = NULL;
     }
   }
-
-  if (callback_)
-    callback_->OnClose(this);
 
   // Signal to the manager that we're closed and can be removed.
   // This should be the last call in the function as it deletes "this".

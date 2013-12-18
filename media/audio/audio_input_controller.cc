@@ -360,13 +360,6 @@ void AudioInputController::OnData(AudioInputStream* stream,
   handler_->OnData(this, data, size);
 }
 
-void AudioInputController::OnClose(AudioInputStream* stream) {
-  DVLOG(1) << "AudioInputController::OnClose()";
-  // TODO(satish): Sometimes the device driver closes the input stream without
-  // us asking for it (may be if the device was unplugged?). Check how to handle
-  // such cases here.
-}
-
 void AudioInputController::OnError(AudioInputStream* stream) {
   // Handle error on the audio-manager thread.
   message_loop_->PostTask(FROM_HERE, base::Bind(

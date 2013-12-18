@@ -117,10 +117,6 @@ class MEDIA_EXPORT AudioInputStream {
                         uint32 size, uint32 hardware_delay_bytes,
                         double volume) = 0;
 
-    // The stream is done with this callback, the last call received by this
-    // audio sink.
-    virtual void OnClose(AudioInputStream* stream) = 0;
-
     // There was an error while recording audio. The audio sink cannot be
     // destroyed yet. No direct action needed by the AudioInputStream, but it
     // is a good place to stop accumulating sound data since is is likely that

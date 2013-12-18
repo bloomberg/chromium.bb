@@ -289,9 +289,10 @@ void AUAudioInputStream::Stop() {
     return;
   StopAgc();
   OSStatus result = AudioOutputUnitStop(audio_unit_);
-  if (result == noErr) {
-    started_ = false;
-  }
+  DCHECK_EQ(result, noErr);
+  started_ = false;
+  sink_ = NULL;
+
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "Failed to stop acquiring data";
 }
@@ -309,10 +310,6 @@ void AUAudioInputStream::Close() {
     // Terminates our connection to the AUHAL component.
     CloseComponent(audio_unit_);
     audio_unit_ = 0;
-  }
-  if (sink_) {
-    sink_->OnClose(this);
-    sink_ = NULL;
   }
 
   // Inform the audio manager that we have been closed. This can cause our

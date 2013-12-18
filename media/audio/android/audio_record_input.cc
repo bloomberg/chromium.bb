@@ -90,8 +90,7 @@ void AudioRecordInputStream::Stop() {
       base::android::AttachCurrentThread(), j_audio_record_.obj());
 
   // The Java thread must have been stopped at this point, so we are free to
-  // set |callback_|.
-  callback_->OnClose(this);
+  // clear |callback_|.
   callback_ = NULL;
 }
 

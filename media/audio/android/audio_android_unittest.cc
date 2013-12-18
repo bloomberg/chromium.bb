@@ -146,7 +146,6 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
                     uint32 size,
                     uint32 hardware_delay_bytes,
                     double volume));
-  MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 };
 
@@ -293,7 +292,6 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
       event_->Signal();
   }
 
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
   virtual void OnError(AudioInputStream* stream) OVERRIDE {}
 
  private:
@@ -359,7 +357,6 @@ class FullDuplexAudioSinkSource
     }
   }
 
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
   virtual void OnError(AudioInputStream* stream) OVERRIDE {}
 
   // AudioOutputStream::AudioSourceCallback implementation
@@ -549,7 +546,6 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
         .WillRepeatedly(
              CheckCountAndPostQuitTask(&count, num_callbacks, loop()));
     EXPECT_CALL(sink, OnError(stream)).Times(0);
-    EXPECT_CALL(sink, OnClose(stream)).Times(1);
 
     EXPECT_TRUE(stream->Open());
     stream->Start(&sink);

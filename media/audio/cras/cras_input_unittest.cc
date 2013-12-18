@@ -27,7 +27,6 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD5(OnData, void(
       AudioInputStream*, const uint8*, uint32, uint32, double));
   MOCK_METHOD1(OnError, void(AudioInputStream*));
-  MOCK_METHOD1(OnClose, void(AudioInputStream*));
 };
 
 class MockAudioManagerCrasInput : public AudioManagerCras {
@@ -93,8 +92,6 @@ class CrasInputStreamTest : public testing::Test {
     EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
 
     test_stream->Stop();
-
-    EXPECT_CALL(mock_callback, OnClose(test_stream)).Times(1);
     test_stream->Close();
   }
 

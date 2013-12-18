@@ -198,7 +198,6 @@ class MEDIA_EXPORT AudioInputController
   // device-specific implementation.
   virtual void OnData(AudioInputStream* stream, const uint8* src, uint32 size,
                       uint32 hardware_delay_bytes, double volume) OVERRIDE;
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE;
   virtual void OnError(AudioInputStream* stream) OVERRIDE;
 
   bool LowLatencyMode() const { return sync_writer_ != NULL; }
@@ -256,8 +255,8 @@ class MEDIA_EXPORT AudioInputController
   AudioInputStream* stream_;
 
   // |no_data_timer_| is used to call OnError() when we stop receiving
-  // OnData() calls without an OnClose() call. This can occur
-  // when an audio input device is unplugged whilst recording on Windows.
+  // OnData() calls. This can occur when an audio input device is unplugged
+  // whilst recording on Windows.
   // See http://crbug.com/79936 for details.
   // This member is only touched by the audio thread.
   scoped_ptr<base::Timer> no_data_timer_;

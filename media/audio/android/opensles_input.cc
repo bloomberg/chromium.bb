@@ -132,6 +132,7 @@ void OpenSLESInputStream::Stop() {
       (*simple_buffer_queue_)->Clear(simple_buffer_queue_));
 
   started_ = false;
+  callback_ = NULL;
 }
 
 void OpenSLESInputStream::Close() {
@@ -141,14 +142,8 @@ void OpenSLESInputStream::Close() {
   // Stop the stream if it is still recording.
   Stop();
   {
+    // TODO(henrika): Do we need to hold the lock here?
     base::AutoLock lock(lock_);
-
-    // TODO(henrika): we use |callback_| in Close() but |callback_| is set
-    // in Start(). Hence, it should be cleared in Stop() and not used here.
-    if (callback_) {
-      callback_->OnClose(this);
-      callback_ = NULL;
-    }
 
     // Destroy the buffer queue recorder object and invalidate all associated
     // interfaces.

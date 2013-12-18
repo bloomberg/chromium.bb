@@ -33,7 +33,6 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD5(OnData, void(AudioInputStream* stream,
                             const uint8* src, uint32 size,
                             uint32 hardware_delay_bytes, double volume));
-  MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 };
 
@@ -84,7 +83,6 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     }
   }
 
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
   virtual void OnError(AudioInputStream* stream) OVERRIDE {}
 
  private:
@@ -162,8 +160,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamOpenStartAndClose) {
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
   ais->Start(&sink);
-  EXPECT_CALL(sink, OnClose(ais))
-      .Times(1);
   ais->Close();
 }
 
@@ -176,8 +172,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamOpenStartStopAndClose) {
   MockAudioInputCallback sink;
   ais->Start(&sink);
   ais->Stop();
-  EXPECT_CALL(sink, OnClose(ais))
-      .Times(1);
   ais->Close();
 }
 
@@ -206,8 +200,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamMiscCallingSequences) {
   ais->Stop();
   EXPECT_FALSE(auais->started());
 
-  EXPECT_CALL(sink, OnClose(ais))
-      .Times(1);
   ais->Close();
 }
 
@@ -239,10 +231,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
   ais->Start(&sink);
   loop.Run();
   ais->Stop();
-
-  // Verify that the sink receieves OnClose() call when calling Close().
-  EXPECT_CALL(sink, OnClose(ais))
-      .Times(1);
   ais->Close();
 }
 
@@ -281,10 +269,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
   ais->Start(&sink);
   loop.Run();
   ais->Stop();
-
-  // Verify that the sink receieves OnClose() call when calling Close().
-  EXPECT_CALL(sink, OnClose(ais))
-      .Times(1);
   ais->Close();
 }
 

@@ -164,7 +164,6 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD5(OnData, void(AudioInputStream* stream, const uint8* src,
                             uint32 size, uint32 hardware_delay_bytes,
                             double volume));
-  MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 
  private:
@@ -242,7 +241,6 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     EXPECT_CALL(mock_input_callback_, OnData(NotNull(), NotNull(), _, _, _))
         .WillRepeatedly(
             InvokeWithoutArgs(&on_data_event_, &base::WaitableEvent::Signal));
-    EXPECT_CALL(mock_input_callback_, OnClose(_));  // At Stop() time.
 
     wcais_->Start(&mock_input_callback_);
 

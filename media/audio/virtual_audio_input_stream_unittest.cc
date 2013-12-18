@@ -43,7 +43,6 @@ class MockInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD5(OnData, void(AudioInputStream* stream, const uint8* data,
                             uint32 size, uint32 hardware_delay_bytes,
                             double volume));
-  MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 
   void WaitForDataPushes() {
@@ -124,7 +123,6 @@ class VirtualAudioInputStreamTest : public testing::TestWithParam<bool> {
   }
 
   void Start() {
-    EXPECT_CALL(input_callback_, OnClose(_));
     EXPECT_CALL(input_callback_, OnData(_, NotNull(), _, _, _))
         .Times(AtLeast(1));
 

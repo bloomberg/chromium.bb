@@ -97,6 +97,7 @@ void VirtualAudioInputStream::Start(AudioInputCallback* callback) {
 void VirtualAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   fake_consumer_.Stop();
+  callback_ = NULL;
 }
 
 void VirtualAudioInputStream::AddOutputStream(
@@ -134,7 +135,6 @@ void VirtualAudioInputStream::RemoveOutputStream(
 
 void VirtualAudioInputStream::PumpAudio(AudioBus* audio_bus) {
   DCHECK(worker_loop_->BelongsToCurrentThread());
-  DCHECK(callback_);
 
   {
     base::AutoLock scoped_lock(converter_network_lock_);
@@ -154,10 +154,6 @@ void VirtualAudioInputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   Stop();  // Make sure callback_ is no longer being used.
-  if (callback_) {
-    callback_->OnClose(this);
-    callback_ = NULL;
-  }
 
   // If a non-null AfterCloseCallback was provided to the constructor, invoke it
   // here.  The callback is moved to a stack-local first since |this| could be

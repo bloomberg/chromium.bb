@@ -65,6 +65,7 @@ bool FakeAudioInputStream::Open() {
 
 void FakeAudioInputStream::Start(AudioInputCallback* callback)  {
   DCHECK(!thread_.IsRunning());
+  DCHECK(!callback_);
   callback_ = callback;
   last_callback_time_ = TimeTicks::Now();
   thread_.Start();
@@ -133,13 +134,10 @@ void FakeAudioInputStream::DoCallback() {
 
 void FakeAudioInputStream::Stop() {
   thread_.Stop();
+  callback_ = NULL;
 }
 
 void FakeAudioInputStream::Close() {
-  if (callback_) {
-    callback_->OnClose(this);
-    callback_ = NULL;
-  }
   audio_manager_->ReleaseInputStream(this);
 }
 

@@ -245,6 +245,8 @@ void AlsaPcmInputStream::Stop() {
   int error = wrapper_->PcmDrop(device_handle_);
   if (error < 0)
     HandleError("PcmDrop", error);
+
+  callback_ = NULL;
 }
 
 void AlsaPcmInputStream::Close() {
@@ -261,9 +263,6 @@ void AlsaPcmInputStream::Close() {
     device_handle_ = NULL;
     mixer_handle_ = NULL;
     mixer_element_handle_ = NULL;
-
-    if (callback_)
-      callback_->OnClose(this);
   }
 
   audio_manager_->ReleaseInputStream(this);

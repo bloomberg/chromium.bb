@@ -85,9 +85,12 @@ void PCMQueueInAudioInputStream::Stop() {
     HandleError(err);
 
   started_ = false;
+  callback_ = NULL;
 }
 
 void PCMQueueInAudioInputStream::Close() {
+  Stop();
+
   // It is valid to call Close() before calling Open() or Start(), thus
   // |audio_queue_| and |callback_| might be NULL.
   if (audio_queue_) {
@@ -96,10 +99,7 @@ void PCMQueueInAudioInputStream::Close() {
     if (err != noErr)
       HandleError(err);
   }
-  if (callback_) {
-    callback_->OnClose(this);
-    callback_ = NULL;
-  }
+
   manager_->ReleaseInputStream(this);
   // CARE: This object may now be destroyed.
 }

@@ -41,20 +41,17 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD5(OnData, void(AudioInputStream* stream,
                             const uint8* src, uint32 size,
                             uint32 hardware_delay_bytes, double volume));
-  MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 };
 
 class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   FakeAudioInputCallback()
-    : closed_(false),
-      error_(false),
+    : error_(false),
       data_event_(false, false) {
   }
 
   const std::vector<uint8>& received_data() const { return received_data_; }
-  bool closed() const { return closed_; }
   bool error() const { return error_; }
 
   // Waits until OnData() is called on another thread.
@@ -69,10 +66,6 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
     data_event_.Signal();
   }
 
-  virtual void OnClose(AudioInputStream* stream) OVERRIDE {
-    closed_ = true;
-  }
-
   virtual void OnError(AudioInputStream* stream) OVERRIDE {
     error_ = true;
   }
@@ -80,7 +73,6 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
  private:
   std::vector<uint8> received_data_;
   base::WaitableEvent data_event_;
-  bool closed_;
   bool error_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioInputCallback);
@@ -137,7 +129,6 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     }
   }
 
-  virtual void OnClose(AudioInputStream* stream) {}
   virtual void OnError(AudioInputStream* stream) {}
 
  private:
@@ -316,8 +307,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
   ais->Start(&sink);
-  EXPECT_CALL(sink, OnClose(ais.get()))
-      .Times(1);
   ais.Close();
 }
 
@@ -332,8 +321,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
   MockAudioInputCallback sink;
   ais->Start(&sink);
   ais->Stop();
-  EXPECT_CALL(sink, OnClose(ais.get()))
-      .Times(1);
   ais.Close();
 }
 
@@ -364,9 +351,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   EXPECT_FALSE(wais->started());
   ais->Stop();
   EXPECT_FALSE(wais->started());
-
-  EXPECT_CALL(sink, OnClose(ais.get()))
-    .Times(1);
   ais.Close();
 }
 
@@ -406,8 +390,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   // Store current packet size (to be used in the subsequent tests).
   int samples_per_packet_10ms = aisw.samples_per_packet();
 
-  EXPECT_CALL(sink, OnClose(ais.get()))
-      .Times(1);
   ais.Close();
 
   // 20 ms packet size.
@@ -425,9 +407,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   ais->Start(&sink);
   loop.Run();
   ais->Stop();
-
-  EXPECT_CALL(sink, OnClose(ais.get()))
-      .Times(1);
   ais.Close();
 
   // 5 ms packet size.
@@ -445,9 +424,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   ais->Start(&sink);
   loop.Run();
   ais->Stop();
-
-  EXPECT_CALL(sink, OnClose(ais.get()))
-      .Times(1);
   ais.Close();
 }
 
@@ -476,7 +452,6 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
   stream.Close();
 
   EXPECT_FALSE(sink.received_data().empty());
-  EXPECT_TRUE(sink.closed());
   EXPECT_FALSE(sink.error());
 }
 

@@ -142,8 +142,8 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
 }
 
 // Test that the AudioInputController reports an error when the input stream
-// stops without an OnClose() callback. This can happen when the underlying
-// audio layer stops feeding data as a result of a removed microphone device.
+// stops. This can happen when the underlying audio layer stops feeding data as
+// a result of a removed microphone device.
 TEST_F(AudioInputControllerTest, RecordAndError) {
   MockAudioInputControllerEventHandler event_handler;
   int count = 0;
