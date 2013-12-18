@@ -42,11 +42,11 @@ TextDocumentParser::~TextDocumentParser()
 {
 }
 
-void TextDocumentParser::appendBytes(const char* data, size_t length)
+void TextDocumentParser::append(PassRefPtr<StringImpl> text)
 {
     if (!m_haveInsertedFakePreElement)
         insertFakePreElement();
-    HTMLDocumentParser::appendBytes(data, length);
+    HTMLDocumentParser::append(text);
 }
 
 void TextDocumentParser::insertFakePreElement()

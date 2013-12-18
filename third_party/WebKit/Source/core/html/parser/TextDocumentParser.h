@@ -41,7 +41,7 @@ public:
 private:
     explicit TextDocumentParser(HTMLDocument*);
 
-    virtual void appendBytes(const char*, size_t) OVERRIDE;
+    virtual void append(PassRefPtr<StringImpl>);
     void insertFakePreElement();
 
     bool m_haveInsertedFakePreElement;

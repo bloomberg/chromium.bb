@@ -55,7 +55,7 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/ImageDocument.h"
-#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLMetaCharsetParser.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/style/StyleFetchedImage.h"
@@ -77,15 +77,15 @@ static bool isCharsetSpecifyingNode(Node* node)
     HTMLElement* element = toHTMLElement(node);
     if (!element->hasTagName(HTMLNames::metaTag))
         return false;
-    HTMLAttributeList attributes;
+    HTMLMetaCharsetParser::AttributeList attributes;
     if (element->hasAttributes()) {
         for (unsigned i = 0; i < element->attributeCount(); ++i) {
             const Attribute* attribute = element->attributeItem(i);
             // FIXME: We should deal appropriately with the attribute if they have a namespace.
-            attributes.append(std::make_pair(attribute->name().localName(), attribute->value().string()));
+            attributes.append(std::make_pair(attribute->name().toString(), attribute->value().string()));
         }
     }
-    WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributes);
+    WTF::TextEncoding textEncoding = HTMLMetaCharsetParser::encodingFromMetaAttributes(attributes);
     return textEncoding.isValid();
 }
 

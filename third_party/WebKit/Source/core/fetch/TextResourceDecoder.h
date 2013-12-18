@@ -28,7 +28,6 @@
 
 namespace WebCore {
 
-class DocumentEncodingData;
 class HTMLMetaCharsetParser;
 
 class TextResourceDecoder {
@@ -73,7 +72,7 @@ public:
 private:
     TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding, bool usesEncodingDetector);
 
-    enum ContentType { PlainTextContent, HTMLContent, XMLContent, CSSContent }; // PlainText only checks for BOM.
+    enum ContentType { PlainText, HTML, XML, CSS }; // PlainText only checks for BOM.
     static ContentType determineContentType(const String& mimeType);
     static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);
 

@@ -31,7 +31,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/html/parser/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/frame/DOMWindow.h"
@@ -78,6 +78,7 @@ void DocumentWriter::appendReplacingData(const String& source)
         // Because we're pinned to the main thread we don't need to worry about
         // passing ownership of the source string.
         parser->append(source.impl());
+        parser->setHasAppendedData();
     }
 }
 
