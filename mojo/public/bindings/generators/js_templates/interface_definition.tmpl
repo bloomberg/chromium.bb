@@ -1,0 +1,46 @@
+{%- for method in interface.methods %}
+  var k{{interface.name}}_{{method.name}}_Name = {{method.ordinal}};
+{%- endfor %}
+
+  function {{interface.name}}Proxy(receiver) {
+    this.receiver_ = receiver;
+  }
+
+{%- for method in interface.methods %}
+  {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
+{%- for parameter in method.parameters -%}
+{{parameter.name}}{% if not loop.last %}, {% endif %}
+{%- endfor %}) {
+    var params = new {{interface.name}}_{{method.name}}_Params();
+{%- for parameter in method.parameters %}
+    params.{{parameter.name}} = {{parameter.name}};
+{%- endfor %}
+
+    var builder = new codec.MessageBuilder(
+        k{{interface.name}}_{{method.name}}_Name,
+        codec.align({{interface.name}}_{{method.name}}_Params.encodedSize));
+    builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
+    var message = builder.finish();
+    this.receiver_.accept(message);
+  };
+{%- endfor %}
+
+  function {{interface.name}}Stub() {
+  }
+
+  {{interface.name}}Stub.prototype.accept = function(message) {
+    var reader = new codec.MessageReader(message);
+    switch (reader.messageName) {
+{%- for method in interface.methods %}
+    case k{{interface.name}}_{{method.name}}_Name:
+      var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
+      this.{{method.name|stylize_method}}(
+{%- for parameter in method.parameters -%}
+params.{{parameter.name}}{% if not loop.last %}, {% endif %}
+{%- endfor %});
+      return true;
+{%- endfor %}
+    default:
+      return false;
+    }
+  };

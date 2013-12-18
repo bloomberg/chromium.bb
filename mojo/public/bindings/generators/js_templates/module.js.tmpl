@@ -6,9 +6,9 @@ define([
     "mojo/apps/js/bindings/core",
     "mojo/apps/js/bindings/codec",
   ], function(core, codec) {
-{%- for enum in enums %}
 
-  // Enum: {{enum.name}}
+{#--- Enums #}
+{%  for enum in enums %}
   var {{enum.name}} = {
 {%-   set next_value = 0 %}
 {%-   for field in enum.fields %}
@@ -19,113 +19,16 @@ define([
 {%-     set next_value = next_value + 1 %}
 {%-   endfor %}
   };
-{%- endfor %}
+{%  endfor %}
 
+{#--- Struct definitions #}
 {%- for struct in structs %}
-
-  function {{struct.name}}() {
-{%- for packed_field in struct.packed.packed_fields %}
-    this.{{packed_field.field.name}} = {{packed_field.field|default_value}};
-{%- endfor %}
-  }
-
-  {{struct.name}}.encodedSize = codec.kStructHeaderSize + {{struct.packed|payload_size}};
-
-  {{struct.name}}.decode = function(decoder) {
-    var packed;
-    var val = new {{struct.name}}();
-    var numberOfBytes = decoder.read32();
-    var numberOfFields = decoder.read32();
-{%- for byte in struct.bytes %}
-{%-   if byte.packed_fields|length > 1 %}
-    packed = decoder.read8();
-{%-     for packed_field in byte.packed_fields %}
-    val.{{packed_field.field.name}} = (packed >> {{packed_field.bit}}) & 1 ? true : false;
-{%-     endfor %}
-{%-   else %}
-{%-     for packed_field in byte.packed_fields %}
-    val.{{packed_field.field.name}} = decoder.{{packed_field.field.kind|decode_snippet}};
-{%-     endfor %}
-{%-   endif %}
-{%-   if byte.is_padding %}
-    decoder.skip(1);
-{%-   endif %}
-{%- endfor %}
-    return val;
-  };
-
-  {{struct.name}}.encode = function(encoder, val) {
-    var packed;
-    encoder.write32({{struct.name}}.encodedSize);
-    encoder.write32({{struct.packed.packed_fields|length}});
-
-{%- for byte in struct.bytes %}
-{%-   if byte.packed_fields|length > 1 %}
-    packed = 0;
-{%-     for packed_field in byte.packed_fields %}
-    packed |= (val.{{packed_field.field.name}} & 1) << {{packed_field.bit}}
-{%-     endfor %}
-    encoder.write8(packed);
-{%-   else %}
-{%-     for packed_field in byte.packed_fields %}
-    encoder.{{packed_field.field.kind|encode_snippet}}val.{{packed_field.field.name}});
-{%-     endfor %}
-{%-   endif %}
-{%-   if byte.is_padding %}
-    encoder.skip(1);
-{%-   endif %}
-{%- endfor %}
-  };
+{%    include "struct_definition.tmpl" %}
 {%- endfor %}
 
+{#--- Interface definitions #}
 {%- for interface in interfaces %}
-{%- for method in interface.methods %}
-  var k{{interface.name}}_{{method.name}}_Name = {{method.ordinal}};
-{%- endfor %}
-
-  function {{interface.name}}Proxy(receiver) {
-    this.receiver_ = receiver;
-  }
-
-{%- for method in interface.methods %}
-  {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
-{%- for parameter in method.parameters -%}
-{{parameter.name}}{% if not loop.last %}, {% endif %}
-{%- endfor %}) {
-    var params = new {{interface.name}}_{{method.name}}_Params();
-{%- for parameter in method.parameters %}
-    params.{{parameter.name}} = {{parameter.name}};
-{%- endfor %}
-
-    var builder = new codec.MessageBuilder(
-        k{{interface.name}}_{{method.name}}_Name,
-        codec.align({{interface.name}}_{{method.name}}_Params.encodedSize));
-    builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
-    var message = builder.finish();
-    this.receiver_.accept(message);
-  };
-{%- endfor %}
-
-  function {{interface.name}}Stub() {
-  }
-
-  {{interface.name}}Stub.prototype.accept = function(message) {
-    var reader = new codec.MessageReader(message);
-    switch (reader.messageName) {
-{%- for method in interface.methods %}
-    case k{{interface.name}}_{{method.name}}_Name:
-      var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
-      this.{{method.name|stylize_method}}(
-{%- for parameter in method.parameters -%}
-params.{{parameter.name}}{% if not loop.last %}, {% endif %}
-{%- endfor %});
-      return true;
-{%- endfor %}
-    default:
-      return false;
-    }
-  };
-
+{%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 
   var exports = {};
