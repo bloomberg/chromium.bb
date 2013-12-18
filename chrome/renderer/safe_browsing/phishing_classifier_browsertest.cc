@@ -33,6 +33,13 @@ using ::testing::Contains;
 using ::testing::Not;
 using ::testing::Pair;
 
+namespace {
+
+// The first RenderFrame is routing ID 1, and the first RenderView is 2.
+const int kRenderViewRoutingId = 2;
+
+}
+
 namespace safe_browsing {
 
 class PhishingClassifierTest : public InProcessBrowserTest {
@@ -92,7 +99,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     ASSERT_TRUE(scorer_.get());
 
     classifier_.reset(new PhishingClassifier(
-        content::RenderView::FromRoutingID(1),
+        content::RenderView::FromRoutingID(kRenderViewRoutingId),
         clock_));
   }
 

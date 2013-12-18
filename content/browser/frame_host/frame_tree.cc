@@ -12,6 +12,8 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 
 namespace content {
 
@@ -52,7 +54,8 @@ FrameTree::FrameTree(Navigator* navigator,
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),
-      root_(new FrameTreeNode(navigator,
+      root_(new FrameTreeNode(this,
+                              navigator,
                               render_frame_delegate,
                               render_view_delegate,
                               render_widget_delegate,
@@ -94,7 +97,7 @@ void FrameTree::OnFirstNavigationAfterSwap(int main_frame_id) {
   root_->set_frame_id(main_frame_id);
 }
 
-RenderFrameHostImpl* FrameTree::AddFrame(int render_frame_host_id,
+RenderFrameHostImpl* FrameTree::AddFrame(int frame_routing_id,
                                          int64 parent_frame_id,
                                          int64 frame_id,
                                          const std::string& frame_name) {
@@ -104,10 +107,11 @@ RenderFrameHostImpl* FrameTree::AddFrame(int render_frame_host_id,
   if (!parent)
     return NULL;
 
-  scoped_ptr<FrameTreeNode> node(CreateNode(
-      frame_id, frame_name, render_frame_host_id, parent));
-  RenderFrameHostImpl* render_frame = node->render_frame_host();
-  parent->AddChild(node.Pass());
+  scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
+      this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
+      render_widget_delegate_, manager_delegate_, frame_id, frame_name));
+  RenderFrameHostImpl* render_frame = node->current_frame_host();
+  parent->AddChild(node.Pass(), frame_routing_id);
   return render_frame;
 }
 
@@ -147,12 +151,12 @@ void FrameTree::SetFrameUrl(int64 frame_id, const GURL& url) {
     node->set_current_url(url);
 }
 
-void FrameTree::SwapMainFrame(RenderFrameHostImpl* render_frame_host) {
-  return root_->ResetForMainFrame(render_frame_host);
+void FrameTree::ResetForMainFrameSwap() {
+  return root_->ResetForMainFrameSwap();
 }
 
 RenderFrameHostImpl* FrameTree::GetMainFrame() const {
-  return root_->render_frame_host();
+  return root_->current_frame_host();
 }
 
 void FrameTree::SetFrameRemoveListener(
@@ -160,32 +164,78 @@ void FrameTree::SetFrameRemoveListener(
   on_frame_removed_ = on_frame_removed;
 }
 
+void FrameTree::ClearFrameRemoveListenerForTesting() {
+  on_frame_removed_.Reset();
+}
+
+RenderViewHostImpl* FrameTree::CreateRenderViewHostForMainFrame(
+    SiteInstance* site_instance,
+    int routing_id,
+    int main_frame_routing_id,
+    bool swapped_out,
+    bool hidden) {
+  DCHECK(main_frame_routing_id != MSG_ROUTING_NONE);
+  RenderViewHostMap::iterator iter =
+      render_view_host_map_.find(site_instance->GetId());
+  CHECK(iter == render_view_host_map_.end());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      RenderViewHostFactory::Create(site_instance,
+                                    render_view_delegate_,
+                                    render_widget_delegate_,
+                                    routing_id,
+                                    main_frame_routing_id,
+                                    swapped_out,
+                                    hidden));
+
+  render_view_host_map_[site_instance->GetId()] =
+      RenderViewHostRefCount(rvh, 0);
+  return rvh;
+}
+
+RenderViewHostImpl* FrameTree::GetRenderViewHostForSubFrame(
+    SiteInstance* site_instance) {
+  RenderViewHostMap::iterator iter =
+      render_view_host_map_.find(site_instance->GetId());
+  CHECK(iter != render_view_host_map_.end());
+  RenderViewHostRefCount rvh_refcount = iter->second;
+  return rvh_refcount.first;
+}
+
+void FrameTree::RegisterRenderFrameHost(
+    RenderFrameHostImpl* render_frame_host) {
+  SiteInstance* site_instance =
+      render_frame_host->render_view_host()->GetSiteInstance();
+  RenderViewHostMap::iterator iter =
+      render_view_host_map_.find(site_instance->GetId());
+  CHECK(iter != render_view_host_map_.end());
+
+  // Increment the refcount.
+  CHECK_GE(iter->second.second, 0);
+  iter->second.second++;
+}
+
+void FrameTree::UnregisterRenderFrameHost(
+    RenderFrameHostImpl* render_frame_host) {
+  SiteInstance* site_instance =
+      render_frame_host->render_view_host()->GetSiteInstance();
+  RenderViewHostMap::iterator iter =
+      render_view_host_map_.find(site_instance->GetId());
+  CHECK(iter != render_view_host_map_.end());
+
+  // Decrement the refcount and shutdown the RenderViewHost if no one else is
+  // using it.
+  CHECK_GT(iter->second.second, 0);
+  iter->second.second--;
+  if (iter->second.second == 0) {
+    iter->second.first->Shutdown();
+    render_view_host_map_.erase(iter);
+  }
+}
+
 FrameTreeNode* FrameTree::FindByFrameID(int64 frame_id) {
   FrameTreeNode* node = NULL;
   ForEach(base::Bind(&FrameTreeNodeForFrameId, frame_id, &node));
   return node;
-}
-
-scoped_ptr<FrameTreeNode> FrameTree::CreateNode(
-    int64 frame_id,
-    const std::string& frame_name,
-    int render_frame_host_id,
-    FrameTreeNode* parent_node) {
-  scoped_ptr<FrameTreeNode> frame_tree_node(new FrameTreeNode(
-      parent_node->navigator(), render_frame_delegate_, render_view_delegate_,
-      render_widget_delegate_, manager_delegate_, frame_id, frame_name));
-
-  scoped_ptr<RenderFrameHostImpl> render_frame_host(
-      RenderFrameHostFactory::Create(
-          parent_node->render_frame_host()->render_view_host(),
-          parent_node->render_frame_host()->delegate(),
-          this,
-          frame_tree_node.get(),
-          render_frame_host_id,
-          false));
-
-  frame_tree_node->set_render_frame_host(render_frame_host.release(), true);
-  return frame_tree_node.Pass();
 }
 
 }  // namespace content

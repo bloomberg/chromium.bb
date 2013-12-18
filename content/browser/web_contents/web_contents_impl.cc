@@ -282,7 +282,7 @@ bool CollectSites(BrowserContext* context,
 bool ForEachFrameInternal(
     const base::Callback<void(RenderFrameHost*)>& on_frame,
     FrameTreeNode* node) {
-  on_frame.Run(node->render_frame_host());
+  on_frame.Run(node->current_frame_host());
   return true;
 }
 
@@ -651,7 +651,7 @@ RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
 }
 
 RenderFrameHost* WebContentsImpl::GetMainFrame() {
-  return frame_tree_.root()->render_frame_host();
+  return frame_tree_.root()->current_frame_host();
 }
 
 void WebContentsImpl::ForEachFrame(
@@ -3062,8 +3062,13 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
                                   const PageState& page_state) {
   // Ensure that this state update comes from either the active RVH or one of
   // the swapped out RVHs.  We don't expect to hear from any other RVHs.
-  DCHECK(rvh == GetRenderViewHost() ||
-         GetRenderManager()->IsOnSwappedOutList(rvh));
+  // TODO(nasko): This should go through RenderFrameHost.
+  // TODO(creis): We can't update state for cross-process subframes until we
+  // have FrameNavigationEntries.  Once we do, this should be a DCHECK.
+  if (rvh != GetRenderViewHost() &&
+      !GetRenderManager()->IsRVHOnSwappedOutList(
+          static_cast<RenderViewHostImpl*>(rvh)))
+    return;
 
   // We must be prepared to handle state updates for any page, these occur
   // when the user is scrolling and entering form data, as well as when we're
@@ -3490,8 +3495,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs() {
 
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
-  return GetRenderManager()->CreateRenderView(instance, MSG_ROUTING_NONE,
-                                              true, true);
+  return GetRenderManager()->CreateRenderFrame(instance, MSG_ROUTING_NONE,
+                                               true, true);
 }
 
 void WebContentsImpl::OnUserGesture() {
@@ -3660,8 +3665,8 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
 
   // Create a swapped out RenderView in the given SiteInstance if none exists,
   // setting its opener to the given route_id.  Return the new view's route_id.
-  return GetRenderManager()->CreateRenderView(instance, opener_route_id,
-                                              true, true);
+  return GetRenderManager()->CreateRenderFrame(instance, opener_route_id,
+                                               true, true);
 }
 
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {

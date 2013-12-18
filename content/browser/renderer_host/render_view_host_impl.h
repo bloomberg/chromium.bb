@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_node_data.h"
@@ -61,8 +60,6 @@ namespace content {
 class BrowserMediaPlayerManager;
 class ChildProcessSecurityPolicyImpl;
 class PageState;
-class RenderFrameHostDelegate;
-class RenderFrameHostImpl;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SessionStorageNamespaceImpl;
@@ -119,7 +116,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderViewHostImpl(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
-      RenderFrameHostDelegate* frame_delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,
@@ -617,12 +613,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 
-  // TODO(nasko): Remove this accessor once RenderFrameHost moves into the frame
-  // tree.
-  RenderFrameHostImpl* main_render_frame_host() const {
-    return main_render_frame_host_.get();
-  }
-
  private:
   friend class TestRenderViewHost;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
@@ -633,16 +623,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SetSwappedOut(bool is_swapped_out);
 
   bool CanAccessFilesOfPageState(const PageState& state) const;
-
-  // All RenderViewHosts must have a RenderFrameHost for its main frame.
-  // Currently the RenderFrameHost is created in lock step on construction
-  // and a pointer to the main frame is given to the FrameTreeNode
-  // when the RenderViewHost commits (see AttachToFrameTree()).
-  //
-  // TODO(ajwong): Make this reference non-owning. The root FrameTreeNode of
-  // the FrameTree should be responsible for owning the main frame's
-  // RenderFrameHost.
-  scoped_ptr<RenderFrameHostImpl> main_render_frame_host_;
 
   // Our delegate, which wants to know about changes in the RenderView.
   RenderViewHostDelegate* delegate_;
@@ -689,7 +669,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // The frame id of the main (top level) frame. This value is set on the
   // initial navigation of a RenderView and reset when the RenderView's
   // process is terminated (in RenderProcessGone).
+  // TODO(creis): Remove this when we switch to routing IDs for frames.
   int64 main_frame_id_;
+
+  // Routing ID for the main frame's RenderFrameHost.
+  int main_frame_routing_id_;
 
   // If we were asked to RunModal, then this will hold the reply_msg that we
   // must return to the renderer to unblock it.

@@ -181,8 +181,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   // - any command sent by the RenderViewHost will be ignored.
   void Disable();
 
-  // Shutdown the RVH.  We will be deleted by the time this method returns.
-  void Shutdown(RenderViewHostImpl* render_view_host);
+  // Delete ourselves, causing Shutdown on the RVH to be called.
+  void Shutdown();
 
   void OnNavigatingAwayOrTabClosing();
 
@@ -230,6 +230,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   // The RenderViewHost displaying the interstitial contents.  This is valid
   // until Hide is called, at which point it will be set to NULL, signifying
   // that shutdown has started.
+  // TODO(creis): This is now owned by the FrameTree.  We should route things
+  // through the tree's root RenderFrameHost instead.
   RenderViewHostImpl* render_view_host_;
 
   // The frame tree structure of the current page.

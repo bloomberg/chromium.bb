@@ -5,6 +5,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
@@ -288,10 +289,10 @@ TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
 }
 
 TEST_F(RenderViewHostTest, RoutingIdSane) {
-  EXPECT_EQ(test_rvh()->GetProcess(),
-            test_rvh()->main_render_frame_host()->GetProcess());
-  EXPECT_NE(test_rvh()->GetRoutingID(),
-            test_rvh()->main_render_frame_host()->routing_id());
+  RenderFrameHostImpl* root_rfh =
+      contents()->GetFrameTree()->root()->current_frame_host();
+  EXPECT_EQ(test_rvh()->GetProcess(), root_rfh->GetProcess());
+  EXPECT_NE(test_rvh()->GetRoutingID(), root_rfh->routing_id());
 }
 
 }  // namespace content

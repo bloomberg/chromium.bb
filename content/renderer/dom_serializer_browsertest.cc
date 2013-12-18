@@ -51,6 +51,13 @@ using blink::WebURL;
 using blink::WebView;
 using blink::WebVector;
 
+namespace {
+
+// The first RenderFrame is routing ID 1, and the first RenderView is 2.
+const int kRenderViewRoutingId = 2;
+
+}
+
 namespace content {
 
 // Iterate recursively over sub-frames to find one with with a given url.
@@ -223,7 +230,7 @@ class DomSerializerTests : public ContentBrowserTest,
   RenderView* GetRenderView() {
     // We could have the test on the UI thread get the WebContent's routing ID,
     // but we know this will be the first RV so skip that and just hardcode it.
-    return RenderView::FromRoutingID(1);
+    return RenderView::FromRoutingID(kRenderViewRoutingId);
   }
 
   WebView* GetWebView() {

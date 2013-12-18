@@ -16,19 +16,17 @@ RenderViewHostFactory* RenderViewHostFactory::factory_ = NULL;
 RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
-    RenderFrameHostDelegate* frame_delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
     bool swapped_out,
     bool hidden) {
   if (factory_) {
-    return factory_->CreateRenderViewHost(instance, delegate, frame_delegate,
-                                          widget_delegate, routing_id,
-                                          main_frame_routing_id, swapped_out);
+    return factory_->CreateRenderViewHost(instance, delegate, widget_delegate,
+                                          routing_id, main_frame_routing_id,
+                                          swapped_out);
   }
-  return new RenderViewHostImpl(instance, delegate, frame_delegate,
-                                widget_delegate, routing_id,
+  return new RenderViewHostImpl(instance, delegate, widget_delegate, routing_id,
                                 main_frame_routing_id, swapped_out, hidden);
 }
 
