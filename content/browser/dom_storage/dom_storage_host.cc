@@ -32,12 +32,8 @@ bool DOMStorageHost::OpenStorageArea(int connection_id, int namespace_id,
     return false;  // Indicates the renderer gave us very bad data.
   NamespaceAndArea references;
   references.namespace_ = context_->GetStorageNamespace(namespace_id);
-  if (!references.namespace_.get()) {
-    // TODO(michaeln): Fix crbug/134003 and return false here.
-    // Until then return true to avoid crashing the renderer for
-    // sending a bad message.
-    return true;
-  }
+  if (!references.namespace_.get())
+    return false;
   references.area_ = references.namespace_->OpenStorageArea(origin);
   DCHECK(references.area_.get());
   connections_[connection_id] = references;
@@ -56,12 +52,8 @@ bool DOMStorageHost::ExtractAreaValues(
     int connection_id, DOMStorageValuesMap* map, bool* send_log_get_messages) {
   map->clear();
   DOMStorageArea* area = GetOpenArea(connection_id);
-  if (!area) {
-    // TODO(michaeln): Fix crbug/134003 and return false here.
-    // Until then return true to avoid crashing the renderer
-    // for sending a bad message.
-    return true;
-  }
+  if (!area)
+    return false;
   if (!area->IsLoadedInMemory()) {
     DOMStorageNamespace* ns = GetNamespace(connection_id);
     DCHECK(ns);
@@ -107,12 +99,8 @@ bool DOMStorageHost::SetAreaItem(
     const base::string16& value, const GURL& page_url,
     base::NullableString16* old_value) {
   DOMStorageArea* area = GetOpenArea(connection_id);
-  if (!area) {
-    // TODO(michaeln): Fix crbug/134003 and return false here.
-    // Until then return true to allow the renderer to operate
-    // to a limited degree out of its cache.
-    return true;
-  }
+  if (!area)
+    return false;
   if (!area->SetItem(key, value, old_value))
     return false;
   if (old_value->is_null() || old_value->string() != value)
