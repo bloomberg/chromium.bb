@@ -66,6 +66,8 @@ class FakeProfileOAuth2TokenService
   virtual bool RefreshTokenIsAvailable(
       const std::string& account_id) OVERRIDE;
 
+  virtual std::vector<std::string> GetAccounts() OVERRIDE;
+
   // Overriden to make sure it works on Android.  Simply calls
   // IssueRefreshToken().
   virtual void UpdateCredentials(const std::string& account_id,
@@ -86,7 +88,10 @@ class FakeProfileOAuth2TokenService
   std::vector<PendingRequest> GetPendingRequests();
 
   // Helper routines to issue tokens for pending requests.
-  // TODO(fgorski): Add account IDs as parameters.
+  void IssueAllTokensForAccount(const std::string& account_id,
+                                const std::string& access_token,
+                                const base::Time& expiration);
+
   void IssueTokenForScope(const ScopeSet& scopes,
                           const std::string& access_token,
                           const base::Time& expiration);
@@ -127,15 +132,20 @@ class FakeProfileOAuth2TokenService
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,
   // then all pending requests are completed, otherwise, only those requests
-  // matching |scopes| are completed.
-  void CompleteRequests(bool all_scopes,
+  // matching |scopes| are completed.  If |account_id| is empty, then pending
+  // requests for all accounts are completed, otherwise only requests for the
+  // given account.
+  void CompleteRequests(const std::string& account_id,
+                        bool all_scopes,
                         const ScopeSet& scopes,
                         const GoogleServiceAuthError& error,
                         const std::string& access_token,
                         const base::Time& expiration);
 
   std::vector<PendingRequest> pending_requests_;
-  std::string refresh_token_;
+
+  // Maps account ids to their refresh token strings.
+  std::map<std::string, std::string> refresh_tokens_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenService);
 };

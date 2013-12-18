@@ -32,6 +32,15 @@ bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
   return !GetRefreshToken(account_id).empty();
 }
 
+std::vector<std::string> FakeProfileOAuth2TokenService::GetAccounts() {
+  std::vector<std::string> account_ids;
+  for (std::map<std::string, std::string>::const_iterator iter =
+           refresh_tokens_.begin(); iter != refresh_tokens_.end(); ++iter) {
+    account_ids.push_back(iter->first);
+  }
+  return account_ids;
+}
+
 void FakeProfileOAuth2TokenService::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
@@ -46,19 +55,34 @@ void FakeProfileOAuth2TokenService::IssueRefreshToken(
 void FakeProfileOAuth2TokenService::IssueRefreshTokenForUser(
     const std::string& account_id,
     const std::string& token) {
-  refresh_token_ = token;
-  if (refresh_token_.empty())
+  if (token.empty()) {
+    refresh_tokens_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
-  else
+  } else {
+    refresh_tokens_[account_id] = token;
     FireRefreshTokenAvailable(account_id);
-  // TODO(atwilson): Maybe we should also call FireRefreshTokensLoaded() here?
+    // TODO(atwilson): Maybe we should also call FireRefreshTokensLoaded() here?
+  }
+}
+
+void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
+    const std::string& account_id,
+    const std::string& access_token,
+    const base::Time& expiration) {
+  CompleteRequests(account_id,
+                   true,
+                   ScopeSet(),
+                   GoogleServiceAuthError::AuthErrorNone(),
+                   access_token,
+                   expiration);
 }
 
 void FakeProfileOAuth2TokenService::IssueTokenForScope(
     const ScopeSet& scope,
     const std::string& access_token,
     const base::Time& expiration) {
-  CompleteRequests(false,
+  CompleteRequests("",
+                   false,
                    scope,
                    GoogleServiceAuthError::AuthErrorNone(),
                    access_token,
@@ -68,18 +92,19 @@ void FakeProfileOAuth2TokenService::IssueTokenForScope(
 void FakeProfileOAuth2TokenService::IssueErrorForScope(
     const ScopeSet& scope,
     const GoogleServiceAuthError& error) {
-  CompleteRequests(false, scope, error, std::string(), base::Time());
+  CompleteRequests("", false, scope, error, std::string(), base::Time());
 }
 
 void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequests(
     const GoogleServiceAuthError& error) {
-  CompleteRequests(true, ScopeSet(), error, std::string(), base::Time());
+  CompleteRequests("", true, ScopeSet(), error, std::string(), base::Time());
 }
 
 void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
     const std::string& access_token,
     const base::Time& expiration) {
-  CompleteRequests(true,
+  CompleteRequests("",
+                   true,
                    ScopeSet(),
                    GoogleServiceAuthError::AuthErrorNone(),
                    access_token,
@@ -87,6 +112,7 @@ void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
 }
 
 void FakeProfileOAuth2TokenService::CompleteRequests(
+    const std::string& account_id,
     bool all_scopes,
     const ScopeSet& scope,
     const GoogleServiceAuthError& error,
@@ -98,14 +124,20 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
   // Walk the requests and notify the callbacks.
   for (std::vector<PendingRequest>::iterator it = pending_requests_.begin();
        it != pending_requests_.end(); ++it) {
-    if (it->request && (all_scopes || it->scopes == scope))
+    if (!it->request)
+      continue;
+
+    bool scope_matches = all_scopes || it->scopes == scope;
+    bool account_matches = account_id.empty() || account_id == it->account_id;
+    if (account_matches && scope_matches)
       it->request->InformConsumer(error, access_token, expiration);
   }
 }
 
 std::string FakeProfileOAuth2TokenService::GetRefreshToken(
     const std::string& account_id) {
-  return refresh_token_;
+  return refresh_tokens_.count(account_id) > 0 ? refresh_tokens_[account_id] :
+      std::string();
 }
 
 net::URLRequestContextGetter*
