@@ -3174,6 +3174,15 @@
    ...
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
+# OOM in layout test: crash/array-splice.html
+{
+   bug_108832
+   Memcheck:Unaddressable
+   fun:_ZN7WebCoreL28reportFatalErrorInMainThreadEPKcS1_
+   fun:_ZN2v88internal2V823FatalProcessOutOfMemoryEPKcb
+   ...
+   fun:_ZN7WebCore12ScriptLoader13executeScriptERKNS_16ScriptSourceCodeE
+}
 {
    bug_109495e
    Memcheck:Leak
