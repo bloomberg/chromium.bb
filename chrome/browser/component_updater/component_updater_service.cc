@@ -46,6 +46,9 @@
 
 using content::BrowserThread;
 
+using component_updater::CrxDownloader;
+using component_updater::CrxUpdateItem;
+
 // The component updater is designed to live until process shutdown, so
 // base::Bind() calls are not refcounted.
 
@@ -113,6 +116,12 @@ bool CanTryDiffUpdate(const CrxUpdateItem* update_item,
   return IsDiffUpdateAvailable(update_item) &&
          !update_item->diff_update_failed &&
          config.DeltasEnabled();
+}
+
+void AppendDownloadMetrics(
+    const std::vector<CrxDownloader::DownloadMetrics>& source,
+    std::vector<CrxDownloader::DownloadMetrics>* destination) {
+  destination->insert(destination->end(), source.begin(), source.end());
 }
 
 }  // namespace
@@ -265,7 +274,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   void DownloadComplete(
       scoped_ptr<CRXContext> crx_context,
-      const component_updater::CrxDownloader::Result& download_result);
+      const CrxDownloader::Result& download_result);
 
   Status OnDemandUpdateInternal(CrxUpdateItem* item);
 
@@ -315,7 +324,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<component_updater::PingManager> ping_manager_;
 
-  scoped_ptr<component_updater::CrxDownloader> crx_downloader_;
+  scoped_ptr<CrxDownloader> crx_downloader_;
 
   // A collection of every work item.
   typedef std::vector<CrxUpdateItem*> UpdateItems;
@@ -678,7 +687,7 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
   const bool is_background_download = !workitem->on_demand &&
                                        config_->UseBackgroundDownloader();
 
-  crx_downloader_.reset(component_updater::CrxDownloader::Create(
+  crx_downloader_.reset(CrxDownloader::Create(
       is_background_download,
       config_->RequestContext(),
       blocking_task_runner_,
@@ -744,6 +753,7 @@ void CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
   item->diff_error_category = 0;
   item->diff_error_code = 0;
   item->diff_extra_code1 = 0;
+  item->download_metrics.clear();
 }
 
 // Builds the sequence of <app> elements in the update check and returns it
@@ -885,12 +895,15 @@ void CrxUpdateService::OnParseUpdateResponseFailed(
 // to be called in the file thread.
 void CrxUpdateService::DownloadComplete(
     scoped_ptr<CRXContext> crx_context,
-    const component_updater::CrxDownloader::Result& download_result) {
+    const CrxDownloader::Result& download_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   CrxUpdateItem* crx = FindUpdateItemById(crx_context->id);
   DCHECK(crx->status == CrxUpdateItem::kDownloadingDiff ||
          crx->status == CrxUpdateItem::kDownloading);
+
+  AppendDownloadMetrics(crx_downloader_->download_metrics(),
+                        &crx->download_metrics);
 
   if (download_result.error) {
     if (crx->status == CrxUpdateItem::kDownloadingDiff) {
@@ -928,7 +941,6 @@ void CrxUpdateService::DownloadComplete(
                                CrxUpdateItem::kUpdating);
     }
     DCHECK_EQ(count, 1ul);
-
     crx_downloader_.reset();
 
     // Why unretained? See comment at top of file.

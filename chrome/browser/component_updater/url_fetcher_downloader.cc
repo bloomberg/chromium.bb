@@ -42,10 +42,17 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   url_fetcher_->SaveResponseToTemporaryFile(task_runner_);
 
   url_fetcher_->Start();
+
+  download_start_time_ = base::Time::Now();
 }
 
 void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const base::Time download_end_time(base::Time::Now());
+  const base::TimeDelta download_time =
+    download_end_time >= download_start_time_ ?
+    download_end_time - download_start_time_ : base::TimeDelta();
 
   // Consider a 5xx response from the server as an indication to terminate
   // the request and avoid overloading the server in this case.
@@ -55,12 +62,18 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   Result result;
   result.error = fetch_error;
-  result.is_background_download = false;
   if (!fetch_error) {
     source->GetResponseAsFilePath(true, &result.response);
   }
 
-  CrxDownloader::OnDownloadComplete(is_handled, result);
+  // The URLFetcher does not provide accessors for the number of bytes yet.
+  DownloadMetrics download_metrics;
+  download_metrics.url = url();
+  download_metrics.downloader = DownloadMetrics::kUrlFetcher;
+  download_metrics.error = fetch_error;
+  download_metrics.download_time_ms = download_time.InMilliseconds();
+
+  CrxDownloader::OnDownloadComplete(is_handled, result, download_metrics);
 }
 
 }  // namespace component_updater

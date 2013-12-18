@@ -13,9 +13,9 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-struct CrxUpdateItem;
-
 namespace component_updater {
+
+struct CrxUpdateItem;
 
 // Provides an event sink for completion events from ComponentUpdateService
 // and sends fire-and-forget pings when handling these events.

@@ -750,6 +750,7 @@
         'browser/component_updater/test/component_installers_unittest.cc',
         'browser/component_updater/test/component_patcher_mock.h',
         'browser/component_updater/test/component_patcher_unittest.cc',
+        'browser/component_updater/test/component_updater_ping_manager_unittest.cc',
         'browser/component_updater/test/component_updater_service_unittest.cc',
         'browser/component_updater/test/crx_downloader_unittest.cc',
         'browser/component_updater/test/test_installer.cc',

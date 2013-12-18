@@ -6,6 +6,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
@@ -13,16 +14,24 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace {
+namespace component_updater {
 
 // Returns true if the |update_item| contains a valid differential update url.
 bool HasDiffUpdate(const CrxUpdateItem* update_item) {
   return update_item->diff_crx_url.is_valid();
 }
 
-}  // namespace
-
-namespace component_updater {
+// Returns a string literal corresponding to the value of the downloader |d|.
+const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
+  switch (d) {
+    case CrxDownloader::DownloadMetrics::kUrlFetcher:
+      return "direct";
+    case CrxDownloader::DownloadMetrics::kBits:
+      return "bits";
+    default:
+      return "unknown";
+  }
+}
 
 // Sends a fire and forget ping. The instances of this class have no
 // ownership and they self-delete upon completion.
@@ -40,7 +49,9 @@ class PingSender : public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   static std::string BuildPing(const CrxUpdateItem* item);
-  static std::string BuildPingEventElement(const CrxUpdateItem* item);
+  static std::string BuildDownloadCompleteEventElements(
+      const CrxUpdateItem* item);
+  static std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item);
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
@@ -75,19 +86,55 @@ std::string PingSender::BuildPing(const CrxUpdateItem* item) {
   const char app_element_format[] =
       "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
       "%s"
+      "%s"
       "</app>";
   const std::string app_element(base::StringPrintf(
       app_element_format,
-      item->id.c_str(),                               // "appid"
-      item->previous_version.GetString().c_str(),     // "version"
-      item->next_version.GetString().c_str(),         // "nextversion"
-      BuildPingEventElement(item).c_str()));
+      item->id.c_str(),                                     // "appid"
+      item->previous_version.GetString().c_str(),           // "version"
+      item->next_version.GetString().c_str(),               // "nextversion"
+      BuildUpdateCompleteEventElement(item).c_str(),        // update event
+      BuildDownloadCompleteEventElements(item).c_str()));   // download events
 
   return BuildProtocolRequest(app_element, "");
 }
 
+// Returns a string representing a sequence of download complete events
+// corresponding to each download metrics in |item|.
+std::string PingSender::BuildDownloadCompleteEventElements(
+    const CrxUpdateItem* item) {
+  using base::StringAppendF;
+  std::string download_events;
+  for (size_t i = 0; i != item->download_metrics.size(); ++i) {
+    const CrxDownloader::DownloadMetrics& metrics = item->download_metrics[i];
+    std::string event("<event eventtype=\"14\" ");
+    StringAppendF(&event, "eventresult=\"%d\"", metrics.error == 0);
+    StringAppendF(&event,
+                  " downloader=\"%s\"", DownloaderToString(metrics.downloader));
+    if (metrics.error)
+      StringAppendF(&event, " errorcode=\"%d\"", metrics.error);
+    StringAppendF(&event, " url=\"%s\"", metrics.url.spec().c_str());
+    if (metrics.bytes_downloaded) {
+      StringAppendF(&event, " downloaded=\"%s\"",
+                    base::Uint64ToString(metrics.bytes_downloaded).c_str());
+    }
+    if (metrics.bytes_total)
+      StringAppendF(&event, " total=\"%s\"",
+                    base::Uint64ToString(metrics.bytes_total).c_str());
+    if (metrics.download_time_ms) {
+      StringAppendF(&event, " download_time_ms=\"%s\"",
+                    base::Uint64ToString(metrics.download_time_ms).c_str());
+    }
+    StringAppendF(&event, "/>");
+
+    download_events += event;
+  }
+  return download_events;
+}
+
 // Returns a string representing one ping event xml element for an update item.
-std::string PingSender::BuildPingEventElement(const CrxUpdateItem* item) {
+std::string PingSender::BuildUpdateCompleteEventElement(
+    const CrxUpdateItem* item) {
   DCHECK(item->status == CrxUpdateItem::kNoUpdate ||
          item->status == CrxUpdateItem::kUpdated);
 

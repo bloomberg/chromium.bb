@@ -462,7 +462,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
       "version=\"0.9\" nextversion=\"1.0\">"
-      "<event eventtype=\"3\" eventresult=\"1\"/></app>"))
+      "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
@@ -642,7 +642,7 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
       "version=\"0.9\" nextversion=\"1.0\">"
-      "<event eventtype=\"3\" eventresult=\"1\"/></app>"))
+      "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
   // Also check what happens if previous check too soon.
@@ -838,7 +838,7 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
       "version=\"0.9\" nextversion=\"1.0\">"
-      "<event eventtype=\"3\" eventresult=\"1\"/></app>"))
+      "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
@@ -964,7 +964,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
       "version=\"0.0\" nextversion=\"1.0\">"
-      "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/></app>"))
+      "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
@@ -974,7 +974,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
       "version=\"1.0\" nextversion=\"2.0\">"
       "<event eventtype=\"3\" eventresult=\"1\" diffresult=\"1\" "
-      "previousfp=\"1\" nextfp=\"22\"/></app>"))
+      "previousfp=\"1\" nextfp=\"22\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[4].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
@@ -1037,7 +1037,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
       "version=\"1.0\" nextversion=\"2.0\">"
       "<event eventtype=\"3\" eventresult=\"1\" diffresult=\"0\" "
-      "differrorcat=\"2\" differrorcode=\"16\" nextfp=\"22\"/></app>"))
+      "differrorcat=\"2\" differrorcode=\"16\" nextfp=\"22\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
@@ -1091,7 +1091,7 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
       "version=\"0.9\" nextversion=\"1.0\">"
       "<event eventtype=\"3\" eventresult=\"0\" "
-      "errorcat=\"3\" errorcode=\"9\"/></app>"))
+      "errorcat=\"3\" errorcode=\"9\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
@@ -1101,7 +1101,7 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
       "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
       "version=\"0.9\" nextversion=\"1.0\">"
       "<event eventtype=\"3\" eventresult=\"0\" "
-      "errorcat=\"3\" errorcode=\"9\"/></app>"))
+      "errorcat=\"3\" errorcode=\"9\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
   // Loop once more, but expect no ping because a noupdate response is issued.
@@ -1184,7 +1184,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
       "version=\"0.0\" nextversion=\"1.0\">"
-      "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/></app>"))
+      "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[2].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
@@ -1196,7 +1196,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
       "<event eventtype=\"3\" eventresult=\"1\" "
       "diffresult=\"0\" differrorcat=\"2\" "
       "differrorcode=\"14\" diffextracode1=\"305\" "
-      "previousfp=\"1\" nextfp=\"22\"/></app>"))
+      "previousfp=\"1\" nextfp=\"22\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[4].find(
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"

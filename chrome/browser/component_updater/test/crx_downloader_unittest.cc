@@ -86,7 +86,7 @@ CrxDownloaderTest::CrxDownloaderTest()
 }
 
 CrxDownloaderTest::~CrxDownloaderTest() {
-  context_ = 0;
+  context_ = NULL;
 }
 
 void CrxDownloaderTest::SetUp() {
