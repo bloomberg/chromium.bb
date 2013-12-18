@@ -48,7 +48,7 @@ public:
     virtual String item(const String& name);
     virtual bool contains(const String& name);
     virtual void setItem(const String& name, const String& value, ExceptionState&);
-    virtual void deleteItem(const String& name, ExceptionState&);
+    virtual bool deleteItem(const String& name);
 
     virtual Element* element() { return m_element; }
 

@@ -145,10 +145,11 @@ static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInf
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->anonymousIndexedDeleter(index, exceptionState);
+    DeleteResult result = collection->anonymousIndexedDeleter(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    return v8SetReturnValueBool(info, result);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
@@ -215,8 +216,9 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    bool result = collection->anonymousNamedDeleter(propertyName);
-    return v8SetReturnValueBool(info, result);
+    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
 static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)

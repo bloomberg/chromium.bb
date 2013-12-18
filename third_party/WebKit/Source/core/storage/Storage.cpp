@@ -78,20 +78,23 @@ bool Storage::anonymousIndexedSetter(unsigned index, const AtomicString& value, 
     return anonymousNamedSetter(AtomicString::number(index), value, exceptionState);
 }
 
-bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& exceptionState)
+DeleteResult Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& exceptionState)
 {
     bool found = contains(name, exceptionState);
-    if (!found || exceptionState.hadException())
-        return false;
+    if (!found)
+        return DeleteUnknownProperty;
+    if (exceptionState.hadException())
+        return DeleteReject;
     removeItem(name, exceptionState);
     if (exceptionState.hadException())
-        return false;
-    return true;
+        return DeleteReject;
+    return DeleteSuccess;
 }
 
-bool Storage::anonymousIndexedDeleter(unsigned index, ExceptionState& exceptionState)
+DeleteResult Storage::anonymousIndexedDeleter(unsigned index, ExceptionState& exceptionState)
 {
-    return anonymousNamedDeleter(AtomicString::number(index), exceptionState);
+    DeleteResult result = anonymousNamedDeleter(AtomicString::number(index), exceptionState);
+    return result == DeleteUnknownProperty ? DeleteSuccess : result;
 }
 
 void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionState& exceptionState)

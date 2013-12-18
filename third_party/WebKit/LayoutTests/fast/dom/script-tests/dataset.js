@@ -116,6 +116,21 @@ shouldBeTrue("testDelete('data-r-2', 'r-2')");
 shouldBeTrue("testDelete('data--r-2-', 'R-2-')");
 shouldBeTrue("testDelete('data--r-2r', 'R-2r')");
 shouldBeTrue("testDelete('data--r-2-----r', 'R-2----R')");
+
+// The element.dataset deleter is only applied to properties
+// that are present; check that any underlying native property
+// is deleted instead.
+function testNativeDelete(prop, isConfigurable)
+{
+    var d = document.createElement("div");
+    Object.defineProperty(d.dataset, prop, {configurable: isConfigurable, value: "native_value"});
+    delete d.dataset[prop];
+    return isConfigurable ? !(prop in d.dataset) : (d.dataset[prop] === "native_value");
+}
+
+shouldBeTrue("testNativeDelete('-r-2-', false)");
+shouldBeTrue("testNativeDelete('foo', true)");
+
 debug("");
 
 shouldBeFalse("testDelete('dummy', '-foo')");

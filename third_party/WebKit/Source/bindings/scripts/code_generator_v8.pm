@@ -4052,12 +4052,13 @@ sub GenerateImplementationIndexedPropertyDeleter
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
         $extraArguments = ", exceptionState";
     }
-    $code .= "    bool result = collection->${methodName}(index$extraArguments);\n";
+    $code .= "    DeleteResult result = collection->${methodName}(index$extraArguments);\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
-    $code .= "    return v8SetReturnValueBool(info, result);\n";
+    $code .= "    if (result != DeleteUnknownProperty)\n";
+    $code .= "        return v8SetReturnValueBool(info, result == DeleteSuccess);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -4079,14 +4080,15 @@ sub GenerateImplementationNamedPropertyDeleter
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
-        $extraArguments = ", exceptionState";
+        $extraArguments .= ", exceptionState";
     }
-    $code .= "    bool result = collection->${methodName}(propertyName$extraArguments);\n";
+    $code .= "    DeleteResult result = collection->${methodName}(propertyName$extraArguments);\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
-    $code .= "    return v8SetReturnValueBool(info, result);\n";
+    $code .= "    if (result != DeleteUnknownProperty)\n";
+    $code .= "        return v8SetReturnValueBool(info, result == DeleteSuccess);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }

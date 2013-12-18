@@ -18,7 +18,7 @@ function runTest()
         return;
     }
     localStorage.clear();
-    
+
     log("foo (before anything) is: " + localStorage.foo);
     localStorage.foo = "bar";
     log("foo (after a named property settter set) is: " + localStorage.foo);
@@ -40,6 +40,16 @@ function runTest()
     log("foo (after an implicit settter set) is: " + localStorage.foo);
     delete localStorage["foo"];
     log("foo (after an indexed delete) is: " + localStorage.foo);
+
+    Object.defineProperty(localStorage, "bar", {value: "present", configurable: true});
+    log("bar (before an indexed delete) is present: " + ("bar" in localStorage));
+    delete localStorage["bar"];
+    log("bar (after an indexed delete) is present: " + ("bar" in localStorage));
+
+    Object.defineProperty(localStorage, "1", {value: "present", configurable: true});
+    log("Indexed property '1' (before delete) is present: " + (1 in localStorage));
+    delete localStorage[1];
+    log("Indexed property '1' (after delete) is present: " + (1 in localStorage));
 }
 
 </script>

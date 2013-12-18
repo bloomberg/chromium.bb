@@ -188,14 +188,16 @@ void DatasetDOMStringMap::setItem(const String& name, const String& value, Excep
     m_element->setAttribute(convertPropertyNameToAttributeName(name), value, exceptionState);
 }
 
-void DatasetDOMStringMap::deleteItem(const String& name, ExceptionState& exceptionState)
+bool DatasetDOMStringMap::deleteItem(const String& name)
 {
-    if (!isValidPropertyName(name)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToDelete(name, "DOMStringMap", "'" + name + "' is not a valid property name."));
-        return;
+    if (isValidPropertyName(name)) {
+        String attributeName = convertPropertyNameToAttributeName(name);
+        if (m_element->hasAttribute(attributeName)) {
+            m_element->removeAttribute(attributeName);
+            return true;
+        }
     }
-
-    m_element->removeAttribute(convertPropertyNameToAttributeName(name));
+    return false;
 }
 
 } // namespace WebCore

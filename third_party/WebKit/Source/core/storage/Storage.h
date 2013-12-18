@@ -27,6 +27,7 @@
 #define Storage_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/storage/StorageArea.h"
 #include "wtf/Forward.h"
@@ -57,8 +58,8 @@ public:
     String anonymousNamedGetter(const AtomicString&, ExceptionState&);
     bool anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionState&);
     bool anonymousIndexedSetter(unsigned, const AtomicString&, ExceptionState&);
-    bool anonymousNamedDeleter(const AtomicString&, ExceptionState&);
-    bool anonymousIndexedDeleter(unsigned, ExceptionState&);
+    DeleteResult anonymousNamedDeleter(const AtomicString&, ExceptionState&);
+    DeleteResult anonymousIndexedDeleter(unsigned, ExceptionState&);
     void namedPropertyEnumerator(Vector<String>&, ExceptionState&);
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 

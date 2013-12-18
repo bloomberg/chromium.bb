@@ -10,4 +10,8 @@ foo (after a delete) is: undefined
 foo (after a redundant delete) is: undefined
 foo (after an implicit settter set) is: bar
 foo (after an indexed delete) is: undefined
+bar (before an indexed delete) is present: true
+bar (after an indexed delete) is present: false
+Indexed property '1' (before delete) is present: true
+Indexed property '1' (after delete) is present: false
 

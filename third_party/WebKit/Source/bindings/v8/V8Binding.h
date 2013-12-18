@@ -696,6 +696,14 @@ namespace WebCore {
     // Each specialized implementation will be generated.
     template<typename T>
     v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
+    // Result values for platform object 'deleter' methods,
+    // http://www.w3.org/TR/WebIDL/#delete
+    enum DeleteResult {
+        DeleteSuccess,
+        DeleteReject,
+        DeleteUnknownProperty
+    };
 } // namespace WebCore
 
 #endif // V8Binding_h
