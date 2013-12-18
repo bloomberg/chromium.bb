@@ -708,6 +708,10 @@ RenderBlockFlow* RenderBlock::columnsBlockForSpanningElement(RenderObject* newCh
 
 void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild)
 {
+    // FIXME: We should NEVER hit this code path for tables as they should go through RenderTable::addChild
+    // to add the appropriate anonymous wrappers. Unfortunately a lot of callers call this method directly
+    // (bypassing the virtual addChild), which means we can't enforce this before cleaning them up.
+
     if (beforeChild && beforeChild->parent() != this) {
         RenderObject* beforeChildContainer = beforeChild->parent();
         while (beforeChildContainer->parent() != this)
@@ -808,13 +812,19 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
         if (newChild->isInline()) {
             // No suitable existing anonymous box - create a new one.
             RenderBlock* newBox = createAnonymousBlock();
-            RenderBox::addChild(newBox, beforeChild);
+            if (isTable())
+                toRenderTable(this)->addChild(newBox, beforeChild);
+            else
+                RenderBox::addChild(newBox, beforeChild);
             newBox->addChild(newChild);
             return;
         }
     }
 
-    RenderBox::addChild(newChild, beforeChild);
+    if (isTable())
+        toRenderTable(this)->addChild(newChild, beforeChild);
+    else
+        RenderBox::addChild(newChild, beforeChild);
 
     if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isRenderBlock())
         toRenderBlock(parent())->removeLeftoverAnonymousBlock(this);

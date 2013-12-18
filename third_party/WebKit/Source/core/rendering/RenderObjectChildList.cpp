@@ -115,6 +115,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
 {
     ASSERT(!newChild->parent());
     ASSERT(!owner->isRenderBlockFlow() || (!newChild->isTableSection() && !newChild->isTableRow() && !newChild->isTableCell()));
+    ASSERT_WITH_SECURITY_IMPLICATION(!owner->isTable() || (newChild->isTableCaption() || newChild->isTableSection() || newChild->isRenderTableCol()));
 
     while (beforeChild && beforeChild->parent() && beforeChild->parent() != owner)
         beforeChild = beforeChild->parent();
