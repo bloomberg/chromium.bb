@@ -12,6 +12,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
 

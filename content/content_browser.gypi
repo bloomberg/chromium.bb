@@ -15,6 +15,7 @@
     '../third_party/zlib/zlib.gyp:zlib',
     '../ui/events/events.gyp:events_base',
     '../ui/gfx/gfx.gyp:gfx',
+    '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/ui.gyp:ui',

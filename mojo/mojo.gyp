@@ -369,6 +369,7 @@
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
             'mojo_common_lib',
             'mojo_jni_headers',

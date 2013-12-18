@@ -14,6 +14,7 @@
         '../../skia/skia.gyp:skia',
         '../../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         '../ui.gyp:ui',
       ],
       'defines': [
@@ -51,6 +52,7 @@
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         '../ui.gyp:ui',
         'snapshot'
       ],

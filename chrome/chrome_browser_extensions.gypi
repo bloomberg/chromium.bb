@@ -48,6 +48,7 @@
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',

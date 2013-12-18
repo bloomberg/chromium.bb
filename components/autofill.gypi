@@ -321,6 +321,7 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/ui.gyp:ui',
             '../url/url.gyp:url_lib',
             '../webkit/webkit_resources.gyp:webkit_resources',

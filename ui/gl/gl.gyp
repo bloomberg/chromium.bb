@@ -19,6 +19,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'variables': {
         'gl_binding_output_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gl',

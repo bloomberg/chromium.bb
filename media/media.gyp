@@ -51,6 +51,7 @@
         '../third_party/opus/opus.gyp:opus',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
         'shared_memory_support',
       ],
@@ -891,6 +892,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
       ],
       'sources': [
@@ -1128,6 +1130,7 @@
         '../testing/gtest.gyp:gtest',
         '../testing/perf/perf_test.gyp:perf_test',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
       ],
@@ -1410,6 +1413,7 @@
             '../base/base.gyp:base',
             '../ui/gl/gl.gyp:gl',
             '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
           ],
           'link_settings': {
             'libraries': [

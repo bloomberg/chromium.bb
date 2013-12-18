@@ -19,6 +19,7 @@
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
       ],

@@ -45,6 +45,7 @@
         '../../content/content.gyp:content_common',
         '../../google_update/google_update.gyp:google_update',
         '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/ui.gyp:ui',
         '../../win8/win8.gyp:check_sdk_patch',
         'delegate_execute_version_resources',

@@ -19,6 +19,7 @@
         '../../../../url/url.gyp:url_lib',
         '../../../events/events.gyp:events',
         '../../../gfx/gfx.gyp:gfx',
+        '../../../gfx/gfx.gyp:gfx_geometry',
         '../../../ui.gyp:ui',
         '../../../web_dialogs/web_dialogs.gyp:web_dialogs',
         '../../views.gyp:views',

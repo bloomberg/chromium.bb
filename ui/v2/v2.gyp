@@ -20,6 +20,7 @@
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [
         'V2_IMPLEMENTATION',
@@ -55,6 +56,7 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         'v2',
       ],
       'sources': [

@@ -18,6 +18,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../url/url.gyp:url_lib',
       ],
@@ -247,6 +248,7 @@
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
       ],
       'sources': [

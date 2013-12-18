@@ -527,6 +527,7 @@
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
       ],
@@ -717,6 +718,7 @@
         '../net/net.gyp:net',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
@@ -818,6 +820,7 @@
         '../net/net.gyp:net',
         '../testing/gtest.gyp:gtest',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
@@ -841,6 +844,7 @@
         '../net/net.gyp:net',
         '../testing/gtest.gyp:gtest',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [

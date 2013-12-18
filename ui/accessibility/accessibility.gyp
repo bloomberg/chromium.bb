@@ -14,6 +14,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [
         'ACCESSIBILITY_IMPLEMENTATION',

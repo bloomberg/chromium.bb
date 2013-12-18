@@ -18,6 +18,7 @@
         '../../net/net.gyp:net',
         '../../skia/skia.gyp:skia',
         '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/ui.gyp:ui',
         '../../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '../../webkit/common/webkit_common.gyp:webkit_common',

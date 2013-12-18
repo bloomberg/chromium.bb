@@ -15,6 +15,7 @@
         '../skia/skia.gyp:skia',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
       ],

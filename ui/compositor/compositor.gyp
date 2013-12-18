@@ -16,6 +16,7 @@
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
       'defines': [
@@ -78,6 +79,7 @@
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
@@ -107,6 +109,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         '<(DEPTH)/ui/ui.gyp:ui',

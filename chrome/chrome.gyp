@@ -690,6 +690,7 @@
             'chrome_resources.gyp:chrome_strings',
             '../base/base.gyp:base',
             '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/ui.gyp:ui',
           ],
           'include_dirs': [

@@ -49,6 +49,7 @@
         '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',

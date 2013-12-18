@@ -27,6 +27,7 @@
             '<(angle_path)/src/build_angle.gyp:translator',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
           ],
           'sources': [
             # This list contains all .h and .cc in gpu except for test code.

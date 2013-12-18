@@ -13,6 +13,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [
         'BUILD_MEMORY_WATCHER',

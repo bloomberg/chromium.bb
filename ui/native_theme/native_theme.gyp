@@ -15,6 +15,7 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
         '../ui.gyp:ui',
       ],

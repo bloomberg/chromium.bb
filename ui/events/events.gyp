@@ -72,6 +72,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         'events_base',
       ],
       'defines': [
@@ -182,6 +183,7 @@
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         'dom4_keycode_converter',
         'events_base',
         'events',

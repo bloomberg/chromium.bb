@@ -18,6 +18,7 @@
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
         '../ui.gyp:ui',
       ],
@@ -174,6 +175,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
         'app_list',
       ],
       'sources': [

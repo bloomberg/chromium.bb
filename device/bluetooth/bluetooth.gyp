@@ -16,6 +16,7 @@
         '../../net/net.gyp:net',
         '../../third_party/libxml/libxml.gyp:libxml',
         '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/ui.gyp:ui',
         'bluetooth_strings.gyp:device_bluetooth_strings',
       ],

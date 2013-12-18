@@ -13,6 +13,7 @@
       ], # source
       'dependencies': [
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
       ],
     },

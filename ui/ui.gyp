@@ -25,6 +25,7 @@
         'base/strings/ui_strings.gyp:ui_strings',
         'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx',
+        'gfx/gfx.gyp:gfx_geometry',
         'resources/ui_resources.gyp:ui_resources',
       ],
       'defines': [

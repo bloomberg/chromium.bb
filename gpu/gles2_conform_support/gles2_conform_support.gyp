@@ -40,6 +40,7 @@
         '../../gpu/gpu.gyp:command_buffer_service',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/gl/gl.gyp:gl',
         '../../ui/ui.gyp:ui',
       ],

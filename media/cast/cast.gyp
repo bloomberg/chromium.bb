@@ -107,6 +107,7 @@
           'dependencies': [
             'cast_config',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
             '<(DEPTH)/net/net.gyp:net_test_support',
             '<(DEPTH)/media/cast/cast_sender.gyp:*',
             '<(DEPTH)/media/media.gyp:media',
@@ -128,6 +129,7 @@
           'dependencies': [
             'cast_config',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
             '<(DEPTH)/net/net.gyp:net_test_support',
             '<(DEPTH)/media/cast/cast_receiver.gyp:*',
             '<(DEPTH)/media/media.gyp:media',
