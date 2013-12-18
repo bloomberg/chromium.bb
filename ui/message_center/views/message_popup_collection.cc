@@ -23,6 +23,7 @@
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/views/message_view_context_menu_controller.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/background.h"
@@ -68,6 +69,7 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
       latest_toast_entered_(NULL),
       user_is_closing_toasts_by_clicking_(false),
       first_item_has_no_margin_(first_item_has_no_margin),
+      context_menu_controller_(new MessageViewContextMenuController(this)),
       weak_factory_(this) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer<MessagePopupCollection>);
@@ -116,13 +118,10 @@ void MessagePopupCollection::RemoveNotification(
   message_center_->RemoveNotification(notification_id, by_user);
 }
 
-void MessagePopupCollection::DisableNotificationsFromThisSource(
-    const NotifierId& notifier_id) {
-  message_center_->DisableNotificationsByNotifier(notifier_id);
-}
-
-void MessagePopupCollection::ShowNotifierSettingsBubble() {
-  tray_->ShowNotifierSettingsBubble();
+scoped_ptr<ui::MenuModel> MessagePopupCollection::CreateMenuModel(
+    const NotifierId& notifier_id,
+    const base::string16& display_source) {
+  return tray_->CreateNotificationMenuModel(notifier_id, display_source);
 }
 
 bool MessagePopupCollection::HasClickedListener(
@@ -194,6 +193,7 @@ void MessagePopupCollection::UpdateWidgets() {
                                  *(*iter),
                                  expanded,
                                  true); // Create top-level notification.
+    view->set_context_menu_controller(context_menu_controller_.get());
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
     int height_available = top_down ? work_area_.bottom() - base : base;
 
@@ -513,6 +513,7 @@ void MessagePopupCollection::OnNotificationUpdated(
                                  *(*iter),
                                  expanded,
                                  true); // Create top-level notification.
+    view->set_context_menu_controller(context_menu_controller_.get());
     (*toast_iter)->SetContents(view, a11y_feedback_for_updates);
     updated = true;
   }

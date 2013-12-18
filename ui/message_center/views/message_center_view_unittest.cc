@@ -98,9 +98,9 @@ class MessageCenterViewTest : public testing::Test,
   virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) OVERRIDE;
-  virtual void DisableNotificationsFromThisSource(
-      const NotifierId& notifier_id) OVERRIDE;
-  virtual void ShowNotifierSettingsBubble() OVERRIDE;
+  virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
+      const NotifierId& notifier_id,
+      const base::string16& display_source) OVERRIDE;
   virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) OVERRIDE;
@@ -191,15 +191,12 @@ void MessageCenterViewTest::RemoveNotification(
   NOTREACHED();
 }
 
-void MessageCenterViewTest::DisableNotificationsFromThisSource(
-    const NotifierId& notifier_id) {
+scoped_ptr<ui::MenuModel> MessageCenterViewTest::CreateMenuModel(
+    const NotifierId& notifier_id,
+    const base::string16& display_source) {
   // For this test, this method should not be invoked.
   NOTREACHED();
-}
-
-void MessageCenterViewTest::ShowNotifierSettingsBubble() {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
+  return scoped_ptr<ui::MenuModel>();
 }
 
 bool MessageCenterViewTest::HasClickedListener(

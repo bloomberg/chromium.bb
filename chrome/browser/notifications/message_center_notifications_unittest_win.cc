@@ -43,6 +43,7 @@ class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
   virtual void HidePopups() OVERRIDE {}
   virtual bool ShowMessageCenter() OVERRIDE { return true; }
   virtual bool ShowNotifierSettings() OVERRIDE { return true; }
+  virtual bool IsContextMenuEnabled() const OVERRIDE { return true; }
   virtual void HideMessageCenter() OVERRIDE {}
   virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE {
     return &tray_;

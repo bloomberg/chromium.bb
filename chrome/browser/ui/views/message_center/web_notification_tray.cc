@@ -191,6 +191,12 @@ bool WebNotificationTray::ShowNotifierSettings() {
   return true;
 }
 
+bool WebNotificationTray::IsContextMenuEnabled() const {
+  // It can always return true because the notifications are invisible if
+  // the context menu shouldn't be enabled, such as in the lock screen.
+  return true;
+}
+
 void WebNotificationTray::OnMessageCenterTrayChanged() {
   if (status_icon_) {
     bool quiet_mode_state = message_center()->IsQuietMode();

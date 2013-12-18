@@ -88,6 +88,8 @@
         'views/message_popup_collection.h',
         'views/message_view.cc',
         'views/message_view.h',
+        'views/message_view_context_menu_controller.cc',
+        'views/message_view_context_menu_controller.h',
         'views/notifier_settings_view.cc',
         'views/notifier_settings_view.h',
         'views/notification_button.cc',

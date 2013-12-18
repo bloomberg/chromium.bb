@@ -47,9 +47,6 @@ class GroupView : public MessageView, public MessageViewController {
   virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) OVERRIDE;
-  virtual void DisableNotificationsFromThisSource(
-      const NotifierId& notifier_id) OVERRIDE;
-  virtual void ShowNotifierSettingsBubble() OVERRIDE;
 
  private:
   MessageCenterController* controller_;  // Weak, controls lifetime of views.

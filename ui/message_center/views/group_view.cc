@@ -250,13 +250,4 @@ void GroupView::RemoveNotification(const std::string& notification_id,
   controller_->RemoveGroup(notifier_id_);
 }
 
-void GroupView::DisableNotificationsFromThisSource(
-    const NotifierId& notifier_id) {
-  controller_->DisableNotificationsFromThisSource(notifier_id);
-}
-
-void GroupView::ShowNotifierSettingsBubble() {
-  controller_->ShowNotifierSettingsBubble();
-}
-
 }  // namespace message_center

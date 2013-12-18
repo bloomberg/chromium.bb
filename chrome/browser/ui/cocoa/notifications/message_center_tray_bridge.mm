@@ -80,6 +80,11 @@ bool MessageCenterTrayBridge::ShowNotifierSettings() {
   return false;
 }
 
+bool MessageCenterTrayBridge::IsContextMenuEnabled() const {
+  // Cocoa message center doesn't support context menu yet.
+  return false;
+}
+
 message_center::MessageCenterTray*
 MessageCenterTrayBridge::GetMessageCenterTray() {
   return tray_.get();

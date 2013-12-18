@@ -28,6 +28,7 @@
 #include "ui/message_center/views/group_view.h"
 #include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/message_view_context_menu_controller.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/message_center/views/notifier_settings_view.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -606,7 +607,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
       source_height_(0),
       target_view_(NULL),
       target_height_(0),
-      is_closing_(false) {
+      is_closing_(false),
+      context_menu_controller_(new MessageViewContextMenuController(this)) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   set_background(views::Background::CreateSolidBackground(
@@ -1004,6 +1006,7 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
                                    expanded,
                                    false); // Not creating a top-level
                                            // notification.
+      view->set_context_menu_controller(context_menu_controller_.get());
       view->set_scroller(scroller_);
       message_list_view_->UpdateNotificationAt(view, index);
       notification_views_[id] = view;
@@ -1023,13 +1026,10 @@ void MessageCenterView::RemoveNotification(const std::string& notification_id,
   message_center_->RemoveNotification(notification_id, by_user);
 }
 
-void MessageCenterView::DisableNotificationsFromThisSource(
-    const NotifierId& notifier_id) {
-  message_center_->DisableNotificationsByNotifier(notifier_id);
-}
-
-void MessageCenterView::ShowNotifierSettingsBubble() {
-  tray_->ShowNotifierSettingsBubble();
+scoped_ptr<ui::MenuModel> MessageCenterView::CreateMenuModel(
+    const NotifierId& notifier_id,
+    const base::string16& display_source) {
+  return tray_->CreateNotificationMenuModel(notifier_id, display_source);
 }
 
 bool MessageCenterView::HasClickedListener(const std::string& notification_id) {
@@ -1134,6 +1134,7 @@ void MessageCenterView::AddGroupPlaceholder(
                                   last_notification,
                                   group_icon,
                                   group_size);
+  view->set_context_menu_controller(context_menu_controller_.get());
   group_views_.push_back(view);
   AddMessageViewAt(view, index);
 }
@@ -1151,6 +1152,7 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
                                expanded,
                                false);  // Not creating a top-level
                                         // notification.
+  view->set_context_menu_controller(context_menu_controller_.get());
   notification_views_[notification.id()] = view;
   AddMessageViewAt(view, index);
 }

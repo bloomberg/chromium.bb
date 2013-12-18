@@ -13,6 +13,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slide_out_view.h"
 
+namespace ui {
+class MenuModel;
+}
+
 namespace views {
 class ImageButton;
 class Painter;
@@ -28,12 +32,7 @@ class MessageViewController {
   virtual void ClickOnNotification(const std::string& notification_id) = 0;
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) = 0;
-  virtual void DisableNotificationsFromThisSource(
-      const NotifierId& notifier_id) = 0;
-  virtual void ShowNotifierSettingsBubble() = 0;
 };
-
-class MessageViewContextMenuController;
 
 // Individual notifications constants.
 const int kPaddingBetweenItems = 10;
@@ -83,6 +82,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() { return notification_id_; }
   NotifierId notifier_id() { return notifier_id_; }
+  const base::string16& display_source() const { return display_source_; }
 
  protected:
   // Overridden from views::SlideOutView:
@@ -95,12 +95,13 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   MessageViewController* controller_;
   std::string notification_id_;
   NotifierId notifier_id_;
-  scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
   views::View* background_view_;  // Owned by views hierarchy.
   scoped_ptr<views::ImageButton> close_button_;
   views::ScrollView* scroller_;
 
   string16 accessible_name_;
+
+  base::string16 display_source_;
 
   scoped_ptr<views::Painter> focus_painter_;
 

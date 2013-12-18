@@ -17,13 +17,11 @@
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/background.h"
-#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/painter.h"
 #include "ui/views/shadow_border.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -33,136 +31,9 @@ const int kCloseIconRightPadding = 5;
 const int kShadowOffset = 1;
 const int kShadowBlur = 4;
 
-// Menu constants
-const int kTogglePermissionCommand = 0;
-const int kShowSettingsCommand = 1;
-
-// A dropdown menu for notifications.
-class MenuModel : public ui::SimpleMenuModel,
-                  public ui::SimpleMenuModel::Delegate {
- public:
-  MenuModel(message_center::MessageViewController* controller,
-            message_center::NotifierId notifier_id,
-            const string16& display_source);
-  virtual ~MenuModel();
-
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-
- private:
-  message_center::MessageViewController* controller_;
-  message_center::NotifierId notifier_id_;
-  DISALLOW_COPY_AND_ASSIGN(MenuModel);
-};
-
-MenuModel::MenuModel(message_center::MessageViewController* controller,
-                     message_center::NotifierId notifier_id,
-                     const string16& display_source)
-    : ui::SimpleMenuModel(this),
-      controller_(controller),
-      notifier_id_(notifier_id) {
-  // Add 'disable notifications' menu item.
-  if (!display_source.empty()) {
-    AddItem(kTogglePermissionCommand,
-            l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_NOTIFIER_DISABLE,
-                                       display_source));
-  }
-  // Add settings menu item.
-  AddItem(kShowSettingsCommand,
-          l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
-}
-
-MenuModel::~MenuModel() {
-}
-
-bool MenuModel::IsItemForCommandIdDynamic(int command_id) const {
-  return false;
-}
-
-bool MenuModel::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool MenuModel::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool MenuModel::GetAcceleratorForCommandId(int command_id,
-                                           ui::Accelerator* accelerator) {
-  return false;
-}
-
-void MenuModel::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    case kTogglePermissionCommand:
-      controller_->DisableNotificationsFromThisSource(notifier_id_);
-      break;
-    case kShowSettingsCommand:
-        controller_->ShowNotifierSettingsBubble();
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 }  // namespace
 
 namespace message_center {
-
-class MessageViewContextMenuController : public views::ContextMenuController {
- public:
-  MessageViewContextMenuController(MessageViewController* controller,
-                                   const NotifierId& notifier_id,
-                                   const string16& display_source);
-  virtual ~MessageViewContextMenuController();
-
- protected:
-  // Overridden from views::ContextMenuController:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
-
-  MessageViewController* controller_;  // Weak, owns us.
-  NotifierId notifier_id_;
-  string16 display_source_;
-};
-
-MessageViewContextMenuController::MessageViewContextMenuController(
-    MessageViewController* controller,
-    const NotifierId& notifier_id,
-    const string16& display_source)
-    : controller_(controller),
-      notifier_id_(notifier_id),
-      display_source_(display_source) {
-}
-
-MessageViewContextMenuController::~MessageViewContextMenuController() {
-}
-
-void MessageViewContextMenuController::ShowContextMenuForView(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  MenuModel menu_model(controller_, notifier_id_, display_source_);
-  if (menu_model.GetItemCount() == 0)
-    return;
-
-  views::MenuRunner menu_runner(&menu_model);
-
-  ignore_result(menu_runner.RunMenuAt(
-      source->GetWidget()->GetTopLevelWidget(),
-      NULL,
-      gfx::Rect(point, gfx::Size()),
-      views::MenuItemView::TOPRIGHT,
-      source_type,
-      views::MenuRunner::HAS_MNEMONICS));
-}
 
 MessageView::MessageView(MessageViewController* controller,
                          const std::string& notification_id,
@@ -171,14 +42,10 @@ MessageView::MessageView(MessageViewController* controller,
     : controller_(controller),
       notification_id_(notification_id),
       notifier_id_(notifier_id),
-      context_menu_controller_(
-        new MessageViewContextMenuController(controller,
-                                             notifier_id,
-                                             display_source)),
       background_view_(NULL),
-      scroller_(NULL) {
+      scroller_(NULL),
+      display_source_(display_source) {
   SetFocusable(true);
-  set_context_menu_controller(context_menu_controller_.get());
 
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();

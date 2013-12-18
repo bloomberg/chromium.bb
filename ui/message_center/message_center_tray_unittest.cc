@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
 
@@ -16,7 +17,8 @@ class MockDelegate : public MessageCenterTrayDelegate {
  public:
   MockDelegate()
       : show_popups_success_(true),
-        show_message_center_success_(true) {}
+        show_message_center_success_(true),
+        enable_context_menu_(true) {}
   virtual ~MockDelegate() {}
   virtual void OnMessageCenterTrayChanged() OVERRIDE {}
   virtual bool ShowPopups() OVERRIDE {
@@ -28,7 +30,10 @@ class MockDelegate : public MessageCenterTrayDelegate {
   }
   virtual void HideMessageCenter() OVERRIDE {}
   virtual bool ShowNotifierSettings() OVERRIDE {
-    return false;
+    return true;
+  }
+  virtual bool IsContextMenuEnabled() const OVERRIDE {
+    return enable_context_menu_;
   }
 
   virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE {
@@ -37,6 +42,7 @@ class MockDelegate : public MessageCenterTrayDelegate {
 
   bool show_popups_success_;
   bool show_message_center_success_;
+  bool enable_context_menu_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -238,6 +244,66 @@ TEST_F(MessageCenterTrayTest, ShowBubbleFails) {
 
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
+}
+
+TEST_F(MessageCenterTrayTest, ContextMenuTest) {
+  const std::string id1 = "id1";
+  const std::string id2 = "id2";
+  const std::string id3 = "id3";
+  AddNotification(id1);
+
+  base::string16 display_source = ASCIIToUTF16("www.test.org");
+  NotifierId notifier_id = DummyNotifierId();
+
+  NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
+  scoped_ptr<Notification> notification(
+      new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                       id2,
+                       ASCIIToUTF16("Test Web Notification"),
+                       ASCIIToUTF16("Notification message body."),
+                       gfx::Image(),
+                       base::string16() /* empty display source */,
+                       notifier_id2,
+                       message_center::RichNotificationData(),
+                       NULL /* delegate */));
+  message_center_->AddNotification(notification.Pass());
+
+  AddNotification(id3);
+
+  scoped_ptr<ui::MenuModel> model(
+      message_center_tray_->CreateNotificationMenuModel(
+          notifier_id, display_source));
+  EXPECT_EQ(2, model->GetItemCount());
+  const int second_command = model->GetCommandIdAt(1);
+
+  // The second item is to open the settings.
+  EXPECT_TRUE(model->IsEnabledAt(0));
+  EXPECT_TRUE(model->IsEnabledAt(1));
+  model->ActivatedAt(1);
+  EXPECT_TRUE(message_center_tray_->message_center_visible());
+
+  message_center_tray_->HideMessageCenterBubble();
+
+  // The first item is to disable notifications from the notifier id. It also
+  // removes all notifications from the same notifier, i.e. id1 and id3.
+  model->ActivatedAt(0);
+  NotificationList::Notifications notifications =
+      message_center_->GetVisibleNotifications();
+  EXPECT_EQ(1u, notifications.size());
+  EXPECT_EQ(id2, (*notifications.begin())->id());
+
+  // Disables the context menu.
+  delegate_->enable_context_menu_ = false;
+
+  // id2 doesn't have the display source, so it don't have the menu item for
+  // disabling notifications.
+  model = message_center_tray_->CreateNotificationMenuModel(
+      notifier_id2, base::string16());
+  EXPECT_EQ(1, model->GetItemCount());
+  EXPECT_EQ(second_command, model->GetCommandIdAt(0));
+
+  // The command itself is disabled because delegate disables context menu.
+  EXPECT_FALSE(model->IsEnabledAt(0));
 }
 
 }  // namespace message_center

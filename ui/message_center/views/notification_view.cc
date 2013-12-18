@@ -622,15 +622,6 @@ void NotificationView::RemoveNotification(const std::string& notification_id,
   controller_->RemoveNotification(notification_id, by_user);
 }
 
-void NotificationView::DisableNotificationsFromThisSource(
-    const NotifierId& notifier_id) {
-  controller_->DisableNotificationsFromThisSource(notifier_id);
-}
-
-void NotificationView::ShowNotifierSettingsBubble() {
-  controller_->ShowNotifierSettingsBubble();
-}
-
 bool NotificationView::IsExpansionNeeded(int width) {
   return (!is_expanded_ &&
               (image_view_ ||

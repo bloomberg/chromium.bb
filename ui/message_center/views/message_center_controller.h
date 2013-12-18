@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
@@ -20,9 +23,9 @@ class MessageCenterController {
   virtual void ClickOnNotification(const std::string& notification_id) = 0;
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) = 0;
-  virtual void DisableNotificationsFromThisSource(
-      const NotifierId& notifier_id) = 0;
-  virtual void ShowNotifierSettingsBubble() = 0;
+  virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
+      const NotifierId& notifier_id,
+      const base::string16& display_source) = 0;
   virtual bool HasClickedListener(const std::string& notification_id) = 0;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;

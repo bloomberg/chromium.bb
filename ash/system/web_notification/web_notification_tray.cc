@@ -527,6 +527,12 @@ bool WebNotificationTray::ShowNotifierSettings() {
   return ShowMessageCenterInternal(true /* show_settings */);
 }
 
+bool WebNotificationTray::IsContextMenuEnabled() const {
+  user::LoginStatus login_status = status_area_widget()->login_status();
+  return login_status != user::LOGGED_IN_NONE
+      && login_status != user::LOGGED_IN_LOCKED;
+}
+
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
   return message_center_tray_.get();
 }

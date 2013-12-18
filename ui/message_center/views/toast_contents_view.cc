@@ -300,15 +300,13 @@ void ToastContentsView::RemoveNotification(
     collection_->RemoveNotification(notification_id, by_user);
 }
 
-void ToastContentsView::DisableNotificationsFromThisSource(
-    const NotifierId& notifier_id) {
-  if (collection_)
-    collection_->DisableNotificationsFromThisSource(notifier_id);
-}
-
-void ToastContentsView::ShowNotifierSettingsBubble() {
-  if (collection_)
-    collection_->ShowNotifierSettingsBubble();
+scoped_ptr<ui::MenuModel> ToastContentsView::CreateMenuModel(
+      const NotifierId& notifier_id,
+      const base::string16& display_source) {
+  // Should not reach, the context menu should be handled in
+  // MessagePopupCollection.
+  NOTREACHED();
+  return scoped_ptr<ui::MenuModel>();
 }
 
 bool ToastContentsView::HasClickedListener(

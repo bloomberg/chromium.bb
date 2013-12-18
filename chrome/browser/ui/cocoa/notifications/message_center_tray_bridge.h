@@ -39,6 +39,7 @@ class MessageCenterTrayBridge :
   virtual bool ShowMessageCenter() OVERRIDE;
   virtual void HideMessageCenter() OVERRIDE;
   virtual bool ShowNotifierSettings() OVERRIDE;
+  virtual bool IsContextMenuEnabled() const OVERRIDE;
   virtual message_center::MessageCenterTray* GetMessageCenterTray() OVERRIDE;
 
   message_center::MessageCenter* message_center() { return message_center_; }

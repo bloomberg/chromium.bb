@@ -60,9 +60,6 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) OVERRIDE;
-  virtual void DisableNotificationsFromThisSource(
-      const NotifierId& notifier_id) OVERRIDE;
-  virtual void ShowNotifierSettingsBubble() OVERRIDE;
 
   void set_controller(MessageCenterController* controller) {
     controller_ = controller;

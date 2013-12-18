@@ -55,6 +55,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   virtual void HideMessageCenter() OVERRIDE;
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
   virtual bool ShowNotifierSettings() OVERRIDE;
+  virtual bool IsContextMenuEnabled() const OVERRIDE;
 
   // StatusIconObserver implementation.
   virtual void OnStatusIconClicked() OVERRIDE;
