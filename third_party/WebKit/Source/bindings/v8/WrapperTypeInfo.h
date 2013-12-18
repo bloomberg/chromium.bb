@@ -66,7 +66,7 @@ namespace WebCore {
 
     enum WrapperTypePrototype {
         WrapperTypeObjectPrototype,
-        WrapperTypeErrorPrototype
+        WrapperTypeExceptionPrototype
     };
 
     inline void setObjectGroup(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)

@@ -4200,7 +4200,7 @@ sub GenerateImplementation
     }
 
     my $parentClassInfo = $parentClass ? "&${parentClass}::wrapperTypeInfo" : "0";
-    my $WrapperTypePrototype = $interface->isException ? "WrapperTypeErrorPrototype" : "WrapperTypeObjectPrototype";
+    my $WrapperTypePrototype = $interface->isException ? "WrapperTypeExceptionPrototype" : "WrapperTypeObjectPrototype";
 
     if (!IsSVGTypeNeedingTearOff($interfaceName)) {
         my $code = <<END;
