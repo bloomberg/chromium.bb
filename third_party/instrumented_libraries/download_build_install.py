@@ -105,7 +105,8 @@ def download_build_install(parsed_arguments):
   # differently escaped. Instead of having problems with that it just
   # uses XORIGIN to build library and after that replaces it to $ORIGIN
   # directly in .so file.
-  environment['LDFLAGS'] = sanitizer_params['linker_flags']
+  environment['LDFLAGS'] = '%s %s' % (sanitizer_params['linker_flags'],
+      parsed_arguments.custom_linker_flags)
 
   library_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
       parsed_arguments.library)
@@ -160,7 +161,8 @@ def main():
       help='Relative path to the directory with chrome binaries')
   argument_parser.add_argument('-m', '--intermediate-directory', default='.',
       help='Relative path to the directory for temporary build files')
-  argument_parser.add_argument('-c', '--custom-configure-flags', default='')
+  argument_parser.add_argument('--custom-configure-flags', default='')
+  argument_parser.add_argument('--custom-linker-flags', default='')
   argument_parser.add_argument('-s', '--sanitizer-type', required=True,
       choices=SUPPORTED_SANITIZERS.keys()) 
   argument_parser.add_argument('-v', '--verbose', action='store_true')

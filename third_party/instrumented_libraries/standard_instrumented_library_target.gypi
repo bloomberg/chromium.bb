@@ -23,6 +23,7 @@
         '--intermediate-directory=<(INTERMEDIATE_DIR)',
         '--sanitizer-type=<(_sanitizer_type)',
         '--custom-configure-flags=<(_custom_configure_flags)',
+        '--custom-linker-flags=<(_custom_linker_flags)',
         '<(_verbose_libraries_build_flag)',
         '--c-compiler=<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang',
         '--cxx-compiler=<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/bin/clang++',

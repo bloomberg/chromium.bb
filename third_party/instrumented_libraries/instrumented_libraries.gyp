@@ -5,6 +5,7 @@
 {
   # Default value for all libraries.
   'custom_configure_flags': '',
+  'custom_linker_flags': '',
   
   'variables': {
     'verbose_libraries_build%': 0,
