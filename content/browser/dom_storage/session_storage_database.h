@@ -74,6 +74,8 @@ class CONTENT_EXPORT SessionStorageDatabase :
 
  private:
   friend class base::RefCountedThreadSafe<SessionStorageDatabase>;
+  class DBOperation;
+  friend class SessionStorageDatabase::DBOperation;
   friend class SessionStorageDatabaseTest;
 
   ~SessionStorageDatabase();
@@ -189,13 +191,20 @@ class CONTENT_EXPORT SessionStorageDatabase :
   scoped_ptr<leveldb::DB> db_;
   base::FilePath file_path_;
 
-  // For protecting the database opening code.
+  // For protecting the database opening code. Also guards the variables below.
   base::Lock db_lock_;
 
   // True if a database error has occurred (e.g., cannot read data).
   bool db_error_;
   // True if the database is in an inconsistent state.
   bool is_inconsistent_;
+  // True if the database is in a failed or inconsistent state, and we have
+  // already deleted it (as an attempt to recover later).
+  bool invalid_db_deleted_;
+
+  // The number of database operations in progress. We need this so that we can
+  // delete an inconsistent database at the right moment.
+  int operation_count_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageDatabase);
 };

@@ -51,10 +51,53 @@ enum SessionStorageUMA {
 
 namespace content {
 
+// This class keeps track of ongoing operations across different threads. When
+// DB inconsistency is detected, we need to 1) make sure no new operations start
+// 2) wait until all current operations finish, and let the last one of them
+// close the DB and delete the data. The DB will remain empty for the rest of
+// the run, and will be recreated during the next run. We cannot hope to recover
+// during this run, since the upper layer will have a different idea about what
+// should be in the database.
+class SessionStorageDatabase::DBOperation {
+ public:
+  DBOperation(SessionStorageDatabase* session_storage_database)
+      : session_storage_database_(session_storage_database) {
+    base::AutoLock auto_lock(session_storage_database_->db_lock_);
+    ++session_storage_database_->operation_count_;
+  }
+
+  ~DBOperation() {
+    base::AutoLock auto_lock(session_storage_database_->db_lock_);
+    --session_storage_database_->operation_count_;
+    if ((session_storage_database_->is_inconsistent_ ||
+         session_storage_database_->db_error_) &&
+        session_storage_database_->operation_count_ == 0 &&
+        !session_storage_database_->invalid_db_deleted_) {
+      // No other operations are ongoing and the data is bad -> delete it now.
+      session_storage_database_->db_.reset();
+#if defined(OS_WIN)
+      leveldb::DestroyDB(
+          WideToUTF8(session_storage_database_->file_path_.value()),
+          leveldb::Options());
+#else
+      leveldb::DestroyDB(session_storage_database_->file_path_.value(),
+                         leveldb::Options());
+#endif
+      session_storage_database_->invalid_db_deleted_ = true;
+    }
+  }
+
+ private:
+  SessionStorageDatabase* session_storage_database_;
+};
+
+
 SessionStorageDatabase::SessionStorageDatabase(const base::FilePath& file_path)
     : file_path_(file_path),
       db_error_(false),
-      is_inconsistent_(false) {
+      is_inconsistent_(false),
+      invalid_db_deleted_(false),
+      operation_count_(0) {
 }
 
 SessionStorageDatabase::~SessionStorageDatabase() {
@@ -67,6 +110,7 @@ void SessionStorageDatabase::ReadAreaValues(const std::string& namespace_id,
   // nothing to be added to the result.
   if (!LazyOpen(false))
     return;
+  DBOperation operation(this);
 
   // While ReadAreaValues is in progress, another thread can call
   // CommitAreaChanges. CommitAreaChanges might update map ref count key while
@@ -92,6 +136,7 @@ bool SessionStorageDatabase::CommitAreaChanges(
   // in the database, so that it can be later shallow-copied succssfully.
   if (!LazyOpen(true))
     return false;
+  DBOperation operation(this);
 
   leveldb::WriteBatch batch;
   // Ensure that the keys "namespace-" "namespace-N" (see the schema above)
@@ -153,6 +198,7 @@ bool SessionStorageDatabase::CloneNamespace(
 
   if (!LazyOpen(true))
     return false;
+  DBOperation operation(this);
 
   leveldb::WriteBatch batch;
   const bool kOkIfExists = false;
@@ -181,6 +227,7 @@ bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id,
     // No need to create the database if it doesn't exist.
     return true;
   }
+  DBOperation operation(this);
   leveldb::WriteBatch batch;
   if (!DeleteAreaHelper(namespace_id, origin.spec(), &batch))
     return false;
@@ -193,6 +240,7 @@ bool SessionStorageDatabase::DeleteNamespace(const std::string& namespace_id) {
     // No need to create the database if it doesn't exist.
     return true;
   }
+  DBOperation operation(this);
   // Itereate through the areas in the namespace.
   leveldb::WriteBatch batch;
   std::map<std::string, std::string> areas;
@@ -213,6 +261,7 @@ bool SessionStorageDatabase::ReadNamespacesAndOrigins(
     std::map<std::string, std::vector<GURL> >* namespaces_and_origins) {
   if (!LazyOpen(true))
     return false;
+  DBOperation operation(this);
 
   // While ReadNamespacesAndOrigins is in progress, another thread can call
   // CommitAreaChanges. To protect the reading operation, create a snapshot and
@@ -347,12 +396,11 @@ bool SessionStorageDatabase::ConsistencyCheck(bool ok) {
   if (ok)
     return true;
   base::AutoLock auto_lock(db_lock_);
-  DCHECK(false);
-  is_inconsistent_ = true;
   // We cannot recover the database during this run, e.g., the upper layer can
   // have a different understanding of the database state (shallow and deep
-  // copies).
-  // TODO(marja): Error handling.
+  // copies). Make further operations fail. The next operation that finishes
+  // will delete the data, and next run will recerate the database.
+  is_inconsistent_ = true;
   return false;
 }
 
@@ -360,8 +408,9 @@ bool SessionStorageDatabase::DatabaseErrorCheck(bool ok) {
   if (ok)
     return true;
   base::AutoLock auto_lock(db_lock_);
+  // Make further operations fail. The next operation that finishes
+  // will delete the data, and next run will recerate the database.
   db_error_ = true;
-  // TODO(marja): Error handling.
   return false;
 }
 

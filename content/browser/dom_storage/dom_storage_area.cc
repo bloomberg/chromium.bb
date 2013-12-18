@@ -361,9 +361,10 @@ void DOMStorageArea::OnCommitTimer() {
 void DOMStorageArea::CommitChanges(const CommitBatch* commit_batch) {
   // This method executes on the commit sequence.
   DCHECK(task_runner_->IsRunningOnCommitSequence());
-  bool success = backing_->CommitChanges(commit_batch->clear_all_first,
+  backing_->CommitChanges(commit_batch->clear_all_first,
                                          commit_batch->changed_values);
-  DCHECK(success);  // TODO(michaeln): what if it fails?
+  // TODO(michaeln): what if CommitChanges returns false (e.g., we're trying to
+  // commit to a DB which is in an inconsistent state?)
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DOMStorageArea::OnCommitComplete, this));
