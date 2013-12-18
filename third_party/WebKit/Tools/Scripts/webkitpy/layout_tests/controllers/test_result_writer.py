@@ -75,10 +75,17 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
                     writer.write_image_diff_files(diff_image)
                 else:
                     _log.warn('ref test mismatch did not produce an image diff.')
-            writer.write_reftest(failure.reference_filename)
+            writer.write_image_files(driver_output.image, expected_image=None)
+            if filesystem.exists(failure.reference_filename):
+                writer.write_reftest(failure.reference_filename)
+            else:
+                _log.warn("reference %s was not found" % failure.reference_filename)
         elif isinstance(failure, test_failures.FailureReftestMismatchDidNotOccur):
             writer.write_image_files(driver_output.image, expected_image=None)
-            writer.write_reftest(failure.reference_filename)
+            if filesystem.exists(failure.reference_filename):
+                writer.write_reftest(failure.reference_filename)
+            else:
+                _log.warn("reference %s was not found" % failure.reference_filename)
         else:
             assert isinstance(failure, (test_failures.FailureTimeout, test_failures.FailureReftestNoImagesGenerated))
 
@@ -126,15 +133,10 @@ class TestResultWriter(object):
         output_filename = fs.join(self._root_output_dir, self._test_name)
         return fs.splitext(output_filename)[0] + modifier
 
-    def _write_binary_file(self, path, contents):
+    def _write_file(self, path, contents):
         if contents is not None:
             self._make_output_directory()
             self._filesystem.write_binary_file(path, contents)
-
-    def _write_text_file(self, path, contents):
-        if contents is not None:
-            self._make_output_directory()
-            self._filesystem.write_text_file(path, contents)
 
     def _output_testname(self, modifier):
         fs = self._filesystem
@@ -156,16 +158,16 @@ class TestResultWriter(object):
         actual_filename = self.output_filename(self.FILENAME_SUFFIX_ACTUAL + file_type)
         expected_filename = self.output_filename(self.FILENAME_SUFFIX_EXPECTED + file_type)
 
-        self._write_binary_file(actual_filename, output)
-        self._write_binary_file(expected_filename, expected)
+        self._write_file(actual_filename, output)
+        self._write_file(expected_filename, expected)
 
     def write_stderr(self, error):
         filename = self.output_filename(self.FILENAME_SUFFIX_STDERR + ".txt")
-        self._write_binary_file(filename, error)
+        self._write_file(filename, error)
 
     def write_crash_log(self, crash_log):
         filename = self.output_filename(self.FILENAME_SUFFIX_CRASH_LOG + ".txt")
-        self._write_text_file(filename, crash_log)
+        self._write_file(filename, crash_log)
 
     def copy_sample_file(self, sample_file):
         filename = self.output_filename(self.FILENAME_SUFFIX_SAMPLE + ".txt")
@@ -187,19 +189,19 @@ class TestResultWriter(object):
         # in conflicting encodings.
         diff = self._port.diff_text(expected_text, actual_text, expected_filename, actual_filename)
         diff_filename = self.output_filename(self.FILENAME_SUFFIX_DIFF + file_type)
-        self._write_binary_file(diff_filename, diff)
+        self._write_file(diff_filename, diff)
 
         # Shell out to wdiff to get colored inline diffs.
         if self._port.wdiff_available():
             wdiff = self._port.wdiff_text(expected_filename, actual_filename)
             wdiff_filename = self.output_filename(self.FILENAME_SUFFIX_WDIFF)
-            self._write_binary_file(wdiff_filename, wdiff)
+            self._write_file(wdiff_filename, wdiff)
 
         # Use WebKit's PrettyPatch.rb to get an HTML diff.
         if self._port.pretty_patch_available():
             pretty_patch = self._port.pretty_patch_text(diff_filename)
             pretty_patch_filename = self.output_filename(self.FILENAME_SUFFIX_PRETTY_PATCH)
-            self._write_binary_file(pretty_patch_filename, pretty_patch)
+            self._write_file(pretty_patch_filename, pretty_patch)
 
     def write_audio_files(self, actual_audio, expected_audio):
         self.write_output_files('.wav', actual_audio, expected_audio)
@@ -209,7 +211,7 @@ class TestResultWriter(object):
 
     def write_image_diff_files(self, image_diff):
         diff_filename = self.output_filename(self.FILENAME_SUFFIX_IMAGE_DIFF)
-        self._write_binary_file(diff_filename, image_diff)
+        self._write_file(diff_filename, image_diff)
 
         diffs_html_filename = self.output_filename(self.FILENAME_SUFFIX_IMAGE_DIFFS_HTML)
         # FIXME: old-run-webkit-tests shows the diff percentage as the text contents of the "diff" link.
@@ -265,10 +267,10 @@ Difference between images: <a href="%(diff_filename)s">diff</a><br>
             'diff_filename': self._output_testname(self.FILENAME_SUFFIX_IMAGE_DIFF),
             'prefix': self._output_testname(''),
         }
-        self._filesystem.write_text_file(diffs_html_filename, html)
+        self._write_file(diffs_html_filename, html)
 
     def write_reftest(self, src_filepath):
         fs = self._filesystem
         dst_dir = fs.dirname(fs.join(self._root_output_dir, self._test_name))
         dst_filepath = fs.join(dst_dir, fs.basename(src_filepath))
-        self._write_text_file(dst_filepath, fs.read_text_file(src_filepath))
+        self._write_file(dst_filepath, fs.read_binary_file(src_filepath))
