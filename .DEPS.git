@@ -65,10 +65,6 @@ deps = {
         Var('git_url') + '/external/leveldb.git@4935bf087b28aa308c0a820720b85ef695e236ae',
     'src/third_party/libaddressinput/src':
         Var('git_url') + '/external/libaddressinput.git@3f7d76be9f572d8fdf512f4e2085109bc32a6128',
-    'src/third_party/libc++/trunk':
-        'https://llvm.googlesource.com/libcxx.git@8f48c23568a122de6088455700e9d197b79bd8f8',
-    'src/third_party/libc++abi/trunk':
-        'https://llvm.googlesource.com/libcxxabi.git@753a30dd68ae008948d48f16bc942d5963fe65a1',
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source/talk':
