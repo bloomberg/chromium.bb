@@ -1,0 +1,82 @@
+{%- macro setters(struct) %}
+{%    for packed_field in struct.packed.packed_fields %}
+{%-     set type = packed_field.field.kind|cpp_type %}
+{%-     set name = packed_field.field.name %}
+{%-     if packed_field.field.kind|is_object_kind %}
+  void set_{{name}}({{type}} {{name}}) { {{name}}_.ptr = {{name}}; }
+{%-     else %}
+  void set_{{name}}({{type}} {{name}}) { {{name}}_ = {{name}}; }
+{%-     endif %}
+{%-   endfor %}
+{%- endmacro %}
+
+{%- macro getters(struct) %}
+{%    for packed_field in struct.packed.packed_fields %}
+{%-     set type = packed_field.field.kind|cpp_type %}
+{%-     set name = packed_field.field.name %}
+{%-     if packed_field.field.kind|is_object_kind %}
+  const {{type}} {{name}}() const { return {{name}}_.ptr; }
+{%-     elif packed_field.field.kind|is_handle_kind %}
+  {{type}}* {{name}}() const { return &{{name}}_; }
+{%-     else %}
+  {{type}} {{name}}() const { return {{name}}_; }
+{%-     endif %}
+{%-   endfor %}
+{%- endmacro %}
+
+{%- macro field_line(field) %}
+{%-   set type = field.kind|cpp_field_type %}
+{%-   set name = field.name -%}
+{%-   if field.kind.spec == 'b' -%}
+  uint8_t {{name}}_ : 1;
+{%-   elif field.kind|is_handle_kind -%}
+  mutable {{type}} {{name}}_;
+{%-   else -%}
+  {{type}} {{name}}_;
+{%-   endif %}
+{%- endmacro %}
+
+{%- macro fields(struct) %}
+{%-   set pad_count = 0 %}
+{%-   for packed_field in struct.packed.packed_fields %}
+  {{field_line(packed_field.field)}}
+{%-     if not loop.last %}
+{%-       set next_pf = struct.packed.packed_fields[loop.index0 + 1] %}
+{%-       set pad = next_pf.offset - (packed_field.offset + packed_field.size) %}
+{%-       if pad > 0 %}
+  uint8_t _pad{{pad_count}}_[{{pad}}];
+{%-         set pad_count = pad_count + 1 %}
+{%-       endif %}
+{%-     endif %}
+{%-   endfor -%}
+
+{%-   set num_fields = struct.packed.packed_fields|length %}
+{%-   if num_fields > 0 %}
+{%-     set last_field = struct.packed.packed_fields[num_fields - 1] %}
+{%-     set offset = last_field.offset + last_field.size %}
+{%-     set pad = offset|get_pad(8) -%}
+{%-     if pad > 0 %}
+  uint8_t _pad{{pad_count}}_[{{pad}}];
+{%-     endif %}
+{%-   endif %}
+{%- endmacro %}
+
+{%- macro encodes(struct, param_name) -%}
+{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
+Encode(&{{param_name}}->{{pf.field.name}}_, handles);
+{%    endfor %}
+{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
+EncodeHandle(&{{param_name}}->{{pf.field.name}}_, handles);
+{%    endfor %}
+{%- endmacro -%}
+
+{%- macro decodes(struct, param_name) -%}
+{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
+if (!Decode(&{{param_name}}->{{pf.field.name}}_, message))
+  return false;
+{%    endfor %}
+{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
+if (!DecodeHandle(&{{param_name}}->{{pf.field.name}}_, &message->handles))
+  return false;
+{%    endfor %}
+{%- endmacro -%}

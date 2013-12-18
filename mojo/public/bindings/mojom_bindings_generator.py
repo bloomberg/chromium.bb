@@ -14,6 +14,7 @@ from parse import mojo_translate
 from generators import mojom_data
 from generators import mojom_js_generator
 from generators import mojom_cpp_generator
+from generators import mojom_jinja_generator
 
 
 def Main():
@@ -44,6 +45,9 @@ def Main():
     js = mojom_js_generator.JSGenerator(
         module, options.include_dir, options.output_dir)
     js.GenerateFiles()
+    jinja = mojom_jinja_generator.JinjaGenerator(
+        module, options.include_dir, options.output_dir)
+    jinja.GenerateFiles()
 
 
 if __name__ == '__main__':

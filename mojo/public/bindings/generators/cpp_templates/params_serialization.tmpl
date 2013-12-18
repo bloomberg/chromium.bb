@@ -1,0 +1,25 @@
+{%- import "struct_macros.tmpl" as struct_macros %}
+{%- set class_name = "%s::internal::%s_Data"|format(namespace, struct.name) %}
+{%- set param_name = "params" %}
+template <>
+class ObjectTraits<{{class_name}}> {
+ public:
+  static void CloseHandles({{class_name}}* {{param_name}}) {
+{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
+    mojo::internal::CloseHandles({{param_name}}->{{pf.field.name}}_.ptr);
+{%- endfor %}
+  }
+
+  static void EncodePointersAndHandles(
+      {{class_name}}* {{param_name}},
+      std::vector<Handle>* handles) {
+    {{ struct_macros.encodes(struct, param_name)|indent(4) }}
+  }
+
+  static bool DecodePointersAndHandles(
+      {{class_name}}* {{param_name}},
+      Message* message) {
+    {{ struct_macros.decodes(struct, param_name)|indent(4) }}
+    return true;
+  }
+};

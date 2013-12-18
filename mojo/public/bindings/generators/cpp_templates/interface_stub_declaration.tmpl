@@ -1,0 +1,4 @@
+class {{interface.name}}Stub : public {{interface.name}}, public mojo::MessageReceiver {
+ public:
+  virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE;
+};

@@ -1,0 +1,16 @@
+class {{interface.name}}Proxy : public {{interface.name}} {
+ public:
+  explicit {{interface.name}}Proxy(mojo::MessageReceiver* receiver);
+
+{%- for method in interface.methods %}
+  virtual void {{method.name}}(
+{%-   for param in method.parameters -%}
+    {{param.kind|cpp_const_wrapper_type}} {{param.name}}
+{%-     if not loop.last %}, {% endif -%}
+{%-   endfor -%}
+  ) MOJO_OVERRIDE;
+{%- endfor %}
+
+ private:
+  mojo::MessageReceiver* receiver_;
+};

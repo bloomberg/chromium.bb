@@ -1,0 +1,45 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{%- set header_guard = "MOJO_GENERATED_BINDINGS_%s_%s_INTERNAL_H_"|
+        format(module_name|upper, module_name|upper) %}
+
+#ifndef {{header_guard}}
+#define {{header_guard}}
+
+#include "mojo/public/bindings/lib/bindings_serialization.h"
+
+namespace {{namespace}} {
+
+{#--- Wrapper forward declarations #}
+{%  for struct in structs %}
+class {{struct.name}};
+{%- endfor %}
+
+namespace internal {
+
+#pragma pack(push, 1)
+
+{#--- Class declarations #}
+{%  for struct in structs %}
+{%    include "struct_declaration.tmpl" -%}
+{%- endfor %}
+
+#pragma pack(pop)
+
+}  // namespace internal
+}  // namespace {{namespace}}
+
+namespace mojo {
+namespace internal {
+
+{#--- Serialization traits #}
+{%  for struct in structs %}
+{%    include "struct_serialization_traits.tmpl" -%}
+{%- endfor %}
+
+}  // namespace internal
+}  // namespace mojo
+
+#endif  // {{header_guard}}

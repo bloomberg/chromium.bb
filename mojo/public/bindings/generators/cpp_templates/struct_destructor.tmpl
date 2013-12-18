@@ -1,0 +1,11 @@
+{%- set class_name = struct.name ~ "_Data" %}
+{%- if struct|is_struct_with_handles %}
+static void {{class_name}}_Destructor(void* address) {
+  {{class_name}}* data = static_cast<{{class_name}}*>(address);
+{%-   for pf in struct.packed.packed_fields %}
+{%-     if pf.field.kind|is_handle_kind %}
+  (void) mojo::MakePassable(data->{{pf.field.name}}()).Pass();
+{%-     endif %}
+{%-   endfor %}
+}
+{%- endif %}

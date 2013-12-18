@@ -1,0 +1,10 @@
+{%- set class_name = struct.name ~ "_Data" %}
+// static
+{{class_name}}* {{class_name}}::New(mojo::Buffer* buf, mojo::Buffer::Destructor dtor) {
+  return new (buf->Allocate(sizeof({{class_name}}), dtor)) {{class_name}}();
+}
+
+{{class_name}}::{{class_name}}() {
+  _header_.num_bytes = sizeof(*this);
+  _header_.num_fields = {{struct.packed.packed_fields|length}};
+}

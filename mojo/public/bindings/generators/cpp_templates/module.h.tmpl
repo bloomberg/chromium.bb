@@ -1,0 +1,53 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{%- set header_guard = "MOJO_GENERATED_BINDINGS_%s_%s_H_"|
+        format(module_name|upper, module_name|upper) %}
+
+#ifndef {{header_guard}}
+#define {{header_guard}}
+
+#include "mojo/public/bindings/lib/bindings.h"
+#include "mojo/public/bindings/lib/message.h"
+#include "./{{module_name|camel_to_underscores}}_internal.h"
+
+namespace {{namespace}} {
+
+{#--- Enums #}
+{%- for enum in enums %}
+
+enum {{enum.name}} {
+{%-   for field in enum.fields %}
+{%-      if field.value %}
+  {{field.name}} = {{field.value}},
+{%-      else %}
+  {{field.name}},
+{%-      endif %}
+{%-   endfor %}
+};
+{%- endfor %}
+
+{#--- Structs #}
+{%  for struct in structs %}
+{%    include "wrapper_class_declaration.tmpl" -%}
+{%- endfor %}
+
+{#--- Interfaces -#}
+{%  for interface in interfaces %}
+{%    include "interface_declaration.tmpl" -%}
+{%- endfor %}
+
+{#--- Interface Proxies -#}
+{%  for interface in interfaces %}
+{%    include "interface_proxy_declaration.tmpl" -%}
+{%- endfor %}
+
+{#--- Interface Stubs -#}
+{%  for interface in interfaces %}
+{%    include "interface_stub_declaration.tmpl" -%}
+{%- endfor %}
+
+}  // namespace {{namespace}}
+
+#endif  // {{header_guard}}

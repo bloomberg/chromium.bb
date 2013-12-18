@@ -1,0 +1,17 @@
+{%- set class_name = struct.name -%}
+{%- set dtor_name = [] %}
+{%- if struct|is_struct_with_handles %}
+{%-   set _ = dtor_name.append("&internal::%s_Data_Destructor"|format(struct.name)) %}
+{%- else %}
+{%-   set _ = dtor_name.append("NULL") %}
+{%- endif %}
+
+{{class_name}}::Builder::Builder(mojo::Buffer* buf)
+    : data_(Data::New(buf, {{dtor_name[0]}})) {
+}
+
+{{class_name}} {{class_name}}::Builder::Finish() {
+  Data* data = NULL;
+  std::swap(data, data_);
+  return mojo::internal::Wrap(data);
+}

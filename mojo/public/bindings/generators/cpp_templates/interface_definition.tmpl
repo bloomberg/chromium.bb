@@ -1,0 +1,89 @@
+{%- set class_name = interface.name %}
+{%- set proxy_name = interface.name ~ "Proxy" %}
+
+{{proxy_name}}::{{proxy_name}}(mojo::MessageReceiver* receiver)
+    : receiver_(receiver) {
+}
+
+{#--- Proxy definitions #}
+{%- macro params_list(method) %}
+{%-   for param in method.parameters -%}
+{{param.kind|cpp_const_wrapper_type}} {{param.name}}
+{%- if not loop.last %}, {% endif %}
+{%-   endfor %}
+{%- endmacro %}
+
+{%- for method in interface.methods %}
+{%-   set name = "internal::k%s_%s_Name"|format(interface.name, method.name) %}
+{%-   set params_name =
+          "internal::%s_%s_Params_Data"|format(interface.name, method.name) %}
+void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
+  size_t payload_size =
+      mojo::internal::Align(sizeof({{params_name}}));
+{#--- Computes #}
+{%-   for param in method.parameters %}
+{%-     if param.kind|is_object_kind %}
+  payload_size += mojo::internal::ComputeSizeOf(
+      mojo::internal::Unwrap({{param.name}}));
+{%-     endif %}
+{%-   endfor %}
+
+  mojo::internal::MessageBuilder builder({{name}}, payload_size);
+
+  {{params_name}}* params =
+      {{params_name}}::New(builder.buffer());
+
+{#--- Sets #}
+{%   for param in method.parameters %}
+{%-     if param.kind|is_object_kind %}
+  params->set_{{param.name}}(
+      mojo::internal::Clone(mojo::internal::Unwrap({{param.name}}),
+                            builder.buffer()));
+{%-     elif param.kind|is_handle_kind %}
+  params->set_{{param.name}}({{param.name}}.release());
+{%-     else %}
+  params->set_{{param.name}}({{param.name}});
+{%-     endif %}
+{%-   endfor %}
+
+  mojo::Message message;
+  mojo::internal::EncodePointersAndHandles(params, &message.handles);
+
+  message.data = builder.Finish();
+
+  receiver_->Accept(&message);
+}
+{%- endfor %}
+
+{#--- Stub definition #}
+{%- macro params(method) %}
+{%-   for param in method.parameters %}
+{%-     if param.kind|is_object_kind -%}
+mojo::internal::Wrap(params->{{param.name}}())
+{%-     elif param.kind|is_handle_kind -%}
+mojo::MakePassable(params->{{param.name}}()).Pass()
+{%-     else -%}
+params->{{param.name}}()
+{%-     endif -%}
+{%-     if not loop.last %}, {% endif %}
+{%-   endfor %}
+{%- endmacro %}
+
+bool {{class_name}}Stub::Accept(mojo::Message* message) {
+  switch (message->data->header.name) {
+{%- for method in interface.methods %}
+    case internal::k{{class_name}}_{{method.name}}_Name: {
+      internal::{{class_name}}_{{method.name}}_Params_Data* params =
+          reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
+              message->data->payload);
+
+      if (!mojo::internal::DecodePointersAndHandles(params, message))
+        return false;
+      {{method.name}}({{params(method)}});
+      mojo::internal::CloseHandles(params);
+      break;
+    }
+{%- endfor %}
+  }
+  return true;
+}

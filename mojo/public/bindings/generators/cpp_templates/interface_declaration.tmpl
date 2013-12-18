@@ -1,0 +1,19 @@
+class {{interface.name}}Proxy;
+class {{interface.name}}Stub;
+class {{interface.peer}};
+
+class {{interface.name}} {
+ public:
+  typedef {{interface.name}}Proxy _Proxy;
+  typedef {{interface.name}}Stub _Stub;
+  typedef {{interface.peer}} _Peer;
+
+{%- for method in interface.methods %}
+  virtual void {{method.name}}(
+{%-   for param in method.parameters -%}
+    {{param.kind|cpp_const_wrapper_type}} {{param.name}}
+{%-     if not loop.last %}, {% endif -%}
+{%-   endfor -%}
+  ) = 0;
+{%- endfor %}
+};

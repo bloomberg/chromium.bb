@@ -1,0 +1,25 @@
+{%- import "struct_macros.tmpl" as struct_macros %}
+{%- set class_name = struct.name ~ "_Data" -%}
+class {{class_name}} {
+ public:
+  typedef {{struct.name}} Wrapper;
+
+  static {{class_name}}* New(mojo::Buffer* buf, mojo::Buffer::Destructor dtor = NULL);
+
+{#--- Setters -#}
+{{ struct_macros.setters(struct) }}
+
+{#--- Getters -#}
+{{ struct_macros.getters(struct) }}
+
+ private:
+  friend class mojo::internal::ObjectTraits<{{class_name}}>;
+
+  {{class_name}}();
+  ~{{class_name}}();  // NOT IMPLEMENTED
+
+  mojo::internal::StructHeader _header_;
+{{ struct_macros.fields(struct) }}
+};
+MOJO_COMPILE_ASSERT(sizeof({{class_name}}) == {{struct.packed|struct_size}},
+                    bad_sizeof_{{class_name}});
