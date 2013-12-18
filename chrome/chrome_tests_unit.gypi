@@ -180,6 +180,8 @@
         'browser/storage_monitor/test_storage_monitor.h',
         'browser/sync/profile_sync_service_mock.cc',
         'browser/sync/profile_sync_service_mock.h',
+        'browser/ui/app_list/test/chrome_app_list_test_support.cc',
+        'browser/ui/app_list/test/chrome_app_list_test_support.h',
         'browser/ui/browser.h',
         'browser/ui/cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm',
         'browser/ui/cocoa/run_loop_testing.h',
@@ -414,6 +416,11 @@
               'browser/local_discovery/test_service_discovery_client.cc',
               'browser/local_discovery/test_service_discovery_client.h',
             ]
+        }],
+        ['enable_app_list==0', {
+          'sources/': [
+            ['exclude', '^browser/ui/app_list/'],
+          ],
         }],
       ],
     },

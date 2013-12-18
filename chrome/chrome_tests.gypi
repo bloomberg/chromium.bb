@@ -186,6 +186,8 @@
         'browser/notifications/desktop_notifications_unittest.h',
         'browser/notifications/notification_browsertest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
+        'browser/ui/app_list/app_list_service_interactive_uitest.cc',
+        'browser/ui/app_list/app_list_service_mac_interactive_uitest.mm',
         'browser/ui/autofill/autofill_popup_controller_interactive_uitest.cc',
         'browser/ui/browser_focus_uitest.cc',
         'browser/ui/cocoa/panels/panel_cocoa_browsertest.mm',
@@ -507,6 +509,11 @@
             'browser/ui/views/native_widget_win_interactive_uitest.cc',
           ],
         }],  # OS != "win"
+        ['enable_app_list==0', {
+          'sources/': [
+            ['exclude', '^browser/ui/app_list/'],
+          ],
+        }],
       ],  # conditions
     },
     {
@@ -1375,7 +1382,6 @@
         'browser/translate/translate_browsertest.cc',
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/app_list/app_list_controller_browsertest.cc',
-        'browser/ui/app_list/app_list_service_mac_browsertest.mm',
         'browser/ui/app_list/search/people/people_provider_browsertest.cc',
         'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
         'browser/ui/ash/accelerator_commands_browsertest.cc',

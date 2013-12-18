@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/app_list/app_list_service_mac.h"
+
 #include <vector>
 
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/command_line.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -17,10 +18,10 @@ using apps::AppShimHandler;
 namespace {
 
 // Browser test for mac-specific AppListService functionality.
-class AppListServiceMacBrowserTest : public InProcessBrowserTest,
-                                     public AppShimHandler::Host {
+class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
+                                         public AppShimHandler::Host {
  public:
-  AppListServiceMacBrowserTest() : launch_count_(0) {}
+  AppListServiceMacInteractiveTest() : launch_count_(0) {}
 
  protected:
   void LaunchShim() {
@@ -54,12 +55,12 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
   int launch_count_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListServiceMacBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(AppListServiceMacInteractiveTest);
 };
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(AppListServiceMacBrowserTest, ShowAppListUsingShim) {
+IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest, ShowAppListUsingShim) {
   // Check that AppListService has registered as a shim handler for "app_list".
   EXPECT_TRUE(AppShimHandler::GetForAppMode(app_mode::kAppListModeId));
 
