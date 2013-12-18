@@ -45,23 +45,25 @@
     },
     {
       'target_name': 'mojo_native_viewport_service',
-      'type': 'static_library',
+      'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
+        'mojo_common_lib',
         'mojo_gles2_service',
         'mojo_native_viewport_bindings',
+        'mojo_shell_bindings',
       ],
-      'export_dependent_settings': [
-        'mojo_native_viewport_bindings',
+      'defines': [
+        'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',
       ],
       'sources': [
         'services/native_viewport/native_viewport.h',
         'services/native_viewport/native_viewport_android.cc',
-        'services/native_viewport/native_viewport_impl.cc',
-        'services/native_viewport/native_viewport_impl.h',
         'services/native_viewport/native_viewport_mac.mm',
+        'services/native_viewport/native_viewport_service.cc',
+        'services/native_viewport/native_viewport_service.h',
         'services/native_viewport/native_viewport_stub.cc',
         'services/native_viewport/native_viewport_win.cc',
         'services/native_viewport/native_viewport_x11.cc',

@@ -7,6 +7,7 @@
 
 #include "mojo/common/bindings_support_impl.h"
 #include "mojo/shell/loader.h"
+#include "mojo/shell/service_manager.h"
 #include "mojo/shell/storage.h"
 #include "mojo/shell/task_runners.h"
 
@@ -25,6 +26,7 @@ class Context {
   TaskRunners* task_runners() { return &task_runners_; }
   Storage* storage() { return &storage_; }
   Loader* loader() { return &loader_; }
+  ServiceManager* service_manager() { return service_manager_.get(); }
 
 #if defined(OS_ANDROID)
   jobject activity() const { return activity_.obj(); }
@@ -36,6 +38,7 @@ class Context {
   Storage storage_;
   Loader loader_;
   common::BindingsSupportImpl bindings_support_impl_;
+  scoped_ptr<ServiceManager> service_manager_;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;

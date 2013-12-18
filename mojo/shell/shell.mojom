@@ -1,0 +1,19 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+[Peer=ShellClient]
+interface Shell {
+  // Loads url. mojo:{service} will result in the user of the value of the
+  // --origin flag to the shell being used.
+  void Connect(string url, handle<message_pipe> client_handle);
+};
+
+[Peer=Shell]
+interface ShellClient {
+  void AcceptConnection(handle<message_pipe> client_handle);
+};
+
+}

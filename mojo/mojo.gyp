@@ -252,12 +252,11 @@
         'mojo_bindings',
         'mojo_gles2_impl',
         'mojo_native_viewport_service',
+        'mojo_shell_bindings',
         'mojo_system',
         'mojo_system_impl',
       ],
       'sources': [
-        'shell/app_container.cc',
-        'shell/app_container.h',
         'shell/context.cc',
         'shell/context.h',
         'shell/init.cc',
@@ -270,6 +269,8 @@
         'shell/run.h',
         'shell/storage.cc',
         'shell/storage.h',
+        'shell/service_manager.cc',
+        'shell/service_manager.h',
         'shell/switches.cc',
         'shell/switches.h',
         'shell/task_runners.cc',
@@ -284,6 +285,18 @@
             4267,
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'mojo_shell_bindings',
+      'type': 'static_library',
+      'sources': [
+        'shell/shell.mojom',
+      ],
+      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_bindings',
+        'mojo_system',
       ],
     },
     {
@@ -360,6 +373,8 @@
             'mojo_common_lib',
             'mojo_jni_headers',
             'mojo_shell_lib',
+            'mojo_shell_bindings',
+            'mojo_native_viewport_service',
           ],
           'sources': [
             'shell/android/library_loader.cc',

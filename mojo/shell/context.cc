@@ -22,6 +22,7 @@ Context::Context()
   system::CoreImpl::Init();
   gles2::GLES2Impl::Init();
   BindingsSupport::Set(&bindings_support_impl_);
+  service_manager_.reset(new ServiceManager(this));
 }
 
 Context::~Context() {

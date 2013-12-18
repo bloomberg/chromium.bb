@@ -4,8 +4,6 @@
 
 #include "mojo/shell/network_delegate.h"
 
-#include "base/command_line.h"
-#include "mojo/shell/switches.h"
 #include "net/url_request/url_request.h"
 
 namespace mojo {
@@ -17,10 +15,8 @@ NetworkDelegate::NetworkDelegate() {
 
 bool NetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
                                       const base::FilePath& path) const {
-  // TODO(aa): We might want to add a --allow-file-urls or something, but
-  // starting conservative.
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kApp)
-      == request.url().spec();
+  // TODO(davemoore): Implement.
+  return true;
 }
 
 }  // namespace shell

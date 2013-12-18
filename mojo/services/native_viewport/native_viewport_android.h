@@ -9,6 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/native_viewport_export.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/size.h"
@@ -22,9 +23,10 @@ struct ANativeWindow;
 namespace mojo {
 namespace services {
 
-class NativeViewportAndroid : public NativeViewport {
+class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
+    : public NativeViewport {
  public:
-  static bool Register(JNIEnv* env);
+  static MOJO_NATIVE_VIEWPORT_EXPORT bool Register(JNIEnv* env);
 
   explicit NativeViewportAndroid(shell::Context* context,
                                  NativeViewportDelegate* delegate);

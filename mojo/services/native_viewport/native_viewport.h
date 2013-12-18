@@ -44,6 +44,7 @@ class NativeViewport {
   virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;
 
+  // |context| is NULL when loaded into separate process.
   static scoped_ptr<NativeViewport> Create(shell::Context* context,
                                            NativeViewportDelegate* delegate);
 };

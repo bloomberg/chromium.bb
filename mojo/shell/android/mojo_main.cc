@@ -12,9 +12,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/MojoMain_jni.h"
+#include "mojo/services/native_viewport/native_viewport_service.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
+#include "mojo/shell/service_manager.h"
 #include "ui/gl/gl_surface_egl.h"
 
 using base::LazyInstance;
@@ -30,6 +32,25 @@ LazyInstance<scoped_ptr<base::MessageLoop> > g_java_message_loop =
 
 LazyInstance<scoped_ptr<shell::Context> > g_context =
     LAZY_INSTANCE_INITIALIZER;
+
+class NativeViewportServiceLoader : public shell::ServiceManager::Loader {
+ public:
+  NativeViewportServiceLoader() {}
+  virtual ~NativeViewportServiceLoader() {}
+
+ private:
+  virtual void Load(const GURL& url,
+                    shell::ServiceManager* manager,
+                    ScopedMessagePipeHandle service_handle)
+      MOJO_OVERRIDE {
+    service_.reset(CreateNativeViewportService(service_handle.Pass()));
+    service_->set_context(g_context.Get().get());
+  }
+  scoped_ptr<services::NativeViewportService> service_;
+};
+
+LazyInstance<scoped_ptr<NativeViewportServiceLoader> >
+    g_viewport_service_loader = LAZY_INSTANCE_INITIALIZER;
 
 }  // namspace
 
@@ -61,7 +82,7 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
     std::string app_url = base::android::ConvertJavaStringToUTF8(env, jurl);
     std::vector<std::string> argv;
     argv.push_back("mojo_shell");
-    argv.push_back("--app=" + app_url);
+    argv.push_back(app_url);
     CommandLine::ForCurrentProcess()->InitFromArgv(argv);
   }
 
@@ -70,6 +91,11 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
 
   shell::Context* shell_context = new shell::Context();
   shell_context->set_activity(activity.obj());
+  g_viewport_service_loader.Get().reset(new NativeViewportServiceLoader());
+  shell_context->service_manager()->SetLoaderForURL(
+    g_viewport_service_loader.Get().get(),
+    GURL("mojo:mojo_native_viewport_service"));
+
   g_context.Get().reset(shell_context);
   shell::Run(shell_context);
 }
