@@ -48,7 +48,7 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
                                    const webrtc::DesktopRegion& region) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
-  if (!view_size_.equals(view_size)) {
+  if (!view_size_.equals(buffer->size())) {
     // Drop the frame, since the data belongs to the previous generation,
     // before SetSourceSize() called SetOutputSizeAndClip().
     FreeBuffer(buffer);
@@ -83,7 +83,6 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
 
 void JniFrameConsumer::ReturnBuffer(webrtc::DesktopFrame* buffer) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
-  VLOG(0) << "Returning image buffer";
   FreeBuffer(buffer);
 }
 
