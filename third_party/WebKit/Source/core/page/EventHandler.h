@@ -228,6 +228,8 @@ private:
     ScrollableArea* associatedScrollableArea(const RenderLayer*) const;
 
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
+
+    TouchAction intersectTouchAction(const TouchAction, const TouchAction);
     TouchAction computeEffectiveTouchAction(const Node&);
 
     bool handleMouseEventAsEmulatedGesture(const PlatformMouseEvent&);

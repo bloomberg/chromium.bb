@@ -3911,6 +3911,19 @@ bool EventHandler::handleWheelEventAsEmulatedGesture(const PlatformWheelEvent& e
     return true;
 }
 
+TouchAction EventHandler::intersectTouchAction(TouchAction action1, TouchAction action2)
+{
+    if (action1 == TouchActionNone || action2 == TouchActionNone)
+        return TouchActionNone;
+    if (action1 == TouchActionAuto)
+        return action2;
+    if (action2 == TouchActionAuto)
+        return action1;
+    if (!(action1 & action2))
+        return TouchActionNone;
+    return action1 & action2;
+}
+
 TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
 {
     // Optimization to minimize risk of this new feature (behavior should be identical
@@ -3922,13 +3935,16 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
     // the target node up to the nearest scrollable ancestor and exclude any
     // prohibited actions. For now this is trivial, but when we add more types
     // of actions it'll get a little more complex.
+    TouchAction effectiveTouchAction = TouchActionAuto;
     for (const Node* curNode = &node; curNode; curNode = NodeRenderingTraversal::parent(curNode)) {
         // The spec says only block and SVG elements get touch-action.
         // FIXME(rbyers): Add correct support for SVG, crbug.com/247396.
         if (RenderObject* renderer = curNode->renderer()) {
             if (renderer->isRenderBlockFlow()) {
-                if (renderer->style()->touchAction() == TouchActionNone)
-                    return TouchActionNone;
+                TouchAction action = renderer->style()->touchAction();
+                effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
+                if (effectiveTouchAction == TouchActionNone)
+                    break;
             }
 
             // If we've reached an ancestor that supports a touch action, search no further.
@@ -3936,7 +3952,7 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
                 break;
         }
     }
-    return TouchActionAuto;
+    return effectiveTouchAction;
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)

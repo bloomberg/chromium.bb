@@ -262,6 +262,12 @@ void TouchActionTest::runTestOnTree(WebCore::Node* root, WebView* webView, Touch
                 if (client.touchActionSetCount()) {
                     if (expectedAction == "none") {
                         EXPECT_EQ(WebTouchActionNone, client.lastTouchAction()) << failureContextPos;
+                    } else if (expectedAction == "pan-x") {
+                        EXPECT_EQ(WebTouchActionPanX, client.lastTouchAction()) << failureContextPos;
+                    } else if (expectedAction == "pan-y") {
+                        EXPECT_EQ(WebTouchActionPanY, client.lastTouchAction()) << failureContextPos;
+                    } else if (expectedAction == "pan-x-y") {
+                        EXPECT_EQ((WebTouchActionPanX | WebTouchActionPanY), client.lastTouchAction()) << failureContextPos;
                     } else {
                         FAIL() << "Unrecognized expected-action \"" << expectedAction.string().ascii().data()
                             << "\" " << failureContextPos;
@@ -311,6 +317,11 @@ TEST_F(TouchActionTest, Overflow)
 TEST_F(TouchActionTest, ShadowDOM)
 {
     runShadowDOMTest("touch-action-shadow-dom.html");
+}
+
+TEST_F(TouchActionTest, Pan)
+{
+    runTouchActionTest("touch-action-pan.html");
 }
 
 }

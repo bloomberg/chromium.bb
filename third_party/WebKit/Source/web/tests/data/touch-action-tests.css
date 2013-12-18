@@ -10,6 +10,18 @@
   -ms-touch-action: auto;
   touch-action: auto;
 }
+.ta-panx {
+  -ms-touch-action: pan-x;
+  touch-action: pan-x;
+}
+.ta-pany {
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+}
+.ta-panxy {
+  -ms-touch-action: pan-x pan-y;
+  touch-action: pan-x pan-y;
+}
 
 /* Make it easy to visualize div boundaries */
 [expected-action] {
@@ -24,6 +36,15 @@
 }
 [expected-action=auto]::before {
   content: "AUTO \2190 ";
+}
+[expected-action=pan-x]::before {
+  content: "PAN-X \2190 ";
+}
+[expected-action=pan-y]::before {
+  content: "PAN-Y \2190 ";
+}
+[expected-action=pan-x-y]::before {
+  content: "PAN-X PAN-Y \2190 ";
 }
 
 body {
