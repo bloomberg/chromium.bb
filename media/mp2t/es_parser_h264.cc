@@ -18,12 +18,12 @@ static const int kExtendedSar = 255;
 
 // ISO 14496 part 10
 // VUI parameters: Table E-1 "Meaning of sample aspect ratio indicator"
-static const int kTableSarWidth[14] = {
-  0, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160
+static const int kSarTableSize = 17;
+static const int kTableSarWidth[kSarTableSize] = {
+  0, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160, 4, 3, 2
 };
-
-static const int kTableSarHeight[14] = {
-  0, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99
+static const int kTableSarHeight[kSarTableSize] = {
+  0, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99, 3, 2, 1
 };
 
 // Remove the start code emulation prevention ( 0x000003 )
@@ -369,6 +369,32 @@ bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
   RCHECK(bit_reader.ReadBits(8, &constraint_setX_flag));
   RCHECK(bit_reader.ReadBits(8, &level_idc));
   RCHECK(bit_reader.ReadBitsExpGolomb(&seq_parameter_set_id));
+
+  if (profile_idc == 100 || profile_idc == 110 ||
+      profile_idc == 122 || profile_idc == 244 ||
+      profile_idc ==  44 || profile_idc ==  83 ||
+      profile_idc ==  86 || profile_idc == 118 ||
+      profile_idc == 128) {
+    uint32 chroma_format_idc;
+    RCHECK(bit_reader.ReadBitsExpGolomb(&chroma_format_idc));
+    if (chroma_format_idc == 3) {
+      int separate_colour_plane_flag;
+      RCHECK(bit_reader.ReadBits(1, &separate_colour_plane_flag));
+    }
+    uint32 bit_depth_luma_minus8;
+    uint32 bit_depth_chroma_minus8;
+    int qpprime_y_zero_transform_bypass_flag;
+    int seq_scaling_matrix_present_flag;
+    RCHECK(bit_reader.ReadBitsExpGolomb(&bit_depth_luma_minus8));
+    RCHECK(bit_reader.ReadBitsExpGolomb(&bit_depth_chroma_minus8));
+    RCHECK(bit_reader.ReadBits(1, &qpprime_y_zero_transform_bypass_flag));
+    RCHECK(bit_reader.ReadBits(1, &seq_scaling_matrix_present_flag));
+    if (seq_scaling_matrix_present_flag) {
+      int skip_count = (chroma_format_idc != 3) ? 8 : 12;
+      RCHECK(bit_reader.SkipBits(skip_count));
+    }
+  }
+
   RCHECK(bit_reader.ReadBitsExpGolomb(&log2_max_frame_num_minus4));
   RCHECK(bit_reader.ReadBitsExpGolomb(&pic_order_cnt_type));
 
@@ -442,7 +468,7 @@ bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
       if (aspect_ratio_idc == kExtendedSar) {
         RCHECK(bit_reader.ReadBits(16, &sar_width));
         RCHECK(bit_reader.ReadBits(16, &sar_height));
-      } else if (aspect_ratio_idc < 14) {
+      } else if (aspect_ratio_idc < kSarTableSize) {
         sar_width = kTableSarWidth[aspect_ratio_idc];
         sar_height = kTableSarHeight[aspect_ratio_idc];
       }
