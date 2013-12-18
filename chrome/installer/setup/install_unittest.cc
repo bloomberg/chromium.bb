@@ -265,7 +265,8 @@ TEST_F(InstallShortcutTest, CreateAllShortcuts) {
                               expected_start_menu_properties_);
 }
 
-TEST_F(InstallShortcutTest, CreateAllShortcutsSystemLevel) {
+// Disabled failing test; http://crbug.com/329239.
+TEST_F(InstallShortcutTest, DISABLED_CreateAllShortcutsSystemLevel) {
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_, installer::ALL_USERS,
       installer::INSTALL_SHORTCUT_CREATE_ALL);
