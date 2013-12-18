@@ -502,6 +502,7 @@ class MsvsSettings(object):
     ld('DataExecutionPrevention',
         map={'1': ':NO', '2': ''}, prefix='/NXCOMPAT')
     ld('OptimizeReferences', map={'1': 'NOREF', '2': 'REF'}, prefix='/OPT:')
+    ld('ForceSymbolReferences', prefix='/INCLUDE:')
     ld('EnableCOMDATFolding', map={'1': 'NOICF', '2': 'ICF'}, prefix='/OPT:')
     ld('LinkTimeCodeGeneration',
         map={'1': '', '2': ':PGINSTRUMENT', '3': ':PGOPTIMIZE',
