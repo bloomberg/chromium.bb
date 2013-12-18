@@ -174,6 +174,16 @@ public abstract class TabBase implements NavigationClient {
                 observer.onToggleFullscreenMode(TabBase.this, enableFullscreen);
             }
         }
+
+        @Override
+        public void navigationStateChanged(int flags) {
+            if ((flags & INVALIDATE_TYPE_TITLE) != 0) {
+                for (TabObserver observer : mObservers) observer.onTitleUpdated(TabBase.this);
+            }
+            if ((flags & INVALIDATE_TYPE_URL) != 0) {
+                for (TabObserver observer : mObservers) observer.onUrlUpdated(TabBase.this);
+            }
+        }
     }
 
     private class TabBaseContextMenuPopulator extends ContextMenuPopulatorWrapper {

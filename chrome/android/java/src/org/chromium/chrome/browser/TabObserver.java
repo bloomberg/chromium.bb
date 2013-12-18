@@ -32,6 +32,18 @@ public interface TabObserver {
     void onFaviconUpdated(TabBase tab);
 
     /**
+     * Called when the title of a {@link TabBase} changes.
+     * @param tab The notifying {@link TabBase}.
+     */
+    void onTitleUpdated(TabBase tab);
+
+    /**
+     * Called when the URL of a {@link TabBase} changes.
+     * @param tab The notifying {@link TabBase}.
+     */
+    void onUrlUpdated(TabBase tab);
+
+    /**
      * Called when the WebContents of a {@link TabBase} have been swapped.
      * @param tab The notifying {@link TabBase}.
      */
@@ -80,4 +92,5 @@ public interface TabObserver {
      */
     void onDidFailLoad(TabBase tab, boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
             String description, String failingUrl);
+
 }
