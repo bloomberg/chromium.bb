@@ -29,14 +29,14 @@
  */
 
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "public/platform/WebAnimation.h"
 
 namespace WebCore {
 
-typedef KeyframeAnimationEffect::PropertySpecificKeyframeVector KeyframeVector;
+typedef KeyframeEffectModel::PropertySpecificKeyframeVector KeyframeVector;
 
 class CompositorAnimationsImpl {
 private:
@@ -50,7 +50,7 @@ private:
 
     static bool convertTimingForCompositor(const Timing&, CompositorTiming& out);
 
-    static void getAnimationOnCompositor(const Timing&, const KeyframeAnimationEffect&, Vector<OwnPtr<blink::WebAnimation> >& animations);
+    static void getAnimationOnCompositor(const Timing&, const KeyframeEffectModel&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
     static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&, const TimingFunction&);
 

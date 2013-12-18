@@ -35,7 +35,7 @@
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 
@@ -118,8 +118,8 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
 
-    const KeyframeAnimationEffect::KeyframeVector keyframes =
-        toKeyframeAnimationEffect(animation->effect())->getFrames();
+    const KeyframeEffectModel::KeyframeVector keyframes =
+        toKeyframeEffectModel(animation->effect())->getFrames();
 
     EXPECT_EQ(0, keyframes[0]->offset());
     EXPECT_EQ(1, keyframes[1]->offset());

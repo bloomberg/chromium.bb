@@ -22,7 +22,7 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
-#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
@@ -124,7 +124,7 @@ public:
     // and should be removed when that is replaced by Web Animations.
     void keyframeStylesForAnimation(Element*, const RenderStyle&, KeyframeList&);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, RenderStyle* parentStyle, const StyleKeyframe*, const AtomicString& animationName);
-    static PassRefPtr<KeyframeAnimationEffect> createKeyframeAnimationEffect(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeAnimationEffect::KeyframeVector&);
+    static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeEffectModel::KeyframeVector&);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 
 #include "core/animation/TimedItem.h"
 #include "wtf/text/StringHash.h"
@@ -160,21 +160,20 @@ PassRefPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
     return theClone.release();
 }
 
-KeyframeAnimationEffect::KeyframeAnimationEffect(const KeyframeVector& keyframes)
+KeyframeEffectModel::KeyframeEffectModel(const KeyframeVector& keyframes)
     : m_keyframes(keyframes)
 {
 }
 
-PropertySet KeyframeAnimationEffect::properties() const
+PropertySet KeyframeEffectModel::properties() const
 {
     PropertySet result;
-    const KeyframeVector& frames = getFrames();
-    if (!frames.size()) {
+    if (!m_keyframes.size()) {
         return result;
     }
-    result = frames[0]->properties();
-    for (size_t i = 1; i < frames.size(); i++) {
-        PropertySet extras = frames[i]->properties();
+    result = m_keyframes[0]->properties();
+    for (size_t i = 1; i < m_keyframes.size(); i++) {
+        PropertySet extras = m_keyframes[i]->properties();
         for (PropertySet::const_iterator it = extras.begin(); it != extras.end(); ++it) {
             result.add(*it);
         }
@@ -182,20 +181,20 @@ PropertySet KeyframeAnimationEffect::properties() const
     return result;
 }
 
-PassOwnPtr<AnimationEffect::CompositableValueList> KeyframeAnimationEffect::sample(int iteration, double fraction) const
+PassOwnPtr<AnimationEffect::CompositableValueList> KeyframeEffectModel::sample(int iteration, double fraction) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
-    const_cast<KeyframeAnimationEffect*>(this)->ensureKeyframeGroups();
+    const_cast<KeyframeEffectModel*>(this)->ensureKeyframeGroups();
     OwnPtr<CompositableValueList> map = adoptPtr(new CompositableValueList());
     for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter)
         map->append(std::make_pair(iter->key, iter->value->sample(iteration, fraction)));
     return map.release();
 }
 
-KeyframeAnimationEffect::KeyframeVector KeyframeAnimationEffect::normalizedKeyframes() const
+KeyframeEffectModel::KeyframeVector KeyframeEffectModel::normalizedKeyframes() const
 {
-    KeyframeVector keyframes = m_keyframes;
+    KeyframeVector keyframes = getFrames();
 
     // Set offsets at 0.0 and 1.0 at ends if unset.
     if (keyframes.size() >= 2) {
@@ -218,7 +217,7 @@ KeyframeAnimationEffect::KeyframeVector KeyframeAnimationEffect::normalizedKeyfr
     return keyframes;
 }
 
-void KeyframeAnimationEffect::ensureKeyframeGroups() const
+void KeyframeEffectModel::ensureKeyframeGroups() const
 {
     if (m_keyframeGroups)
         return;
@@ -249,7 +248,7 @@ void KeyframeAnimationEffect::ensureKeyframeGroups() const
 }
 
 
-KeyframeAnimationEffect::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, const AnimatableValue* value, CompositeOperation composite)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, const AnimatableValue* value, CompositeOperation composite)
     : m_offset(offset)
     , m_value(composite == AnimationEffect::CompositeReplace ?
         static_cast<PassRefPtr<CompositableValue> >(ReplaceCompositableValue::create(value)) :
@@ -257,26 +256,26 @@ KeyframeAnimationEffect::PropertySpecificKeyframe::PropertySpecificKeyframe(doub
 {
 }
 
-KeyframeAnimationEffect::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<CompositableValue> value)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<CompositableValue> value)
     : m_offset(offset)
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
 }
 
-PassOwnPtr<KeyframeAnimationEffect::PropertySpecificKeyframe> KeyframeAnimationEffect::PropertySpecificKeyframe::cloneWithOffset(double offset) const
+PassOwnPtr<KeyframeEffectModel::PropertySpecificKeyframe> KeyframeEffectModel::PropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
     return adoptPtr(new PropertySpecificKeyframe(offset, PassRefPtr<CompositableValue>(m_value)));
 }
 
 
-void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::appendKeyframe(PassOwnPtr<PropertySpecificKeyframe> keyframe)
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::appendKeyframe(PassOwnPtr<PropertySpecificKeyframe> keyframe)
 {
     ASSERT(m_keyframes.isEmpty() || m_keyframes.last()->offset() <= keyframe->offset());
     m_keyframes.append(keyframe);
 }
 
-void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::removeRedundantKeyframes()
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::removeRedundantKeyframes()
 {
     // As an optimization, removes keyframes in the following categories, as
     // they will never be used by sample().
@@ -295,7 +294,7 @@ void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::removeRedundantKeyf
     ASSERT(m_keyframes.size() >= 2);
 }
 
-void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired()
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired()
 {
     ASSERT(!m_keyframes.isEmpty());
     double offset = m_keyframes.first()->offset();
@@ -315,7 +314,7 @@ void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::addSyntheticKeyfram
         m_keyframes.insert(0, adoptPtr(new PropertySpecificKeyframe(0.0, AnimatableValue::neutralValue(), CompositeAdd)));
 }
 
-PassRefPtr<AnimationEffect::CompositableValue> KeyframeAnimationEffect::PropertySpecificKeyframeGroup::sample(int iteration, double offset) const
+PassRefPtr<AnimationEffect::CompositableValue> KeyframeEffectModel::PropertySpecificKeyframeGroup::sample(int iteration, double offset) const
 {
     // FIXME: Implement accumulation.
     ASSERT_UNUSED(iteration, iteration >= 0);

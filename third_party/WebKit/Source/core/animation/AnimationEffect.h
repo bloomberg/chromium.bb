@@ -62,7 +62,7 @@ public:
     virtual PassOwnPtr<CompositableValueList> sample(int iteration, double fraction) const = 0;
 
     virtual bool affects(CSSPropertyID) { return false; };
-    virtual bool isKeyframeAnimationEffect() const { return false; }
+    virtual bool isKeyframeEffectModel() const { return false; }
 };
 
 } // namespace WebCore

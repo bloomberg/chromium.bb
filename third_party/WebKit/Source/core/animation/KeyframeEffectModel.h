@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyframeAnimationEffect_h
-#define KeyframeAnimationEffect_h
+#ifndef KeyframeEffectModel_h
+#define KeyframeEffectModel_h
 
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimationEffect.h"
@@ -74,15 +74,15 @@ private:
     PropertyValueMap m_propertyValues;
 };
 
-class KeyframeAnimationEffect : public AnimationEffect {
+class KeyframeEffectModel : public AnimationEffect {
 public:
     class PropertySpecificKeyframe;
     typedef Vector<RefPtr<Keyframe> > KeyframeVector;
-    typedef Vector<OwnPtr<KeyframeAnimationEffect::PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
+    typedef Vector<OwnPtr<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
     // FIXME: Implement accumulation.
-    static PassRefPtr<KeyframeAnimationEffect> create(const KeyframeVector& keyframes)
+    static PassRefPtr<KeyframeEffectModel> create(const KeyframeVector& keyframes)
     {
-        return adoptRef(new KeyframeAnimationEffect(keyframes));
+        return adoptRef(new KeyframeEffectModel(keyframes));
     }
 
     virtual bool affects(CSSPropertyID property) OVERRIDE
@@ -97,7 +97,7 @@ public:
     // FIXME: Implement setFrames()
     const KeyframeVector& getFrames() const { return m_keyframes; }
 
-    virtual bool isKeyframeAnimationEffect() const OVERRIDE { return true; }
+    virtual bool isKeyframeEffectModel() const OVERRIDE { return true; }
 
     PropertySet properties() const;
 
@@ -124,7 +124,7 @@ public:
         void removeRedundantKeyframes();
         void addSyntheticKeyframeIfRequired();
 
-        friend class KeyframeAnimationEffect;
+        friend class KeyframeEffectModel;
     };
 
     const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(CSSPropertyID id) const
@@ -134,7 +134,7 @@ public:
     }
 
 private:
-    KeyframeAnimationEffect(const KeyframeVector& keyframes);
+    KeyframeEffectModel(const KeyframeVector& keyframes);
 
     KeyframeVector normalizedKeyframes() const;
     // Lazily computes the groups of property-specific keyframes.
@@ -148,8 +148,8 @@ private:
     mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
 };
 
-DEFINE_TYPE_CASTS(KeyframeAnimationEffect, AnimationEffect, value, value->isKeyframeAnimationEffect(), value.isKeyframeAnimationEffect());
+DEFINE_TYPE_CASTS(KeyframeEffectModel, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
 
 } // namespace WebCore
 
-#endif // KeyframeAnimationEffect_h
+#endif // KeyframeEffectModel_h

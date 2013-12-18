@@ -33,7 +33,6 @@
 
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/CompositorAnimations.h"
-#include "core/animation/KeyframeAnimationEffect.h"
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
 

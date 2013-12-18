@@ -35,7 +35,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -72,7 +72,7 @@ bool isLaterPhase(TimedItem::Phase target, TimedItem::Phase reference)
     return target > reference;
 }
 
-static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeAnimationEffect::KeyframeVector keyframes, const HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions)
+static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeEffectModel::KeyframeVector keyframes, const HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions)
 {
     // Generate the chained timing function. Note that timing functions apply
     // from the keyframe in which they're specified to the next keyframe.
@@ -93,7 +93,7 @@ static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeAnimation
 }
 
 static void resolveKeyframes(StyleResolver* resolver, Element* element, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
-    Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
+    Vector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     const StyleRuleKeyframes* keyframesRule = CSSAnimations::matchScopedKeyframesRule(resolver, element, name.impl());
@@ -106,7 +106,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
 
     // Construct and populate the style for each keyframe
     PropertySet specifiedProperties;
-    KeyframeAnimationEffect::KeyframeVector keyframes;
+    KeyframeEffectModel::KeyframeVector keyframes;
     HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
@@ -221,7 +221,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
         ASSERT(count <= numKeyframes);
         if (count == numKeyframes)
             continue;
-        KeyframeAnimationEffect::KeyframeVector splitOutKeyframes;
+        KeyframeEffectModel::KeyframeVector splitOutKeyframes;
         for (size_t i = 0; i < numKeyframes; i++) {
             Keyframe* keyframe = keyframes[i].get();
             if (!keyframe->properties().contains(property)) {
@@ -407,15 +407,15 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
             Timing timing;
             bool isPaused;
             RefPtr<TimingFunction> defaultTimingFunction = timingFromAnimationData(animationData, timing, isPaused);
-            Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
+            Vector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
             resolveKeyframes(resolver, element, style, parentStyle, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
             if (!keyframesAndTimingFunctions.isEmpty()) {
                 HashSet<RefPtr<InertAnimation> > animations;
                 for (size_t j = 0; j < keyframesAndTimingFunctions.size(); ++j) {
                     ASSERT(!keyframesAndTimingFunctions[j].first.isEmpty());
                     timing.timingFunction = keyframesAndTimingFunctions[j].second;
-                    // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
-                    animations.add(InertAnimation::create(KeyframeAnimationEffect::create(keyframesAndTimingFunctions[j].first), timing, isPaused));
+                    // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeEffectModel to skip normalization.
+                    animations.add(InertAnimation::create(KeyframeEffectModel::create(keyframesAndTimingFunctions[j].first), timing, isPaused));
                 }
                 ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
                 update->startAnimation(animationName, animations);
@@ -510,9 +510,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             double oldStartTime = oldTransition.second;
             double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline()->currentTime() - oldStartTime;
             oldAnimation->updateInheritedTime(inheritedTime);
-            KeyframeAnimationEffect* oldEffect = toKeyframeAnimationEffect(inertAnimation->effect());
-            const KeyframeAnimationEffect::KeyframeVector& frames = oldEffect->getFrames();
-            KeyframeAnimationEffect::KeyframeVector newFrames;
+            KeyframeEffectModel* oldEffect = toKeyframeEffectModel(inertAnimation->effect());
+            const KeyframeEffectModel::KeyframeVector& frames = oldEffect->getFrames();
+            KeyframeEffectModel::KeyframeVector newFrames;
             newFrames.append(frames[0]->clone());
             newFrames[0]->clearPropertyValue(id);
             ASSERT(oldAnimation->compositableValues()->size() == 1);
@@ -520,7 +520,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             ASSERT(!compositableValue->dependsOnUnderlyingValue());
             newFrames[0]->setPropertyValue(id, compositableValue->compositeOnto(0).get());
             newFrames.append(frames[1]->clone());
-            effect = KeyframeAnimationEffect::create(newFrames);
+            effect = KeyframeEffectModel::create(newFrames);
         }
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<Player> player = element->document().transitionTimeline()->createPlayer(transition.get());
@@ -558,7 +558,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     if (AnimatableValue::usesDefaultInterpolation(to.get(), from.get()))
         return;
 
-    KeyframeAnimationEffect::KeyframeVector keyframes;
+    KeyframeEffectModel::KeyframeVector keyframes;
 
     RefPtr<Keyframe> startKeyframe = Keyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
@@ -570,7 +570,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     endKeyframe->setOffset(1);
     keyframes.append(endKeyframe);
 
-    RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
+    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
 
     Timing timing;
     bool isPaused;

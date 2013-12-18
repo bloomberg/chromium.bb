@@ -83,7 +83,7 @@ void ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDict
 
 void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
 {
-    KeyframeAnimationEffect::KeyframeVector keyframes;
+    KeyframeEffectModel::KeyframeVector keyframes;
     Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
 
     for (size_t i = 0; i < keyframeDictionaryVector.size(); ++i) {
@@ -120,7 +120,7 @@ void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyfr
             // in a Keyframe object, so for now I just skip over them. Eventually we
             // will need to support getFrames(), which should return exactly the
             // keyframes that were input through the API. We will add a layer to wrap
-            // KeyframeAnimationEffect, store input keyframes and implement getFrames.
+            // KeyframeEffectModel, store input keyframes and implement getFrames.
             if (id == CSSPropertyInvalid || !CSSAnimations::isAnimatableProperty(id))
                 continue;
 
@@ -131,7 +131,7 @@ void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyfr
     }
 
     // FIXME: Replace this with code that just parses, when that code is available.
-    RefPtr<KeyframeAnimationEffect> effect = StyleResolver::createKeyframeAnimationEffect(*element, propertySetVector, keyframes);
+    RefPtr<KeyframeEffectModel> effect = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
 
     // FIXME: Totally hardcoded Timing for now. Will handle timing parameters later.
     Timing timing;

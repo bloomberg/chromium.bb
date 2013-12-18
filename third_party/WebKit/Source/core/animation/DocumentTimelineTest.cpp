@@ -33,7 +33,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/TimedItem.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -132,7 +132,7 @@ TEST_F(AnimationDocumentTimelineTest, HasStarted)
 
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 {
-    RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());
+    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector());
     RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
     timeline->play(anim.get());
@@ -163,7 +163,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyPlayerDoesNotTriggerStyleRecalc)
 TEST_F(AnimationDocumentTimelineTest, EmptyTargetDoesNotTriggerStyleRecalc)
 {
     timing.iterationDuration = 200;
-    timeline->play(Animation::create(0, KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing).get());
+    timeline->play(Animation::create(0, KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing).get());
     document->animationClock().updateTime(100);
     EXPECT_FALSE(timeline->serviceAnimations());
 }
@@ -177,7 +177,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyEffectDoesNotTriggerStyleRecalc)
 
 TEST_F(AnimationDocumentTimelineTest, TriggerStyleRecalc)
 {
-    timeline->play(Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing).get());
+    timeline->play(Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing).get());
     document->animationClock().updateTime(100);
     EXPECT_TRUE(timeline->serviceAnimations());
 }
@@ -203,8 +203,8 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime)
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
-    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
-    RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
+    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
+    RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
     Player* player1 = timeline->play(anim1.get());
     Player* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
@@ -236,10 +236,10 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
     timingNoFillDelay.fillMode = Timing::FillModeNone;
     timingNoFillDelay.startDelay = 1;
 
-    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingForwardFill);
-    RefPtr<Animation> anim2 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingNoFill);
-    RefPtr<Animation> anim3 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingBackwardFillDelay);
-    RefPtr<Animation> anim4 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingNoFillDelay);
+    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingForwardFill);
+    RefPtr<Animation> anim2 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingNoFill);
+    RefPtr<Animation> anim3 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingBackwardFillDelay);
+    RefPtr<Animation> anim4 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingNoFillDelay);
 
     timeline->play(anim1.get());
     timeline->play(anim2.get());

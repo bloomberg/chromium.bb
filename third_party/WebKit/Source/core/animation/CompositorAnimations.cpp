@@ -58,7 +58,7 @@ namespace WebCore {
 
 namespace {
 
-void getKeyframeValuesForProperty(const KeyframeAnimationEffect* effect, CSSPropertyID id, double scale, bool reverse, KeyframeVector& values)
+void getKeyframeValuesForProperty(const KeyframeEffectModel* effect, CSSPropertyID id, double scale, bool reverse, KeyframeVector& values)
 {
     ASSERT(values.isEmpty());
     const KeyframeVector& group = effect->getPropertySpecificKeyframes(id);
@@ -147,10 +147,10 @@ PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(c
 
 bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
 {
-    const KeyframeAnimationEffect& keyframeEffect = *toKeyframeAnimationEffect(&effect);
+    const KeyframeEffectModel& keyframeEffect = *toKeyframeEffectModel(&effect);
 
     // Are the keyframes convertible?
-    const KeyframeAnimationEffect::KeyframeVector frames = keyframeEffect.getFrames();
+    const KeyframeEffectModel::KeyframeVector frames = keyframeEffect.getFrames();
     for (size_t i = 0; i < frames.size(); ++i) {
         // Only replace mode can be accelerated
         if (frames[i]->composite() != AnimationEffect::CompositeReplace)
@@ -258,7 +258,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
     ASSERT(isCandidateForAnimationOnCompositor(timing, effect));
     ASSERT(canStartAnimationOnCompositor(element));
 
-    const KeyframeAnimationEffect& keyframeEffect = *toKeyframeAnimationEffect(&effect);
+    const KeyframeEffectModel& keyframeEffect = *toKeyframeEffectModel(&effect);
 
     RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
     ASSERT(layer);
@@ -472,8 +472,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(
-    const Timing& timing, const KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, const KeyframeEffectModel& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
