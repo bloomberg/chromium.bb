@@ -745,20 +745,6 @@ Decimal Decimal::fromString(const String& str)
             return nan();
 
         case StateDot:
-            if (ch >= '0' && ch <= '9') {
-                if (numberOfDigits < Precision) {
-                    ++numberOfDigits;
-                    ++numberOfDigitsAfterDot;
-                    accumulator *= 10;
-                    accumulator += ch - '0';
-                }
-                state = StateDotDigit;
-                break;
-            }
-
-            HandleTwoCharsAndBreak('E', 'e', StateE);
-            return nan();
-
         case StateDotDigit:
             if (ch >= '0' && ch <= '9') {
                 if (numberOfDigits < Precision) {
@@ -767,6 +753,7 @@ Decimal Decimal::fromString(const String& str)
                     accumulator *= 10;
                     accumulator += ch - '0';
                 }
+                state = StateDotDigit;
                 break;
             }
 
