@@ -463,9 +463,6 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             Length stdDeviation = Length(0, Fixed);
             if (filterValue->length() >= 1)
                 stdDeviation = firstValue->convertToLength<FixedConversion | PercentConversion>(conversionData);
-            if (stdDeviation.isUndefined())
-                return false;
-
             operations.operations().append(BlurFilterOperation::create(stdDeviation));
             break;
         }

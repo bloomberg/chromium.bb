@@ -46,7 +46,6 @@ Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue*
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    ASSERT(!result.isUndefined());
     result.setQuirk(primitiveValue->isQuirkValue());
     return result;
 }
@@ -55,7 +54,6 @@ Length StyleBuilderConverter::convertLengthOrAuto(StyleResolverState& state, CSS
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-    ASSERT(!result.isUndefined());
     result.setQuirk(primitiveValue->isQuirkValue());
     return result;
 }

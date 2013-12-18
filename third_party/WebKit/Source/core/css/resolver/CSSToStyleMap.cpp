@@ -211,9 +211,6 @@ void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value
         secondLength = Length();
     }
 
-    if (firstLength.isUndefined() || secondLength.isUndefined())
-        return;
-
     b.setWidth(firstLength);
     b.setHeight(secondLength);
     layer->setSizeLength(b);
@@ -232,7 +229,6 @@ void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer,
     }
 
     Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(cssToLengthConversionData());
-    ASSERT(!length.isUndefined());
 
     layer->setXPosition(length);
     if (pair)
@@ -252,7 +248,6 @@ void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer,
     }
 
     Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(cssToLengthConversionData());
-    ASSERT(!length.isUndefined());
 
     layer->setYPosition(length);
     if (pair)

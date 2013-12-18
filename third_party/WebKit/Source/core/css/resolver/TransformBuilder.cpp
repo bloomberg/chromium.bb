@@ -53,7 +53,8 @@ TransformBuilder::~TransformBuilder()
 
 static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
 {
-    return primitiveValue ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(conversionData) : Length(Undefined);
+    ASSERT(primitiveValue);
+    return primitiveValue->convertToLength<FixedConversion | PercentConversion>(conversionData);
 }
 
 static TransformOperation::OperationType getTransformOperationType(CSSTransformValue::TransformOperationType type)
@@ -180,9 +181,6 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                 }
             }
 
-            if (tx.isUndefined() || ty.isUndefined())
-                return false;
-
             operations.operations().append(TranslateTransformOperation::create(tx, ty, Length(0, Fixed), getTransformOperationType(transformValue->operationType())));
             break;
         }
@@ -208,9 +206,6 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                     }
                 }
             }
-
-            if (tx.isUndefined() || ty.isUndefined() || tz.isUndefined())
-                return false;
 
             operations.operations().append(TranslateTransformOperation::create(tx, ty, tz, getTransformOperationType(transformValue->operationType())));
             break;
@@ -311,11 +306,10 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
             else {
                 // This is a quirk that should go away when 3d transforms are finalized.
                 double val = firstValue->getDoubleValue();
-                p = val >= 0 ? Length(clampToPositiveInteger(val), Fixed) : Length(Undefined);
+                if (val < 0)
+                    return false;
+                p = Length(clampToPositiveInteger(val), Fixed);
             }
-
-            if (p.isUndefined())
-                return false;
 
             operations.operations().append(PerspectiveTransformOperation::create(p));
             break;

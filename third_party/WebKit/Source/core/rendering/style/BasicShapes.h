@@ -81,12 +81,10 @@ public:
     void setHeight(Length height) { m_height = height; }
     void setCornerRadiusX(Length radiusX)
     {
-        ASSERT(!radiusX.isUndefined());
         m_cornerRadiusX = radiusX;
     }
     void setCornerRadiusY(Length radiusY)
     {
-        ASSERT(!radiusY.isUndefined());
         m_cornerRadiusY = radiusY;
     }
 
@@ -199,12 +197,10 @@ public:
     void setLeft(Length left) { m_left = left; }
     void setCornerRadiusX(Length radiusX)
     {
-        ASSERT(!radiusX.isUndefined());
         m_cornerRadiusX = radiusX;
     }
     void setCornerRadiusY(Length radiusY)
     {
-        ASSERT(!radiusY.isUndefined());
         m_cornerRadiusY = radiusY;
     }
 

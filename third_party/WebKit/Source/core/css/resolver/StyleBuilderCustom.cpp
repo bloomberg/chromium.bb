@@ -539,7 +539,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     CSSValueList* valueList = toCSSValueList(value);
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(valueList->itemWithoutBoundsCheck(0));
     Length lengthOrPercentageValue = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    ASSERT(!lengthOrPercentageValue.isUndefined());
     state.style()->setTextIndent(lengthOrPercentageValue);
 
     ASSERT(valueList->length() <= 2);
@@ -705,9 +704,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeIncrement(StyleR
             break;
         }
     } else {
-        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()) : Length(Undefined);
-        if (!marqueeLength.isUndefined())
-            state.style()->setMarqueeIncrement(marqueeLength);
+        Length marqueeLength = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+        state.style()->setMarqueeIncrement(marqueeLength);
     }
 }
 
@@ -881,9 +879,6 @@ static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const Styl
     }
 
     workingLength = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-    if (workingLength.length().isUndefined())
-        return false;
-
     if (primitiveValue->isLength())
         workingLength.length().setQuirk(primitiveValue->isQuirkValue());
 

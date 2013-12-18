@@ -231,12 +231,8 @@ public:
         case CalcLength:
             return adoptPtr(new CalcExpressionLength(Length(m_value->computeLength<float>(conversionData), WebCore::Fixed)));
         case CalcPercent:
-        case CalcPercentLength: {
-            CSSPrimitiveValue* primitiveValue = m_value.get();
-            return adoptPtr(new CalcExpressionLength(primitiveValue
-                ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(conversionData)
-                : Length(Undefined)));
-        }
+        case CalcPercentLength:
+            return adoptPtr(new CalcExpressionLength(m_value->convertToLength<FixedConversion | PercentConversion>(conversionData)));
         // Only types that could be part of a Length expression can be converted
         // to a CalcExpressionNode. CalcPercentNumber makes no sense as a Length.
         case CalcPercentNumber:
