@@ -2154,8 +2154,9 @@ bool RenderBlockFlow::positionNewFloats()
             continue;
 
         RenderBox* childBox = floatingObject->renderer();
-        LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(childBox) : marginEndForChild(childBox);
+        LayoutRectRecorder childBoxRecorder(*childBox);
 
+        LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(childBox) : marginEndForChild(childBox);
         LayoutRect oldRect = childBox->frameRect();
 
         if (childBox->style()->clear() & CLEFT)
@@ -2217,7 +2218,8 @@ bool RenderBlockFlow::positionNewFloats()
             shapeOutside->setShapeSize(logicalWidthForChild(childBox), logicalHeightForChild(childBox));
 
         // If the child moved, we have to repaint it.
-        if (childBox->checkForRepaintDuringLayout())
+        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
+            && childBox->checkForRepaintDuringLayout())
             childBox->repaintDuringLayoutIfMoved(oldRect);
     }
     return true;
