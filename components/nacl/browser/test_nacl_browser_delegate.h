@@ -38,6 +38,8 @@ class TestNaClBrowserDelegate : public NaClBrowserDelegate {
                                      base::FilePath* file_path) OVERRIDE;
   virtual void SetDebugPatterns(std::string debug_patterns) OVERRIDE;
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE;
+  virtual content::BrowserPpapiHost::OnKeepaliveCallback
+      GetOnKeepaliveCallback() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNaClBrowserDelegate);

@@ -49,6 +49,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -799,6 +800,8 @@ void NaClProcessHost::OnPpapiChannelCreated(
         nacl_host_message_filter_->render_process_id(),
         render_view_id_,
         profile_directory_));
+    ppapi_host_->SetOnKeepaliveCallback(
+        NaClBrowser::GetDelegate()->GetOnKeepaliveCallback());
 
     ppapi::PpapiNaClChannelArgs args;
     args.off_the_record = nacl_host_message_filter_->off_the_record();

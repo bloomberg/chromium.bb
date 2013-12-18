@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
 #include "content/common/content_export.h"
@@ -52,6 +53,9 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   virtual const base::FilePath& GetProfileDataDirectory() OVERRIDE;
   virtual GURL GetDocumentURLForInstance(PP_Instance instance) OVERRIDE;
   virtual GURL GetPluginURLForInstance(PP_Instance instance) OVERRIDE;
+  virtual void SetOnKeepaliveCallback(
+      const BrowserPpapiHost::OnKeepaliveCallback& callback) OVERRIDE;
+
 
   void set_plugin_process_handle(base::ProcessHandle handle) {
     plugin_process_handle_ = handle;
@@ -83,18 +87,26 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // reference. To avoid that, define a message filter object.
   class HostMessageFilter : public IPC::ChannelProxy::MessageFilter {
    public:
-    explicit HostMessageFilter(ppapi::host::PpapiHost* ppapi_host)
-        : ppapi_host_(ppapi_host) {}
+    HostMessageFilter(ppapi::host::PpapiHost* ppapi_host,
+                      BrowserPpapiHostImpl* browser_ppapi_host_impl);
+
     // IPC::ChannelProxy::MessageFilter.
     virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
     void OnHostDestroyed();
 
    private:
-    virtual ~HostMessageFilter() {}
+    virtual ~HostMessageFilter();
 
+    void OnKeepalive();
+
+    // Non owning pointers cleared in OnHostDestroyed()
     ppapi::host::PpapiHost* ppapi_host_;
+    BrowserPpapiHostImpl* browser_ppapi_host_impl_;
   };
+
+  // Reports plugin activity to the callback set with SetOnKeepaliveCallback.
+  void OnKeepalive();
 
   scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
   base::ProcessHandle plugin_process_handle_;
@@ -117,6 +129,8 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   InstanceMap instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
+
+  BrowserPpapiHost::OnKeepaliveCallback on_keepalive_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPpapiHostImpl);
 };

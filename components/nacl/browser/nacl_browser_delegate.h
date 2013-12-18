@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "content/public/browser/browser_ppapi_host.h"
 
 class GURL;
 
@@ -19,10 +20,6 @@ namespace ppapi {
 namespace host {
 class HostFactory;
 }
-}
-
-namespace content {
-class BrowserPpapiHost;
 }
 
 // Encapsulates the dependencies of NaCl code on chrome/, to avoid a direct
@@ -73,6 +70,10 @@ class NaClBrowserDelegate {
 
   // Returns whether NaCl application with this manifest URL should be debugged.
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) = 0;
+
+  // Returns a callback that handles NaCl idle state transitions.
+  virtual content::BrowserPpapiHost::OnKeepaliveCallback
+      GetOnKeepaliveCallback() = 0;
 };
 
 #endif  // COMPONENTS_NACL_BROWSER_NACL_BROWSER_DELEGATE_H_

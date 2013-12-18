@@ -9,15 +9,20 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
@@ -25,6 +30,78 @@
 #include "ppapi/c/private/ppb_nacl_private.h"
 
 using extensions::SharedModuleInfo;
+
+namespace {
+
+// Handles an extension's NaCl process transitioning in or out of idle state by
+// relaying the state to the extension's process manager.
+//
+// A NaCl instance, when active (making PPAPI calls or receiving callbacks),
+// sends keepalive IPCs to the browser process BrowserPpapiHost at a throttled
+// rate. The content::BrowserPpapiHost passes context information up to the
+// chrome level NaClProcessHost where we use the instance's context to find the
+// associated extension process manager.
+//
+// There is a 1:many relationship for extension:nacl-embeds, but only a
+// 1:1 relationship for NaClProcessHost:PP_Instance. The content layer doesn't
+// rely on this knowledge because it routes messages for ppapi non-nacl
+// instances as well, though they won't have callbacks set. Here the 1:1
+// assumption is made and DCHECKed.
+void OnKeepaliveOnUIThread(
+    const content::BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
+    const base::FilePath& profile_data_directory) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Only one instance will exist for NaCl embeds, even when more than one
+  // embed of the same plugin exists on the same page.
+  DCHECK(instance_data.size() == 1);
+  if (instance_data.size() < 1)
+    return;
+
+  content::RenderViewHost* render_view_host = content::RenderViewHost::FromID(
+      instance_data[0].render_process_id, instance_data[0].render_view_id);
+  if (!render_view_host)
+    return;
+
+  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
+  if (!site_instance)
+    return;
+
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::GetForBrowserContext(
+          site_instance->GetBrowserContext());
+  if (!extension_system)
+    return;
+
+  const ExtensionService* extension_service =
+      extension_system->extension_service();
+  if (!extension_service)
+    return;
+
+  const extensions::Extension* extension = extension_service->GetExtensionById(
+      instance_data[0].document_url.host(), false);
+  if (!extension)
+    return;
+
+  extensions::ProcessManager* pm = extension_system->process_manager();
+  if (!pm)
+    return;
+
+  pm->KeepaliveImpulse(extension);
+}
+
+// Calls OnKeepaliveOnUIThread on UI thread.
+void OnKeepalive(
+    const content::BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
+    const base::FilePath& profile_data_directory) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(&OnKeepaliveOnUIThread,
+                                              instance_data,
+                                              profile_data_directory));
+}
+
+}  // namespace
 
 NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
     extensions::InfoMap* extension_info_map)
@@ -180,4 +257,9 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
 
   *file_path = resource_file_path;
   return true;
+}
+
+content::BrowserPpapiHost::OnKeepaliveCallback
+NaClBrowserDelegateImpl::GetOnKeepaliveCallback() {
+  return base::Bind(&OnKeepalive);
 }

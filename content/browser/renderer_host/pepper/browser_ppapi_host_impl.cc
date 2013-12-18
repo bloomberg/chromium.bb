@@ -7,9 +7,9 @@
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/pepper_renderer_instance_data.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace content {
 
@@ -55,7 +55,7 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
       in_process_(in_process),
       external_plugin_(external_plugin),
       ssl_context_helper_(new SSLContextHelper()) {
-  message_filter_ = new HostMessageFilter(ppapi_host_.get());
+  message_filter_ = new HostMessageFilter(ppapi_host_.get(), this);
   ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
       new ContentBrowserPepperHostFactory(this)));
 }
@@ -126,6 +126,11 @@ GURL BrowserPpapiHostImpl::GetPluginURLForInstance(PP_Instance instance) {
   return found->second.plugin_url;
 }
 
+void BrowserPpapiHostImpl::SetOnKeepaliveCallback(
+      const BrowserPpapiHost::OnKeepaliveCallback& callback) {
+  on_keepalive_callback_ = callback;
+}
+
 void BrowserPpapiHostImpl::AddInstance(
     PP_Instance instance,
     const PepperRendererInstanceData& instance_data) {
@@ -142,26 +147,67 @@ void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {
   instance_map_.erase(found);
 }
 
+BrowserPpapiHostImpl::HostMessageFilter::HostMessageFilter(
+    ppapi::host::PpapiHost* ppapi_host,
+    BrowserPpapiHostImpl* browser_ppapi_host_impl)
+        : ppapi_host_(ppapi_host),
+          browser_ppapi_host_impl_(browser_ppapi_host_impl) {
+}
+
 bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
     const IPC::Message& msg) {
   // Don't forward messages if our owner object has been destroyed.
   if (!ppapi_host_)
     return false;
 
-  /* TODO(brettw) when we add messages, here, the code should look like this:
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl, msg)
+  IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl::HostMessageFilter, msg)
     // Add necessary message handlers here.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_Keepalive, OnKeepalive)
     IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP();
   return handled;
-  */
-  return ppapi_host_->OnMessageReceived(msg);
 }
 
 void BrowserPpapiHostImpl::HostMessageFilter::OnHostDestroyed() {
   DCHECK(ppapi_host_);
   ppapi_host_ = NULL;
+  browser_ppapi_host_impl_ = NULL;
+}
+
+BrowserPpapiHostImpl::HostMessageFilter::~HostMessageFilter() {
+}
+
+void BrowserPpapiHostImpl::HostMessageFilter::OnKeepalive() {
+  if (browser_ppapi_host_impl_)
+    browser_ppapi_host_impl_->OnKeepalive();
+}
+
+void BrowserPpapiHostImpl::OnKeepalive() {
+  // An instance has been active. The on_keepalive_callback_ will be
+  // used to permit the content embedder to handle this, e.g. by tracking
+  // activity and shutting down processes that go idle.
+  //
+  // Currently embedders do not need to distinguish between instances having
+  // different idle state, and thus this implementation handles all instances
+  // for this module together.
+
+  if (on_keepalive_callback_.is_null())
+    return;
+
+  BrowserPpapiHost::OnKeepaliveInstanceData
+      instance_data(instance_map_.size());
+
+  InstanceMap::iterator instance = instance_map_.begin();
+  int i = 0;
+  while (instance != instance_map_.end()) {
+    instance_data[i].render_process_id = instance->second.render_process_id;
+    instance_data[i].render_view_id = instance->second.render_view_id;
+    instance_data[i].document_url = instance->second.document_url;
+    ++instance;
+    ++i;
+  }
+  on_keepalive_callback_.Run(instance_data, profile_data_directory_);
 }
 
 }  // namespace content

@@ -53,3 +53,8 @@ bool TestNaClBrowserDelegate::URLMatchesDebugPatterns(
     const GURL& manifest_url) {
   return false;
 }
+
+content::BrowserPpapiHost::OnKeepaliveCallback
+TestNaClBrowserDelegate::GetOnKeepaliveCallback() {
+  return content::BrowserPpapiHost::OnKeepaliveCallback();
+}

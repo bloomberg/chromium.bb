@@ -726,6 +726,9 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
                     PP_VideoDecodeError_Dev /* error */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
+// Reports to the browser that a plugin has been active.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Keepalive)
+
 // -----------------------------------------------------------------------------
 // These are from the plugin to the renderer.
 

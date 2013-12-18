@@ -203,6 +203,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
                    content::Source<BrowserContext>(original_context));
   }
 
+  // Note: event_page_idle_time_ must be sufficiently larger (e.g. 2x) than
+  // kKeepaliveThrottleIntervalInSeconds in ppapi/proxy/plugin_globals.
   event_page_idle_time_ = base::TimeDelta::FromSeconds(10);
   unsigned idle_time_msec = 0;
   if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

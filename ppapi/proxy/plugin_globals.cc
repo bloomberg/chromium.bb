@@ -10,10 +10,17 @@
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/enter.h"
+
+namespace {
+
+const int kKeepaliveThrottleIntervalDefault = 5000;
+
+}  // namespace
 
 namespace ppapi {
 namespace proxy {
@@ -54,7 +61,11 @@ PluginGlobals::PluginGlobals()
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker),
       resource_reply_thread_registrar_(
-          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())) {
+          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())),
+      plugin_recently_active_(false),
+      keepalive_throttle_interval_milliseconds_(
+          kKeepaliveThrottleIntervalDefault),
+      weak_factory_(this) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 
@@ -71,7 +82,11 @@ PluginGlobals::PluginGlobals(PerThreadForTest per_thread_for_test)
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker),
       resource_reply_thread_registrar_(
-          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())) {
+          new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())),
+      plugin_recently_active_(false),
+      keepalive_throttle_interval_milliseconds_(
+          kKeepaliveThrottleIntervalDefault),
+      weak_factory_(this) {
   DCHECK(!plugin_globals_);
 }
 
@@ -165,6 +180,21 @@ base::TaskRunner* PluginGlobals::GetFileTaskRunner() {
   return file_thread_->message_loop_proxy();
 }
 
+void PluginGlobals::MarkPluginIsActive() {
+  if (!plugin_recently_active_) {
+    plugin_recently_active_ = true;
+    if (!GetBrowserSender() || !base::MessageLoop::current())
+      return;
+    GetBrowserSender()->Send(new PpapiHostMsg_Keepalive());
+
+    GetMainThreadMessageLoop()->PostDelayedTask(FROM_HERE,
+        RunWhileLocked(base::Bind(&PluginGlobals::OnReleaseKeepaliveThrottle,
+                                  weak_factory_.GetWeakPtr())),
+        base::TimeDelta::FromMilliseconds(
+            keepalive_throttle_interval_milliseconds()));
+  }
+}
+
 IPC::Sender* PluginGlobals::GetBrowserSender() {
   if (!browser_sender_.get()) {
     browser_sender_.reset(
@@ -195,8 +225,21 @@ MessageLoopResource* PluginGlobals::loop_for_main_thread() {
   return loop_for_main_thread_.get();
 }
 
+int PluginGlobals::keepalive_throttle_interval_milliseconds() const {
+  return keepalive_throttle_interval_milliseconds_;
+}
+
+void PluginGlobals::set_keepalive_throttle_interval_milliseconds(int i) {
+  keepalive_throttle_interval_milliseconds_ = i;
+}
+
 bool PluginGlobals::IsPluginGlobals() const {
   return true;
+}
+
+void PluginGlobals::OnReleaseKeepaliveThrottle() {
+  ppapi::ProxyLock::AssertAcquiredDebugOnly();
+  plugin_recently_active_ = false;
 }
 
 }  // namespace proxy
