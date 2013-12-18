@@ -229,14 +229,14 @@ Page* Frame::page() const
 {
     if (m_host)
         return &m_host->page();
-    return nullptr;
+    return 0;
 }
 
 Settings* Frame::settings() const
 {
     if (m_host)
         return &m_host->settings();
-    return nullptr;
+    return 0;
 }
 
 void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot shouldAdjustViewSize)
