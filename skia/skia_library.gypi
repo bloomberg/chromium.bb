@@ -54,8 +54,6 @@
     '../third_party/skia/src/ports/SkOSFile_posix.cpp',
     '../third_party/skia/src/ports/SkOSFile_stdio.cpp',
     '../third_party/skia/src/ports/SkOSFile_win.cpp',
-    '../third_party/skia/src/ports/SkThread_pthread.cpp',
-    '../third_party/skia/src/ports/SkThread_win.cpp',
     '../third_party/skia/src/ports/SkTime_Unix.cpp',
     '../third_party/skia/src/ports/SkTLS_pthread.cpp',
     '../third_party/skia/src/ports/SkTLS_win.cpp',
@@ -270,7 +268,6 @@
     [ 'OS == "win"', {
       'sources!': [
         '../third_party/skia/src/ports/SkOSFile_posix.cpp',
-        '../third_party/skia/src/ports/SkThread_pthread.cpp',
         '../third_party/skia/src/ports/SkTime_Unix.cpp',
         '../third_party/skia/src/ports/SkTLS_pthread.cpp',
       ],

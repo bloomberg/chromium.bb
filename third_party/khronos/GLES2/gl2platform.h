@@ -1,7 +1,7 @@
 #ifndef __gl2platform_h_
 #define __gl2platform_h_
 
-/* $Revision: 10602 $ on $Date:: 2010-03-04 22:35:34 -0800 #$ */
+/* $Revision: 23328 $ on $Date:: 2013-10-02 02:28:28 -0700 #$ */
 
 /*
  * This document is licensed under the SGI Free Software B License Version
@@ -19,25 +19,12 @@
 
 #include <KHR/khrplatform.h>
 
-#if defined(COMPONENT_BUILD)
-#if defined(WIN32)
-#if defined(GLES2_C_LIB_IMPLEMENTATION)
-#define GL_APICALL __declspec(dllexport)
-#else
-#define GL_APICALL __declspec(dllimport)
-#endif  /* defined(GLES2_C_LIB_IMPLEMENTATION) */
-#else /* defined(WIN32) */
-#define GL_APICALL __attribute__((visibility("default")))
-#endif
-#else
-#   define GL_APICALL
+#ifndef GL_APICALL
+#define GL_APICALL  KHRONOS_APICALL
 #endif
 
 #ifndef GL_APIENTRY
 #define GL_APIENTRY KHRONOS_APIENTRY
 #endif
-
-#undef GL_APIENTRY
-#define GL_APIENTRY
 
 #endif /* __gl2platform_h_ */

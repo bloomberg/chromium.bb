@@ -53,9 +53,17 @@ _GL_TYPES = {
   'GLclampf': 'float',
   'GLvoid': 'void',
   'GLfixed': 'int',
-  'GLclampx': 'int',
+  'GLclampx': 'int'
+}
+
+_GL_TYPES_32 = {
   'GLintptr': 'long int',
-  'GLsizeiptr': 'long int',
+  'GLsizeiptr': 'long int'
+}
+
+_GL_TYPES_64 = {
+  'GLintptr': 'long long int',
+  'GLsizeiptr': 'long long int'
 }
 
 # Capabilites selected with glEnable
@@ -7593,6 +7601,13 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       file.Write("\n#ifndef __gl2_h_\n")
       for (k, v) in _GL_TYPES.iteritems():
         file.Write("typedef %s %s;\n" % (v, k))
+      file.Write("#ifdef _WIN64\n")
+      for (k, v) in _GL_TYPES_64.iteritems():
+        file.Write("typedef %s %s;\n" % (v, k))
+      file.Write("#else\n")
+      for (k, v) in _GL_TYPES_32.iteritems():
+        file.Write("typedef %s %s;\n" % (v, k))
+      file.Write("#endif  // _WIN64\n")
       file.Write("#endif  // __gl2_h_\n\n")
 
     for interface in self.pepper_interfaces:

@@ -2355,9 +2355,9 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
 
         const void* commands = GetPut();
         gl_->PixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-        gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, kSrcWidth);
-        gl_->PixelStorei(GL_UNPACK_SKIP_PIXELS, kSrcSubImageX0);
-        gl_->PixelStorei(GL_UNPACK_SKIP_ROWS, kSrcSubImageY0);
+        gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
+        gl_->PixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
+        gl_->PixelStorei(GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
         gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
         if (sub) {
           gl_->TexImage2D(

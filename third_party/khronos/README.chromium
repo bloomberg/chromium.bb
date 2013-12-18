@@ -2,7 +2,7 @@ Name: Khronos header files
 Short Name: khronos_headers
 URL: http://www.khronos.org/registry
 Version: unknown
-Date: 2012-02-01
+Date: 2013-12-13
 License: MIT/X11, SGI Free Software License B
 Security Critical: no
 
@@ -21,11 +21,10 @@ and not here.
 
 GLES2/gl2.h
  - Added include of gl2chromium.h
-GLES2/gl2ext.h
- - Added Chromium and Angle extensions.
- - Added include of gl2chromium.h
 EGL/eglplatform.h
  - Added EGLNative*Type for Mac.
  - Added EGLNative*Type for native linux framebuffers.
+KHR/khrplatform.h
+ - Modified KHRONOS_APICALL and KHRONOS_APIENTRY
 DEPS
  - Added DEPS file to prevent inclusion of external dependencies.
