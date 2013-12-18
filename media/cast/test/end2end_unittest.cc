@@ -536,9 +536,16 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
   EXPECT_EQ(i, test_receiver_video_callback_->number_times_called());
 }
 
+// TODO(mikhal): Crashes on the Win7 x64 bots. Re-enable.
+// http://crbug.com/329563
+#if defined(OS_WIN)
+#define MAYBE_LoopNoLossPcm16ExternalDecoder DISABLED_LoopNoLossPcm16ExternalDecoder
+#else
+#define MAYBE_LoopNoLossPcm16ExternalDecoder LoopNoLossPcm16ExternalDecoder
+#endif
 // This tests our external decoder interface for Audio.
 // Audio test without packet loss using raw PCM 16 audio "codec";
-TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
+TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16ExternalDecoder) {
   SetupConfig(kPcm16, 32000, true, 1);
   Create();
 
