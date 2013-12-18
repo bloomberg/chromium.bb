@@ -67,6 +67,9 @@
   "dromaeo.jslibtraverseprototype":{
     "description":"Traversing a DOM structure using the Prototype JavaScript Library."
   },
+  "fast_path.key_mobile_sites":{
+    "description":"Measures CPU usage on rendering critical threads. Both clock and CPU time is measured."
+  },
    "html5gaming": {
     "description": "Impact HTML5 Gaming benchmark.\n\nTests one very specific use case: smooth running games rendered with the <canvas> element. The score for the HTML5-Benchmark takes the total time the browser spent rendering frames (formula is 1000000/(sqrt(totalTime) + lagTime * 0.1)). The benchmark automatically runs at a reasonable screen size. Final score is a indicator for the browser's ability to smoothly run HTML5 games.",
     "code": ["chrome/src/tools/perf/benchmark/html5gaming.py"]
