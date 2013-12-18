@@ -42,7 +42,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Page.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -82,12 +81,8 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
     if (scriptURL.isEmpty())
         return 0;
 
-    if (document->frame()->loader().client()->sharedWorkerRepositoryClient()) {
+    if (document->frame()->loader().client()->sharedWorkerRepositoryClient())
         document->frame()->loader().client()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
-    } else {
-        if (document->page() && document->page()->sharedWorkerRepositoryClient())
-            document->page()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
-    }
 
     return worker.release();
 }

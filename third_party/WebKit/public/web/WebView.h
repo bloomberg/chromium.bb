@@ -57,7 +57,6 @@ class WebSettings;
 class WebSpellCheckClient;
 class WebString;
 class WebPasswordGeneratorClient;
-class WebSharedWorkerRepositoryClient;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
 struct WebMediaPlayerAction;
@@ -103,7 +102,6 @@ public:
     // FIXME: Remove setValidationMessageClient.
     virtual void setValidationMessageClient(void*) = 0;
     virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) = 0;
-    virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
     // Options -------------------------------------------------------------
 

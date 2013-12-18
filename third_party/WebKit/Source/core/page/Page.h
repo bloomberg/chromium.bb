@@ -73,7 +73,6 @@ class VisibleSelection;
 class ScrollableArea;
 class ScrollingCoordinator;
 class Settings;
-class SharedWorkerRepositoryClient;
 class SpellCheckerClient;
 class StorageNamespace;
 class UndoStack;
@@ -153,8 +152,6 @@ public:
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
     void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
-    SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return m_sharedWorkerRepositoryClient; }
-    void setSharedWorkerRepositoryClient(SharedWorkerRepositoryClient* client) { m_sharedWorkerRepositoryClient = client; }
 
     ScrollingCoordinator* scrollingCoordinator();
 
@@ -269,7 +266,6 @@ private:
     BackForwardClient* m_backForwardClient;
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
-    SharedWorkerRepositoryClient* m_sharedWorkerRepositoryClient;
     SpellCheckerClient* const m_spellCheckerClient;
 
     UseCounter m_useCounter;

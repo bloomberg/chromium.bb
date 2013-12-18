@@ -47,7 +47,6 @@
 #include "PopupContainer.h"
 #include "PrerendererClientImpl.h"
 #include "RuntimeEnabledFeatures.h"
-#include "SharedWorkerRepositoryClientImpl.h"
 #include "SpeechInputClientImpl.h"
 #include "SpeechRecognitionClientProxy.h"
 #include "ValidationMessageClientImpl.h"
@@ -352,12 +351,6 @@ void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient)
 void WebViewImpl::setPasswordGeneratorClient(WebPasswordGeneratorClient* client)
 {
     m_passwordGeneratorClient = client;
-}
-
-void WebViewImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient* client)
-{
-    m_sharedWorkerRepositoryClient = SharedWorkerRepositoryClientImpl::create(client);
-    m_page->setSharedWorkerRepositoryClient(m_sharedWorkerRepositoryClient.get());
 }
 
 WebViewImpl::WebViewImpl(WebViewClient* client)
