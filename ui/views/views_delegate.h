@@ -102,11 +102,6 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual NonClientFrameView* CreateDefaultNonClientFrameView(
       Widget* widget) = 0;
 
-  // Returns whether the embedding app wants windows to be created with the
-  // views::Widget marked as transparent.  For example, an app may wish to
-  // apply transparent window frames in the NonClientFrameView.
-  virtual bool UseTransparentWindows() const = 0;
-
   // AddRef/ReleaseRef are invoked while a menu is visible. They are used to
   // ensure we don't attempt to exit while a menu is showing.
   virtual void AddRef() = 0;

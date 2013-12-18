@@ -112,9 +112,7 @@ Widget::InitParams::InitParams()
     : type(TYPE_WINDOW),
       delegate(NULL),
       child(false),
-      opacity((ViewsDelegate::views_delegate &&
-               ViewsDelegate::views_delegate->UseTransparentWindows()) ?
-              TRANSLUCENT_WINDOW : INFER_OPACITY),
+      opacity(INFER_OPACITY),
       accept_events(true),
       can_activate(true),
       keep_on_top(false),
@@ -137,10 +135,7 @@ Widget::InitParams::InitParams(Type type)
     : type(type),
       delegate(NULL),
       child(type == TYPE_CONTROL),
-      opacity(((type == TYPE_WINDOW || type == TYPE_PANEL) &&
-               ViewsDelegate::views_delegate &&
-               ViewsDelegate::views_delegate->UseTransparentWindows()) ?
-              TRANSLUCENT_WINDOW : INFER_OPACITY),
+      opacity(INFER_OPACITY),
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU &&
                    type != TYPE_DRAG),
@@ -349,21 +344,17 @@ void Widget::Init(const InitParams& in_params) {
        params.type != InitParams::TYPE_CONTROL &&
        params.type != InitParams::TYPE_TOOLTIP);
   params.top_level = is_top_level_;
-  if (params.opacity == InitParams::INFER_OPACITY) {
-#if defined(OS_WIN) && defined(USE_AURA)
-    // By default, make all top-level windows but the main window transparent
-    // initially so that they can be made to fade in.
-    if (is_top_level_ && params.type != InitParams::TYPE_WINDOW)
-      params.opacity = InitParams::TRANSLUCENT_WINDOW;
-    else
-      params.opacity = InitParams::OPAQUE_WINDOW;
-#else
-    params.opacity = InitParams::OPAQUE_WINDOW;
-#endif
-  }
+
+  if (params.opacity == views::Widget::InitParams::INFER_OPACITY &&
+      params.type != views::Widget::InitParams::TYPE_WINDOW &&
+      params.type != views::Widget::InitParams::TYPE_PANEL)
+    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);
+
+  if (params.opacity == views::Widget::InitParams::INFER_OPACITY)
+    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this, params);

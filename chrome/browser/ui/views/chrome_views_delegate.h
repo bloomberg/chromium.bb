@@ -42,7 +42,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #endif
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) OVERRIDE;
-  virtual bool UseTransparentWindows() const OVERRIDE;
   virtual void AddRef() OVERRIDE;
   virtual void ReleaseRef() OVERRIDE;
   virtual content::WebContents* CreateWebContents(
@@ -54,6 +53,11 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration() OVERRIDE;
 
  private:
+  // Function to retrieve default opacity value mainly based on platform
+  // and desktop context.
+  views::Widget::InitParams::WindowOpacity GetOpacityForInitParams(
+      const views::Widget::InitParams& params);
+
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);
 };
 

@@ -175,21 +175,6 @@ views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
   return NULL;
 }
 
-bool ChromeViewsDelegate::UseTransparentWindows() const {
-#if defined(USE_ASH)
-  // TODO(scottmg): http://crbug.com/133312. This needs context to determine
-  // if it's desktop or ash.
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
-#else
-  return false;
-#endif
-}
-
 void ChromeViewsDelegate::AddRef() {
   g_browser_process->AddRefModule();
 }
@@ -207,6 +192,10 @@ content::WebContents* ChromeViewsDelegate::CreateWebContents(
 void ChromeViewsDelegate::OnBeforeWidgetInit(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {
+  // We need to determine opacity if it's not already specified.
+  if (params->opacity == views::Widget::InitParams::INFER_OPACITY)
+    params->opacity = GetOpacityForInitParams(*params);
+
   // If we already have a native_widget, we don't have to try to come
   // up with one.
   if (params->native_widget)
@@ -311,3 +300,11 @@ base::TimeDelta
 ChromeViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
   return base::TimeDelta();
 }
+
+#if !defined(USE_AURA) && !defined(USE_CHROMEOS)
+views::Widget::InitParams::WindowOpacity
+ChromeViewsDelegate::GetOpacityForInitParams(
+    const views::Widget::InitParams& params) {
+  return views::Widget::InitParams::OPAQUE_WINDOW;
+}
+#endif

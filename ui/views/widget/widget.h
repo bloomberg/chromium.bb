@@ -169,10 +169,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     explicit InitParams(Type type);
     ~InitParams();
 
-    // Will return the first of the following that isn't NULL: the native view,
-    // |parent|, |context|.
-    gfx::NativeView GetContext() const;
-
     Type type;
     // If NULL, a default implementation will be constructed.
     WidgetDelegate* delegate;

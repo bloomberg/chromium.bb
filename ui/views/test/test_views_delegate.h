@@ -59,7 +59,6 @@ class TestViewsDelegate : public ViewsDelegate {
 #endif
   virtual NonClientFrameView* CreateDefaultNonClientFrameView(
       Widget* widget) OVERRIDE;
-  virtual bool UseTransparentWindows() const OVERRIDE;
   virtual void AddRef() OVERRIDE {}
   virtual void ReleaseRef() OVERRIDE {}
   virtual content::WebContents* CreateWebContents(

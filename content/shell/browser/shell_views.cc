@@ -56,11 +56,6 @@ class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
     use_transparent_windows_ = transparent;
   }
 
-  // Overridden from views::TestViewsDelegate:
-  virtual bool UseTransparentWindows() const OVERRIDE {
-    return use_transparent_windows_;
-  }
-
  private:
   bool use_transparent_windows_;
 

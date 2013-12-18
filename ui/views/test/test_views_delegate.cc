@@ -54,10 +54,6 @@ NonClientFrameView* TestViewsDelegate::CreateDefaultNonClientFrameView(
   return NULL;
 }
 
-bool TestViewsDelegate::UseTransparentWindows() const {
-  return use_transparent_windows_;
-}
-
 content::WebContents* TestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) {
@@ -67,6 +63,12 @@ content::WebContents* TestViewsDelegate::CreateWebContents(
 void TestViewsDelegate::OnBeforeWidgetInit(
     Widget::InitParams* params,
     internal::NativeWidgetDelegate* delegate) {
+  if (params->opacity == Widget::InitParams::INFER_OPACITY) {
+    if (use_transparent_windows_)
+      params->opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+    else
+      params->opacity = Widget::InitParams::OPAQUE_WINDOW;
+  }
 }
 
 base::TimeDelta TestViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
