@@ -1698,7 +1698,7 @@ def GenerateNPlus1Payloads(build_root, previous_versions_dir, target_image_path,
          '--nplus1',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
-  cros_build_lib.RunCommandCaptureOutput(cmd)
+  cros_build_lib.RunCommand(cmd)
 
 
 def GetChromeLKGM(svn_revision):
