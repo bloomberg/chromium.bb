@@ -9,14 +9,6 @@
 
 namespace cc {
 
-#ifdef SK_SUPPORT_LEGACY_PIXELREF_CONSTRUCTOR
-// Takes ownership of pixels.
-ETC1PixelRef::ETC1PixelRef(scoped_ptr<uint8_t[]> pixels)
-    : pixels_(pixels.Pass()) {
-  setImmutable();
-}
-#endif
-
 // Takes ownership of pixels.
 ETC1PixelRef::ETC1PixelRef(const SkImageInfo& info,
                            scoped_ptr<uint8_t[]> pixels)

@@ -714,8 +714,8 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_BACKWARD));
 
-  scoped_ptr<cc::PaintedScrollbarLayerImpl> vertical_scrollbar(
-      cc::PaintedScrollbarLayerImpl::Create(
+  scoped_ptr<PaintedScrollbarLayerImpl> vertical_scrollbar(
+      PaintedScrollbarLayerImpl::Create(
           host_impl_->active_tree(),
           20,
           VERTICAL));
@@ -5129,10 +5129,14 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
+  SkImageInfo info = {4, 4, kPMColor_SkColorType, kPremul_SkAlphaType};
   scoped_ptr<uint8_t[]> pixels(new uint8_t[8]);
   skia::RefPtr<ETC1PixelRef> etc1_pixel_ref =
-      skia::AdoptRef(new ETC1PixelRef(pixels.Pass()));
-  UIResourceBitmap bitmap(etc1_pixel_ref, gfx::Size(4, 4));
+      skia::AdoptRef(new ETC1PixelRef(info, pixels.Pass()));
+  UIResourceBitmap bitmap(etc1_pixel_ref, gfx::Size(info.fWidth, info.fHeight));
+  // TODO(powel) Now that pixel_refs have info, the UIResourceBitmap
+  // constructor can get the can size from (pixelref->info().fWidth,
+  // pixelref->info().fHeight).
 
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
