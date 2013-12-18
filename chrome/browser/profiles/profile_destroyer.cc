@@ -16,7 +16,13 @@
 
 namespace {
 
+#if defined(OS_ANDROID)
+// Set the render host waiting time to 5s on Android, that's the same
+// as ANR timeout.
+const int64 kTimerDelaySeconds = 5;
+#else
 const int64 kTimerDelaySeconds = 1;
+#endif
 
 }  // namespace
 
