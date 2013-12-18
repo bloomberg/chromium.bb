@@ -786,8 +786,10 @@ AutofillDialogViews::SectionContainer::SectionContainer(
                                               kDetailSectionVerticalPadding,
                                               kDialogEdgePadding));
 
-  // TODO(estade): this label should be semi-bold.
-  views::Label* label_view = new views::Label(label);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::FontList default_fonts = rb.GetFontList(ui::ResourceBundle::BaseFont);
+  gfx::FontList bold_fonts = default_fonts.DeriveFontList(gfx::Font::BOLD);
+  views::Label* label_view = new views::Label(label, bold_fonts);
   label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   views::View* label_bar = new views::View();
