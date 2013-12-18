@@ -76,7 +76,7 @@ WebVector<WebDragData::Item> WebDragData::items() const
         if (originalItem->kind() == ChromiumDataObjectItem::StringKind) {
             item.storageType = Item::StorageTypeString;
             item.stringType = originalItem->type();
-            item.stringData = originalItem->internalGetAsString();
+            item.stringData = originalItem->getAsString();
         } else if (originalItem->kind() == ChromiumDataObjectItem::FileKind) {
             if (originalItem->sharedBuffer()) {
                 item.storageType = Item::StorageTypeBinaryData;

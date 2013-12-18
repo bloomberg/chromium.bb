@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/chromium/ChromiumDataObjectItem.h"
 
-#include "core/dom/StringCallback.h"
 #include "core/fileapi/Blob.h"
 #include "core/platform/Pasteboard.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
@@ -101,14 +100,6 @@ ChromiumDataObjectItem::ChromiumDataObjectItem(Kind kind, const String& type, ui
 {
 }
 
-void ChromiumDataObjectItem::getAsString(PassOwnPtr<StringCallback> callback, ExecutionContext* context) const
-{
-    if (!callback || kind() != StringKind)
-        return;
-
-    StringCallback::scheduleCallback(callback, context, internalGetAsString());
-}
-
 PassRefPtr<Blob> ChromiumDataObjectItem::getAsFile() const
 {
     if (kind() != FileKind)
@@ -147,7 +138,7 @@ PassRefPtr<Blob> ChromiumDataObjectItem::getAsFile() const
     return 0;
 }
 
-String ChromiumDataObjectItem::internalGetAsString() const
+String ChromiumDataObjectItem::getAsString() const
 {
     ASSERT(m_kind == StringKind);
 

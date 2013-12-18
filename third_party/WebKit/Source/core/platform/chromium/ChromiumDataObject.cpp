@@ -154,7 +154,7 @@ String ChromiumDataObject::getData(const String& type) const
 {
     for (size_t i = 0; i < m_itemList.size(); ++i)  {
         if (m_itemList[i]->kind() == ChromiumDataObjectItem::StringKind && m_itemList[i]->type() == type)
-            return m_itemList[i]->internalGetAsString();
+            return m_itemList[i]->getAsString();
     }
     return String();
 }
@@ -172,7 +172,7 @@ void ChromiumDataObject::urlAndTitle(String& url, String* title) const
     RefPtr<ChromiumDataObjectItem> item = findStringItem(mimeTypeTextURIList);
     if (!item)
         return;
-    url = convertURIListToURL(item->internalGetAsString());
+    url = convertURIListToURL(item->getAsString());
     if (title)
         *title = item->title();
 }
@@ -188,7 +188,7 @@ void ChromiumDataObject::htmlAndBaseURL(String& html, KURL& baseURL) const
     RefPtr<ChromiumDataObjectItem> item = findStringItem(mimeTypeTextHTML);
     if (!item)
         return;
-    html = item->internalGetAsString();
+    html = item->getAsString();
     baseURL = item->baseURL();
 }
 

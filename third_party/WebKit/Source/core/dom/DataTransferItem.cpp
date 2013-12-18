@@ -75,8 +75,10 @@ void DataTransferItem::getAsString(ExecutionContext* context, PassOwnPtr<StringC
 {
     if (!m_clipboard->canReadData())
         return;
+    if (!callback || m_item->kind() != ChromiumDataObjectItem::StringKind)
+        return;
 
-    m_item->getAsString(callback, context);
+    StringCallback::scheduleCallback(callback, context, m_item->getAsString());
 }
 
 PassRefPtr<Blob> DataTransferItem::getAsFile() const

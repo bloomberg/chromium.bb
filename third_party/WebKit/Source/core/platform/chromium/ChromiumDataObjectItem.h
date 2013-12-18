@@ -41,8 +41,6 @@
 namespace WebCore {
 
 class Blob;
-class ExecutionContext;
-class StringCallback;
 
 class ChromiumDataObjectItem : public RefCounted<ChromiumDataObjectItem> {
 public:
@@ -60,11 +58,10 @@ public:
 
     Kind kind() const { return m_kind; }
     String type() const { return m_type; }
-    void getAsString(PassOwnPtr<StringCallback>, ExecutionContext*) const;
+    String getAsString() const;
     PassRefPtr<Blob> getAsFile() const;
 
     // Used to support legacy DataTransfer APIs and renderer->browser serialization.
-    String internalGetAsString() const;
     PassRefPtr<SharedBuffer> sharedBuffer() const { return m_sharedBuffer; }
     String title() const { return m_title; }
     KURL baseURL() const { return m_baseURL; }
