@@ -9,6 +9,7 @@ group("root") {
   deps = [
     "//base(//build/toolchain/nacl:x86_newlib)",
     "//chrome",
+    "//components/navigation_metrics",
     "//components/onc:onc_component",
     "//components/startup_metric_utils",
     "//crypto",

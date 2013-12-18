@@ -67,4 +67,3 @@ test("url_unittests") {
     "//third_party/icu:icuuc",
   ]
 }
-
