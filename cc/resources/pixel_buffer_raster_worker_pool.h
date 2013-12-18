@@ -82,6 +82,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   bool should_notify_client_if_no_tasks_are_pending_;
   bool should_notify_client_if_no_tasks_required_for_activation_are_pending_;
+  bool raster_finished_task_pending_;
+  bool raster_required_for_activation_finished_task_pending_;
   ResourceFormat format_;
 
   DISALLOW_COPY_AND_ASSIGN(PixelBufferRasterWorkerPool);

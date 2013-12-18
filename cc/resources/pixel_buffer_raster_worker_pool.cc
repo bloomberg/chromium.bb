@@ -102,7 +102,9 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
       check_for_completed_raster_tasks_pending_(false),
       should_notify_client_if_no_tasks_are_pending_(false),
       should_notify_client_if_no_tasks_required_for_activation_are_pending_(
-          false) {
+          false),
+      raster_finished_task_pending_(false),
+      raster_required_for_activation_finished_task_pending_(false) {
 }
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
@@ -255,6 +257,7 @@ void PixelBufferRasterWorkerPool::OnRasterTasksFinished() {
   // perform another check in that case as we've already notified the client.
   if (!should_notify_client_if_no_tasks_are_pending_)
     return;
+  raster_finished_task_pending_ = false;
 
   // Call CheckForCompletedRasterTasks() when we've finished running all
   // raster tasks needed since last time ScheduleTasks() was called.
@@ -268,6 +271,7 @@ void PixelBufferRasterWorkerPool::OnRasterTasksRequiredForActivationFinished() {
   // CheckForCompletedRasterTasks() if the client has already been notified.
   if (!should_notify_client_if_no_tasks_required_for_activation_are_pending_)
     return;
+  raster_required_for_activation_finished_task_pending_ = false;
 
   // This reduces latency between the time when all tasks required for
   // activation have finished running and the time when the client is
@@ -386,9 +390,11 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   // Determine what client notifications to generate.
   bool will_notify_client_that_no_tasks_required_for_activation_are_pending =
       (should_notify_client_if_no_tasks_required_for_activation_are_pending_ &&
+       !raster_required_for_activation_finished_task_pending_ &&
        !HasPendingTasksRequiredForActivation());
   bool will_notify_client_that_no_tasks_are_pending =
       (should_notify_client_if_no_tasks_are_pending_ &&
+       !raster_finished_task_pending_ &&
        !HasPendingTasks());
 
   // Adjust the need to generate notifications before scheduling more tasks.
@@ -534,6 +540,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       should_notify_client_if_no_tasks_required_for_activation_are_pending_) {
     new_raster_required_for_activation_finished_task =
         CreateRasterRequiredForActivationFinishedTask();
+    raster_required_for_activation_finished_task_pending_ = true;
     internal::GraphNode* raster_required_for_activation_finished_node =
         CreateGraphNodeForTask(
             new_raster_required_for_activation_finished_task.get(),
@@ -555,6 +562,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   if (scheduled_raster_task_count == PendingRasterTaskCount() &&
       should_notify_client_if_no_tasks_are_pending_) {
     new_raster_finished_task = CreateRasterFinishedTask();
+    raster_finished_task_pending_ = true;
     internal::GraphNode* raster_finished_node =
         CreateGraphNodeForTask(new_raster_finished_task.get(),
                                1u,  // Priority 1
