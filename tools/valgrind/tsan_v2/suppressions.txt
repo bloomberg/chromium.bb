@@ -155,3 +155,6 @@ race:PR_Lock
 
 # http://crbug.com/329225
 race:blink::currentTimeFunction
+
+# http://crbug.com/329460
+race:extensions::InfoMap::AddExtension
