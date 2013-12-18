@@ -9,6 +9,7 @@
 // a loadable module.
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -18,13 +19,6 @@
 #endif  // OS_*
 
 #include "base/strings/string16.h"
-
-// Macro useful for writing cross-platform function pointers.
-#if defined(OS_WIN) && !defined(CDECL)
-#define CDECL __cdecl
-#else
-#define CDECL
-#endif
 
 namespace base {
 

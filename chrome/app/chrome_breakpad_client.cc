@@ -38,7 +38,7 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "chrome/common/dump_without_crashing.h"
+#include "base/debug/dump_without_crashing.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -325,12 +325,6 @@ bool ChromeBreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
 
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
-
-#if defined(OS_POSIX)
-void ChromeBreakpadClient::SetDumpWithoutCrashingFunction(void (*function)()) {
-  logging::SetDumpWithoutCrashingFunction(function);
-}
-#endif
 
 size_t ChromeBreakpadClient::RegisterCrashKeys() {
   // Note: This is not called on Windows because Breakpad is initialized in the

@@ -112,8 +112,6 @@
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
         'common/descriptors_android.h',
-        'common/dump_without_crashing.cc',
-        'common/dump_without_crashing.h',
         'common/encrypted_media_messages_android.h',
         'common/extensions/api/commands/commands_handler.cc',
         'common/extensions/api/commands/commands_handler.h',

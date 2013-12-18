@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/logging_chrome.h"
 
 #if defined(OS_WIN)
@@ -49,7 +49,7 @@ void NullPointerCrash(int line_number) {
 #ifndef NDEBUG
   *NullPointer() = line_number;  // Crash.
 #else
-  logging::DumpWithoutCrashing();
+  base::debug::DumpWithoutCrashing();
 #endif
 }
 
@@ -861,7 +861,7 @@ class StartupWatchDogThread : public base::Watchdog {
 #ifndef NDEBUG
     DCHECK(false);
 #else
-    logging::DumpWithoutCrashing();
+    base::debug::DumpWithoutCrashing();
 #endif
   }
 

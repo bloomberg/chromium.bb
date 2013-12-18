@@ -33,6 +33,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -47,7 +48,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "ipc/ipc_logging.h"
 
@@ -96,7 +96,7 @@ void SilentRuntimeReportHandler(const std::string& str) {
 // Handler to silently dump the current process when there is an assert in
 // chrome.
 void DumpProcessAssertHandler(const std::string& str) {
-  logging::DumpWithoutCrashing();
+  base::debug::DumpWithoutCrashing();
 }
 #endif  // OS_WIN
 MSVC_ENABLE_OPTIMIZE();

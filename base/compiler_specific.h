@@ -211,4 +211,13 @@ void __msan_unpoison(const void *p, unsigned long s);
 #define MSAN_UNPOISON(p, s)
 #endif  // MEMORY_SANITIZER
 
+// Macro useful for writing cross-platform function pointers.
+#if !defined(CDECL)
+#if defined(OS_WIN)
+#define CDECL __cdecl
+#else  // defined(OS_WIN)
+#define CDECL
+#endif  // defined(OS_WIN)
+#endif  // !defined(CDECL)
+
 #endif  // BASE_COMPILER_SPECIFIC_H_

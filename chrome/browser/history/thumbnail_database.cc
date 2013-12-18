@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -19,7 +20,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/dump_without_crashing.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -121,7 +121,7 @@ void DumpWithoutCrashing2000(const std::string& debug_info) {
   base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
   base::debug::Alias(&debug_buf);
 
-  logging::DumpWithoutCrashing();
+  base::debug::DumpWithoutCrashing();
 }
 
 void ReportCorrupt(sql::Connection* db, size_t startup_kb) {

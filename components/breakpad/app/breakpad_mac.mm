@@ -12,6 +12,7 @@
 #import "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #import "base/logging.h"
@@ -243,8 +244,7 @@ void InitCrashReporter(const std::string& process_type) {
   }
 
   logging::SetLogMessageHandler(&FatalMessageHandler);
-  GetBreakpadClient()->SetDumpWithoutCrashingFunction(
-      &DumpHelper::DumpWithoutCrashing);
+  base::debug::SetDumpWithoutCrashingFunction(&DumpHelper::DumpWithoutCrashing);
 
   // abort() sends SIGABRT, which breakpad does not intercept.
   // Register a signal handler to crash in a way breakpad will

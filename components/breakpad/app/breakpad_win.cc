@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -744,6 +745,8 @@ void InitCrashReporter(const std::string& process_type_switch) {
       // handlers.
       google_breakpad::ExceptionHandler::HANDLER_NONE,
       dump_type, pipe_name.c_str(), custom_info);
+
+  base::debug::SetDumpWithoutCrashingFunction(&DumpProcessWithoutCrash);
 
   if (g_breakpad->IsOutOfProcess()) {
     // Tells breakpad to handle breakpoint and single step exceptions.

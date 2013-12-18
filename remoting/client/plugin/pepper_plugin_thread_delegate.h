@@ -7,13 +7,6 @@
 
 #include "remoting/base/plugin_thread_task_runner.h"
 
-// Macro useful for writing cross-platform function pointers.
-#if defined(OS_WIN) && !defined(CDECL)
-#define CDECL __cdecl
-#else
-#define CDECL
-#endif
-
 namespace pp {
 class Core;
 }  // namespace pp
