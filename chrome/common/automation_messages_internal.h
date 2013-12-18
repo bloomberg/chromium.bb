@@ -609,29 +609,29 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_NormalBrowserWindowCount,
 
 
 
-// A URL request to be fetched via automation
-IPC_MESSAGE_ROUTED2(AutomationMsg_RequestStart,
-                    int /* request_id */,
-                    AutomationURLRequest /* request */)
 
-// Read data from a URL request to be fetched via automation
-IPC_MESSAGE_ROUTED2(AutomationMsg_RequestRead,
-                    int /* request_id */,
-                    int /* bytes_to_read */)
 
-// Response to a AutomationMsg_RequestStart message
-IPC_MESSAGE_ROUTED2(AutomationMsg_RequestStarted,
-                    int /* request_id */,
-                    AutomationURLResponse /* response */)
 
-// Data read via automation
-IPC_MESSAGE_ROUTED2(AutomationMsg_RequestData,
-                    int /* request_id */,
-                    std::string /* data */)
 
-IPC_MESSAGE_ROUTED2(AutomationMsg_RequestEnd,
-                    int /* request_id */,
-                    net::URLRequestStatus /* status */)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

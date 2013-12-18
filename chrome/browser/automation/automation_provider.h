@@ -38,7 +38,6 @@
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
 class AutomationBrowserTracker;
-class AutomationResourceMessageFilter;
 class AutomationTabTracker;
 class AutomationWindowTracker;
 class Browser;
@@ -197,9 +196,6 @@ class AutomationProvider
       bool match_case,
       bool find_next,
       IPC::Message* reply_message);
-
-  scoped_refptr<AutomationResourceMessageFilter>
-      automation_resource_message_filter_;
 
   // True iff we should open a new automation IPC channel if it closes.
   bool reinitialize_on_channel_error_;

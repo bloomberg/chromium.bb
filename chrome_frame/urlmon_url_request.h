@@ -80,21 +80,6 @@ class UrlmonUrlRequestManager
 
   // PluginUrlRequestManager implementation.
   virtual PluginUrlRequestManager::ThreadSafeFlags GetThreadSafeFlags();
-  virtual void StartRequest(int request_id,
-                            const AutomationURLRequest& request_info);
-  virtual void ReadRequest(int request_id, int bytes_to_read);
-  virtual void EndRequest(int request_id);
-  virtual void StopAll();
-
-  // PluginUrlRequestDelegate implementation
-  virtual void OnResponseStarted(
-      int request_id, const char* mime_type, const char* headers, int size,
-      base::Time last_modified, const std::string& redirect_url,
-      int redirect_status, const net::HostPortPair& socket_address,
-      uint64 upload_size);
-  virtual void OnReadComplete(int request_id, const std::string& data);
-  virtual void OnResponseEnd(int request_id,
-                             const net::URLRequestStatus& status);
 
   // This method is passed as a callback to UrlmonUrlRequest::TerminateBind.
   // We simply forward moniker and bind_ctx to host ActiveX/ActiveDocument,
@@ -114,15 +99,6 @@ class UrlmonUrlRequestManager
   // The background_request_map_ is referenced from multiple threads. Lock to
   // synchronize access.
   base::Lock background_resource_map_lock_;
-
-  // Helper function to stop all requests in the request map.
-  void StopAllRequestsHelper(RequestMap* request_map,
-                             base::Lock* request_map_lock);
-  // Helper function for initiating a new IE request.
-  void StartRequestHelper(int request_id,
-                          const AutomationURLRequest& request_info,
-                          RequestMap* request_map,
-                          base::Lock* request_map_lock);
 
   scoped_refptr<UrlmonUrlRequest> pending_request_;
   scoped_ptr<base::Thread> background_thread_;

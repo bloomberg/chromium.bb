@@ -29,7 +29,6 @@
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
-#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/browser_process.h"
@@ -69,6 +68,7 @@
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -139,16 +139,11 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     reinitialize_on_channel_error_ = true;
   }
 
-  if (!automation_resource_message_filter_.get()) {
-    automation_resource_message_filter_ = new AutomationResourceMessageFilter;
-  }
-
   channel_.reset(new IPC::ChannelProxy(
       effective_channel_id,
       GetChannelMode(use_named_interface),
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
-  channel_->AddFilter(automation_resource_message_filter_.get());
 
 #if defined(OS_CHROMEOS)
   if (use_initial_load_observers_) {

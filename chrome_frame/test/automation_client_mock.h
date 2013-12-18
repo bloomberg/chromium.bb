@@ -17,58 +17,6 @@
 
 using testing::StrictMock;
 
-// ChromeFrameAutomationClient [CFAC] tests.
-struct MockCFDelegate : public ChromeFrameDelegateImpl {
-  MOCK_CONST_METHOD0(GetWindow, WindowType());
-  MOCK_METHOD1(GetBounds, void(RECT* bounds));
-  MOCK_METHOD0(GetDocumentUrl, std::string());
-  MOCK_METHOD2(ExecuteScript, bool(const std::string& script,
-                                   std::string* result));
-  MOCK_METHOD0(OnAutomationServerReady, void());
-  MOCK_METHOD2(OnAutomationServerLaunchFailed, void(
-      AutomationLaunchResult reason, const std::string& server_version));
-  // This remains in interface since we call it if Navigate()
-  // returns immediate error.
-  MOCK_METHOD2(OnLoadFailed, void(int error_code, const std::string& url));
-
-  // Do not mock this method. :) Use it as message demuxer and dispatcher
-  // to the following methods (which we mock)
-  // MOCK_METHOD1(OnMessageReceived, void(const IPC::Message&));
-
-  MOCK_METHOD0(OnChannelError, void(void));
-  MOCK_METHOD1(OnLoad, void(const GURL& url));
-  MOCK_METHOD2(OnRequestStart, void(int request_id,
-      const AutomationURLRequest& request));
-  MOCK_METHOD2(OnRequestRead, void(int request_id, int bytes_to_read));
-  MOCK_METHOD2(OnRequestEnd, void(int request_id,
-      const net::URLRequestStatus& status));
-
-  // Use for sending network responses
-  void SetRequestDelegate(PluginUrlRequestDelegate* request_delegate) {
-    request_delegate_ = request_delegate;
-  }
-
-  void ReplyStarted(int request_id, const char* headers) {
-    request_delegate_->OnResponseStarted(request_id, "text/html", headers,
-      0, base::Time::Now(), std::string(), 0, net::HostPortPair(), 0);
-  }
-
-  void ReplyData(int request_id, const std::string* data) {
-    request_delegate_->OnReadComplete(request_id, *data);
-  }
-
-  void Reply(const net::URLRequestStatus& status, int request_id) {
-    request_delegate_->OnResponseEnd(request_id, status);
-  }
-
-  void Reply404(int request_id) {
-    ReplyStarted(request_id, "HTTP/1.1 404\r\n\r\n");
-    Reply(net::URLRequestStatus(), request_id);
-  }
-
-  PluginUrlRequestDelegate* request_delegate_;
-};
-
 class MockAutomationProxy : public ChromeFrameAutomationProxy {
  public:
   MOCK_METHOD1(Send, bool(IPC::Message*));
@@ -98,73 +46,6 @@ struct MockAutomationMessageSender : public AutomationMessageSender {
   }
 
   StrictMock<MockAutomationProxy>* proxy_;
-};
-
-// [CFAC] -- uses a ProxyFactory for creation of ChromeFrameAutomationProxy
-// -- uses ChromeFrameAutomationProxy
-// -- uses TabProxy obtained from ChromeFrameAutomationProxy
-// -- uses ChromeFrameDelegate as outgoing interface
-//
-// We mock ProxyFactory to return mock object (MockAutomationProxy) implementing
-// ChromeFrameAutomationProxy interface.
-// Since CFAC uses TabProxy for few calls and TabProxy is not easy mockable,
-// we create 'real' TabProxy but with fake AutomationSender (the one responsible
-// for sending messages over channel).
-// Additionally we have mock implementation ChromeFrameDelagate interface -
-// MockCFDelegate.
-
-// Test fixture, saves typing all of it's members.
-class CFACMockTest : public testing::Test {
- public:
-  MockProxyFactory factory_;
-  MockCFDelegate   cfd_;
-  chrome_frame_test::TimedMsgLoop loop_;
-  // Most of the test uses the mocked proxy, but some tests need
-  // to validate the functionality of the real proxy object.
-  // So we have a mock that is used as the default for the returned_proxy_
-  // pointer, but tests can set their own pointer in there as needed.
-  StrictMock<MockAutomationProxy> mock_proxy_;
-  ChromeFrameAutomationProxy* returned_proxy_;
-  scoped_ptr<AutomationHandleTracker> tracker_;
-  MockAutomationMessageSender dummy_sender_;
-  scoped_refptr<TabProxy> tab_;
-  // the victim of all tests
-  scoped_refptr<ChromeFrameAutomationClient> client_;
-
-  base::FilePath profile_path_;
-  int timeout_;
-  void* id_;  // Automation server id we are going to return
-  int tab_handle_;   // Tab handle. Any non-zero value is Ok.
-
-  inline ChromeFrameAutomationProxy* get_proxy() {
-    return returned_proxy_;
-  }
-
-  inline void CreateTab() {
-    ASSERT_EQ(NULL, tab_.get());
-    tab_ = new TabProxy(&dummy_sender_, tracker_.get(), tab_handle_);
-  }
-
-  // Easy methods to set expectations.
-  void SetAutomationServerOk(int times);
-  void Set_CFD_LaunchFailed(AutomationLaunchResult result);
-
- protected:
-  CFACMockTest()
-    : timeout_(500),
-      returned_proxy_(static_cast<ChromeFrameAutomationProxy*>(&mock_proxy_)) {
-    GetChromeFrameProfilePath(L"Adam.N.Epilinter", &profile_path_);
-    id_ = reinterpret_cast<void*>(5);
-    tab_handle_ = 3;
-  }
-
-  virtual void SetUp() {
-    dummy_sender_.ForwardTo(&mock_proxy_);
-    tracker_.reset(new AutomationHandleTracker());
-
-    client_ = new ChromeFrameAutomationClient;
-    client_->set_proxy_factory(&factory_);
-  }
 };
 
 #endif  // CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_

@@ -33,8 +33,6 @@
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
 class ChildProcessSecurityPolicyTest;
-class TestAutomationProvider;
-class URLRequestAutomationJob;
 
 namespace base {
 class Value;
@@ -177,8 +175,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
    private:
     // TODO(willchan): Kill off these friend declarations.
     friend class ::ChildProcessSecurityPolicyTest;
-    friend class ::TestAutomationProvider;
-    friend class ::URLRequestAutomationJob;
     friend class TestInterceptor;
     friend class URLRequestFilter;
     friend class appcache::AppCacheInterceptor;

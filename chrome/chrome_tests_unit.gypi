@@ -560,7 +560,6 @@
         'browser/autocomplete/keyword_provider_unittest.cc',
         'browser/autocomplete/search_provider_unittest.cc',
         'browser/autocomplete/shortcuts_provider_unittest.cc',
-        'browser/automation/chrome_frame_automation_provider_win_unittest.cc',
         'browser/background/background_application_list_model_unittest.cc',
         'browser/background/background_contents_service_unittest.cc',
         'browser/background/background_mode_manager_unittest.cc',

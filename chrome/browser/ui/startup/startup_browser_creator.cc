@@ -82,7 +82,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/automation/chrome_frame_automation_provider_win.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_win.h"
 #endif
 
@@ -535,17 +534,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     if (expected_tabs == 0)
       silent_launch = true;
 
-    if (command_line.HasSwitch(switches::kChromeFrame)) {
-#if defined(OS_WIN)
-      if (!CreateAutomationProvider<ChromeFrameAutomationProvider>(
-          automation_channel_id, last_used_profile, expected_tabs))
-        return false;
-#endif
-    } else {
-      if (!CreateAutomationProvider<AutomationProvider>(
-          automation_channel_id, last_used_profile, expected_tabs))
-        return false;
-    }
+    if (!CreateAutomationProvider<AutomationProvider>(
+        automation_channel_id, last_used_profile, expected_tabs))
+      return false;
   }
 #endif  // defined(ENABLE_AUTOMATION)
 

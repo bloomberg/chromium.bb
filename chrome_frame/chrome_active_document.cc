@@ -53,15 +53,13 @@ const DWORD kIEEncodingIdArray[] = {
 };
 
 ChromeActiveDocument::ChromeActiveDocument()
-    : navigation_info_(new NavigationInfo()),
-      first_navigation_(true),
+    : first_navigation_(true),
       is_automation_client_reused_(false),
       popup_allowed_(false),
       accelerator_table_(NULL) {
   TRACE_EVENT_BEGIN_ETW("chromeframe.createactivedocument", this, "");
 
   url_fetcher_->set_frame_busting(false);
-  memset(navigation_info_.get(), 0, sizeof(NavigationInfo));
 }
 
 HRESULT ChromeActiveDocument::FinalConstruct() {
@@ -406,22 +404,7 @@ STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
 }
 
 STDMETHODIMP ChromeActiveDocument::SaveHistory(IStream* stream) {
-  // TODO(sanjeevr): We need to fetch the entire list of navigation entries
-  // from Chrome and persist it in the stream. And in LoadHistory we need to
-  // pass this list back to Chrome which will recreate the list. This will allow
-  // Back-Forward navigation to anchors to work correctly when we navigate to a
-  // page outside of ChromeFrame and then come back.
-  if (!stream) {
-    NOTREACHED();
-    return E_INVALIDARG;
-  }
-
-  LARGE_INTEGER offset = {0};
-  ULARGE_INTEGER new_pos = {0};
-  DWORD written = 0;
-  std::wstring url = UTF8ToWide(navigation_info_->url.spec());
-  return stream->Write(url.c_str(), (url.length() + 1) * sizeof(wchar_t),
-                       &written);
+  return E_INVALIDARG;
 }
 
 STDMETHODIMP ChromeActiveDocument::SetPositionCookie(DWORD position_cookie) {
@@ -429,10 +412,6 @@ STDMETHODIMP ChromeActiveDocument::SetPositionCookie(DWORD position_cookie) {
 }
 
 STDMETHODIMP ChromeActiveDocument::GetPositionCookie(DWORD* position_cookie) {
-  if (!position_cookie)
-    return E_INVALIDARG;
-
-  *position_cookie = navigation_info_->navigation_index;
   return S_OK;
 }
 
@@ -598,183 +577,6 @@ bool IsFindAccelerator(const MSG& msg) {
          !(base::win::IsAltPressed() || base::win::IsShiftPressed());
 }
 
-void ChromeActiveDocument::UpdateNavigationState(
-    const NavigationInfo& new_navigation_info, int flags) {
-  // This could be NULL if the active document instance is being destroyed.
-  if (!m_spInPlaceSite) {
-    DVLOG(1) << __FUNCTION__ << "m_spInPlaceSite is NULL. Returning";
-    return;
-  }
-
-  HRESULT hr = S_OK;
-  bool is_title_changed =
-      (navigation_info_->title != new_navigation_info.title);
-  bool is_ssl_state_changed =
-      (navigation_info_->security_style !=
-          new_navigation_info.security_style) ||
-      (navigation_info_->displayed_insecure_content !=
-          new_navigation_info.displayed_insecure_content) ||
-      (navigation_info_->ran_insecure_content !=
-          new_navigation_info.ran_insecure_content);
-
-  if (is_ssl_state_changed) {
-    int lock_status = SECURELOCK_SET_UNSECURE;
-    switch (new_navigation_info.security_style) {
-      case content::SECURITY_STYLE_AUTHENTICATED:
-        lock_status = new_navigation_info.displayed_insecure_content ?
-            SECURELOCK_SET_MIXED : SECURELOCK_SET_SECUREUNKNOWNBIT;
-        break;
-      default:
-        break;
-    }
-
-    base::win::ScopedVariant secure_lock_status(lock_status);
-    IEExec(&CGID_ShellDocView, INTERNAL_CMDID_SET_SSL_LOCK,
-           OLECMDEXECOPT_DODEFAULT, secure_lock_status.AsInput(), NULL);
-  }
-
-  // A number of poorly written bho's crash in their event sink callbacks if
-  // chrome frame is the currently loaded document. This is because they expect
-  // chrome frame to implement interfaces like IHTMLDocument, etc. We patch the
-  // event sink's of these bho's and don't invoke the event sink if chrome
-  // frame is the currently loaded document.
-  if (GetConfigBool(true, kEnableBuggyBhoIntercept)) {
-    base::win::ScopedComPtr<IWebBrowser2> wb2;
-    DoQueryService(SID_SWebBrowserApp, m_spClientSite, wb2.Receive());
-    if (wb2 && buggy_bho::BuggyBhoTls::GetInstance()) {
-      buggy_bho::BuggyBhoTls::GetInstance()->PatchBuggyBHOs(wb2);
-    }
-  }
-
-  // Ideally all navigations should come to Chrome Frame so that we can call
-  // BeforeNavigate2 on installed BHOs and give them a chance to cancel the
-  // navigation. However, in practice what happens is as below:
-  // The very first navigation that happens in CF happens via a Load or a
-  // LoadHistory call. In this case, IE already has the correct information for
-  // its travel log as well address bar. For other internal navigations (navs
-  // that only happen within Chrome such as anchor navigations) we need to
-  // update IE's internal state after the fact. In the case of internal
-  // navigations, we notify the BHOs but ignore the should_cancel flag.
-
-  // Another case where we need to issue BeforeNavigate2 calls is as below:-
-  // We get notified after the fact, when navigations are initiated within
-  // Chrome via window.open calls. These navigations are handled by creating
-  // an external tab container within chrome and then connecting to it from IE.
-  // We still want to update the address bar/history, etc, to ensure that
-  // the special URL used by Chrome to indicate this is updated correctly.
-  ChromeFrameUrl cf_url;
-  bool is_attach_external_tab_url = cf_url.Parse(std::wstring(url_)) &&
-      cf_url.attach_to_external_tab();
-
-  bool is_internal_navigation =
-      IsNewNavigation(new_navigation_info, flags) || is_attach_external_tab_url;
-
-  if (new_navigation_info.url.is_valid())
-    url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
-
-  if (is_internal_navigation) {
-    // IE6 does not support tabs. If Chrome sent us a window open request
-    // indicating that the navigation needs to occur in a foreground tab or
-    // a popup window, then we need to ensure that the new window in IE6 is
-    // brought to the foreground.
-    if (GetIEVersion() == IE_6 &&
-        is_attach_external_tab_url &&
-        (cf_url.disposition() == NEW_FOREGROUND_TAB ||
-         cf_url.disposition() == NEW_POPUP)) {
-      base::win::ScopedComPtr<IWebBrowser2> wb2;
-      DoQueryService(SID_SWebBrowserApp, m_spClientSite, wb2.Receive());
-      if (wb2)
-        BaseActiveX::BringWebBrowserWindowToTop(wb2);
-    }
-    base::win::ScopedComPtr<IDocObjectService> doc_object_svc;
-    base::win::ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
-
-    DoQueryService(__uuidof(web_browser_events_svc), m_spClientSite,
-                   web_browser_events_svc.Receive());
-
-    if (!web_browser_events_svc.get()) {
-      DoQueryService(SID_SShellBrowser, m_spClientSite,
-                     doc_object_svc.Receive());
-    }
-
-    // web_browser_events_svc can be NULL on IE6.
-    if (web_browser_events_svc) {
-      VARIANT_BOOL should_cancel = VARIANT_FALSE;
-      web_browser_events_svc->FireBeforeNavigate2Event(&should_cancel);
-    } else if (doc_object_svc) {
-      BOOL should_cancel = FALSE;
-      doc_object_svc->FireBeforeNavigate2(NULL, url_, 0, NULL, NULL, 0,
-                                          NULL, FALSE, &should_cancel);
-    }
-
-    // We need to tell IE that we support navigation so that IE will query us
-    // for IPersistHistory and call GetPositionCookie to save our navigation
-    // index.
-    base::win::ScopedVariant html_window(static_cast<IUnknown*>(
-        static_cast<IHTMLWindow2*>(this)));
-    IEExec(&CGID_DocHostCmdPriv, DOCHOST_DOCCANNAVIGATE, 0,
-           html_window.AsInput(), NULL);
-
-    // We pass the HLNF_INTERNALJUMP flag to INTERNAL_CMDID_FINALIZE_TRAVEL_LOG
-    // since we want to make IE treat all internal navigations within this page
-    // (including anchor navigations and subframe navigations) as anchor
-    // navigations. This will ensure that IE calls GetPositionCookie
-    // to save the current position cookie in the travel log and then call
-    // SetPositionCookie when the user hits Back/Forward to come back here.
-    base::win::ScopedVariant internal_navigation(HLNF_INTERNALJUMP);
-    IEExec(&CGID_Explorer, INTERNAL_CMDID_FINALIZE_TRAVEL_LOG, 0,
-           internal_navigation.AsInput(), NULL);
-
-    // We no longer need to lie to IE. If we lie persistently to IE, then
-    // IE reuses us for new navigations.
-    IEExec(&CGID_DocHostCmdPriv, DOCHOST_DOCCANNAVIGATE, 0, NULL, NULL);
-
-    if (doc_object_svc) {
-      // Now call the FireNavigateCompleteEvent which makes IE update the text
-      // in the address-bar.
-      doc_object_svc->FireNavigateComplete2(this, 0);
-      doc_object_svc->FireDocumentComplete(this, 0);
-    } else if (web_browser_events_svc) {
-      web_browser_events_svc->FireNavigateComplete2Event();
-      web_browser_events_svc->FireDocumentCompleteEvent();
-    }
-  }
-
-  if (is_title_changed) {
-    base::win::ScopedVariant title(new_navigation_info.title.c_str());
-    IEExec(NULL, OLECMDID_SETTITLE, OLECMDEXECOPT_DONTPROMPTUSER,
-           title.AsInput(), NULL);
-  }
-
-  // There are cases in which we receive NavigationStateChanged events for
-  // provisional loads. These events will contain a new URL but will not be
-  // considered new navigations since their navigation_index is 0. For these
-  // events, do not update the navigation_info_ state, as this will muck up the
-  // travel log when the subsequent committed navigation event takes place.
-  //
-  // Given this filtering, also special-case first navigations since those
-  // are needed to initially populate navigation_info_ to keep it in sync with
-  // what was placed in the IE travel log when CF was first opened.
-  //
-  // Lastly, allow through navigation events that would neither affect the
-  // travel log nor cause the page location to change, as these will
-  // contain informational state (referrer, title, etc.) that we should
-  // preserve.
-  if (is_internal_navigation || IsFirstNavigation(new_navigation_info) ||
-      new_navigation_info.url == navigation_info_->url) {
-    // It is important that we only update the navigation_info_ after we have
-    // finalized the travel log. This is because IE will ask for information
-    // such as navigation index when the travel log is finalized and we need
-    // supply the old index and not the new one.
-    *navigation_info_ = new_navigation_info;
-  }
-
-  // Update the IE zone here. Ideally we would like to do it when the active
-  // document is activated. However that does not work at times as the frame we
-  // get there is not the actual frame which handles the command.
-  IEExec(&CGID_Explorer, SBCMDID_MIXEDZONE, 0, NULL, NULL);
-}
-
 void ChromeActiveDocument::OnFindInPage() {
   TabProxy* tab = GetTabProxy();
   if (tab) {
@@ -786,9 +588,6 @@ void ChromeActiveDocument::OnFindInPage() {
 }
 
 void ChromeActiveDocument::OnViewSource() {
-  DCHECK(navigation_info_->url.is_valid());
-  HostNavigate(GURL(content::kViewSourceScheme + std::string(":") +
-      navigation_info_->url.spec()), GURL(), NEW_WINDOW);
 }
 
 void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
@@ -916,19 +715,6 @@ HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
   TabProxy* tab_proxy = GetTabProxy();
   if (tab_proxy) {
     tab_proxy->ReloadAsync();
-  } else {
-    DLOG(ERROR) << "No automation proxy";
-    DCHECK(automation_client_.get() != NULL) << "how did it get freed?";
-    // The current url request manager (url_fetcher_) has been switched to
-    // a stopping state so we need to reset it and get a new one for the new
-    // automation server.
-    ResetUrlRequestManager();
-    url_fetcher_->set_frame_busting(false);
-    // And now launch the current URL again.  This starts a new server process.
-    DCHECK(navigation_info_->url.is_valid());
-    ChromeFrameUrl cf_url;
-    cf_url.Parse(UTF8ToWide(navigation_info_->url.spec()));
-    LaunchUrl(cf_url, navigation_info_->referrer.spec());
   }
 
   return S_OK;
@@ -1116,45 +902,4 @@ LRESULT ChromeActiveDocument::OnSetFocus(UINT message, WPARAM wparam,
                                          LPARAM lparam,
                                          BOOL& handled) {  // NO_LINT
   return 0;
-}
-
-bool ChromeActiveDocument::IsNewNavigation(
-    const NavigationInfo& new_navigation_info, int flags) const {
-  // A new navigation is typically an internal navigation which is initiated by
-  // the renderer(WebKit). Condition 1 below has to be true along with the
-  // any of the other conditions below.
-  // 1. The navigation notification flags passed in as the flags parameter
-  //    is not INVALIDATE_TYPE_LOAD which indicates that the loading state of
-  //    the tab changed.
-  // 2. The navigation index is greater than 0 which means that a top level
-  //    navigation was initiated on the current external tab.
-  // 3. The navigation type has changed.
-  // 4. The url or the referrer are different.
-  if (flags == content::INVALIDATE_TYPE_LOAD)
-    return false;
-
-  if (new_navigation_info.navigation_index <= 0)
-    return false;
-
-  if (new_navigation_info.navigation_index ==
-      navigation_info_->navigation_index)
-    return false;
-
-  if (new_navigation_info.navigation_type != navigation_info_->navigation_type)
-    return true;
-
-  if (new_navigation_info.url != navigation_info_->url)
-    return true;
-
-  if (new_navigation_info.referrer != navigation_info_->referrer)
-    return true;
-
-  return false;
-}
-
-bool ChromeActiveDocument::IsFirstNavigation(
-    const NavigationInfo& new_navigation_info) const {
-  return (navigation_info_->url.is_empty() &&
-          new_navigation_info.navigation_type ==
-              content::NAVIGATION_TYPE_NEW_PAGE);
 }

@@ -20,9 +20,7 @@
 #include "ipc/ipc_message.h"
 
 class GURL;
-struct AutomationURLRequest;
 struct ContextMenuModel;
-struct NavigationInfo;
 
 namespace net {
 class URLRequestStatus;
@@ -79,14 +77,6 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual bool IsValid() const {
     return true;
   }
-
- protected:
-  // Protected methods to be overridden.
-  virtual void OnRequestStart(
-      int request_id, const AutomationURLRequest& request) {}
-  virtual void OnRequestRead(int request_id, int bytes_to_read) {}
-  virtual void OnRequestEnd(int request_id,
-                            const net::URLRequestStatus& status) {}
 };
 
 // This interface enables tasks to be marshaled to desired threads.

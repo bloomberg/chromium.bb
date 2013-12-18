@@ -601,8 +601,6 @@ void ChromeFrameAutomationClient::Uninitialize() {
 
   // Called from client's FinalRelease() / destructor
   if (url_fetcher_) {
-    // Clean up any outstanding requests
-    url_fetcher_->StopAllRequests();
     url_fetcher_ = NULL;
   }
 
@@ -679,52 +677,6 @@ void ChromeFrameAutomationClient::AutomationServerDied() {
                             base::Unretained(this)));
 }
 
-bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
-    const IPC::Message& msg, bool ui_thread) {
-  // Either directly call appropriate url_fetcher function
-  // or postpone call to the UI thread.
-  uint16 msg_type = msg.type();
-  switch (msg_type) {
-    default:
-      return false;
-
-    case AutomationMsg_RequestStart::ID:
-      if (ui_thread || (url_fetcher_flags_ &
-                           PluginUrlRequestManager::START_REQUEST_THREADSAFE)) {
-        AutomationMsg_RequestStart::Dispatch(&msg, url_fetcher_, this,
-            &PluginUrlRequestManager::StartUrlRequest);
-        return true;
-      }
-      break;
-
-    case AutomationMsg_RequestRead::ID:
-      if (ui_thread || (url_fetcher_flags_ &
-                            PluginUrlRequestManager::READ_REQUEST_THREADSAFE)) {
-        AutomationMsg_RequestRead::Dispatch(&msg, url_fetcher_, this,
-            &PluginUrlRequestManager::ReadUrlRequest);
-        return true;
-      }
-      break;
-
-    case AutomationMsg_RequestEnd::ID:
-      if (ui_thread || (url_fetcher_flags_ &
-                            PluginUrlRequestManager::STOP_REQUEST_THREADSAFE)) {
-        AutomationMsg_RequestEnd::Dispatch(&msg, url_fetcher_, this,
-            &PluginUrlRequestManager::EndUrlRequest);
-        return true;
-      }
-      break;
-  }
-
-  PostTask(
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(
-              &ChromeFrameAutomationClient::ProcessUrlRequestMessage),
-          base::Unretained(this), tab, msg, true));
-  return true;
-}
-
 // These are invoked in channel's background thread.
 // Cannot call any method of the activex here since it is a STA kind of being.
 // By default we marshal the IPC message to the main/GUI thread and from there
@@ -732,9 +684,6 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
 bool ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
                                                     const IPC::Message& msg) {
   DCHECK(tab == tab_.get());
-  // Quickly process network related messages.
-  if (url_fetcher_ && ProcessUrlRequestMessage(tab, msg, false))
-    return true;
 
   // Early check to avoid needless marshaling
   if (chrome_frame_delegate_ == NULL)
@@ -895,41 +844,4 @@ void ChromeFrameAutomationClient::SetUrlFetcher(
   url_fetcher_ = url_fetcher;
   url_fetcher_flags_ = url_fetcher->GetThreadSafeFlags();
   url_fetcher_->set_delegate(this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// PluginUrlRequestDelegate implementation.
-// Forward network related responses to Chrome.
-
-void ChromeFrameAutomationClient::OnResponseStarted(
-    int request_id, const char* mime_type,  const char* headers, int size,
-    base::Time last_modified, const std::string& redirect_url,
-    int redirect_status, const net::HostPortPair& socket_address,
-    uint64 upload_size) {
-  AutomationURLResponse response;
-  response.mime_type = mime_type;
-  if (headers)
-    response.headers = headers;
-  response.content_length = size;
-  response.last_modified = last_modified;
-  response.redirect_url = redirect_url;
-  response.redirect_status = redirect_status;
-  response.socket_address = socket_address;
-  response.upload_size = upload_size;
-
-  automation_server_->Send(new AutomationMsg_RequestStarted(
-      tab_->handle(), request_id, response));
-}
-
-void ChromeFrameAutomationClient::OnReadComplete(int request_id,
-                                                 const std::string& data) {
-  automation_server_->Send(new AutomationMsg_RequestData(
-      tab_->handle(), request_id, data));
-}
-
-void ChromeFrameAutomationClient::OnResponseEnd(
-    int request_id,
-    const net::URLRequestStatus& status) {
-  automation_server_->Send(new AutomationMsg_RequestEnd(
-      tab_->handle(), request_id, status));
 }

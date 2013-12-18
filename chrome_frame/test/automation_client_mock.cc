@@ -49,27 +49,6 @@ void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
       base::TimeDelta::FromMilliseconds(params->launch_timeout()) / 2);
 }
 
-void CFACMockTest::SetAutomationServerOk(int times) {
-  EXPECT_CALL(factory_, GetAutomationServer(testing::NotNull(),
-        LaunchParamProfileEq(profile_path_.BaseName().value()),
-        testing::NotNull()))
-    .Times(times)
-    .WillRepeatedly(testing::Invoke(CreateFunctor(&factory_,
-        &MockProxyFactory::GetServerImpl, get_proxy(), id_,
-        AUTOMATION_SUCCESS)));
-
-  EXPECT_CALL(factory_,
-      ReleaseAutomationServer(testing::Eq(id_), testing::NotNull()))
-          .Times(times);
-}
-
-void CFACMockTest::Set_CFD_LaunchFailed(AutomationLaunchResult result) {
-  EXPECT_CALL(cfd_, OnAutomationServerLaunchFailed(testing::Eq(result),
-                                                   testing::_))
-      .Times(1)
-      .WillOnce(QUIT_LOOP(loop_));
-}
-
 MATCHER_P(MsgType, msg_type, "IPC::Message::type()") {
   const IPC::Message& m = arg;
   return (m.type() == msg_type);
@@ -112,7 +91,6 @@ class CFACWithChrome : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   static base::FilePath profile_path_;
-  MockCFDelegate cfd_;
   scoped_refptr<ChromeFrameAutomationClient> client_;
   scoped_refptr<ChromeFrameLaunchParams> launch_params_;
   chrome_frame_test::TimedMsgLoop loop_;
@@ -144,32 +122,4 @@ void CFACWithChrome::SetUp() {
 
 void CFACWithChrome::TearDown() {
   client_->Uninitialize();
-}
-
-// We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
-TEST_F(CFACWithChrome, CreateTooFast) {
-  int timeout = 0;  // Chrome cannot send Hello message so fast.
-
-  EXPECT_CALL(cfd_, OnAutomationServerLaunchFailed(AUTOMATION_TIMEOUT, _))
-      .WillOnce(QUIT_LOOP(loop_));
-
-  launch_params_->set_launch_timeout(timeout);
-  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
-  loop_.RunFor(kChromeLaunchTimeout);
-}
-
-// This test may fail if Chrome take more that 10 seconds (timeout var) to
-// launch. In this case GMock shall print something like "unexpected call to
-// OnAutomationServerLaunchFailed". I'm yet to find out how to specify
-// that this is an unexpected call, and still to execute an action.
-TEST_F(CFACWithChrome, CreateNotSoFast) {
-  EXPECT_CALL(cfd_, OnAutomationServerReady())
-      .WillOnce(QUIT_LOOP(loop_));
-
-  EXPECT_CALL(cfd_, OnAutomationServerLaunchFailed(_, _))
-      .Times(0);
-
-  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
-
-  loop_.RunFor(kChromeLaunchTimeout);
 }

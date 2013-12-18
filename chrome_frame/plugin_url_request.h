@@ -25,14 +25,6 @@ class PluginUrlRequestManager;
 
 class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
  public:
-  virtual void OnResponseStarted(
-      int request_id, const char* mime_type, const char* headers, int size,
-      base::Time last_modified, const std::string& redirect_url,
-      int redirect_status, const net::HostPortPair& socket_address,
-      uint64 upload_size) = 0;
-  virtual void OnReadComplete(int request_id, const std::string& data) = 0;
-  virtual void OnResponseEnd(int request_id,
-                             const net::URLRequestStatus& status) = 0;
   virtual void AddPrivacyDataForUrl(const std::string& url,
                                     const std::string& policy_ref,
                                     int32 flags) {}
@@ -64,37 +56,9 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   };
   virtual ThreadSafeFlags GetThreadSafeFlags() = 0;
 
-  // These are called directly from Automation Client when network related
-  // automation messages are received from Chrome.
-  // Strip 'tab' handle and forward to the virtual methods implemented by
-  // derived classes.
-  void StartUrlRequest(int request_id,
-                       const AutomationURLRequest& request_info) {
-    StartRequest(request_id, request_info);
-  }
-
-  void ReadUrlRequest(int request_id, int bytes_to_read) {
-    ReadRequest(request_id, bytes_to_read);
-  }
-
-  void EndUrlRequest(int request_id, const net::URLRequestStatus& s) {
-    EndRequest(request_id);
-  }
-
-  void StopAllRequests() {
-    StopAll();
-  }
-
  protected:
   PluginUrlRequestDelegate* delegate_;
   bool enable_frame_busting_;
-
- private:
-  virtual void StartRequest(
-      int request_id, const AutomationURLRequest& request_info) = 0;
-  virtual void ReadRequest(int request_id, int bytes_to_read) = 0;
-  virtual void EndRequest(int request_id) = 0;
-  virtual void StopAll() = 0;
 };
 
 // Used as base class. Holds Url request properties (url, method, referrer..)
