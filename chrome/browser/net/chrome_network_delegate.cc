@@ -62,6 +62,11 @@
 #include "components/policy/core/common/url_blacklist_manager.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/precache/content/precache_manager.h"
+#include "components/precache/content/precache_manager_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
@@ -310,6 +315,28 @@ void RecordContentLengthHistograms(
 #endif  // defined(OS_ANDROID)
 }
 
+#if defined(OS_ANDROID)
+void RecordPrecacheStatsOnUIThread(const GURL& url,
+                                   const base::Time& fetch_time, int64 size,
+                                   bool was_cached, void* profile_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile)) {
+    return;
+  }
+
+  precache::PrecacheManager* precache_manager =
+      precache::PrecacheManagerFactory::GetForBrowserContext(profile);
+  if (!precache_manager) {
+    // This could be NULL if the profile is off the record.
+    return;
+  }
+
+  precache_manager->RecordStatsForFetch(url, fetch_time, size, was_cached);
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
@@ -525,6 +552,18 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     // specified with the Content-Length header, which may be inaccurate,
     // or missing, as is the case with chunked encoding.
     int64 received_content_length = request->received_response_content_length();
+
+#if defined(OS_ANDROID)
+    if (precache::PrecacheManager::IsPrecachingEnabled()) {
+      // Record precache metrics when a fetch is completed successfully, if
+      // precaching is enabled.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
+                     base::Time::Now(), received_content_length,
+                     request->was_cached(), profile_));
+    }
+#endif  // defined(OS_ANDROID)
 
     // Only record for http or https urls.
     bool is_http = request->url().SchemeIs("http");

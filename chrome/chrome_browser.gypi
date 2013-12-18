@@ -2614,6 +2614,7 @@
             '../components/components.gyp:browser_context_keyed_service',
             '../components/components.gyp:dom_distiller_content',
             '../components/components.gyp:navigation_interception',
+            '../components/components.gyp:precache_content',
             '../components/components.gyp:sessions',
             '../components/components.gyp:url_matcher',
             '../components/components.gyp:visitedlink_browser',

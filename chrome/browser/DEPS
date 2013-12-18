@@ -16,6 +16,7 @@ include_rules = [
   "+components/navigation_interception",
   "+components/navigation_metrics",
   "+components/policy",
+  "+components/precache",
   "+components/sessions",
   "+components/startup_metric_utils",
   "+components/translate/common",
