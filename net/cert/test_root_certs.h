@@ -12,6 +12,8 @@
 
 #if defined(USE_NSS) || defined(OS_IOS)
 #include <list>
+#elif defined(USE_OPENSSL) && !defined(OS_ANDROID)
+#include <vector>
 #elif defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
@@ -68,7 +70,9 @@ class NET_EXPORT_PRIVATE TestRootCerts {
   // be trusted. By default, this is true, indicating that the TestRootCerts
   // are used in addition to OS trust store.
   void SetAllowSystemTrust(bool allow_system_trust);
-
+#elif defined(USE_OPENSSL) && !defined(OS_ANDROID)
+  const std::vector<scoped_refptr<X509Certificate> >&
+      temporary_roots() const { return temporary_roots_; }
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots() const { return temporary_roots_; }
 
@@ -93,6 +97,8 @@ class NET_EXPORT_PRIVATE TestRootCerts {
   // settings, in order to restore them when Clear() is called.
   class TrustEntry;
   std::list<TrustEntry*> trust_cache_;
+#elif defined(USE_OPENSSL) && !defined(OS_ANDROID)
+  std::vector<scoped_refptr<X509Certificate> > temporary_roots_;
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots_;
 #elif defined(OS_MACOSX)
@@ -100,7 +106,7 @@ class NET_EXPORT_PRIVATE TestRootCerts {
   bool allow_system_trust_;
 #endif
 
-#if defined(OS_WIN) || defined(USE_OPENSSL)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   // True if there are no temporarily trusted root certificates.
   bool empty_;
 #endif

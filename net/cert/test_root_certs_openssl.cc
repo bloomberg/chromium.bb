@@ -26,26 +26,24 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
     ERR_clear_error();
   }
 
-  empty_ = false;
+  temporary_roots_.push_back(certificate);
   return true;
 }
 
 void TestRootCerts::Clear() {
-  if (empty_)
+  if (temporary_roots_.empty())
     return;
 
+  temporary_roots_.clear();
   X509Certificate::ResetCertStore();
-  empty_ = true;
 }
 
 bool TestRootCerts::IsEmpty() const {
-  return empty_;
+  return temporary_roots_.empty();
 }
 
 TestRootCerts::~TestRootCerts() {}
 
-void TestRootCerts::Init() {
-  empty_ = true;
-}
+void TestRootCerts::Init() {}
 
 }  // namespace net
