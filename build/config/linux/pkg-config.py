@@ -55,7 +55,7 @@ def SetConfigPath(options):
 
   # Add the sysroot path to the environment's PKG_CONFIG_PATH
   config_path = sysroot + '/usr/' + libpath + '/pkgconfig'
-  config_path = ':' + sysroot + '/usr/share/pkgconfig'
+  config_path += ':' + sysroot + '/usr/share/pkgconfig'
   if 'PKG_CONFIG_PATH' in os.environ:
     os.environ['PKG_CONFIG_PATH'] += ':' + config_path
   else:
