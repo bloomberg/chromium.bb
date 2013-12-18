@@ -642,10 +642,8 @@ void Browser::OnWindowClosing() {
   bool should_quit_if_last_browser =
       browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
 
-  if (should_quit_if_last_browser &&
-      BrowserList::GetInstance(host_desktop_type_)->size() == 1) {
+  if (should_quit_if_last_browser && chrome::ShouldStartShutdown(this))
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
-  }
 
   // Don't use GetForProfileIfExisting here, we want to force creation of the
   // session service so that user can restore what was open.
