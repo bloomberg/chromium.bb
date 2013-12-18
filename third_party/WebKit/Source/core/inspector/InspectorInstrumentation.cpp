@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
+#include "core/events/EventTarget.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
@@ -204,6 +205,13 @@ InstrumentingAgents* instrumentingAgentsFor(Page* page)
     if (!page)
         return 0;
     return instrumentationForPage(page);
+}
+
+InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
+{
+    if (!eventTarget)
+        return 0;
+    return instrumentingAgentsFor(eventTarget->executionContext());
 }
 
 InstrumentingAgents* instrumentingAgentsFor(RenderObject* renderer)

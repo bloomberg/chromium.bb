@@ -83,7 +83,12 @@ inline DOMWindow* EventTarget::executingWindow()
 
 bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
-    return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
+    EventListener* eventListener = listener.get();
+    if (ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture)) {
+        InspectorInstrumentation::didAddEventListener(this, eventType, eventListener, useCapture);
+        return true;
+    }
+    return false;
 }
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
@@ -96,6 +101,7 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, EventListen
 
     if (!d->eventListenerMap.remove(eventType, listener, useCapture, indexOfRemovedListener))
         return false;
+    InspectorInstrumentation::didRemoveEventListener(this, eventType, listener, useCapture);
 
     // Notify firing events planning to invoke the listener at 'index' that
     // they have one less listener to invoke.
@@ -327,7 +333,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (!context)
             break;
 
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(context, event);
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(this, event->type(), registeredListener.listener.get(), registeredListener.useCapture);
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener->handleEvent(context, event);
@@ -363,6 +369,7 @@ void EventTarget::removeAllEventListeners()
     if (!d)
         return;
     d->eventListenerMap.clear();
+    InspectorInstrumentation::didRemoveAllEventListeners(this);
 
     // Notify firing events planning to invoke the listener at 'index' that
     // they have one less listener to invoke.

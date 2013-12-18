@@ -41,6 +41,8 @@
 
 namespace WebCore {
 
+class EventListener;
+class EventTarget;
 class ExecutionContext;
 
 class AsyncCallStackTracker {
@@ -83,11 +85,17 @@ public:
     void didCancelAnimationFrame(ExecutionContext*, int callbackId);
     void willFireAnimationFrame(ExecutionContext*, int callbackId);
 
+    void didAddEventListener(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture, const ScriptValue& callFrames);
+    void didRemoveEventListener(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
+    void didRemoveAllEventListeners(EventTarget*);
+    void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
+
     void didFireAsyncCall();
     void clear();
 
 private:
     PassRefPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
+    void setCurrentAsyncCallChain(PassRefPtr<AsyncCallChain>);
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     static bool validateCallFrames(const ScriptValue& callFrames);
 
@@ -96,6 +104,7 @@ private:
 
     unsigned m_maxAsyncCallStackDepth;
     RefPtr<AsyncCallChain> m_currentAsyncCallChain;
+    unsigned m_nestedAsyncCallCount;
     typedef HashMap<ExecutionContext*, ExecutionContextData*> ExecutionContextDataMap;
     ExecutionContextDataMap m_executionContextDataMap;
 };

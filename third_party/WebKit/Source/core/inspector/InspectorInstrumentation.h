@@ -54,16 +54,17 @@
 namespace WebCore {
 
 struct CSSParserString;
+class DeviceOrientationData;
 class Document;
 class Element;
-class DeviceOrientationData;
+class EventTarget;
+class ExecutionContext;
 class GeolocationPosition;
 class GraphicsContext;
 class GraphicsLayer;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
 class RenderLayer;
-class ExecutionContext;
 class ThreadableLoaderClient;
 class WorkerGlobalScope;
 class WorkerGlobalScopeProxy;
@@ -109,6 +110,7 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
 // Called from generated instrumentation code.
 InstrumentingAgents* instrumentingAgentsFor(Page*);
 InstrumentingAgents* instrumentingAgentsFor(Frame*);
+InstrumentingAgents* instrumentingAgentsFor(EventTarget*);
 InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
 InstrumentingAgents* instrumentingAgentsFor(Document&);
 InstrumentingAgents* instrumentingAgentsFor(Document*);

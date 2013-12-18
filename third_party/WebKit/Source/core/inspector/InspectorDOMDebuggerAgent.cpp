@@ -32,7 +32,6 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/events/Event.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -405,39 +404,39 @@ PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(
     return eventData.release();
 }
 
-void InspectorDOMDebuggerAgent::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
+void InspectorDOMDebuggerAgent::didInstallTimer(ExecutionContext*, int, int, bool)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, setTimerEventName), true);
 }
 
-void InspectorDOMDebuggerAgent::didRemoveTimer(ExecutionContext* context, int timerId)
+void InspectorDOMDebuggerAgent::didRemoveTimer(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, clearTimerEventName), true);
 }
 
-void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext* context, int timerId)
+void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, timerFiredEventName), false);
 }
 
-void InspectorDOMDebuggerAgent::didRequestAnimationFrame(Document* document, int callbackId)
+void InspectorDOMDebuggerAgent::didRequestAnimationFrame(Document*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, requestAnimationFrameEventName), true);
 }
 
-void InspectorDOMDebuggerAgent::didCancelAnimationFrame(Document* document, int callbackId)
+void InspectorDOMDebuggerAgent::didCancelAnimationFrame(Document*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, cancelAnimationFrameEventName), true);
 }
 
-void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document* document, int callbackId)
+void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, animationFrameFiredEventName), false);
 }
 
-void InspectorDOMDebuggerAgent::willHandleEvent(Event* event)
+void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool)
 {
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(true, event->type()), false);
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(true, eventType), false);
 }
 
 void InspectorDOMDebuggerAgent::didFireWebGLError(const String& errorName)

@@ -32,13 +32,13 @@
 
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -48,6 +48,8 @@
 namespace WebCore {
 
 class Document;
+class EventListener;
+class EventTarget;
 class InjectedScriptManager;
 class InspectorFrontend;
 class InstrumentingAgents;
@@ -55,9 +57,9 @@ class JSONObject;
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptDebugServer;
+class ScriptRegexp;
 class ScriptSourceCode;
 class ScriptValue;
-class ScriptRegexp;
 
 typedef String ErrorString;
 
@@ -138,6 +140,10 @@ public:
     void didCancelAnimationFrame(Document*, int callbackId);
     bool willFireAnimationFrame(Document*, int callbackId);
     void didFireAnimationFrame();
+    void didAddEventListener(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
+    void didRemoveEventListener(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
+    void didRemoveAllEventListeners(EventTarget*);
+    void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
     void didHandleEvent();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
