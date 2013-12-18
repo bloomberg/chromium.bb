@@ -3065,7 +3065,7 @@
 {
    bug_106912
    Memcheck:Leak
-   fun:_Znw*
+   fun:_Zn*
    fun:_ZN15tracked_objects10ThreadData23InitializeThreadContextERKSs
    fun:_ZN4base14PlatformThread7SetNameEPKc
 }
