@@ -294,6 +294,11 @@ bool WebInputEventTraits::IgnoresAckDisposition(
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::TouchCancel:
+    case WebInputEvent::MouseDown:
+    case WebInputEvent::MouseUp:
+    case WebInputEvent::MouseEnter:
+    case WebInputEvent::MouseLeave:
+    case WebInputEvent::ContextMenu:
       return true;
     default:
       break;

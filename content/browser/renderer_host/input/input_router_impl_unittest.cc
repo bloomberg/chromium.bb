@@ -153,10 +153,9 @@ class InputRouterImplTest : public testing::Test {
         ui::LatencyInfo()));
   }
 
-  void SimulateMouseMove(int x, int y, int modifiers) {
+  void SimulateMouseEvent(WebInputEvent::Type type, int x, int y) {
     input_router_->SendMouseEvent(MouseEventWithLatencyInfo(
-        SyntheticWebMouseEventBuilder::Build(
-            WebInputEvent::MouseMove, x, y, modifiers),
+        SyntheticWebMouseEventBuilder::Build(type, x, y, 0),
         ui::LatencyInfo()));
   }
 
@@ -705,6 +704,7 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   int start_type = static_cast<int>(WebInputEvent::TouchStart);
   int end_type = static_cast<int>(WebInputEvent::TouchCancel);
+  ASSERT_LT(start_type, end_type);
   for (int i = start_type; i <= end_type; ++i) {
     WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
     if (!WebInputEventTraits::IgnoresAckDisposition(type))
@@ -734,6 +734,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
 TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
   int start_type = static_cast<int>(WebInputEvent::GestureScrollBegin);
   int end_type = static_cast<int>(WebInputEvent::GesturePinchUpdate);
+  ASSERT_LT(start_type, end_type);
   for (int i = start_type; i <= end_type; ++i) {
     WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
     if (!WebInputEventTraits::IgnoresAckDisposition(type))
@@ -746,6 +747,51 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
     SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
     EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  }
+}
+
+TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
+  int start_type = static_cast<int>(WebInputEvent::MouseDown);
+  int end_type = static_cast<int>(WebInputEvent::ContextMenu);
+  ASSERT_LT(start_type, end_type);
+  for (int i = start_type; i <= end_type; ++i) {
+    WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
+    int expected_in_flight_event_count =
+        WebInputEventTraits::IgnoresAckDisposition(type) ? 0 : 1;
+
+    // Note: Mouse event acks are never forwarded to the ack handler, so the key
+    // result here is that ignored ack types don't affect the in-flight count.
+    SimulateMouseEvent(type, 0, 0);
+    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+    EXPECT_EQ(expected_in_flight_event_count, client_->in_flight_event_count());
+    SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+    EXPECT_EQ(0, client_->in_flight_event_count());
+  }
+}
+
+// Guard against breaking changes to the list of ignored event ack types in
+// |WebInputEventTraits::IgnoresAckDisposition|.
+TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
+  const WebInputEvent::Type kRequiredEventAckTypes[] = {
+    WebInputEvent::MouseMove,
+    WebInputEvent::MouseWheel,
+    WebInputEvent::RawKeyDown,
+    WebInputEvent::KeyDown,
+    WebInputEvent::KeyUp,
+    WebInputEvent::Char,
+    WebInputEvent::GestureScrollUpdate,
+    WebInputEvent::GestureFlingStart,
+    WebInputEvent::GestureFlingCancel,
+    WebInputEvent::GesturePinchUpdate,
+    WebInputEvent::TouchStart,
+    WebInputEvent::TouchMove
+  };
+  for (size_t i = 0; i < arraysize(kRequiredEventAckTypes); ++i) {
+    const WebInputEvent::Type required_ack_type = kRequiredEventAckTypes[i];
+    EXPECT_FALSE(WebInputEventTraits::IgnoresAckDisposition(required_ack_type));
   }
 }
 

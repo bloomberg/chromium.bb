@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/input/input_event_filter.h"
@@ -96,17 +97,6 @@ class IPCMessageRecorder : public IPC::Listener {
   std::vector<IPC::Message> messages_;
 };
 
-void InitMouseEvent(WebMouseEvent* event, WebInputEvent::Type type,
-                    int x, int y) {
-  // Avoid valgrind false positives by initializing memory completely.
-  memset(event, 0, sizeof(*event));
-
-  new (event) WebMouseEvent();
-  event->type = type;
-  event->x = x;
-  event->y = y;
-}
-
 void AddMessagesToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
                          const std::vector<IPC::Message>& events) {
   for (size_t i = 0; i < events.size(); ++i) {
@@ -163,10 +153,11 @@ class InputEventFilterTest : public testing::Test {
 };
 
 TEST_F(InputEventFilterTest, Basic) {
-  WebMouseEvent kEvents[3];
-  InitMouseEvent(&kEvents[0], WebInputEvent::MouseDown, 10, 10);
-  InitMouseEvent(&kEvents[1], WebInputEvent::MouseMove, 20, 20);
-  InitMouseEvent(&kEvents[2], WebInputEvent::MouseUp, 30, 30);
+  WebMouseEvent kEvents[3] = {
+    SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 10, 10, 0),
+    SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 20, 20, 0),
+    SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 30, 30, 0)
+  };
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(0U, ipc_sink_.message_count());
@@ -260,10 +251,10 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   event_recorder_.set_send_to_widget(true);
 
 
-  WebMouseEvent mouse_down;
-  mouse_down.type = WebMouseEvent::MouseDown;
-  WebMouseEvent mouse_up;
-  mouse_up.type = WebMouseEvent::MouseUp;
+  WebMouseEvent mouse_down =
+      SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseDown);
+  WebMouseEvent mouse_up =
+      SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseUp);
 
   std::vector<IPC::Message> messages;
   messages.push_back(InputMsg_HandleInputEvent(kTestRoutingID,
