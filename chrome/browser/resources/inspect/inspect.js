@@ -34,27 +34,41 @@ function onload() {
     tabHeader.addEventListener('click', selectTab.bind(null, tabContent.id));
     $('navigation').appendChild(tabHeader);
   }
-  var selectedTabName = window.location.hash.slice(1) || 'devices';
-  selectTab(selectedTabName);
+  onHashChange();
   initSettings();
   sendCommand('init-ui');
 }
 
+function onHashChange() {
+  var hash = window.location.hash.slice(1);
+  if (!selectTab(hash))
+    selectTab('devices');
+}
+
+/**
+ * @param {string} id Tab id.
+ * @return {boolean} True if successful.
+ */
 function selectTab(id) {
   var tabContents = document.querySelectorAll('#content > div');
   var tabHeaders = $('navigation').querySelectorAll('.tab-header');
+  var found = false;
   for (var i = 0; i != tabContents.length; i++) {
     var tabContent = tabContents[i];
     var tabHeader = tabHeaders[i];
     if (tabContent.id == id) {
       tabContent.classList.add('selected');
       tabHeader.classList.add('selected');
+      found = true;
     } else {
       tabContent.classList.remove('selected');
       tabHeader.classList.remove('selected');
     }
   }
+  if (!found)
+    return false;
   window.location.hash = id;
+  return true;
 }
 
 function populateTargets(source, data) {
@@ -787,3 +801,5 @@ function commitFreshLineIfValid(opt_selectNew) {
 }
 
 document.addEventListener('DOMContentLoaded', onload);
+
+window.addEventListener('hashchange', onHashChange);
