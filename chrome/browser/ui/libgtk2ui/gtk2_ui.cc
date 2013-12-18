@@ -46,12 +46,10 @@
 //
 // TODO(erg): There's still a lot that needs ported or done for the first time:
 //
-// - Inject default favicon/folder icons into views somehow.
 // - Render and inject the button overlay from the gtk theme.
 // - Render and inject the omnibox background.
 // - Listen for the "style-set" signal on |fake_frame_| and recreate theme
 //   colors and images.
-// - Allow not using the theme.
 // - Make sure to test with a light on dark theme, too.
 // - Everything else that we're not doing.
 
@@ -542,6 +540,89 @@ scoped_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate) const {
   return scoped_ptr<ui::LinuxInputMethodContext>(
       new X11InputMethodContextImplGtk2(delegate));
+}
+
+bool Gtk2UI::UseAntialiasing() const {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+  gint gtk_antialias = 0;
+  g_object_get(gtk_settings,
+               "gtk-xft-antialias", &gtk_antialias,
+               NULL);
+  return gtk_antialias != 0;
+}
+
+gfx::FontRenderParams::Hinting Gtk2UI::GetHintingStyle() const {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+  gfx::FontRenderParams::Hinting hinting =
+      gfx::FontRenderParams::HINTING_SLIGHT;
+  gint gtk_hinting = 0;
+  gchar* gtk_hint_style = NULL;
+  g_object_get(gtk_settings,
+               "gtk-xft-hinting", &gtk_hinting,
+               "gtk-xft-hintstyle", &gtk_hint_style,
+               NULL);
+
+  if (gtk_hint_style) {
+    if (gtk_hinting == 0 || strcmp(gtk_hint_style, "hintnone") == 0)
+      hinting = gfx::FontRenderParams::HINTING_NONE;
+    else if (strcmp(gtk_hint_style, "hintslight") == 0)
+      hinting = gfx::FontRenderParams::HINTING_SLIGHT;
+    else if (strcmp(gtk_hint_style, "hintmedium") == 0)
+      hinting = gfx::FontRenderParams::HINTING_MEDIUM;
+    else if (strcmp(gtk_hint_style, "hintfull") == 0)
+      hinting = gfx::FontRenderParams::HINTING_FULL;
+
+    g_free(gtk_hint_style);
+  }
+
+  return hinting;
+}
+
+gfx::FontRenderParams::SubpixelRendering
+Gtk2UI::GetSubpixelRenderingStyle() const {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+  gfx::FontRenderParams::SubpixelRendering subpixel_rendering =
+      gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE;
+  gchar* gtk_rgba = NULL;
+  g_object_get(gtk_settings,
+               "gtk-xft-rgba", &gtk_rgba,
+               NULL);
+
+  if (gtk_rgba) {
+    if (strcmp(gtk_rgba, "none") == 0)
+      subpixel_rendering = gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE;
+    else if (strcmp(gtk_rgba, "rgb") == 0)
+      subpixel_rendering = gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB;
+    else if (strcmp(gtk_rgba, "bgr") == 0)
+      subpixel_rendering = gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR;
+    else if (strcmp(gtk_rgba, "vrgb") == 0)
+      subpixel_rendering = gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB;
+    else if (strcmp(gtk_rgba, "vbgr") == 0)
+      subpixel_rendering = gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR;
+
+    g_free(gtk_rgba);
+  }
+
+  return subpixel_rendering;
+}
+
+std::string Gtk2UI::GetDefaultFontName() const {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+
+  std::string out_font_name = "sans 10";
+  gchar* font_name = NULL;
+  g_object_get(gtk_settings, "gtk-font-name", &font_name, NULL);
+
+  if (font_name) {
+    out_font_name = std::string(font_name);
+    g_free(font_name);
+  }
+
+  return out_font_name;
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(

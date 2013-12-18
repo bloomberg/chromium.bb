@@ -14,6 +14,10 @@
 #include <fontconfig/fontconfig.h>
 #endif
 
+#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "ui/gfx/linux_font_delegate.h"
+#endif
+
 namespace gfx {
 
 namespace {
@@ -114,6 +118,15 @@ void LoadDefaults(FontRenderParams* params, bool renderer) {
     default:
       params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
   }
+
+#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+  const LinuxFontDelegate* delegate = LinuxFontDelegate::instance();
+  if (delegate) {
+    params->antialiasing = delegate->UseAntialiasing();
+    params->hinting = delegate->GetHintingStyle();
+    params->subpixel_rendering = delegate->GetSubpixelRenderingStyle();
+  }
+#endif
 #endif
 
   params->subpixel_positioning = SubpixelPositioningRequested(renderer);

@@ -218,6 +218,8 @@
         'image/image_util_ios.mm',
         'interpolated_transform.cc',
         'interpolated_transform.h',
+        'linux_font_delegate.cc',
+        'linux_font_delegate.h',
         'mac/scoped_ns_disable_screen_updates.h',
         'native_widget_types.h',
         'ozone/dri/dri_skbitmap.cc',

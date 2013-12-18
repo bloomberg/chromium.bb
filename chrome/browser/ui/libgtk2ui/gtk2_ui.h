@@ -45,6 +45,13 @@ class Gtk2UI : public views::LinuxUI {
   virtual scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
       ui::LinuxInputMethodContextDelegate* delegate) const OVERRIDE;
 
+  // gfx::LinuxFontDelegate:
+  virtual bool UseAntialiasing() const OVERRIDE;
+  virtual gfx::FontRenderParams::Hinting GetHintingStyle() const OVERRIDE;
+  virtual gfx::FontRenderParams::SubpixelRendering
+      GetSubpixelRenderingStyle() const OVERRIDE;
+  virtual std::string GetDefaultFontName() const OVERRIDE;
+
   // ui::LinuxShellDialog:
   virtual ui::SelectFileDialog* CreateSelectFileDialog(
       ui::SelectFileDialog::Listener* listener,

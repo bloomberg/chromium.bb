@@ -7,6 +7,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
+#include "ui/gfx/linux_font_delegate.h"
 #include "ui/shell_dialogs/linux_shell_dialog.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
@@ -33,6 +34,7 @@ class WindowButtonOrderObserver;
 // complex method that pokes around with dlopen against a libuigtk2.so, a
 // liuigtk3.so, etc.
 class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
+                             public gfx::LinuxFontDelegate,
                              public ui::LinuxShellDialog {
  public:
   virtual ~LinuxUI() {}

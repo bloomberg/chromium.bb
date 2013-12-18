@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/pango_util.h"
 
 #if defined(TOOLKIT_GTK)
@@ -275,6 +276,10 @@ std::string PlatformFontPango::GetDefaultFont() {
   CHECK(default_font_description_);
   return *default_font_description_;
 #else
+  const gfx::LinuxFontDelegate* delegate = gfx::LinuxFontDelegate::instance();
+  if (delegate)
+    return delegate->GetDefaultFontName();
+
   return "sans 10";
 #endif    // defined(OS_CHROMEOS)
 #else
