@@ -205,6 +205,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   int parent_host_id_;
   int parent_process_id_;
 
+  // Defined prior to refs to AppCaches and Groups because destruction
+  // order matters, the disabled_storage_reference_ must outlive those
+  // objects. See additional comments for the storage_ member.
+  scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
+
   // The cache associated with this host, if any.
   scoped_refptr<AppCache> associated_cache_;
 
@@ -244,12 +249,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
 
   // And the equally central storage object, with a twist. In some error
   // conditions the storage object gets recreated and reinitialized. The
-  // disabled_reference_ allows for cleanup of an instance that got disabled
-  // after we had latched onto it. In normal circumstances,
-  // disabled_reference_ is expected to be NULL. When non-NULL both
-  // storage_ and disabled_reference_ refer to the same instance.
+  // disabled_storage_reference_ (defined earlier) allows for cleanup of an
+  // instance that got disabled  after we had latched onto it. In normal
+  // circumstances, disabled_storage_reference_ is expected to be NULL.
+  // When non-NULL both storage_ and disabled_storage_reference_ refer to the
+  // same instance.
   AppCacheStorage* storage_;
-  scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
 
   // Since these are synchronous scriptable API calls in the client, there can
   // only be one type of callback pending. Also, we have to wait until we have a
