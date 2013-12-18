@@ -1075,6 +1075,9 @@ ui::EventDispatchDetails RootWindow::DispatchTouchEventImpl(
 }
 
 ui::EventDispatchDetails RootWindow::DispatchHeldEvents() {
+  if (!held_repostable_event_ && !held_move_event_)
+    return DispatchDetails();
+
   CHECK(!dispatching_held_event_);
   dispatching_held_event_ = true;
 
