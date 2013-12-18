@@ -19,7 +19,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  public:
   static const char kViewClassName[];
 
-  explicit Checkbox(const string16& label);
+  explicit Checkbox(const base::string16& label);
   virtual ~Checkbox();
 
   // Sets a listener for this checkbox. Checkboxes aren't required to have them

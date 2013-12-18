@@ -94,7 +94,7 @@ class TestComboboxModel : public ui::ComboboxModel {
   virtual int GetItemCount() const OVERRIDE {
     return 10;
   }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual base::string16 GetItemAt(int index) OVERRIDE {
     if (IsItemSeparatorAt(index)) {
       NOTREACHED();
       return ASCIIToUTF16("SEPARATOR");

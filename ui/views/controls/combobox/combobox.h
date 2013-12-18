@@ -79,7 +79,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   ui::ComboboxModel* model() const { return model_; }
 
   // Set the accessible name of the combobox.
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
   // Visually marks the combobox as having an invalid value selected.
   // When invalid, it paints with white text on a red background.
@@ -110,7 +110,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   virtual int GetRowCount() OVERRIDE;
   virtual int GetSelectedRow() OVERRIDE;
   virtual void SetSelectedRow(int row) OVERRIDE;
-  virtual string16 GetTextForRow(int row) OVERRIDE;
+  virtual base::string16 GetTextForRow(int row) OVERRIDE;
 
   // Overriden from ComboboxModelObserver:
   virtual void OnModelChanged() OVERRIDE;
@@ -168,7 +168,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   bool invalid_;
 
   // The accessible name of this combobox.
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   // A helper used to select entries by keyboard input.
   scoped_ptr<PrefixSelector> selector_;

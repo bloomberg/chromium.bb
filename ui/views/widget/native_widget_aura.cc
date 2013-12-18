@@ -345,7 +345,7 @@ void NativeWidgetAura::GetWindowPlacement(
       ui::SHOW_STATE_DEFAULT;
 }
 
-bool NativeWidgetAura::SetWindowTitle(const string16& title) {
+bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
   if (!window_)
     return false;
   if (window_->title() == title)

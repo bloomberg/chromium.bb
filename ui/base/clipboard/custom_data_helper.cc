@@ -4,7 +4,7 @@
 //
 // TODO(dcheng): For efficiency reasons, consider passing custom data around
 // as a vector instead. It allows us to append a
-// std::pair<string16, string16> and swap the deserialized values in.
+// std::pair<base::string16, base::string16> and swap the deserialized values.
 
 #include "ui/base/clipboard/custom_data_helper.h"
 

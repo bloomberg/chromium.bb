@@ -34,7 +34,7 @@ class TextfieldExample : public ExampleBase,
  private:
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
   virtual bool HandleMouseEvent(Textfield* sender,

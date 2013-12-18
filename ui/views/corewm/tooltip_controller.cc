@@ -267,7 +267,7 @@ void TooltipController::UpdateIfRequired() {
     return;
   }
 
-  string16 tooltip_text;
+  base::string16 tooltip_text;
   if (tooltip_window_)
     tooltip_text = aura::client::GetTooltipText(tooltip_window_);
 

@@ -29,7 +29,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD1(SetCompositionText, void(const ui::CompositionText&));
   MOCK_METHOD0(ConfirmCompositionText, void());
   MOCK_METHOD0(ClearCompositionText, void());
-  MOCK_METHOD1(InsertText, void(const string16&));
+  MOCK_METHOD1(InsertText, void(const base::string16&));
   MOCK_METHOD2(InsertChar, void(char16, int));
   MOCK_CONST_METHOD0(GetAttachedWindow, gfx::NativeWindow());
   MOCK_CONST_METHOD0(GetTextInputType, ui::TextInputType());
@@ -43,7 +43,8 @@ class MockTextInputClient : public TextInputClient {
   MOCK_CONST_METHOD1(GetSelectionRange, bool(gfx::Range*));
   MOCK_METHOD1(SetSelectionRange, bool(const gfx::Range&));
   MOCK_METHOD1(DeleteRange, bool(const gfx::Range&));
-  MOCK_CONST_METHOD2(GetTextFromRange, bool(const gfx::Range&, string16*));
+  MOCK_CONST_METHOD2(GetTextFromRange, bool(const gfx::Range&,
+                                            base::string16*));
   MOCK_METHOD0(OnInputMethodChanged, void());
   MOCK_METHOD1(ChangeTextDirectionAndLayoutAlignment,
                bool(base::i18n::TextDirection));
@@ -128,7 +129,7 @@ class TSFTextStoreTest : public testing::Test {
   }
 
   // Accessors to the internal state of TSFTextStore.
-  string16* string_buffer() { return &text_store_->string_buffer_; }
+  base::string16* string_buffer() { return &text_store_->string_buffer_; }
   size_t* committed_size() { return &text_store_->committed_size_; }
 
   base::win::ScopedCOMInitializer com_initializer_;
@@ -148,14 +149,14 @@ class TSFTextStoreTestCallback {
  protected:
   // Accessors to the internal state of TSFTextStore.
   bool* edit_flag() { return &text_store_->edit_flag_; }
-  string16* string_buffer() { return &text_store_->string_buffer_; }
+  base::string16* string_buffer() { return &text_store_->string_buffer_; }
   size_t* committed_size() { return &text_store_->committed_size_; }
   gfx::Range* selection() { return &text_store_->selection_; }
   CompositionUnderlines* composition_undelines() {
     return &text_store_->composition_undelines_;
   }
 
-  void SetInternalState(const string16& new_string_buffer,
+  void SetInternalState(const base::string16& new_string_buffer,
                         LONG new_committed_size, LONG new_selection_start,
                         LONG new_selection_end) {
     ASSERT_LE(0, new_committed_size);
@@ -193,7 +194,7 @@ class TSFTextStoreTestCallback {
   }
 
   void SetTextTest(LONG acp_start, LONG acp_end,
-                   const string16& text, HRESULT error_code) {
+                   const base::string16& text, HRESULT error_code) {
     TS_TEXTCHANGE change = {};
     ASSERT_EQ(error_code,
               text_store_->SetText(0, acp_start, acp_end,
@@ -206,7 +207,7 @@ class TSFTextStoreTestCallback {
   }
 
   void GetTextTest(LONG acp_start, LONG acp_end,
-                   const string16& expected_string,
+                   const base::string16& expected_string,
                    LONG expected_next_acp) {
     wchar_t buffer[1024] = {};
     ULONG text_buffer_copied = 0;
@@ -219,7 +220,8 @@ class TSFTextStoreTestCallback {
                                    &run_info, 1, &run_info_buffer_copied,
                                    &next_acp));
     ASSERT_EQ(expected_string.size(), text_buffer_copied);
-    EXPECT_EQ(expected_string, string16(buffer, buffer + text_buffer_copied));
+    EXPECT_EQ(expected_string,
+              base::string16(buffer, buffer + text_buffer_copied));
     EXPECT_EQ(1, run_info_buffer_copied);
     EXPECT_EQ(expected_string.size(), run_info.uCount);
     EXPECT_EQ(TS_RT_PLAIN, run_info.type);
@@ -548,7 +550,7 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  void InsertText(const string16& text) {
+  void InsertText(const base::string16& text) {
     EXPECT_EQ(2, state_);
     EXPECT_EQ(L"012345", text);
     state_ = 3;
@@ -1057,7 +1059,7 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  void InsertText2(const string16& text) {
+  void InsertText2(const base::string16& text) {
     EXPECT_EQ(L"axy", text);
   }
 
@@ -1086,7 +1088,7 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  void InsertText3(const string16& text) {
+  void InsertText3(const base::string16& text) {
     EXPECT_EQ(L"ZCPc", text);
   }
 

@@ -24,7 +24,7 @@ namespace win {
 
 // Show the Windows "Open With" dialog box to ask the user to pick an app to
 // open the file with.
-bool OpenItemWithExternalApp(const string16& full_path) {
+bool OpenItemWithExternalApp(const base::string16& full_path) {
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_FLAG_DDEWAIT;
   sei.nShow = SW_SHOWNORMAL;
@@ -33,9 +33,9 @@ bool OpenItemWithExternalApp(const string16& full_path) {
   return (TRUE == ::ShellExecuteExW(&sei));
 }
 
-bool OpenAnyViaShell(const string16& full_path,
-                     const string16& directory,
-                     const string16& args,
+bool OpenAnyViaShell(const base::string16& full_path,
+                     const base::string16& directory,
+                     const base::string16& args,
                      DWORD mask) {
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = mask;
@@ -54,11 +54,11 @@ bool OpenAnyViaShell(const string16& full_path,
 
 bool OpenItemViaShell(const base::FilePath& full_path) {
   return OpenAnyViaShell(full_path.value(), full_path.DirName().value(),
-                         string16(), 0);
+                         base::string16(), 0);
 }
 
 bool OpenItemViaShellNoZoneCheck(const base::FilePath& full_path) {
-  return OpenAnyViaShell(full_path.value(), string16(), string16(),
+  return OpenAnyViaShell(full_path.value(), base::string16(), base::string16(),
                          SEE_MASK_NOZONECHECKS | SEE_MASK_FLAG_DDEWAIT);
 }
 
@@ -80,10 +80,10 @@ bool PreventWindowFromPinning(HWND hwnd) {
 
 // TODO(calamity): investigate moving this out of the UI thread as COM
 // operations may spawn nested message loops which can cause issues.
-void SetAppDetailsForWindow(const string16& app_id,
-                            const string16& app_icon,
-                            const string16& relaunch_command,
-                            const string16& relaunch_display_name,
+void SetAppDetailsForWindow(const base::string16& app_id,
+                            const base::string16& app_icon,
+                            const base::string16& relaunch_command,
+                            const base::string16& relaunch_display_name,
                             HWND hwnd) {
   // This functionality is only available on Win7+. It also doesn't make sense
   // to do this for Chrome Metro.
@@ -112,19 +112,27 @@ void SetAppDetailsForWindow(const string16& app_id,
   }
 }
 
-void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
-  SetAppDetailsForWindow(app_id, string16(), string16(), string16(), hwnd);
+void SetAppIdForWindow(const base::string16& app_id, HWND hwnd) {
+  SetAppDetailsForWindow(app_id,
+                         base::string16(),
+                         base::string16(),
+                         base::string16(),
+                         hwnd);
 }
 
-void SetAppIconForWindow(const string16& app_icon, HWND hwnd) {
-  SetAppDetailsForWindow(string16(), app_icon, string16(), string16(), hwnd);
+void SetAppIconForWindow(const base::string16& app_icon, HWND hwnd) {
+  SetAppDetailsForWindow(base::string16(),
+                         app_icon,
+                         base::string16(),
+                         base::string16(),
+                         hwnd);
 }
 
-void SetRelaunchDetailsForWindow(const string16& relaunch_command,
-                                 const string16& display_name,
+void SetRelaunchDetailsForWindow(const base::string16& relaunch_command,
+                                 const base::string16& display_name,
                                  HWND hwnd) {
-  SetAppDetailsForWindow(string16(),
-                         string16(),
+  SetAppDetailsForWindow(base::string16(),
+                         base::string16(),
                          relaunch_command,
                          display_name,
                          hwnd);

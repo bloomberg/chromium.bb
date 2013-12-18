@@ -77,7 +77,7 @@ void TextfieldExample::CreateExampleView(View* container) {
 }
 
 void TextfieldExample::ContentsChanged(Textfield* sender,
-                                       const string16& new_contents) {
+                                       const base::string16& new_contents) {
   if (sender == name_) {
     PrintStatus("Name [%s]", UTF16ToUTF8(new_contents).c_str());
   } else if (sender == password_) {
@@ -102,7 +102,7 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == show_password_) {
     PrintStatus("Password [%s]", UTF16ToUTF8(password_->text()).c_str());
   } else if (sender == clear_all_) {
-    string16 empty;
+    base::string16 empty;
     name_->SetText(empty);
     password_->SetText(empty);
     read_only_->SetText(empty);

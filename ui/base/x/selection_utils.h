@@ -37,14 +37,14 @@ UI_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& desired,
                                    const std::vector< ::Atom>& offered,
                                    std::vector< ::Atom>* output);
 
-// Takes the raw bytes of the string16 and copies them into |bytes|.
-UI_EXPORT void AddString16ToVector(const string16& str,
+// Takes the raw bytes of the base::string16 and copies them into |bytes|.
+UI_EXPORT void AddString16ToVector(const base::string16& str,
                                    std::vector<unsigned char>* bytes);
 
 UI_EXPORT std::string RefCountedMemoryToString(
     const scoped_refptr<base::RefCountedMemory>& memory);
 
-UI_EXPORT string16 RefCountedMemoryToString16(
+UI_EXPORT base::string16 RefCountedMemoryToString16(
     const scoped_refptr<base::RefCountedMemory>& memory);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,11 +105,11 @@ class UI_EXPORT SelectionData {
 
   // If |type_| is the HTML type, returns the data as a string16. This detects
   // guesses the character encoding of the source.
-  string16 GetHtml() const;
+  base::string16 GetHtml() const;
 
   // Assigns the raw data to the string.
   void AssignTo(std::string* result) const;
-  void AssignTo(string16* result) const;
+  void AssignTo(base::string16* result) const;
 
  private:
   ::Atom type_;

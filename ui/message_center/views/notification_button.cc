@@ -54,7 +54,7 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
   }
 }
 
-void NotificationButton::SetTitle(const string16& title) {
+void NotificationButton::SetTitle(const base::string16& title) {
   if (title_ != NULL)
     delete title_;  // This removes the title from this view's children.
   if (title.empty()) {

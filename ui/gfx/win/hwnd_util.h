@@ -15,8 +15,8 @@ class Point;
 class Size;
 
 // A version of the GetClassNameW API that returns the class name in an
-// string16. An empty result indicates a failure to get the class name.
-GFX_EXPORT string16 GetClassName(HWND hwnd);
+// base::string16. An empty result indicates a failure to get the class name.
+GFX_EXPORT base::string16 GetClassName(HWND hwnd);
 
 // Useful for subclassing a HWND.  Returns the previous window procedure.
 GFX_EXPORT WNDPROC SetWindowProc(HWND hwnd, WNDPROC wndproc);

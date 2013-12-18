@@ -315,7 +315,7 @@ void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
     // text has changed.
     gfx::Point view_point = mouse_pos;
     View::ConvertPointToTarget(root_view, last_tooltip_view_, &view_point);
-    string16 new_tooltip_text;
+    base::string16 new_tooltip_text;
     bool has_tooltip_text =
         last_tooltip_view_->GetTooltipText(view_point, &new_tooltip_text);
     if (!has_tooltip_text || (new_tooltip_text != tooltip_text_)) {

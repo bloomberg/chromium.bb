@@ -351,7 +351,7 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
             styled()->child_at(3)->bounds().x());
   EXPECT_EQ(0, styled()->child_at(4)->bounds().x());
 
-  string16 tooltip;
+  base::string16 tooltip;
   EXPECT_TRUE(
       styled()->child_at(1)->GetTooltipText(gfx::Point(1, 1), &tooltip));
   EXPECT_EQ(ASCIIToUTF16("tooltip"), tooltip);

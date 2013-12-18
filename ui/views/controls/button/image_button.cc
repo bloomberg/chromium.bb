@@ -220,7 +220,7 @@ void ToggleImageButton::SetToggledImage(ButtonState state,
   }
 }
 
-void ToggleImageButton::SetToggledTooltipText(const string16& tooltip) {
+void ToggleImageButton::SetToggledTooltipText(const base::string16& tooltip) {
   toggled_tooltip_text_ = tooltip;
 }
 
@@ -249,7 +249,7 @@ void ToggleImageButton::SetImage(ButtonState state,
 // ToggleImageButton, View overrides:
 
 bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
-                                       string16* tooltip) const {
+                                       base::string16* tooltip) const {
   if (!toggled_ || toggled_tooltip_text_.empty())
     return Button::GetTooltipText(p, tooltip);
 

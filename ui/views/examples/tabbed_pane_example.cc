@@ -57,7 +57,7 @@ void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == add_) {
     AddButton("Added");
   } else if (sender == add_at_) {
-    const string16 label = ASCIIToUTF16("Added at 1");
+    const base::string16 label = ASCIIToUTF16("Added at 1");
     tabbed_pane_->AddTabAtIndex(1, label, new LabelButton(NULL, label));
   } else if (sender == select_at_) {
     if (tabbed_pane_->GetTabCount() > 1)

@@ -89,7 +89,7 @@ class DummyComboboxModel : public ui::ComboboxModel {
  public:
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE { return 10; }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual base::string16 GetItemAt(int index) OVERRIDE {
     return ASCIIToUTF16("Item ") + base::IntToString16(index);
   }
 };

@@ -210,7 +210,7 @@ LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
   if (reconv->dwSize < need_size)
     return 0;
 
-  string16 text;
+  base::string16 text;
   if (!GetTextInputClient()->GetTextFromRange(text_range, &text))
     return 0;
   DCHECK_EQ(text_range.length(), text.length());
@@ -266,7 +266,7 @@ LRESULT InputMethodWin::OnReconvertString(RECONVERTSTRING* reconv) {
 
   // TODO(penghuang): Return some extra context to help improve IME's
   // reconversion accuracy.
-  string16 text;
+  base::string16 text;
   if (!GetTextInputClient()->GetTextFromRange(selection_range, &text))
     return 0;
   DCHECK_EQ(selection_range.length(), text.length());

@@ -24,11 +24,11 @@ namespace views {
 
 const char Link::kViewClassName[] = "Link";
 
-Link::Link() : Label(string16()) {
+Link::Link() : Label(base::string16()) {
   Init();
 }
 
-Link::Link(const string16& title) : Label(title) {
+Link::Link(const base::string16& title) : Label(title) {
   Init();
 }
 

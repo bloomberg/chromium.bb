@@ -15,7 +15,7 @@ namespace views {
 // static
 const char Checkbox::kViewClassName[] = "Checkbox";
 
-Checkbox::Checkbox(const string16& label)
+Checkbox::Checkbox(const base::string16& label)
     : LabelButton(NULL, label),
       checked_(false) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);

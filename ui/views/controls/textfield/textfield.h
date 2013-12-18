@@ -90,25 +90,25 @@ class VIEWS_EXPORT Textfield : public View {
   void SetTextInputType(ui::TextInputType type);
 
   // Gets/Sets the text currently displayed in the Textfield.
-  const string16& text() const { return text_; }
+  const base::string16& text() const { return text_; }
 
   // Sets the text currently displayed in the Textfield.  This doesn't
   // change the cursor position if the current cursor is within the
   // new text's range, or moves the cursor to the end if the cursor is
   // out of the new text's range.
-  void SetText(const string16& text);
+  void SetText(const base::string16& text);
 
   // Appends the given string to the previously-existing text in the field.
-  void AppendText(const string16& text);
+  void AppendText(const base::string16& text);
 
   // Inserts |text| at the current cursor position, replacing any selected text.
-  void InsertOrReplaceText(const string16& text);
+  void InsertOrReplaceText(const base::string16& text);
 
   // Returns the text direction.
   base::i18n::TextDirection GetTextDirection() const;
 
   // Returns the text that is currently selected.
-  string16 GetSelectedText() const;
+  base::string16 GetSelectedText() const;
 
   // Select the entire text range. If |reversed| is true, the range will end at
   // the logical beginning of the text; this generally shows the leading portion
@@ -165,7 +165,7 @@ class VIEWS_EXPORT Textfield : public View {
   void RemoveBorder();
 
   // Sets the text to display when empty.
-  void set_placeholder_text(const string16& text) {
+  void set_placeholder_text(const base::string16& text) {
     placeholder_text_ = text;
   }
   virtual base::string16 GetPlaceholderText() const;
@@ -235,7 +235,7 @@ class VIEWS_EXPORT Textfield : public View {
   void ClearEditHistory();
 
   // Set the accessible name of the text field.
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
   // Performs the action associated with the specified command id.
   void ExecuteCommand(int command_id);
@@ -285,7 +285,7 @@ class VIEWS_EXPORT Textfield : public View {
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers
   // don't normally use this). Sets the value and clears the selection.
-  void AccessibilitySetValue(const string16& new_value);
+  void AccessibilitySetValue(const base::string16& new_value);
 
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
@@ -297,7 +297,7 @@ class VIEWS_EXPORT Textfield : public View {
   gfx::FontList font_list_;
 
   // The text displayed in the Textfield.
-  string16 text_;
+  base::string16 text_;
 
   // True if this Textfield cannot accept input and is read-only.
   bool read_only_;
@@ -329,13 +329,13 @@ class VIEWS_EXPORT Textfield : public View {
   bool vertical_margins_were_set_;
 
   // Text to display when empty.
-  string16 placeholder_text_;
+  base::string16 placeholder_text_;
 
   // Placeholder text color.
   SkColor placeholder_text_color_;
 
   // The accessible name of the text field.
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   // The input type of this text field.
   ui::TextInputType text_input_type_;

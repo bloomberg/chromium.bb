@@ -40,12 +40,12 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
   // the TabbedPane.
-  void AddTab(const string16& title, View* contents);
+  void AddTab(const base::string16& title, View* contents);
 
   // Adds a new tab at |index| with |title|. |contents| is the view displayed
   // when the tab is selected and is owned by the TabbedPane. If the tabbed pane
   // is currently empty, the new tab is selected.
-  void AddTabAtIndex(int index, const string16& title, View* contents);
+  void AddTabAtIndex(int index, const base::string16& title, View* contents);
 
   // Selects the tab at |index|, which must be valid.
   void SelectTabAt(int index);

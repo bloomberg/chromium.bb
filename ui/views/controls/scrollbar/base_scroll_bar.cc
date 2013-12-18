@@ -305,7 +305,7 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, Menu::Delegate implementation:
 
-string16 BaseScrollBar::GetLabel(int id) const {
+base::string16 BaseScrollBar::GetLabel(int id) const {
   int ids_value = 0;
   switch (id) {
     case ScrollBarContextMenuCommand_ScrollHere:
@@ -337,7 +337,7 @@ string16 BaseScrollBar::GetLabel(int id) const {
       NOTREACHED() << "Invalid BaseScrollBar Context Menu command!";
   }
 
-  return ids_value ? l10n_util::GetStringUTF16(ids_value) : string16();
+  return ids_value ? l10n_util::GetStringUTF16(ids_value) : base::string16();
 }
 
 bool BaseScrollBar::IsCommandEnabled(int id) const {

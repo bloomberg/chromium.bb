@@ -19,16 +19,16 @@ class OSExchangeDataTest : public PlatformTest {
 
 TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
   OSExchangeData data;
-  string16 input = ASCIIToUTF16("I can has cheezburger?");
+  base::string16 input = ASCIIToUTF16("I can has cheezburger?");
   data.SetString(input);
 
   OSExchangeData data2(data.provider().Clone());
-  string16 output;
+  base::string16 output;
   EXPECT_TRUE(data2.GetString(&output));
   EXPECT_EQ(input, output);
   std::string url_spec = "http://www.goats.com/";
   GURL url(url_spec);
-  string16 title;
+  base::string16 title;
   EXPECT_FALSE(data2.GetURLAndTitle(&url, &title));
   // No URLs in |data|, so url should be untouched.
   EXPECT_EQ(url_spec, url.spec());
@@ -38,19 +38,19 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
   OSExchangeData data;
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
-  string16 url_title = ASCIIToUTF16("www.google.com");
+  base::string16 url_title = ASCIIToUTF16("www.google.com");
   data.SetURL(url, url_title);
-  string16 output;
+  base::string16 output;
 
   OSExchangeData data2(data.provider().Clone());
 
   // URL spec and title should match
   GURL output_url;
-  string16 output_title;
+  base::string16 output_title;
   EXPECT_TRUE(data2.GetURLAndTitle(&output_url, &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
-  string16 output_string;
+  base::string16 output_string;
 
   // URL should be the raw text response
   EXPECT_TRUE(data2.GetString(&output_string));
@@ -83,14 +83,14 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
 TEST_F(OSExchangeDataTest, TestHTML) {
   OSExchangeData data;
   GURL url("http://www.google.com/");
-  string16 html = ASCIIToUTF16(
+  base::string16 html = ASCIIToUTF16(
       "<HTML>\n<BODY>\n"
       "<b>bold.</b> <i><b>This is bold italic.</b></i>\n"
       "</BODY>\n</HTML>");
   data.SetHtml(html, url);
 
   OSExchangeData copy(data.provider().Clone());
-  string16 read_html;
+  base::string16 read_html;
   EXPECT_TRUE(copy.GetHtml(&read_html, &url));
   EXPECT_EQ(html, read_html);
 }

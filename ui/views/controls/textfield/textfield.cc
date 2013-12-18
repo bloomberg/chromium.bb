@@ -163,19 +163,19 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
     SetObscured(should_be_obscured);
 }
 
-void Textfield::SetText(const string16& text) {
+void Textfield::SetText(const base::string16& text) {
   text_ = text;
   if (native_wrapper_)
     native_wrapper_->UpdateText();
 }
 
-void Textfield::AppendText(const string16& text) {
+void Textfield::AppendText(const base::string16& text) {
   text_ += text;
   if (native_wrapper_)
     native_wrapper_->AppendText(text);
 }
 
-void Textfield::InsertOrReplaceText(const string16& text) {
+void Textfield::InsertOrReplaceText(const base::string16& text) {
   if (native_wrapper_) {
     native_wrapper_->InsertOrReplaceText(text);
     text_ = native_wrapper_->GetText();
@@ -192,8 +192,9 @@ void Textfield::SelectAll(bool reversed) {
     native_wrapper_->SelectAll(reversed);
 }
 
-string16 Textfield::GetSelectedText() const {
-  return native_wrapper_ ? native_wrapper_->GetSelectedText() : string16();
+base::string16 Textfield::GetSelectedText() const {
+  return native_wrapper_ ? native_wrapper_->GetSelectedText() :
+                           base::string16();
 }
 
 void Textfield::ClearSelection() const {
@@ -345,7 +346,7 @@ void Textfield::UpdateAllProperties() {
 
 void Textfield::SyncText() {
   if (native_wrapper_) {
-    string16 new_text = native_wrapper_->GetText();
+    base::string16 new_text = native_wrapper_->GetText();
     if (new_text != text_) {
       text_ = new_text;
       if (controller_)
@@ -400,7 +401,7 @@ void Textfield::ClearEditHistory() {
   native_wrapper_->ClearEditHistory();
 }
 
-void Textfield::SetAccessibleName(const string16& name) {
+void Textfield::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
@@ -559,7 +560,7 @@ gfx::Insets Textfield::GetTextInsets() const {
   return insets;
 }
 
-void Textfield::AccessibilitySetValue(const string16& new_value) {
+void Textfield::AccessibilitySetValue(const base::string16& new_value) {
   if (!read_only()) {
     SetText(new_value);
     ClearSelection();

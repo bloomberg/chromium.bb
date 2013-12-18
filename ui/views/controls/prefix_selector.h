@@ -29,7 +29,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
       const ui::CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
-  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertText(const base::string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
@@ -45,7 +45,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                string16* text) const OVERRIDE;
+                                base::string16* text) const OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
@@ -57,10 +57,10 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
 
  private:
   // Invoked when text is typed. Tries to change the selection appropriately.
-  void OnTextInput(const string16& text);
+  void OnTextInput(const base::string16& text);
 
   // Returns true if the text of the node at |row| starts with |lower_text|.
-  bool TextAtRowMatchesText(int row, const string16& lower_text);
+  bool TextAtRowMatchesText(int row, const base::string16& lower_text);
 
   // Clears |current_text_| and resets |time_of_last_key_|.
   void ClearText();
@@ -70,7 +70,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   // Time OnTextInput() was last invoked.
   base::TimeTicks time_of_last_key_;
 
-  string16 current_text_;
+  base::string16 current_text_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefixSelector);
 };

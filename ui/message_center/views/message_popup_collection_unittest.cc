@@ -90,7 +90,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
                          UTF8ToUTF16("test title"),
                          UTF8ToUTF16("test message"),
                          gfx::Image(),
-                         string16() /* display_source */,
+                         base::string16() /* display_source */,
                          NotifierId(),
                          message_center::RichNotificationData(),
                          NULL /* delegate */));

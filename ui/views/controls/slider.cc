@@ -167,7 +167,7 @@ void Slider::UpdateState(bool control_on) {
   SchedulePaint();
 }
 
-void Slider::SetAccessibleName(const string16& name) {
+void Slider::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 

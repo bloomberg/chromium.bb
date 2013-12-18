@@ -359,7 +359,7 @@ void DialogClientView::ChildVisibilityChanged(View* child) {
 // DialogClientView, private:
 
 LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
-  const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
+  const base::string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
   LabelButton* button = NULL;
   if (GetDialogDelegate()->UseNewStyleForThisDialog() &&
       GetDialogDelegate()->GetDefaultDialogButton() == type &&

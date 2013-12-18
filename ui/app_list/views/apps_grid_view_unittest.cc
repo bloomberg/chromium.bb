@@ -435,7 +435,7 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   std::string expected_tooltip("tooltip");
   model_->CreateAndAddItem(expected_text, expected_tooltip);
 
-  string16 actual_tooltip;
+  base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();
@@ -451,7 +451,7 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   std::string title("a");
   model_->CreateAndAddItem(title, title);
 
-  string16 actual_tooltip;
+  base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();

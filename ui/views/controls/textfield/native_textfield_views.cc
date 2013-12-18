@@ -318,7 +318,7 @@ int NativeTextfieldViews::OnPerformDrop(const ui::DropTargetEvent& event) {
 
   gfx::SelectionModel drop_destination_model =
       GetRenderText()->FindCursorPosition(event.location());
-  string16 text;
+  base::string16 text;
   event.data().GetString(&text);
   text = GetTextForDisplay(text);
 
@@ -493,7 +493,7 @@ bool NativeTextfieldViews::CanStartDragForView(View* sender,
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, NativeTextifieldWrapper overrides:
 
-string16 NativeTextfieldViews::GetText() const {
+base::string16 NativeTextfieldViews::GetText() const {
   return model_->GetText();
 }
 
@@ -505,7 +505,7 @@ void NativeTextfieldViews::UpdateText() {
       ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
 }
 
-void NativeTextfieldViews::AppendText(const string16& text) {
+void NativeTextfieldViews::AppendText(const base::string16& text) {
   if (text.empty())
     return;
   model_->Append(GetTextForDisplay(text));
@@ -513,7 +513,7 @@ void NativeTextfieldViews::AppendText(const string16& text) {
   SchedulePaint();
 }
 
-void NativeTextfieldViews::InsertOrReplaceText(const string16& text) {
+void NativeTextfieldViews::InsertOrReplaceText(const base::string16& text) {
   if (text.empty())
     return;
   model_->InsertText(text);
@@ -525,7 +525,7 @@ base::i18n::TextDirection NativeTextfieldViews::GetTextDirection() const {
   return GetRenderText()->GetTextDirection();
 }
 
-string16 NativeTextfieldViews::GetSelectedText() const {
+base::string16 NativeTextfieldViews::GetSelectedText() const {
   return model_->GetSelectedText();
 }
 
@@ -749,7 +749,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
     return controller->IsCommandIdEnabled(command_id);
 
   bool editable = !textfield_->read_only();
-  string16 result;
+  base::string16 result;
   switch (command_id) {
     case IDS_APP_UNDO:
       return editable && model_->CanUndo();
@@ -780,9 +780,11 @@ bool NativeTextfieldViews::IsItemForCommandIdDynamic(int command_id) const {
   return controller && controller->IsItemForCommandIdDynamic(command_id);
 }
 
-string16 NativeTextfieldViews::GetLabelForCommandId(int command_id) const {
+base::string16 NativeTextfieldViews::GetLabelForCommandId(
+    int command_id) const {
   const TextfieldController* controller = textfield_->GetController();
-  return controller ? controller->GetLabelForCommandId(command_id) : string16();
+  return controller ? controller->GetLabelForCommandId(command_id) :
+                      base::string16();
 }
 
 void NativeTextfieldViews::ExecuteCommand(int command_id, int event_flags) {
@@ -911,7 +913,7 @@ void NativeTextfieldViews::ClearCompositionText() {
   OnAfterUserAction();
 }
 
-void NativeTextfieldViews::InsertText(const string16& text) {
+void NativeTextfieldViews::InsertText(const base::string16& text) {
   // TODO(suzhe): Filter invalid characters.
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || text.empty())
     return;
@@ -1070,7 +1072,7 @@ bool NativeTextfieldViews::DeleteRange(const gfx::Range& range) {
 
 bool NativeTextfieldViews::GetTextFromRange(
     const gfx::Range& range,
-    string16* text) const {
+    base::string16* text) const {
   if (!ImeEditingAllowed() || !range.IsValid())
     return false;
 
@@ -1137,7 +1139,8 @@ gfx::RenderText* NativeTextfieldViews::GetRenderText() const {
   return model_->render_text();
 }
 
-string16 NativeTextfieldViews::GetTextForDisplay(const string16& text) {
+base::string16 NativeTextfieldViews::GetTextForDisplay(
+    const base::string16& text) {
   return textfield_->style() & Textfield::STYLE_LOWERCASE ?
       base::i18n::ToLower(text) : text;
 }
@@ -1426,14 +1429,14 @@ bool NativeTextfieldViews::Paste() {
   if (textfield_->read_only())
     return false;
 
-  const string16 original_text = GetText();
+  const base::string16 original_text = GetText();
   const bool success = model_->Paste();
 
   if (success) {
     // As Paste is handled in model_->Paste(), the RenderText may contain
     // upper case characters. This is not consistent with other places
     // which keeps RenderText only containing lower case characters.
-    string16 new_text = GetTextForDisplay(GetText());
+    base::string16 new_text = GetTextForDisplay(GetText());
     model_->SetText(new_text);
 
     TextfieldController* controller = textfield_->GetController();

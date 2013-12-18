@@ -192,11 +192,12 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
     [groupDropDownButton_ setTarget:self];
     // Add a dummy item for pull-down.
     [groupDropDownButton_ addItemWithTitle:@""];
-    string16 title;
+    base::string16 title;
     for (size_t i = 0; i < groupCount; ++i) {
       const message_center::NotifierGroup& group =
           provider_->GetNotifierGroupAt(i);
-      string16 item = group.login_info.empty() ? group.name : group.login_info;
+      base::string16 item =
+          group.login_info.empty() ? group.name : group.login_info;
       [groupDropDownButton_ addItemWithTitle:base::SysUTF16ToNSString(item)];
       if (provider_->IsNotifierGroupActiveAt(i)) {
         title = item;

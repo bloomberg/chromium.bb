@@ -33,7 +33,7 @@ typedef chromeos::IBusEngineHandlerInterface::KeyEventDoneCallback
     KeyEventCallback;
 
 uint32 GetOffsetInUTF16(const std::string& utf8_string, uint32 utf8_offset) {
-  string16 utf16_string = UTF8ToUTF16(utf8_string);
+  base::string16 utf16_string = UTF8ToUTF16(utf8_string);
   DCHECK_LT(utf8_offset, utf16_string.size());
   base::i18n::UTF16CharIterator char_iterator(&utf16_string);
   for (size_t i = 0; i < utf8_offset; ++i)
@@ -257,7 +257,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual void ClearCompositionText() OVERRIDE {
     composition_text_.Clear();
   }
-  virtual void InsertText(const string16& text) OVERRIDE {
+  virtual void InsertText(const base::string16& text) OVERRIDE {
     inserted_text_ = text;
   }
   virtual void InsertChar(char16 ch, int flags) OVERRIDE {
@@ -302,7 +302,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE { return false; }
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                string16* text) const OVERRIDE {
+                                base::string16* text) const OVERRIDE {
     *text = surrounding_text_.substr(range.GetMin(), range.length());
     return true;
   }
@@ -359,7 +359,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   // ui::TextInputClient functions.
   CompositionText composition_text_;
   CompositionText confirmed_text_;
-  string16 inserted_text_;
+  base::string16 inserted_text_;
   char16 inserted_char_;
   unsigned int on_input_method_changed_call_count_;
   int inserted_char_flags_;
@@ -371,7 +371,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   gfx::Rect caret_bounds_;
   gfx::Range text_range_;
   gfx::Range selection_range_;
-  string16 surrounding_text_;
+  base::string16 surrounding_text_;
 
   scoped_ptr<chromeos::MockIMEEngineHandler> mock_ime_engine_handler_;
   scoped_ptr<chromeos::MockIMECandidateWindowHandler>
@@ -599,7 +599,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {
   const char kSampleText[] = "Sample Text";
   const uint32 kCursorPos = 2UL;
 
-  const string16 utf16_string = UTF8ToUTF16(kSampleText);
+  const base::string16 utf16_string = UTF8ToUTF16(kSampleText);
   chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
 

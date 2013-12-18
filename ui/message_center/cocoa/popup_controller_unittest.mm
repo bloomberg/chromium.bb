@@ -24,7 +24,7 @@ TEST_F(PopupControllerTest, Creation) {
           ASCIIToUTF16("Added to circles"),
           ASCIIToUTF16("Jonathan and 5 others"),
           gfx::Image(),
-          string16(),
+          base::string16(),
           message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));

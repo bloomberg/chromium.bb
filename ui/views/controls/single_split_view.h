@@ -77,7 +77,7 @@ class VIEWS_EXPORT SingleSplitView : public View {
                                gfx::Rect* leading_bounds,
                                gfx::Rect* trailing_bounds) const;
 
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
  protected:
   // View overrides.
@@ -137,7 +137,7 @@ class VIEWS_EXPORT SingleSplitView : public View {
   SingleSplitViewListener* listener_;
 
   // The accessible name of this view.
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleSplitView);
 };

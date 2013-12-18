@@ -29,7 +29,7 @@ class VIEWS_EXPORT TextfieldController {
   // user. It won't be called if the text is changed by calling
   // Textfield::SetText() or Textfield::AppendText().
   virtual void ContentsChanged(Textfield* sender,
-                               const string16& new_contents) {}
+                               const base::string16& new_contents) {}
 
   // This method is called to get notified about keystrokes in the edit.
   // Returns true if the message was handled and should not be processed
@@ -87,7 +87,7 @@ class VIEWS_EXPORT TextfieldController {
   virtual bool IsItemForCommandIdDynamic(int command_id) const;
 
   // Returns the label string for the |coomand_id|.
-  virtual string16 GetLabelForCommandId(int command_id) const;
+  virtual base::string16 GetLabelForCommandId(int command_id) const;
 
   // Returns whether the controller handles the specified command. This is used
   // to handle a command the textfield would normally handle. For example, to

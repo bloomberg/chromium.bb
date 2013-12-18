@@ -26,7 +26,7 @@ namespace views {
 typedef ViewsTestBase LabelButtonTest;
 
 TEST_F(LabelButtonTest, Init) {
-  const string16 text(ASCIIToUTF16("abc"));
+  const base::string16 text(ASCIIToUTF16("abc"));
   LabelButton button(NULL, text);
 
   EXPECT_TRUE(button.GetImage(Button::STATE_NORMAL).isNull());
@@ -45,12 +45,12 @@ TEST_F(LabelButtonTest, Init) {
 }
 
 TEST_F(LabelButtonTest, Label) {
-  LabelButton button(NULL, string16());
+  LabelButton button(NULL, base::string16());
   EXPECT_TRUE(button.GetText().empty());
 
   const gfx::Font font;
-  const string16 short_text(ASCIIToUTF16("abcdefghijklm"));
-  const string16 long_text(ASCIIToUTF16("abcdefghijklmnopqrstuvwxyz"));
+  const base::string16 short_text(ASCIIToUTF16("abcdefghijklm"));
+  const base::string16 long_text(ASCIIToUTF16("abcdefghijklmnopqrstuvwxyz"));
   const int short_text_width = gfx::Canvas::GetStringWidth(short_text, font);
   const int long_text_width = gfx::Canvas::GetStringWidth(long_text, font);
 
@@ -76,7 +76,7 @@ TEST_F(LabelButtonTest, Label) {
 }
 
 TEST_F(LabelButtonTest, Image) {
-  LabelButton button(NULL, string16());
+  LabelButton button(NULL, base::string16());
 
   const int small_size = 50, large_size = 100;
   const gfx::ImageSkia small_image = CreateTestImage(small_size, small_size);
@@ -108,10 +108,10 @@ TEST_F(LabelButtonTest, Image) {
 }
 
 TEST_F(LabelButtonTest, LabelAndImage) {
-  LabelButton button(NULL, string16());
+  LabelButton button(NULL, base::string16());
 
   const gfx::Font font;
-  const string16 text(ASCIIToUTF16("abcdefghijklm"));
+  const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
   const int text_width = gfx::Canvas::GetStringWidth(text, font);
 
   const int image_size = 50;
@@ -146,7 +146,7 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_EQ(gfx::ALIGN_RIGHT, button.GetHorizontalAlignment());
   EXPECT_LT(button.label_->bounds().right(), button.image_->bounds().x());
 
-  button.SetText(string16());
+  button.SetText(base::string16());
   EXPECT_GT(button.GetPreferredSize().width(), text_width + image_size);
   EXPECT_GT(button.GetPreferredSize().height(), image_size);
   button.SetImage(Button::STATE_NORMAL, gfx::ImageSkia());
@@ -165,7 +165,7 @@ TEST_F(LabelButtonTest, LabelAndImage) {
 }
 
 TEST_F(LabelButtonTest, Font) {
-  const string16 text(ASCIIToUTF16("abc"));
+  const base::string16 text(ASCIIToUTF16("abc"));
   LabelButton button(NULL, text);
 
   const gfx::Font original_font = button.GetFont();

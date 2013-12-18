@@ -127,7 +127,7 @@ void NonClientView::LayoutFrameView() {
   frame_view_->Layout();
 }
 
-void NonClientView::SetAccessibleName(const string16& name) {
+void NonClientView::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 

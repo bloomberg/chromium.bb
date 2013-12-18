@@ -135,10 +135,10 @@ ui::ModalType WebDialogView::GetModalType() const {
   return GetDialogModalType();
 }
 
-string16 WebDialogView::GetWindowTitle() const {
+base::string16 WebDialogView::GetWindowTitle() const {
   if (delegate_)
     return delegate_->GetDialogTitle();
-  return string16();
+  return base::string16();
 }
 
 std::string WebDialogView::GetWindowName() const {
@@ -188,7 +188,7 @@ ui::ModalType WebDialogView::GetDialogModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-string16 WebDialogView::GetDialogTitle() const {
+base::string16 WebDialogView::GetDialogTitle() const {
   return GetWindowTitle();
 }
 

@@ -17,7 +17,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   // The button's class name.
   static const char kViewClassName[];
 
-  RadioButton(const string16& label, int group_id);
+  RadioButton(const base::string16& label, int group_id);
   virtual ~RadioButton();
 
   // Overridden from View:

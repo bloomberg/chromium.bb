@@ -56,7 +56,7 @@ class MultilineExample::RenderTextView : public View {
     return height;
   }
 
-  void SetText(const string16& new_contents) {
+  void SetText(const base::string16& new_contents) {
     // Color and style the text inside |test_range| to test colors and styles.
     gfx::Range test_range(1, 21);
     test_range.set_start(std::min(test_range.start(), new_contents.length()));
@@ -139,7 +139,7 @@ void MultilineExample::CreateExampleView(View* container) {
 }
 
 void MultilineExample::ContentsChanged(Textfield* sender,
-                                       const string16& new_contents) {
+                                       const base::string16& new_contents) {
   render_text_view_->SetText(new_contents);
   if (label_checkbox_->checked())
     label_->SetText(new_contents);
@@ -154,7 +154,8 @@ bool MultilineExample::HandleKeyEvent(Textfield* sender,
 
 void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
   DCHECK_EQ(sender, label_checkbox_);
-  label_->SetText(label_checkbox_->checked() ? textfield_->text() : string16());
+  label_->SetText(label_checkbox_->checked() ? textfield_->text() :
+                                               base::string16());
   container()->Layout();
   container()->SchedulePaint();
 }

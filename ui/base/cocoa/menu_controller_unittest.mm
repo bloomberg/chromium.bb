@@ -87,7 +87,7 @@ class DynamicDelegate : public Delegate {
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE {
     return true;
   }
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE {
+  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE {
     return label_;
   }
   virtual bool GetIconForCommandId(
@@ -100,11 +100,11 @@ class DynamicDelegate : public Delegate {
       return true;
     }
   }
-  void SetDynamicLabel(string16 label) { label_ = label; }
+  void SetDynamicLabel(base::string16 label) { label_ = label; }
   void SetDynamicIcon(const gfx::Image& icon) { icon_ = icon; }
 
  private:
-  string16 label_;
+  base::string16 label_;
   gfx::Image icon_;
 };
 
@@ -222,7 +222,7 @@ TEST_F(MenuControllerTest, PopUpButton) {
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:YES]);
   EXPECT_EQ([[menu menu] numberOfItems], 4);
   EXPECT_EQ(base::SysNSStringToUTF16([[[menu menu] itemAtIndex:0] title]),
-            string16());
+            base::string16());
 
   // Make sure the tags are still correct (the index no longer matches the tag).
   NSMenuItem* itemTwo = [[menu menu] itemAtIndex:2];
@@ -313,7 +313,7 @@ TEST_F(MenuControllerTest, Dynamic) {
 
   // Create a menu containing a single item whose label is "initial" and who has
   // no icon.
-  string16 initial = ASCIIToUTF16("initial");
+  base::string16 initial = ASCIIToUTF16("initial");
   delegate.SetDynamicLabel(initial);
   SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("foo"));
@@ -329,7 +329,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   EXPECT_EQ(nil, [item image]);
 
   // Now update the item to have a label of "second" and an icon.
-  string16 second = ASCIIToUTF16("second");
+  base::string16 second = ASCIIToUTF16("second");
   delegate.SetDynamicLabel(second);
   const gfx::Image& icon =
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER);

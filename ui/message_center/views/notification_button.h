@@ -24,7 +24,7 @@ class NotificationButton : public views::CustomButton {
   virtual ~NotificationButton();
 
   void SetIcon(const gfx::ImageSkia& icon);
-  void SetTitle(const string16& title);
+  void SetTitle(const base::string16& title);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

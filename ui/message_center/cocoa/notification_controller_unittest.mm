@@ -115,7 +115,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           ASCIIToUTF16("Added to circles"),
           ASCIIToUTF16("Jonathan and 5 others"),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           message_center::RichNotificationData(),
           NULL));
@@ -145,7 +145,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
                        "notification. Are you really going to read this "
                        "entire thing?"),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           message_center::RichNotificationData(),
           NULL));
@@ -163,10 +163,10 @@ TEST_F(NotificationControllerTest, Close) {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           "an_id",
-          string16(),
-          string16(),
+          base::string16(),
+          base::string16(),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           message_center::RichNotificationData(),
           NULL));
@@ -193,7 +193,7 @@ TEST_F(NotificationControllerTest, Update) {
           ASCIIToUTF16("This message isn't too long and should fit in the"
                        "default bounds."),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           message_center::RichNotificationData(),
           NULL));
@@ -226,10 +226,10 @@ TEST_F(NotificationControllerTest, Buttons) {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT,
           "an_id",
-          string16(),
-          string16(),
+          base::string16(),
+          base::string16(),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           optional,
           NULL));
@@ -251,10 +251,10 @@ TEST_F(NotificationControllerTest, Image) {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT,
           "an_id",
-          string16(),
-          string16(),
+          base::string16(),
+          base::string16(),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           message_center::RichNotificationData(),
           NULL));
@@ -297,7 +297,7 @@ TEST_F(NotificationControllerTest, List) {
           UTF8ToUTF16("Notification Title"),
           UTF8ToUTF16("Notification Message - should be hidden"),
           gfx::Image(),
-          string16(),
+          base::string16(),
           DummyNotifierId(),
           optional,
           NULL));

@@ -52,7 +52,7 @@ class TooltipManagerAura : public TooltipManager {
   aura::Window* GetWindow();
 
   Widget* widget_;
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerAura);
 };

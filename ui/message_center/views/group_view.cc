@@ -78,7 +78,7 @@ GroupView::GroupView(MessageCenterController* controller,
       context_message_view_(NULL),
       icon_view_(NULL)
 {
-  std::vector<string16> accessible_lines;
+  std::vector<base::string16> accessible_lines;
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
@@ -96,7 +96,7 @@ GroupView::GroupView(MessageCenterController* controller,
   int padding = kTitleLineHeight - font_list.GetHeight();
 
   title_view_ = new BoundedLabel(
-      gfx::TruncateString(string16(last_notification.title()),
+      gfx::TruncateString(base::string16(last_notification.title()),
                           kTitleCharacterLimit),
                           font_list);
   accessible_lines.push_back(last_notification.title());
@@ -155,7 +155,7 @@ GroupView::GroupView(MessageCenterController* controller,
       1, 0, 0, 0, kButtonSeparatorColor));
   bottom_view_->AddChildView(separator);
   more_button_ = new NotificationButton(this);
-  string16 button_title =
+  base::string16 button_title =
       l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_MORE_FROM,
                                  base::IntToString16(group_size_),
                                  display_source_);

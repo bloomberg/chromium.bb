@@ -35,7 +35,7 @@ class ChildModalParent : public WidgetDelegateView,
 
   // Overridden from WidgetDelegate:
   virtual View* GetContentsView() OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual void Layout() OVERRIDE;

@@ -186,7 +186,7 @@ class AuraClipboard {
   }
 
   // Reads text from the data at the top of clipboard stack.
-  void ReadText(string16* result) const {
+  void ReadText(base::string16* result) const {
     std::string utf8_result;
     ReadAsciiText(&utf8_result);
     *result = UTF8ToUTF16(utf8_result);
@@ -207,7 +207,7 @@ class AuraClipboard {
   }
 
   // Reads HTML from the data at the top of clipboard stack.
-  void ReadHTML(string16* markup,
+  void ReadHTML(base::string16* markup,
                 std::string* src_url,
                 uint32* fragment_start,
                 uint32* fragment_end) const {
@@ -252,7 +252,8 @@ class AuraClipboard {
   }
 
   // Reads data of type |type| from the data at the top of clipboard stack.
-  void ReadCustomData(const string16& type, string16* result) const {
+  void ReadCustomData(const base::string16& type,
+                      base::string16* result) const {
     result->clear();
     const ClipboardData* data = GetData();
     if (!HasFormat(CUSTOM))
@@ -264,7 +265,7 @@ class AuraClipboard {
   }
 
   // Reads bookmark from the data at the top of clipboard stack.
-  void ReadBookmark(string16* title, std::string* url) const {
+  void ReadBookmark(base::string16* title, std::string* url) const {
     title->clear();
     url->clear();
     if (!HasFormat(BOOKMARK))
@@ -481,7 +482,7 @@ void Clipboard::Clear(ClipboardType type) {
 }
 
 void Clipboard::ReadAvailableTypes(ClipboardType type,
-                                   std::vector<string16>* types,
+                                   std::vector<base::string16>* types,
                                    bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
@@ -507,7 +508,7 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
   }
 }
 
-void Clipboard::ReadText(ClipboardType type, string16* result) const {
+void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadText(result);
 }
@@ -518,7 +519,7 @@ void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
 }
 
 void Clipboard::ReadHTML(ClipboardType type,
-                         string16* markup,
+                         base::string16* markup,
                          std::string* src_url,
                          uint32* fragment_start,
                          uint32* fragment_end) const {
@@ -537,13 +538,13 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
 }
 
 void Clipboard::ReadCustomData(ClipboardType clipboard_type,
-                               const string16& type,
-                               string16* result) const {
+                               const base::string16& type,
+                               base::string16* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadCustomData(type, result);
 }
 
-void Clipboard::ReadBookmark(string16* title, std::string* url) const {
+void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadBookmark(title, url);
 }

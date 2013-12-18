@@ -537,7 +537,8 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
   class LabelButtonDtorTracked : public LabelButton {
    public:
-    LabelButtonDtorTracked(const string16& text, DtorTrackVector* dtor_tracker)
+    LabelButtonDtorTracked(const base::string16& text,
+                           DtorTrackVector* dtor_tracker)
         : LabelButton(NULL, text),
           dtor_tracker_(dtor_tracker) {
       SetStyle(STYLE_NATIVE_TEXTBUTTON);

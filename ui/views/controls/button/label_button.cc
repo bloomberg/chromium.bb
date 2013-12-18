@@ -37,7 +37,7 @@ const int LabelButton::kHoverAnimationDurationMs = 170;
 // static
 const char LabelButton::kViewClassName[] = "LabelButton";
 
-LabelButton::LabelButton(ButtonListener* listener, const string16& text)
+LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
     : CustomButton(listener),
       image_(new ImageView()),
       label_(new Label()),
@@ -75,11 +75,11 @@ void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
   UpdateImage();
 }
 
-const string16& LabelButton::GetText() const {
+const base::string16& LabelButton::GetText() const {
   return label_->text();
 }
 
-void LabelButton::SetText(const string16& text) {
+void LabelButton::SetText(const base::string16& text) {
   SetAccessibleName(text);
   label_->SetText(text);
 }

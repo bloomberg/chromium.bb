@@ -107,7 +107,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual bool HasCapture() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
-  virtual bool SetWindowTitle(const string16& title) OVERRIDE;
+  virtual bool SetWindowTitle(const base::string16& title) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
@@ -284,7 +284,7 @@ private:
 
   scoped_ptr<X11ScopedCapture> x11_capture_;
 
-  string16 window_title_;
+  base::string16 window_title_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostX11);
 };

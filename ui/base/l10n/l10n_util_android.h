@@ -17,8 +17,9 @@ namespace l10n_util {
 // Return the current default locale of the device.
 UI_EXPORT std::string GetDefaultLocale();
 
-UI_EXPORT string16 GetDisplayNameForLocale(const std::string& locale,
-                                           const std::string& display_locale);
+UI_EXPORT base::string16 GetDisplayNameForLocale(
+    const std::string& locale,
+    const std::string& display_locale);
 
 UI_EXPORT bool RegisterLocalizationUtil(JNIEnv* env);
 

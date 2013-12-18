@@ -358,7 +358,7 @@ bool CheckCharacterComposeTable(const ComposeBufferType& sequence,
 
 // Converts |character| to UTF16 string.
 // Returns false when |character| is not a valid character.
-bool UTF32CharacterToUTF16(uint32 character, string16* output) {
+bool UTF32CharacterToUTF16(uint32 character, base::string16* output) {
   output->clear();
   // Reject invalid character. (e.g. codepoint greater than 0x10ffff)
   if (!CBU_IS_UNICODE_CHAR(character))

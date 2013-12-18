@@ -73,8 +73,8 @@ ScopedJavaLocalRef<jobject> NewJavaLocale(
 
 }  // namespace
 
-string16 GetDisplayNameForLocale(const std::string& locale,
-                                 const std::string& display_locale) {
+base::string16 GetDisplayNameForLocale(const std::string& locale,
+                                       const std::string& display_locale) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_locale =
       NewJavaLocale(env, locale);

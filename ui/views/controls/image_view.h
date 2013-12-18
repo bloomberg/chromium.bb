@@ -72,8 +72,8 @@ class VIEWS_EXPORT ImageView : public View {
   Alignment GetVerticalAlignment() const;
 
   // Set / Get the tooltip text.
-  void SetTooltipText(const string16& tooltip);
-  string16 GetTooltipText() const;
+  void SetTooltipText(const base::string16& tooltip);
+  base::string16 GetTooltipText() const;
 
   void set_interactive(bool interactive) { interactive_ = interactive; }
 
@@ -86,7 +86,7 @@ class VIEWS_EXPORT ImageView : public View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
  private:
@@ -117,7 +117,7 @@ class VIEWS_EXPORT ImageView : public View {
   Alignment vert_alignment_;
 
   // The current tooltip text.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   // A flag controlling hit test handling for interactivity.
   bool interactive_;

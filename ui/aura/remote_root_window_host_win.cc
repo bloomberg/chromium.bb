@@ -61,7 +61,7 @@ void SetVirtualKeyStates(uint32 flags) {
 }
 
 void FillCompositionText(
-    const string16& text,
+    const base::string16& text,
     int32 selection_start,
     int32 selection_end,
     const std::vector<metro_viewer::UnderlineInfo>& underlines,
@@ -652,7 +652,7 @@ void RemoteRootWindowHostWin::OnImeCandidatePopupChanged(bool visible) {
 }
 
 void RemoteRootWindowHostWin::OnImeCompositionChanged(
-    const string16& text,
+    const base::string16& text,
     int32 selection_start,
     int32 selection_end,
     const std::vector<metro_viewer::UnderlineInfo>& underlines) {
@@ -666,7 +666,7 @@ void RemoteRootWindowHostWin::OnImeCompositionChanged(
   remote_input_method_private->OnCompositionChanged(composition_text);
 }
 
-void RemoteRootWindowHostWin::OnImeTextCommitted(const string16& text) {
+void RemoteRootWindowHostWin::OnImeTextCommitted(const base::string16& text) {
   ui::RemoteInputMethodPrivateWin* remote_input_method_private =
       GetRemoteInputMethodPrivate();
   if (!remote_input_method_private)

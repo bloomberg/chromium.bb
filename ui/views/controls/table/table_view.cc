@@ -404,7 +404,7 @@ void TableView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool TableView::GetTooltipText(const gfx::Point& p,
-                               string16* tooltip) const {
+                               base::string16* tooltip) const {
   return GetTooltipImpl(p, tooltip, NULL);
 }
 
@@ -871,7 +871,7 @@ GroupRange TableView::GetGroupRange(int model_index) const {
 }
 
 bool TableView::GetTooltipImpl(const gfx::Point& location,
-                               string16* tooltip,
+                               base::string16* tooltip,
                                gfx::Point* tooltip_origin) const {
   const int row = location.y() / row_height_;
   if (row < 0 || row >= RowCount() || visible_columns_.empty())
@@ -883,7 +883,7 @@ bool TableView::GetTooltipImpl(const gfx::Point& location,
       x > (visible_columns_[column].x + visible_columns_[column].width))
     return false;
 
-  const string16 text(model_->GetText(ViewToModel(row),
+  const base::string16 text(model_->GetText(ViewToModel(row),
                                       visible_columns_[column].column.id));
   if (text.empty())
     return false;

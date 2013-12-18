@@ -199,7 +199,8 @@ void TextButtonNativeThemeBorder::Paint(const View& view, gfx::Canvas* canvas) {
 
 // TextButtonBase -------------------------------------------------------------
 
-TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
+TextButtonBase::TextButtonBase(ButtonListener* listener,
+                               const base::string16& text)
     : CustomButton(listener),
       alignment_(ALIGN_LEFT),
       font_(ResourceBundle::GetSharedInstance().GetFont(
@@ -239,7 +240,7 @@ void TextButtonBase::SetIsDefault(bool is_default) {
   SchedulePaint();
 }
 
-void TextButtonBase::SetText(const string16& text) {
+void TextButtonBase::SetText(const base::string16& text) {
   if (text == text_)
     return;
   text_ = text;
@@ -609,7 +610,7 @@ ui::NativeTheme::State TextButtonBase::GetForegroundThemeState(
 
 // TextButton -----------------------------------------------------------------
 
-TextButton::TextButton(ButtonListener* listener, const string16& text)
+TextButton::TextButton(ButtonListener* listener, const base::string16& text)
     : TextButtonBase(listener, text),
       icon_placement_(ICON_ON_LEFT),
       has_hover_icon_(false),

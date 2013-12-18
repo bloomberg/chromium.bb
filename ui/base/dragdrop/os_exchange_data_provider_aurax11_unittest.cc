@@ -32,12 +32,12 @@ TEST(OSExchangeDataProviderAuraX11Test, MozillaURL) {
   }
 
   // Check that we can get non-titled entries.
-  provider.SetURL(GURL(kGoogleURL), string16());
+  provider.SetURL(GURL(kGoogleURL), base::string16());
   {
     GURL out_gurl;
     base::string16 out_str;
     EXPECT_TRUE(provider.GetURLAndTitle(&out_gurl, &out_str));
-    EXPECT_EQ(string16(), out_str);
+    EXPECT_EQ(base::string16(), out_str);
     EXPECT_EQ(kGoogleURL, out_gurl.spec());
   }
 }

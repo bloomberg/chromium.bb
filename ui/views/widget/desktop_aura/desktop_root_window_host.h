@@ -113,7 +113,7 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   virtual bool IsAlwaysOnTop() const = 0;
 
   // Returns true if the title changed.
-  virtual bool SetWindowTitle(const string16& title) = 0;
+  virtual bool SetWindowTitle(const base::string16& title) = 0;
 
   virtual void ClearNativeFocus() = 0;
 

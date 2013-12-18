@@ -86,14 +86,16 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
 // The struct to hold the information of notifiers. The information will be
 // used by NotifierSettingsView.
 struct MESSAGE_CENTER_EXPORT Notifier {
-  Notifier(const NotifierId& notifier_id, const string16& name, bool enabled);
+  Notifier(const NotifierId& notifier_id,
+           const base::string16& name,
+           bool enabled);
   ~Notifier();
 
   NotifierId notifier_id;
 
   // The human-readable name of the notifier such like the extension name.
   // It can be empty.
-  string16 name;
+  base::string16 name;
 
   // True if the source is allowed to send notifications. True is default.
   bool enabled;
@@ -107,8 +109,8 @@ struct MESSAGE_CENTER_EXPORT Notifier {
 
 struct MESSAGE_CENTER_EXPORT NotifierGroup {
   NotifierGroup(const gfx::Image& icon,
-                const string16& name,
-                const string16& login_info,
+                const base::string16& name,
+                const base::string16& login_info,
                 size_t index);
   ~NotifierGroup();
 
@@ -116,10 +118,10 @@ struct MESSAGE_CENTER_EXPORT NotifierGroup {
   const gfx::Image icon;
 
   // Display name of a notifier group.
-  const string16 name;
+  const base::string16 name;
 
   // More display information about the notifier group.
-  string16 login_info;
+  base::string16 login_info;
 
   // Unique identifier for the notifier group so that they can be selected in
   // the UI.

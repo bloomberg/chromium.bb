@@ -23,7 +23,7 @@ class VIEWS_EXPORT PrefixDelegate : public View {
   virtual void SetSelectedRow(int row) = 0;
 
   // Returns the item at the specified row.
-  virtual string16 GetTextForRow(int row) = 0;
+  virtual base::string16 GetTextForRow(int row) = 0;
 
  protected:
   virtual ~PrefixDelegate() {}

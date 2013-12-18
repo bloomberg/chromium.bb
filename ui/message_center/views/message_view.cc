@@ -38,7 +38,7 @@ namespace message_center {
 MessageView::MessageView(MessageViewController* controller,
                          const std::string& notification_id,
                          const NotifierId& notifier_id,
-                         const string16& display_source)
+                         const base::string16& display_source)
     : controller_(controller),
       notification_id_(notification_id),
       notifier_id_(notifier_id),

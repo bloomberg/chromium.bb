@@ -25,7 +25,7 @@ int CalculateLineHeight() {
 }
 
 scoped_ptr<Label> CreateLabelRange(
-    const string16& text,
+    const base::string16& text,
     const StyledLabel::RangeStyleInfo& style_info,
     views::LinkListener* link_listener) {
   scoped_ptr<Label> result;
@@ -80,7 +80,8 @@ bool StyledLabel::StyleRange::operator<(
   return range.start() > other.range.start();
 }
 
-StyledLabel::StyledLabel(const string16& text, StyledLabelListener* listener)
+StyledLabel::StyledLabel(const base::string16& text,
+                         StyledLabelListener* listener)
     : listener_(listener),
       displayed_on_background_color_set_(false),
       auto_color_readability_enabled_(true) {
@@ -89,7 +90,7 @@ StyledLabel::StyledLabel(const string16& text, StyledLabelListener* listener)
 
 StyledLabel::~StyledLabel() {}
 
-void StyledLabel::SetText(const string16& text) {
+void StyledLabel::SetText(const base::string16& text) {
   text_ = text;
   style_ranges_ = std::priority_queue<StyleRange>();
   RemoveAllChildViews(true);
@@ -162,7 +163,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   // bounds.
   int x = 0;
 
-  string16 remaining_string = text_;
+  base::string16 remaining_string = text_;
   std::priority_queue<StyleRange> style_ranges = style_ranges_;
 
   // Iterate over the text, creating a bunch of labels and links and laying them
@@ -180,7 +181,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     const size_t position = text_.size() - remaining_string.size();
 
     const gfx::Rect chunk_bounds(x, 0, width - x, 2 * line_height);
-    std::vector<string16> substrings;
+    std::vector<base::string16> substrings;
     gfx::FontList text_font_list;
     // If the start of the remaining text is inside a styled range, the font
     // style may differ from the base font. The font specified by the range
@@ -197,7 +198,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
                             &substrings);
 
     DCHECK(!substrings.empty());
-    string16 chunk = substrings[0];
+    base::string16 chunk = substrings[0];
     if (chunk.empty()) {
       // Nothing fits on this line. Start a new line.
       // If x is 0, first line may have leading whitespace that doesn't fit in a

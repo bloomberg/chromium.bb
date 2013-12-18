@@ -57,7 +57,7 @@ void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 
 void TestBarView::Init() {
   SetLayoutManager(new FillLayout());
-  string16 label;
+  base::string16 label;
   child_button_.reset(new LabelButton(this, label));
   AddChildView(child_button_.get());
   second_child_button_.reset(new LabelButton(this, label));

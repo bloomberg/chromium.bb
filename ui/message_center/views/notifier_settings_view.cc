@@ -295,7 +295,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
       notifier_(notifier),
       icon_view_(new views::ImageView()),
       name_view_(new views::Label(notifier_->name)),
-      checkbox_(new views::Checkbox(string16())),
+      checkbox_(new views::Checkbox(base::string16())),
       learn_more_(NULL) {
   DCHECK(provider);
   DCHECK(notifier);
@@ -581,7 +581,7 @@ void NotifierSettingsView::UpdateContentsView(
 
   if (need_account_switcher) {
     const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
-    string16 notifier_group_text = active_group.login_info.empty() ?
+    base::string16 notifier_group_text = active_group.login_info.empty() ?
         active_group.name : active_group.login_info;
     notifier_group_selector_ =
         new views::MenuButton(NULL, notifier_group_text, this, true);

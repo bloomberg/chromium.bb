@@ -20,17 +20,17 @@
 namespace message_center {
 
 struct MESSAGE_CENTER_EXPORT NotificationItem {
-  string16 title;
-  string16 message;
+  base::string16 title;
+  base::string16 message;
 
-  NotificationItem(const string16& title, const string16& message);
+  NotificationItem(const base::string16& title, const base::string16& message);
 };
 
 struct MESSAGE_CENTER_EXPORT ButtonInfo {
-  string16 title;
+  base::string16 title;
   gfx::Image icon;
 
-  ButtonInfo(const string16& title);
+  ButtonInfo(const base::string16& title);
 };
 
 class MESSAGE_CENTER_EXPORT RichNotificationData {
@@ -42,8 +42,8 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   int priority;
   bool never_timeout;
   base::Time timestamp;
-  string16 expanded_message;
-  string16 context_message;
+  base::string16 expanded_message;
+  base::string16 context_message;
   gfx::Image image;
   std::vector<NotificationItem> items;
   int progress;
@@ -56,10 +56,10 @@ class MESSAGE_CENTER_EXPORT Notification {
  public:
   Notification(NotificationType type,
                const std::string& id,
-               const string16& title,
-               const string16& message,
+               const base::string16& title,
+               const base::string16& message,
                const gfx::Image& icon,
-               const string16& display_source,
+               const base::string16& display_source,
                const NotifierId& notifier_id,
                const RichNotificationData& optional_fields,
                NotificationDelegate* delegate);
@@ -77,14 +77,14 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   const std::string& id() const { return id_; }
 
-  const string16& title() const { return title_; }
-  void set_title(const string16& title) { title_ = title; }
+  const base::string16& title() const { return title_; }
+  void set_title(const base::string16& title) { title_ = title; }
 
-  const string16& message() const { return message_; }
-  void set_message(const string16& message) { message_ = message; }
+  const base::string16& message() const { return message_; }
+  void set_message(const base::string16& message) { message_ = message; }
 
   // A display string for the source of the notification.
-  const string16& display_source() const { return display_source_; }
+  const base::string16& display_source() const { return display_source_; }
 
   const NotifierId& notifier_id() const { return notifier_id_; }
 
@@ -101,17 +101,17 @@ class MESSAGE_CENTER_EXPORT Notification {
     optional_fields_.timestamp = timestamp;
   }
 
-  const string16& expanded_message() const {
+  const base::string16& expanded_message() const {
     return optional_fields_.expanded_message;
   }
-  void set_expanded_message(const string16& expanded_message) {
+  void set_expanded_message(const base::string16& expanded_message) {
     optional_fields_.expanded_message = expanded_message;
   }
 
-  const string16& context_message() const {
+  const base::string16& context_message() const {
     return optional_fields_.context_message;
   }
-  void set_context_message(const string16& context_message) {
+  void set_context_message(const base::string16& context_message) {
     optional_fields_.context_message = context_message;
   }
 
@@ -205,15 +205,15 @@ class MESSAGE_CENTER_EXPORT Notification {
   NotificationType type_;
 
   std::string id_;
-  string16 title_;
-  string16 message_;
+  base::string16 title_;
+  base::string16 message_;
 
   // Image data for the associated icon, used by Ash when available.
   gfx::Image icon_;
 
   // The display string for the source of the notification.  Could be
   // the same as origin_url_, or the name of an extension.
-  string16 display_source_;
+  base::string16 display_source_;
 
  private:
   NotifierId notifier_id_;

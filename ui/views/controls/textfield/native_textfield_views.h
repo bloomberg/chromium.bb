@@ -102,12 +102,12 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
                                    const gfx::Point& p) OVERRIDE;
 
   // NativeTextfieldWrapper overrides:
-  virtual string16 GetText() const OVERRIDE;
+  virtual base::string16 GetText() const OVERRIDE;
   virtual void UpdateText() OVERRIDE;
-  virtual void AppendText(const string16& text) OVERRIDE;
-  virtual void InsertOrReplaceText(const string16& text) OVERRIDE;
+  virtual void AppendText(const base::string16& text) OVERRIDE;
+  virtual void InsertOrReplaceText(const base::string16& text) OVERRIDE;
   virtual base::i18n::TextDirection GetTextDirection() const OVERRIDE;
-  virtual string16 GetSelectedText() const OVERRIDE;
+  virtual base::string16 GetSelectedText() const OVERRIDE;
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void ClearSelection() OVERRIDE;
   virtual void UpdateBorder() OVERRIDE;
@@ -157,7 +157,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // class name of internal
@@ -176,7 +176,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
       const ui::CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
-  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertText(const base::string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
@@ -192,7 +192,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                string16* text) const OVERRIDE;
+                                base::string16* text) const OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
@@ -210,7 +210,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
 
   // Converts |text| according to textfield style, e.g. lower case if
   // |textfield_| has STYLE_LOWERCASE style.
-  string16 GetTextForDisplay(const string16& text);
+  base::string16 GetTextForDisplay(const base::string16& text);
 
   // Updates any colors that have not been explicitly set from the theme.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);

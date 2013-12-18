@@ -54,6 +54,6 @@ UI_EXPORT
 #endif  // __OBJC__
 
 // Also provide a c++ interface
-UI_EXPORT string16 GetFindPboardText();
+UI_EXPORT base::string16 GetFindPboardText();
 
 #endif  // UI_BASE_COCOA_FIND_PASTEBOARD_H_

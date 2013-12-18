@@ -125,8 +125,9 @@ void TouchEditingMenuView::CreateButtons() {
   Layout();
 }
 
-Button* TouchEditingMenuView::CreateButton(const string16& title, int tag) {
-  string16 label = gfx::RemoveAcceleratorChar(title, '&', NULL, NULL);
+Button* TouchEditingMenuView::CreateButton(const base::string16& title,
+                                           int tag) {
+  base::string16 label = gfx::RemoveAcceleratorChar(title, '&', NULL, NULL);
   LabelButton* button = new LabelButton(this, label);
   button->SetFocusable(true);
   button->set_request_focus_on_press(false);

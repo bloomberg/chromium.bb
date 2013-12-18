@@ -374,11 +374,11 @@ NativeViewAccessibilityWin
   void SetState(VARIANT* msaa_state, View* view);
 
   // Return the text to use for IAccessibleText.
-  string16 TextForIAccessibleText();
+  base::string16 TextForIAccessibleText();
 
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
-  void HandleSpecialTextOffset(const string16& text, LONG* offset);
+  void HandleSpecialTextOffset(const base::string16& text, LONG* offset);
 
   // Convert from a IA2TextBoundaryType to a ui::TextBoundaryType.
   ui::TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
@@ -386,7 +386,7 @@ NativeViewAccessibilityWin
   // Search forwards (direction == 1) or backwards (direction == -1)
   // from the given offset until the given boundary is found, and
   // return the offset of that boundary.
-  LONG FindBoundary(const string16& text,
+  LONG FindBoundary(const base::string16& text,
                     IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);

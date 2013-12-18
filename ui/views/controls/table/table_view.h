@@ -171,7 +171,7 @@ class VIEWS_EXPORT TableView
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
                                     gfx::Point* loc) const OVERRIDE;
 
@@ -291,7 +291,7 @@ class VIEWS_EXPORT TableView
   // sets |tooltip| and/or |tooltip_origin| as appropriate, each of which may be
   // NULL.
   bool GetTooltipImpl(const gfx::Point& location,
-                      string16* tooltip,
+                      base::string16* tooltip,
                       gfx::Point* tooltip_origin) const;
 
   ui::TableModel* model_;

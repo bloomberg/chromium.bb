@@ -238,7 +238,7 @@ void MessageCenterViewTest::RegisterCall(CallType type) {
 }
 
 void MessageCenterViewTest::LogBounds(int depth, views::View* view) {
-  string16 inset;
+  base::string16 inset;
   for (int i = 0; i < depth; ++i)
     inset.append(UTF8ToUTF16("  "));
   gfx::Rect bounds = view->bounds();

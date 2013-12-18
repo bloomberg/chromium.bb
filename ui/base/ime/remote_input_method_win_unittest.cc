@@ -94,7 +94,7 @@ class MockTextInputClient : public DummyTextInputClient {
     inserted_text_.append(1, ch);
     ++call_count_insert_char_;
   }
-  virtual void InsertText(const string16& text) OVERRIDE{
+  virtual void InsertText(const base::string16& text) OVERRIDE{
     inserted_text_.append(text);
     ++call_count_insert_text_;
   }

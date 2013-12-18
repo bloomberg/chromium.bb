@@ -523,7 +523,7 @@ bool DesktopRootWindowHostX11::IsAlwaysOnTop() const {
   return is_always_on_top_;
 }
 
-bool DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
+bool DesktopRootWindowHostX11::SetWindowTitle(const base::string16& title) {
   if (window_title_ == title)
     return false;
   window_title_ = title;

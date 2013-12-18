@@ -14,8 +14,8 @@ namespace ui {
 // RTL locale, we need to make sure that LTR strings are rendered correctly by
 // adding the appropriate Unicode directionality marks.
 int MessageBox(HWND hwnd,
-               const string16& text,
-               const string16& caption,
+               const base::string16& text,
+               const base::string16& caption,
                UINT flags) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoMessageBox))
     return IDOK;
@@ -24,11 +24,11 @@ int MessageBox(HWND hwnd,
   if (base::i18n::IsRTL())
     actual_flags |= MB_RIGHT | MB_RTLREADING;
 
-  string16 localized_text = text;
+  base::string16 localized_text = text;
   base::i18n::AdjustStringForLocaleDirection(&localized_text);
   const wchar_t* text_ptr = localized_text.c_str();
 
-  string16 localized_caption = caption;
+  base::string16 localized_caption = caption;
   base::i18n::AdjustStringForLocaleDirection(&localized_caption);
   const wchar_t* caption_ptr = localized_caption.c_str();
 

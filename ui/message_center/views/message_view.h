@@ -48,7 +48,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   MessageView(MessageViewController* controller,
               const std::string& notification_id,
               const NotifierId& notifier_id,
-              const string16& display_source);
+              const base::string16& display_source);
   virtual ~MessageView();
 
   // Returns the insets for the shadow it will have for rich notification.
@@ -60,7 +60,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   bool IsCloseButtonFocused();
   void RequestFocusOnCloseButton();
 
-  void set_accessible_name(const string16& name) { accessible_name_ = name; }
+  void set_accessible_name(const base::string16& accessible_name) {
+    accessible_name_ = accessible_name;
+  }
 
   // Overridden from views::View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -99,7 +101,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   scoped_ptr<views::ImageButton> close_button_;
   views::ScrollView* scroller_;
 
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   base::string16 display_source_;
 

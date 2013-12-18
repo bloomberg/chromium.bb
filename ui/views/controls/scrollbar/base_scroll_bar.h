@@ -93,7 +93,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
   // Menu::Delegate overrides:
-  virtual string16 GetLabel(int id) const OVERRIDE;
+  virtual base::string16 GetLabel(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 

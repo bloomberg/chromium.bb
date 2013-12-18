@@ -45,7 +45,7 @@ class VIEWS_EXPORT Menu {
     virtual bool IsItemDefault(int id) const;
 
     // The string shown for the menu item.
-    virtual string16 GetLabel(int id) const;
+    virtual base::string16 GetLabel(int id) const;
 
     // The delegate needs to implement this function if it wants to display
     // the shortcut text next to each menu item. If there is an accelerator
@@ -94,7 +94,7 @@ class VIEWS_EXPORT Menu {
     // Controller
     virtual bool SupportsCommand(int id) const;
     virtual bool IsCommandEnabled(int id) const;
-    virtual bool GetContextualLabel(int id, string16* out) const;
+    virtual bool GetContextualLabel(int id, base::string16* out) const;
     virtual void ExecuteCommand(int id) {
     }
 
@@ -151,35 +151,37 @@ class VIEWS_EXPORT Menu {
   // label      The text label shown.
   // type       The type of item.
   void AppendMenuItem(int item_id,
-                      const string16& label,
+                      const base::string16& label,
                       MenuItemType type);
   void AddMenuItem(int index,
                    int item_id,
-                   const string16& label,
+                   const base::string16& label,
                    MenuItemType type);
 
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
   Menu* AppendSubMenu(int item_id,
-                      const string16& label);
-  Menu* AddSubMenu(int index, int item_id, const string16& label);
+                      const base::string16& label);
+  Menu* AddSubMenu(int index, int item_id, const base::string16& label);
 
   // Append a submenu with an icon to this menu
   // The returned pointer is owned by this menu.
   // Unless the icon is empty, calling this function forces the Menu class
   // to draw the menu, instead of relying on Windows.
   Menu* AppendSubMenuWithIcon(int item_id,
-                              const string16& label,
+                              const base::string16& label,
                               const gfx::ImageSkia& icon);
   virtual Menu* AddSubMenuWithIcon(int index,
                                    int item_id,
-                                   const string16& label,
+                                   const base::string16& label,
                                    const gfx::ImageSkia& icon) = 0;
 
   // This is a convenience for standard text label menu items where the label
   // is provided with this call.
-  void AppendMenuItemWithLabel(int item_id, const string16& label);
-  void AddMenuItemWithLabel(int index, int item_id, const string16& label);
+  void AppendMenuItemWithLabel(int item_id, const base::string16& label);
+  void AddMenuItemWithLabel(int index,
+                            int item_id,
+                            const base::string16& label);
 
   // This is a convenience for text label menu items where the label is
   // provided by the delegate.
@@ -194,11 +196,11 @@ class VIEWS_EXPORT Menu {
   // needs an icon. Calling this function forces the Menu class to draw
   // the menu, instead of relying on Windows.
   void AppendMenuItemWithIcon(int item_id,
-                              const string16& label,
+                              const base::string16& label,
                               const gfx::ImageSkia& icon);
   virtual void AddMenuItemWithIcon(int index,
                                    int item_id,
-                                   const string16& label,
+                                   const base::string16& label,
                                    const gfx::ImageSkia& icon);
 
   // Enables or disables the item with the specified id.
@@ -206,7 +208,7 @@ class VIEWS_EXPORT Menu {
   virtual void EnableMenuItemAt(int index, bool enabled) = 0;
 
   // Sets menu label at specified index.
-  virtual void SetMenuLabel(int item_id, const string16& label) = 0;
+  virtual void SetMenuLabel(int item_id, const base::string16& label) = 0;
 
   // Sets an icon for an item with a given item_id. Calling this function
   // also forces the Menu class to draw the menu, instead of relying on Windows.
@@ -234,7 +236,7 @@ class VIEWS_EXPORT Menu {
 
   virtual void AddMenuItemInternal(int index,
                                    int item_id,
-                                   const string16& label,
+                                   const base::string16& label,
                                    const gfx::ImageSkia& icon,
                                    MenuItemType type) = 0;
 

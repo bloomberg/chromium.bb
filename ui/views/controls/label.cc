@@ -44,18 +44,18 @@ namespace views {
 const char Label::kViewClassName[] = "Label";
 
 Label::Label() {
-  Init(string16(), GetDefaultFontList());
+  Init(base::string16(), GetDefaultFontList());
 }
 
-Label::Label(const string16& text) {
+Label::Label(const base::string16& text) {
   Init(text, GetDefaultFontList());
 }
 
-Label::Label(const string16& text, const gfx::FontList& font_list) {
+Label::Label(const base::string16& text, const gfx::FontList& font_list) {
   Init(text, font_list);
 }
 
-Label::Label(const string16& text, const gfx::Font& font) {
+Label::Label(const base::string16& text, const gfx::Font& font) {
   Init(text, gfx::FontList(font));
 }
 
@@ -77,7 +77,7 @@ void Label::SetFont(const gfx::Font& font) {
   SetFontList(gfx::FontList(font));
 }
 
-void Label::SetText(const string16& text) {
+void Label::SetText(const base::string16& text) {
   if (text == text_)
     return;
   text_ = text;
@@ -176,18 +176,18 @@ void Label::SetElideBehavior(ElideBehavior elide_behavior) {
   }
 }
 
-void Label::SetTooltipText(const string16& tooltip_text) {
+void Label::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
 }
 
 void Label::SizeToFit(int max_width) {
   DCHECK(is_multi_line_);
 
-  std::vector<string16> lines;
+  std::vector<base::string16> lines;
   base::SplitString(text_, '\n', &lines);
 
   int label_width = 0;
-  for (std::vector<string16>::const_iterator iter = lines.begin();
+  for (std::vector<base::string16>::const_iterator iter = lines.begin();
        iter != lines.end(); ++iter) {
     label_width = std::max(label_width, gfx::GetStringWidth(*iter, font_list_));
   }
@@ -282,7 +282,7 @@ bool Label::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   DCHECK(tooltip);
 
   // If a tooltip has been explicitly set, use it.
@@ -307,7 +307,7 @@ void Label::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void Label::PaintText(gfx::Canvas* canvas,
-                      const string16& text,
+                      const base::string16& text,
                       const gfx::Rect& text_bounds,
                       int flags) {
   gfx::ShadowValues shadows;
@@ -358,7 +358,7 @@ void Label::OnPaint(gfx::Canvas* canvas) {
   // interfere with that.
   OnPaintBorder(canvas);
 
-  string16 paint_text;
+  base::string16 paint_text;
   gfx::Rect text_bounds;
   int flags = 0;
   CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
@@ -369,7 +369,7 @@ void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
 }
 
-void Label::Init(const string16& text, const gfx::FontList& font_list) {
+void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   font_list_ = font_list;
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
   auto_color_readability_ = true;
@@ -485,7 +485,7 @@ gfx::Rect Label::GetAvailableRect() const {
   return bounds;
 }
 
-void Label::CalculateDrawStringParams(string16* paint_text,
+void Label::CalculateDrawStringParams(base::string16* paint_text,
                                       gfx::Rect* text_bounds,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);

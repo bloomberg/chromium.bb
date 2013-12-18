@@ -176,7 +176,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void SetVisibilityChangedAnimationsEnabled(bool enabled);
 
   // Returns true if the title changed.
-  bool SetTitle(const string16& title);
+  bool SetTitle(const base::string16& title);
 
   void SetCursor(HCURSOR cursor);
 

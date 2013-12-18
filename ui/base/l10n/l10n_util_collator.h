@@ -82,7 +82,7 @@ void SortStringsUsingMethod(const std::string& locale,
 // Compares two elements' string keys and returns true if the first element's
 // string key is less than the second element's string key. The Element must
 // have a method like the follow format to return the string key.
-// const string16& GetStringKey() const;
+// const base::string16& GetStringKey() const;
 // This uses the locale specified in the constructor.
 template <class Element>
 class StringComparator : public std::binary_function<const Element&,
@@ -105,7 +105,7 @@ class StringComparator : public std::binary_function<const Element&,
   icu::Collator* collator_;
 };
 
-// Specialization of operator() method for string16 version.
+// Specialization of operator() method for base::string16 version.
 template <> UI_EXPORT
 bool StringComparator<base::string16>::operator()(const base::string16& lhs,
                                                   const base::string16& rhs);

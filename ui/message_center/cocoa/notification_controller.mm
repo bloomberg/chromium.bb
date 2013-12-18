@@ -227,7 +227,7 @@
 // more than the given number of lines. The wrapped text would be painted using
 // the given font. The Ellipsis could be added at the end of the last line if
 // it is too long.
-- (string16)wrapText:(const string16&)text
+- (string16)wrapText:(const base::string16&)text
              forFont:(NSFont*)font
     maxNumberOfLines:(size_t)lines;
 @end
@@ -392,9 +392,9 @@
       [[itemView textContainer] setWidthTracksTextView:NO];
 
       // Construct the text from the title and message.
-      string16 text =
+      base::string16 text =
           items[i].title + base::UTF8ToUTF16(" ") + items[i].message;
-      string16 ellidedText =
+      base::string16 ellidedText =
           [self wrapText:text forFont:font maxNumberOfLines:1];
       [itemView setString:base::SysUTF16ToNSString(ellidedText)];
 
@@ -724,7 +724,7 @@
   return contentFrame;
 }
 
-- (string16)wrapText:(const string16&)text
+- (string16)wrapText:(const base::string16&)text
              forFont:(NSFont*)nsfont
     maxNumberOfLines:(size_t)lines {
   if (text.empty())
@@ -733,18 +733,18 @@
   int width = NSWidth([self currentContentRect]);
   int height = (lines + 1) * font_list.GetHeight();
 
-  std::vector<string16> wrapped;
+  std::vector<base::string16> wrapped;
   gfx::ElideRectangleText(text, font_list, width, height,
                           gfx::WRAP_LONG_WORDS, &wrapped);
 
   // This could be possible when the input text contains only spaces.
   if (wrapped.empty())
-    return string16();
+    return base::string16();
 
   if (wrapped.size() > lines) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
     // too wide, that line will be further elided by the gfx::ElideText below.
-    string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
+    base::string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
     if (gfx::GetStringWidth(last, font_list) > width)
       last = gfx::ElideText(last, font_list, width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);

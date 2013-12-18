@@ -53,9 +53,9 @@ class VIEWS_EXPORT Label : public View {
   };
 
   Label();
-  explicit Label(const string16& text);
-  Label(const string16& text, const gfx::FontList& font_list);
-  Label(const string16& text, const gfx::Font& font);  // OBSOLETE
+  explicit Label(const base::string16& text);
+  Label(const base::string16& text, const gfx::FontList& font_list);
+  Label(const base::string16& text, const gfx::Font& font);  // OBSOLETE
   virtual ~Label();
 
   // Gets or sets the fonts used by this label.
@@ -66,8 +66,8 @@ class VIEWS_EXPORT Label : public View {
   virtual void SetFont(const gfx::Font& font);  // OBSOLETE
 
   // Get or set the label text.
-  const string16& text() const { return text_; }
-  void SetText(const string16& text);
+  const base::string16& text() const { return text_; }
+  void SetText(const base::string16& text);
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
@@ -144,7 +144,7 @@ class VIEWS_EXPORT Label : public View {
   // show the full text if it is wider than its bounds.  Calling this overrides
   // the default behavior and lets you set a custom tooltip.  To revert to
   // default behavior, call this with an empty string.
-  void SetTooltipText(const string16& tooltip_text);
+  void SetTooltipText(const base::string16& tooltip_text);
 
   // Resizes the label so its width is set to the width of the longest line and
   // its height deduced accordingly.
@@ -180,13 +180,13 @@ class VIEWS_EXPORT Label : public View {
   // tooltip).  If a custom tooltip has been specified with SetTooltipText()
   // it is returned instead.
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
 
  protected:
   // Called by Paint to paint the text.  Override this to change how
   // text is painted.
   virtual void PaintText(gfx::Canvas* canvas,
-                         const string16& text,
+                         const base::string16& text,
                          const gfx::Rect& text_bounds,
                          int flags);
 
@@ -212,7 +212,7 @@ class VIEWS_EXPORT Label : public View {
   // Calls ComputeDrawStringFlags().
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DisableSubpixelRendering);
 
-  void Init(const string16& text, const gfx::FontList& font_list);
+  void Init(const base::string16& text, const gfx::FontList& font_list);
 
   void RecalculateColors();
 
@@ -224,7 +224,7 @@ class VIEWS_EXPORT Label : public View {
   gfx::Rect GetAvailableRect() const;
 
   // Returns parameters to be used for the DrawString call.
-  void CalculateDrawStringParams(string16* paint_text,
+  void CalculateDrawStringParams(base::string16* paint_text,
                                  gfx::Rect* text_bounds,
                                  int* flags) const;
 
@@ -237,7 +237,7 @@ class VIEWS_EXPORT Label : public View {
 
   bool ShouldShowDefaultTooltip() const;
 
-  string16 text_;
+  base::string16 text_;
   gfx::FontList font_list_;
   SkColor requested_enabled_color_;
   SkColor actual_enabled_color_;
@@ -258,7 +258,7 @@ class VIEWS_EXPORT Label : public View {
   bool allow_character_break_;
   ElideBehavior elide_behavior_;
   gfx::HorizontalAlignment horizontal_alignment_;
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
   // The following member variable is used to control whether the

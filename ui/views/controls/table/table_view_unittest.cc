@@ -67,7 +67,7 @@ class TestTableModel2 : public ui::TableModel {
 
   // ui::TableModel:
   virtual int RowCount() OVERRIDE;
-  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual base::string16 GetText(int row, int column_id) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
 
@@ -115,7 +115,7 @@ int TestTableModel2::RowCount() {
   return static_cast<int>(rows_.size());
 }
 
-string16 TestTableModel2::GetText(int row, int column_id) {
+base::string16 TestTableModel2::GetText(int row, int column_id) {
   return base::IntToString16(rows_[row][column_id]);
 }
 

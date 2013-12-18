@@ -33,7 +33,7 @@ const char TabbedPane::kViewClassName[] = "TabbedPane";
 // The tab view shown in the tab strip.
 class Tab : public View {
  public:
-  Tab(TabbedPane* tabbed_pane, const string16& title, View* contents);
+  Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents);
   virtual ~Tab();
 
   View* contents() const { return contents_; }
@@ -85,7 +85,7 @@ class TabStrip : public View {
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 
-Tab::Tab(TabbedPane* tabbed_pane, const string16& title, View* contents)
+Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
       title_(new Label(title, gfx::Font().DeriveFont(0, gfx::Font::BOLD))),
       tab_state_(TAB_ACTIVE),
@@ -255,12 +255,12 @@ View* TabbedPane::GetSelectedTab() {
       NULL : GetTabAt(selected_tab_index())->contents();
 }
 
-void TabbedPane::AddTab(const string16& title, View* contents) {
+void TabbedPane::AddTab(const base::string16& title, View* contents) {
   AddTabAtIndex(tab_strip_->child_count(), title, contents);
 }
 
 void TabbedPane::AddTabAtIndex(int index,
-                               const string16& title,
+                               const base::string16& title,
                                View* contents) {
   DCHECK(index >= 0 && index <= GetTabCount());
   contents->SetVisible(false);

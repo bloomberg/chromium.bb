@@ -198,7 +198,7 @@ void InputMethodBridge::ClearCompositionText() {
     client->ClearCompositionText();
 }
 
-void InputMethodBridge::InsertText(const string16& text) {
+void InputMethodBridge::InsertText(const base::string16& text) {
   TextInputClient* client = GetTextInputClient();
   if (client)
     client->InsertText(text);
@@ -280,7 +280,7 @@ bool InputMethodBridge::DeleteRange(const gfx::Range& range) {
 }
 
 bool InputMethodBridge::GetTextFromRange(const gfx::Range& range,
-                                         string16* text) const {
+                                         base::string16* text) const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextFromRange(range, text) : false;
 }

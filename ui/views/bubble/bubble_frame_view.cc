@@ -67,11 +67,12 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
       close_(NULL),
       titlebar_extra_view_(NULL) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title_ = new Label(string16(), rb.GetFont(ui::ResourceBundle::MediumFont));
+  title_ =
+      new Label(base::string16(), rb.GetFont(ui::ResourceBundle::MediumFont));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(title_);
 
-  close_ = new LabelButton(this, string16());
+  close_ = new LabelButton(this, base::string16());
   close_->SetImage(CustomButton::STATE_NORMAL,
                    *rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
   close_->SetImage(CustomButton::STATE_HOVERED,
@@ -154,7 +155,7 @@ void BubbleFrameView::UpdateWindowIcon() {}
 
 void BubbleFrameView::UpdateWindowTitle() {
   title_->SetText(GetWidget()->widget_delegate()->ShouldShowWindowTitle() ?
-      GetWidget()->widget_delegate()->GetWindowTitle() : string16());
+      GetWidget()->widget_delegate()->GetWindowTitle() : base::string16());
   // Update the close button visibility too, otherwise it's not intialized.
   ResetWindowControls();
 }

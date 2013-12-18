@@ -44,9 +44,9 @@ class ClipboardTest : public PlatformTest {
 
 namespace {
 
-bool MarkupMatches(const string16& expected_markup,
-                   const string16& actual_markup) {
-  return actual_markup.find(expected_markup) != string16::npos;
+bool MarkupMatches(const base::string16& expected_markup,
+                   const base::string16& actual_markup) {
+  return actual_markup.find(expected_markup) != base::string16::npos;
 }
 
 }  // namespace
@@ -67,7 +67,7 @@ TEST_F(ClipboardTest, ClearTest) {
 }
 
 TEST_F(ClipboardTest, TextTest) {
-  string16 text(ASCIIToUTF16("This is a string16!#$")), text_result;
+  base::string16 text(ASCIIToUTF16("This is a base::string16!#$")), text_result;
   std::string ascii_text;
 
   {
@@ -88,8 +88,8 @@ TEST_F(ClipboardTest, TextTest) {
 }
 
 TEST_F(ClipboardTest, HTMLTest) {
-  string16 markup(ASCIIToUTF16("<string>Hi!</string>")), markup_result;
-  string16 plain(ASCIIToUTF16("Hi!")), plain_result;
+  base::string16 markup(ASCIIToUTF16("<string>Hi!</string>")), markup_result;
+  base::string16 plain(ASCIIToUTF16("Hi!")), plain_result;
   std::string url("http://www.example.com/"), url_result;
 
   {
@@ -133,8 +133,8 @@ TEST_F(ClipboardTest, RTFTest) {
 
 #if defined(TOOLKIT_GTK)
 TEST_F(ClipboardTest, MultipleBufferTest) {
-  string16 text(ASCIIToUTF16("Standard")), text_result;
-  string16 markup(ASCIIToUTF16("<string>Selection</string>")), markup_result;
+  base::string16 text(ASCIIToUTF16("Standard")), text_result;
+  base::string16 markup(ASCIIToUTF16("<string>Selection</string>"));
   std::string url("http://www.example.com/"), url_result;
 
   {
@@ -164,6 +164,7 @@ TEST_F(ClipboardTest, MultipleBufferTest) {
   EXPECT_EQ(text, text_result);
 
   uint32 ignored;
+  base::string16 markup_result;
   clipboard().ReadHTML(CLIPBOARD_TYPE_SELECTION,
                        &markup_result,
                        &url_result,
@@ -174,10 +175,10 @@ TEST_F(ClipboardTest, MultipleBufferTest) {
 #endif
 
 TEST_F(ClipboardTest, TrickyHTMLTest) {
-  string16 markup(ASCIIToUTF16("<em>Bye!<!--EndFragment --></em>")),
+  base::string16 markup(ASCIIToUTF16("<em>Bye!<!--EndFragment --></em>")),
       markup_result;
   std::string url, url_result;
-  string16 plain(ASCIIToUTF16("Bye!")), plain_result;
+  base::string16 plain(ASCIIToUTF16("Bye!")), plain_result;
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
@@ -201,7 +202,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
 
 #if defined(OS_WIN)
 TEST_F(ClipboardTest, UniodeHTMLTest) {
-  string16 markup(UTF8ToUTF16("<div>A \xc3\xb8 \xe6\xb0\xb4</div>")),
+  base::string16 markup(UTF8ToUTF16("<div>A \xc3\xb8 \xe6\xb0\xb4</div>")),
       markup_result;
   std::string url, url_result;
 
@@ -237,19 +238,19 @@ TEST_F(ClipboardTest, EmptyHTMLTest) {
 
   EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetHtmlFormatType(),
                                             CLIPBOARD_TYPE_COPY_PASTE));
-  string16 markup_result;
+  base::string16 markup_result;
   std::string url_result;
   uint32 ignored;
   clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result, &url_result,
                        &ignored, &ignored);
-  EXPECT_PRED2(MarkupMatches, string16(), markup_result);
+  EXPECT_PRED2(MarkupMatches, base::string16(), markup_result);
 }
 #endif
 
 // TODO(estade): Port the following test (decide what target we use for urls)
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
 TEST_F(ClipboardTest, BookmarkTest) {
-  string16 title(ASCIIToUTF16("The Example Company")), title_result;
+  base::string16 title(ASCIIToUTF16("The Example Company")), title_result;
   std::string url("http://www.example.com/"), url_result;
 
   {
@@ -267,8 +268,8 @@ TEST_F(ClipboardTest, BookmarkTest) {
 #endif  // defined(OS_WIN)
 
 TEST_F(ClipboardTest, MultiFormatTest) {
-  string16 text(ASCIIToUTF16("Hi!")), text_result;
-  string16 markup(ASCIIToUTF16("<strong>Hi!</string>")), markup_result;
+  base::string16 text(ASCIIToUTF16("Hi!")), text_result;
+  base::string16 markup(ASCIIToUTF16("<strong>Hi!</string>")), markup_result;
   std::string url("http://www.example.com/"), url_result;
   std::string ascii_text;
 
@@ -301,7 +302,7 @@ TEST_F(ClipboardTest, MultiFormatTest) {
 }
 
 TEST_F(ClipboardTest, URLTest) {
-  string16 url(ASCIIToUTF16("http://www.google.com/"));
+  base::string16 url(ASCIIToUTF16("http://www.google.com/"));
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
@@ -313,7 +314,7 @@ TEST_F(ClipboardTest, URLTest) {
       Clipboard::GetPlainTextWFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetPlainTextFormatType(),
                                             CLIPBOARD_TYPE_COPY_PASTE));
-  string16 text_result;
+  base::string16 text_result;
   clipboard().ReadText(CLIPBOARD_TYPE_COPY_PASTE, &text_result);
 
   EXPECT_EQ(text_result, url);
@@ -625,7 +626,7 @@ TEST_F(ClipboardTest, HyperlinkTest) {
       "The &lt;Example&gt; Company&#39;s &quot;home page&quot;</a>");
 
   std::string url_result;
-  string16 html_result;
+  base::string16 html_result;
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
                                            CLIPBOARD_TYPE_COPY_PASTE);

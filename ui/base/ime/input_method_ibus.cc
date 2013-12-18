@@ -182,7 +182,7 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
 
   gfx::Range text_range;
   gfx::Range selection_range;
-  string16 surrounding_text;
+  base::string16 surrounding_text;
   if (!GetTextInputClient()->GetTextRange(&text_range) ||
       !GetTextInputClient()->GetTextFromRange(text_range, &surrounding_text) ||
       !GetTextInputClient()->GetSelectionRange(&selection_range)) {
@@ -435,7 +435,7 @@ void InputMethodIBus::ProcessInputMethodResult(const ui::KeyEvent& event,
 
   if (result_text_.length()) {
     if (handled && NeedInsertChar()) {
-      for (string16::const_iterator i = result_text_.begin();
+      for (base::string16::const_iterator i = result_text_.begin();
            i != result_text_.end(); ++i) {
         client->InsertChar(*i, event.flags());
       }
@@ -484,7 +484,7 @@ void InputMethodIBus::CommitText(const std::string& text) {
   if (!GetTextInputClient())
     return;
 
-  const string16 utf16_text = UTF8ToUTF16(text);
+  const base::string16 utf16_text = UTF8ToUTF16(text);
   if (utf16_text.empty())
     return;
 

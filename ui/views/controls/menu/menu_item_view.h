@@ -132,7 +132,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Returns the preferred height of menu items. This is only valid when the
@@ -147,8 +147,8 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the accessible name to be used with screen readers. Mnemonics are
   // removed and the menu item accelerator text is appended.
-  static string16 GetAccessibleNameForMenuItem(
-      const string16& item_text, const string16& accelerator_text);
+  static base::string16 GetAccessibleNameForMenuItem(
+      const base::string16& item_text, const base::string16& accelerator_text);
 
   // Hides and cancels the menu. This does nothing if the menu is not open.
   void Cancel();
@@ -157,9 +157,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // called after adding menu items if the menu may be active.
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
-                              const string16& label,
-                              const string16& sublabel,
-                              const string16& minor_text,
+                              const base::string16& label,
+                              const base::string16& sublabel,
+                              const base::string16& minor_text,
                               const gfx::ImageSkia& icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
@@ -177,24 +177,24 @@ class VIEWS_EXPORT MenuItemView : public View {
   // label      The text label shown.
   // type       The type of item.
   MenuItemView* AppendMenuItem(int item_id,
-                               const string16& label,
+                               const base::string16& label,
                                Type type);
 
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenu(int item_id,
-                              const string16& label);
+                              const base::string16& label);
 
   // Append a submenu with an icon to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenuWithIcon(int item_id,
-                                      const string16& label,
+                                      const base::string16& label,
                                       const gfx::ImageSkia& icon);
 
   // This is a convenience for standard text label menu items where the label
   // is provided with this call.
   MenuItemView* AppendMenuItemWithLabel(int item_id,
-                                        const string16& label);
+                                        const base::string16& label);
 
   // This is a convenience for text label menu items where the label is
   // provided by the delegate.
@@ -207,14 +207,14 @@ class VIEWS_EXPORT MenuItemView : public View {
   // needs an icon. Calling this function forces the Menu class to draw
   // the menu, instead of relying on Windows.
   MenuItemView* AppendMenuItemWithIcon(int item_id,
-                                       const string16& label,
+                                       const base::string16& label,
                                        const gfx::ImageSkia& icon);
 
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
-                                   const string16& label,
-                                   const string16& sublabel,
-                                   const string16& minor_text,
+                                   const base::string16& label,
+                                   const base::string16& sublabel,
+                                   const base::string16& minor_text,
                                    const gfx::ImageSkia& icon,
                                    Type type,
                                    ui::MenuSeparatorType separator_style);
@@ -234,14 +234,14 @@ class VIEWS_EXPORT MenuItemView : public View {
   const MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
 
   // Sets/Gets the title.
-  void SetTitle(const string16& title);
-  const string16& title() const { return title_; }
+  void SetTitle(const base::string16& title);
+  const base::string16& title() const { return title_; }
 
   // Sets the subtitle.
-  void SetSubtitle(const string16& subtitle);
+  void SetSubtitle(const base::string16& subtitle);
 
   // Sets the minor text.
-  void SetMinorText(const string16& minor_text);
+  void SetMinorText(const base::string16& minor_text);
 
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
@@ -254,7 +254,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   bool IsSelected() const { return selected_; }
 
   // Sets the |tooltip| for a menu item view with |item_id| identifier.
-  void SetTooltip(const string16& tooltip, int item_id);
+  void SetTooltip(const base::string16& tooltip, int item_id);
 
   // Sets the icon for the descendant identified by item_id.
   void SetIcon(const gfx::ImageSkia& icon, int item_id);
@@ -403,7 +403,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the text that should be displayed on the end (right) of the menu
   // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
-  string16 GetMinorText();
+  base::string16 GetMinorText();
 
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions();
@@ -464,13 +464,13 @@ class VIEWS_EXPORT MenuItemView : public View {
   SubmenuView* submenu_;
 
   // Title.
-  string16 title_;
+  base::string16 title_;
 
   // Subtitle/sublabel.
-  string16 subtitle_;
+  base::string16 subtitle_;
 
   // Minor text.
-  string16 minor_text_;
+  base::string16 minor_text_;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;
@@ -486,7 +486,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   View* icon_view_;
 
   // The tooltip to show on hover for this menu item.
-  string16 tooltip_;
+  base::string16 tooltip_;
 
   // Width of a menu icon area.
   static int icon_area_width_;

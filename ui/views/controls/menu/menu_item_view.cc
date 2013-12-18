@@ -47,7 +47,7 @@ class EmptyMenuMenuItem : public MenuItemView {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE {
+                              base::string16* tooltip) const OVERRIDE {
     // Empty menu items shouldn't have a tooltip.
     return false;
   }
@@ -116,7 +116,7 @@ void MenuItemView::ChildPreferredSizeChanged(View* child) {
 }
 
 bool MenuItemView::GetTooltipText(const gfx::Point& p,
-                                  string16* tooltip) const {
+                                  base::string16* tooltip) const {
   *tooltip = tooltip_;
   if (!tooltip->empty())
     return true;
@@ -150,7 +150,7 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p,
 void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_MENUITEM;
 
-  string16 item_text;
+  base::string16 item_text;
   if (IsContainer()) {
     // The first child is taking over, just use its accessible name instead of
     // |title_|.
@@ -189,14 +189,14 @@ bool MenuItemView::IsBubble(MenuItemView::AnchorPosition anchor) {
 }
 
 // static
-string16 MenuItemView::GetAccessibleNameForMenuItem(
-      const string16& item_text, const string16& minor_text) {
-  string16 accessible_name = item_text;
+base::string16 MenuItemView::GetAccessibleNameForMenuItem(
+      const base::string16& item_text, const base::string16& minor_text) {
+  base::string16 accessible_name = item_text;
 
   // Filter out the "&" for accessibility clients.
   size_t index = 0;
   const char16 amp = '&';
-  while ((index = accessible_name.find(amp, index)) != string16::npos &&
+  while ((index = accessible_name.find(amp, index)) != base::string16::npos &&
          index + 1 < accessible_name.length()) {
     accessible_name.replace(index, accessible_name.length() - index,
                             accessible_name.substr(index + 1));
@@ -225,9 +225,9 @@ void MenuItemView::Cancel() {
 MenuItemView* MenuItemView::AddMenuItemAt(
     int index,
     int item_id,
-    const string16& label,
-    const string16& sublabel,
-    const string16& minor_text,
+    const base::string16& label,
+    const base::string16& sublabel,
+    const base::string16& minor_text,
     const gfx::ImageSkia& icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
@@ -271,51 +271,52 @@ void MenuItemView::RemoveMenuItemAt(int index) {
 }
 
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
-                                           const string16& label,
+                                           const base::string16& label,
                                            Type type) {
-  return AppendMenuItemImpl(item_id, label, string16(), string16(),
+  return AppendMenuItemImpl(item_id, label, base::string16(), base::string16(),
       gfx::ImageSkia(), type, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendSubMenu(int item_id,
-                                          const string16& label) {
-  return AppendMenuItemImpl(item_id, label, string16(), string16(),
+                                          const base::string16& label) {
+  return AppendMenuItemImpl(item_id, label, base::string16(), base::string16(),
       gfx::ImageSkia(), SUBMENU, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendSubMenuWithIcon(int item_id,
-                                                  const string16& label,
+                                                  const base::string16& label,
                                                   const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, string16(), string16(), icon,
-      SUBMENU, ui::NORMAL_SEPARATOR);
+  return AppendMenuItemImpl(item_id, label, base::string16(), base::string16(),
+                            icon, SUBMENU, ui::NORMAL_SEPARATOR);
 }
 
-MenuItemView* MenuItemView::AppendMenuItemWithLabel(int item_id,
-                                                    const string16& label) {
+MenuItemView* MenuItemView::AppendMenuItemWithLabel(
+    int item_id,
+    const base::string16& label) {
   return AppendMenuItem(item_id, label, NORMAL);
 }
 
 MenuItemView* MenuItemView::AppendDelegateMenuItem(int item_id) {
-  return AppendMenuItem(item_id, string16(), NORMAL);
+  return AppendMenuItem(item_id, base::string16(), NORMAL);
 }
 
 void MenuItemView::AppendSeparator() {
-  AppendMenuItemImpl(0, string16(), string16(), string16(), gfx::ImageSkia(),
-                     SEPARATOR, ui::NORMAL_SEPARATOR);
+  AppendMenuItemImpl(0, base::string16(), base::string16(), base::string16(),
+                     gfx::ImageSkia(), SEPARATOR, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
-                                                   const string16& label,
+                                                   const base::string16& label,
                                                    const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, string16(), string16(), icon,
-      NORMAL, ui::NORMAL_SEPARATOR);
+  return AppendMenuItemImpl(item_id, label, base::string16(), base::string16(),
+                            icon, NORMAL, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(
     int item_id,
-    const string16& label,
-    const string16& sublabel,
-    const string16& minor_text,
+    const base::string16& label,
+    const base::string16& sublabel,
+    const base::string16& minor_text,
     const gfx::ImageSkia& icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
@@ -338,17 +339,17 @@ SubmenuView* MenuItemView::GetSubmenu() const {
   return submenu_;
 }
 
-void MenuItemView::SetTitle(const string16& title) {
+void MenuItemView::SetTitle(const base::string16& title) {
   title_ = title;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
-void MenuItemView::SetSubtitle(const string16& subtitle) {
+void MenuItemView::SetSubtitle(const base::string16& subtitle) {
   subtitle_ = subtitle;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
-void MenuItemView::SetMinorText(const string16& minor_text) {
+void MenuItemView::SetMinorText(const base::string16& minor_text) {
   minor_text_ = minor_text;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
@@ -358,7 +359,7 @@ void MenuItemView::SetSelected(bool selected) {
   SchedulePaint();
 }
 
-void MenuItemView::SetTooltip(const string16& tooltip, int item_id) {
+void MenuItemView::SetTooltip(const base::string16& tooltip, int item_id) {
   MenuItemView* item = GetMenuItemByID(item_id);
   DCHECK(item);
   item->tooltip_ = tooltip;
@@ -448,7 +449,7 @@ char16 MenuItemView::GetMnemonic() {
   size_t index = 0;
   do {
     index = title_.find('&', index);
-    if (index != string16::npos) {
+    if (index != base::string16::npos) {
       if (index + 1 != title_.size() && title_[index + 1] != '&') {
         char16 char_array[] = { title_[index + 1], 0 };
         // TODO(jshin): What about Turkish locale? See http://crbug.com/81719.
@@ -459,7 +460,7 @@ char16 MenuItemView::GetMnemonic() {
       }
       index++;
     }
-  } while (index != string16::npos);
+  } while (index != base::string16::npos);
   return 0;
 }
 
@@ -850,7 +851,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
 void MenuItemView::PaintMinorText(gfx::Canvas* canvas,
                                   bool render_selection) {
-  string16 minor_text = GetMinorText();
+  base::string16 minor_text = GetMinorText();
   if (minor_text.empty())
     return;
 
@@ -983,7 +984,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
   dimensions.standard_width = string_width + label_start +
       item_right_margin_;
   // Determine the length of the right-side text.
-  string16 minor_text = GetMinorText();
+  base::string16 minor_text = GetMinorText();
   dimensions.minor_text_width =
       minor_text.empty() ? 0 : GetFont().GetStringWidth(minor_text);
 
@@ -1005,10 +1006,10 @@ int MenuItemView::GetLabelStartForThisItem() {
   return label_start;
 }
 
-string16 MenuItemView::GetMinorText() {
+base::string16 MenuItemView::GetMinorText() {
   if (id() == kEmptyMenuItemViewID) {
     // Don't query the delegate for menus that represent no children.
-    return string16();
+    return base::string16();
   }
 
   ui::Accelerator accelerator;

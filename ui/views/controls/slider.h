@@ -57,7 +57,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Set the delta used for changing the value via keyboard.
   void SetKeyboardIncrement(float increment);
 
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
   void set_enable_accessibility_events(bool enabled) {
     accessibility_events_enabled_ = enabled;
@@ -105,7 +105,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   float keyboard_increment_;
   float animating_value_;
   bool value_is_valid_;
-  string16 accessible_name_;
+  base::string16 accessible_name_;
   bool accessibility_events_enabled_;
   SkColor focus_border_color_;
 

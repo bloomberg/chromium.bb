@@ -155,7 +155,7 @@ TEST_F(CustomButtonTest, GestureEventsSetState) {
 // Make sure all subclasses of CustomButton are correctly recognized
 // as CustomButton.
 TEST_F(CustomButtonTest, AsCustomButton) {
-  string16 text;
+  base::string16 text;
 
   TextButton text_button(NULL, text);
   EXPECT_TRUE(CustomButton::AsCustomButton(&text_button));

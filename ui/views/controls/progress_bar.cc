@@ -167,11 +167,12 @@ void ProgressBar::SetValue(double value) {
   }
 }
 
-void ProgressBar::SetTooltipText(const string16& tooltip_text) {
+void ProgressBar::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
 }
 
-bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+bool ProgressBar::GetTooltipText(const gfx::Point& p,
+                                 base::string16* tooltip) const {
   DCHECK(tooltip);
   *tooltip = tooltip_text_;
   return !tooltip_text_.empty();

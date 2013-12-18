@@ -56,7 +56,7 @@ class TextfieldViewsModelTest : public ViewsTestBase,
 
  protected:
   void ResetModel(TextfieldViewsModel* model) const {
-    model->SetText(string16());
+    model->SetText(base::string16());
     model->ClearEditHistory();
   }
 
@@ -243,15 +243,15 @@ TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
 
 TEST_F(TextfieldViewsModelTest, EmptyString) {
   TextfieldViewsModel model(NULL);
-  EXPECT_EQ(string16(), model.GetText());
-  EXPECT_EQ(string16(), model.GetSelectedText());
+  EXPECT_EQ(base::string16(), model.GetText());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
   EXPECT_EQ(0U, model.GetCursorPosition());
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_EQ(0U, model.GetCursorPosition());
 
-  EXPECT_EQ(string16(), model.GetSelectedText());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
 
   EXPECT_FALSE(model.Delete());
   EXPECT_FALSE(model.Backspace());
@@ -271,7 +271,7 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_STR_EQ("ELLO", model.GetSelectedText());
   model.ClearSelection();
-  EXPECT_EQ(string16(), model.GetSelectedText());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
 
   // SelectAll(false) selects towards the end.
   model.SelectAll(false);
@@ -336,7 +336,7 @@ TEST_F(TextfieldViewsModelTest, Selection_BidiWithNonSpacingMarks) {
             model.GetSelectedText());
 
   model.ClearSelection();
-  EXPECT_EQ(string16(), model.GetSelectedText());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
   model.SelectAll(false);
   EXPECT_EQ(WideToUTF16(L"abc\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8" L"def"),
             model.GetSelectedText());
@@ -379,7 +379,7 @@ TEST_F(TextfieldViewsModelTest, Selection_BidiWithNonSpacingMarks) {
   EXPECT_EQ(WideToUTF16(L"\x05E9" L"b"), model.GetSelectedText());
 
   model.ClearSelection();
-  EXPECT_EQ(string16(), model.GetSelectedText());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
   model.SelectAll(false);
   EXPECT_EQ(WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
 }
@@ -456,7 +456,7 @@ TEST_F(TextfieldViewsModelTest, Word) {
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
   EXPECT_STR_EQ("The answer to Life", model.GetSelectedText());
   model.ReplaceChar('4');
-  EXPECT_EQ(string16(), model.GetSelectedText());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
   EXPECT_STR_EQ("42", model.GetText());
 }
 
@@ -476,18 +476,18 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   model.SetText(ASCIIToUTF16("BYE"));
   // Setting shorter string moves the cursor to the end of the new string.
   EXPECT_EQ(3U, model.GetCursorPosition());
-  EXPECT_EQ(string16(), model.GetSelectedText());
-  model.SetText(string16());
+  EXPECT_EQ(base::string16(), model.GetSelectedText());
+  model.SetText(base::string16());
   EXPECT_EQ(0U, model.GetCursorPosition());
 }
 
 TEST_F(TextfieldViewsModelTest, Clipboard) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  const string16 initial_clipboard_text = ASCIIToUTF16("initial text");
+  const base::string16 initial_clipboard_text = ASCIIToUTF16("initial text");
   ui::ScopedClipboardWriter(clipboard, ui::CLIPBOARD_TYPE_COPY_PASTE).
       WriteText(initial_clipboard_text);
 
-  string16 clipboard_text;
+  base::string16 clipboard_text;
   TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
 
@@ -552,8 +552,10 @@ TEST_F(TextfieldViewsModelTest, Clipboard) {
   EXPECT_EQ(18U, model.GetCursorPosition());
 }
 
-static void SelectWordTestVerifier(const TextfieldViewsModel& model,
-    const string16 &expected_selected_string, size_t expected_cursor_pos) {
+static void SelectWordTestVerifier(
+    const TextfieldViewsModel& model,
+    const base::string16 &expected_selected_string,
+    size_t expected_cursor_pos) {
   EXPECT_EQ(expected_selected_string, model.GetSelectedText());
   EXPECT_EQ(expected_cursor_pos, model.GetCursorPosition());
 }
@@ -913,7 +915,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("1234567890-678-", model.GetText());
 
-  model.SetText(string16());
+  model.SetText(base::string16());
   model.SetCompositionText(composition);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, false);
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
@@ -934,7 +936,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("676788678", model.GetText());
 
-  model.SetText(string16());
+  model.SetText(base::string16());
   model.SetCompositionText(composition);
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);

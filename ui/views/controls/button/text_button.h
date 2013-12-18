@@ -112,8 +112,8 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // Call SetText once per string in your set of possible values at button
   // creation time, so that it can contain the largest of them and avoid
   // resizing the button when the text changes.
-  virtual void SetText(const string16& text);
-  const string16& text() const { return text_; }
+  virtual void SetText(const base::string16& text);
+  const base::string16& text() const { return text_; }
 
   enum TextAlignment {
     ALIGN_LEFT,
@@ -185,7 +185,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
  protected:
-  TextButtonBase(ButtonListener* listener, const string16& text);
+  TextButtonBase(ButtonListener* listener, const base::string16& text);
 
   // Called when enabled or disabled state changes, or the colors for those
   // states change.
@@ -239,7 +239,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   gfx::Rect GetContentBounds(int extra_width) const;
 
   // The text string that is displayed in the button.
-  string16 text_;
+  base::string16 text_;
 
   // The size of the text string.
   gfx::Size text_size_;
@@ -310,7 +310,7 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   // The button's class name.
   static const char kViewClassName[];
 
-  TextButton(ButtonListener* listener, const string16& text);
+  TextButton(ButtonListener* listener, const base::string16& text);
   virtual ~TextButton();
 
   void set_icon_text_spacing(int icon_text_spacing) {

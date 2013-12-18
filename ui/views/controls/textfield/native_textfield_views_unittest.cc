@@ -87,11 +87,11 @@ class GetTextHelper {
  public:
   GetTextHelper() {}
 
-  void set_text(const string16& text) { text_ = text; }
-  const string16& text() const { return text_; }
+  void set_text(const base::string16& text) { text_ = text; }
+  const base::string16& text() const { return text_; }
 
  private:
-  string16 text_;
+  base::string16 text_;
 
   DISALLOW_COPY_AND_ASSIGN(GetTextHelper);
 };
@@ -142,7 +142,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const string16& new_contents) OVERRIDE {
+                               const base::string16& new_contents) OVERRIDE {
     // Paste calls TextfieldController::ContentsChanged() explicitly even if the
     // paste action did not change the content. So |new_contents| may match
     // |last_contents_|. For more info, see http://crbug.com/79002
@@ -246,8 +246,8 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     }
   }
 
-  string16 GetClipboardText() const {
-    string16 text;
+  base::string16 GetClipboardText() const {
+    base::string16 text;
     ui::Clipboard::GetForCurrentThread()->
         ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
     return text;
@@ -338,7 +338,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   TextfieldViewsModel* model_;
 
   // The string from Controller::ContentsChanged callback.
-  string16 last_contents_;
+  base::string16 last_contents_;
 
   // For testing input method related behaviors.
   MockInputMethod* input_method_;
@@ -370,7 +370,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTest) {
   EXPECT_STR_EQ("this is a test", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
 
-  EXPECT_EQ(string16(), textfield_->GetSelectedText());
+  EXPECT_EQ(base::string16(), textfield_->GetSelectedText());
   textfield_->SelectAll(false);
   EXPECT_STR_EQ("this is a test", textfield_->GetSelectedText());
   EXPECT_TRUE(last_contents_.empty());
@@ -577,7 +577,7 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   textfield_view_->ExecuteCommand(IDS_APP_COPY, 0);
   SendKeyEvent(ui::VKEY_C, false, true);
   SendKeyEvent(ui::VKEY_INSERT, false, true);
-  EXPECT_STR_EQ("foo", string16(GetClipboardText()));
+  EXPECT_STR_EQ("foo", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("password", textfield_->text());
   // [Shift]+[Delete] should just delete without copying text to the clipboard.
   textfield_->SelectAll(false);
@@ -588,7 +588,7 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   textfield_view_->ExecuteCommand(IDS_APP_PASTE, 0);
   SendKeyEvent(ui::VKEY_V, false, true);
   SendKeyEvent(ui::VKEY_INSERT, true, false);
-  EXPECT_STR_EQ("foo", string16(GetClipboardText()));
+  EXPECT_STR_EQ("foo", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("foofoofoo", textfield_->text());
 }
 
@@ -671,7 +671,7 @@ TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {
   textfield_->clear();
 
   // Empty Textfield does not handle left/right.
-  textfield_->SetText(string16());
+  textfield_->SetText(base::string16());
   SendKeyEvent(ui::VKEY_LEFT);
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
@@ -863,11 +863,11 @@ TEST_F(NativeTextfieldViewsTest, DragToSelect) {
   EXPECT_TRUE(textfield_->GetSelectedText().empty());
   // Check that dragging left selects the beginning of the string.
   textfield_view_->OnMouseDragged(drag_left);
-  string16 text_left = textfield_->GetSelectedText();
+  base::string16 text_left = textfield_->GetSelectedText();
   EXPECT_STR_EQ("hello", text_left);
   // Check that dragging right selects the rest of the string.
   textfield_view_->OnMouseDragged(drag_right);
-  string16 text_right = textfield_->GetSelectedText();
+  base::string16 text_right = textfield_->GetSelectedText();
   EXPECT_STR_EQ(" world", text_right);
   // Check that releasing in the same location does not alter the selection.
   textfield_view_->OnMouseReleased(release);
@@ -885,7 +885,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   ui::OSExchangeData data;
-  string16 string(ASCIIToUTF16("string "));
+  base::string16 string(ASCIIToUTF16("string "));
   data.SetString(string);
   int formats = 0;
   std::set<OSExchangeData::CustomFormat> custom_formats;
@@ -926,7 +926,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   ui::OSExchangeData::CustomFormat fmt = ui::Clipboard::GetBitmapFormatType();
   bad_data.SetPickledData(fmt, Pickle());
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
-  bad_data.SetHtml(string16(ASCIIToUTF16("x")), GURL("x.org"));
+  bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
   ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), NULL);
   bad_data.SetDownloadFileInfo(download);
 #endif
@@ -939,7 +939,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   textfield_->SetText(ASCIIToUTF16("hello string world"));
 
   // Ensure the textfield will provide selected text for drag data.
-  string16 string;
+  base::string16 string;
   ui::OSExchangeData data;
   const gfx::Range kStringRange(6, 12);
   textfield_->SelectRange(kStringRange);
@@ -985,7 +985,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
-  string16 string;
+  base::string16 string;
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
@@ -1040,7 +1040,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
-  string16 string;
+  base::string16 string;
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
@@ -1149,7 +1149,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   textfield_view_->ExecuteCommand(IDS_APP_CUT, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
   SendKeyEvent(ui::VKEY_DELETE, true, false);
-  EXPECT_STR_EQ("Test", string16(GetClipboardText()));
+  EXPECT_STR_EQ("Test", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("read only", textfield_->text());
 
   // Paste should be disabled.
@@ -1163,13 +1163,13 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   SetClipboardText("Test");
   EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_COPY));
   textfield_view_->ExecuteCommand(IDS_APP_COPY, 0);
-  EXPECT_STR_EQ("read only", string16(GetClipboardText()));
+  EXPECT_STR_EQ("read only", base::string16(GetClipboardText()));
   SetClipboardText("Test");
   SendKeyEvent(ui::VKEY_C, false, true);
-  EXPECT_STR_EQ("read only", string16(GetClipboardText()));
+  EXPECT_STR_EQ("read only", base::string16(GetClipboardText()));
   SetClipboardText("Test");
   SendKeyEvent(ui::VKEY_INSERT, false, true);
-  EXPECT_STR_EQ("read only", string16(GetClipboardText()));
+  EXPECT_STR_EQ("read only", base::string16(GetClipboardText()));
 
   // SetText should work even in read only mode.
   textfield_->SetText(ASCIIToUTF16(" four five six "));
@@ -1206,7 +1206,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   // This code can't be compiled because of a bug in base::Callback.
 #if 0
   GetTextHelper helper;
-  base::Callback<void(string16)> callback =
+  base::Callback<void(base::string16)> callback =
       base::Bind(&GetTextHelper::set_text, base::Unretained(&helper));
 
   EXPECT_TRUE(client->GetTextFromRange(range, callback));
@@ -1395,24 +1395,24 @@ TEST_F(NativeTextfieldViewsTest, CutCopyPaste) {
   textfield_->SelectAll(false);
   EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_CUT));
   textfield_view_->ExecuteCommand(IDS_APP_CUT, 0);
-  EXPECT_STR_EQ("123", string16(GetClipboardText()));
+  EXPECT_STR_EQ("123", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("", textfield_->text());
 
   // Ensure [Ctrl]+[x] cuts and [Ctrl]+[Alt][x] does nothing.
   textfield_->SetText(ASCIIToUTF16("456"));
   textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_X, true, false, true, false);
-  EXPECT_STR_EQ("123", string16(GetClipboardText()));
+  EXPECT_STR_EQ("123", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("456", textfield_->text());
   SendKeyEvent(ui::VKEY_X, false, true);
-  EXPECT_STR_EQ("456", string16(GetClipboardText()));
+  EXPECT_STR_EQ("456", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("", textfield_->text());
 
   // Ensure [Shift]+[Delete] cuts.
   textfield_->SetText(ASCIIToUTF16("123"));
   textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_DELETE, true, false);
-  EXPECT_STR_EQ("123", string16(GetClipboardText()));
+  EXPECT_STR_EQ("123", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("", textfield_->text());
 
   // Ensure IDS_APP_COPY copies.
@@ -1420,27 +1420,27 @@ TEST_F(NativeTextfieldViewsTest, CutCopyPaste) {
   textfield_->SelectAll(false);
   EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_COPY));
   textfield_view_->ExecuteCommand(IDS_APP_COPY, 0);
-  EXPECT_STR_EQ("789", string16(GetClipboardText()));
+  EXPECT_STR_EQ("789", base::string16(GetClipboardText()));
 
   // Ensure [Ctrl]+[c] copies and [Ctrl]+[Alt][c] does nothing.
   textfield_->SetText(ASCIIToUTF16("012"));
   textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_C, true, false, true, false);
-  EXPECT_STR_EQ("789", string16(GetClipboardText()));
+  EXPECT_STR_EQ("789", base::string16(GetClipboardText()));
   SendKeyEvent(ui::VKEY_C, false, true);
-  EXPECT_STR_EQ("012", string16(GetClipboardText()));
+  EXPECT_STR_EQ("012", base::string16(GetClipboardText()));
 
   // Ensure [Ctrl]+[Insert] copies.
   textfield_->SetText(ASCIIToUTF16("345"));
   textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_INSERT, false, true);
-  EXPECT_STR_EQ("345", string16(GetClipboardText()));
+  EXPECT_STR_EQ("345", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("345", textfield_->text());
 
   // Ensure IDS_APP_PASTE, [Ctrl]+[V], and [Shift]+[Insert] pastes;
   // also ensure that [Ctrl]+[Alt]+[V] does nothing.
   SetClipboardText("abc");
-  textfield_->SetText(string16());
+  textfield_->SetText(base::string16());
   EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_PASTE));
   textfield_view_->ExecuteCommand(IDS_APP_PASTE, 0);
   EXPECT_STR_EQ("abc", textfield_->text());
@@ -1454,7 +1454,7 @@ TEST_F(NativeTextfieldViewsTest, CutCopyPaste) {
   // Ensure [Ctrl]+[Shift]+[Insert] is a no-op.
   textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_INSERT, true, true);
-  EXPECT_STR_EQ("abc", string16(GetClipboardText()));
+  EXPECT_STR_EQ("abc", base::string16(GetClipboardText()));
   EXPECT_STR_EQ("abcabcabc", textfield_->text());
 }
 
@@ -1704,7 +1704,7 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaInRTLTest) {
 TEST_F(NativeTextfieldViewsTest, OverflowTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
-  string16 str;
+  base::string16 str;
   for (int i = 0; i < 500; ++i)
     SendKeyEvent('a');
   SendKeyEvent(kHebrewLetterSamekh);
@@ -1733,7 +1733,7 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
 
   InitTextfield(Textfield::STYLE_DEFAULT);
 
-  string16 str;
+  base::string16 str;
   for (int i = 0; i < 500; ++i)
     SendKeyEvent('a');
   SendKeyEvent(kHebrewLetterSamekh);
@@ -1761,7 +1761,7 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
 TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
-  string16 str;
+  base::string16 str;
   const uint32 char_count = 10UL;
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("0123456789");

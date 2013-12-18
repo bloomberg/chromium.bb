@@ -15,21 +15,22 @@ namespace views {
 Button::~Button() {
 }
 
-void Button::SetTooltipText(const string16& tooltip_text) {
+void Button::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
   if (accessible_name_.empty())
     accessible_name_ = tooltip_text_;
   TooltipTextChanged();
 }
 
-void Button::SetAccessibleName(const string16& name) {
+void Button::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 
-bool Button::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+bool Button::GetTooltipText(const gfx::Point& p,
+                            base::string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 

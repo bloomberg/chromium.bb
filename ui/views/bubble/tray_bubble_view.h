@@ -71,7 +71,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
 
     // Called from GetAccessibleState(); should return the appropriate
     // accessible name for the bubble.
-    virtual string16 GetAccessibleNameForBubble() = 0;
+    virtual base::string16 GetAccessibleNameForBubble() = 0;
 
     // Passes responsibility for BubbleDelegateView::GetAnchorRect to the
     // delegate.

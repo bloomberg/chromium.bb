@@ -76,7 +76,7 @@ TEST_F(TrayViewControllerTest, AddRemoveOne) {
       ASCIIToUTF16("First notification"),
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -110,7 +110,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       ASCIIToUTF16("First notification"),
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -121,7 +121,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       ASCIIToUTF16("Second notification"),
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -132,7 +132,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       ASCIIToUTF16("Third notification"),
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -165,7 +165,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
       ASCIIToUTF16("First notification"),
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -184,7 +184,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
       ASCIIToUTF16("Second notification"),
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));

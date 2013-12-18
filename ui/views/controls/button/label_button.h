@@ -28,7 +28,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   static const char kViewClassName[];
 
-  LabelButton(ButtonListener* listener, const string16& text);
+  LabelButton(ButtonListener* listener, const base::string16& text);
   virtual ~LabelButton();
 
   // Get or set the image shown for the specified button state.
@@ -37,8 +37,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
   // Get or set the text shown on the button.
-  const string16& GetText() const;
-  void SetText(const string16& text);
+  const base::string16& GetText() const;
+  void SetText(const base::string16& text);
 
   // Set the text color shown for the specified button state.
   void SetTextColor(ButtonState for_state, SkColor color);

@@ -48,16 +48,16 @@ class MenuWin : public Menu {
   // Overridden from Menu:
   virtual void AddMenuItemWithIcon(int index,
                                    int item_id,
-                                   const string16& label,
+                                   const base::string16& label,
                                    const gfx::ImageSkia& icon) OVERRIDE;
   virtual Menu* AddSubMenuWithIcon(int index,
                                    int item_id,
-                                   const string16& label,
+                                   const base::string16& label,
                                    const gfx::ImageSkia& icon) OVERRIDE;
   virtual void AddSeparator(int index) OVERRIDE;
   virtual void EnableMenuItemByID(int item_id, bool enabled) OVERRIDE;
   virtual void EnableMenuItemAt(int index, bool enabled) OVERRIDE;
-  virtual void SetMenuLabel(int item_id, const string16& label) OVERRIDE;
+  virtual void SetMenuLabel(int item_id, const base::string16& label) OVERRIDE;
   virtual bool SetIcon(const gfx::ImageSkia& icon, int item_id) OVERRIDE;
   virtual void RunMenuAt(int x, int y) OVERRIDE;
   virtual void Cancel() OVERRIDE;
@@ -73,7 +73,7 @@ class MenuWin : public Menu {
  protected:
   virtual void AddMenuItemInternal(int index,
                                    int item_id,
-                                   const string16& label,
+                                   const base::string16& label,
                                    const gfx::ImageSkia& icon,
                                    MenuItemType type) OVERRIDE;
 
@@ -85,7 +85,7 @@ class MenuWin : public Menu {
 
   void AddMenuItemInternal(int index,
                            int item_id,
-                           const string16& label,
+                           const base::string16& label,
                            const gfx::ImageSkia& icon,
                            HMENU submenu,
                            MenuItemType type);
@@ -110,7 +110,7 @@ class MenuWin : public Menu {
   // This list is used to store the default labels for the menu items.
   // We may use contextual labels when RunMenu is called, so we must save
   // a copy of default ones here.
-  std::vector<string16> labels_;
+  std::vector<base::string16> labels_;
 
   // A flag to indicate whether this menu will be drawn by the Menu class.
   // If it's true, all the menu items will be owner drawn. Otherwise,

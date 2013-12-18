@@ -28,7 +28,7 @@ struct UnderlineInfo {
 struct Composition {
   Composition();
   ~Composition();
-  string16 text;
+  base::string16 text;
   int32 selection_start;
   int32 selection_end;
   std::vector<UnderlineInfo> underlines;

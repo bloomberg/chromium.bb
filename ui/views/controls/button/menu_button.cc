@@ -43,7 +43,7 @@ const int MenuButton::kMenuMarkerPaddingRight = -1;
 ////////////////////////////////////////////////////////////////////////////////
 
 MenuButton::MenuButton(ButtonListener* listener,
-                       const string16& text,
+                       const base::string16& text,
                        MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
     : TextButton(listener, text),

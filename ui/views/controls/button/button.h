@@ -46,16 +46,16 @@ class VIEWS_EXPORT Button : public View {
     STYLE_COUNT,
   };
 
-  void SetTooltipText(const string16& tooltip_text);
+  void SetTooltipText(const base::string16& tooltip_text);
 
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
 
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
@@ -72,10 +72,10 @@ class VIEWS_EXPORT Button : public View {
 
  private:
   // The text shown in a tooltip.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   // Accessibility data.
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   // The id tag associated with this button. Used to disambiguate buttons in
   // the ButtonListener implementation.

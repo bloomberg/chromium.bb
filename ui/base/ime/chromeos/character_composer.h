@@ -30,10 +30,12 @@ class UI_EXPORT CharacterComposer {
 
   // Returns a string consisting of composed character.
   // Empty string is returned when there is no composition result.
-  const string16& composed_character() const { return composed_character_; }
+  const base::string16& composed_character() const {
+    return composed_character_;
+  }
 
   // Returns the preedit string.
-  const string16& preedit_string() const { return preedit_string_; }
+  const base::string16& preedit_string() const { return preedit_string_; }
 
  private:
   friend class CharacterComposerTest;
@@ -85,10 +87,10 @@ class UI_EXPORT CharacterComposer {
   std::vector<unsigned int> compose_buffer_;
 
   // A string representing the composed character.
-  string16 composed_character_;
+  base::string16 composed_character_;
 
   // Preedit string.
-  string16 preedit_string_;
+  base::string16 preedit_string_;
 
   // Composition mode which this instance is in.
   CompositionMode composition_mode_;

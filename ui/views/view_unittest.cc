@@ -1434,10 +1434,10 @@ TEST_F(ViewTest, NotifyEnterExitOnChild) {
 }
 
 TEST_F(ViewTest, Textfield) {
-  const string16 kText = ASCIIToUTF16("Reality is that which, when you stop "
-                                      "believing it, doesn't go away.");
-  const string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
-  const string16 kEmptyString;
+  const base::string16 kText = ASCIIToUTF16(
+      "Reality is that which, when you stop believing it, doesn't go away.");
+  const base::string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
+  const base::string16 kEmptyString;
 
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -1453,7 +1453,7 @@ TEST_F(ViewTest, Textfield) {
   EXPECT_EQ(kText, textfield->text());
   textfield->AppendText(kExtraText);
   EXPECT_EQ(kText + kExtraText, textfield->text());
-  textfield->SetText(string16());
+  textfield->SetText(base::string16());
   EXPECT_EQ(kEmptyString, textfield->text());
 
   // Test selection related methods.
@@ -1469,9 +1469,10 @@ TEST_F(ViewTest, Textfield) {
 
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
 TEST_F(ViewTest, TextfieldCutCopyPaste) {
-  const string16 kNormalText = ASCIIToUTF16("Normal");
-  const string16 kReadOnlyText = ASCIIToUTF16("Read only");
-  const string16 kPasswordText = ASCIIToUTF16("Password! ** Secret stuff **");
+  const base::string16 kNormalText = ASCIIToUTF16("Normal");
+  const base::string16 kReadOnlyText = ASCIIToUTF16("Read only");
+  const base::string16 kPasswordText =
+      ASCIIToUTF16("Password! ** Secret stuff **");
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
 
@@ -1500,7 +1501,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_CUT);
-  string16 result;
+  base::string16 result;
   clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.

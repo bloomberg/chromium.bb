@@ -86,7 +86,7 @@ TooltipAura::~TooltipAura() {
 
 // static
 void TooltipAura::TrimTooltipToFit(int max_width,
-                                   string16* text,
+                                   base::string16* text,
                                    int* width,
                                    int* line_count) {
   *width = 0;
@@ -95,24 +95,24 @@ void TooltipAura::TrimTooltipToFit(int max_width,
   // Determine the available width for the tooltip.
   int available_width = std::min(kTooltipMaxWidthPixels, max_width);
 
-  std::vector<string16> lines;
+  std::vector<base::string16> lines;
   base::SplitString(*text, '\n', &lines);
-  std::vector<string16> result_lines;
+  std::vector<base::string16> result_lines;
 
   // Format each line to fit.
   gfx::Font font = GetDefaultFont();
-  for (std::vector<string16>::iterator l = lines.begin(); l != lines.end();
-      ++l) {
+  for (std::vector<base::string16>::iterator l = lines.begin();
+       l != lines.end(); ++l) {
     // We break the line at word boundaries, then stuff as many words as we can
     // in the available width to the current line, and move the remaining words
     // to a new line.
-    std::vector<string16> words;
+    std::vector<base::string16> words;
     base::SplitStringDontTrim(*l, ' ', &words);
     int current_width = 0;
-    string16 line;
-    for (std::vector<string16>::iterator w = words.begin(); w != words.end();
-        ++w) {
-      string16 word = *w;
+    base::string16 line;
+    for (std::vector<base::string16>::iterator w = words.begin();
+         w != words.end(); ++w) {
+      base::string16 word = *w;
       if (w + 1 != words.end())
         word.push_back(' ');
       int word_width = font.GetStringWidth(word);
@@ -139,8 +139,8 @@ void TooltipAura::TrimTooltipToFit(int max_width,
   *line_count = result_lines.size();
 
   // Flatten the result.
-  string16 result;
-  for (std::vector<string16>::iterator l = result_lines.begin();
+  base::string16 result;
+  for (std::vector<base::string16>::iterator l = result_lines.begin();
       l != result_lines.end(); ++l) {
     if (!result.empty())
       result.push_back('\n');
@@ -234,11 +234,11 @@ void TooltipAura::DestroyWidget() {
 }
 
 void TooltipAura::SetText(aura::Window* window,
-                          const string16& tooltip_text,
+                          const base::string16& tooltip_text,
                           const gfx::Point& location) {
   tooltip_window_ = window;
   int max_width, line_count;
-  string16 trimmed_text(tooltip_text);
+  base::string16 trimmed_text(tooltip_text);
   TrimTooltipToFit(
       GetMaxWidth(location), &trimmed_text, &max_width, &line_count);
   label_.SetText(trimmed_text);

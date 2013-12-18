@@ -1603,10 +1603,10 @@ class WidgetWindowTitleTest : public WidgetTest {
     internal::NativeWidgetPrivate* native_widget =
         widget->native_widget_private();
 
-    string16 empty;
-    string16 s1(UTF8ToUTF16("Title1"));
-    string16 s2(UTF8ToUTF16("Title2"));
-    string16 s3(UTF8ToUTF16("TitleLong"));
+    base::string16 empty;
+    base::string16 s1(UTF8ToUTF16("Title1"));
+    base::string16 s2(UTF8ToUTF16("Title2"));
+    base::string16 s3(UTF8ToUTF16("TitleLong"));
 
     // The widget starts with no title, setting empty should not change
     // anything.

@@ -26,7 +26,7 @@ BubbleBorder::Arrow arrows[] = {
     BubbleBorder::BOTTOM_LEFT, BubbleBorder::LEFT_BOTTOM,
     BubbleBorder::LEFT_CENTER, BubbleBorder::LEFT_TOP };
 
-string16 GetArrowName(BubbleBorder::Arrow arrow) {
+base::string16 GetArrowName(BubbleBorder::Arrow arrow) {
   switch (arrow) {
     case BubbleBorder::TOP_LEFT:      return ASCIIToUTF16("TOP_LEFT");
     case BubbleBorder::TOP_RIGHT:     return ASCIIToUTF16("TOP_RIGHT");

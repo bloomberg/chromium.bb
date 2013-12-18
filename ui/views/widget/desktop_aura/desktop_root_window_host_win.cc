@@ -334,7 +334,7 @@ bool DesktopRootWindowHostWin::IsAlwaysOnTop() const {
   return message_handler_->IsAlwaysOnTop();
 }
 
-bool DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
+bool DesktopRootWindowHostWin::SetWindowTitle(const base::string16& title) {
   return message_handler_->SetTitle(title);
 }
 

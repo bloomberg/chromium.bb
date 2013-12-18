@@ -22,7 +22,7 @@ class DialogExample : public DialogDelegateView {
  public:
   DialogExample();
   virtual ~DialogExample();
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual View* CreateExtraView() OVERRIDE;
   virtual View* CreateTitlebarExtraView() OVERRIDE;
   virtual View* CreateFootnoteView() OVERRIDE;
@@ -36,7 +36,7 @@ DialogExample::DialogExample() {
 
 DialogExample::~DialogExample() {}
 
-string16 DialogExample::GetWindowTitle() const {
+base::string16 DialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
 }
 

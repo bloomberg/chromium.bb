@@ -48,7 +48,7 @@ void KeyboardUIHandler::RegisterMessages() {
 }
 
 void KeyboardUIHandler::HandleInsertTextMessage(const base::ListValue* args) {
-  string16 text;
+  base::string16 text;
   if (!args->GetString(0, &text)) {
     LOG(ERROR) << "insertText failed: bad argument";
     return;

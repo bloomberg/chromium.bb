@@ -568,7 +568,7 @@ void Clipboard::Clear(ClipboardType type) {
 }
 
 void Clipboard::ReadAvailableTypes(ClipboardType type,
-                                   std::vector<string16>* types,
+                                   std::vector<base::string16>* types,
                                    bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
@@ -596,7 +596,7 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
     ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
 }
 
-void Clipboard::ReadText(ClipboardType type, string16* result) const {
+void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
@@ -619,7 +619,7 @@ void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
 void Clipboard::ReadHTML(ClipboardType type,
-                         string16* markup,
+                         base::string16* markup,
                          std::string* src_url,
                          uint32* fragment_start,
                          uint32* fragment_end) const {
@@ -665,8 +665,8 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
 }
 
 void Clipboard::ReadCustomData(ClipboardType clipboard_type,
-                               const string16& type,
-                               string16* result) const {
+                               const base::string16& type,
+                               base::string16* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
@@ -676,7 +676,7 @@ void Clipboard::ReadCustomData(ClipboardType clipboard_type,
     ReadCustomDataForType(data.GetData(), data.GetSize(), type, result);
 }
 
-void Clipboard::ReadBookmark(string16* title, std::string* url) const {
+void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
   DCHECK(CalledOnValidThread());
   // TODO(erg): This was left NOTIMPLEMENTED() in the gtk port too.
   NOTIMPLEMENTED();
@@ -736,8 +736,8 @@ void Clipboard::WriteBookmark(const char* title_data,
                               const char* url_data,
                               size_t url_len) {
   // Write as a mozilla url (UTF16: URL, newline, title).
-  string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
-  string16 title = UTF8ToUTF16(std::string(title_data, title_len));
+  base::string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
+  base::string16 title = UTF8ToUTF16(std::string(title_data, title_len));
 
   std::vector<unsigned char> data;
   ui::AddString16ToVector(url, &data);

@@ -28,7 +28,7 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   // give the location of the tooltip in screen coordinates. |max_width| comes
   // from GetMaxWidth().
   static void TrimTooltipToFit(int max_width,
-                               string16* text,
+                               base::string16* text,
                                int* width,
                                int* line_count);
 
@@ -53,7 +53,7 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
 
   // Tooltip:
   virtual void SetText(aura::Window* window,
-                       const string16& tooltip_text,
+                       const base::string16& tooltip_text,
                        const gfx::Point& location) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

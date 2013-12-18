@@ -35,10 +35,10 @@ class BoundedLabelTest : public testing::Test {
   // with an ellipses character (UTF8 "\xE2\x80\xA6") and returns a string16
   // with the results. This allows test strings to be specified as ASCII const
   // char* strings, making tests more readable and easier to write.
-  string16 ToString(const char* string) {
-    const string16 periods = UTF8ToUTF16("...");
-    const string16 ellipses = UTF8ToUTF16("\xE2\x80\xA6");
-    string16 result = UTF8ToUTF16(string);
+  base::string16 ToString(const char* string) {
+    const base::string16 periods = UTF8ToUTF16("...");
+    const base::string16 ellipses = UTF8ToUTF16("\xE2\x80\xA6");
+    base::string16 result = UTF8ToUTF16(string);
     ReplaceSubstringsAfterOffset(&result, 0, periods, ellipses);
     return result;
   }
@@ -58,7 +58,7 @@ class BoundedLabelTest : public testing::Test {
   }
 
   // Exercise BounderLabel::GetWrappedText() using the fixture's test label.
-  string16 GetWrappedText(int width) {
+  base::string16 GetWrappedText(int width) {
     return label_->GetWrappedTextForTest(width, lines_);
   }
 
@@ -71,7 +71,7 @@ class BoundedLabelTest : public testing::Test {
  protected:
   // Creates a label to test with. Returns this fixture, which can be used to
   // test the newly created label using the exercise methods above.
-  BoundedLabelTest& Label(string16 text, int lines) {
+  BoundedLabelTest& Label(base::string16 text, int lines) {
     lines_ = lines;
     label_.reset(new BoundedLabel(text, font_list_));
     label_->SetLineLimit(lines_);

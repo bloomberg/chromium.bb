@@ -19,7 +19,7 @@ TooltipControllerTestHelper::TooltipControllerTestHelper(
 TooltipControllerTestHelper::~TooltipControllerTestHelper() {
 }
 
-string16 TooltipControllerTestHelper::GetTooltipText() {
+base::string16 TooltipControllerTestHelper::GetTooltipText() {
   return controller_->tooltip_text_;
 }
 
@@ -55,7 +55,7 @@ TooltipTestView::~TooltipTestView() {
 }
 
 bool TooltipTestView::GetTooltipText(const gfx::Point& p,
-                                     string16* tooltip) const {
+                                     base::string16* tooltip) const {
   *tooltip = tooltip_text_;
   return true;
 }

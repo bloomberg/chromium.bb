@@ -17,8 +17,8 @@ bool Menu::Delegate::IsItemDefault(int id) const {
   return false;
 }
 
-string16 Menu::Delegate::GetLabel(int id) const {
-  return string16();
+base::string16 Menu::Delegate::GetLabel(int id) const {
+  return base::string16();
 }
 
 bool Menu::Delegate::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
@@ -49,7 +49,7 @@ bool Menu::Delegate::IsCommandEnabled(int id) const {
   return true;
 }
 
-bool Menu::Delegate::GetContextualLabel(int id, string16* out) const {
+bool Menu::Delegate::GetContextualLabel(int id, base::string16* out) const {
   return false;
 }
 
@@ -76,14 +76,14 @@ Menu::~Menu() {
 }
 
 void Menu::AppendMenuItem(int item_id,
-                          const string16& label,
+                          const base::string16& label,
                           MenuItemType type) {
   AddMenuItem(-1, item_id, label, type);
 }
 
 void Menu::AddMenuItem(int index,
                        int item_id,
-                       const string16& label,
+                       const base::string16& label,
                        MenuItemType type) {
   if (type == SEPARATOR)
     AddSeparator(index);
@@ -91,27 +91,27 @@ void Menu::AddMenuItem(int index,
     AddMenuItemInternal(index, item_id, label, gfx::ImageSkia(), type);
 }
 
-Menu* Menu::AppendSubMenu(int item_id, const string16& label) {
+Menu* Menu::AppendSubMenu(int item_id, const base::string16& label) {
   return AddSubMenu(-1, item_id, label);
 }
 
-Menu* Menu::AddSubMenu(int index, int item_id, const string16& label) {
+Menu* Menu::AddSubMenu(int index, int item_id, const base::string16& label) {
   return AddSubMenuWithIcon(index, item_id, label, gfx::ImageSkia());
 }
 
 Menu* Menu::AppendSubMenuWithIcon(int item_id,
-                                  const string16& label,
+                                  const base::string16& label,
                                   const gfx::ImageSkia& icon) {
   return AddSubMenuWithIcon(-1, item_id, label, icon);
 }
 
-void Menu::AppendMenuItemWithLabel(int item_id, const string16& label) {
+void Menu::AppendMenuItemWithLabel(int item_id, const base::string16& label) {
   AddMenuItemWithLabel(-1, item_id, label);
 }
 
 void Menu::AddMenuItemWithLabel(int index,
                                 int item_id,
-                                const string16& label) {
+                                const base::string16& label) {
   AddMenuItem(index, item_id, label, Menu::NORMAL);
 }
 
@@ -120,7 +120,7 @@ void Menu::AppendDelegateMenuItem(int item_id) {
 }
 
 void Menu::AddDelegateMenuItem(int index, int item_id) {
-  AddMenuItem(index, item_id, string16(), Menu::NORMAL);
+  AddMenuItem(index, item_id, base::string16(), Menu::NORMAL);
 }
 
 void Menu::AppendSeparator() {
@@ -128,14 +128,14 @@ void Menu::AppendSeparator() {
 }
 
 void Menu::AppendMenuItemWithIcon(int item_id,
-                                  const string16& label,
+                                  const base::string16& label,
                                   const gfx::ImageSkia& icon) {
   AddMenuItemWithIcon(-1, item_id, label, icon);
 }
 
 void Menu::AddMenuItemWithIcon(int index,
                                int item_id,
-                               const string16& label,
+                               const base::string16& label,
                                const gfx::ImageSkia& icon) {
   AddMenuItemInternal(index, item_id, label, icon, Menu::NORMAL);
 }

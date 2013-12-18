@@ -31,8 +31,8 @@ bool TextfieldController::IsItemForCommandIdDynamic(int command_id) const {
   return false;
 }
 
-string16 TextfieldController::GetLabelForCommandId(int command_id) const {
-  return string16();
+base::string16 TextfieldController::GetLabelForCommandId(int command_id) const {
+  return base::string16();
 }
 
 bool TextfieldController::HandlesCommand(int command_id) const {

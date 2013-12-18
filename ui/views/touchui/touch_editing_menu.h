@@ -69,7 +69,7 @@ class VIEWS_EXPORT TouchEditingMenuView : public BubbleDelegateView,
   void CreateButtons();
 
   // Helper method to create a single button.
-  Button* CreateButton(const string16& title, int tag);
+  Button* CreateButton(const base::string16& title, int tag);
 
   TouchEditingMenuController* controller_;
 

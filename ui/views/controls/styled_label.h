@@ -44,7 +44,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     SkColor color;
 
     // Tooltip for the range.
-    string16 tooltip;
+    base::string16 tooltip;
 
     // If set, the whole range will be put on a single line.
     bool disable_line_wrapping;
@@ -54,11 +54,11 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   };
 
   // Note that any trailing whitespace in |text| will be trimmed.
-  StyledLabel(const string16& text, StyledLabelListener* listener);
+  StyledLabel(const base::string16& text, StyledLabelListener* listener);
   virtual ~StyledLabel();
 
   // Sets the text to be displayed, and clears any previous styling.
-  void SetText(const string16& text);
+  void SetText(const base::string16& text);
 
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
@@ -111,7 +111,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   int CalculateAndDoLayout(int width, bool dry_run);
 
   // The text to display.
-  string16 text_;
+  base::string16 text_;
 
   // The default style to use for any part of the text that isn't within
   // a range in |style_ranges_|.

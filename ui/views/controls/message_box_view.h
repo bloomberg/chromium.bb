@@ -42,12 +42,12 @@ class VIEWS_EXPORT MessageBoxView : public View {
   };
 
   struct VIEWS_EXPORT InitParams {
-    explicit InitParams(const string16& message);
+    explicit InitParams(const base::string16& message);
     ~InitParams();
 
     uint16 options;
-    string16 message;
-    string16 default_prompt;
+    base::string16 message;
+    base::string16 default_prompt;
     int message_width;
     int inter_row_vertical_spacing;
   };
@@ -60,7 +60,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
   views::Textfield* text_box() { return prompt_field_; }
 
   // Returns user entered data in the prompt field.
-  string16 GetInputText();
+  base::string16 GetInputText();
 
   // Returns true if a checkbox is selected, false otherwise. (And false if
   // the message box has no checkbox.)
@@ -73,14 +73,14 @@ class VIEWS_EXPORT MessageBoxView : public View {
   // Adds a checkbox with the specified label to the message box if this is the
   // first call. Otherwise, it changes the label of the current checkbox. To
   // start, the message box has no checkbox until this function is called.
-  void SetCheckBoxLabel(const string16& label);
+  void SetCheckBoxLabel(const base::string16& label);
 
   // Sets the state of the check-box.
   void SetCheckBoxSelected(bool selected);
 
   // Sets the text and the listener of the link. If |text| is empty, the link
   // is removed.
-  void SetLink(const string16& text, LinkListener* listener);
+  void SetLink(const base::string16& text, LinkListener* listener);
 
   // View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

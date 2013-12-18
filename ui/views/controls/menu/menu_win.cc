@@ -38,7 +38,7 @@ static MenuHostWindow* active_host_window = NULL;
 
 // The data of menu items needed to display.
 struct MenuWin::ItemData {
-  string16 label;
+  base::string16 label;
   gfx::ImageSkia icon;
   bool submenu;
 };
@@ -109,7 +109,7 @@ class MenuHostWindow : public gfx::WindowImpl {
       if (data->submenu)
         lpmis->itemWidth += kArrowWidth;
       // If the label contains an accelerator, make room for tab.
-      if (data->label.find(L'\t') != string16::npos)
+      if (data->label.find(L'\t') != base::string16::npos)
         lpmis->itemWidth += font.GetStringWidth(L" ");
       lpmis->itemHeight = font.GetHeight() + kItemBottomMargin + kItemTopMargin;
     } else {
@@ -165,10 +165,10 @@ class MenuHostWindow : public gfx::WindowImpl {
       // left and the accelerator on the right.
       // TODO(jungshik): This will break in RTL UI. Currently, he/ar use the
       //                 window system UI font and will not hit here.
-      string16 label = data->label;
-      string16 accel;
-      string16::size_type tab_pos = label.find(L'\t');
-      if (tab_pos != string16::npos) {
+      base::string16 label = data->label;
+      base::string16 accel;
+      base::string16::size_type tab_pos = label.find(L'\t');
+      if (tab_pos != base::string16::npos) {
         accel = label.substr(tab_pos);
         label = label.substr(0, tab_pos);
       }
@@ -262,7 +262,7 @@ MenuWin::~MenuWin() {
 
 void MenuWin::AddMenuItemWithIcon(int index,
                                   int item_id,
-                                  const string16& label,
+                                  const base::string16& label,
                                   const gfx::ImageSkia& icon) {
   owner_draw_ = true;
   Menu::AddMenuItemWithIcon(index, item_id, label, icon);
@@ -270,7 +270,7 @@ void MenuWin::AddMenuItemWithIcon(int index,
 
 Menu* MenuWin::AddSubMenuWithIcon(int index,
                                   int item_id,
-                                  const string16& label,
+                                  const base::string16& label,
                                   const gfx::ImageSkia& icon) {
   MenuWin* submenu = new MenuWin(this);
   submenus_.push_back(submenu);
@@ -296,7 +296,7 @@ void MenuWin::EnableMenuItemAt(int index, bool enabled) {
   EnableMenuItem(menu_, index, MF_BYPOSITION | enable_flags);
 }
 
-void MenuWin::SetMenuLabel(int item_id, const string16& label) {
+void MenuWin::SetMenuLabel(int item_id, const base::string16& label) {
   MENUITEMINFO mii = {0};
   mii.cbSize = sizeof(mii);
   mii.fMask = MIIM_STRING;
@@ -385,7 +385,7 @@ int MenuWin::ItemCount() {
 
 void MenuWin::AddMenuItemInternal(int index,
                                   int item_id,
-                                  const string16& label,
+                                  const base::string16& label,
                                   const gfx::ImageSkia& icon,
                                   MenuItemType type) {
   AddMenuItemInternal(index, item_id, label, icon, NULL, type);
@@ -393,7 +393,7 @@ void MenuWin::AddMenuItemInternal(int index,
 
 void MenuWin::AddMenuItemInternal(int index,
                                   int item_id,
-                                  const string16& label,
+                                  const base::string16& label,
                                   const gfx::ImageSkia& icon,
                                   HMENU submenu,
                                   MenuItemType type) {
@@ -437,7 +437,8 @@ void MenuWin::AddMenuItemInternal(int index,
   item_data_.push_back(data);
   data->submenu = submenu != NULL;
 
-  string16 actual_label(label.empty() ? delegate()->GetLabel(item_id) : label);
+  base::string16 actual_label(
+      label.empty() ? delegate()->GetLabel(item_id) : label);
 
   // Find out if there is a shortcut we need to append to the label.
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
@@ -495,7 +496,7 @@ void MenuWin::SetMenuInfo() {
 
       // Validate the label. If there is a contextual label, use it, otherwise
       // default to the static label
-      string16 label;
+      base::string16 label;
       if (!delegate()->GetContextualLabel(id, &label))
         label = labels_[i - sep_count];
 

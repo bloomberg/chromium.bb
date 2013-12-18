@@ -56,7 +56,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         ASCIIToUTF16("This is the first notification to"
                      " be displayed"),
         gfx::Image(),
-        string16(),
+        base::string16(),
         DummyNotifierId(),
         message_center::RichNotificationData(),
         NULL));
@@ -68,7 +68,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         ASCIIToUTF16("Two"),
         ASCIIToUTF16("This is the second notification."),
         gfx::Image(),
-        string16(),
+        base::string16(),
         DummyNotifierId(),
         message_center::RichNotificationData(),
         NULL));
@@ -85,7 +85,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                      "set the screen size too small or "
                      "if the notification is way too big"),
         gfx::Image(),
-        string16(),
+        base::string16(),
         DummyNotifierId(),
         message_center::RichNotificationData(),
         NULL));
@@ -140,7 +140,7 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
       ASCIIToUTF16("Four"),
       ASCIIToUTF16("This is the fourth notification."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -189,7 +189,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
       ASCIIToUTF16("Four"),
       ASCIIToUTF16("This is the fourth notification."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       optional,
       NULL));
@@ -227,7 +227,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
       ASCIIToUTF16("This is the first notification to"
               " be displayed"),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -249,7 +249,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
               "very very very very very very very "
               "long notification."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -293,7 +293,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
               "updated to have a significantly "
               "longer body"),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -322,7 +322,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
       ASCIIToUTF16("This is the first notification to"
                    " be displayed"),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
@@ -355,7 +355,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
       ASCIIToUTF16("One"),
       ASCIIToUTF16("New message."),
       gfx::Image(),
-      string16(),
+      base::string16(),
       DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));

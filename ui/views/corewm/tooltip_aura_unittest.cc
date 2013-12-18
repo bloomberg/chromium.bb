@@ -23,7 +23,7 @@ gfx::Font GetDefaultFont() {
 
 TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   const int max_width = 4000;
-  string16 tooltip;
+  base::string16 tooltip;
   int width, line_count, expect_lines;
   int max_pixel_width = 400;  // copied from constants in tooltip_controller.cc
   int max_lines = 10;  // copied from constants in tooltip_controller.cc

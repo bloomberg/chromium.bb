@@ -148,7 +148,7 @@ void SingleSplitView::CalculateChildrenBounds(
   }
 }
 
-void SingleSplitView::SetAccessibleName(const string16& name) {
+void SingleSplitView::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 

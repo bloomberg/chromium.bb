@@ -36,12 +36,12 @@ class TestPrefixDelegate : public PrefixDelegate {
     selected_row_ = row;
   }
 
-  virtual string16 GetTextForRow(int row) OVERRIDE {
+  virtual base::string16 GetTextForRow(int row) OVERRIDE {
     return rows_[row];
   }
 
  private:
-  std::vector<string16> rows_;
+  std::vector<base::string16> rows_;
   int selected_row_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPrefixDelegate);

@@ -482,7 +482,7 @@ void TreeView::TreeNodeChanged(TreeModel* model, TreeModelNode* model_node) {
 }
 
 void TreeView::ContentsChanged(Textfield* sender,
-                               const string16& new_contents) {
+                               const base::string16& new_contents) {
 }
 
 bool TreeView::HandleKeyEvent(Textfield* sender,
@@ -525,7 +525,7 @@ void TreeView::SetSelectedRow(int row) {
   SetSelectedNode(GetNodeForRow(row));
 }
 
-string16 TreeView::GetTextForRow(int row) {
+base::string16 TreeView::GetTextForRow(int row) {
   return GetNodeForRow(row)->GetTitle();
 }
 

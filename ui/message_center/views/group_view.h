@@ -51,7 +51,7 @@ class GroupView : public MessageView, public MessageViewController {
  private:
   MessageCenterController* controller_;  // Weak, controls lifetime of views.
   NotifierId notifier_id_;
-  string16 display_source_;
+  base::string16 display_source_;
   gfx::ImageSkia group_icon_;
   int group_size_;
   std::string last_notification_id_;

@@ -587,7 +587,7 @@ void DesktopNativeWidgetAura::GetWindowPlacement(
     desktop_root_window_host_->GetWindowPlacement(bounds, maximized);
 }
 
-bool DesktopNativeWidgetAura::SetWindowTitle(const string16& title) {
+bool DesktopNativeWidgetAura::SetWindowTitle(const base::string16& title) {
   if (!content_window_)
     return false;
   return desktop_root_window_host_->SetWindowTitle(title);

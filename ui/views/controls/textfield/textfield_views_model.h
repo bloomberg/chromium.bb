@@ -64,42 +64,42 @@ class VIEWS_EXPORT TextfieldViewsModel {
 
   // Edit related methods.
 
-  const string16& GetText() const;
+  const base::string16& GetText() const;
   // Sets the text. Returns true if the text has been modified.  The
   // current composition text will be confirmed first.  Setting
   // the same text will not add edit history because it's not user
   // visible change nor user-initiated change. This allow a client
   // code to set the same text multiple times without worrying about
   // messing edit history.
-  bool SetText(const string16& text);
+  bool SetText(const base::string16& text);
 
   gfx::RenderText* render_text() { return render_text_.get(); }
 
   // Inserts given |text| at the current cursor position.
   // The current composition text will be cleared.
-  void InsertText(const string16& text) {
+  void InsertText(const base::string16& text) {
     InsertTextInternal(text, false);
   }
 
   // Inserts a character at the current cursor position.
   void InsertChar(char16 c) {
-    InsertTextInternal(string16(&c, 1), true);
+    InsertTextInternal(base::string16(&c, 1), true);
   }
 
   // Replaces characters at the current position with characters in given text.
   // The current composition text will be cleared.
-  void ReplaceText(const string16& text) {
+  void ReplaceText(const base::string16& text) {
     ReplaceTextInternal(text, false);
   }
 
   // Replaces the char at the current position with given character.
   void ReplaceChar(char16 c) {
-    ReplaceTextInternal(string16(&c, 1), true);
+    ReplaceTextInternal(base::string16(&c, 1), true);
   }
 
   // Appends the text.
   // The current composition text will be confirmed.
-  void Append(const string16& text);
+  void Append(const base::string16& text);
 
   // Deletes the first character after the current cursor position (as if, the
   // the user has pressed delete key in the textfield). Returns true if
@@ -136,7 +136,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Selection related method
 
   // Returns the selected text.
-  string16 GetSelectedText() const;
+  base::string16 GetSelectedText() const;
 
   // The current composition text will be confirmed. The selection starts with
   // the range's start position, and ends with the range's end position,
@@ -198,10 +198,10 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Deletes the selected text (if any) and insert text at given
   // position.
   void DeleteSelectionAndInsertTextAt(
-      const string16& text, size_t position);
+      const base::string16& text, size_t position);
 
   // Retrieves the text content in a given range.
-  string16 GetTextFromRange(const gfx::Range& range) const;
+  base::string16 GetTextFromRange(const gfx::Range& range) const;
 
   // Retrieves the range containing all text in the model.
   void GetTextRange(gfx::Range* range) const;
@@ -241,12 +241,12 @@ class VIEWS_EXPORT TextfieldViewsModel {
 
   // Insert the given |text|. |mergeable| indicates if this insert
   // operation can be merged to previous edit in the edit history.
-  void InsertTextInternal(const string16& text, bool mergeable);
+  void InsertTextInternal(const base::string16& text, bool mergeable);
 
   // Replace the current text with the given |text|. |mergeable|
   // indicates if this replace operation can be merged to previous
   // edit in the edit history.
-  void ReplaceTextInternal(const string16& text, bool mergeable);
+  void ReplaceTextInternal(const base::string16& text, bool mergeable);
 
   // Clears all edit history.
   void ClearEditHistory();
@@ -257,13 +257,13 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Executes and records edit operations.
   void ExecuteAndRecordDelete(gfx::Range range, bool mergeable);
   void ExecuteAndRecordReplaceSelection(internal::MergeType merge_type,
-                                        const string16& text);
+                                        const base::string16& text);
   void ExecuteAndRecordReplace(internal::MergeType merge_type,
                                size_t old_cursor_pos,
                                size_t new_cursor_pos,
-                               const string16& text,
+                               const base::string16& text,
                                size_t new_text_start);
-  void ExecuteAndRecordInsert(const string16& text, bool mergeable);
+  void ExecuteAndRecordInsert(const base::string16& text, bool mergeable);
 
   // Adds or merge |edit| into edit history. Return true if the edit
   // has been merged and must be deleted after redo.
@@ -276,7 +276,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // 3) Move the cursor to |new_cursor_pos|.
   void ModifyText(size_t delete_from,
                   size_t delete_to,
-                  const string16& new_text,
+                  const base::string16& new_text,
                   size_t new_text_insert_at,
                   size_t new_cursor_pos);
 

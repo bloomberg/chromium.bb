@@ -159,7 +159,7 @@ void MockInputMethod::SetCompositionTextForNextKey(
   composition_ = composition;
 }
 
-void MockInputMethod::SetResultTextForNextKey(const string16& result) {
+void MockInputMethod::SetResultTextForNextKey(const base::string16& result) {
   result_text_ = result;
 }
 

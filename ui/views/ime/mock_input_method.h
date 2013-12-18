@@ -52,7 +52,7 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   void Clear();
 
   void SetCompositionTextForNextKey(const ui::CompositionText& composition);
-  void SetResultTextForNextKey(const string16& result);
+  void SetResultTextForNextKey(const base::string16& result);
 
   void SetInputLocale(const std::string& locale);
   void SetInputTextDirection(base::i18n::TextDirection direction);
@@ -75,7 +75,7 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
   // Result text for the next key event. It'll be cleared automatically after
   // dispatching the next key event.
-  string16 result_text_;
+  base::string16 result_text_;
 
   // Record call state of corresponding methods. They will be set to false
   // automatically before dispatching a key event.

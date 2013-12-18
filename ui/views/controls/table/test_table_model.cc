@@ -22,7 +22,7 @@ int TestTableModel::RowCount() {
   return row_count_;
 }
 
-string16 TestTableModel::GetText(int row, int column_id) {
+base::string16 TestTableModel::GetText(int row, int column_id) {
   return ASCIIToUTF16(base::IntToString(row) + "x" +
                       base::IntToString(column_id));
 }

@@ -123,7 +123,7 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
                                            const base::string16& title) {
   // Mozilla's URL format: (UTF16: URL, newline, title)
   if (url.is_valid()) {
-    string16 spec = UTF8ToUTF16(url.spec());
+    base::string16 spec = UTF8ToUTF16(url.spec());
 
     std::vector<unsigned char> data;
     ui::AddString16ToVector(spec, &data);
@@ -200,7 +200,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
         if (num_tokens > 1)
           *title = tokens[1];
         else
-          *title = string16();
+          *title = base::string16();
 
         *url = GURL(tokens[0]);
         return true;
@@ -355,7 +355,7 @@ bool OSExchangeDataProviderAuraX11::Dispatch(const base::NativeEvent& event) {
 }
 
 bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {
-  string16 text;
+  base::string16 text;
   if (GetString(&text)) {
     GURL test_url(text);
     if (test_url.is_valid()) {

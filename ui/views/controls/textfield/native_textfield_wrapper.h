@@ -37,23 +37,23 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   virtual ~NativeTextfieldWrapper() {}
 
   // Gets the text displayed in the wrapped native text field.
-  virtual string16 GetText() const = 0;
+  virtual base::string16 GetText() const = 0;
 
   // Updates the text displayed with the text held by the Textfield.
   virtual void UpdateText() = 0;
 
   // Adds the specified text to the text already displayed by the wrapped native
   // text field.
-  virtual void AppendText(const string16& text) = 0;
+  virtual void AppendText(const base::string16& text) = 0;
 
   // Inserts |text| at the current cursor position, replacing any selected text.
-  virtual void InsertOrReplaceText(const string16& text) = 0;
+  virtual void InsertOrReplaceText(const base::string16& text) = 0;
 
   // Returns the text direction.
   virtual base::i18n::TextDirection GetTextDirection() const = 0;
 
   // Gets the text that is selected in the wrapped native text field.
-  virtual string16 GetSelectedText() const = 0;
+  virtual base::string16 GetSelectedText() const = 0;
 
   // Select the entire text range. If |reversed| is true, the range will end at
   // the logical beginning of the text; this generally shows the leading portion

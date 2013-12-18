@@ -25,7 +25,7 @@
 @synthesize model = model_;
 @synthesize useWithPopUpButtonCell = useWithPopUpButtonCell_;
 
-+ (string16)elideMenuTitle:(const string16&)title
++ (string16)elideMenuTitle:(const base::string16&)title
                    toWidth:(int)width {
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToUTF8([nsfont fontName]),
@@ -102,7 +102,7 @@
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
             fromModel:(ui::MenuModel*)model {
-  string16 label16 = model->GetLabelAt(index);
+  base::string16 label16 = model->GetLabelAt(index);
   int maxWidth = [self maxWidthForMenuModel:model modelIndex:index];
   if (maxWidth != -1)
     label16 = [MenuController elideMenuTitle:label16 toWidth:maxWidth];

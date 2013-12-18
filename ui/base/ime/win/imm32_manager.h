@@ -154,7 +154,7 @@ class UI_EXPORT IMM32Manager {
   //     the same parameter of a WM_IME_COMPOSITION message handler.
   //     This parameter is used for checking if the ongoing composition has
   //     its result string,
-  //   * result [out] (string16)
+  //   * result [out] (base::string16)
   //     Represents the object contains the composition result.
   // Return values
   //   * true
@@ -164,7 +164,7 @@ class UI_EXPORT IMM32Manager {
   // Remarks
   //   This function is designed for being called from WM_IME_COMPOSITION
   //   message handlers.
-  bool GetResult(HWND window_handle, LPARAM lparam, string16* result);
+  bool GetResult(HWND window_handle, LPARAM lparam, base::string16* result);
 
   // Retrieves the current composition status of the ongoing composition.
   // Parameters
@@ -274,7 +274,10 @@ class UI_EXPORT IMM32Manager {
   void CompleteComposition(HWND window_handle, HIMC imm_context);
 
   // Retrieves a string from the IMM.
-  bool GetString(HIMC imm_context, WPARAM lparam, int type, string16* result);
+  bool GetString(HIMC imm_context,
+                 WPARAM lparam,
+                 int type,
+                 base::string16* result);
 
  private:
   // Represents whether or not there is an ongoing composition in a browser

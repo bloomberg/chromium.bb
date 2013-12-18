@@ -53,7 +53,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE { return example_list_.size(); }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual base::string16 GetItemAt(int index) OVERRIDE {
     return UTF8ToUTF16(example_list_[index]->example_title());
   }
 
@@ -101,7 +101,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   // Overridden from WidgetDelegateView:
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual bool CanMaximize() const OVERRIDE { return true; }
-  virtual string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const OVERRIDE {
     return ASCIIToUTF16("Views Examples");
   }
   virtual View* GetContentsView() OVERRIDE { return this; }

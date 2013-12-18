@@ -321,7 +321,7 @@ bool Combobox::SelectValue(const base::string16& value) {
   return false;
 }
 
-void Combobox::SetAccessibleName(const string16& name) {
+void Combobox::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
@@ -396,8 +396,9 @@ void Combobox::SetSelectedRow(int row) {
   SetSelectedIndex(row);
 }
 
-string16 Combobox::GetTextForRow(int row) {
-  return model()->IsItemSeparatorAt(row) ? string16() : model()->GetItemAt(row);
+base::string16 Combobox::GetTextForRow(int row) {
+  return model()->IsItemSeparatorAt(row) ? base::string16() :
+                                           model()->GetItemAt(row);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -593,7 +594,7 @@ void Combobox::UpdateFromModel() {
       continue;
     }
 
-    string16 text = model()->GetItemAt(i);
+    base::string16 text = model()->GetItemAt(i);
 
     // Inserting the Unicode formatting characters if necessary so that the
     // text is displayed correctly in right-to-left UIs.
@@ -636,7 +637,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   DCHECK_LT(selected_index_, model()->GetItemCount());
   if (selected_index_ < 0 || selected_index_ > model()->GetItemCount())
     selected_index_ = 0;
-  string16 text = model()->GetItemAt(selected_index_);
+  base::string16 text = model()->GetItemAt(selected_index_);
 
   int disclosure_arrow_offset = width() - disclosure_arrow_->width() -
       GetDisclosureArrowLeftPadding() - GetDisclosureArrowRightPadding();

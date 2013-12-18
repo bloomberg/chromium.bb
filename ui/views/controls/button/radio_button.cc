@@ -15,7 +15,7 @@ namespace views {
 // static
 const char RadioButton::kViewClassName[] = "RadioButton";
 
-RadioButton::RadioButton(const string16& label, int group_id)
+RadioButton::RadioButton(const base::string16& label, int group_id)
     : Checkbox(label) {
   SetGroup(group_id);
 

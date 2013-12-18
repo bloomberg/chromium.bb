@@ -32,8 +32,8 @@ struct FileTestcase {
 };
 
 struct UTF16Testcase {
-  const string16 input;
-  const string16 output;
+  const base::string16 input;
+  const base::string16 output;
 };
 
 struct TestData {
@@ -111,7 +111,7 @@ TEST(TextEliderTest, MAYBE_ElideEmail) {
 
   const FontList font_list;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
-    const string16 expected_output = UTF8ToUTF16(testcases[i].output);
+    const base::string16 expected_output = UTF8ToUTF16(testcases[i].output);
     EXPECT_EQ(expected_output,
               ElideEmail(
                   UTF8ToUTF16(testcases[i].input),
@@ -139,7 +139,7 @@ TEST(TextEliderTest, ElideEmailMoreSpace) {
         font_list.GetExpectedTextWidth(test_width_factors[i]);
     for (size_t j = 0; j < arraysize(test_emails); ++j) {
       // Extra space is available: the email should not be elided.
-      const string16 test_email = UTF8ToUTF16(test_emails[j]);
+      const base::string16 test_email = UTF8ToUTF16(test_emails[j]);
       EXPECT_EQ(test_email, ElideEmail(test_email, font_list, test_width));
     }
   }
@@ -193,7 +193,7 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
                             font_list),
             GetStringWidthF(UTF8ToUTF16("d" + kEllipsisStr), font_list));
   GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
-  string16 expected =
+  base::string16 expected =
       ElideUrl(long_url, font_list, available_width, std::string());
   // Ensure that the expected result still contains part of the directory name.
   ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
@@ -320,7 +320,7 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
   static const FontList font_list;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     base::FilePath filepath(testcases[i].input);
-    string16 expected = UTF8ToUTF16(testcases[i].output);
+    base::string16 expected = UTF8ToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
     EXPECT_EQ(expected, ElideFilename(filepath, font_list,
         GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list)));
@@ -344,7 +344,7 @@ TEST(TextEliderTest, ElideTextTruncate) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
+    base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                 cases[i].width, TRUNCATE_AT_END);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
@@ -370,7 +370,7 @@ TEST(TextEliderTest, ElideTextEllipsis) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
+    base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                 cases[i].width, ELIDE_AT_END);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
@@ -378,17 +378,17 @@ TEST(TextEliderTest, ElideTextEllipsis) {
 
 // Checks that all occurrences of |first_char| are followed by |second_char| and
 // all occurrences of |second_char| are preceded by |first_char| in |text|.
-static void CheckSurrogatePairs(const string16& text,
+static void CheckSurrogatePairs(const base::string16& text,
                                 char16 first_char,
                                 char16 second_char) {
   size_t index = text.find_first_of(first_char);
-  while (index != string16::npos) {
+  while (index != base::string16::npos) {
     EXPECT_LT(index, text.length() - 1);
     EXPECT_EQ(second_char, text[index + 1]);
     index = text.find_first_of(first_char, index + 1);
   }
   index = text.find_first_of(second_char);
-  while (index != string16::npos) {
+  while (index != base::string16::npos) {
     EXPECT_GT(index, 0U);
     EXPECT_EQ(first_char, text[index - 1]);
     index = text.find_first_of(second_char, index + 1);
@@ -400,12 +400,12 @@ TEST(TextEliderTest, ElideTextSurrogatePairs) {
   // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
   // two characters forming a surrogate pair 0x0001D11E.
   const std::string kSurrogate = "\xF0\x9D\x84\x9E";
-  const string16 kTestString =
+  const base::string16 kTestString =
       UTF8ToUTF16(kSurrogate + "ab" + kSurrogate + kSurrogate + "cd");
   const float kTestStringWidth = GetStringWidthF(kTestString, font_list);
   const char16 kSurrogateFirstChar = kTestString[0];
   const char16 kSurrogateSecondChar = kTestString[1];
-  string16 result;
+  base::string16 result;
 
   // Elide |kTextString| to all possible widths and check that no instance of
   // |kSurrogate| was split in two.
@@ -422,20 +422,20 @@ TEST(TextEliderTest, ElideTextSurrogatePairs) {
 }
 
 TEST(TextEliderTest, ElideTextLongStrings) {
-  const string16 kEllipsisStr = UTF8ToUTF16(kEllipsis);
-  string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
+  const base::string16 kEllipsisStr = UTF8ToUTF16(kEllipsis);
+  base::string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
   size_t data_scheme_length = data_scheme.length();
 
-  string16 ten_a(10, 'a');
-  string16 hundred_a(100, 'a');
-  string16 thousand_a(1000, 'a');
-  string16 ten_thousand_a(10000, 'a');
-  string16 hundred_thousand_a(100000, 'a');
-  string16 million_a(1000000, 'a');
+  base::string16 ten_a(10, 'a');
+  base::string16 hundred_a(100, 'a');
+  base::string16 thousand_a(1000, 'a');
+  base::string16 ten_thousand_a(10000, 'a');
+  base::string16 hundred_thousand_a(100000, 'a');
+  base::string16 million_a(1000000, 'a');
 
   size_t number_of_as = 156;
-  string16 long_string_end(
-      data_scheme + string16(number_of_as, 'a') + kEllipsisStr);
+  base::string16 long_string_end(
+      data_scheme + base::string16(number_of_as, 'a') + kEllipsisStr);
   UTF16Testcase testcases_end[] = {
      {data_scheme + ten_a,              data_scheme + ten_a},
      {data_scheme + hundred_a,          data_scheme + hundred_a},
@@ -462,9 +462,9 @@ TEST(TextEliderTest, ElideTextLongStrings) {
   }
 
   size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
-  string16 long_string_middle(data_scheme +
-      string16(number_of_as - number_of_trailing_as, 'a') + kEllipsisStr +
-      string16(number_of_trailing_as, 'a'));
+  base::string16 long_string_middle(data_scheme +
+      base::string16(number_of_as - number_of_trailing_as, 'a') + kEllipsisStr +
+      base::string16(number_of_trailing_as, 'a'));
   UTF16Testcase testcases_middle[] = {
      {data_scheme + ten_a,              data_scheme + ten_a},
      {data_scheme + hundred_a,          data_scheme + hundred_a},
@@ -553,7 +553,7 @@ TEST(TextEliderTest, ElideString) {
     { "Hello, my name is Tom", 100, false, "Hello, my name is Tom" }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 output;
+    base::string16 output;
     EXPECT_EQ(cases[i].result,
               ElideString(UTF8ToUTF16(cases[i].input),
                           cases[i].max_len, &output));
@@ -601,7 +601,7 @@ TEST(TextEliderTest, ElideRectangleText) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    std::vector<string16> lines;
+    std::vector<base::string16> lines;
     EXPECT_EQ(cases[i].truncated_y ? INSUFFICIENT_SPACE_VERTICAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
                                  font_list,
@@ -639,7 +639,7 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    std::vector<string16> lines;
+    std::vector<base::string16> lines;
     const WordWrapBehavior wrap_behavior =
         (cases[i].wrap_words ? WRAP_LONG_WORDS : TRUNCATE_LONG_WORDS);
     EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
@@ -661,7 +661,8 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
 TEST(TextEliderTest, ElideRectangleTextLongWords) {
   const FontList font_list;
   const int kAvailableHeight = 1000;
-  const string16 kElidedTesting = UTF8ToUTF16(std::string("Tes") + kEllipsis);
+  const base::string16 kElidedTesting =
+      UTF8ToUTF16(std::string("Tes") + kEllipsis);
   const float elided_width = GetStringWidthF(kElidedTesting, font_list);
   const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
 
@@ -702,7 +703,7 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    std::vector<string16> lines;
+    std::vector<base::string16> lines;
     EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
                                  font_list,
@@ -731,7 +732,7 @@ TEST(TextEliderTest, ElideRectangleTextCheckLineWidth) {
   const float kAvailableWidth = 235;
   const int kAvailableHeight = 1000;
   const char text[] = "that Russian place we used to go to after fencing";
-  std::vector<string16> lines;
+  std::vector<base::string16> lines;
   EXPECT_EQ(0, ElideRectangleText(UTF8ToUTF16(text),
                                   font_list,
                                   kAvailableWidth,
@@ -816,7 +817,7 @@ TEST(TextEliderTest, ElideRectangleString) {
     { "Hi, my name is\nTom", 2, 20, false, "Hi, my name is\nTom" },
     { "Hi, my name is Tom",  1, 40, false, "Hi, my name is Tom" },
   };
-  string16 output;
+  base::string16 output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     EXPECT_EQ(cases[i].result,
               ElideRectangleString(UTF8ToUTF16(cases[i].input),
@@ -898,7 +899,7 @@ TEST(TextEliderTest, ElideRectangleStringNotStrict) {
     { "Hi, my name_is\nDick", 2, 20, false, "Hi, my name_is\nDick" },
     { "Hi, my name_is Dick",  1, 40, false, "Hi, my name_is Dick" },
   };
-  string16 output;
+  base::string16 output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     EXPECT_EQ(cases[i].result,
               ElideRectangleString(UTF8ToUTF16(cases[i].input),
@@ -910,17 +911,17 @@ TEST(TextEliderTest, ElideRectangleStringNotStrict) {
 
 TEST(TextEliderTest, ElideRectangleWide16) {
   // Two greek words separated by space.
-  const string16 str(WideToUTF16(
+  const base::string16 str(WideToUTF16(
       L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9"
       L"\x03bf\x03c2\x0020\x0399\x03c3\x03c4\x03cc\x03c2"));
-  const string16 out1(WideToUTF16(
+  const base::string16 out1(WideToUTF16(
       L"\x03a0\x03b1\x03b3\x03ba\n"
       L"\x03cc\x03c3\x03bc\x03b9\n"
       L"..."));
-  const string16 out2(WideToUTF16(
+  const base::string16 out2(WideToUTF16(
       L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9\x03bf\x03c2\x0020\n"
       L"\x0399\x03c3\x03c4\x03cc\x03c2"));
-  string16 output;
+  base::string16 output;
   EXPECT_TRUE(ElideRectangleString(str, 2, 4, true, &output));
   EXPECT_EQ(out1, output);
   EXPECT_FALSE(ElideRectangleString(str, 2, 12, true, &output));
@@ -929,19 +930,19 @@ TEST(TextEliderTest, ElideRectangleWide16) {
 
 TEST(TextEliderTest, ElideRectangleWide32) {
   // Four U+1D49C MATHEMATICAL SCRIPT CAPITAL A followed by space "aaaaa".
-  const string16 str(UTF8ToUTF16(
+  const base::string16 str(UTF8ToUTF16(
       "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C"
       " aaaaa"));
-  const string16 out(UTF8ToUTF16(
+  const base::string16 out(UTF8ToUTF16(
       "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\n"
       "\xF0\x9D\x92\x9C \naaa\n..."));
-  string16 output;
+  base::string16 output;
   EXPECT_TRUE(ElideRectangleString(str, 3, 3, true, &output));
   EXPECT_EQ(out, output);
 }
 
 TEST(TextEliderTest, TruncateString) {
-  string16 string = ASCIIToUTF16("foooooey    bxxxar baz");
+  base::string16 string = ASCIIToUTF16("foooooey    bxxxar baz");
 
   // Make sure it doesn't modify the string if length > string length.
   EXPECT_EQ(string, TruncateString(string, 100));

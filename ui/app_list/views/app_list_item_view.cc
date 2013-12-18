@@ -134,7 +134,7 @@ void AppListItemView::UpdateIcon() {
 
 void AppListItemView::UpdateTooltip() {
   title_->SetTooltipText(model_->title() == model_->full_name() ?
-                             string16() : UTF8ToUTF16(model_->full_name()));
+      base::string16() : UTF8ToUTF16(model_->full_name()));
 }
 
 void AppListItemView::SetUIState(UIState state) {

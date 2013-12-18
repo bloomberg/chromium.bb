@@ -40,7 +40,7 @@ class InnerBoundedLabel : public views::Label {
   // Pass in a -1 width to use the preferred width, a -1 limit to skip limits.
   int GetLinesForWidthAndLimit(int width, int limit);
   gfx::Size GetSizeForWidthAndLines(int width, int lines);
-  std::vector<string16> GetWrappedText(int width, int lines);
+  std::vector<base::string16> GetWrappedText(int width, int lines);
 
  protected:
   // Overridden from views::Label.
@@ -57,7 +57,7 @@ class InnerBoundedLabel : public views::Label {
   void SetCachedSize(std::pair<int, int> width_and_lines, gfx::Size size);
 
   const BoundedLabel* owner_;  // Weak reference.
-  string16 wrapped_text_;
+  base::string16 wrapped_text_;
   int wrapped_text_width_;
   int wrapped_text_lines_;
   std::map<int, int> lines_cache_;
@@ -108,7 +108,7 @@ gfx::Size InnerBoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
     int text_width = (width < 0) ? std::numeric_limits<int>::max() :
                                    std::max(width - insets.width(), 0);
     int text_height = std::numeric_limits<int>::max();
-    std::vector<string16> wrapped = GetWrappedText(text_width, lines);
+    std::vector<base::string16> wrapped = GetWrappedText(text_width, lines);
     gfx::Canvas::SizeStringInt(JoinString(wrapped, '\n'), font(),
                                &text_width, &text_height,
                                owner_->GetLineHeight(),
@@ -120,10 +120,11 @@ gfx::Size InnerBoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
   return size;
 }
 
-std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
+std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
+                                                              int lines) {
   // Short circuit simple case.
   if (width == 0 || lines == 0)
-    return std::vector<string16>();
+    return std::vector<base::string16>();
 
   // Restrict line limit to ensure (lines + 1) * line_height <= INT_MAX and
   // use it to calculate a reasonable text height.
@@ -141,7 +142,7 @@ std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
   width = std::max(width, 2 * font().GetStringWidth(UTF8ToUTF16("W")));
 
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
-  std::vector<string16> wrapped;
+  std::vector<base::string16> wrapped;
   gfx::ElideRectangleText(text(), font_list(),
                           (width < 0) ? std::numeric_limits<int>::max() : width,
                           height, gfx::WRAP_LONG_WORDS, &wrapped);
@@ -151,7 +152,7 @@ std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
     // too wide, that line will be further elided by the gfx::ElideText below,
     // so for example "ABC" could become "ABC..." and then "AB...".
-    string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
+    base::string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
     if (width > 0 && font().GetStringWidth(last) > width)
       last = gfx::ElideText(last, font(), width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);
@@ -257,14 +258,15 @@ void InnerBoundedLabel::SetCachedSize(std::pair<int, int> width_and_lines,
 
 // BoundedLabel ///////////////////////////////////////////////////////////
 
-BoundedLabel::BoundedLabel(const string16& text, const gfx::FontList& font_list)
+BoundedLabel::BoundedLabel(const base::string16& text,
+                           const gfx::FontList& font_list)
     : line_limit_(-1) {
   label_.reset(new InnerBoundedLabel(*this));
   label_->SetFontList(font_list);
   label_->SetText(text);
 }
 
-BoundedLabel::BoundedLabel(const string16& text)
+BoundedLabel::BoundedLabel(const base::string16& text)
     : line_limit_(-1) {
   label_.reset(new InnerBoundedLabel(*this));
   label_->SetText(text);
@@ -338,7 +340,7 @@ void BoundedLabel::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   label_->SetNativeTheme(theme);
 }
 
-string16 BoundedLabel::GetWrappedTextForTest(int width, int lines) {
+base::string16 BoundedLabel::GetWrappedTextForTest(int width, int lines) {
   return JoinString(label_->GetWrappedText(width, lines), '\n');
 }
 

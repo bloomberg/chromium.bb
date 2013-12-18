@@ -141,7 +141,7 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
 
   // TextfieldController overrides:
   virtual void ContentsChanged(Textfield* sender,
-                               const string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
@@ -155,7 +155,7 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   virtual int GetRowCount() OVERRIDE;
   virtual int GetSelectedRow() OVERRIDE;
   virtual void SetSelectedRow(int row) OVERRIDE;
-  virtual string16 GetTextForRow(int row) OVERRIDE;
+  virtual base::string16 GetTextForRow(int row) OVERRIDE;
 
  protected:
   // View overrides:

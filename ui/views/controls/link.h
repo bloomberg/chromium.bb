@@ -25,7 +25,7 @@ class LinkListener;
 class VIEWS_EXPORT Link : public Label {
  public:
   Link();
-  explicit Link(const string16& title);
+  explicit Link(const base::string16& title);
   virtual ~Link();
 
   static SkColor GetDefaultEnabledColor();

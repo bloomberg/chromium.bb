@@ -51,7 +51,7 @@ class MenuModelBase : public ui::MenuModel {
     return index + command_id_base_;
   }
 
-  virtual string16 GetLabelAt(int index) const OVERRIDE {
+  virtual base::string16 GetLabelAt(int index) const OVERRIDE {
     return items_[index].label;
   }
 
@@ -133,7 +133,7 @@ class MenuModelBase : public ui::MenuModel {
     }
 
     ItemType type;
-    string16 label;
+    base::string16 label;
     ui::MenuModel* submenu;
   };
 

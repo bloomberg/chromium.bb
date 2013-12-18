@@ -17,8 +17,8 @@ namespace ui {
 // callers don't have to worry about adding these flags when running in a
 // right-to-left locale.
 UI_EXPORT int MessageBox(HWND hwnd,
-                         const string16& text,
-                         const string16& caption,
+                         const base::string16& text,
+                         const base::string16& caption,
                          UINT flags);
 
 }  // namespace ui

@@ -116,10 +116,10 @@ class TooltipManagerWin : public TooltipManager {
   bool last_view_out_of_sync_;
 
   // Text for tooltip from the view.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   // The clipped tooltip.
-  string16 clipped_text_;
+  base::string16 clipped_text_;
 
   // Number of lines in the tooltip.
   int line_count_;

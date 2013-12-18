@@ -37,7 +37,7 @@ TEST_F(L10nUtilMacTest, FixUpWindowsStyleLabel) {
     { @"(&b)foo", @"foo" },
   };
   for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(data); ++idx) {
-    string16 input16(base::SysNSStringToUTF16(data[idx].input));
+    base::string16 input16(base::SysNSStringToUTF16(data[idx].input));
 
     NSString* result = l10n_util::FixUpWindowsStyleLabel(input16);
     EXPECT_TRUE(result != nil) << "Fixup Failed, idx = " << idx;

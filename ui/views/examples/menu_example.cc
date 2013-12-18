@@ -58,7 +58,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
 
 class ExampleMenuButton : public MenuButton, public MenuButtonListener {
  public:
-  explicit ExampleMenuButton(const string16& test);
+  explicit ExampleMenuButton(const base::string16& test);
   virtual ~ExampleMenuButton();
 
  private:
@@ -176,7 +176,7 @@ void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 // ExampleMenuButton -----------------------------------------------------------
 
-ExampleMenuButton::ExampleMenuButton(const string16& test)
+ExampleMenuButton::ExampleMenuButton(const base::string16& test)
     : MenuButton(NULL, test, this, true) {
 }
 

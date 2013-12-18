@@ -303,7 +303,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
       controller_(controller),
       clickable_(notification.clickable()),
       is_expanded_(expanded) {
-  std::vector<string16> accessible_lines;
+  std::vector<base::string16> accessible_lines;
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.

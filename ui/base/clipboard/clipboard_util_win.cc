@@ -34,7 +34,9 @@ bool GetData(IDataObject* data_object,
   return SUCCEEDED(data_object->GetData(&format_etc, medium));
 }
 
-bool GetUrlFromHDrop(IDataObject* data_object, string16* url, string16* title) {
+bool GetUrlFromHDrop(IDataObject* data_object,
+                     base::string16* url,
+                     base::string16* title) {
   DCHECK(data_object && url && title);
 
   STGMEDIUM medium;
@@ -67,22 +69,22 @@ bool GetUrlFromHDrop(IDataObject* data_object, string16* url, string16* title) {
   return success;
 }
 
-void SplitUrlAndTitle(const string16& str,
-                      string16* url,
-                      string16* title) {
+void SplitUrlAndTitle(const base::string16& str,
+                      base::string16* url,
+                      base::string16* title) {
   DCHECK(url && title);
   size_t newline_pos = str.find('\n');
-  if (newline_pos != string16::npos) {
+  if (newline_pos != base::string16::npos) {
     url->assign(str, 0, newline_pos);
-    title->assign(str, newline_pos + 1, string16::npos);
+    title->assign(str, newline_pos + 1, base::string16::npos);
   } else {
     url->assign(str);
     title->assign(str);
   }
 }
 
-bool GetFileUrl(IDataObject* data_object, string16* url,
-                string16* title) {
+bool GetFileUrl(IDataObject* data_object, base::string16* url,
+                base::string16* title) {
   STGMEDIUM store;
   if (GetData(data_object, Clipboard::GetFilenameWFormatType(), &store)) {
     bool success = false;
@@ -164,7 +166,7 @@ bool ClipboardUtil::HasPlainText(IDataObject* data_object) {
 }
 
 bool ClipboardUtil::GetUrl(IDataObject* data_object,
-    string16* url, string16* title, bool convert_filenames) {
+    base::string16* url, base::string16* title, bool convert_filenames) {
   DCHECK(data_object && url && title);
   if (!HasUrl(data_object))
     return false;
@@ -203,7 +205,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetFilenames(IDataObject* data_object,
-                                 std::vector<string16>* filenames) {
+                                 std::vector<base::string16>* filenames) {
   DCHECK(data_object && filenames);
   if (!HasFilenames(data_object))
     return false;
@@ -233,7 +235,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetPlainText(IDataObject* data_object,
-                                 string16* plain_text) {
+                                 base::string16* plain_text) {
   DCHECK(data_object && plain_text);
   if (!HasPlainText(data_object))
     return false;
@@ -261,12 +263,12 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
 
   // If a file is dropped on the window, it does not provide either of the
   // plain text formats, so here we try to forcibly get a url.
-  string16 title;
+  base::string16 title;
   return GetUrl(data_object, plain_text, &title, false);
 }
 
 bool ClipboardUtil::GetHtml(IDataObject* data_object,
-                            string16* html, std::string* base_url) {
+                            base::string16* html, std::string* base_url) {
   DCHECK(data_object && html && base_url);
 
   STGMEDIUM store;
@@ -300,7 +302,7 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetFileContents(IDataObject* data_object,
-    string16* filename, std::string* file_contents) {
+    base::string16* filename, std::string* file_contents) {
   DCHECK(data_object && filename && file_contents);
   if (!HasData(data_object, Clipboard::GetFileContentZeroFormatType()) &&
       !HasData(data_object, Clipboard::GetFileDescriptorFormatType()))
@@ -334,7 +336,8 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetWebCustomData(
-    IDataObject* data_object, std::map<string16, string16>* custom_data) {
+    IDataObject* data_object,
+    std::map<base::string16, base::string16>* custom_data) {
   DCHECK(data_object && custom_data);
 
   if (!HasData(data_object, Clipboard::GetWebCustomDataFormatType()))

@@ -208,7 +208,7 @@ class VIEWS_EXPORT NonClientView : public View {
   void LayoutFrameView();
 
   // Set the accessible name of this view.
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
   // NonClientView, View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -243,7 +243,7 @@ class VIEWS_EXPORT NonClientView : public View {
   View* overlay_view_;
 
   // The accessible name of this view.
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };

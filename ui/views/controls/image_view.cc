@@ -177,15 +177,16 @@ ImageView::Alignment ImageView::GetVerticalAlignment() const {
   return vert_alignment_;
 }
 
-void ImageView::SetTooltipText(const string16& tooltip) {
+void ImageView::SetTooltipText(const base::string16& tooltip) {
   tooltip_text_ = tooltip;
 }
 
-string16 ImageView::GetTooltipText() const {
+base::string16 ImageView::GetTooltipText() const {
   return tooltip_text_;
 }
 
-bool ImageView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+bool ImageView::GetTooltipText(const gfx::Point& p,
+                               base::string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 

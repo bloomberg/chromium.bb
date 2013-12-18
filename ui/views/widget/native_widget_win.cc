@@ -232,7 +232,7 @@ void NativeWidgetWin::GetWindowPlacement(
   *bounds = gfx::win::ScreenToDIPRect(*bounds);
 }
 
-bool NativeWidgetWin::SetWindowTitle(const string16& title) {
+bool NativeWidgetWin::SetWindowTitle(const base::string16& title) {
   return message_handler_->SetTitle(title);
 }
 

@@ -196,11 +196,11 @@ class AURA_EXPORT RemoteRootWindowHostWin
   ui::RemoteInputMethodPrivateWin* GetRemoteInputMethodPrivate();
   void OnImeCandidatePopupChanged(bool visible);
   void OnImeCompositionChanged(
-      const string16& text,
+      const base::string16& text,
       int32 selection_start,
       int32 selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines);
-  void OnImeTextCommitted(const string16& text);
+  void OnImeTextCommitted(const base::string16& text);
   void OnImeInputSourceChanged(uint16 language_id, bool is_ime);
 
   // RootWindowHost overrides:

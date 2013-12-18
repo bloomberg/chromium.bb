@@ -59,7 +59,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
                                                        int item_id) {
   gfx::Image icon;
   model->GetIconAt(model_index, &icon);
-  string16 label, sublabel, minor_text;
+  base::string16 label, sublabel, minor_text;
   ui::MenuSeparatorType separator_style = ui::NORMAL_SEPARATOR;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(model_index);
@@ -171,14 +171,14 @@ bool MenuModelAdapter::GetAccelerator(int id,
   return false;
 }
 
-string16 MenuModelAdapter::GetLabel(int id) const {
+base::string16 MenuModelAdapter::GetLabel(int id) const {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
     return model->GetLabelAt(index);
 
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 const gfx::Font* MenuModelAdapter::GetLabelFont(int id) const {

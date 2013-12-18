@@ -40,7 +40,7 @@ UI_EXPORT void HWNDSetRTLLayout(HWND hwnd);
 // override_font_family and font_size_scaler are not null, they'll be
 // filled with the font family name and the size scaler.  The output
 // parameters are not modified if the return value is false.
-UI_EXPORT bool NeedOverrideDefaultUIFont(string16* override_font_family,
+UI_EXPORT bool NeedOverrideDefaultUIFont(base::string16* override_font_family,
                                          double* font_size_scaler);
 
 // If the default UI font stored in |logfont| is not suitable, its family

@@ -51,7 +51,7 @@ bool NotifierId::operator<(const NotifierId& other) const {
 }
 
 Notifier::Notifier(const NotifierId& notifier_id,
-                   const string16& name,
+                   const base::string16& name,
                    bool enabled)
     : notifier_id(notifier_id),
       name(name),
@@ -62,8 +62,8 @@ Notifier::~Notifier() {
 }
 
 NotifierGroup::NotifierGroup(const gfx::Image& icon,
-                             const string16& name,
-                             const string16& login_info,
+                             const base::string16& name,
+                             const base::string16& login_info,
                              size_t index)
     : icon(icon), name(name), login_info(login_info), index(index) {}
 

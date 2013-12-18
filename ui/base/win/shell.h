@@ -32,15 +32,15 @@ UI_EXPORT bool OpenItemViaShellNoZoneCheck(const base::FilePath& full_path);
 // don't use it if one of the above will do. |mask| is a valid combination
 // of SEE_MASK_FLAG_XXX as stated in msdn. If there is no default application
 // registered for the item, it behaves the same as OpenItemViaShell.
-UI_EXPORT bool OpenAnyViaShell(const string16& full_path,
-                               const string16& directory,
-                               const string16& args,
+UI_EXPORT bool OpenAnyViaShell(const base::string16& full_path,
+                               const base::string16& directory,
+                               const base::string16& args,
                                DWORD mask);
 
 // Ask the user, via the Windows "Open With" dialog, for an application to use
 // to open the file specified by 'full_path'.
 // Returns 'true' on successful open, 'false' otherwise.
-bool OpenItemWithExternalApp(const string16& full_path);
+bool OpenItemWithExternalApp(const base::string16& full_path);
 
 // Disables the ability of the specified window to be pinned to the taskbar or
 // the Start menu. This will remove "Pin this program to taskbar" from the
@@ -49,26 +49,28 @@ UI_EXPORT bool PreventWindowFromPinning(HWND hwnd);
 
 // Sets the application id, app icon, relaunch command and relaunch display name
 // for the given window.
-UI_EXPORT void SetAppDetailsForWindow(const string16& app_id,
-                                      const string16& app_icon,
-                                      const string16& relaunch_command,
-                                      const string16& relaunch_display_name,
-                                      HWND hwnd);
+UI_EXPORT void SetAppDetailsForWindow(
+    const base::string16& app_id,
+    const base::string16& app_icon,
+    const base::string16& relaunch_command,
+    const base::string16& relaunch_display_name,
+    HWND hwnd);
 
 // Sets the application id given as the Application Model ID for the window
 // specified.  This method is used to insure that different web applications
 // do not group together on the Win7 task bar.
-UI_EXPORT void SetAppIdForWindow(const string16& app_id, HWND hwnd);
+UI_EXPORT void SetAppIdForWindow(const base::string16& app_id, HWND hwnd);
 
 // Sets the application icon for the window specified.
-UI_EXPORT void SetAppIconForWindow(const string16& app_icon, HWND hwnd);
+UI_EXPORT void SetAppIconForWindow(const base::string16& app_icon, HWND hwnd);
 
 // Sets the relaunch command and relaunch display name for the window specified.
 // Windows will use this information for grouping on the taskbar, and to create
 // a shortcut if the window is pinned to the taskbar.
-UI_EXPORT void SetRelaunchDetailsForWindow(const string16& relaunch_command,
-                                           const string16& display_name,
-                                           HWND hwnd);
+UI_EXPORT void SetRelaunchDetailsForWindow(
+    const base::string16& relaunch_command,
+    const base::string16& display_name,
+    HWND hwnd);
 
 // Returns true if composition is available and turned on on the current
 // platform.

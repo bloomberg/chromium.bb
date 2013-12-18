@@ -559,7 +559,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accDefaultAction(
 
   ui::AccessibleViewState state;
   view_->GetAccessibleState(&state);
-  string16 temp_action = state.default_action;
+  base::string16 temp_action = state.default_action;
 
   if (!temp_action.empty()) {
     *def_action = SysAllocString(temp_action.c_str());
@@ -578,7 +578,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accDescription(
   if (!view_)
     return E_FAIL;
 
-  string16 temp_desc;
+  base::string16 temp_desc;
 
   view_->GetTooltipText(gfx::Point(), &temp_desc);
   if (!temp_desc.empty()) {
@@ -626,7 +626,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accKeyboardShortcut(
 
   ui::AccessibleViewState state;
   view_->GetAccessibleState(&state);
-  string16 temp_key = state.keyboard_shortcut;
+  base::string16 temp_key = state.keyboard_shortcut;
 
   if (!temp_key.empty()) {
     *acc_key = SysAllocString(temp_key.c_str());
@@ -648,7 +648,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accName(
   // Retrieve the current view's name.
   ui::AccessibleViewState state;
   view_->GetAccessibleState(&state);
-  string16 temp_name = state.name;
+  base::string16 temp_name = state.name;
   if (!temp_name.empty()) {
     // Return name retrieved.
     *name = SysAllocString(temp_name.c_str());
@@ -735,7 +735,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accValue(VARIANT var_id,
   // Retrieve the current view's value.
   ui::AccessibleViewState state;
   view_->GetAccessibleState(&state);
-  string16 temp_value = state.value;
+  base::string16 temp_value = state.value;
 
   if (!temp_value.empty()) {
     // Return value retrieved.
@@ -877,7 +877,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_nCharacters(LONG* n_characters) {
   if (!n_characters)
     return E_INVALIDARG;
 
-  string16 text = TextForIAccessibleText();
+  base::string16 text = TextForIAccessibleText();
   *n_characters = static_cast<LONG>(text.size());
   return S_OK;
 }
@@ -935,7 +935,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_text(LONG start_offset,
 
   ui::AccessibleViewState state;
   view_->GetAccessibleState(&state);
-  string16 text_str = TextForIAccessibleText();
+  base::string16 text_str = TextForIAccessibleText();
   LONG len = static_cast<LONG>(text_str.size());
 
   if (start_offset == IA2_TEXT_OFFSET_LENGTH) {
@@ -963,7 +963,8 @@ STDMETHODIMP NativeViewAccessibilityWin::get_text(LONG start_offset,
   if (end_offset > len)
     return E_INVALIDARG;
 
-  string16 substr = text_str.substr(start_offset, end_offset - start_offset);
+  base::string16 substr =
+      text_str.substr(start_offset, end_offset - start_offset);
   if (substr.empty())
     return S_FALSE;
 
@@ -989,7 +990,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_textAtOffset(
     return S_FALSE;
   }
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = FindBoundary(
       text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
@@ -1015,7 +1016,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_textBeforeOffset(
     return S_FALSE;
   }
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = FindBoundary(
       text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
@@ -1040,7 +1041,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_textAfterOffset(
     return S_FALSE;
   }
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = offset;
   *end_offset = FindBoundary(
@@ -1344,7 +1345,7 @@ void NativeViewAccessibilityWin::SetState(
   msaa_state->lVal |= MSAAState(view_state.state);
 }
 
-string16 NativeViewAccessibilityWin::TextForIAccessibleText() {
+base::string16 NativeViewAccessibilityWin::TextForIAccessibleText() {
   ui::AccessibleViewState state;
   view_->GetAccessibleState(&state);
   if (state.role == AccessibilityTypes::ROLE_TEXT)
@@ -1354,7 +1355,7 @@ string16 NativeViewAccessibilityWin::TextForIAccessibleText() {
 }
 
 void NativeViewAccessibilityWin::HandleSpecialTextOffset(
-    const string16& text, LONG* offset) {
+    const base::string16& text, LONG* offset) {
   if (*offset == IA2_TEXT_OFFSET_LENGTH) {
     *offset = static_cast<LONG>(text.size());
   } else if (*offset == IA2_TEXT_OFFSET_CARET) {
@@ -1378,7 +1379,7 @@ ui::TextBoundaryType NativeViewAccessibilityWin::IA2TextBoundaryToTextBoundary(
 }
 
 LONG NativeViewAccessibilityWin::FindBoundary(
-    const string16& text,
+    const base::string16& text,
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
     ui::TextBoundaryDirection direction) {

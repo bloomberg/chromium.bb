@@ -108,8 +108,8 @@ class TextExample::TextExampleView : public View {
   int text_flags() const { return text_flags_; }
   void set_text_flags(int text_flags) { text_flags_ = text_flags; }
 
-  const string16& text() const { return text_; }
-  void set_text(const string16& text) { text_ = text; }
+  const base::string16& text() const { return text_; }
+  void set_text(const base::string16& text) { text_ = text; }
 
   bool halo() const { return halo_; }
   void set_halo(bool halo) { halo_ = halo; }
@@ -132,7 +132,7 @@ class TextExample::TextExampleView : public View {
   gfx::FontList font_list_;
 
   // The text to draw.
-  string16 text_;
+  base::string16 text_;
 
   // Text flags for passing to |DrawStringInt()|.
   int text_flags_;
