@@ -515,21 +515,20 @@ void FeatureInfo::InitializeFeatures() {
       validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
       validators_.render_buffer_parameter.AddValue(GL_RENDERBUFFER_SAMPLES_EXT);
       AddExtensionString("GL_CHROMIUM_framebuffer_multisample");
-    } else {
-      if (extensions.Contains("GL_EXT_multisampled_render_to_texture")) {
-        feature_flags_.multisampled_render_to_texture = true;
-      } else if (extensions.Contains("GL_IMG_multisampled_render_to_texture")) {
-        feature_flags_.multisampled_render_to_texture = true;
-        feature_flags_.use_img_for_multisampled_render_to_texture = true;
-      }
-      if (feature_flags_.multisampled_render_to_texture) {
-        validators_.render_buffer_parameter.AddValue(
-            GL_RENDERBUFFER_SAMPLES_EXT);
-        validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
-        validators_.frame_buffer_parameter.AddValue(
-            GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT);
-        AddExtensionString("GL_EXT_multisampled_render_to_texture");
-      }
+    }
+    if (extensions.Contains("GL_EXT_multisampled_render_to_texture")) {
+      feature_flags_.multisampled_render_to_texture = true;
+    } else if (extensions.Contains("GL_IMG_multisampled_render_to_texture")) {
+      feature_flags_.multisampled_render_to_texture = true;
+      feature_flags_.use_img_for_multisampled_render_to_texture = true;
+    }
+    if (feature_flags_.multisampled_render_to_texture) {
+      validators_.render_buffer_parameter.AddValue(
+          GL_RENDERBUFFER_SAMPLES_EXT);
+      validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
+      validators_.frame_buffer_parameter.AddValue(
+          GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT);
+      AddExtensionString("GL_EXT_multisampled_render_to_texture");
     }
   }
 

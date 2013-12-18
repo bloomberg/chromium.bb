@@ -618,7 +618,7 @@ TEST_F(FeatureInfoTest, InitializeEXT_multisampled_render_to_texture) {
 TEST_F(FeatureInfoTest, InitializeIMG_multisampled_render_to_texture) {
   SetupInitExpectations("GL_IMG_multisampled_render_to_texture");
   EXPECT_TRUE(info_->feature_flags(
-      ).use_img_for_multisampled_render_to_texture);
+      ).multisampled_render_to_texture);
   EXPECT_TRUE(info_->feature_flags(
       ).use_img_for_multisampled_render_to_texture);
   EXPECT_THAT(info_->extensions(),
