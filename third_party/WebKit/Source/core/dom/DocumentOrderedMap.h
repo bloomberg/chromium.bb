@@ -33,6 +33,7 @@
 
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"
 
 namespace WebCore {
@@ -50,6 +51,7 @@ public:
     bool containsMultiple(StringImpl*) const;
     // concrete instantiations of the get<>() method template
     Element* getElementById(StringImpl*, const TreeScope*) const;
+    const Vector<Element*>& getAllElementsById(StringImpl*, const TreeScope*) const;
     Element* getElementByMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLowercasedMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
@@ -72,6 +74,7 @@ private:
 
         Element* element;
         unsigned count;
+        Vector<Element*> orderedList;
     };
 
     typedef HashMap<StringImpl*, MapEntry> Map;

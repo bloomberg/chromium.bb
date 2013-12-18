@@ -150,6 +150,16 @@ Element* TreeScope::getElementById(const AtomicString& elementId) const
     return m_elementsById->getElementById(elementId.impl(), this);
 }
 
+const Vector<Element*>& TreeScope::getAllElementsById(const AtomicString& elementId) const
+{
+    DEFINE_STATIC_LOCAL(Vector<Element*>, emptyVector, ());
+    if (elementId.isEmpty())
+        return emptyVector;
+    if (!m_elementsById)
+        return emptyVector;
+    return m_elementsById->getAllElementsById(elementId.impl(), this);
+}
+
 void TreeScope::addElementById(const AtomicString& elementId, Element* element)
 {
     if (!m_elementsById)

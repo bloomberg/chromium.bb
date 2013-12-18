@@ -306,6 +306,17 @@ void SelectorDataList::executeSlowQueryAll(Node& rootNode, Vector<RefPtr<Node> >
     }
 }
 
+const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector* firstSelector) const
+{
+    for (const CSSSelector* selector = firstSelector; selector; selector = selector->tagHistory()) {
+        if (selector->m_match == CSSSelector::Id)
+            return selector;
+        if (selector->relation() != CSSSelector::SubSelector)
+            break;
+    }
+    return 0;
+}
+
 void SelectorDataList::executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const
 {
     if (!canUseFastQuery(rootNode))
@@ -314,22 +325,34 @@ void SelectorDataList::executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& ma
     ASSERT(m_selectors.size() == 1);
     ASSERT(m_selectors[0].selector);
 
-    const CSSSelector* firstSelector = m_selectors[0].selector;
+    const SelectorData& selector = m_selectors[0];
+    const CSSSelector* firstSelector = selector.selector;
+
+    // Fast path for querySelectorAll('#id'), querySelectorAll('tag#id').
+    if (const CSSSelector* idSelector = selectorForIdLookup(firstSelector)) {
+        const AtomicString& idToMatch = idSelector->value();
+        if (rootNode.treeScope().containsMultipleElementsWithId(idToMatch)) {
+            const Vector<Element*>& elements = rootNode.treeScope().getAllElementsById(idToMatch);
+            size_t count = elements.size();
+            for (size_t i = 0; i < count; ++i) {
+                Element* element = elements[i];
+                ASSERT(element);
+                if (selectorMatches(selector, *element, rootNode))
+                    matchedElements.append(element);
+            }
+            return;
+        }
+        Element* element = rootNode.treeScope().getElementById(idToMatch);
+        if (!element || !(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+            return;
+        if (selectorMatches(selector, *element, rootNode))
+            matchedElements.append(element);
+        return;
+    }
 
     if (!firstSelector->tagHistory()) {
-        // Fast path for querySelectorAll('#id'), querySelectorAl('.foo'), and querySelectorAll('div').
+        // Fast path for querySelectorAl('.foo'), and querySelectorAll('div').
         switch (firstSelector->m_match) {
-        case CSSSelector::Id:
-            {
-                if (rootNode.document().containsMultipleElementsWithId(firstSelector->value()))
-                    break;
-
-                // Just the same as getElementById.
-                Element* element = rootNode.treeScope().getElementById(firstSelector->value());
-                if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
-                    matchedElements.append(element);
-                return;
-            }
         case CSSSelector::Class:
             return collectElementsByClassName(rootNode, firstSelector->value(), matchedElements);
         case CSSSelector::Tag:
@@ -344,7 +367,6 @@ void SelectorDataList::executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& ma
     if (traverseRoots->isEmpty())
         return;
 
-    const SelectorData& selector = m_selectors[0];
     if (matchTraverseRoots) {
         while (!traverseRoots->isEmpty()) {
             Node& node = *traverseRoots->next();
@@ -426,25 +448,40 @@ Element* SelectorDataList::executeQueryFirst(Node& rootNode) const
     if (!canUseFastQuery(rootNode))
         return executeSlowQueryFirst(rootNode);
 
+    ASSERT(m_selectors.size() == 1);
+    ASSERT(m_selectors[0].selector);
 
-    const CSSSelector* selector = m_selectors[0].selector;
-    ASSERT(selector);
+    const SelectorData& selector = m_selectors[0];
+    const CSSSelector* firstSelector = selector.selector;
 
-    if (!selector->tagHistory()) {
-        // Fast path for querySelector('#id'), querySelector('.foo'), and querySelector('div').
-        // Many web developers uses querySelector with these simple selectors.
-        switch (selector->m_match) {
-        case CSSSelector::Id:
-            {
-                if (rootNode.document().containsMultipleElementsWithId(selector->value()))
-                    break;
-                Element* element = rootNode.treeScope().getElementById(selector->value());
-                return element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)) ? element : 0;
+    // Fast path for querySelectorAll('#id'), querySelectorAll('tag#id').
+    if (const CSSSelector* idSelector = selectorForIdLookup(firstSelector)) {
+        const AtomicString& idToMatch = idSelector->value();
+        if (rootNode.treeScope().containsMultipleElementsWithId(idToMatch)) {
+            const Vector<Element*>& elements = rootNode.treeScope().getAllElementsById(idToMatch);
+            size_t count = elements.size();
+            for (size_t i = 0; i < count; ++i) {
+                Element* element = elements[i];
+                ASSERT(element);
+                if (selectorMatches(selector, *element, rootNode))
+                    return element;
             }
+            return 0;
+        }
+        Element* element = rootNode.treeScope().getElementById(idToMatch);
+        if (!element || !(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+            return 0;
+        return selectorMatches(selector, *element, rootNode) ? element : 0;
+    }
+
+    if (!firstSelector->tagHistory()) {
+        // Fast path for querySelector('.foo'), and querySelector('div').
+        // Many web developers uses querySelector with these simple selectors.
+        switch (firstSelector->m_match) {
         case CSSSelector::Class:
-            return findElementByClassName(rootNode, selector->value());
+            return findElementByClassName(rootNode, firstSelector->value());
         case CSSSelector::Tag:
-            return findElementByTagName(rootNode, selector->tagQName());
+            return findElementByTagName(rootNode, firstSelector->tagQName());
         default:
             break; // If we need another fast path, add here.
         }
@@ -455,14 +492,13 @@ Element* SelectorDataList::executeQueryFirst(Node& rootNode) const
     if (!traverseRootNode)
         return 0;
     if (matchTraverseRoot) {
-        ASSERT(m_selectors.size() == 1);
         ASSERT(traverseRootNode->isElementNode());
         Element& element = toElement(*traverseRootNode);
-        return selectorMatches(m_selectors[0], element, rootNode) ? &element : 0;
+        return selectorMatches(selector, element, rootNode) ? &element : 0;
     }
 
     for (Element* element = ElementTraversal::firstWithin(*traverseRootNode); element; element = ElementTraversal::next(*element, traverseRootNode)) {
-        if (selectorMatches(m_selectors[0], *element, rootNode))
+        if (selectorMatches(selector, *element, rootNode))
             return element;
     }
     return 0;

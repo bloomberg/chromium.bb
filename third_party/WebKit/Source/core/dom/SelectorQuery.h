@@ -68,6 +68,7 @@ private:
     Node* findTraverseRoot(Node& rootNode, bool& matchTraverseRoot) const;
     Element* executeSlowQueryFirst(Node& rootNode) const;
     Element* executeQueryFirst(Node& rootNode) const;
+    const CSSSelector* selectorForIdLookup(const CSSSelector*) const;
 
     Vector<SelectorData> m_selectors;
 };

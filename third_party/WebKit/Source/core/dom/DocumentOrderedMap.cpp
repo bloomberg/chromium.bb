@@ -80,6 +80,7 @@ void DocumentOrderedMap::add(StringImpl* key, Element* element)
     ASSERT(entry.count);
     entry.element = 0;
     entry.count++;
+    entry.orderedList.clear();
 }
 
 void DocumentOrderedMap::remove(StringImpl* key, Element* element)
@@ -97,9 +98,12 @@ void DocumentOrderedMap::remove(StringImpl* key, Element* element)
         ASSERT(!entry.element || entry.element == element);
         m_map.remove(it);
     } else {
-        if (entry.element == element)
-            entry.element = 0;
+        if (entry.element == element) {
+            ASSERT(entry.orderedList.isEmpty() || entry.orderedList.first() == element);
+            entry.element = entry.orderedList.size() > 1 ? entry.orderedList[1] : 0;
+        }
         entry.count--;
+        entry.orderedList.clear();
     }
 }
 
@@ -132,6 +136,34 @@ inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope)
 Element* DocumentOrderedMap::getElementById(StringImpl* key, const TreeScope* scope) const
 {
     return get<keyMatchesId>(key, scope);
+}
+
+const Vector<Element*>& DocumentOrderedMap::getAllElementsById(StringImpl* key, const TreeScope* scope) const
+{
+    ASSERT(key);
+    ASSERT(scope);
+    DEFINE_STATIC_LOCAL(Vector<Element*>, emptyVector, ());
+
+    Map::iterator it = m_map.find(key);
+    if (it == m_map.end())
+        return emptyVector;
+
+    MapEntry& entry = it->value;
+    ASSERT(entry.count);
+
+    if (entry.orderedList.isEmpty()) {
+        entry.orderedList.reserveCapacity(entry.count);
+        for (Element* element = entry.element ? entry.element : ElementTraversal::firstWithin(*scope->rootNode()); entry.orderedList.size() < entry.count; element = ElementTraversal::next(*element)) {
+            ASSERT(element);
+            if (!keyMatchesId(key, element))
+                continue;
+            entry.orderedList.uncheckedAppend(element);
+        }
+        if (!entry.element)
+            entry.element = entry.orderedList.first();
+    }
+
+    return entry.orderedList;
 }
 
 Element* DocumentOrderedMap::getElementByMapName(StringImpl* key, const TreeScope* scope) const
