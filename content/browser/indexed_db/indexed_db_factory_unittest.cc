@@ -316,7 +316,7 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
                           temp_directory.path());
 
   EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
+  EXPECT_TRUE(factory->IsBackingStorePendingClose(origin));
 
   // Now simulate shutdown, which should stop the timer.
   factory->ContextDestroyed();
@@ -342,7 +342,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
                             temp_directory.path());
 
   EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
+  EXPECT_TRUE(factory->IsBackingStorePendingClose(origin));
 
   // Now simulate shutdown, which should stop the timer.
   factory->ContextDestroyed();
