@@ -237,4 +237,9 @@ bool SVGAElement::childShouldCreateRenderer(const Node& child) const
     return SVGElement::childShouldCreateRenderer(child);
 }
 
+bool SVGAElement::willRespondToMouseClickEvents()
+{
+    return isLink() || SVGGraphicsElement::willRespondToMouseClickEvents();
+}
+
 } // namespace WebCore

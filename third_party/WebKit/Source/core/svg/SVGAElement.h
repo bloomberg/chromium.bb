@@ -57,6 +57,8 @@ private:
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const;
 
+    virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
+
     virtual bool childShouldCreateRenderer(const Node& child) const;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)

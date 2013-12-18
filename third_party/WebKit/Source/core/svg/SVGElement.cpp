@@ -687,9 +687,18 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         // style updates (instead of Element::parseAttribute). We don't
         // tell Element about the change to avoid parsing the class list twice
         setClassNameBaseValue(value);
+    } else if (name == ontouchstartAttr) {
+        setAttributeEventListener(EventTypeNames::touchstart, createAttributeEventListener(this, name, value));
+    } else if (name == ontouchmoveAttr) {
+        setAttributeEventListener(EventTypeNames::touchmove, createAttributeEventListener(this, name, value));
+    } else if (name == ontouchendAttr) {
+        setAttributeEventListener(EventTypeNames::touchend, createAttributeEventListener(this, name, value));
+    } else if (name == ontouchcancelAttr) {
+        setAttributeEventListener(EventTypeNames::touchcancel, createAttributeEventListener(this, name, value));
     } else if (name.matches(XMLNames::langAttr) || name.matches(XMLNames::spaceAttr)) {
-    } else
+    } else {
         Element::parseAttribute(name, value);
+    }
 }
 
 typedef HashMap<QualifiedName, AnimatedPropertyType> AttributeToPropertyTypeMap;
