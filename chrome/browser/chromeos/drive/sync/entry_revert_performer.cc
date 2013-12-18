@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 
+#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -48,13 +49,12 @@ FileError FinishRevert(ResourceMetadata* metadata,
 
     changed_directories->insert(original_path.DirName());
   } else {
-    std::string parent_local_id;
-    error = metadata->GetIdByResourceId(parent_resource_id, &parent_local_id);
+    error = ChangeListProcessor::SetParentLocalIdOfEntry(metadata, &entry,
+                                                         parent_resource_id);
     if (error != FILE_ERROR_OK)
       return error;
 
     entry.set_local_id(local_id);
-    entry.set_parent_local_id(parent_local_id);
     error = metadata->RefreshEntry(entry);
     if (error != FILE_ERROR_OK)
       return error;

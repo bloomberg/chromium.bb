@@ -197,7 +197,7 @@ void RemovePerformer::UnparentResourceAfterGetResourceEntry(
     return;
   }
 
-  if (parent_resource_id == util::kDriveOtherDirLocalId) {
+  if (parent_resource_id.empty()) {
     // This entry is unparented already.
     UnparentResourceAfterUpdateRemoteState(callback, local_id,
                                            google_apis::HTTP_NO_CONTENT);

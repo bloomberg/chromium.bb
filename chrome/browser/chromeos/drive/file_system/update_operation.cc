@@ -74,18 +74,18 @@ FileError UpdateFileLocalState(
     const std::string& local_id,
     scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* drive_file_path) {
+  ResourceEntry existing_entry;
+  FileError error = metadata->GetResourceEntryById(local_id, &existing_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   ResourceEntry entry;
   std::string parent_resource_id;
   if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
     return FILE_ERROR_NOT_A_FILE;
 
-  std::string parent_local_id;
-  FileError error = metadata->GetIdByResourceId(parent_resource_id,
-                                                &parent_local_id);
-  if (error != FILE_ERROR_OK)
-    return error;
   entry.set_local_id(local_id);
-  entry.set_parent_local_id(parent_local_id);
+  entry.set_parent_local_id(existing_entry.parent_local_id());
 
   error = metadata->RefreshEntry(entry);
   if (error != FILE_ERROR_OK)

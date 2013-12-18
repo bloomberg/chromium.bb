@@ -59,10 +59,6 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
   if (parent_link)
     parent_resource_id = util::ExtractResourceIdFromUrl(parent_link->href());
 
-  // Apply mapping from an empty parent to the special dummy directory.
-  if (parent_resource_id.empty())
-    parent_resource_id = util::kDriveOtherDirLocalId;
-
   converted.set_deleted(input.deleted());
   converted.set_shared_with_me(HasLabel(input, kSharedWithMeLabel));
   converted.set_shared(HasLabel(input, kSharedLabel));

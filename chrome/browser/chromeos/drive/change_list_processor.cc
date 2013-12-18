@@ -232,9 +232,12 @@ FileError ChangeListProcessor::ApplyEntryMap(
          it != entry_map_.end();) {
       entries.push_back(it);
 
+      DCHECK(parent_resource_id_map_.count(it->first)) << it->first;
       const std::string& parent_resource_id =
           parent_resource_id_map_[it->first];
-      DCHECK(!parent_resource_id.empty()) << it->first;
+
+      if (parent_resource_id.empty())  // This entry has no parent.
+        break;
 
       ResourceEntryMap::iterator it_parent =
           entry_map_.find(parent_resource_id);
@@ -300,14 +303,13 @@ FileError ChangeListProcessor::ApplyEntryMap(
 
 FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   DCHECK(!entry.deleted());
-
+  DCHECK(parent_resource_id_map_.count(entry.resource_id()));
   const std::string& parent_resource_id =
       parent_resource_id_map_[entry.resource_id()];
-  DCHECK(!parent_resource_id.empty()) << entry.resource_id();
 
-  std::string parent_local_id;
-  FileError error = resource_metadata_->GetIdByResourceId(
-      parent_resource_id, &parent_local_id);
+  ResourceEntry new_entry(entry);
+  FileError error = SetParentLocalIdOfEntry(resource_metadata_, &new_entry,
+                                            parent_resource_id);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -318,9 +320,6 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   ResourceEntry existing_entry;
   if (error == FILE_ERROR_OK)
     error = resource_metadata_->GetResourceEntryById(local_id, &existing_entry);
-
-  ResourceEntry new_entry(entry);
-  new_entry.set_parent_local_id(parent_local_id);
 
   switch (error) {
     case FILE_ERROR_OK:  // Entry exists and needs to be refreshed.
@@ -410,6 +409,25 @@ FileError ChangeListProcessor::RefreshDirectory(
     return error;
 
   *out_file_path = resource_metadata->GetFilePath(directory_local_id);
+  return FILE_ERROR_OK;
+}
+
+// static
+FileError ChangeListProcessor::SetParentLocalIdOfEntry(
+    ResourceMetadata* resource_metadata,
+    ResourceEntry* entry,
+    const std::string& parent_resource_id) {
+  std::string parent_local_id;
+  if (parent_resource_id.empty()) {
+    // Entries without parents should go under "other" directory.
+    parent_local_id = util::kDriveOtherDirLocalId;
+  } else {
+    FileError error = resource_metadata->GetIdByResourceId(
+        parent_resource_id, &parent_local_id);
+    if (error != FILE_ERROR_OK)
+      return error;
+  }
+  entry->set_parent_local_id(parent_local_id);
   return FILE_ERROR_OK;
 }
 

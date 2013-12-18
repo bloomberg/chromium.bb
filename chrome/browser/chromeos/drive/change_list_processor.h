@@ -113,6 +113,12 @@ class ChangeListProcessor {
       ScopedVector<ChangeList> change_lists,
       base::FilePath* out_file_path);
 
+  // Sets |entry|'s parent_local_id.
+  static FileError SetParentLocalIdOfEntry(
+      ResourceMetadata* resource_metadata,
+      ResourceEntry* entry,
+      const std::string& parent_resource_id);
+
  private:
   typedef std::map<std::string /* resource_id */, ResourceEntry>
       ResourceEntryMap;

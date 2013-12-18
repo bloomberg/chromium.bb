@@ -68,7 +68,8 @@ FileError UpdateLocalStateForServerSideCopy(
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id) ||
+      parent_resource_id.empty())
     return FILE_ERROR_NOT_A_FILE;
 
   std::string parent_local_id;
