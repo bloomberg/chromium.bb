@@ -571,8 +571,10 @@ class MediaSourcePlayerTest : public testing::Test {
   void WaitForDecodeDone(bool wait_for_audio, bool wait_for_video) {
     DCHECK(wait_for_audio || wait_for_video);
 
-    while ((wait_for_audio && GetMediaDecoderJob(true)->is_decoding()) ||
-           (wait_for_video && GetMediaDecoderJob(false)->is_decoding())) {
+    while ((wait_for_audio && GetMediaDecoderJob(true) &&
+               GetMediaDecoderJob(true)->is_decoding()) ||
+           (wait_for_video && GetMediaDecoderJob(false) &&
+               GetMediaDecoderJob(false)->is_decoding())) {
       message_loop_.RunUntilIdle();
     }
   }
@@ -1744,6 +1746,31 @@ TEST_F(MediaSourcePlayerTest, NewSurfaceWhileChangingConfigs) {
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(1, demuxer_->num_config_requests());
   EXPECT_EQ(0, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest,
+       BrowserSeek_DecoderStarvationWhilePendingSurfaceChange) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test video decoder starvation while handling a pending surface change
+  // should not cause any crashes.
+  CreateNextTextureAndSetVideoSurface();
+  StartVideoDecoderJob(true);
+  DemuxerData data = CreateReadFromDemuxerAckForVideo();
+  player_.OnDemuxerDataAvailable(data);
+
+  // Trigger a surface change and decoder starvation.
+  CreateNextTextureAndSetVideoSurface();
+  TriggerPlayerStarvation();
+  WaitForVideoDecodeDone();
+
+  // Surface change should trigger a seek.
+  EXPECT_EQ(1, demuxer_->num_browser_seek_requests());
+  player_.OnDemuxerSeekDone(base::TimeDelta());
+  EXPECT_TRUE(GetMediaDecoderJob(false));
+
+  // A new data request should be sent.
+  EXPECT_EQ(2, demuxer_->num_data_requests());
 }
 
 TEST_F(MediaSourcePlayerTest, ReleaseWithOnPrefetchDoneAlreadyPosted) {

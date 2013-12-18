@@ -423,6 +423,8 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
   DVLOG(1) << __FUNCTION__;
 
   ClearPendingEvent(SEEK_EVENT_PENDING);
+  if (IsEventPending(PREFETCH_REQUEST_EVENT_PENDING))
+    ClearPendingEvent(PREFETCH_REQUEST_EVENT_PENDING);
 
   next_video_data_is_iframe_ = true;
 
