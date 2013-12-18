@@ -21,14 +21,15 @@ struct AwHitTestData {
     // |extra_data_for_type| will be empty. All other values should be emtpy
     // except the special case described below.
     // For special case of invalid or javascript scheme url that would
-    // otherwise be type an LINK type, |href|, |anchor_text|, |img_src| contain
+    // otherwise be type an LINK type, |href| will contain the javascript
+    // string in the href attribute, and |anchor_text|i and |img_src| contain
     // their normal values for the respective type.
     UNKNOWN_TYPE = 0,
 
     // Special case urls for SRC_LINK_TYPE below. Each type corresponds to a
     // different prefix in content url_constants. |extra_data_for_type| will
-    // contain the url but with the prefix removed. Other fields are the same
-    // as SRC_LINK_TYPE.
+    // contain the url but with the prefix removed. |href| will contain the
+    // exact href attribute string. Other fields are the same as SRC_LINK_TYPE.
     PHONE_TYPE = 2,
     GEO_TYPE = 3,
     EMAIL_TYPE = 4,
@@ -39,22 +40,22 @@ struct AwHitTestData {
     IMAGE_TYPE = 5,
 
     // Hit on a link with valid and non-javascript url and without embedded
-    // image. |extra_data_for_type| is the valid absolute url of the link.
-    // |href| will contain the exact href attribute string. |anchor_text| will
-    // contain the anchor text if the link is an anchor tag. |img_src| will be
-    // empty.
+    // image. |extra_data_for_type| and |href| will be the valid absolute url
+    // of the link. |anchor_text| will contain the anchor text if the link is
+    // an anchor tag. |img_src| will be empty.
     // Note 1: If the link url is invalid or javascript scheme, then the type
     // will be UNKNOWN_TYPE.
     // Note 2: Note that this matches SRC_ANCHOR_TYPE in the public WebView
     // Java API, but the actual tag can be something other than <a>, such as
     // <link> or <area>.
+    // Note 3: |href| is not the raw attribute string, but the absolute link
+    // url.
     SRC_LINK_TYPE = 7,
 
     // Same as SRC_LINK_TYPE except the link contains an image. |img_src| and
     // |extra_data_for_type| will contain the absolute valid url of the image
-    // source. |href| will contain the (possibly invalid or javascript-scheme)
-    // link href attribute. |anchor_text| will be empty.
-    // Both notes from SRC_LINK_TYPE apply.
+    // source. |href| will be the valid absolute url of the link. |anchor_text|
+    // will be empty. All notes from SRC_LINK_TYPE apply.
     SRC_IMAGE_LINK_TYPE = 8,
 
     // Hit on an editable text input element. All other values will be empty.

@@ -18,6 +18,9 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Test for getHitTestResult, requestFocusNodeHref, and requestImageRef methods
+ */
 public class WebKitHitTestTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestView;
@@ -153,7 +156,7 @@ public class WebKitHitTestTest extends AwTestBase {
         simulateInput(byTouch);
         assertTrue(pollForHitTestDataOnUiThread(
                 HitTestResult.SRC_ANCHOR_TYPE, fullpath));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(null, ANCHOR_TEXT, null));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(fullpath, ANCHOR_TEXT, null));
     }
 
     @SmallTest
@@ -176,7 +179,7 @@ public class WebKitHitTestTest extends AwTestBase {
         simulateInput(byTouch);
         assertTrue(pollForHitTestDataOnUiThread(
                 HitTestResult.SRC_ANCHOR_TYPE, fullpath));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(relpath, ANCHOR_TEXT, null));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(fullpath, ANCHOR_TEXT, null));
     }
 
     @SmallTest

@@ -1350,7 +1350,7 @@ public class AwContents {
         // In order to maintain compatibility with the old WebView's implementation,
         // the absolute (full) url is passed in the |url| field, not only the href attribute.
         // Note: HitTestData could be cleaned up at this point. See http://crbug.com/290992.
-        data.putString("url", mPossiblyStaleHitTestData.hitTestResultExtraData);
+        data.putString("url", mPossiblyStaleHitTestData.href);
         data.putString("title", mPossiblyStaleHitTestData.anchorText);
         data.putString("src", mPossiblyStaleHitTestData.imgSrc);
         msg.setData(data);

@@ -99,6 +99,8 @@ void DistinguishAndAssignSrcLinkType(const GURL& url, AwHitTestData* data) {
   } else {
     data->type = AwHitTestData::SRC_LINK_TYPE;
     data->extra_data_for_type = url.possibly_invalid_spec();
+    if (!data->extra_data_for_type.empty())
+      data->href = UTF8ToUTF16(data->extra_data_for_type);
   }
 }
 
@@ -123,6 +125,8 @@ void PopulateHitTestData(const GURL& absolute_link_url,
   } else if (has_link_url && has_image_url && !is_javascript_scheme) {
     data->type = AwHitTestData::SRC_IMAGE_LINK_TYPE;
     data->extra_data_for_type = data->img_src.possibly_invalid_spec();
+    if (absolute_link_url.is_valid())
+      data->href = UTF8ToUTF16(absolute_link_url.possibly_invalid_spec());
   } else if (!has_link_url && has_image_url) {
     data->type = AwHitTestData::IMAGE_TYPE;
     data->extra_data_for_type = data->img_src.possibly_invalid_spec();
