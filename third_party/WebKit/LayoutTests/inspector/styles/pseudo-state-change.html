@@ -64,6 +64,7 @@ function test()
         return;
     }
 
+    WebInspector.settings.updatePseudoStatesFromPage.set(true);
     WebInspector.showPanel("elements");
     InspectorTest.runTestSuite([
         function dumpDefaultStyles(next)
