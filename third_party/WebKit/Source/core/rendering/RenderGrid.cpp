@@ -487,7 +487,17 @@ const GridTrackSize& RenderGrid::gridTrackSize(GridTrackSizingDirection directio
     if (i >= trackStyles.size())
         return (direction == ForColumns) ? style()->gridAutoColumns() : style()->gridAutoRows();
 
-    return trackStyles[i];
+    const GridTrackSize& trackSize = trackStyles[i];
+    // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto>.
+    if (trackSize.isPercentage()) {
+        Length logicalSize = direction == ForColumns ? style()->logicalWidth() : style()->logicalHeight();
+        if (logicalSize.isIntrinsicOrAuto()) {
+            DEFINE_STATIC_LOCAL(GridTrackSize, autoTrackSize, (Auto));
+            return autoTrackSize;
+        }
+    }
+
+    return trackSize;
 }
 
 size_t RenderGrid::explicitGridColumnCount() const

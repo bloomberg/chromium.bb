@@ -6,6 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Test getting grid-definition-columns and grid-definition-rows set through CSS
 PASS window.getComputedStyle(singleSingleTrackRepeatWithSize, '').getPropertyValue('grid-definition-columns') is "120px"
 PASS window.getComputedStyle(singleSingleTrackRepeatWithSize, '').getPropertyValue('grid-definition-rows') is "18px"
+PASS window.getComputedStyle(singleSingleTrackRepeatWithoutSize, '').getPropertyValue('grid-definition-columns') is "0px"
+PASS window.getComputedStyle(singleSingleTrackRepeatWithoutSize, '').getPropertyValue('grid-definition-rows') is "18px"
 PASS window.getComputedStyle(twoSingleTrackRepeat, '').getPropertyValue('grid-definition-columns') is "400px 400px"
 PASS window.getComputedStyle(twoSingleTrackRepeat, '').getPropertyValue('grid-definition-rows') is "0px 0px"
 PASS window.getComputedStyle(twoSingleTrackRepeatWithChildren, '').getPropertyValue('grid-definition-columns') is "400px 400px"

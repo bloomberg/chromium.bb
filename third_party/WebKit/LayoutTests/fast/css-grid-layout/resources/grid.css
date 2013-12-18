@@ -3,6 +3,13 @@
     background-color: grey;
 }
 
+.indefiniteSizeGrid {
+    display: grid;
+    background-color: grey;
+    width: -webkit-min-content;
+    height: auto;
+}
+
 .inline-grid {
     display: inline-grid;
     background-color: grey;

@@ -1,10 +1,6 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script>
-if (window.testRunner)
-    testRunner.overridePreference("WebKitCSSGridLayoutEnabled", 1);
-</script>
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
@@ -76,6 +72,10 @@ if (window.testRunner)
 <body>
 <div class="grid gridWithFixed" id="gridWithFixedElement"></div>
 <div class="grid gridWithPercent" id="gridWithPercentElement"></div>
+<div class="indefiniteSizeGrid gridWithPercent" id="gridWithPercentWithoutSize"></div>
+<div class="indefiniteSizeGrid gridWithPercent" id="gridWithPercentWithoutSizeWithChildren">
+    <div class="gridItem"></div>
+</div>
 <div class="grid gridWithAuto" id="gridWithAutoElement"></div>
 <div class="grid gridWithAuto" id="gridWithAutoWithChildrenElement">
     <div class="gridItem"></div>
@@ -98,6 +98,8 @@ if (window.testRunner)
     debug("Test getting grid-definition-columns and grid-definition-rows set through CSS");
     testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "(first) 10px", "(first) 15px");
     testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "424px (last)", "162px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "0px (last)", "0px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSizeWithChildren"), "77px (last)", "22px (last)");
     testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "(first) 0px", "0px (last)");
     testGridDefinitionsValues(document.getElementById("gridWithAutoWithChildrenElement"), "(first) 77px", "22px (last)");
     testGridDefinitionsValues(document.getElementById("gridWithMinMax"), "(first) 80px", "300px (last)");
