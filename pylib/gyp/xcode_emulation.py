@@ -829,9 +829,11 @@ class XcodeSettings(object):
           ['security', 'find-identity', '-p', 'codesigning', '-v'])
       for line in output.splitlines():
         if identity in line:
-          assert identity not in XcodeSettings._codesigning_key_cache, (
-              "Multiple codesigning identities for identity: %s" % identity)
-          XcodeSettings._codesigning_key_cache[identity] = line.split()[1]
+          fingerprint = line.split()[1]
+          cache = XcodeSettings._codesigning_key_cache
+          assert identity not in cache or fingerprint == cache[identity], (
+              "Multiple codesigning fingerprints for identity: %s" % identity)
+          XcodeSettings._codesigning_key_cache[identity] = fingerprint
     return XcodeSettings._codesigning_key_cache.get(identity, '')
 
   def AddImplicitPostbuilds(self, configname, output, output_binary,
