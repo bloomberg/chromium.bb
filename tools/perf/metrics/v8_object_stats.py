@@ -178,7 +178,11 @@ class V8ObjectStatsMetric(Metric):
        var results = {};
        if (!window.chrome || !window.chrome.benchmarking)
         return results;
-       window.gc();  // Trigger GC to ensure stats are checkpointed.
+       try {
+        window.gc();  // Trigger GC to ensure stats are checkpointed.
+       } catch(e) {
+        // window.gc() could have been mapped to something else, just continue.
+       }
        for (var i = 0; i < counters.length; i++)
          results[counters[i]] =
              chrome.benchmarking.counterForRenderer(counters[i]);
