@@ -15,7 +15,9 @@
 #ifndef __gl2_h_
 typedef unsigned int GLenum;
 typedef void GLvoid;
+typedef long int GLintptr;
 typedef int GLsizei;
+typedef long int GLsizeiptr;
 typedef int GLint;
 typedef unsigned char GLboolean;
 typedef unsigned int GLuint;
@@ -28,13 +30,6 @@ typedef unsigned char GLubyte;
 typedef int GLfixed;
 typedef unsigned short GLushort;
 typedef int GLclampx;
-#ifdef _WIN64
-typedef long long int GLintptr;
-typedef long long int GLsizeiptr;
-#else
-typedef long int GLintptr;
-typedef long int GLsizeiptr;
-#endif  // _WIN64
 #endif  // __gl2_h_
 
 #define PPB_OPENGLES2_INTERFACE_1_0 "PPB_OpenGLES2;1.0"

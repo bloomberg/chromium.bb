@@ -41,8 +41,8 @@ vars = {
 
   "sfntly_revision": "228",
   "lighttpd_revision": "33737",
-  "skia_revision": "12758",
-  "skia_hash": "9ebad0d1562d99637665f74b929abacc6d88a778",
+  "skia_revision": "12723",
+  "skia_hash": "ef74fa189b738e13295d6a96f86a6e10223505a8",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
@@ -268,7 +268,7 @@ deps = {
     "/trunk/deps/cdm@241073",
 
   "src/third_party/mesa/src":
-    "/trunk/deps/third_party/mesa@240938",
+    "/trunk/deps/third_party/mesa@229994",
 
   "src/third_party/cld_2/src":
     (Var("googlecode_url") % "cld2") + "/trunk@84",

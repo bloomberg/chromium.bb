@@ -1228,13 +1228,13 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
     case GL_UNPACK_ALIGNMENT:
         unpack_alignment_ = param;
         break;
-    case GL_UNPACK_ROW_LENGTH_EXT:
+    case GL_UNPACK_ROW_LENGTH:
         unpack_row_length_ = param;
         return;
-    case GL_UNPACK_SKIP_ROWS_EXT:
+    case GL_UNPACK_SKIP_ROWS:
         unpack_skip_rows_ = param;
         return;
-    case GL_UNPACK_SKIP_PIXELS_EXT:
+    case GL_UNPACK_SKIP_PIXELS:
         unpack_skip_pixels_ = param;
         return;
     case GL_UNPACK_FLIP_Y_CHROMIUM:
