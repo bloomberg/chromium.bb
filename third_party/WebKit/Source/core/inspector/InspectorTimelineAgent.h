@@ -63,7 +63,6 @@ class GraphicsLayer;
 class InspectorClient;
 class InspectorDOMAgent;
 class InspectorFrontend;
-class InspectorMemoryAgent;
 class InspectorOverlay;
 class InspectorPageAgent;
 class InstrumentingAgents;
@@ -133,9 +132,9 @@ public:
         size_t usedGPUMemoryBytes;
     };
 
-    static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
+    static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, memoryAgent, domAgent, overlay, state, type, client));
+        return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, domAgent, overlay, state, type, client));
     }
 
     ~InspectorTimelineAgent();
@@ -251,7 +250,7 @@ private:
 
     friend class TimelineRecordStack;
 
-    InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorCompositeState*, InspectorType, InspectorClient*);
+    InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorCompositeState*, InspectorType, InspectorClient*);
 
     // Trace event handlers
     void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);
@@ -304,7 +303,6 @@ private:
     void innerStop(bool fromConsole);
 
     InspectorPageAgent* m_pageAgent;
-    InspectorMemoryAgent* m_memoryAgent;
     InspectorDOMAgent* m_domAgent;
     InspectorFrontend::Timeline* m_frontend;
     InspectorClient* m_client;
