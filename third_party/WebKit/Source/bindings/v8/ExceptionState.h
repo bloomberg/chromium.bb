@@ -106,6 +106,11 @@ public:
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
 
+    void rethrowV8Exception(v8::Handle<v8::Value> value)
+    {
+        setException(value);
+    }
+
 protected:
     ExceptionCode m_code;
     Context m_context;

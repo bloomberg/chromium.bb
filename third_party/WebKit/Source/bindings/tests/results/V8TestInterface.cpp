@@ -563,7 +563,8 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     if (info.Length() <= 1 || !info[1]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("implementsMethod2", "TestInterface", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        exceptionState.throwTypeError("The callback provided as parameter 2 is not a function.");
+        exceptionState.throwIfNeeded();
         return;
     }
     OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
@@ -629,7 +630,8 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     if (info.Length() <= 1 || !info[1]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "TestInterface", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        exceptionState.throwTypeError("The callback provided as parameter 2 is not a function.");
+        exceptionState.throwIfNeeded();
         return;
     }
     OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());

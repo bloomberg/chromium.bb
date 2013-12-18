@@ -64,7 +64,7 @@ void createHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> 
     cacheArray->Set(v8::Integer::New(cacheArray->Length(), isolate), value);
 }
 
-bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, bool& notASequence, v8::Isolate* isolate)
+bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value)) {
         ports.resize(0);
@@ -77,7 +77,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
         v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
         length = array->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        notASequence = true;
+        exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex + 1));
         return false;
     }
 
@@ -88,7 +88,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
         v8::Local<v8::Value> transferrable = transferrables->Get(i);
         // Validation of non-null objects, per HTML5 spec 10.3.3.
         if (isUndefinedOrNull(transferrable)) {
-            setDOMException(DataCloneError, isolate);
+            exceptionState.throwDOMException(DataCloneError, "Value at index " + String::number(i) + " is an untransferable " + (transferrable->IsUndefined() ? "'undefined'" : "'null'") + " value.");
             return false;
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
@@ -96,14 +96,14 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
             RefPtr<MessagePort> port = V8MessagePort::toNative(v8::Handle<v8::Object>::Cast(transferrable));
             // Check for duplicate MessagePorts.
             if (ports.contains(port)) {
-                setDOMException(DataCloneError, isolate);
+                exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(i) + " is a duplicate of an earlier port.");
                 return false;
             }
             ports.append(port.release());
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate, worldType(isolate)))
             arrayBuffers.append(V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(transferrable)));
         else {
-            setDOMException(DataCloneError, isolate);
+            exceptionState.throwDOMException(DataCloneError, "Value at index " + String::number(i) + " does not have a transferable type.");
             return false;
         }
     }

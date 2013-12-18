@@ -61,15 +61,14 @@ void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Va
 
 void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    bool didThrow = false;
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, didThrow, info.GetIsolate());
-    if (didThrow)
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "pushState", "History", info.Holder(), info.GetIsolate());
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, exceptionState);
     info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
@@ -78,15 +77,14 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
 void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    bool didThrow = false;
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, didThrow, info.GetIsolate());
-    if (didThrow)
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "replaceState", "History", info.Holder(), info.GetIsolate());
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, exceptionState);
     info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));

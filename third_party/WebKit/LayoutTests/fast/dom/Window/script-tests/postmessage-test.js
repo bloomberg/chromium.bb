@@ -153,7 +153,7 @@ ConstructorWithPrototype.prototype = {
     protoProperty: 2010
 };
 
-window.tryPostMessage = function(message, shouldThrow, expected, expectedExceptionOrEvalThunk) {
+window.tryPostMessage = function(message, shouldThrow, expected, expectedExceptionOrEvalThunk, transferables) {
     if (expected == "evalThunk") {
       var evalThunk = expectedExceptionOrEvalThunk;
     } else {
@@ -161,7 +161,7 @@ window.tryPostMessage = function(message, shouldThrow, expected, expectedExcepti
     }
     try {
         var value = eval(message);
-        postMessage(value, "*");
+        postMessage(value, "*", transferables);
         if (shouldThrow)
             console.innerHTML += "FAIL: 'postMessage("+message+")' should throw but didn't<br>";
         messages.push(expected || message);

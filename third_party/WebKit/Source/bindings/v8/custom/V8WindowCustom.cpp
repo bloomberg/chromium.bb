@@ -261,6 +261,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
 
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
     // This function has variable arguments and can be:
     // Per current spec:
     //   postMessage(message, targetOrigin)
@@ -276,22 +277,17 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
-        bool notASequence = false;
-        if (!extractTransferables(info[transferablesArgIndex], portArray, arrayBufferArray, notASequence, info.GetIsolate())) {
-            if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Window", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), info.GetIsolate());
+        if (!extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
+            exceptionState.throwIfNeeded();
             return;
         }
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, targetOrigin, info[targetOriginArgIndex]);
 
-    bool didThrow = false;
-    RefPtr<SerializedScriptValue> message =
-        SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, didThrow, info.GetIsolate());
-    if (didThrow)
+    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, exceptionState, info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
     window->postMessage(message.release(), &portArray, targetOrigin, source, exceptionState);
     exceptionState.throwIfNeeded();
 }

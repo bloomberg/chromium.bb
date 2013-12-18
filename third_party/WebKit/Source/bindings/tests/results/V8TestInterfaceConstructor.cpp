@@ -94,13 +94,15 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
     V8TRYCATCH_VOID(Dictionary, dictionaryArg, Dictionary(info[3], info.GetIsolate()));
     if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "parameter 4 ('dictionaryArg') is not an object."), info.GetIsolate());
+        exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
+        exceptionState.throwIfNeeded();
         return;
     }
     V8TRYCATCH_VOID(Vector<String>, sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
     V8TRYCATCH_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[5], info.GetIsolate()));
     if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "parameter 6 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
+        exceptionState.throwTypeError("parameter 6 ('optionalDictionaryArg') is not an object.");
+        exceptionState.throwIfNeeded();
         return;
     }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[6])) : 0);

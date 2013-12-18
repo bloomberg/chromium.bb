@@ -167,10 +167,8 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
         return 0;
     }
 
-    // FIXME: Make SerializedScriptValue::create etc take an ExceptionState or use ScriptState::setDOMException.
-    bool didThrow = false;
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, didThrow, state);
-    if (didThrow)
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, exceptionState, state);
+    if (exceptionState.hadException())
         return 0;
 
     if (serializedValue->containsBlobs()) {

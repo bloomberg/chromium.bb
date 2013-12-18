@@ -3120,7 +3120,8 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     if (info.Length() <= 1 || !info[1]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodThatRequiresAllArgsAndThrows", "TestObject", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        exceptionState.throwTypeError("The callback provided as parameter 2 is not a function.");
+        exceptionState.throwIfNeeded();
         return;
     }
     OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
@@ -3157,14 +3158,15 @@ static void methodQueryListListenerMethodCallback(const v8::FunctionCallbackInfo
 
 static void serializedValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "serializedValue", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("serializedValue", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    bool serializedArgDidThrow = false;
-    RefPtr<SerializedScriptValue> serializedArg = SerializedScriptValue::create(info[0], 0, 0, serializedArgDidThrow, info.GetIsolate());
-    if (serializedArgDidThrow)
+    RefPtr<SerializedScriptValue> serializedArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
     imp->serializedValue(serializedArg);
 }
@@ -3676,7 +3678,7 @@ static void methodWithCallbackInterfaceAndOptionalArgMethod(const v8::FunctionCa
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     OwnPtr<TestCallbackInterface> callbackInterface;
-    if (info.Length() > 0 && !info[0]->IsNull() && !info[0]->IsUndefined()) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
         if (!info[0]->IsFunction()) {
             throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
@@ -3718,7 +3720,7 @@ static void methodWithNullableCallbackInterfaceArgMethodCallback(const v8::Funct
 static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     OwnPtr<TestCallbackInterface> callbackInterface;
-    if (info.Length() > 0 && !info[0]->IsNull() && !info[0]->IsUndefined()) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
         if (!info[0]->IsFunction()) {
             throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
@@ -4175,7 +4177,7 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodB1Method(info);
         return;
     }
-    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
+    if (((info.Length() == 1) && (isUndefinedOrNull(info[0]) || info[0]->IsString() || info[0]->IsObject()))) {
         overloadedMethodB2Method(info);
         return;
     }
@@ -4474,7 +4476,8 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(ExceptionMessages::failedToExecute("strictSVGPointMethod", "TestObject", "parameter 1 is not of type 'SVGPoint'."), info.GetIsolate());
+        exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
+        exceptionState.throwIfNeeded();
         return;
     }
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);

@@ -47,6 +47,7 @@ class ArrayBufferContents;
 namespace WebCore {
 
 class BlobDataHandle;
+class ExceptionState;
 class MessagePort;
 
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
@@ -68,14 +69,14 @@ public:
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
-    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool& didThrow, v8::Isolate*);
+    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> createFromWire(const String&);
     static PassRefPtr<SerializedScriptValue> createFromWireBytes(const Vector<uint8_t>&);
     static PassRefPtr<SerializedScriptValue> create(const String&);
     static PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> create();
 
-    static PassRefPtr<SerializedScriptValue> create(const ScriptValue&, bool& didThrow, ScriptState*);
+    static PassRefPtr<SerializedScriptValue> create(const ScriptValue&, ExceptionState&, ScriptState*);
 
     // Never throws exceptions.
     static PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Handle<v8::Value>, v8::Isolate*);
@@ -106,17 +107,13 @@ private:
         StringValue,
         WireData
     };
-    enum ExceptionPolicy {
-        ThrowExceptions,
-        DoNotThrowExceptions
-    };
     typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
     SerializedScriptValue();
-    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool& didThrow, v8::Isolate*, ExceptionPolicy = ThrowExceptions);
+    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
     explicit SerializedScriptValue(const String& wireData);
 
-    static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(ArrayBufferArray&, bool& didThrow, v8::Isolate*);
+    static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(ArrayBufferArray&, ExceptionState&, v8::Isolate*);
 
     String m_data;
     OwnPtr<ArrayBufferContentsArray> m_arrayBufferContentsArray;

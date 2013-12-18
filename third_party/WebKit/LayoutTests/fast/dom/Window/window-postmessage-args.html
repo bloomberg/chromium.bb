@@ -62,6 +62,8 @@ var channel4 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, channel4.port1, '*', [channel4.port1, channel4.port2]);
 var channel5 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, [channel5.port1, channel5.port2], '*', [channel5.port1, channel5.port2]);
+tryPostMessageFunction(window.postMessage, 'data', '*', [channel5.port1, channel5.port2], true);
+tryPostMessageFunction(window.postMessage, [channel5.port1, channel5.port2], '*', [], true);
 
 var arrayBuffer = new ArrayBuffer(30);
 var int8View = new Int8Array(arrayBuffer, 2, 10);
@@ -79,7 +81,11 @@ if (!(int8View.length == 0)) {
 else {
     console.innerHTML += "PASS: view neutered<br>"
 }
+tryPostMessageFunction(window.postMessage, arrayBuffer, '*', [], true);
+tryPostMessageFunction(window.postMessage, 'data', '*', [arrayBuffer], true);
 
+tryPostMessageFunction(window.postMessage, int8View, '*', [], true);
+tryPostMessageFunction(window.postMessage, 'data', '*', [int8View], true);
 
 tryPostMessageFunction(window.postMessage, 'done', '*');
 </script>

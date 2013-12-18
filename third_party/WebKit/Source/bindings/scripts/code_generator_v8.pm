@@ -2167,7 +2167,7 @@ sub GenerateParametersCheckExpression
         # FIXME: Implement WebIDL overload resolution algorithm.
         if ($type eq "DOMString") {
             if ($parameter->extendedAttributes->{"StrictTypeChecking"}) {
-                push(@andExpression, "${value}->IsNull() || ${value}->IsUndefined() || ${value}->IsString() || ${value}->IsObject()");
+                push(@andExpression, "isUndefinedOrNull(${value}) || ${value}->IsString() || ${value}->IsObject()");
             }
         } elsif (IsCallbackInterface($parameter->type)) {
             # For Callbacks only checks if the value is null or object.
@@ -2369,7 +2369,7 @@ sub GenerateFunction
     my $isNonListSVGType = $svgNativeType && !($interfaceName =~ /List$/);
 
     my $hasExceptionState = 0;
-    if ($raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType) {
+    if ($raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType || HasSerializedScriptValueParameter($function)) {
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${unoverloadedName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $hasExceptionState = 1;
     }
@@ -2455,7 +2455,7 @@ END
 END
     }
 
-    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, $forMainWorldSuffix);
+    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, $forMainWorldSuffix, $hasExceptionState);
     $code .= $parameterCheckString;
 
     # Build the function call string.
@@ -2546,6 +2546,7 @@ sub GenerateParametersCheck
     my $function = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
+    my $hasExceptionState = shift;
     my $style = shift || "new";
 
     my $functionName = $function->name;
@@ -2579,9 +2580,14 @@ END
             AddToImplIncludes("$v8ClassName.h");
             if ($parameter->isOptional) {
                 $parameterCheckString .= "    OwnPtr<" . $parameter->type . "> $parameterName;\n";
-                $parameterCheckString .= "    if (info.Length() > $paramIndex && !info[$paramIndex]->IsNull() && !info[$paramIndex]->IsUndefined()) {\n";
+                $parameterCheckString .= "    if (info.Length() > $paramIndex && !isUndefinedOrNull(info[$paramIndex])) {\n";
                 $parameterCheckString .= "        if (!info[$paramIndex]->IsFunction()) {\n";
-                $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
+                if ($hasExceptionState) {
+                    $parameterCheckString .= "            exceptionState.throwTypeError(\"The callback provided as parameter $humanFriendlyIndex is not a function.\");\n";
+                    $parameterCheckString .= "            exceptionState.throwIfNeeded();\n";
+                } else {
+                    $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
+                }
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
                 $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), getExecutionContext());\n";
@@ -2594,7 +2600,12 @@ END
                     $parameterCheckString .= "!info[$paramIndex]->IsFunction()";
                 }
                 $parameterCheckString .= ") {\n";
-                $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
+                if ($hasExceptionState) {
+                    $parameterCheckString .= "        exceptionState.throwTypeError(\"The callback provided as parameter $humanFriendlyIndex is not a function.\");\n";
+                    $parameterCheckString .= "        exceptionState.throwIfNeeded();\n";
+                } else {
+                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
+                }
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    OwnPtr<" . $parameter->type . "> $parameterName = ";
@@ -2610,9 +2621,8 @@ END
                 $parameterCheckString .= "        $parameterName = clampTo<$idlType>($nativeValue);\n";
         } elsif ($parameter->type eq "SerializedScriptValue") {
             AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
-            $parameterCheckString .= "    bool ${parameterName}DidThrow = false;\n";
-            $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(info[$paramIndex], 0, 0, ${parameterName}DidThrow, info.GetIsolate());\n";
-            $parameterCheckString .= "    if (${parameterName}DidThrow)\n";
+            $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(info[$paramIndex], 0, 0, exceptionState, info.GetIsolate());\n";
+            $parameterCheckString .= "    if (exceptionState.throwIfNeeded())\n";
             $parameterCheckString .= "        return;\n";
         } elsif ($parameter->isVariadic) {
             my $nativeElementType = GetNativeType($parameter->type);
@@ -2625,7 +2635,12 @@ END
                 $parameterCheckString .= "    Vector<$nativeElementType> $parameterName;\n";
                 $parameterCheckString .= "    for (int i = $paramIndex; i < info.Length(); ++i) {\n";
                 $parameterCheckString .= "        if (!V8${argType}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
-                $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type \'$argType\'.\"), info.GetIsolate());\n";
+                if ($hasExceptionState) {
+                    $parameterCheckString .= "            exceptionState.throwTypeError(\"parameter $humanFriendlyIndex is not of type \'$argType\'.\");\n";
+                    $parameterCheckString .= "            exceptionState.throwIfNeeded();\n";
+                } else {
+                    $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type \'$argType\'.\"), info.GetIsolate());\n";
+                }
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
                 $parameterCheckString .= "        $parameterName.append(V8${argType}::toNative(v8::Handle<v8::Object>::Cast(info[i])));\n";
@@ -2653,7 +2668,12 @@ END
                 my $enumValidationExpression = join(" || ", @validEqualities);
                 $parameterCheckString .=  "    String string = $parameterName;\n";
                 $parameterCheckString .= "    if (!($enumValidationExpression)) {\n";
-                $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex (\'\" + string + \"\') is not a valid enum value.\"), info.GetIsolate());\n";
+                if ($hasExceptionState) {
+                    $parameterCheckString .= "        exceptionState.throwTypeError(\"parameter $humanFriendlyIndex (\'\" + string + \"\') is not a valid enum value.\");\n";
+                    $parameterCheckString .= "        exceptionState.throwIfNeeded();\n";
+                } else {
+                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex (\'\" + string + \"\') is not a valid enum value.\"), info.GetIsolate());\n";
+                }
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
             }
@@ -2669,7 +2689,12 @@ END
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {
                     $parameterCheckString .= "    if (info.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::hasInstance($argValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
-                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type \'$argType\'.\"), info.GetIsolate());\n";
+                    if ($hasExceptionState) {
+                        $parameterCheckString .= "        exceptionState.throwTypeError(\"parameter $humanFriendlyIndex is not of type \'$argType\'.\");\n";
+                        $parameterCheckString .= "        exceptionState.throwIfNeeded();\n";
+                    }else {
+                        $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type \'$argType\'.\"), info.GetIsolate());\n";
+                    }
                     $parameterCheckString .= "        return;\n";
                     $parameterCheckString .= "    }\n";
                 }
@@ -2681,7 +2706,10 @@ END
             $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $humanFriendlyIndex, $jsValue, $parameterName, "    ", "info.GetIsolate()");
             if ($nativeType eq 'Dictionary' or $nativeType eq 'ScriptPromise') {
                 $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
-                if ($functionName eq "Constructor") {
+                if ($hasExceptionState) {
+                    $parameterCheckString .= "        exceptionState.throwTypeError(\"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\");\n";
+                    $parameterCheckString .= "        exceptionState.throwIfNeeded();\n";
+                } elsif ($functionName eq "Constructor") {
                     $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), info.GetIsolate());\n";
                 } else {
                     $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), info.GetIsolate());\n";
@@ -2750,7 +2778,7 @@ sub GenerateSingleConstructorCallback
     }
 
     my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException;
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException || HasSerializedScriptValueParameter($function);
 
     my @beforeArgumentList;
     my @afterArgumentList;
@@ -2770,7 +2798,7 @@ END
     }
 
     # FIXME: Currently [Constructor(...)] does not yet support optional arguments without [Default=...]
-    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "");
+    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "", $raisesExceptions);
     $code .= $parameterCheckString;
 
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
@@ -2958,7 +2986,7 @@ END
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
     }
     if (@anyAttributeNames && $interface->name ne 'ErrorEvent') {
-        # If we're in an isolated world, create a SerializedScriptValue andi
+        # If we're in an isolated world, create a SerializedScriptValue and
         # store it in the event for later cloning if the property is accessed
         # from another world.
         # The main world case is handled lazily (in Custom code).
@@ -3044,7 +3072,7 @@ sub GenerateNamedConstructor
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException;
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException || HasSerializedScriptValueParameter($function);
 
     my $maybeObserveFeature = GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     my $maybeDeprecateFeature = GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
@@ -3092,7 +3120,7 @@ END
     my $hasExceptionState = $raisesExceptions;
     $code .= GenerateArgumentsCountCheck($function, $interface, $hasExceptionState);
 
-    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface);
+    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "", $raisesExceptions);
     $code .= $parameterCheckString;
 
     push(@beforeArgumentList, "*document");
@@ -6345,6 +6373,18 @@ sub NeedsSpecialWrap
     return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
     return 1 if InheritsInterface($interface, "Document");
 
+    return 0;
+}
+
+sub HasSerializedScriptValueParameter
+{
+    my $function = shift;
+
+    foreach my $parameter (@{$function->parameters}) {
+        if ($parameter->type eq "SerializedScriptValue") {
+            return 1;
+        }
+    }
     return 0;
 }
 

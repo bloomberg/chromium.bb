@@ -4317,14 +4317,15 @@ static void voidMethodPromiseArgMethodCallback(const v8::FunctionCallbackInfo<v8
 
 static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSerializedScriptValueArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodSerializedScriptValueArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    bool serializedScriptValueArgDidThrow = false;
-    RefPtr<SerializedScriptValue> serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, serializedScriptValueArgDidThrow, info.GetIsolate());
-    if (serializedScriptValueArgDidThrow)
+    RefPtr<SerializedScriptValue> serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
     imp->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
@@ -5018,7 +5019,7 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodG1Method(info);
         return;
     }
-    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
+    if (((info.Length() == 1) && (isUndefinedOrNull(info[0]) || info[0]->IsString() || info[0]->IsObject()))) {
         overloadedMethodG2Method(info);
         return;
     }

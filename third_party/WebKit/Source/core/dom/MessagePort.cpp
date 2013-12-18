@@ -77,7 +77,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
         for (unsigned int i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
             if (dataPort == this) {
-                exceptionState.throwDOMException(DataCloneError, "Item #" + String::number(i) + " in the array of ports contains the source port.");
+                exceptionState.throwDOMException(DataCloneError, "Port at index " + String::number(i) + " contains the source port.");
                 return;
             }
         }
@@ -212,7 +212,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
                 type = "already neutered";
             else
                 type = "a duplicate";
-            exceptionState.throwDOMException(DataCloneError, "Item #"  + String::number(i) + " in the array of ports is " + type + ".");
+            exceptionState.throwDOMException(DataCloneError, "Port at index "  + String::number(i) + " is " + type + ".");
             return nullptr;
         }
         portSet.add(port);

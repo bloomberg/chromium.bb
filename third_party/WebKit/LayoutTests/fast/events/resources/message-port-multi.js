@@ -15,21 +15,21 @@ channel.port1.postMessage("zero ports", []);
 channel.port1.postMessage("two ports", [channel2.port1, channel2.port2]);
 
 // Now test various failure cases
-shouldThrow('channel.port1.postMessage("same port", [channel.port1])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Item #0 in the array of ports contains the source port."');
-shouldThrow('channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])', "'DataCloneError: An object could not be cloned.'");
-shouldThrow('channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2])', "'DataCloneError: An object could not be cloned.'");
-shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("same port", [channel.port1])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Port at index 0 contains the source port."');
+shouldThrow('channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 1 is an untransferable \'null\' value."');
+shouldThrow('channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 1 does not have a transferable type."');
+shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Message port at index 1 is a duplicate of an earlier port."');
 // Should be OK to send channel3.port1 (should not have been disentangled by the previous failed calls).
 channel.port1.postMessage("entangled ports", [channel3.port1, channel3.port2]);
 
 shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': The 2nd argument is neither an array, nor does it have indexed properties."');
-shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 0 does not have a transferable type."');
 
 // Should not crash (we should figure out that the array contains undefined
 // entries).
 var largePortArray = [];
 largePortArray[1234567890] = channel4.port1;
-shouldThrow('channel.port1.postMessage("largeSequence", largePortArray)', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("largeSequence", largePortArray)', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 0 is an untransferable \'undefined\' value."');
 
 channel.port1.postMessage("done");
 

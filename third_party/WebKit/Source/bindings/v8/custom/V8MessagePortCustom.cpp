@@ -48,19 +48,14 @@ void V8MessagePort::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::V
     MessagePortArray portArray;
     ArrayBufferArray arrayBufferArray;
     if (info.Length() > 1) {
-        bool notASequence = false;
         const int transferablesArgIndex = 1;
-        if (!extractTransferables(info[transferablesArgIndex], portArray, arrayBufferArray, notASequence, info.GetIsolate())) {
-            if (notASequence) {
-                exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1));
-                exceptionState.throwIfNeeded();
-            }
+        if (!extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
+            exceptionState.throwIfNeeded();
             return;
         }
     }
-    bool didThrow = false;
-    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, didThrow, info.GetIsolate());
-    if (didThrow)
+    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, exceptionState, info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
     messagePort->postMessage(message.release(), &portArray, exceptionState);
     exceptionState.throwIfNeeded();

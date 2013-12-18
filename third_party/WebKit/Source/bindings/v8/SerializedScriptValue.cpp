@@ -37,6 +37,7 @@
 #include "V8FileList.h"
 #include "V8ImageData.h"
 #include "V8MessagePort.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
@@ -703,9 +704,7 @@ public:
         Success,
         InputError,
         DataCloneError,
-        InvalidStateError,
-        JSException,
-        JSFailure
+        JSException
     };
 
     Serializer(Writer& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, v8::Isolate* isolate)
@@ -742,6 +741,8 @@ public:
         return m_status;
     }
 
+    String errorMessage() { return m_errorMessage; }
+
     // Functions used by serialization states.
     StateBase* doSerialize(v8::Handle<v8::Value>, StateBase* next);
 
@@ -752,12 +753,7 @@ public:
 
     StateBase* checkException(StateBase* state)
     {
-        return m_tryCatch.HasCaught() ? handleError(JSException, state) : 0;
-    }
-
-    StateBase* reportFailure(StateBase* state)
-    {
-        return handleError(JSFailure, state);
+        return m_tryCatch.HasCaught() ? handleError(JSException, "", state) : 0;
     }
 
     StateBase* writeObject(uint32_t numProperties, StateBase* state)
@@ -860,7 +856,7 @@ private:
                     if (StateBase* newState = serializer.checkException(this))
                         return newState;
                     if (propertyName.IsEmpty())
-                        return serializer.reportFailure(this);
+                        return serializer.handleError(InputError, "Empty property names cannot be cloned.", this);
                     bool hasStringProperty = propertyName->IsString() && composite()->HasRealNamedProperty(propertyName.As<v8::String>());
                     if (StateBase* newState = serializer.checkException(this))
                         return newState;
@@ -919,7 +915,7 @@ private:
                 if (StateBase* newState = serializer.checkException(this))
                     return newState;
                 if (m_propertyNames.IsEmpty())
-                    return serializer.reportFailure(this);
+                    return serializer.handleError(InputError, "Empty property names cannot be cloned.", nextState());
             }
             return serializeProperties(false, serializer);
         }
@@ -989,7 +985,7 @@ private:
     {
         ASSERT(state);
         ++m_depth;
-        return checkComposite(state) ? state : handleError(InputError, state);
+        return checkComposite(state) ? state : handleError(InputError, "Value being cloned is either cyclic or too deeply nested.", state);
     }
 
     StateBase* pop(StateBase* state)
@@ -1001,10 +997,11 @@ private:
         return next;
     }
 
-    StateBase* handleError(Status errorStatus, StateBase* state)
+    StateBase* handleError(Status errorStatus, const String& message, StateBase* state)
     {
         ASSERT(errorStatus != Success);
         m_status = errorStatus;
+        m_errorMessage = message;
         while (state) {
             StateBase* tmp = state->nextState();
             delete state;
@@ -1071,7 +1068,7 @@ private:
         if (!fs)
             return 0;
         if (!fs->clonable())
-            return handleError(DataCloneError, next);
+            return handleError(DataCloneError, "A FileSystem object could not be cloned.", next);
         m_writer.writeDOMFileSystem(fs->type(), fs->name(), fs->rootURL().string());
         return 0;
     }
@@ -1118,10 +1115,10 @@ private:
         if (!arrayBufferView)
             return 0;
         if (!arrayBufferView->buffer())
-            return handleError(DataCloneError, next);
+            return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
         v8::Handle<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), v8::Handle<v8::Object>(), m_writer.getIsolate());
         if (underlyingBuffer.IsEmpty())
-            return handleError(DataCloneError, next);
+            return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
         StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
         if (stateOut)
             return stateOut;
@@ -1146,7 +1143,7 @@ private:
         if (!arrayBuffer)
             return 0;
         if (arrayBuffer->isNeutered())
-            return handleError(InvalidStateError, next);
+            return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
         ASSERT(!m_transferredArrayBuffers.contains(value.As<v8::Object>()));
         m_writer.writeArrayBuffer(*arrayBuffer);
         return 0;
@@ -1158,7 +1155,7 @@ private:
         if (!arrayBuffer)
             return 0;
         if (arrayBuffer->isNeutered())
-            return handleError(DataCloneError, next);
+            return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
         m_writer.writeTransferredArrayBuffer(index);
         return 0;
     }
@@ -1208,6 +1205,7 @@ private:
     v8::TryCatch& m_tryCatch;
     int m_depth;
     Status m_status;
+    String m_errorMessage;
     typedef V8ObjectMap<v8::Object, uint32_t> ObjectPool;
     ObjectPool m_objectPool;
     ObjectPool m_transferredMessagePorts;
@@ -1229,9 +1227,9 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
         // that we grey and write below).
         ASSERT(!value->IsString());
         m_writer.writeObjectReference(objectReference);
-    } else if (value.IsEmpty())
-        return reportFailure(next);
-    else if (value->IsUndefined())
+    } else if (value.IsEmpty()) {
+        return handleError(InputError, "The empty property name cannot be cloned.", next);
+    } else if (value->IsUndefined())
         m_writer.writeUndefined();
     else if (value->IsNull())
         m_writer.writeNull();
@@ -1254,13 +1252,13 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
         if (m_transferredMessagePorts.tryGet(value.As<v8::Object>(), &messagePortIndex))
                 m_writer.writeTransferredMessagePort(messagePortIndex);
             else
-                return handleError(DataCloneError, next);
+                return handleError(DataCloneError, "A MessagePort could not be cloned.", next);
     } else if (V8ArrayBuffer::hasInstance(value, m_isolate, currentWorldType) && m_transferredArrayBuffers.tryGet(value.As<v8::Object>(), &arrayBufferIndex))
         return writeTransferredArrayBuffer(value, arrayBufferIndex, next);
     else {
         v8::Handle<v8::Object> jsObject = value.As<v8::Object>();
         if (jsObject.IsEmpty())
-            return handleError(DataCloneError, next);
+            return handleError(DataCloneError, "An object could not be cloned.", next);
         greyObject(jsObject);
         if (value->IsDate())
             m_writer.writeDate(value->NumberValue());
@@ -1288,10 +1286,10 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
             return writeArrayBuffer(value, next);
         else if (value->IsObject()) {
             if (isHostObject(jsObject) || jsObject->IsCallable() || value->IsNativeError())
-                return handleError(DataCloneError, next);
+                return handleError(DataCloneError, "An object could not be cloned.", next);
             return startObjectState(jsObject, next);
         } else
-            return handleError(DataCloneError, next);
+            return handleError(DataCloneError, "A value could not be cloned.", next);
     }
     return 0;
 }
@@ -2253,21 +2251,21 @@ private:
 
 } // namespace
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
-    return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, didThrow, isolate));
+    return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, exceptionState, isolate));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExceptions(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    bool didThrow;
-    return adoptRef(new SerializedScriptValue(value, 0, 0, didThrow, isolate, DoNotThrowExceptions));
+    TrackExceptionState exceptionState;
+    return adoptRef(new SerializedScriptValue(value, 0, 0, exceptionState, isolate));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, bool& didThrow, ScriptState* state)
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, ExceptionState& exceptionState, ScriptState* state)
 {
     ScriptScope scope(state);
-    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, didThrow, state->isolate()));
+    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, exceptionState, state->isolate()));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createFromWire(const String& data)
@@ -2368,14 +2366,13 @@ inline void neuterBinding(ArrayBufferView* object)
     }
 }
 
-PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValue::transferArrayBuffers(ArrayBufferArray& arrayBuffers, bool& didThrow, v8::Isolate* isolate)
+PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValue::transferArrayBuffers(ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     ASSERT(arrayBuffers.size());
 
     for (size_t i = 0; i < arrayBuffers.size(); i++) {
         if (arrayBuffers[i]->isNeutered()) {
-            setDOMException(InvalidStateError, isolate);
-            didThrow = true;
+            exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is already neutered.");
             return nullptr;
         }
     }
@@ -2392,8 +2389,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
         bool result = arrayBuffers[i]->transfer(contents->at(i), neuteredViews);
         if (!result) {
-            setDOMException(InvalidStateError, isolate);
-            didThrow = true;
+            exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " could not be transferred.");
             return nullptr;
         }
 
@@ -2404,52 +2400,36 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
     return contents.release();
 }
 
-SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow, v8::Isolate* isolate, ExceptionPolicy policy)
+SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
     : m_externallyAllocatedMemory(0)
 {
-    didThrow = false;
     Writer writer(isolate);
     Serializer::Status status;
+    String errorMessage;
     {
         v8::TryCatch tryCatch;
         Serializer serializer(writer, messagePorts, arrayBuffers, m_blobDataHandles, tryCatch, isolate);
         status = serializer.serialize(value);
         if (status == Serializer::JSException) {
-            didThrow = true;
             // If there was a JS exception thrown, re-throw it.
-            if (policy == ThrowExceptions)
-                tryCatch.ReThrow();
+            exceptionState.rethrowV8Exception(tryCatch.Exception());
             return;
         }
+        errorMessage = serializer.errorMessage();
     }
     switch (status) {
     case Serializer::InputError:
     case Serializer::DataCloneError:
-        // If there was an input error, throw a new exception outside
-        // of the TryCatch scope.
-        didThrow = true;
-        if (policy == ThrowExceptions)
-            setDOMException(DataCloneError, isolate);
-        return;
-    case Serializer::InvalidStateError:
-        didThrow = true;
-        if (policy == ThrowExceptions)
-            setDOMException(InvalidStateError, isolate);
-        return;
-    case Serializer::JSFailure:
-        // If there was a JS failure (but no exception), there's not
-        // much we can do except for unwinding the C++ stack by
-        // pretending there was a JS exception.
-        didThrow = true;
+        exceptionState.throwDOMException(DataCloneError, errorMessage);
         return;
     case Serializer::Success:
         m_data = writer.takeWireString();
         ASSERT(m_data.impl()->hasOneRef());
         if (arrayBuffers && arrayBuffers->size())
-            m_arrayBufferContentsArray = transferArrayBuffers(*arrayBuffers, didThrow, isolate);
+            m_arrayBufferContentsArray = transferArrayBuffers(*arrayBuffers, exceptionState, isolate);
         return;
     case Serializer::JSException:
-        // We should never get here because this case was handled above.
+        ASSERT_NOT_REACHED();
         break;
     }
     ASSERT_NOT_REACHED();
