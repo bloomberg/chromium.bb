@@ -19,10 +19,10 @@ function test()
         }
 
         for (var i = 0; i < headers.length; ++i)
-            CSSAgent.getStyleSheetRules(headers[i].styleSheetId, styleSheetRulesCallback.bind(null, i === headers.length - 1));
+            CSSAgent.getStyleSheet(headers[i].styleSheetId, styleSheetCallback.bind(null, i === headers.length - 1));
     }
 
-    function styleSheetRulesCallback(isLast, error, rules)
+    function styleSheetCallback(isLast, error, styleSheet)
     {
         if (error) {
             InspectorTest.addResult("Error loading stylesheet body: " + error);
@@ -30,7 +30,7 @@ function test()
             return;
         }
 
-        InspectorTest.dumpRulesArray(rules);
+        InspectorTest.dumpRulesArray(styleSheet.rules);
         if (isLast)
             InspectorTest.completeTest();
     }

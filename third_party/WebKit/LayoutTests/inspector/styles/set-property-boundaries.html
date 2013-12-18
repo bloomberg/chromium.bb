@@ -25,17 +25,17 @@ function test()
         }
 
         for (var i = 0; i < infos.length; ++i)
-            CSSAgent.getStyleSheetRules(infos[i].styleSheetId, styleSheetRulesLoaded);
+            CSSAgent.getStyleSheet(infos[i].styleSheetId, styleSheetLoaded);
     }
 
-    function styleSheetRulesLoaded(error, rules)
+    function styleSheetLoaded(error, styleSheet)
     {
         if (error) {
             InspectorTest.addResult("error: " + error);
             InspectorTest.completeTest();
             return;
         }
-        editRule(rules[0]);
+        editRule(styleSheet.rules[0]);
     }
 
     function editRule(rule)

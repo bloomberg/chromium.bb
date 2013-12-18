@@ -188,12 +188,12 @@ function test()
             "    text-align: justify;" +
             "}";
 
-        function patchStyleSheet(styleSheetId, rules)
+        function patchStyleSheet(styleSheet)
         {
             InspectorTest.addResult("");
             InspectorTest.addResult("=== Last stylesheet patched ===");
-            CSSAgent.setStyleSheetText(styleSheetId, newStyleSheetText,
-                loadAndDumpStyleSheet.bind(null, styleSheetId, test_changeSelector));
+            CSSAgent.setStyleSheetText(styleSheet.styleSheetId, newStyleSheetText,
+                loadAndDumpStyleSheet.bind(null, styleSheet.styleSheetId, test_changeSelector));
         }
 
         function styleSheetInfosLoaded(error, infos)
@@ -204,30 +204,13 @@ function test()
             }
             InspectorTest.addResult("");
             InspectorTest.addResult("=== All stylesheets ===");
-            var headerIndex = 0;
-            
-            function loadAndDumpNextHeader()
-            {
-                loadAndDumpStyleSheet(infos[headerIndex].styleSheetId, headerLoadedAndDumped);
-            }
-            
-            loadAndDumpNextHeader();
-            
-            function headerLoadedAndDumped(styleSheetId, rules)
-            {
-                if (headerIndex === infos.length - 1) {
-                    patchStyleSheet(styleSheetId, rules);
-                    return;
-                }
-
-                ++headerIndex;
-                loadAndDumpNextHeader();
-            }
+            for (var i = 0; i < infos.length; ++i)
+                loadAndDumpStyleSheet(infos[i].styleSheetId, (i < infos.length - 1) ? null : patchStyleSheet);
         }
         CSSAgent.getAllStyleSheets(styleSheetInfosLoaded);
     }
 
-    function test_changeSelector(styleSheetId, rules)
+    function test_changeSelector(styleSheet)
     {
         function didSetSelector(error, rule)
         {
@@ -237,13 +220,13 @@ function test()
             }
             InspectorTest.addResult("");
             InspectorTest.addResult("=== After selector set ===");
-            loadAndDumpStyleSheet(styleSheetId, test_setStyleText);
+            loadAndDumpStyleSheet(rule.ruleId.styleSheetId, test_setStyleText);
         }
 
-        CSSAgent.setRuleSelector(rules[0].ruleId, "html *, body[foo=\"bar\"]", didSetSelector);
+        CSSAgent.setRuleSelector(styleSheet.rules[0].ruleId, "html *, body[foo=\"bar\"]", didSetSelector);
     }
 
-    function test_setStyleText(styleSheetId, rules)
+    function test_setStyleText(styleSheet)
     {
         function didSetStyleText(error, style)
         {
@@ -256,12 +239,12 @@ function test()
             loadAndDumpStyleSheet(style.styleId.styleSheetId, test_addRule);
         }
 
-        CSSAgent.setPropertyText(rules[0].style.styleId, 0, "", true);
-        CSSAgent.setPropertyText(rules[0].style.styleId, 0, "", true);
+        CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "", true);
+        CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "", true);
 
         // This operation should not update the style as the new property text is not parsable.
-        CSSAgent.setPropertyText(rules[0].style.styleId, 0, "zzz;", false);
-        CSSAgent.setPropertyText(rules[0].style.styleId, 0, "color: white; background: black;", false, didSetStyleText);
+        CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "zzz;", false);
+        CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "color: white; background: black;", false, didSetStyleText);
     }
 
     function test_addRule()
@@ -382,29 +365,20 @@ function test()
             return;
         }
 
-        function styleSheetTextLoaded(error, text)
+        function styleSheetLoaded(error, styleSheet)
         {
             if (error) {
                 InspectorTest.addResult("error: " + error);
                 return;
             }
             InspectorTest.addResult("");
-            InspectorTest.addResult("StyleSheet: '" + text + "'");
-            CSSAgent.getStyleSheetRules(styleSheetId, styleSheetRulesLoaded);
-        }
-
-        function styleSheetRulesLoaded(error, rules)
-        {
-            if (error) {
-                InspectorTest.addResult("error: " + error);
-                return;
-            }
-            InspectorTest.dumpRulesArray(rules);
+            InspectorTest.addResult("StyleSheet: '" + styleSheet.text + "'");
+            InspectorTest.dumpRulesArray(styleSheet.rules);
             if (continuation)
-                continuation(styleSheetId, rules);
+                continuation(styleSheet);
         }
 
-        CSSAgent.getStyleSheetText(styleSheetId, styleSheetTextLoaded);
+        CSSAgent.getStyleSheet(styleSheetId, styleSheetLoaded);
     }
 }
 
