@@ -186,11 +186,8 @@ private:
     bool m_notifyRegion : 1;
 };
 
-inline VTTCue* toVTTCue(TextTrackCue* cue)
-{
-    // VTTCue is currently the only TextTrackCue subclass.
-    return static_cast<VTTCue*>(cue);
-}
+// VTTCue is currently the only TextTrackCue subclass.
+DEFINE_TYPE_CASTS(VTTCue, TextTrackCue, cue, true, true);
 
 } // namespace WebCore
 

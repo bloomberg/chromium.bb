@@ -1333,18 +1333,7 @@ inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type 
     return origin >= m_legacyViewportDescription.type;
 }
 
-inline Document* toDocument(ExecutionContext* executionContext)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!executionContext || executionContext->isDocument());
-    return static_cast<Document*>(executionContext);
-}
-
-inline const Document* toDocument(const ExecutionContext* executionContext)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!executionContext || executionContext->isDocument());
-    return static_cast<const Document*>(executionContext);
-}
-
+DEFINE_TYPE_CASTS(Document, ExecutionContext, context, context->isDocument(), context.isDocument());
 DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
 
 #define DEFINE_DOCUMENT_TYPE_CASTS(thisType) \

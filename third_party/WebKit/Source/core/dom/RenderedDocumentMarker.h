@@ -62,10 +62,7 @@ inline void RenderedDocumentMarker::invalidate(const LayoutRect& r)
         invalidate();
 }
 
-inline RenderedDocumentMarker* toRenderedDocumentMarker(DocumentMarker* marker)
-{
-    return static_cast<RenderedDocumentMarker*>(marker);
-}
+DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);
 
 } // namespace
 

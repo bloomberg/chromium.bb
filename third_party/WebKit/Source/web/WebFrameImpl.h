@@ -524,18 +524,7 @@ private:
     float m_inputEventsScaleFactorForEmulation;
 };
 
-inline WebFrameImpl* toWebFrameImpl(WebFrame* webFrame)
-{
-    return static_cast<WebFrameImpl*>(webFrame);
-}
-
-inline const WebFrameImpl* toWebFrameImpl(const WebFrame* webFrame)
-{
-    return static_cast<const WebFrameImpl*>(webFrame);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toWebFrameImpl(const WebFrameImpl*);
+DEFINE_TYPE_CASTS(WebFrameImpl, WebFrame, frame, true, true);
 
 } // namespace blink
 

@@ -78,11 +78,8 @@ inline PassRefPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndC
     return create(document());
 }
 
-inline SliderThumbElement* toSliderThumbElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isHTMLElement());
-    return static_cast<SliderThumbElement*>(node);
-}
+// FIXME: There are no ways to check if a node is a SliderThumbElement.
+DEFINE_NODE_TYPE_CASTS(SliderThumbElement, isHTMLElement());
 
 // --------------------------------
 
