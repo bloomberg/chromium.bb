@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -34,8 +33,7 @@ class SyncSessionSnapshot;
 // and authentication. It provides ways to "wait" adequate periods of time for
 // several clients to get to the same state.
 class ProfileSyncServiceHarness
-    : public ProfileSyncServiceObserver,
-      public browser_sync::MigrationObserver {
+    : public ProfileSyncServiceObserver {
  public:
   static ProfileSyncServiceHarness* Create(
       Profile* profile,
@@ -73,9 +71,6 @@ class ProfileSyncServiceHarness
   virtual void OnStateChanged() OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
 
-  // MigrationObserver implementation.
-  virtual void OnMigrationStateChange() OVERRIDE;
-
   // Blocks the caller until the sync backend host associated with this harness
   // has been initialized.  Returns true if the wait was successful.
   bool AwaitBackendInitialized();
@@ -97,9 +92,6 @@ class ProfileSyncServiceHarness
   // Blocks the caller until sync has been disabled for this client. Returns
   // true if sync is disabled.
   bool AwaitSyncDisabled();
-
-  // Blocks until the given set of data types are migrated.
-  bool AwaitMigration(syncer::ModelTypeSet expected_migrated_types);
 
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
@@ -137,6 +129,9 @@ class ProfileSyncServiceHarness
 
   // Returns the ProfileSyncService member of the sync client.
   ProfileSyncService* service() const { return service_; }
+
+  // Returns the debug name for this profile. Used for logging.
+  const std::string& profile_debug_name() const { return profile_debug_name_; }
 
   // Returns the status of the ProfileSyncService member of the sync client.
   ProfileSyncService::Status GetStatus() const;
@@ -234,11 +229,6 @@ class ProfileSyncServiceHarness
       const std::string& password,
       invalidation::P2PInvalidationService* invalidation_service);
 
-  // Listen to migration events if the migrator has been initialized
-  // and we're not already listening.  Returns true if we started
-  // listening.
-  bool TryListeningToMigrationEvents();
-
   // Indicates that the operation being waited on is complete.
   void SignalStateComplete();
 
@@ -276,14 +266,6 @@ class ProfileSyncServiceHarness
   // Number used by GenerateFakeOAuth2RefreshTokenString() to make sure that
   // all refresh tokens used in the tests are different.
   int oauth2_refesh_token_number_;
-
-  // The current set of data types pending migration.  Used by
-  // AwaitMigration().
-  syncer::ModelTypeSet pending_migration_types_;
-
-  // The set of data types that have undergone migration.  Used by
-  // AwaitMigration().
-  syncer::ModelTypeSet migrated_types_;
 
   // Used for logging.
   const std::string profile_debug_name_;

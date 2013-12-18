@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/sync/about_sync_util.h"
+#include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
@@ -203,13 +204,6 @@ bool IsPassphraseAccepted(const ProfileSyncServiceHarness* harness) {
           harness->service()->IsUsingSecondaryPassphrase());
 }
 
-// Helper function which returns true if the sync client no longer has a pending
-// backend migration.
-bool NoPendingBackendMigration(const ProfileSyncServiceHarness* harness) {
-  DCHECK(harness);
-  return !harness->HasPendingBackendMigration();
-}
-
 }  // namespace
 
 // static
@@ -337,13 +331,6 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Notify ProfileSyncService that we are done with configuration.
   FinishSyncSetup();
 
-  // Subscribe sync client to notifications from the backend migrator
-  // (possible only after choosing data types).
-  if (!TryListeningToMigrationEvents()) {
-    NOTREACHED();
-    return false;
-  }
-
   // Set an implicit passphrase for encryption if an explicit one hasn't already
   // been set. If an explicit passphrase has been set, immediately return false,
   // since a decryption passphrase is required.
@@ -384,16 +371,6 @@ bool ProfileSyncServiceHarness::SetupSync(
   return true;
 }
 
-bool ProfileSyncServiceHarness::TryListeningToMigrationEvents() {
-  browser_sync::BackendMigrator* migrator =
-      service()->GetBackendMigratorForTest();
-  if (migrator && !migrator->HasMigrationObserver(this)) {
-    migrator->AddMigrationObserver(this);
-    return true;
-  }
-  return false;
-}
-
 void ProfileSyncServiceHarness::SignalStateComplete() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
@@ -417,27 +394,6 @@ void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
         snap.model_neutral_state().commit_request_types;
     syncer::ObjectIdSet ids = ModelTypeSetToObjectIdSet(model_types);
     p2p_invalidation_service_->SendInvalidation(ids);
-  }
-  OnStateChanged();
-}
-
-void ProfileSyncServiceHarness::OnMigrationStateChange() {
-  // Update migration state.
-  if (HasPendingBackendMigration()) {
-    // Merge current pending migration types into
-    // |pending_migration_types_|.
-    pending_migration_types_.PutAll(
-        service()->GetBackendMigratorForTest()->
-            GetPendingMigrationTypesForTest());
-    DVLOG(1) << profile_debug_name_ << ": new pending migration types "
-             << syncer::ModelTypeSetToString(pending_migration_types_);
-  } else {
-    // Merge just-finished pending migration types into
-    // |migration_types_|.
-    migrated_types_.PutAll(pending_migration_types_);
-    pending_migration_types_.Clear();
-    DVLOG(1) << profile_debug_name_ << ": new migrated types "
-             << syncer::ModelTypeSetToString(migrated_types_);
   }
   OnStateChanged();
 }
@@ -546,54 +502,6 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
                  base::Unretained(this)),
       "IsSyncDisabled");
   return AwaitStatusChange(&sync_disabled_checker, "AwaitSyncDisabled");
-}
-
-bool ProfileSyncServiceHarness::AwaitMigration(
-    syncer::ModelTypeSet expected_migrated_types) {
-  DVLOG(1) << GetClientInfoString("AwaitMigration");
-  DVLOG(1) << profile_debug_name_ << ": waiting until migration is done for "
-          << syncer::ModelTypeSetToString(expected_migrated_types);
-  while (true) {
-    bool migration_finished = migrated_types_.HasAll(expected_migrated_types);
-    DVLOG(1) << "Migrated types "
-             << syncer::ModelTypeSetToString(migrated_types_)
-             << (migration_finished ? " contains " : " does not contain ")
-             << syncer::ModelTypeSetToString(expected_migrated_types);
-    if (migration_finished) {
-      return true;
-    }
-
-    if (!HasPendingBackendMigration()) {
-      CallbackStatusChecker pending_migration_checker(
-          base::Bind(&ProfileSyncServiceHarness::HasPendingBackendMigration,
-                     base::Unretained(this)),
-          "HasPendingBackendMigration");
-      if (!AwaitStatusChange(&pending_migration_checker,
-                             "AwaitMigration Start")) {
-        DVLOG(1) << profile_debug_name_ << ": Migration did not start";
-        return false;
-      }
-    }
-
-    CallbackStatusChecker migration_finished_checker(
-        base::Bind(&::NoPendingBackendMigration, base::Unretained(this)),
-        "NoPendingBackendMigration");
-    if (!AwaitStatusChange(&migration_finished_checker,
-                           "AwaitMigration Finish")) {
-      DVLOG(1) << profile_debug_name_ << ": Migration did not finish";
-      return false;
-    }
-
-    // We must use AwaitDataSyncCompletion rather than the more common
-    // AwaitFullSyncCompletion.  As long as crbug.com/97780 is open, we will
-    // rely on self-notifications to ensure that progress markers are updated,
-    // which allows AwaitFullSyncCompletion to return.  However, in some
-    // migration tests these notifications are completely disabled, so the
-    // progress markers do not get updated.  This is why we must use the less
-    // strict condition, AwaitDataSyncCompletion.
-    if (!AwaitDataSyncCompletion())
-      return false;
-  }
 }
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
