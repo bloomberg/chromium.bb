@@ -666,8 +666,9 @@ net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
                                                      net::URLFetcher::GET,
                                                      this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
-  Profile* profile = g_browser_process->profile_manager()->
-      GetDefaultProfile();
+  // If this code ever goes multi profile, the used profile needs to be taken
+  // from the browser context.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   fetcher->SetRequestContext(profile->GetRequestContext());
   // Configure max retries to be at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;

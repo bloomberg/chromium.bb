@@ -238,9 +238,11 @@ void UpdateContentLengthPrefs(
     return;
   }
 #if defined(OS_ANDROID)
+  // If Android ever goes multi profile, the profile should be passed so that
+  // the browser preference will be taken.
   bool with_data_reduction_proxy_enabled =
-      g_browser_process->profile_manager()->GetDefaultProfile()->
-      GetPrefs()->GetBoolean(prefs::kSpdyProxyAuthEnabled);
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          prefs::kSpdyProxyAuthEnabled);
 #else
   bool with_data_reduction_proxy_enabled = false;
 #endif
