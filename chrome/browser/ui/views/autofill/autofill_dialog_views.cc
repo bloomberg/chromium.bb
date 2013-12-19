@@ -754,6 +754,8 @@ void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
 
 void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
   observer_.Remove(widget);
+  if (error_bubble_ && error_bubble_->GetWidget() == widget)
+    error_bubble_ = NULL;
 }
 
 void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
@@ -2153,15 +2155,14 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
       bool show_above = view->GetClassName() == views::Combobox::kViewClassName;
       error_bubble_->set_show_above_anchor(show_above);
       error_bubble_->Show();
+      observer_.Add(error_bubble_->GetWidget());
     }
   }
 }
 
 void AutofillDialogViews::HideErrorBubble() {
-  if (error_bubble_) {
+  if (error_bubble_)
     error_bubble_->Hide();
-    error_bubble_ = NULL;
-  }
 }
 
 void AutofillDialogViews::MarkInputsInvalid(
