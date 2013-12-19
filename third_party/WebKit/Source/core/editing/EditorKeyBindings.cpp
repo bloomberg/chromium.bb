@@ -64,45 +64,7 @@ bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt)
         return true;
     }
 
-    // Here we need to filter key events.
-    // On Gtk/Linux, it emits key events with ASCII text and ctrl on for ctrl-<x>.
-    // In Webkit, EditorClient::handleKeyboardEvent in
-    // WebKit/gtk/WebCoreSupport/EditorClientGtk.cpp drop such events.
-    // On Mac, it emits key events with ASCII text and meta on for Command-<x>.
-    // These key events should not emit text insert event.
-    // Alt key would be used to insert alternative character, so we should let
-    // through. Also note that Ctrl-Alt combination equals to AltGr key which is
-    // also used to insert alternative character.
-    // http://code.google.com/p/chromium/issues/detail?id=10846
-    // Windows sets both alt and meta are on when "Alt" key pressed.
-    // http://code.google.com/p/chromium/issues/detail?id=2215
-    // Also, we should not rely on an assumption that keyboards don't
-    // send ASCII characters when pressing a control key on Windows,
-    // which may be configured to do it so by user.
-    // See also http://en.wikipedia.org/wiki/Keyboard_Layout
-    // FIXME(ukai): investigate more detail for various keyboard layout.
-    if (evt->keyEvent()->text().length() == 1) {
-        UChar ch = evt->keyEvent()->text()[0U];
-
-        // Don't insert null or control characters as they can result in
-        // unexpected behaviour
-        if (ch < ' ')
-            return false;
-#if !OS(WIN)
-        // Don't insert ASCII character if ctrl w/o alt or meta is on.
-        // On Mac, we should ignore events when meta is on (Command-<x>).
-        if (ch < 0x80) {
-            if (evt->keyEvent()->ctrlKey() && !evt->keyEvent()->altKey())
-                return false;
-#if OS(MACOSX)
-            if (evt->keyEvent()->metaKey())
-            return false;
-#endif
-        }
-#endif
-    }
-
-    if (!canEdit())
+    if (!behavior().shouldInsertCharacter(*evt) || !canEdit())
         return false;
 
     return insertText(evt->keyEvent()->text(), evt);
