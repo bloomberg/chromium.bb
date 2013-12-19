@@ -418,14 +418,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
   download_observer.WaitForFinished();
 }
 
-// http://crbug.com/235171
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_AURA))
-#define MAYBE_ServerRedirectSingleProcess DISABLED_ServerRedirectSingleProcess
-#else
-#define MAYBE_ServerRedirectSingleProcess ServerRedirectSingleProcess
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
-                       MAYBE_ServerRedirectSingleProcess) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Set max renderers to 1 to force running out of processes.
