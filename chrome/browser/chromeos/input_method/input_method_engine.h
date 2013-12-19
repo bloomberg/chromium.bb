@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
-#include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -26,8 +25,7 @@ struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 
-class InputMethodEngine : public InputMethodEngineInterface,
-                              public IBusEngineHandlerInterface {
+class InputMethodEngine : public InputMethodEngineInterface {
  public:
   InputMethodEngine();
 

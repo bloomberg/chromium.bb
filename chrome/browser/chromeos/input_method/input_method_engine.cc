@@ -104,7 +104,6 @@ void InputMethodEngine::Initialize(
 
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, input_view, this);
-  IBusBridge::Get()->SetEngineHandler(ibus_id_, this);
 }
 
 void InputMethodEngine::StartIme() {

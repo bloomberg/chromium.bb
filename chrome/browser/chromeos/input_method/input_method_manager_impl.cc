@@ -452,6 +452,10 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     // Ensure that the input method daemon is running.
     MaybeInitializeCandidateWindowController();
   }
+
+  // TODO(komatsu): Engine should not be NULL even in unittests.
+  if (engine)
+    IBusBridge::Get()->SetEngineHandler(id, engine);
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {

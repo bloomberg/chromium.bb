@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ui/base/ime/chromeos/ibus_bridge.h"
+
 class GURL;
 
 namespace chromeos {
@@ -18,7 +20,7 @@ struct KeyEventHandle;
 
 // InputMethodEngine is used to translate from the Chrome IME API to the native
 // API.
-class InputMethodEngineInterface {
+class InputMethodEngineInterface : public IBusEngineHandlerInterface {
  public:
   struct KeyboardEvent {
     KeyboardEvent();
