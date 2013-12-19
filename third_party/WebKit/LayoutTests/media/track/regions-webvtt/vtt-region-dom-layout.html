@@ -34,8 +34,8 @@
             testExpected("region.children[0] == container", true);
 
             consoleWrite("<br>** Default pseudo IDs should be set properly");
-            testExpected("region.getAttribute('pseudo')", "-webkit-media-text-track-region");
-            testExpected("container.getAttribute('pseudo')", "-webkit-media-text-track-region-container");
+            testExpected("internals.shadowPseudoId(region)", "-webkit-media-text-track-region");
+            testExpected("internals.shadowPseudoId(container)", "-webkit-media-text-track-region-container");
 
             endTest();
         }

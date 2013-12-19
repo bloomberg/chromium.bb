@@ -13,7 +13,7 @@ EXPECTED (region.children.length == '1') OK
 EXPECTED (region.children[0] == container == 'true') OK
 
 ** Default pseudo IDs should be set properly
-EXPECTED (region.getAttribute('pseudo') == '-webkit-media-text-track-region') OK
-EXPECTED (container.getAttribute('pseudo') == '-webkit-media-text-track-region-container') OK
+EXPECTED (internals.shadowPseudoId(region) == '-webkit-media-text-track-region') OK
+EXPECTED (internals.shadowPseudoId(container) == '-webkit-media-text-track-region-container') OK
 END OF TEST
 

@@ -128,7 +128,7 @@ VTTCueBox::VTTCueBox(Document& document, VTTCue* cue)
     : HTMLDivElement(document)
     , m_cue(cue)
 {
-    setPseudo(AtomicString("-webkit-media-text-track-display", AtomicString::ConstructFromLiteral));
+    setShadowPseudoId(AtomicString("-webkit-media-text-track-display", AtomicString::ConstructFromLiteral));
 }
 
 void VTTCueBox::applyCSSProperties(const IntSize&)
@@ -732,7 +732,7 @@ PassRefPtr<VTTCueBox> VTTCue::getDisplayTree(const IntSize& videoSize)
     // background box.
 
     // Note: This is contained by default in m_cueBackgroundBox.
-    m_cueBackgroundBox->setPseudo(cueShadowPseudoId());
+    m_cueBackgroundBox->setShadowPseudoId(cueShadowPseudoId());
     displayTree->appendChild(m_cueBackgroundBox);
 
     // FIXME(BUG 79916): Runs of children of WebVTT Ruby Objects that are not

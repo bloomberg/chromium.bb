@@ -90,7 +90,7 @@ public:
     static PassRefPtr<DataListIndicatorElement> create(Document& document)
     {
         RefPtr<DataListIndicatorElement> element = adoptRef(new DataListIndicatorElement(document));
-        element->setPseudo(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
+        element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
         element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
         return element.release();
     }
@@ -296,7 +296,7 @@ void TextFieldInputType::createShadowSubtree()
     }
 
     RefPtr<TextControlInnerContainer> container = TextControlInnerContainer::create(document);
-    container->setPseudo(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
+    container->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
     shadowRoot->appendChild(container);
 
     RefPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
@@ -347,7 +347,7 @@ void TextFieldInputType::listAttributeTargetChanged()
             // but they are different. We should simplify the code by making
             // containerElement mandatory.
             RefPtr<Element> rpContainer = TextControlInnerContainer::create(document);
-            rpContainer->setPseudo(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
+            rpContainer->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
             RefPtr<Element> innerEditor = element().innerTextElement();
             innerEditor->parentNode()->replaceChild(rpContainer.get(), innerEditor.get());
             RefPtr<Element> editingViewPort = EditingViewPortElement::create(document);
@@ -472,7 +472,7 @@ void TextFieldInputType::updatePlaceholderText()
     if (!placeholder) {
         RefPtr<HTMLElement> newElement = HTMLDivElement::create(element().document());
         placeholder = newElement.get();
-        placeholder->setPseudo(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
+        placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();
         Node* previous = container ? container : element().innerTextElement();

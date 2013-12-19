@@ -1007,8 +1007,6 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         classAttributeChanged(newValue);
     } else if (name == HTMLNames::nameAttr) {
         setHasName(!newValue.isNull());
-    } else if (name == HTMLNames::pseudoAttr) {
-        shouldInvalidateStyle |= testShouldInvalidateStyle && isInShadowTree();
     }
 
     invalidateNodeListCachesInAncestors(&name, this);
@@ -2443,15 +2441,19 @@ String Element::textFromChildren()
     return content.toString();
 }
 
-// pseudo is used via shadowPseudoId.
-const AtomicString& Element::pseudo() const
+const AtomicString& Element::shadowPseudoId() const
 {
-    return getAttribute(pseudoAttr);
+    if (ShadowRoot* root = containingShadowRoot()) {
+        if (root->type() == ShadowRoot::UserAgentShadowRoot)
+            return fastGetAttribute(pseudoAttr);
+    }
+    return nullAtom;
 }
 
-void Element::setPseudo(const AtomicString& value)
+void Element::setShadowPseudoId(const AtomicString& id)
 {
-    setAttribute(pseudoAttr, value);
+    ASSERT(CSSSelector::parsePseudoType(id) == CSSSelector::PseudoWebKitCustomElement || CSSSelector::parsePseudoType(id) == CSSSelector::PseudoUserAgentCustomElement);
+    setAttribute(pseudoAttr, id);
 }
 
 bool Element::isInDescendantTreeOf(const Element* shadowHost) const

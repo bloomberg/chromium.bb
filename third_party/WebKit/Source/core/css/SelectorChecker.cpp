@@ -69,14 +69,12 @@ SelectorChecker::SelectorChecker(Document& document, Mode mode)
 static bool matchesCustomPseudoElement(const Element* element, const CSSSelector* selector)
 {
     ShadowRoot* root = element->containingShadowRoot();
-    if (!root)
+    if (!root || root->type() != ShadowRoot::UserAgentShadowRoot)
         return false;
 
-    const AtomicString& pseudoId = selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement ? element->shadowPseudoId() : element->pseudo();
-    if (pseudoId != selector->value())
+    if (element->shadowPseudoId() != selector->value())
         return false;
-    if (selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement && root->type() != ShadowRoot::UserAgentShadowRoot)
-        return false;
+
     return true;
 }
 

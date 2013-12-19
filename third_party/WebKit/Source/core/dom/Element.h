@@ -316,7 +316,6 @@ public:
     virtual void didAddShadowRoot(ShadowRoot&);
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot& ensureUserAgentShadowRoot();
-    const AtomicString& shadowPseudoId() const;
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
@@ -405,8 +404,8 @@ public:
 
     virtual String title() const { return String(); }
 
-    virtual const AtomicString& pseudo() const;
-    void setPseudo(const AtomicString&);
+    virtual const AtomicString& shadowPseudoId() const;
+    void setShadowPseudoId(const AtomicString&);
 
     LayoutSize minimumSizeForResizing() const;
     void setMinimumSizeForResizing(const LayoutSize&);
@@ -750,11 +749,6 @@ inline const AtomicString& Element::idForStyleResolution() const
 {
     ASSERT(hasID());
     return elementData()->idForStyleResolution();
-}
-
-inline const AtomicString& Element::shadowPseudoId() const
-{
-    return pseudo();
 }
 
 inline bool Element::isIdAttributeName(const QualifiedName& attributeName) const

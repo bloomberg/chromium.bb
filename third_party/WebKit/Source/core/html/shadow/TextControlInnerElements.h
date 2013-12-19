@@ -77,7 +77,7 @@ public:
 
 private:
     SearchFieldDecorationElement(Document&);
-    virtual const AtomicString& pseudo() const OVERRIDE;
+    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE { return false; }
 };
 

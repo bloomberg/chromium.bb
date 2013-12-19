@@ -123,7 +123,7 @@ protected:
 private:
     virtual bool isMediaControls() const { return true; }
 
-    virtual const AtomicString& pseudo() const;
+    virtual const AtomicString& shadowPseudoId() const;
 };
 
 DEFINE_NODE_TYPE_CASTS(MediaControls, isMediaControls());
