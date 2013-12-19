@@ -222,14 +222,14 @@ intptr_t SandboxSyscall(int nr,
       : "=r"(inout)
       : "0"(inout), "r"(data)
       : "cc", "lr", "memory", "r1", "r2", "r3", "r4", "r5"
-#if !defined(__arm__)
+#if !defined(__thumb__)
       // In thumb mode, we cannot use "r7" as a general purpose register, as
       // it is our frame pointer. We have to manually manage and preserve it.
       // In ARM mode, we have a dedicated frame pointer register and "r7" is
       // thus available as a general purpose register. We don't preserve it,
       // but instead mark it as clobbered.
         , "r7"
-#endif
+#endif  // !defined(__thumb__)
       );
     ret = inout;
   }
