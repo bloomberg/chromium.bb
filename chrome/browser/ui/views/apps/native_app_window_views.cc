@@ -395,8 +395,16 @@ void NativeAppWindowViews::InitializePanelWindow(
 }
 
 bool NativeAppWindowViews::ShouldUseChromeStyleFrame() const {
+  if (frameless_)
+    return true;
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Linux always uses native style frames.
+  return false;
+#endif
+
   return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAppsUseNativeFrame) || frameless_;
+      switches::kAppsUseNativeFrame);
 }
 
 apps::ShellWindowFrameView* NativeAppWindowViews::CreateShellWindowFrameView() {
