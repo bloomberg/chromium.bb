@@ -971,6 +971,8 @@ def GetTrackingBranch(git_repo, branch=None, for_checkout=True, fallback=True,
 
   Args:
     git_repo: Git repository to operate upon.
+    branch: Find the tracking branch for this branch.  Defaults to the
+      current branch for |git_repo|.
     for_checkout: Whether to return localized refspecs, or the remotes
       view of it.
     fallback: If true and no remote/branch could be discerned, return
@@ -1030,6 +1032,8 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
     git_repo: Git repository to act on.
     refspec: The local ref to push to the remote.
     push_to: A RemoteRef object representing the remote ref to push to.
+    dryrun: Do not actually push anything.  Uses the --dry-run option
+      built into git.
     force: Whether to bypass non-fastforward checks.
     retry: Retry a push in case of transient errors.
   """
