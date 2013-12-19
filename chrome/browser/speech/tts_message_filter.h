@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SPEECH_TTS_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SPEECH_TTS_MESSAGE_FILTER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/tts_messages.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -14,7 +15,8 @@ class Profile;
 class TtsMessageFilter
     : public content::BrowserMessageFilter,
       public UtteranceEventDelegate,
-      public VoicesChangedDelegate {
+      public VoicesChangedDelegate,
+      public base::SupportsWeakPtr<TtsMessageFilter> {
  public:
   TtsMessageFilter(int render_process_id, Profile* profile);
 

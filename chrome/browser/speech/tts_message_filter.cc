@@ -88,7 +88,7 @@ void TtsMessageFilter::OnSpeak(const TtsUtteranceRequest& request) {
   params.volume = request.volume;
   utterance->set_continuous_parameters(params);
 
-  utterance->set_event_delegate(this);
+  utterance->set_event_delegate(this->AsWeakPtr());
 
   TtsController::GetInstance()->SpeakOrEnqueue(utterance.release());
 }

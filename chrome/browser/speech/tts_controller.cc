@@ -74,7 +74,6 @@ Utterance::Utterance(Profile* profile)
     : profile_(profile),
       id_(next_utterance_id_++),
       src_id_(-1),
-      event_delegate_(NULL),
       gender_(TTS_GENDER_NONE),
       can_enqueue_(false),
       char_index_(0),
@@ -97,7 +96,7 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   if (event_delegate_)
     event_delegate_->OnTtsEvent(this, event_type, char_index, error_message);
   if (finished_)
-    event_delegate_ = NULL;
+    event_delegate_.reset();
 }
 
 void Utterance::Finish() {

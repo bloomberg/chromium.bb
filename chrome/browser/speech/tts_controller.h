@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
 class Utterance;
@@ -175,8 +176,11 @@ class Utterance {
     extension_id_ = extension_id;
   }
 
-  UtteranceEventDelegate* event_delegate() const { return event_delegate_; }
-  void set_event_delegate(UtteranceEventDelegate* event_delegate) {
+  UtteranceEventDelegate* event_delegate() const {
+    return event_delegate_.get();
+  }
+  void set_event_delegate(
+      base::WeakPtr<UtteranceEventDelegate> event_delegate) {
     event_delegate_ = event_delegate;
   }
 
@@ -223,9 +227,7 @@ class Utterance {
   GURL src_url_;
 
   // The delegate to be called when an utterance event is fired.
-  // Weak reference; it will be cleared after we fire a "final" event
-  // (as determined by IsFinalTtsEventType).
-  UtteranceEventDelegate* event_delegate_;
+  base::WeakPtr<UtteranceEventDelegate> event_delegate_;
 
   // The parsed options.
   std::string voice_name_;
