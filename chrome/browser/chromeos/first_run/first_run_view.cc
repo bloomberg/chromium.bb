@@ -50,6 +50,10 @@ void FirstRunView::RequestFocus() {
   web_view_->RequestFocus();
 }
 
+content::WebContents* FirstRunView::GetWebContents() {
+  return web_view_->web_contents();
+}
+
 bool FirstRunView::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Discards context menu.

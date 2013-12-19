@@ -44,7 +44,6 @@ class OobeScreenWaiter : public OobeUI::Observer {
   DISALLOW_COPY_AND_ASSIGN(OobeScreenWaiter);
 };
 
-
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREEN_WAITER_H_

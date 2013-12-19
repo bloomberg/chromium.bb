@@ -87,6 +87,9 @@ void FirstRunHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("helpButtonClicked",
       base::Bind(&FirstRunHandler::HandleHelpButtonClicked,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("stepShown",
+      base::Bind(&FirstRunHandler::HandleStepShown,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("stepHidden",
       base::Bind(&FirstRunHandler::HandleStepHidden,
                  base::Unretained(this)));
@@ -111,6 +114,13 @@ void FirstRunHandler::HandleNextButtonClicked(const base::ListValue* args) {
 void FirstRunHandler::HandleHelpButtonClicked(const base::ListValue* args) {
   if (delegate())
     delegate()->OnHelpButtonClicked();
+}
+
+void FirstRunHandler::HandleStepShown(const base::ListValue* args) {
+  std::string step_name;
+  CHECK(args->GetString(0, &step_name));
+  if (delegate())
+    delegate()->OnStepShown(step_name);
 }
 
 void FirstRunHandler::HandleStepHidden(const base::ListValue* args) {

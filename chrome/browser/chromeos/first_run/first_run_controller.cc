@@ -50,6 +50,10 @@ void FirstRunController::Stop() {
   g_instance = NULL;
 }
 
+FirstRunController* FirstRunController::GetInstanceForTest() {
+  return g_instance;
+}
+
 FirstRunController::FirstRunController()
     : actor_(NULL),
       current_step_index_(NONE_STEP_INDEX),
@@ -70,6 +74,7 @@ void FirstRunController::Init() {
   actor_->set_delegate(this);
   shell_helper_->GetOverlayWidget()->Show();
   view->RequestFocus();
+  web_contents_for_tests_ = view->GetWebContents();
 
   if (actor_->IsInitialized())
     OnActorInitialized();
@@ -110,6 +115,10 @@ void FirstRunController::OnStepHidden(const std::string& step_name) {
   GetCurrentStep()->OnAfterHide();
   if (!actor_->IsFinalizing())
     ShowNextStep();
+}
+
+void FirstRunController::OnStepShown(const std::string& step_name) {
+  DCHECK(GetCurrentStep() && GetCurrentStep()->name() == step_name);
 }
 
 void FirstRunController::OnActorFinalized() {

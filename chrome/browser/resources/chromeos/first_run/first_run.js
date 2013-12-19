@@ -235,8 +235,9 @@ cr.define('cr.FirstRun', function() {
         step.setPointsTo(pointWithOffset.slice(0, 2), pointWithOffset[2]);
       step.show(true, function(step) {
         step.focusDefaultControl();
-      });
-      this.currentStep_ = step;
+        this.currentStep_ = step;
+        chrome.send('stepShown', [name]);
+      }.bind(this));
     },
 
     /**

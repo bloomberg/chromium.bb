@@ -103,6 +103,8 @@
         'browser/chromeos/login/mock_user_manager.h',
         'browser/chromeos/login/test/oobe_screen_waiter.cc',
         'browser/chromeos/login/test/oobe_screen_waiter.h',
+        'browser/chromeos/login/test/js_checker.cc',
+        'browser/chromeos/login/test/js_checker.h',
         'browser/chromeos/policy/cloud_external_data_manager_base_test_util.cc',
         'browser/chromeos/policy/cloud_external_data_manager_base_test_util.h',
         'browser/chromeos/policy/device_policy_builder.cc',

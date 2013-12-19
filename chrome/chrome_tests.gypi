@@ -1016,6 +1016,7 @@
         'browser/chromeos/file_manager/file_manager_jstest.cc',
         'browser/chromeos/file_manager/zip_file_creator_browsertest.cc',
         'browser/chromeos/first_run/drive_first_run_browsertest.cc',
+        'browser/chromeos/first_run/first_run_browsertest.cc',
         'browser/chromeos/input_method/input_method_engine_browsertests.cc',
         'browser/chromeos/input_method/mode_indicator_browsertest.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.cc',

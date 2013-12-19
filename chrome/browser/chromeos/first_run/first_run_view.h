@@ -36,6 +36,8 @@ class FirstRunView : public views::View,
   virtual void Layout() OVERRIDE;
   virtual void RequestFocus() OVERRIDE;
 
+  content::WebContents* GetWebContents();
+
  private:
   // Overriden from content::WebContentsDelegate.
   virtual bool HandleContextMenu(

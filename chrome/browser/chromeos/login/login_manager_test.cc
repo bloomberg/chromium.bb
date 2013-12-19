@@ -105,13 +105,7 @@ void LoginManagerTest::AddUser(const std::string& username) {
 }
 
 void LoginManagerTest::JSExpect(const std::string& expression) {
-  bool result;
-  EXPECT_TRUE(web_contents_ != NULL);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents(),
-      "window.domAutomationController.send(!!(" + expression + "));",
-      &result));
-  ASSERT_TRUE(result) << expression;
+  js_checker_.ExpectTrue(expression);
 }
 
 void LoginManagerTest::InitializeWebContents() {
@@ -122,6 +116,7 @@ void LoginManagerTest::InitializeWebContents() {
         host->GetWebUILoginView()->GetWebContents();
     EXPECT_TRUE(web_contents != NULL);
     set_web_contents(web_contents);
+    js_checker_.set_web_contents(web_contents);
   }
 
 }  // namespace chromeos

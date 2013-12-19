@@ -43,6 +43,7 @@ class FirstRunHandler : public FirstRunActor,
   void HandleInitialized(const base::ListValue* args);
   void HandleNextButtonClicked(const base::ListValue* args);
   void HandleHelpButtonClicked(const base::ListValue* args);
+  void HandleStepShown(const base::ListValue* args);
   void HandleStepHidden(const base::ListValue* args);
   void HandleFinalized(const base::ListValue* args);
 

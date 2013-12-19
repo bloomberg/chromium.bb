@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_TEST_H_
 
 #include "chrome/browser/chromeos/login/mock_login_utils.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace content {
@@ -73,6 +74,7 @@ class LoginManagerTest : public InProcessBrowserTest {
   MockLoginUtils* mock_login_utils_;
   bool should_launch_browser_;
   content::WebContents* web_contents_;
+  test::JSChecker js_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerTest);
 };
