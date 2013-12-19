@@ -340,15 +340,6 @@ public:
 
     bool inSameContainingBlockFlowElement(Node*);
 
-    // Called by the parser when this element's close tag is reached,
-    // signaling that all child tags have been parsed and added.
-    // This is needed for <applet> and <object> elements, which can't lay themselves out
-    // until they know all of their nested <param>s. [Radar 3603191, 4040848].
-    // Also used for script elements and some SVG elements for similar purposes,
-    // but making parsing a special case in this respect should be avoided if possible.
-    virtual void finishParsingChildren() { }
-    virtual void beginParsingChildren() { }
-
     // For <link> and <style> elements.
     virtual bool sheetLoaded() { return true; }
     virtual void notifyLoadedSheetAndAllCriticalSubresources(bool /* error loading subresource */) { }
@@ -812,6 +803,9 @@ protected:
 
     void markAncestorsWithChildNeedsStyleRecalc();
 
+    bool isParsingChildrenFinished() const { return getFlag(IsParsingChildrenFinishedFlag); }
+    void setIsParsingChildrenFinished(bool value) { setFlag(value, IsParsingChildrenFinishedFlag); }
+
 private:
     friend class TreeShared<Node>;
 
@@ -859,11 +853,6 @@ private:
         RenderObject* m_renderer;
         NodeRareDataBase* m_rareData;
     } m_data;
-
-protected:
-    bool isParsingChildrenFinished() const { return getFlag(IsParsingChildrenFinishedFlag); }
-    void setIsParsingChildrenFinished() { setFlag(IsParsingChildrenFinishedFlag); }
-    void clearIsParsingChildrenFinished() { clearFlag(IsParsingChildrenFinishedFlag); }
 };
 
 // Used in Node::addSubresourceAttributeURLs() and in addSubresourceStyleURLs()

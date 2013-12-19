@@ -199,7 +199,9 @@ void HTMLElementStack::popAll()
     m_bodyElement = 0;
     m_stackDepth = 0;
     while (m_top) {
-        topNode()->finishParsingChildren();
+        Node& node = *topNode();
+        if (node.isElementNode())
+            toElement(node).finishParsingChildren();
         m_top = m_top->releaseNext();
     }
 }

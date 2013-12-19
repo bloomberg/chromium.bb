@@ -113,10 +113,12 @@ static inline void executeInsertTask(HTMLConstructionSiteTask& task)
 
     insert(task);
 
-    task.child->beginParsingChildren();
-
-    if (task.selfClosing)
-        task.child->finishParsingChildren();
+    if (task.child->isElementNode()) {
+        Element& child = toElement(*task.child);
+        child.beginParsingChildren();
+        if (task.selfClosing)
+            child.finishParsingChildren();
+    }
 }
 
 static inline void executeInsertTextTask(HTMLConstructionSiteTask& task)

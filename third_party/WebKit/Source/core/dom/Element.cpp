@@ -1932,14 +1932,9 @@ void Element::removeAllEventListeners()
         shadow->removeAllEventListeners();
 }
 
-void Element::beginParsingChildren()
-{
-    clearIsParsingChildrenFinished();
-}
-
 void Element::finishParsingChildren()
 {
-    setIsParsingChildrenFinished();
+    setIsParsingChildrenFinished(true);
     checkForSiblingStyleChanges(this, lastChild(), 0, 0);
 }
 

@@ -260,10 +260,4 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
         document().removedStyleSheet(removedSheet.get());
 }
 
-void ProcessingInstruction::finishParsingChildren()
-{
-    m_createdByParser = false;
-    CharacterData::finishParsingChildren();
-}
-
 } // namespace

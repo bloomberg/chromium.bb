@@ -1024,7 +1024,8 @@ void XMLDocumentParser::endElementNs()
     exitText();
 
     RefPtr<ContainerNode> n = m_currentNode;
-    n->finishParsingChildren();
+    if (m_currentNode->isElementNode())
+        toElement(n.get())->finishParsingChildren();
 
     if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptLoaderIfPossible(toElement(n))) {
         popCurrentNode();
@@ -1148,7 +1149,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
 
     m_currentNode->parserAppendChild(pi.get());
 
-    pi->finishParsingChildren();
+    pi->setCreatedByParser(false);
 
     if (pi->isCSS())
         m_sawCSS = true;
