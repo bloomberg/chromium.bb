@@ -18,17 +18,18 @@ std::string FakeInputMethodDelegate::GetHardwareKeyboardLayout() const {
   return hardware_keyboard_layout_;
 }
 
-string16 FakeInputMethodDelegate::GetLocalizedString(int resource_id) const {
+base::string16 FakeInputMethodDelegate::GetLocalizedString(
+    int resource_id) const {
   if (!get_localized_string_callback_.is_null())
     return get_localized_string_callback_.Run(resource_id);
-  return string16();
+  return base::string16();
 }
 
-string16 FakeInputMethodDelegate::GetDisplayLanguageName(
+base::string16 FakeInputMethodDelegate::GetDisplayLanguageName(
     const std::string& language_code) const {
   if (!get_display_language_name_callback_.is_null())
     return get_display_language_name_callback_.Run(language_code);
-  return string16();
+  return base::string16();
 }
 
 }  // namespace input_method

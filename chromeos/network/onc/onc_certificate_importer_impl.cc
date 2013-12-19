@@ -315,7 +315,7 @@ bool CertificateImporterImpl::ParseClientCertificate(
   net::CertificateList imported_certs;
 
   int import_result = cert_database->ImportFromPKCS12(
-      module.get(), decoded_pkcs12, string16(), false, &imported_certs);
+      module.get(), decoded_pkcs12, base::string16(), false, &imported_certs);
   if (import_result != net::OK) {
     ONC_LOG_ERROR(
         base::StringPrintf("Unable to import client certificate (error %s)",

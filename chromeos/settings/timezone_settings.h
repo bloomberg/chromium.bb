@@ -29,11 +29,11 @@ class CHROMEOS_EXPORT TimezoneSettings {
 
   // Returns the current timezone as an icu::Timezone object.
   virtual const icu::TimeZone& GetTimezone() = 0;
-  virtual string16 GetCurrentTimezoneID() = 0;
+  virtual base::string16 GetCurrentTimezoneID() = 0;
 
   // Sets the current timezone and notifies all Observers.
   virtual void SetTimezone(const icu::TimeZone& timezone) = 0;
-  virtual void SetTimezoneFromID(const string16& timezone_id) = 0;
+  virtual void SetTimezoneFromID(const base::string16& timezone_id) = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -41,7 +41,7 @@ class CHROMEOS_EXPORT TimezoneSettings {
   virtual const std::vector<icu::TimeZone*>& GetTimezoneList() const = 0;
 
   // Gets timezone ID which is also used as timezone pref value.
-  static string16 GetTimezoneID(const icu::TimeZone& timezone);
+  static base::string16 GetTimezoneID(const icu::TimeZone& timezone);
 
  protected:
   virtual ~TimezoneSettings() {}

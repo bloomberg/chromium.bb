@@ -16,9 +16,9 @@ namespace input_method {
 
 class CHROMEOS_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
  public:
-  typedef base::Callback<string16 (const std::string& language_code)>
+  typedef base::Callback<base::string16 (const std::string& language_code)>
       LanguageNameLocalizationCallback;
-  typedef base::Callback<string16 (int resource_id)>
+  typedef base::Callback<base::string16 (int resource_id)>
       GetLocalizedStringCallback;
 
   FakeInputMethodDelegate();
@@ -26,8 +26,8 @@ class CHROMEOS_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
 
   // InputMethodDelegate implementation:
   virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
-  virtual string16 GetLocalizedString(int resource_id) const OVERRIDE;
-  virtual string16 GetDisplayLanguageName(
+  virtual base::string16 GetLocalizedString(int resource_id) const OVERRIDE;
+  virtual base::string16 GetDisplayLanguageName(
       const std::string& language_code) const OVERRIDE;
 
   void set_hardware_keyboard_layout(const std::string& value) {

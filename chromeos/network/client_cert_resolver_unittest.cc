@@ -113,7 +113,7 @@ class ClientCertResolverTest : public testing::Test {
     ASSERT_EQ(net::OK,
               cert_db->ImportFromPKCS12(crypt_module.get(),
                                         pkcs12_data,
-                                        string16(),
+                                        base::string16(),
                                         false,
                                         &client_cert_list));
     ASSERT_TRUE(!client_cert_list.empty());
