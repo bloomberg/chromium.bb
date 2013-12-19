@@ -590,7 +590,6 @@ class _Generator(object):
     |failure_value|.
     """
     c = Code()
-    c.Sblock('{')
 
     underlying_type = self._type_helper.FollowRef(type_)
 
@@ -721,14 +720,16 @@ class _Generator(object):
         )
     else:
       raise NotImplementedError(type_)
-    return c.Eblock('}').Substitute({
+    if c.IsEmpty():
+      return c
+    return Code().Sblock('{').Concat(c.Substitute({
       'cpp_type': self._type_helper.GetCppType(type_),
       'src_var': src_var,
       'dst_var': dst_var,
       'failure_value': failure_value,
       'key': type_.name,
       'parent_key': type_.parent.name
-    })
+    })).Eblock('}')
 
   def _GenerateListValueToEnumArrayConversion(self,
                                               item_type,
