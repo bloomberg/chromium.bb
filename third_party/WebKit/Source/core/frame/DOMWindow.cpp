@@ -85,7 +85,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/WindowFocusAllowedIndicator.h"

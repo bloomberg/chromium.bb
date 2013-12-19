@@ -51,7 +51,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"

@@ -40,7 +40,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 
 namespace WebCore {
 

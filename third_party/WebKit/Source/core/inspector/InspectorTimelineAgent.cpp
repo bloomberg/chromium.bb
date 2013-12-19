@@ -50,7 +50,7 @@
 #include "core/inspector/TraceEventDispatcher.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/xml/XMLHttpRequest.h"

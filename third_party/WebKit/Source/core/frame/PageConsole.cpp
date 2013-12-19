@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"

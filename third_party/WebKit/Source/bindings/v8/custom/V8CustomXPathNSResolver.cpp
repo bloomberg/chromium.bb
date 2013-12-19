@@ -38,7 +38,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

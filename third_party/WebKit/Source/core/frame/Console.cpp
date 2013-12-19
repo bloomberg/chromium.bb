@@ -38,7 +38,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "core/timing/MemoryInfo.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

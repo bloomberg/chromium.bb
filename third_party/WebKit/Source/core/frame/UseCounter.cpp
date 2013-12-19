@@ -33,7 +33,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameHost.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {

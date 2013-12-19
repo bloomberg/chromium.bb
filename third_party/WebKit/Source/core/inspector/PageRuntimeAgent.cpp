@@ -40,7 +40,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 using WebCore::TypeBuilder::Runtime::ExecutionContextDescription;

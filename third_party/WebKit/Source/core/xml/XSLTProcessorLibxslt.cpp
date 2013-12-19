@@ -35,7 +35,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/XSLTExtensions.h"
 #include "core/xml/XSLTUnicodeSort.h"

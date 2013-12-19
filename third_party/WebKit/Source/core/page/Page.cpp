@@ -46,7 +46,6 @@
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
-#include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"

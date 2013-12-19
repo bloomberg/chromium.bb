@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/frame/FrameHost.h"
 
+#include "core/frame/PageConsole.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
 
 namespace WebCore {
 
@@ -44,6 +44,11 @@ PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 FrameHost::FrameHost(Page& page)
     : m_page(page)
     , m_console(PageConsole::create(*this))
+{
+}
+
+// Explicitly in the .cpp to avoid default constructor in .h
+FrameHost::~FrameHost()
 {
 }
 

@@ -59,7 +59,6 @@ class HistoryItem;
 class InspectorClient;
 class InspectorController;
 class Node;
-class PageConsole;
 class PageGroup;
 class PageLifecycleNotifier;
 class PlatformMouseEvent;

@@ -35,7 +35,7 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {

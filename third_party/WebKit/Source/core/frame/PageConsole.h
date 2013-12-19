@@ -39,6 +39,12 @@ namespace WebCore {
 
 class FrameHost;
 
+// PageConsole (bad name) takes per-frame/per-document
+// console messages and routes them up through the
+// FrameHost to the ChromeClient and Inspector.
+// It's meant as an abstraction around ChromeClient calls
+// and the way that Blink core/ can add messages to the console.
+
 class PageConsole FINAL {
 public:
     static PassOwnPtr<PageConsole> create(FrameHost& host) { return adoptPtr(new PageConsole(host)); }

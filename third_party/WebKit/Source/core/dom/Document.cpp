@@ -157,7 +157,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
+#include "core/frame/PageConsole.h"
 #include "core/page/PointerLockController.h"
 #include "core/frame/Settings.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"

@@ -57,6 +57,7 @@ class FrameHost {
     WTF_MAKE_NONCOPYABLE(FrameHost); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<FrameHost> create(Page&);
+    ~FrameHost();
 
     // Careful: This function will eventually be removed.
     Page& page() const { return m_page; }
