@@ -70,68 +70,72 @@ class IntegrationTest(unittest.TestCase):
     finally:
       print('Took %s seconds' % (time.time() - start_time))
 
-    print("Checking for broken links...")
-    start_time = time.time()
-    link_error_detector = LinkErrorDetector(
-        # TODO(kalman): Use of ChrootFileSystem here indicates a hack. Fix.
-        ChrootFileSystem(LocalFileSystem.Create(), EXTENSIONS),
-        lambda path: Handler(Request.ForTest(path)).Get(),
-        'templates/public',
-        ('extensions/index.html', 'apps/about_apps.html'))
+    # TODO(kalman): Re-enable this, but it takes about an hour at the moment,
+    # presumably because every page now has a lot of links on it from the
+    # topnav.
 
-    broken_links = link_error_detector.GetBrokenLinks()
-    if broken_links and _VERBOSE:
-      print('The broken links are:')
-      print(StringifyBrokenLinks(broken_links))
+    #print("Checking for broken links...")
+    #start_time = time.time()
+    #link_error_detector = LinkErrorDetector(
+    #    # TODO(kalman): Use of ChrootFileSystem here indicates a hack. Fix.
+    #    ChrootFileSystem(LocalFileSystem.Create(), EXTENSIONS),
+    #    lambda path: Handler(Request.ForTest(path)).Get(),
+    #    'templates/public',
+    #    ('extensions/index.html', 'apps/about_apps.html'))
 
-    broken_links_set = set(broken_links)
+    #broken_links = link_error_detector.GetBrokenLinks()
+    #if broken_links and _VERBOSE:
+    #  print('The broken links are:')
+    #  print(StringifyBrokenLinks(broken_links))
 
-    known_broken_links_path = os.path.join(
-        sys.path[0], 'known_broken_links.json')
-    try:
-      with open(known_broken_links_path, 'r') as f:
-        # The JSON file converts tuples and sets into lists, and for this
-        # set union/difference logic they need to be converted back.
-        known_broken_links = set(tuple(item) for item in json.load(f))
-    except IOError:
-      known_broken_links = set()
+    #broken_links_set = set(broken_links)
 
-    newly_broken_links = broken_links_set - known_broken_links
-    fixed_links = known_broken_links - broken_links_set
+    #known_broken_links_path = os.path.join(
+    #    sys.path[0], 'known_broken_links.json')
+    #try:
+    #  with open(known_broken_links_path, 'r') as f:
+    #    # The JSON file converts tuples and sets into lists, and for this
+    #    # set union/difference logic they need to be converted back.
+    #    known_broken_links = set(tuple(item) for item in json.load(f))
+    #except IOError:
+    #  known_broken_links = set()
 
-    if _REBASE:
-      print('Rebasing broken links with %s newly broken and %s fixed links.' %
-            (len(newly_broken_links), len(fixed_links)))
-      with open(known_broken_links_path, 'w') as f:
-        json.dump(broken_links, f,
-                  indent=2, separators=(',', ': '), sort_keys=True)
-    else:
-      if fixed_links or newly_broken_links:
-        print('Found %s broken links, and some have changed. '
-              'If this is acceptable or expected then run %s with the --rebase '
-              'option.' % (len(broken_links), os.path.split(__file__)[-1]))
-      elif broken_links:
-        print('Found %s broken links, but there were no changes.' %
-              len(broken_links))
-      if fixed_links:
-        print('%s broken links have been fixed:' % len(fixed_links))
-        print(StringifyBrokenLinks(fixed_links))
-      if newly_broken_links:
-        print('There are %s new broken links:' % len(newly_broken_links))
-        print(StringifyBrokenLinks(newly_broken_links))
-        self.fail('See logging for details.')
+    #newly_broken_links = broken_links_set - known_broken_links
+    #fixed_links = known_broken_links - broken_links_set
 
-    print('Took %s seconds.' % (time.time() - start_time))
+    #if _REBASE:
+    #  print('Rebasing broken links with %s newly broken and %s fixed links.' %
+    #        (len(newly_broken_links), len(fixed_links)))
+    #  with open(known_broken_links_path, 'w') as f:
+    #    json.dump(broken_links, f,
+    #              indent=2, separators=(',', ': '), sort_keys=True)
+    #else:
+    #  if fixed_links or newly_broken_links:
+    #    print('Found %s broken links, and some have changed. '
+    #          'If this is acceptable or expected then run %s with the --rebase '
+    #          'option.' % (len(broken_links), os.path.split(__file__)[-1]))
+    #  elif broken_links:
+    #    print('Found %s broken links, but there were no changes.' %
+    #          len(broken_links))
+    #  if fixed_links:
+    #    print('%s broken links have been fixed:' % len(fixed_links))
+    #    print(StringifyBrokenLinks(fixed_links))
+    #  if newly_broken_links:
+    #    print('There are %s new broken links:' % len(newly_broken_links))
+    #    print(StringifyBrokenLinks(newly_broken_links))
+    #    self.fail('See logging for details.')
 
-    print('Searching for orphaned pages...')
-    start_time = time.time()
-    orphaned_pages = link_error_detector.GetOrphanedPages()
-    if orphaned_pages:
-      # TODO(jshumway): Test should fail when orphaned pages are detected.
-      print('Warning: Found %d orphaned pages:' % len(orphaned_pages))
-      for page in orphaned_pages:
-        print(page)
-    print('Took %s seconds.' % (time.time() - start_time))
+    #print('Took %s seconds.' % (time.time() - start_time))
+
+    #print('Searching for orphaned pages...')
+    #start_time = time.time()
+    #orphaned_pages = link_error_detector.GetOrphanedPages()
+    #if orphaned_pages:
+    #  # TODO(jshumway): Test should fail when orphaned pages are detected.
+    #  print('Warning: Found %d orphaned pages:' % len(orphaned_pages))
+    #  for page in orphaned_pages:
+    #    print(page)
+    #print('Took %s seconds.' % (time.time() - start_time))
 
     public_files = _GetPublicFiles()
 

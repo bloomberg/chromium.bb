@@ -43,9 +43,6 @@ class RenderServletTest(unittest.TestCase):
     root_404 = create_404_response('404.html')
     extensions_404 = create_404_response('extensions/404.html')
     apps_404 = create_404_response('apps/404.html')
-    # Note: would test that root_404 != extensions and apps but it's not
-    # necessarily true.
-    self.assertNotEqual(extensions_404, apps_404)
 
     self.assertEqual(root_404, self._Render('not_found.html'))
     self.assertEqual(root_404, self._Render('not_found/not_found.html'))
