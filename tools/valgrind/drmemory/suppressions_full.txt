@@ -1016,6 +1016,10 @@ GDI32.dll!GetTextMetricsW
 *!gfx::PlatformFontWin::CreateHFontRef
 *!gfx::PlatformFontWin::GetBaseFontRef
 
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=471
+*!autofill::DetailInput::DetailInput
+
 ###############################################################
 # Benign issues in Chromium
 
