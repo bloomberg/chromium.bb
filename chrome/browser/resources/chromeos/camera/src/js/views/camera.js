@@ -466,6 +466,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.addEffect_(new camera.effects.Beauty(this.tracker_));
     this.addEffect_(new camera.effects.Newspaper(this.tracker_));
     this.addEffect_(new camera.effects.Funky(this.tracker_));
+    this.addEffect_(new camera.effects.Ghost(this.tracker_));
     this.addEffect_(new camera.effects.Swirl(this.tracker_));
 
     // Select the default effect.
@@ -1177,10 +1178,13 @@ camera.views.Camera.prototype.drawEffectsRibbon_ = function() {
  * @private
  */
 camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
+  if (this.frame_ % 10 == 0 || mode == camera.views.Camera.DrawMode.OPTIMIZED) {
+    this.mainFastCanvasTexture_.loadContentsOf(this.video_);
+    this.mainFastProcessor_.processFrame();
+  }
+
   switch (mode) {
     case camera.views.Camera.DrawMode.OPTIMIZED:
-      this.mainFastCanvasTexture_.loadContentsOf(this.video_);
-      this.mainFastProcessor_.processFrame();
       this.mainCanvas_.parentNode.hidden = true;
       this.mainFastCanvas_.parentNode.hidden = false;
       break;

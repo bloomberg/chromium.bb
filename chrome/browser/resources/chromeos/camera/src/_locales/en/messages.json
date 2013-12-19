@@ -91,6 +91,10 @@
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Ghost",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
     "message": "Your camera is currently unavailable.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
