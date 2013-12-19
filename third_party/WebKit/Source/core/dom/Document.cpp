@@ -840,6 +840,10 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         return createProcessingInstruction(importedNode->nodeName(), importedNode->nodeValue(), exceptionState);
     case COMMENT_NODE:
         return createComment(importedNode->nodeValue());
+    case DOCUMENT_TYPE_NODE: {
+        DocumentType* doctype = toDocumentType(importedNode);
+        return DocumentType::create(this, doctype->name(), doctype->publicId(), doctype->systemId());
+    }
     case ELEMENT_NODE: {
         Element* oldElement = toElement(importedNode);
         // FIXME: The following check might be unnecessary. Is it possible that
@@ -893,7 +897,6 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         // FIXME: It should be possible to import these node types, however in DOM3 the DocumentType is readonly, so there isn't much sense in doing that.
         // Ability to add these imported nodes to a DocumentType will be considered for addition to a future release of the DOM.
     case DOCUMENT_NODE:
-    case DOCUMENT_TYPE_NODE:
     case XPATH_NAMESPACE_NODE:
         break;
     }
