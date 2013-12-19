@@ -413,6 +413,12 @@ weston_view_output_destroy_handler(struct wl_listener *listener,
 
 	if (ev->surface->output_destroyed)
 		ev->surface->output_destroyed(ev->surface);
+
+	wl_list_remove(&ev->output_move_listener.link);
+	wl_list_remove(&ev->output_destroy_listener.link);
+
+	wl_list_init(&ev->output_move_listener.link);
+	wl_list_init(&ev->output_destroy_listener.link);
 }
 
 WL_EXPORT struct weston_view *
