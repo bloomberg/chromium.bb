@@ -82,7 +82,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         }
         m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
     } else {
-        m_prototype = v8::Object::New();
+        m_prototype = v8::Object::New(m_context->GetIsolate());
         v8::Local<v8::Object> basePrototype = V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
         if (!basePrototype.IsEmpty())
             m_prototype->SetPrototype(basePrototype);

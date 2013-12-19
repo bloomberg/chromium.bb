@@ -56,7 +56,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
         return;
     }
 
-    v8::Local<v8::Object> item = v8::Object::New();
+    v8::Local<v8::Object> item = v8::Object::New(info.GetIsolate());
     unsigned numColumns = rowList->columnNames().size();
     unsigned valuesIndex = index * numColumns;
 

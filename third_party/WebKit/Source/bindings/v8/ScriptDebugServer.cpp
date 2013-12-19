@@ -89,7 +89,7 @@ String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBrea
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
-    v8::Local<v8::Object> info = v8::Object::New();
+    v8::Local<v8::Object> info = v8::Object::New(m_isolate);
     info->Set(v8AtomicString(m_isolate, "sourceID"), v8String(debuggerContext->GetIsolate(), sourceID));
     info->Set(v8AtomicString(m_isolate, "lineNumber"), v8::Integer::New(scriptBreakpoint.lineNumber, debuggerContext->GetIsolate()));
     info->Set(v8AtomicString(m_isolate, "columnNumber"), v8::Integer::New(scriptBreakpoint.columnNumber, debuggerContext->GetIsolate()));
@@ -111,7 +111,7 @@ void ScriptDebugServer::removeBreakpoint(const String& breakpointId)
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
-    v8::Local<v8::Object> info = v8::Object::New();
+    v8::Local<v8::Object> info = v8::Object::New(m_isolate);
     info->Set(v8AtomicString(m_isolate, "breakpointId"), v8String(debuggerContext->GetIsolate(), breakpointId));
 
     v8::Handle<v8::Function> removeBreakpointFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "removeBreakpoint")));
@@ -136,7 +136,7 @@ void ScriptDebugServer::setBreakpointsActivated(bool activated)
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
-    v8::Local<v8::Object> info = v8::Object::New();
+    v8::Local<v8::Object> info = v8::Object::New(m_isolate);
     info->Set(v8AtomicString(m_isolate, "enabled"), v8::Boolean::New(m_isolate, activated));
     v8::Handle<v8::Function> setBreakpointsActivated = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "setBreakpointsActivated")));
     v8::Debug::Call(setBreakpointsActivated, info);

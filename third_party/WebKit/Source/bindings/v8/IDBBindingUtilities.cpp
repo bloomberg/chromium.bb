@@ -273,7 +273,7 @@ static v8::Handle<v8::Value> ensureNthValueOnKeyPath(v8::Handle<v8::Value>& root
         v8::Handle<v8::Value> parentValue(currentValue);
         const String& keyPathElement = keyPathElements[i];
         if (!get(parentValue, keyPathElement, currentValue, isolate)) {
-            v8::Handle<v8::Object> object = v8::Object::New();
+            v8::Handle<v8::Object> object = v8::Object::New(isolate);
             if (!set(parentValue, keyPathElement, object, isolate))
                 return v8Undefined();
             currentValue = object;

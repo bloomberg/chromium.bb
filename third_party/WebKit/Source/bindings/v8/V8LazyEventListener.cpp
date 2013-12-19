@@ -67,10 +67,10 @@ template<typename T>
 v8::Handle<v8::Object> toObjectWrapper(T* domObject, v8::Isolate* isolate)
 {
     if (!domObject)
-        return v8::Object::New();
+        return v8::Object::New(isolate);
     v8::Handle<v8::Value> value = toV8(domObject, v8::Handle<v8::Object>(), isolate);
     if (value.IsEmpty())
-        return v8::Object::New();
+        return v8::Object::New(isolate);
     return v8::Local<v8::Object>::New(isolate, value.As<v8::Object>());
 }
 
@@ -177,7 +177,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     v8::Handle<v8::Object> formWrapper = toObjectWrapper<HTMLFormElement>(formElement, isolate);
     v8::Handle<v8::Object> documentWrapper = toObjectWrapper<Document>(m_node ? m_node->ownerDocument() : 0, isolate);
 
-    v8::Local<v8::Object> thisObject = v8::Object::New();
+    v8::Local<v8::Object> thisObject = v8::Object::New(isolate);
     if (thisObject.IsEmpty())
         return;
     if (!thisObject->ForceSet(v8::Integer::New(0, isolate), nodeWrapper))

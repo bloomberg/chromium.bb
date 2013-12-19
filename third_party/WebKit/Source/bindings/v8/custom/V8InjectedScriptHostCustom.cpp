@@ -207,12 +207,12 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     int lineNumber = function->GetScriptLineNumber();
     int columnNumber = function->GetScriptColumnNumber();
 
-    v8::Local<v8::Object> location = v8::Object::New();
+    v8::Local<v8::Object> location = v8::Object::New(isolate);
     location->Set(v8AtomicString(isolate, "lineNumber"), v8::Integer::New(lineNumber, isolate));
     location->Set(v8AtomicString(isolate, "columnNumber"), v8::Integer::New(columnNumber, isolate));
     location->Set(v8AtomicString(isolate, "scriptId"), v8::Integer::New(function->ScriptId(), isolate)->ToString());
 
-    v8::Local<v8::Object> result = v8::Object::New();
+    v8::Local<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8AtomicString(isolate, "location"), location);
 
     if (!setFunctionName(result, function->GetDisplayName(), isolate)
@@ -265,7 +265,7 @@ static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const Ev
                 continue;
         }
         ASSERT(!function.IsEmpty());
-        v8::Local<v8::Object> listenerEntry = v8::Object::New();
+        v8::Local<v8::Object> listenerEntry = v8::Object::New(isolate);
         listenerEntry->Set(v8AtomicString(isolate, "listener"), function);
         listenerEntry->Set(v8AtomicString(isolate, "useCapture"), v8::Boolean::New(isolate, listenerInfo.eventListenerVector[i].useCapture));
         result->Set(v8::Number::New(isolate, outputIndex++), listenerEntry);
@@ -289,7 +289,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
     Vector<EventListenerInfo> listenersArray;
     host->getEventListenersImpl(node, listenersArray);
 
-    v8::Local<v8::Object> result = v8::Object::New();
+    v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
     for (size_t i = 0; i < listenersArray.size(); ++i) {
         v8::Handle<v8::Array> listeners = getJSListenerFunctions(&node->document(), listenersArray[i], info.GetIsolate());
         if (!listeners->Length())

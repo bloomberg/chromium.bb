@@ -2042,7 +2042,7 @@ public:
 
     virtual bool newObject()
     {
-        v8::Local<v8::Object> object = v8::Object::New();
+        v8::Local<v8::Object> object = v8::Object::New(m_reader.isolate());
         if (object.IsEmpty())
             return false;
         openComposite(object);
@@ -2057,8 +2057,9 @@ public:
             if (!closeComposite(&composite))
                 return false;
             object = composite.As<v8::Object>();
-        } else
-            object = v8::Object::New();
+        } else {
+            object = v8::Object::New(m_reader.isolate());
+        }
         if (object.IsEmpty())
             return false;
         return initializeObject(object, numProperties, value);

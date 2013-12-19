@@ -45,7 +45,7 @@ ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
     v8::Isolate* isolate = toIsolate(context);
     ASSERT(isolate->InContext());
     v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current());
-    v8::Handle<v8::Object> creationContext = v8Context.IsEmpty() ? v8::Object::New() : v8Context->Global();
+    v8::Handle<v8::Object> creationContext = v8Context.IsEmpty() ? v8::Object::New(isolate) : v8Context->Global();
     v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(creationContext, isolate);
     return ScriptPromise(promise, isolate);
 }
@@ -54,7 +54,7 @@ ScriptPromise ScriptPromise::createPending()
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     ASSERT(isolate->InContext());
-    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(), isolate);
+    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(isolate), isolate);
     return ScriptPromise(promise, isolate);
 }
 
