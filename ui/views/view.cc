@@ -875,8 +875,8 @@ View* View::GetEventHandlerForRect(const gfx::Rect& rect) {
       // |cur_view| is a suitable candidate for rect-based targeting.
       // Check to see if it is the closest suitable candidate so far.
       gfx::Point touch_center(rect.CenterPoint());
-      int cur_dist = views::DistanceSquaredFromCenterLineToPoint(
-          touch_center, cur_view_bounds);
+      int cur_dist = views::DistanceSquaredFromCenterToPoint(touch_center,
+                                                             cur_view_bounds);
       if (!rect_view || cur_dist < rect_view_distance) {
         rect_view = cur_view;
         rect_view_distance = cur_dist;
@@ -898,8 +898,8 @@ View* View::GetEventHandlerForRect(const gfx::Rect& rect) {
   gfx::Rect local_bounds(GetLocalBounds());
   if (views::PercentCoveredBy(local_bounds, rect) >= kRectTargetOverlap) {
     gfx::Point touch_center(rect.CenterPoint());
-    int cur_dist = views::DistanceSquaredFromCenterLineToPoint(touch_center,
-                                                               local_bounds);
+    int cur_dist = views::DistanceSquaredFromCenterToPoint(touch_center,
+                                                           local_bounds);
     if (!rect_view || cur_dist < rect_view_distance)
       rect_view = this;
   }

@@ -21,11 +21,9 @@ VIEWS_EXPORT bool UsePointBasedTargeting(const gfx::Rect& rect);
 VIEWS_EXPORT float PercentCoveredBy(const gfx::Rect& rect_1,
                                     const gfx::Rect& rect_2);
 
-// Returns the square of the distance from |point| to the center line of
-// |rect|. The center line of a rectangle is obtained by repeatedly
-// stripping away 1px borders around the rectangle until a line remains.
-VIEWS_EXPORT int DistanceSquaredFromCenterLineToPoint(const gfx::Point& point,
-                                                      const gfx::Rect& rect);
+// Returns the square of the distance from |point| to the center of |rect|.
+VIEWS_EXPORT int DistanceSquaredFromCenterToPoint(const gfx::Point& point,
+                                                  const gfx::Rect& rect);
 
 }  // namespace views
 

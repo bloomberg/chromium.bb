@@ -577,6 +577,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // closest visible descendant having at least kRectTargetOverlap of
   // its area covered by |rect|. If no such descendant exists, return the
   // deepest visible descendant that contains the center point of |rect|.
+  // See http://goo.gl/3Jp2BD for more information about rect-based targeting.
   virtual View* GetEventHandlerForRect(const gfx::Rect& rect);
 
   // Returns the deepest visible descendant that contains the specified point

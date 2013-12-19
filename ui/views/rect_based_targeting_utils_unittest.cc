@@ -48,7 +48,7 @@ TEST(RectBasedTargetingUtils, PercentCoveredBy) {
   EXPECT_FLOAT_EQ(0.0f, PercentCoveredBy(rect_4, rect_2));
 }
 
-TEST(RectBasedTargetingUtils, DistanceSquaredFromCenterLineToPoint) {
+TEST(RectBasedTargetingUtils, DistanceSquaredFromCenterToPoint) {
   gfx::Rect rect_1(gfx::Point(0, 0), gfx::Size(10, 10));
   gfx::Rect rect_2(gfx::Point(20, 0), gfx::Size(80, 10));
   gfx::Rect rect_3(gfx::Point(0, 20), gfx::Size(10, 20));
@@ -58,20 +58,13 @@ TEST(RectBasedTargetingUtils, DistanceSquaredFromCenterLineToPoint) {
   gfx::Point point_3(11, 15);
   gfx::Point point_4(33, 44);
 
-  // The point lies on the center line of the rect.
-  EXPECT_EQ(0, DistanceSquaredFromCenterLineToPoint(point_1, rect_1));
-  EXPECT_EQ(0, DistanceSquaredFromCenterLineToPoint(point_2, rect_2));
-
-  // Distance from a point to the left/top endpoint of a rect's center line.
-  EXPECT_EQ(400, DistanceSquaredFromCenterLineToPoint(point_1, rect_2));
-  EXPECT_EQ(800, DistanceSquaredFromCenterLineToPoint(point_2, rect_3));
-  EXPECT_EQ(296, DistanceSquaredFromCenterLineToPoint(point_3, rect_2));
-
-  // Distance from a point to the center point of a square.
-  EXPECT_EQ(136, DistanceSquaredFromCenterLineToPoint(point_3, rect_1));
-
-  // Distance from a point to the bottom endpoint of a rect's center line.
-  EXPECT_EQ(865, DistanceSquaredFromCenterLineToPoint(point_4, rect_3));
+  EXPECT_EQ(0, DistanceSquaredFromCenterToPoint(point_1, rect_1));
+  EXPECT_EQ(1225, DistanceSquaredFromCenterToPoint(point_2, rect_2));
+  EXPECT_EQ(3025, DistanceSquaredFromCenterToPoint(point_1, rect_2));
+  EXPECT_EQ(1025, DistanceSquaredFromCenterToPoint(point_2, rect_3));
+  EXPECT_EQ(2501, DistanceSquaredFromCenterToPoint(point_3, rect_2));
+  EXPECT_EQ(136, DistanceSquaredFromCenterToPoint(point_3, rect_1));
+  EXPECT_EQ(980, DistanceSquaredFromCenterToPoint(point_4, rect_3));
 }
 
 }  // namespace views
