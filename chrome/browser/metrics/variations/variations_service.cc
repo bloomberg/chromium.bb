@@ -157,7 +157,7 @@ ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
     case ResourceRequestAllowedNotifier::DISALLOWED_COMMAND_LINE_DISABLED:
       return RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED;
     case ResourceRequestAllowedNotifier::ALLOWED:
-     return RESOURCE_REQUESTS_ALLOWED;
+      return RESOURCE_REQUESTS_ALLOWED;
   }
   NOTREACHED();
   return RESOURCE_REQUESTS_NOT_ALLOWED;
@@ -370,13 +370,12 @@ void VariationsService::FetchVariationsSeed() {
 
   const ResourceRequestAllowedNotifier::State state =
       resource_request_allowed_notifier_->GetResourceRequestsAllowedState();
+  RecordRequestsAllowedHistogram(ResourceRequestStateToHistogramValue(state));
   if (state != ResourceRequestAllowedNotifier::ALLOWED) {
-    RecordRequestsAllowedHistogram(ResourceRequestStateToHistogramValue(state));
     DVLOG(1) << "Resource requests were not allowed. Waiting for notification.";
     return;
   }
 
-  RecordRequestsAllowedHistogram(RESOURCE_REQUESTS_ALLOWED);
   DoActualFetch();
 }
 
