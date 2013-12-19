@@ -41,6 +41,7 @@ config.kPlatforms = {
             'WebKit Win7': {version: 'win7'},
             'WebKit Win7 (dbg)': {version: 'win7', debug: true},
             'WebKit Linux': {version: 'lucid', is64bit: true},
+            'WebKit Linux ASAN': {version: 'lucid', is64bit: true},
             'WebKit Linux 32': {version: 'lucid'},
             'WebKit Linux (dbg)': {version: 'lucid', is64bit: true, debug: true},
             'WebKit Mac10.6': {version: 'snowleopard'},

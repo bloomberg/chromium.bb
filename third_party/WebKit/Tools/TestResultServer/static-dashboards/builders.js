@@ -73,8 +73,7 @@ builders.getBuilderGroup = function(groupName, testType)
 
 function isChromiumWebkitTipOfTreeTestRunner(builder)
 {
-    return builder.indexOf('ASAN') == -1 &&
-        !isChromiumWebkitDepsTestRunner(builder);
+    return !isChromiumWebkitDepsTestRunner(builder);
 }
 
 function isChromiumWebkitDepsTestRunner(builder)
