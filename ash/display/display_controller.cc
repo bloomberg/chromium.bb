@@ -124,7 +124,7 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
 #endif
   scoped_ptr<aura::RootWindowTransformer> transformer(
       internal::CreateRootWindowTransformerForDisplay(root->window(), display));
-  root->SetRootWindowTransformer(transformer.Pass());
+  root->host()->SetRootWindowTransformer(transformer.Pass());
 }
 
 }  // namespace
@@ -761,7 +761,7 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
   aura::RootWindow* root_window = new aura::RootWindow(params);
   root_window->window()->SetName(
       base::StringPrintf("RootWindow-%d", root_window_count++));
-  root_window->compositor()->SetBackgroundColor(SK_ColorBLACK);
+  root_window->host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
   // No need to remove RootWindowObserver because
   // the DisplayController object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);

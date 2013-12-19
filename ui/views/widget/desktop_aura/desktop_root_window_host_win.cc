@@ -142,6 +142,7 @@ void DesktopRootWindowHostWin::Init(
 
   gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
+  CreateCompositor(GetAcceleratedWidget());
 
   rw_create_params->host = this;
 }
@@ -805,7 +806,7 @@ void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
 void DesktopRootWindowHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
   if (delegate_)
-    delegate_->OnHostResized(new_size);
+    NotifyHostResized(new_size);
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {
@@ -900,7 +901,7 @@ bool DesktopRootWindowHostWin::HandlePaintAccelerated(
 }
 
 void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
-  delegate_->OnHostPaint(gfx::Rect());
+  compositor()->ScheduleRedrawRect(gfx::Rect());
 }
 
 bool DesktopRootWindowHostWin::HandleTooltipNotify(int w_param,
@@ -945,7 +946,8 @@ HWND DesktopRootWindowHostWin::GetHWND() const {
 
 void DesktopRootWindowHostWin::SetWindowTransparency() {
   bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
-  root_window_->compositor()->SetHostHasTransparentBackground(transparent);
+  root_window_->host()->compositor()->SetHostHasTransparentBackground(
+      transparent);
   root_window_->window()->SetTransparent(transparent);
   content_window_->SetTransparent(transparent);
 }

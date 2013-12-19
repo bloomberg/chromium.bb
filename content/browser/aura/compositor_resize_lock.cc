@@ -51,7 +51,7 @@ void CompositorResizeLock::UnlockCompositor() {
 
 void CompositorResizeLock::LockCompositor() {
   ResizeLock::LockCompositor();
-  compositor_lock_ = root_window_->compositor()->GetCompositorLock();
+  compositor_lock_ = root_window_->host()->compositor()->GetCompositorLock();
 }
 
 void CompositorResizeLock::CancelLock() {

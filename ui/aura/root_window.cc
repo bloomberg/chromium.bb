@@ -18,7 +18,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window_observer.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_targeter.h"
@@ -32,11 +31,7 @@
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/point3_f.h"
-#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/size_conversions.h"
 
 using std::vector;
 
@@ -56,13 +51,6 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
     return false;
   int hit_test_code = target->delegate()->GetNonClientComponent(location);
   return hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE;
-}
-
-float GetDeviceScaleFactorFromDisplay(Window* window) {
-  gfx::Display display = gfx::Screen::GetScreenFor(window)->
-      GetDisplayNearestWindow(window);
-  DCHECK(display.is_valid());
-  return display.device_scale_factor();
 }
 
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
@@ -95,47 +83,6 @@ bool IsUsingEventProcessorForDispatch(const ui::Event& event) {
          event.IsScrollEvent();
 }
 
-class SimpleRootWindowTransformer : public RootWindowTransformer {
- public:
-  SimpleRootWindowTransformer(const Window* root_window,
-                              const gfx::Transform& transform)
-      : root_window_(root_window),
-        transform_(transform) {
-  }
-
-  // RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const OVERRIDE {
-    return transform_;
-  }
-
-  virtual gfx::Transform GetInverseTransform() const OVERRIDE {
-    gfx::Transform invert;
-    if (!transform_.GetInverse(&invert))
-      return transform_;
-    return invert;
-  }
-
-  virtual gfx::Rect GetRootWindowBounds(
-      const gfx::Size& host_size) const OVERRIDE {
-    gfx::Rect bounds(host_size);
-    gfx::RectF new_bounds(ui::ConvertRectToDIP(root_window_->layer(), bounds));
-    transform_.TransformRect(&new_bounds);
-    return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
-  }
-
-  virtual gfx::Insets GetHostInsets() const OVERRIDE {
-    return gfx::Insets();
-  }
-
- private:
-  virtual ~SimpleRootWindowTransformer() {}
-
-  const Window* root_window_;
-  const gfx::Transform transform_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleRootWindowTransformer);
-};
-
 }  // namespace
 
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
@@ -165,9 +112,6 @@ RootWindow::RootWindow(const CreateParams& params)
   window()->set_event_targeter(
       scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
 
-  compositor_.reset(new ui::Compositor(host_->GetAcceleratedWidget()));
-  DCHECK(compositor_.get());
-
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),
                                kRootWindowForAcceleratedWidget,
                                this));
@@ -178,10 +122,6 @@ RootWindow::~RootWindow() {
   TRACE_EVENT0("shutdown", "RootWindow::Destructor");
 
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
-
-  // Make sure to destroy the compositor before terminating so that state is
-  // cleared and we don't hit asserts.
-  compositor_.reset();
 
   // An observer may have been added by an animation on the RootWindow.
   window()->layer()->GetAnimator()->RemoveObserver(this);
@@ -207,15 +147,7 @@ RootWindow* RootWindow::GetForAcceleratedWidget(
 }
 
 void RootWindow::Init() {
-  compositor()->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
-                                host_->GetBounds().size());
-  window()->Init(ui::LAYER_NOT_DRAWN);
-  compositor()->SetRootLayer(window()->layer());
-  transformer_.reset(
-      new SimpleRootWindowTransformer(window(), gfx::Transform()));
-  UpdateRootWindowSize(host_->GetBounds().size());
-  Env::GetInstance()->NotifyRootWindowInitialized(this);
-  window()->Show();
+  host()->InitHost();
 }
 
 void RootWindow::PrepareForShutdown() {
@@ -305,18 +237,14 @@ void RootWindow::OnMouseEventsEnableStateChanged(bool enabled) {
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
   gfx::Point host_location(location_in_dip);
-  ConvertPointToHost(&host_location);
+  host()->ConvertPointToHost(&host_location);
   MoveCursorToInternal(location_in_dip, host_location);
 }
 
 void RootWindow::MoveCursorToHostLocation(const gfx::Point& host_location) {
   gfx::Point root_location(host_location);
-  ConvertPointFromHost(&root_location);
+  host()->ConvertPointFromHost(&root_location);
   MoveCursorToInternal(root_location, host_location);
-}
-
-void RootWindow::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
-  compositor_->ScheduleRedrawRect(damage_rect);
 }
 
 Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
@@ -422,18 +350,6 @@ void RootWindow::RemoveRootWindowObserver(RootWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void RootWindow::ConvertPointToHost(gfx::Point* point) const {
-  gfx::Point3F point_3f(*point);
-  GetRootTransform().TransformPoint(&point_3f);
-  *point = gfx::ToFlooredPoint(point_3f.AsPointF());
-}
-
-void RootWindow::ConvertPointFromHost(gfx::Point* point) const {
-  gfx::Point3F point_3f(*point);
-  GetInverseRootTransform().TransformPoint(&point_3f);
-  *point = gfx::ToFlooredPoint(point_3f.AsPointF());
-}
-
 void RootWindow::ProcessedTouchEvent(ui::TouchEvent* event,
                                      Window* window,
                                      ui::EventResult result) {
@@ -477,36 +393,11 @@ gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
   return location;
 }
 
-void RootWindow::SetRootWindowTransformer(
-    scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_ = transformer.Pass();
-  host_->SetInsets(transformer_->GetHostInsets());
-  window()->SetTransform(transformer_->GetTransform());
-  // If the layer is not animating, then we need to update the root window
-  // size immediately.
-  if (!window()->layer()->GetAnimator()->is_animating())
-    UpdateRootWindowSize(host_->GetBounds().size());
-}
-
-gfx::Transform RootWindow::GetRootTransform() const {
-  float scale = ui::GetDeviceScaleFactor(window()->layer());
-  gfx::Transform transform;
-  transform.Scale(scale, scale);
-  transform *= transformer_->GetTransform();
-  return transform;
-}
-
-void RootWindow::SetTransform(const gfx::Transform& transform) {
-  scoped_ptr<RootWindowTransformer> transformer(
-      new SimpleRootWindowTransformer(window(), transform));
-  SetRootWindowTransformer(transformer.Pass());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
 void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
-  event->UpdateForRootTransform(GetInverseRootTransform());
+  event->UpdateForRootTransform(host()->GetInverseRootTransform());
 }
 
 void RootWindow::MoveCursorToInternal(const gfx::Point& root_location,
@@ -612,10 +503,6 @@ void RootWindow::CleanupGestureState(Window* window) {
       ++iter) {
     CleanupGestureState(*iter);
   }
-}
-
-void RootWindow::UpdateRootWindowSize(const gfx::Size& host_size) {
-  window()->SetBounds(transformer_->GetRootWindowBounds(host_size));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -743,7 +630,7 @@ void RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
 
 void RootWindow::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* animation) {
-  UpdateRootWindowSize(host_->GetBounds().size());
+  host()->UpdateRootWindowSize(host_->GetBounds().size());
 }
 
 void RootWindow::OnLayerAnimationScheduled(
@@ -823,10 +710,6 @@ void RootWindow::OnHostLostMouseGrab() {
   mouse_moved_handler_ = NULL;
 }
 
-void RootWindow::OnHostPaint(const gfx::Rect& damage_rect) {
-  compositor_->ScheduleRedrawRect(damage_rect);
-}
-
 void RootWindow::OnHostMoved(const gfx::Point& origin) {
   TRACE_EVENT1("ui", "RootWindow::OnHostMoved",
                "origin", origin.ToString());
@@ -842,19 +725,8 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   DispatchDetails details = DispatchHeldEvents();
   if (details.dispatcher_destroyed)
     return;
-  // The compositor should have the same size as the native root window host.
-  // Get the latest scale from display because it might have been changed.
-  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()), size);
-
-  // The layer, and the observers should be notified of the
-  // transformed size of the root window.
-  UpdateRootWindowSize(host_->GetBounds().size());
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnRootWindowHostResized(this));
-}
-
-float RootWindow::GetDeviceScaleFactor() {
-  return compositor()->device_scale_factor();
 }
 
 RootWindow* RootWindow::AsRootWindow() {
@@ -1135,7 +1007,7 @@ ui::EventDispatchDetails RootWindow::SynthesizeMouseMoveEvent() {
   if (!window()->bounds().Contains(root_mouse_location))
     return details;
   gfx::Point host_mouse_location = root_mouse_location;
-  ConvertPointToHost(&host_mouse_location);
+  host()->ConvertPointToHost(&host_mouse_location);
 
   ui::MouseEvent event(ui::ET_MOUSE_MOVED,
                        host_mouse_location,
@@ -1149,13 +1021,6 @@ void RootWindow::SynthesizeMouseMoveEventAsync() {
   DispatchDetails details = SynthesizeMouseMoveEvent();
   if (details.dispatcher_destroyed)
     return;
-}
-
-gfx::Transform RootWindow::GetInverseRootTransform() const {
-  float scale = ui::GetDeviceScaleFactor(window()->layer());
-  gfx::Transform transform;
-  transform.Scale(1.0f / scale, 1.0f / scale);
-  return transformer_->GetInverseTransform() * transform;
 }
 
 void RootWindow::PreDispatchLocatedEvent(Window* target,

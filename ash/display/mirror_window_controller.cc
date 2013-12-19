@@ -168,7 +168,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     root_window_.reset(new aura::RootWindow(params));
     root_window_->window()->SetName(
         base::StringPrintf("MirrorRootWindow-%d", mirror_root_window_count++));
-    root_window_->compositor()->SetBackgroundColor(SK_ColorBLACK);
+    root_window_->host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
     // No need to remove RootWindowObserver because
     // the DisplayController object outlives RootWindow objects.
     root_window_->AddRootWindowObserver(
@@ -193,7 +193,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     mirror_window->SetBounds(root_window_->window()->bounds());
     mirror_window->Show();
     reflector_ = ui::ContextFactory::GetInstance()->CreateReflector(
-        Shell::GetPrimaryRootWindow()->GetDispatcher()->compositor(),
+        Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->compositor(),
         mirror_window->layer());
 
     cursor_window_ = new aura::Window(cursor_window_delegate_.get());
@@ -215,7 +215,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
       internal::CreateRootWindowTransformerForMirroredDisplay(
           source_display_info,
           display_info));
-  root_window_->SetRootWindowTransformer(transformer.Pass());
+  root_window_->host()->SetRootWindowTransformer(transformer.Pass());
 
   UpdateCursorLocation();
 }
@@ -250,7 +250,8 @@ void MirrorWindowController::UpdateCursorLocation() {
   if (cursor_window_) {
     // TODO(oshima): Rotate cursor image (including hotpoint).
     gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
-    Shell::GetPrimaryRootWindow()->GetDispatcher()->ConvertPointToHost(&point);
+    Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->ConvertPointToHost(
+        &point);
     point.Offset(-hot_point_.x(), -hot_point_.y());
     gfx::Rect bounds = cursor_window_->bounds();
     bounds.set_origin(point);
@@ -325,7 +326,7 @@ void MirrorWindowController::OnRootWindowHostResized(
     return;
   mirror_window_host_size_ = root->host()->GetBounds().size();
   reflector_->OnMirroringCompositorResized();
-  root_window_->SetRootWindowTransformer(
+  root_window_->host()->SetRootWindowTransformer(
       CreateRootWindowTransformer().Pass());
   UpdateCursorLocation();
 }

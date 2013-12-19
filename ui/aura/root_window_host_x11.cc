@@ -379,6 +379,7 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
   XRRSelectInput(xdisplay_, x_root_window_,
                  RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
   Env::GetInstance()->AddObserver(this);
+  CreateCompositor(GetAcceleratedWidget());
 }
 
 RootWindowHostX11::~RootWindowHostX11() {
@@ -422,7 +423,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
     case Expose: {
       gfx::Rect damage_rect(xev->xexpose.x, xev->xexpose.y,
                             xev->xexpose.width, xev->xexpose.height);
-      delegate_->AsRootWindow()->ScheduleRedrawRect(damage_rect);
+      compositor()->ScheduleRedrawRect(damage_rect);
       break;
     }
     case KeyPress: {
@@ -493,7 +494,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
         ConfineCursorToRootWindow();
       }
       if (size_changed)
-        delegate_->OnHostResized(bounds.size());
+        NotifyHostResized(bounds.size());
       if (origin_changed)
         delegate_->OnHostMoved(bounds_.origin());
       break;
@@ -609,7 +610,7 @@ gfx::Rect RootWindowHostX11::GetBounds() const {
 void RootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
-  float current_scale = delegate_->GetDeviceScaleFactor();
+  float current_scale = compositor()->device_scale_factor();
   float new_scale = gfx::Screen::GetScreenFor(
       delegate_->AsRootWindow()->window())->GetDisplayNearestWindow(
           delegate_->AsRootWindow()->window()).device_scale_factor();
@@ -642,7 +643,7 @@ void RootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   if (origin_changed)
     delegate_->OnHostMoved(bounds.origin());
   if (size_changed || current_scale != new_scale) {
-    delegate_->OnHostResized(bounds.size());
+    NotifyHostResized(bounds.size());
   } else {
     delegate_->AsRootWindow()->window()->SchedulePaintInRect(
         delegate_->AsRootWindow()->window()->bounds());
@@ -995,7 +996,7 @@ void RootWindowHostX11::TranslateAndDispatchMouseEvent(
     // host window, then convert it back to this host window's coordinate.
     screen_position_client->ConvertHostPointToScreen(root_window, &location);
     screen_position_client->ConvertPointFromScreen(root_window, &location);
-    root_window->GetDispatcher()->ConvertPointToHost(&location);
+    ConvertPointToHost(&location);
     event->set_location(location);
     event->set_root_location(location);
   }

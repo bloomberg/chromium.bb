@@ -372,7 +372,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   transform.Translate(100.0, 100.0);
   transform.Rotate(90.0);
   transform.Scale(2.0, 5.0);
-  dispatcher()->SetTransform(transform);
+  dispatcher()->host()->SetTransform(transform);
   dispatcher()->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   gfx::Point mouse_location;
@@ -453,7 +453,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   transform.Translate(10.0, 20.0);
   transform.Rotate(10.0);
   transform.Scale(0.3f, 0.5f);
-  dispatcher()->SetTransform(root_transform);
+  dispatcher()->host()->SetTransform(root_transform);
   w1->SetTransform(transform);
   w11->SetTransform(transform);
   w111->SetTransform(transform);
@@ -1547,7 +1547,7 @@ TEST_F(WindowTest, Transform) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0);
   transform.Rotate(90.0);
-  dispatcher()->SetTransform(transform);
+  dispatcher()->host()->SetTransform(transform);
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
@@ -1575,7 +1575,7 @@ TEST_F(WindowTest, TransformGesture) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0.0);
   transform.Rotate(90.0);
-  dispatcher()->SetTransform(transform);
+  dispatcher()->host()->SetTransform(transform);
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), 0, getTime());

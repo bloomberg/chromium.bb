@@ -46,12 +46,8 @@ class AURA_EXPORT RootWindowHostDelegate {
   // window move on our behalf, but we should still paint as if we're active.
   virtual void OnHostLostMouseGrab() = 0;
 
-  virtual void OnHostPaint(const gfx::Rect& damage_rect) = 0;
-
   virtual void OnHostMoved(const gfx::Point& origin) = 0;
   virtual void OnHostResized(const gfx::Size& size) = 0;
-
-  virtual float GetDeviceScaleFactor() = 0;
 
   virtual RootWindow* AsRootWindow() = 0;
   virtual const RootWindow* AsRootWindow() const = 0;

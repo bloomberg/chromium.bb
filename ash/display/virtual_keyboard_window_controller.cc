@@ -95,7 +95,7 @@ void VirtualKeyboardWindowController::FlipDisplay() {
   scoped_ptr<aura::RootWindowTransformer> transformer(
       internal::CreateRootWindowTransformerForDisplay(root_window->window(),
           display_manager->non_desktop_display()));
-  root_window->SetRootWindowTransformer(transformer.Pass());
+  root_window->host()->SetRootWindowTransformer(transformer.Pass());
 }
 
 }  // namespace internal

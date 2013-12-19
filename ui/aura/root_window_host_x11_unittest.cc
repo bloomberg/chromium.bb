@@ -46,10 +46,8 @@ class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate,
   virtual void OnHostActivated() OVERRIDE {}
   virtual void OnHostLostWindowCapture() OVERRIDE {}
   virtual void OnHostLostMouseGrab() OVERRIDE {}
-  virtual void OnHostPaint(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE {}
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE {}
-  virtual float GetDeviceScaleFactor() OVERRIDE { return 1.0f; }
   virtual aura::RootWindow* AsRootWindow() OVERRIDE { return NULL; }
   virtual const aura::RootWindow* AsRootWindow() const OVERRIDE { return NULL; }
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE {
