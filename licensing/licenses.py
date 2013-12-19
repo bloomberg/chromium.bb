@@ -36,24 +36,47 @@ Recommended build:
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
   cd ~/trunk/chromite/licensing
-  %(prog)s [--debug] --board $board -o out.html 2>&1 | output.sav
+  %(prog)s [--debug] --board $board -o out.html 2>&1 | tee output.sav
 
-You can get a faster run by passing a list of pacakges using --package:
+You can check the licenses and/or generate a HTML file for a list of
+packages using --package or -p:
   %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package
   "net-misc/wget-1.14" --board $board -o out.html
 
-The output file is meant to update
+By default, when no package is specified, this script processes all
+packages for the board. The output HTML file is meant to update
 http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
   chromeos/about_os_credits.html?view=log
 (gclient config svn://svn.chromium.org/chrome/trunk/src)
 For an example CL, see https://codereview.chromium.org/13496002/
 
-UPDATE: gcl will probably fail now, because the file is too big. Before it
-gets moved somewhere else, you should just use svn diff and svn commit.
+The detailed process is listed below.
 
-Before you commit a new html file, make sure the changes are valid with:
-bin/diff_license_html output.html-M31 output.html-M32
-and review the diff.
+* Check out the branch you intend to generate the HTML file for. Use
+  the internal manifest for this purpose.
+    repo init -b <branch_name> -u <URL>
+
+  The list of branches (e.g. release-R33-5116.B) are available here:
+  https://chromium.googlesource.com/chromiumos/manifest/+refs
+
+* Generate the HTML file by following the steps mentioned
+  previously. Check whether your changes are valid with:
+    bin/diff_license_html output.html-M33 output.html-M34
+  and review the diff.
+
+* Update the about_os_credits.html in the svn repository. Create a CL
+  and upload it for review.
+    gcl change <change_name>
+    gcl upload <change_name>
+
+  When uploading, you may get a warning for file being too large to
+  upload. In this case, your CL can still be reviewed. Always include
+  the diff in your commit message so that the reviwers know what the
+  changes are. You can add reviewers on the reivew page by clicking on
+  "Edit issue".  (A quick reference:
+  http://www.chromium.org/developers/quick-reference)
+
+* After receiving LGTMs, commit your change with 'svn commit'.
 
 If you don't get this in before the freeze window, it'll need to be merged into
 the branch being released, which is done by adding a Merge-Requested label to
@@ -1182,8 +1205,7 @@ def main(args):
   board, output_file = opts.board, opts.output
   logging.info("Using board %s.", board)
 
-  if opts.package:
-    packages_mode = True
+  packages_mode = bool(opts.package)
 
   if not output_file and not packages_mode:
     logging.warning('No output file is specified.')
