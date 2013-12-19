@@ -2639,6 +2639,9 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
   }
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
+  // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
+  // Chromium builds as well.
   return channel <= chrome::VersionInfo::CHANNEL_DEV;
 #else
   return false;
