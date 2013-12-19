@@ -84,8 +84,10 @@ keyDown('6'); // -> 05/06/[yyyy]
 keyDown('2'); // -> 05/06/[0002]
 keyDown('0'); // -> 05/06/[0020]
 keyDown('1'); // -> 05/06/[0201]
-keyDown('4'); // -> 05/06/2014
+keyDown('4'); // -> 05/06/[2014] We accept a value larger than the maximum.
 shouldBeEqualToString('input.value', '2014-05-06');
+keyDown('5'); // -> 05/06/[0145] We don't accept a value of which the number of digits is longer than one of the maximum.
+shouldBeEqualToString('input.value', '0145-05-06');
 
 beginTest('Digit keys with minimum value', null, '2013-01-01');
 keyDown('5'); // -> 05/[dd]/yyyy

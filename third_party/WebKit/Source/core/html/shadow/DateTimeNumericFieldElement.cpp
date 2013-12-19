@@ -122,6 +122,13 @@ void DateTimeNumericFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEve
     if (digit < 0 || digit > 9)
         return;
 
+    unsigned maximumLength = DateTimeNumericFieldElement::formatValue(m_range.maximum).length();
+    if (m_typeAheadBuffer.length() >= maximumLength) {
+        String current = m_typeAheadBuffer.toString();
+        m_typeAheadBuffer.clear();
+        unsigned desiredLength = maximumLength - 1;
+        m_typeAheadBuffer.append(current, current.length() - desiredLength, desiredLength);
+    }
     m_typeAheadBuffer.append(number);
     int newValue = typeAheadValue();
     if (newValue >= m_hardLimits.minimum)
@@ -131,7 +138,7 @@ void DateTimeNumericFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEve
         updateVisibleValue(DispatchEvent);
     }
 
-    if (m_typeAheadBuffer.length() >= DateTimeNumericFieldElement::formatValue(m_range.maximum).length() || newValue * 10 > m_range.maximum)
+    if (m_typeAheadBuffer.length() >= maximumLength || newValue * 10 > m_range.maximum)
         focusOnNextField();
 
     keyboardEvent->setDefaultHandled();
