@@ -451,6 +451,7 @@ void MCSClient::HandlePacketFromWire(
 
   switch (tag) {
     case kLoginResponseTag: {
+      DCHECK_EQ(CONNECTING, state_);
       mcs_proto::LoginResponse* login_response =
           reinterpret_cast<mcs_proto::LoginResponse*>(protobuf.get());
       DVLOG(1) << "Received login response:";
@@ -503,10 +504,9 @@ void MCSClient::HandlePacketFromWire(
       // timeout (with backoff).
       return;
     case kCloseTag:
-      LOG(ERROR) << "Received close command, closing connection.";
-      state_ = UNINITIALIZED;
-      initialization_callback_.Run(false, 0, 0);
-      // TODO(zea): should this happen in non-error cases? Reconnect?
+      LOG(ERROR) << "Received close command, resetting connection.";
+      state_ = LOADED;
+      connection_factory_->SignalConnectionReset();
       return;
     case kIqStanzaTag: {
       DCHECK_GE(stream_id_in_, 1U);

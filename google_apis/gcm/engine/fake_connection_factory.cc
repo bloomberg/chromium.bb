@@ -43,4 +43,8 @@ base::TimeTicks FakeConnectionFactory::NextRetryAttempt() const {
   return base::TimeTicks();
 }
 
+void FakeConnectionFactory::SignalConnectionReset() {
+  Connect();
+}
+
 }  // namespace gcm

@@ -43,6 +43,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual void Connect() OVERRIDE;
   virtual bool IsEndpointReachable() const OVERRIDE;
   virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
+  virtual void SignalConnectionReset() OVERRIDE;
 
   // NetworkChangeNotifier observer implementations.
   virtual void OnConnectionTypeChanged(
@@ -68,10 +69,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // Callback for Socket connection completion.
   void OnConnectDone(int result);
 
- private:
   // ConnectionHandler callback for connection issues.
   void ConnectionHandlerCallback(int result);
 
+ private:
   // The MCS endpoint to make connections to.
   const GURL mcs_endpoint_;
 
@@ -84,6 +85,14 @@ class GCM_EXPORT ConnectionFactoryImpl :
   net::ClientSocketHandle socket_handle_;
   // Connection attempt backoff policy.
   scoped_ptr<net::BackoffEntry> backoff_entry_;
+  // Backoff policy from previous backoff attempt.
+  scoped_ptr<net::BackoffEntry> previous_backoff_;
+  base::TimeTicks backoff_reset_time_;
+
+  // Whether a connection attempt is currently in progress or we're in backoff
+  // waiting until the next connection attempt. |!connecting_| denotes
+  // steady state with an active connection.
+  bool connecting_;
 
   // The current connection handler, if one exists.
   scoped_ptr<ConnectionHandlerImpl> connection_handler_;

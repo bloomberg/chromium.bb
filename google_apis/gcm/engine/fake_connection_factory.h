@@ -28,6 +28,7 @@ class FakeConnectionFactory : public ConnectionFactory {
   virtual void Connect() OVERRIDE;
   virtual bool IsEndpointReachable() const OVERRIDE;
   virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
+  virtual void SignalConnectionReset() OVERRIDE;
 
  private:
   scoped_ptr<FakeConnectionHandler> connection_handler_;

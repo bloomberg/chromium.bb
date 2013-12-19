@@ -22,6 +22,11 @@ namespace {
 // The amount of time a Socket read should wait before timing out.
 const int kReadTimeoutMs = 30000;  // 30 seconds.
 
+// If a connection is reset after succeeding within this window of time,
+// the previous backoff entry is restored (and the connection success is treated
+// as if it was transient).
+const int kConnectionResetWindowSecs = 10;  // 10 seconds.
+
 // Backoff policy.
 const net::BackoffEntry::Policy kConnectionBackoffPolicy = {
   // Number of initial errors (in sequence) to ignore before applying
@@ -36,10 +41,10 @@ const net::BackoffEntry::Policy kConnectionBackoffPolicy = {
 
   // Fuzzing percentage. ex: 10% will spread requests randomly
   // between 90%-100% of the calculated time.
-  0.2, // 20%.
+  0.5,  // 50%.
 
   // Maximum amount of time we are willing to delay our request in ms.
-  1000 * 3600 * 4, // 4 hours.
+  1000 * 60 * 5, // 5 minutes.
 
   // Time to keep an entry from being discarded even when it
   // has no significant state, -1 to never discard.
@@ -58,6 +63,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
   : mcs_endpoint_(mcs_endpoint),
     network_session_(network_session),
     net_log_(net_log),
+    connecting_(false),
     weak_ptr_factory_(this) {
 }
 
@@ -70,6 +76,7 @@ void ConnectionFactoryImpl::Initialize(
     const ConnectionHandler::ProtoSentCallback& write_callback) {
   DCHECK(!connection_handler_);
 
+  previous_backoff_ = CreateBackoffEntry(&kConnectionBackoffPolicy);
   backoff_entry_ = CreateBackoffEntry(&kConnectionBackoffPolicy);
   request_builder_ = request_builder;
 
@@ -92,6 +99,7 @@ void ConnectionFactoryImpl::Connect() {
   DCHECK(connection_handler_);
   DCHECK(!IsEndpointReachable());
 
+  connecting_ = true;
   if (backoff_entry_->ShouldRejectRequest()) {
     DVLOG(1) << "Delaying MCS endpoint connection for "
              << backoff_entry_->GetTimeUntilRelease().InMilliseconds()
@@ -110,6 +118,21 @@ void ConnectionFactoryImpl::Connect() {
 
 bool ConnectionFactoryImpl::IsEndpointReachable() const {
   return connection_handler_ && connection_handler_->CanSendMessage();
+}
+
+void ConnectionFactoryImpl::SignalConnectionReset() {
+  if (connecting_)
+    return;  // Already attempting to reconnect.
+
+  if (!backoff_reset_time_.is_null() &&
+      base::TimeTicks::Now() - backoff_reset_time_ <=
+          base::TimeDelta::FromSeconds(kConnectionResetWindowSecs)) {
+    backoff_entry_.swap(previous_backoff_);
+    backoff_entry_->InformOfRequest(false);
+  }
+  backoff_reset_time_ = base::TimeTicks();
+  previous_backoff_->Reset();
+  Connect();
 }
 
 base::TimeTicks ConnectionFactoryImpl::NextRetryAttempt() const {
@@ -186,15 +209,19 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
     return;
   }
 
-  DVLOG(1) << "MCS endpoint connection success.";
-
-  // Reset the backoff.
-  backoff_entry_->Reset();
-
+  DVLOG(1) << "MCS endpoint socket connection success, starting handshake.";
   InitHandler();
 }
 
 void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
+  if (result == net::OK) {
+    // Handshake succeeded, reset the backoff.
+    connecting_ = false;
+    backoff_reset_time_ = base::TimeTicks::Now();
+    previous_backoff_.swap(backoff_entry_);
+    backoff_entry_->Reset();
+    return;
+  }
   // TODO(zea): Consider how to handle errors that may require some sort of
   // user intervention (login page, etc.).
   LOG(ERROR) << "Connection reset with error " << result;

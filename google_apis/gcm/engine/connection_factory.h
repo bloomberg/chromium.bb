@@ -57,6 +57,12 @@ class GCM_EXPORT ConnectionFactory {
   // a null time, indicating either no attempt to connect has been made or no
   // backoff is in progress.
   virtual base::TimeTicks NextRetryAttempt() const = 0;
+
+  // Manually reset the connection. This can occur if an application specific
+  // event forced a reset (e.g. server sends a close connection response).
+  // If the last connection was made within kConnectionResetWindowSecs, the old
+  // backoff is restored, else a new backoff kicks off.
+  virtual void SignalConnectionReset() = 0;
 };
 
 }  // namespace gcm

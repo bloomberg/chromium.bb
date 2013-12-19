@@ -130,6 +130,7 @@ void TestConnectionFactoryImpl::ConnectImpl() {
 
 void TestConnectionFactoryImpl::InitHandler() {
   EXPECT_NE(connect_result_, net::ERR_UNEXPECTED);
+  ConnectionHandlerCallback(net::OK);
 }
 
 scoped_ptr<net::BackoffEntry> TestConnectionFactoryImpl::CreateBackoffEntry(
@@ -297,6 +298,81 @@ TEST_F(ConnectionFactoryImplTest, FailThenConnectionTypeEvent) {
   factory()->OnConnectionTypeChanged(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+}
+
+// Fail after successful connection via signal reset.
+TEST_F(ConnectionFactoryImplTest, FailViaSignalReset) {
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
+      ConnectionHandler::ProtoReceivedCallback(),
+      ConnectionHandler::ProtoSentCallback());
+  factory()->SetConnectResult(net::OK);
+  factory()->Connect();
+  WaitForConnections();
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+
+  factory()->SignalConnectionReset();
+  EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
+}
+
+TEST_F(ConnectionFactoryImplTest, IgnoreResetWhileConnecting) {
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
+      ConnectionHandler::ProtoReceivedCallback(),
+      ConnectionHandler::ProtoSentCallback());
+  factory()->SetConnectResult(net::OK);
+  factory()->Connect();
+  WaitForConnections();
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+
+  factory()->SignalConnectionReset();
+  base::TimeTicks retry_time = factory()->NextRetryAttempt();
+  EXPECT_FALSE(retry_time.is_null());
+
+  const int kNumAttempts = 5;
+  for (int i = 0; i < kNumAttempts; ++i)
+    factory()->SignalConnectionReset();
+  EXPECT_EQ(retry_time, factory()->NextRetryAttempt());
+}
+
+// Go into backoff due to connection failure. On successful connection, receive
+// a signal reset. The original backoff should be restored and extended, rather
+// than a new backoff starting from scratch.
+TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
+      ConnectionHandler::ProtoReceivedCallback(),
+      ConnectionHandler::ProtoSentCallback());
+  factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
+  base::TimeTicks connect_time = base::TimeTicks::Now();
+  factory()->Connect();
+  WaitForConnections();
+  base::TimeTicks retry_time = factory()->NextRetryAttempt();
+  EXPECT_FALSE(retry_time.is_null());
+
+  factory()->SetConnectResult(net::OK);
+  connect_time = base::TimeTicks::Now();
+  WaitForConnections();
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+
+  factory()->SignalConnectionReset();
+  EXPECT_NE(retry_time, factory()->NextRetryAttempt());
+  retry_time = factory()->NextRetryAttempt();
+  EXPECT_FALSE(retry_time.is_null());
+  EXPECT_GE((retry_time - connect_time).InMilliseconds(),
+            CalculateBackoff(2));
+
+  factory()->SetConnectResult(net::OK);
+  connect_time = base::TimeTicks::Now();
+  WaitForConnections();
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+
+  factory()->SignalConnectionReset();
+  EXPECT_NE(retry_time, factory()->NextRetryAttempt());
+  retry_time = factory()->NextRetryAttempt();
+  EXPECT_FALSE(retry_time.is_null());
+  EXPECT_GE((retry_time - connect_time).InMilliseconds(),
+            CalculateBackoff(3));
 }
 
 }  // namespace

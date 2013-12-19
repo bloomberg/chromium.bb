@@ -379,6 +379,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
     } else {
       handshake_complete_ = true;
       DVLOG(1) << "GCM Handshake complete.";
+      connection_callback_.Run(net::OK);
     }
   }
   read_callback_.Run(protobuf.Pass());
