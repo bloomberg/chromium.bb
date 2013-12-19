@@ -5545,18 +5545,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Force compositing mode' lab.">
         Uses GPU accelerated compositing on all pages, not just those that include GPU-accelerated layers.
       </message>
-      <message name="IDS_FLAGS_PRESENT_WITH_GDI_NAME" desc="Name of the 'First Present With GDI' experiment.">
-        Do SHOW Presents with GDI.
-      </message>
-      <message name="IDS_FLAGS_PRESENT_WITH_GDI_DESCRIPTION" desc="Description of the 'First Present With GDI' experiment.">
-        Speculative fix for http://crbug.com/169848
-      </message>
-      <message name="IDS_FLAGS_PRESENT_WITH_GDI_FIRST_SHOW" desc="Description of the 'First Show Present With GDI' experiment.">
-        First
-      </message>
-      <message name="IDS_FLAGS_PRESENT_WITH_GDI_ALL_SHOW" desc="Description of the 'All Show Present With GDI' experiment.">
-        All
-      </message>
       <message name="IDS_FLAGS_FORCE_HIGH_DPI_NAME" desc="Name of the 'Force high DPI mode' lab.">
         Force high DPI mode
       </message>
@@ -5624,12 +5612,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable deferred 2D canvas' lab.">
         Disables the deferral of 2d canvas rendering, causing draw operations to be completed immediately, before running the next javascript command.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_THREADED_ANIMATION_NAME" desc="Name of the 'Disable accelerated CSS animations' lab.">
-        Disable accelerated CSS animations
-      </message>
-      <message name="IDS_FLAGS_DISABLE_THREADED_ANIMATION_DESCRIPTION" desc="Description of the 'Disable accelerated CSS animations' lab.">
-        When threaded compositing is enabled, accelerated CSS animations run on the compositing thread. However, there may be performance gains running with accelerated CSS animations, even without the compositor thread.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
         Experimental Extension APIs
