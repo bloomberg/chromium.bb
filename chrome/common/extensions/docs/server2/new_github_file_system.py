@@ -149,19 +149,24 @@ class GithubFileSystem(FileSystem):
     repo_key, repo_url, username, password = (
         self._repo_key, self._repo_url, self._username, self._password)
 
-    def fetch_from_blobstore():
+    def fetch_from_blobstore(version):
       '''Returns a Future which resolves to the _GithubZipFile for this repo
       fetched from blobstore.
       '''
-      blob = self._blobstore.Get(repo_url, _GITHUB_REPOS_NAMESPACE)
+      blob = None
+      try:
+        blob = self._blobstore.Get(repo_url, _GITHUB_REPOS_NAMESPACE)
+      except blobstore.BlobNotFoundError:
+        pass
+
       if blob is None:
-        return FileSystemError.RaiseInFuture(
-            'No blob for %s found in datastore' % repo_key)
+        logging.warning('No blob for %s found in datastore' % repo_key)
+        return fetch_from_github(version)
 
       repo_zip = _GithubZipFile.Create(repo_key, blob)
       if repo_zip is None:
-        return FileSystemError.RaiseInFuture(
-            'Blob for %s was corrupted in blobstore!?' % repo_key)
+        logging.warning('Blob for %s was corrupted in blobstore!?' % repo_key)
+        return fetch_from_github(version)
 
       return Future(value=repo_zip)
 
@@ -197,9 +202,9 @@ class GithubFileSystem(FileSystem):
     # GitHub. If the stat hasn't changed since last time then no reason to
     # re-fetch from GitHub, just take from blobstore.
 
+    cached_version = self._stat_cache.Get(repo_key).Get()
     if self._up_to_date_cache.Get(repo_key).Get() is None:
       # This is either a cron or an instance where a cron has never been run.
-      cached_version = self._stat_cache.Get(repo_key).Get()
       live_version = self._FetchLiveVersion(username, password)
       if cached_version != live_version:
         # Note: branch intentionally triggered if |cached_version| is None.
@@ -210,10 +215,10 @@ class GithubFileSystem(FileSystem):
         # to True here since it'll already be set for instances, and it'll
         # never be set for crons.
         logging.info('%s is up to date.' % repo_url)
-        self._repo_zip = fetch_from_blobstore()
+        self._repo_zip = fetch_from_blobstore(cached_version)
     else:
       # Instance where cron has been run. It should be in blobstore.
-      self._repo_zip = fetch_from_blobstore()
+      self._repo_zip = fetch_from_blobstore(cached_version)
 
     assert self._repo_zip is not None
 

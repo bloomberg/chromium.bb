@@ -6,9 +6,9 @@ import json
 import logging
 from StringIO import StringIO
 
-import appengine_blobstore as blobstore
+from appengine_blobstore import AppEngineBlobstore, BLOBSTORE_GITHUB
 from appengine_url_fetcher import AppEngineUrlFetcher
-from appengine_wrappers import urlfetch
+from appengine_wrappers import urlfetch, blobstore
 from docs_server_utils import StringIdentity
 from file_system import FileSystem, StatInfo
 from future import Future
@@ -53,7 +53,7 @@ class _AsyncFetchFutureZip(object):
       return None
     if self._key_to_delete is not None:
       self._blobstore.Delete(_MakeBlobstoreKey(self._key_to_delete),
-                             blobstore.BLOBSTORE_GITHUB)
+                             BLOBSTORE_GITHUB)
     try:
       return_zip = ZipFile(StringIO(blob))
     except BadZipfile as e:
@@ -62,7 +62,7 @@ class _AsyncFetchFutureZip(object):
 
     self._blobstore.Set(_MakeBlobstoreKey(self._key_to_set),
                         blob,
-                        blobstore.BLOBSTORE_GITHUB)
+                        BLOBSTORE_GITHUB)
     return return_zip
 
 class GithubFileSystem(FileSystem):
@@ -70,7 +70,7 @@ class GithubFileSystem(FileSystem):
   def CreateChromeAppsSamples(object_store_creator):
     return GithubFileSystem(
         '%s/GoogleChrome/chrome-app-samples' % url_constants.GITHUB_REPOS,
-        blobstore.AppEngineBlobstore(),
+        AppEngineBlobstore(),
         object_store_creator)
 
   def __init__(self, url, blobstore, object_store_creator):
@@ -99,17 +99,15 @@ class GithubFileSystem(FileSystem):
 
   def _GetZip(self, version):
     try:
-      blob = self._blobstore.Get(_MakeBlobstoreKey(version),
-                                 blobstore.BLOBSTORE_GITHUB)
-    except:
+      blob = self._blobstore.Get(_MakeBlobstoreKey(version), BLOBSTORE_GITHUB)
+    except blobstore.BlobNotFoundError:
       self._zip_file = Future(value=None)
       return
     if blob is not None:
       try:
         self._zip_file = Future(value=ZipFile(StringIO(blob)))
       except BadZipfile as e:
-        self._blobstore.Delete(_MakeBlobstoreKey(version),
-                               blobstore.BLOBSTORE_GITHUB)
+        self._blobstore.Delete(_MakeBlobstoreKey(version), BLOBSTORE_GITHUB)
         logging.error('Bad github zip file: %s' % e)
         self._zip_file = Future(value=None)
     else:

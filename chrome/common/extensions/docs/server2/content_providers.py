@@ -100,13 +100,14 @@ class ContentProviders(object):
 
   def Cron(self):
     def safe(name, action, callback):
-      '''Safely runs |callback| for a ContentProvider called |name|. It's
-      important to run all ContentProvider Cron's even if some of them fail.
+      '''Safely runs |callback| for a ContentProvider called |name| by
+      swallowing exceptions and turning them into a None return value. It's
+      important to run all ContentProvider Crons even if some of them fail.
       '''
       try:
         return callback()
       except:
-        logging.error('Error %s Cron for ContentProvider "%s": %s' %
+        logging.error('Error %s Cron for ContentProvider "%s":\n%s' %
                       (action, name, traceback.format_exc()))
         return None
 

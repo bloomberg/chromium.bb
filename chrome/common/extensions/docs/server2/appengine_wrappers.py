@@ -97,6 +97,9 @@ except ImportError:
 
   _BLOBS = {}
   class FakeBlobstore(object):
+    class BlobNotFoundError(Exception):
+      pass
+
     class BlobReader(object):
       def __init__(self, blob_key):
         self._data = _BLOBS[blob_key].getvalue()
