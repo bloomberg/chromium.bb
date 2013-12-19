@@ -421,7 +421,7 @@ class GSContextTest(AbstractGSContextTest):
     """Test ability to get the generation of a file."""
     ctx = gs.GSContext()
     ctx.GetGeneration('gs://abc/1')
-    self.gs_mock.assertCommandContains(['getacl', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['acl', 'get', 'gs://abc/1'])
 
   def testCreateCached(self):
     """Test that the function runs through."""

@@ -584,7 +584,7 @@ class GSContext(object):
       True if the path exists; otherwise returns False.
     """
     try:
-      self.DoCommand(['getacl', path], redirect_stdout=True, **kwargs)
+      self.DoCommand(['acl', 'get', path], redirect_stdout=True, **kwargs)
     except GSNoSuchKey:
       return False
     return True
@@ -618,7 +618,7 @@ class GSContext(object):
       return 0
 
     try:
-      res = self.DoCommand(['-d', 'getacl', path],
+      res = self.DoCommand(['-d', 'acl', 'get', path],
                            error_code_ok=True, redirect_stdout=True)
     except GSNoSuchKey:
       # If a DoCommand throws an error, 'res' will be None, so _Header(...)
