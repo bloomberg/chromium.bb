@@ -528,6 +528,10 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
   SetBounds(bounds_in_screen);
   Show();
+#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
+  if (NeedsInputGrab())
+    window_->SetCapture();
+#endif
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
