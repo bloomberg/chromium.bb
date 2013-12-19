@@ -249,7 +249,8 @@ TEST_F(DataReductionProxySettingsTest, TestAuthenticationInit) {
       DataReductionProxySettings::GetDataReductionProxies();
   for (DataReductionProxySettings::DataReductionProxyList::iterator it =
            proxies.begin();  it != proxies.end(); ++it) {
-    net::HttpAuthCache::Entry* entry = cache.LookupByPath(*it, std::string());
+    net::HttpAuthCache::Entry* entry = cache.LookupByPath(*it,
+                                                          std::string("/"));
     EXPECT_TRUE(entry != NULL);
     EXPECT_EQ(net::HttpAuth::AUTH_SCHEME_SPDYPROXY, entry->scheme());
     EXPECT_EQ("SpdyProxy", entry->auth_challenge().substr(0,9));

@@ -193,12 +193,14 @@ void DataReductionProxySettings::InitDataReductionAuthentication(
         << "] challenge: [" << challenge << "] password: [" << password << "]";
 
     net::AuthCredentials credentials(base::string16(), password);
+    // |HttpAuthController| searches this cache by origin and path, the latter
+    // being '/' in the case of the data reduction proxy.
     auth_cache->Add(auth_origin,
                     realm,
                     net::HttpAuth::AUTH_SCHEME_SPDYPROXY,
                     challenge,
                     credentials,
-                    std::string()); // Proxy auth uses an empty path for lookup.
+                    std::string("/"));
   }
 }
 
