@@ -26,7 +26,7 @@ namespace {
 void LogErrors(PolicyErrorMap* errors) {
   PolicyErrorMap::const_iterator iter;
   for (iter = errors->begin(); iter != errors->end(); ++iter) {
-    string16 policy = ASCIIToUTF16(iter->first);
+    base::string16 policy = ASCIIToUTF16(iter->first);
     DLOG(WARNING) << "Policy " << policy << ": " << iter->second;
   }
 }

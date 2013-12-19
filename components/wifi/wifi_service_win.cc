@@ -529,7 +529,7 @@ void WiFiServiceImpl::CreateNetwork(
     return;
   }
 
-  string16 profile_xml16(UTF8ToUTF16(profile_xml));
+  base::string16 profile_xml16(UTF8ToUTF16(profile_xml));
   DWORD reason_code = 0u;
 
   error_code = WlanSetProfile_function_(client_,

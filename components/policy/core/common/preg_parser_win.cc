@@ -87,8 +87,10 @@ bool ReadField32(const uint8** cursor, const uint8* end, uint32* data) {
   return true;
 }
 
-// Reads a string field from a  file.
-bool ReadFieldString(const uint8** cursor, const uint8* end, string16* str) {
+// Reads a string field from a file.
+bool ReadFieldString(const uint8** cursor,
+                     const uint8* end,
+                     base::string16* str) {
   int current = -1;
   while ((current = NextChar(cursor, end)) > 0x0000)
     *str += current;
@@ -102,7 +104,7 @@ std::string DecodePRegStringValue(const std::vector<uint8>& data) {
     return std::string();
 
   const char16* chars = reinterpret_cast<const char16*>(vector_as_array(&data));
-  string16 result;
+  base::string16 result;
   std::transform(chars, chars + len - 1, std::back_inserter(result),
                  std::ptr_fun(base::ByteSwapToLE16));
   return UTF16ToUTF8(result);
@@ -147,16 +149,16 @@ bool DecodePRegValue(uint32 type,
 
 // Adds the record data passed via parameters to |dict| in case the data is
 // relevant policy for Chromium.
-void HandleRecord(const string16& key_name,
-                  const string16& value,
+void HandleRecord(const base::string16& key_name,
+                  const base::string16& value,
                   uint32 type,
                   const std::vector<uint8>& data,
                   RegistryDict* dict) {
   // Locate/create the dictionary to place the value in.
-  std::vector<string16> path;
+  std::vector<base::string16> path;
 
   Tokenize(key_name, kRegistryPathSeparator, &path);
-  for (std::vector<string16>::const_iterator entry(path.begin());
+  for (std::vector<base::string16>::const_iterator entry(path.begin());
        entry != path.end(); ++entry) {
     if (entry->empty())
       continue;
@@ -212,7 +214,7 @@ void HandleRecord(const string16& key_name,
 }
 
 bool ReadFile(const base::FilePath& file_path,
-              const string16& root,
+              const base::string16& root,
               RegistryDict* dict,
               PolicyLoadStatusSample* status) {
   base::MemoryMappedFile mapped_file;
@@ -251,8 +253,8 @@ bool ReadFile(const base::FilePath& file_path,
       break;
 
     // Read the record fields.
-    string16 key_name;
-    string16 value;
+    base::string16 key_name;
+    base::string16 value;
     uint32 type = 0;
     uint32 size = 0;
     std::vector<uint8> data;

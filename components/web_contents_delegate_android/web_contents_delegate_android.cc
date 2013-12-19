@@ -316,8 +316,8 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
 void WebContentsDelegateAndroid::ShowValidationMessage(
     WebContents* web_contents,
     const gfx::Rect& anchor_in_root_view,
-    const string16& main_text,
-    const string16& sub_text) {
+    const base::string16& main_text,
+    const base::string16& sub_text) {
   RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
   if (rwhv) {
     validation_message_bubble_.reset(

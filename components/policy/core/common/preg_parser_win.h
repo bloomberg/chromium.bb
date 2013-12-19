@@ -34,7 +34,7 @@ POLICY_EXPORT extern const char kPRegFileHeader[8];
 // |root| specifies the registry subtree the caller is interested in,
 // everything else gets ignored.
 POLICY_EXPORT bool ReadFile(const base::FilePath& file_path,
-                            const string16& root,
+                            const base::string16& root,
                             RegistryDict* dict,
                             PolicyLoadStatusSample* status);
 

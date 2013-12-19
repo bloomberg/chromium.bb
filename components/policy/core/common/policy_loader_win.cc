@@ -284,7 +284,7 @@ const base::FilePath::CharType PolicyLoaderWin::kPRegFileName[] =
 
 PolicyLoaderWin::PolicyLoaderWin(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const string16& chrome_policy_key,
+    const base::string16& chrome_policy_key,
     AppliedGPOListProvider* gpo_provider)
     : AsyncPolicyLoader(task_runner),
       is_initialized_(false),
@@ -318,7 +318,7 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 // static
 scoped_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const string16& chrome_policy_key) {
+    const base::string16& chrome_policy_key) {
   return make_scoped_ptr(
       new PolicyLoaderWin(task_runner,
                           chrome_policy_key,

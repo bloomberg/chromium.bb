@@ -52,14 +52,14 @@ class POLICY_EXPORT PolicyLoaderWin
   static const base::FilePath::CharType kPRegFileName[];
 
   PolicyLoaderWin(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                  const string16& chrome_policy_key,
+                  const base::string16& chrome_policy_key,
                   AppliedGPOListProvider* gpo_provider);
   virtual ~PolicyLoaderWin();
 
   // Creates a policy loader that uses the Win API to access GPO.
   static scoped_ptr<PolicyLoaderWin> Create(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const string16& chrome_policy_key);
+      const base::string16& chrome_policy_key);
 
   // AsyncPolicyLoader implementation.
   virtual void InitOnBackgroundThread() OVERRIDE;
@@ -107,7 +107,7 @@ class POLICY_EXPORT PolicyLoaderWin
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
 
   bool is_initialized_;
-  const string16 chrome_policy_key_;
+  const base::string16 chrome_policy_key_;
   class AppliedGPOListProvider* gpo_provider_;
 
   base::WaitableEvent user_policy_changed_event_;

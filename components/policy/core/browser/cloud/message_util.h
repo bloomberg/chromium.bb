@@ -14,17 +14,17 @@
 namespace policy {
 
 // Returns a string describing |status| suitable for display in UI.
-POLICY_EXPORT string16 FormatDeviceManagementStatus(
+POLICY_EXPORT base::string16 FormatDeviceManagementStatus(
     DeviceManagementStatus status);
 
 // Returns a string describing |validation_status| suitable for display in UI.
-POLICY_EXPORT string16 FormatValidationStatus(
+POLICY_EXPORT base::string16 FormatValidationStatus(
     CloudPolicyValidatorBase::Status validation_status);
 
 // Returns a textual description of |store_status| for display in the UI. If
 // |store_status| is STATUS_VALIDATION_FAILED, |validation_status| will be
 // consulted to create a description of the validation failure.
-POLICY_EXPORT string16 FormatStoreStatus(
+POLICY_EXPORT base::string16 FormatStoreStatus(
     CloudPolicyStore::Status store_status,
     CloudPolicyValidatorBase::Status validation_status);
 
