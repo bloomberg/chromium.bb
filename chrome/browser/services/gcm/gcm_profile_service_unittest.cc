@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/webdata/encryptor/encryptor.h"
@@ -200,6 +201,8 @@ class GCMProfileServiceTest : public testing::Test,
     permission_list->Append(Value::CreateStringValue("gcm"));
     manifest.Set(manifest_keys::kPermissions, permission_list);
 
+    // TODO(jianli): Once the GCM API enters stable, remove |channel|.
+    ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
     std::string error;
     scoped_refptr<Extension> extension =
         Extension::Create(path.AppendASCII(kTestExtensionName),
@@ -208,6 +211,7 @@ class GCMProfileServiceTest : public testing::Test,
                           Extension::NO_FLAGS,
                           &error);
     EXPECT_TRUE(extension.get()) << error;
+    EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kGcm));
 
     extension_service_->AddExtension(extension.get());
     return extension;
@@ -483,13 +487,6 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
   EXPECT_EQ(GCMClient::SUCCESS, result_);
 }
 
-// http://crbug.com/326321
-#if defined(OS_WIN)
-#define MAYBE_ReadRegistrationFromStateStore \
-    DISABLED_ReadRegistrationFromStateStore
-#else
-#define MAYBE_ReadRegistrationFromStateStore ReadRegistrationFromStateStore
-#endif
 TEST_F(GCMProfileServiceRegisterTest, ReadRegistrationFromStateStore) {
   scoped_refptr<Extension> extension(CreateExtension());
 
