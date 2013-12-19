@@ -115,6 +115,7 @@
 #include "core/frame/DOMSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/frame/animation/AnimationController.h"
@@ -1427,6 +1428,11 @@ Page* Document::page() const
     return m_frame ? m_frame->page() : 0;
 }
 
+FrameHost* Document::frameHost() const
+{
+    return m_frame ? m_frame->host() : 0;
+}
+
 Settings* Document::settings() const
 {
     return m_frame ? m_frame->settings() : 0;
@@ -2114,7 +2120,7 @@ void Document::setVisuallyOrdered()
 PassRefPtr<DocumentParser> Document::createParser()
 {
     if (isHTMLDocument()) {
-        bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this->page());
+        bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(page());
         return HTMLDocumentParser::create(toHTMLDocument(this), reportErrors);
     }
     // FIXME: this should probably pass the frame instead
@@ -2957,7 +2963,7 @@ void Document::updateViewportDescription()
 #ifndef NDEBUG
         m_didDispatchViewportPropertiesChanged = true;
 #endif
-        page()->chrome().dispatchViewportPropertiesDidChange(m_viewportDescription);
+        frameHost()->chrome().dispatchViewportPropertiesDidChange(m_viewportDescription);
     }
 }
 
@@ -3430,8 +3436,8 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             cache->handleFocusedUIElementChanged(oldFocusedElement.get(), newFocusedElement.get());
     }
 
-    if (!focusChangeBlocked && page())
-        page()->chrome().focusedNodeChanged(m_focusedElement.get());
+    if (!focusChangeBlocked && frameHost())
+        frameHost()->chrome().focusedNodeChanged(m_focusedElement.get());
 
 SetFocusedElementDone:
     updateStyleIfNeeded();
@@ -4636,8 +4642,8 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
         m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
-    Page* page = this->page();
-    if (!page)
+    FrameHost* host = frameHost();
+    if (!host)
         return;
 
     String messageURL = sourceURL;
@@ -4649,7 +4655,7 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
     }
-    page->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, state, 0);
+    host->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, state, 0);
 }
 
 void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
@@ -4659,8 +4665,8 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
         return;
     }
 
-    if (Page* page = this->page())
-        page->console().addMessage(source, level, message, String(), 0, 0, 0, 0, requestIdentifier);
+    if (FrameHost* host = frameHost())
+        host->console().addMessage(source, level, message, String(), 0, 0, 0, 0, requestIdentifier);
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-DOMWindow migration.
@@ -4837,7 +4843,7 @@ void Document::didAddTouchEventHandler(Node* handler)
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             scrollingCoordinator->touchEventTargetRectsDidChange(this);
         if (m_touchEventTargets->size() == 1)
-            page->chrome().client().needTouchEvents(true);
+            frameHost()->chrome().client().needTouchEvents(true);
     }
 }
 
@@ -4863,7 +4869,7 @@ void Document::didRemoveTouchEventHandler(Node* handler)
         if (frame->document() && frame->document()->hasTouchEventHandlers())
             return;
     }
-    page->chrome().client().needTouchEvents(false);
+    frameHost()->chrome().client().needTouchEvents(false);
 }
 
 void Document::didRemoveEventTargetNode(Node* handler)

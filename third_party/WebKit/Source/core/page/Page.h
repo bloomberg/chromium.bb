@@ -214,8 +214,6 @@ public:
     bool isPainting() const { return m_isPainting; }
 #endif
 
-    PageConsole& console() { return *m_console; }
-
     double timerAlignmentInterval() const;
 
     class MultisamplingChangedObserver {
@@ -298,8 +296,6 @@ private:
 #ifndef NDEBUG
     bool m_isPainting;
 #endif
-
-    const OwnPtr<PageConsole> m_console;
 
     HashSet<MultisamplingChangedObserver*> m_multisamplingChangedObservers;
 

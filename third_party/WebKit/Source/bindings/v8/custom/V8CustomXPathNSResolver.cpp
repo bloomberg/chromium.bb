@@ -37,7 +37,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 #include "core/page/PageConsole.h"
 #include "wtf/text/WTFString.h"
 
@@ -72,8 +72,8 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 
     if (lookupNamespaceURIFunc.IsEmpty() && !m_resolver->IsFunction()) {
         Frame* frame = activeDOMWindow()->frame();
-        if (frame && frame->page())
-            frame->page()->console().addMessage(JSMessageSource, ErrorMessageLevel, "XPathNSResolver does not have a lookupNamespaceURI method.");
+        if (frame && frame->host())
+            frame->host()->console().addMessage(JSMessageSource, ErrorMessageLevel, "XPathNSResolver does not have a lookupNamespaceURI method.");
         return nullAtom;
     }
 

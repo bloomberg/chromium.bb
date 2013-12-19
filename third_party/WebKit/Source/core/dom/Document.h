@@ -102,6 +102,7 @@ class FloatQuad;
 class FloatRect;
 class FormController;
 class Frame;
+class FrameHost;
 class FrameView;
 class HTMLAllCollection;
 class HTMLCanvasElement;
@@ -434,6 +435,7 @@ public:
 
     FrameView* view() const; // can be null
     Frame* frame() const { return m_frame; } // can be null
+    FrameHost* frameHost() const; // can be null
     Page* page() const; // can be null
     Settings* settings() const; // can be null
 

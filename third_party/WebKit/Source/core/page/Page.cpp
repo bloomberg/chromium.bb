@@ -128,7 +128,6 @@ Page::Page(PageClients& pageClients)
 #ifndef NDEBUG
     , m_isPainting(false)
 #endif
-    , m_console(PageConsole::create(this))
     , m_frameHost(FrameHost::create(*this))
 {
     ASSERT(m_editorClient);

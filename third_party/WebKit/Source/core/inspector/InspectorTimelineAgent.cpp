@@ -34,6 +34,7 @@
 #include "core/events/Event.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
@@ -48,6 +49,7 @@
 #include "core/inspector/TimelineRecordFactory.h"
 #include "core/inspector/TraceEventDispatcher.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -56,7 +58,6 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/network/ResourceRequest.h"
-
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -410,7 +411,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
         String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
-        page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message);
+        frameHost()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message);
     }
     m_consoleTimelines.clear();
 
@@ -792,7 +793,7 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
         return;
 
     String message = String::format("Timeline '%s' started.", title.utf8().data());
-    page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
+    frameHost()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
     m_consoleTimelines.append(title);
     if (!isStarted()) {
         innerStart();
@@ -810,7 +811,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     size_t index = m_consoleTimelines.find(title);
     if (index == kNotFound) {
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
-        page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
+        frameHost()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
         return;
     }
 
@@ -821,7 +822,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
         unwindRecordStack();
         innerStop(true);
     }
-    page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
+    frameHost()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
 }
 
 void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
@@ -1233,9 +1234,11 @@ double InspectorTimelineAgent::timestamp()
     return m_timeConverter.fromMonotonicallyIncreasingTime(WTF::monotonicallyIncreasingTime());
 }
 
-Page* InspectorTimelineAgent::page()
+FrameHost* InspectorTimelineAgent::frameHost() const
 {
-    return m_pageAgent ? m_pageAgent->page() : 0;
+    if (!m_pageAgent || !m_pageAgent->page())
+        return 0;
+    return &m_pageAgent->page()->frameHost();
 }
 
 PassRefPtr<JSONObject> InspectorTimelineAgent::createRecordForEvent(const TraceEventDispatcher::TraceEvent& event, const String& type, PassRefPtr<JSONObject> data)

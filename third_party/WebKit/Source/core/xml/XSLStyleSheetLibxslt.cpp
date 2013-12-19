@@ -26,7 +26,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/TransformSource.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 #include "core/xml/XSLImportRule.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
@@ -130,8 +130,8 @@ bool XSLStyleSheet::parseString(const String& source)
 
     PageConsole* console = 0;
     Frame* frame = ownerDocument()->frame();
-    if (frame && frame->page())
-        console = &frame->page()->console();
+    if (frame && frame->host())
+        console = &frame->host()->console();
 
     XMLDocumentParserScope scope(fetcher(), XSLTProcessor::genericErrorFunc, XSLTProcessor::parseErrorFunc, console);
     XMLParserInput input(source);

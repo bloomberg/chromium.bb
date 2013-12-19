@@ -56,8 +56,10 @@ class DOMWindow;
 class Document;
 class DocumentLoader;
 class Event;
+class ExecutionContext;
 class FloatQuad;
 class Frame;
+class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
 class InspectorClient;
@@ -68,7 +70,6 @@ class InspectorPageAgent;
 class InstrumentingAgents;
 class KURL;
 class Node;
-class Page;
 class RenderImage;
 class RenderObject;
 class ResourceError;
@@ -77,9 +78,8 @@ class ResourceRequest;
 class ResourceResponse;
 class ScriptArguments;
 class ScriptCallStack;
-class TimelineRecordStack;
-class ExecutionContext;
 class ScriptState;
+class TimelineRecordStack;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
 class XMLHttpRequest;
@@ -296,7 +296,8 @@ private:
     void releaseNodeIds();
 
     double timestamp();
-    Page* page();
+
+    FrameHost* frameHost() const;
 
     bool isStarted();
     void innerStart();

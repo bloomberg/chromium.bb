@@ -33,13 +33,16 @@
 
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class Page;
+class PageConsole;
 class Chrome;
 class Settings;
+class UseCounter;
 
 // FrameHost is the set of global data shared between multiple frames
 // and is provided by the embedder to each frame when created.
@@ -60,6 +63,8 @@ public:
 
     Settings& settings() const;
     Chrome& chrome() const;
+    PageConsole& console() const;
+    UseCounter& useCounter() const;
 
     // Corresponds to pixel density of the device where this Page is
     // being displayed. In multi-monitor setups this can vary between pages.
@@ -70,6 +75,7 @@ private:
     explicit FrameHost(Page&);
 
     Page& m_page;
+    const OwnPtr<PageConsole> m_console;
 };
 
 }

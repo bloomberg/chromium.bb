@@ -32,7 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMWindow.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 #include "core/page/PageConsole.h"
 #include "public/platform/Platform.h"
 
@@ -569,12 +569,12 @@ void UseCounter::didCommitLoad()
 
 void UseCounter::count(const Document& document, Feature feature)
 {
-    Page* page = document.page();
-    if (!page)
+    FrameHost* host = document.frameHost();
+    if (!host)
         return;
 
-    ASSERT(page->useCounter().deprecationMessage(feature).isEmpty());
-    page->useCounter().recordMeasurement(feature);
+    ASSERT(host->useCounter().deprecationMessage(feature).isEmpty());
+    host->useCounter().recordMeasurement(feature);
 }
 
 void UseCounter::count(const DOMWindow* domWindow, Feature feature)
@@ -601,13 +601,13 @@ void UseCounter::countDeprecation(const DOMWindow* window, Feature feature)
 
 void UseCounter::countDeprecation(const Document& document, Feature feature)
 {
-    Page* page = document.page();
-    if (!page)
+    FrameHost* host = document.frameHost();
+    if (!host)
         return;
 
-    if (page->useCounter().recordMeasurement(feature)) {
-        ASSERT(!page->useCounter().deprecationMessage(feature).isEmpty());
-        page->console().addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter().deprecationMessage(feature));
+    if (host->useCounter().recordMeasurement(feature)) {
+        ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
+        host->console().addMessage(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature));
     }
 }
 
@@ -710,8 +710,8 @@ void UseCounter::count(Feature feature)
 
 UseCounter* UseCounter::getFrom(const Document* document)
 {
-    if (document && document->page())
-        return &document->page()->useCounter();
+    if (document && document->frameHost())
+        return &document->frameHost()->useCounter();
     return 0;
 }
 

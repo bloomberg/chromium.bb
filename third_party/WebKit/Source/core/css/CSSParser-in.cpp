@@ -76,10 +76,11 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/Settings.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/PageConsole.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/FloatConversion.h"
@@ -237,7 +238,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, cons
     setStyleSheet(sheet);
     m_defaultNamespace = starAtom; // Reset the default namespace.
     m_sourceDataHandler = sourceDataHandler;
-    m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->page();
+    m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->frameHost();
     m_ignoreErrors = false;
     m_tokenizer.m_lineNumber = 0;
     m_startPosition = startPosition;
@@ -1173,7 +1174,7 @@ bool CSSParser::parseColor(const String& string)
 
 bool CSSParser::parseSystemColor(RGBA32& color, const String& string, Document* document)
 {
-    if (!document || !document->page())
+    if (!document)
         return false;
 
     CSSParserString cssColor;
@@ -9858,7 +9859,6 @@ void CSSParser::logError(const String& message, const CSSParserLocation& locatio
 {
     unsigned lineNumberInStyleSheet;
     unsigned columnNumber = 0;
-    PageConsole& console = m_styleSheet->singleOwnerDocument()->page()->console();
     if (InspectorInstrumentation::hasFrontends()) {
         ensureLineEndings();
         TextPosition tokenPosition = TextPosition::fromOffsetAndLineEndings(location.offset, *m_lineEndings);
@@ -9867,6 +9867,7 @@ void CSSParser::logError(const String& message, const CSSParserLocation& locatio
     } else {
         lineNumberInStyleSheet = location.lineNumber;
     }
+    PageConsole& console = m_styleSheet->singleOwnerDocument()->frameHost()->console();
     console.addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
 }
 

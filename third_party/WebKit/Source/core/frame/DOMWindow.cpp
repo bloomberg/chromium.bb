@@ -62,6 +62,7 @@
 #include "core/frame/DOMPoint.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/frame/Location.h"
@@ -710,7 +711,7 @@ PageConsole* DOMWindow::pageConsole() const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
-    return m_frame->page() ? &m_frame->page()->console() : 0;
+    return m_frame->host() ? &m_frame->host()->console() : 0;
 }
 
 ApplicationCache* DOMWindow::applicationCache() const
@@ -819,11 +820,11 @@ Storage* DOMWindow::localStorage(ExceptionState& exceptionState) const
         return m_localStorage.get();
     }
 
-    Page* page = document->page();
-    if (!page)
+    FrameHost* host = document->frameHost();
+    if (!host)
         return 0;
 
-    if (!page->settings().localStorageEnabled())
+    if (!host->settings().localStorageEnabled())
         return 0;
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
@@ -934,8 +935,8 @@ void DOMWindow::focus(ExecutionContext* context)
     if (!m_frame)
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
     bool allowFocus = WindowFocusAllowedIndicator::windowFocusAllowed();
@@ -948,7 +949,7 @@ void DOMWindow::focus(ExecutionContext* context)
 
     // If we're a top level window, bring the window to the front.
     if (m_frame->isMainFrame() && allowFocus)
-        page->chrome().focus();
+        host->chrome().focus();
 
     if (!m_frame)
         return;
@@ -962,14 +963,11 @@ void DOMWindow::blur()
 
 void DOMWindow::close(ExecutionContext* context)
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->isMainFrame())
         return;
 
     Page* page = m_frame->page();
     if (!page)
-        return;
-
-    if (m_frame != page->mainFrame())
         return;
 
     if (context) {
@@ -1001,8 +999,8 @@ void DOMWindow::print()
     if (!m_frame)
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
     if (m_frame->loader().activeDocumentLoader()->isLoading()) {
@@ -1010,7 +1008,7 @@ void DOMWindow::print()
         return;
     }
     m_shouldPrintWhenFinishedLoading = false;
-    page->chrome().print(m_frame);
+    host->chrome().print(m_frame);
 }
 
 void DOMWindow::stop()
@@ -1027,11 +1025,11 @@ void DOMWindow::alert(const String& message)
 
     m_frame->document()->updateStyleIfNeeded();
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
-    page->chrome().runJavaScriptAlert(m_frame, message);
+    host->chrome().runJavaScriptAlert(m_frame, message);
 }
 
 bool DOMWindow::confirm(const String& message)
@@ -1041,11 +1039,11 @@ bool DOMWindow::confirm(const String& message)
 
     m_frame->document()->updateStyleIfNeeded();
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return false;
 
-    return page->chrome().runJavaScriptConfirm(m_frame, message);
+    return host->chrome().runJavaScriptConfirm(m_frame, message);
 }
 
 String DOMWindow::prompt(const String& message, const String& defaultValue)
@@ -1055,12 +1053,12 @@ String DOMWindow::prompt(const String& message, const String& defaultValue)
 
     m_frame->document()->updateStyleIfNeeded();
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return String();
 
     String returnValue;
-    if (page->chrome().runJavaScriptPrompt(m_frame, message, defaultValue, returnValue))
+    if (host->chrome().runJavaScriptPrompt(m_frame, message, defaultValue, returnValue))
         return returnValue;
 
     return String();
@@ -1085,13 +1083,13 @@ int DOMWindow::outerHeight() const
     if (!m_frame)
         return 0;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return 0;
 
-    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(page->chrome().windowRect().height() * page->deviceScaleFactor());
-    return static_cast<int>(page->chrome().windowRect().height());
+    if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(host->chrome().windowRect().height() * host->deviceScaleFactor());
+    return static_cast<int>(host->chrome().windowRect().height());
 }
 
 int DOMWindow::outerWidth() const
@@ -1099,13 +1097,13 @@ int DOMWindow::outerWidth() const
     if (!m_frame)
         return 0;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return 0;
 
-    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(page->chrome().windowRect().width() * page->deviceScaleFactor());
-    return static_cast<int>(page->chrome().windowRect().width());
+    if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(host->chrome().windowRect().width() * host->deviceScaleFactor());
+    return static_cast<int>(host->chrome().windowRect().width());
 }
 
 int DOMWindow::innerHeight() const
@@ -1145,13 +1143,13 @@ int DOMWindow::screenX() const
     if (!m_frame)
         return 0;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return 0;
 
-    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(page->chrome().windowRect().x() * page->deviceScaleFactor());
-    return static_cast<int>(page->chrome().windowRect().x());
+    if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(host->chrome().windowRect().x() * host->deviceScaleFactor());
+    return static_cast<int>(host->chrome().windowRect().x());
 }
 
 int DOMWindow::screenY() const
@@ -1159,13 +1157,13 @@ int DOMWindow::screenY() const
     if (!m_frame)
         return 0;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return 0;
 
-    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(page->chrome().windowRect().y() * page->deviceScaleFactor());
-    return static_cast<int>(page->chrome().windowRect().y());
+    if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(host->chrome().windowRect().y() * host->deviceScaleFactor());
+    return static_cast<int>(host->chrome().windowRect().y());
 }
 
 int DOMWindow::scrollX() const
