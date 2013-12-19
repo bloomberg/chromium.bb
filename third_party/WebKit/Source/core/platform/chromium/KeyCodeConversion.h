@@ -31,11 +31,9 @@
 #ifndef KeyCodeConversion_h
 #define KeyCodeConversion_h
 
-#include "platform/PlatformExport.h"
-
 namespace WebCore {
 
-PLATFORM_EXPORT int windowsKeyCodeForKeyEvent(unsigned keycode);
+    int windowsKeyCodeForKeyEvent(unsigned keycode);
 
 } // namespace WebCore
 

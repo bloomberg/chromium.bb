@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "platform/KeyCodeConversion.h"
+#include "core/platform/chromium/KeyCodeConversion.h"
 #include "platform/KeyboardCodes.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtest/gtest.h>
