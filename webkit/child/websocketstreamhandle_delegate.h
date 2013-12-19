@@ -33,7 +33,7 @@ class WebSocketStreamHandleDelegate {
   virtual void DidClose(blink::WebSocketStreamHandle*) {}
   virtual void DidFail(blink::WebSocketStreamHandle* handle,
                        int error_code,
-                       const string16& error_msg) {}
+                       const base::string16& error_msg) {}
 
  protected:
   virtual ~WebSocketStreamHandleDelegate() {}
