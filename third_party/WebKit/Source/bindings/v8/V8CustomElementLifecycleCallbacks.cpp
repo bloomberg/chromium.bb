@@ -90,7 +90,7 @@ static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T> >& da
 
 V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(enteredView, leftView, attributeChanged))
-    , ActiveDOMCallback(executionContext)
+    , ContextLifecycleObserver(executionContext)
     , m_owner(0)
     , m_world(DOMWrapperWorld::current())
     , m_prototype(toIsolate(executionContext), prototype)
@@ -149,7 +149,10 @@ bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owne
 
 void V8CustomElementLifecycleCallbacks::created(Element* element)
 {
-    if (!canInvokeCallback())
+    // FIXME: callbacks while paused should be queued up for execution to
+    // continue then be delivered in order rather than delivered immediately.
+    // Bug 329665 tracks similar behavior for other synchronous events.
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
     element->setCustomElementState(Element::Upgraded);
@@ -199,7 +202,10 @@ void V8CustomElementLifecycleCallbacks::leftView(Element* element)
 
 void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (!canInvokeCallback())
+    // FIXME: callbacks while paused should be queued up for execution to
+    // continue then be delivered in order rather than delivered immediately.
+    // Bug 329665 tracks similar behavior for other synchronous events.
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
     v8::Isolate* isolate = toIsolate(executionContext());
@@ -230,7 +236,10 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
 
 void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function>& weakCallback, Element* element)
 {
-    if (!canInvokeCallback())
+    // FIXME: callbacks while paused should be queued up for execution to
+    // continue then be delivered in order rather than delivered immediately.
+    // Bug 329665 tracks similar behavior for other synchronous events.
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
     v8::HandleScope handleScope(toIsolate(executionContext()));
