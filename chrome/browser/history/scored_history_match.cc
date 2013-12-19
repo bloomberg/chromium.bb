@@ -27,7 +27,7 @@ namespace history {
 // ScoredHistoryMatch ----------------------------------------------------------
 
 // static
-const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10u;
+const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10;
 const int ScoredHistoryMatch::kDaysToPrecomputeRecencyScoresFor = 366;
 const int ScoredHistoryMatch::kMaxRawTermScore = 30;
 float* ScoredHistoryMatch::raw_term_score_to_topicality_score_ = NULL;
@@ -319,23 +319,17 @@ float ScoredHistoryMatch::GetTopicalityScore(
       url.find('/', colon_pos + 3) : url.find('/');
   size_t last_part_of_hostname_pos =
       (end_of_hostname_pos != std::string::npos) ?
-      url.rfind('.', end_of_hostname_pos) :
-      url.rfind('.');
+      url.rfind('.', end_of_hostname_pos) : url.rfind('.');
   // Loop through all URL matches and score them appropriately.
   // First, filter all matches not at a word boundary and in the path (or
   // later).
   url_matches_ = FilterTermMatchesByWordStarts(
-      url_matches_,
-      word_starts.url_word_starts_,
-      end_of_hostname_pos,
+      url_matches_, word_starts.url_word_starts_, end_of_hostname_pos,
       std::string::npos);
   if (colon_pos != std::string::npos) {
     // Also filter matches not at a word boundary and in the scheme.
     url_matches_ = FilterTermMatchesByWordStarts(
-        url_matches_,
-        word_starts.url_word_starts_,
-        0u,
-        colon_pos);
+        url_matches_, word_starts.url_word_starts_, 0, colon_pos);
   }
   for (TermMatches::const_iterator iter = url_matches_.begin();
        iter != url_matches_.end(); ++iter) {
@@ -385,7 +379,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
   end_word_starts = word_starts.title_word_starts_.end();
   int word_num = 0;
   title_matches_ = FilterTermMatchesByWordStarts(
-      title_matches_, word_starts.title_word_starts_, 0u, std::string::npos);
+      title_matches_, word_starts.title_word_starts_, 0, std::string::npos);
   for (TermMatches::const_iterator iter = title_matches_.begin();
        iter != title_matches_.end(); ++iter) {
     // Advance next_word_starts until it's >= the position of the term
