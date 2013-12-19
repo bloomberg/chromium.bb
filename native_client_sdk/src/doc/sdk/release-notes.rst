@@ -7,6 +7,25 @@ Release Notes
 This page provides notes for all releases of the Native Client SDK (including
 releases that have been or will be published subsequent to Pepper 28).
 
+Chrome 33 Release (branched on December 16 2013)
+================================================
+
+Portable Native Client
+----------------------
+
+PNaCl's default C++ standard library is now LLVM's own libc++, based on
+LLVM 3.3. It also now supports optional ``setjmp``/``longjmp`` exception
+handling. See the `announcement
+<https://groups.google.com/forum/#!topic/native-client-discuss/0spfg6O04FM>`_
+for more details.
+
+SDK
+---
+
+* Add FUSE mount.
+* Make common.js load the Release nexe/pexe by default.
+* Fix "make debug" and "make run" on Mac.
+
 PNaCl enabled by default in Chrome 31 (12 Nov 2013)
 ===================================================
 
