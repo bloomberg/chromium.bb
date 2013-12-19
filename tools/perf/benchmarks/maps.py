@@ -20,13 +20,12 @@ class MapsMeasurement(page_measurement.PageMeasurement):
 
     total = re.search('total=([0-9]+)', test_results).group(1)
     render = re.search('render=([0-9.]+),([0-9.]+)', test_results).group(2)
-    results.Add('total_time', 'ms', total)
-    results.Add('render_mean_time', 'ms', render)
+    results.Add('total_time', 'ms', float(total))
+    results.Add('render_mean_time', 'ms', float(render))
 
 class MapsBenchmark(test.Test):
   """Basic Google Maps benchmarks."""
   test = MapsMeasurement
-  enabled = False
 
   def CreatePageSet(self, options):
     page_set_path = os.path.join(
