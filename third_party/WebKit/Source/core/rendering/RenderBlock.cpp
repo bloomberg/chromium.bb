@@ -4789,15 +4789,10 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
 static inline unsigned firstLetterLength(const String& text)
 {
     unsigned length = 0;
-    bool punctuationOpen = false;
 
     // Account for leading spaces and punctuation.
-    while (length < text.length() && shouldSkipForFirstLetter((text)[length])) {
-        if (isPunctuationForFirstLetter((text)[length]))
-            punctuationOpen = true;
-
+    while (length < text.length() && shouldSkipForFirstLetter((text)[length]))
         length++;
-    }
 
     // Bail if we didn't find a letter
     if (text.length() && length == text.length())
@@ -4805,9 +4800,6 @@ static inline unsigned firstLetterLength(const String& text)
 
     // Account for first letter.
     length++;
-
-    if (!punctuationOpen)
-        return length;
 
     // Keep looking for whitespace and allowed punctuation, but avoid
     // accumulating just whitespace into the :first-letter.
