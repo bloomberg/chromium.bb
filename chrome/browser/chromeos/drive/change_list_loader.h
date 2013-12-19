@@ -111,18 +111,22 @@ class ChangeListLoader {
   // |callback| to the callback queue of the already running job.
   void Load(const DirectoryFetchInfo& directory_fetch_info,
             const FileOperationCallback& callback);
-
-  // Part of Load(). DoInitialLoad() is called if it is the first time to Load.
-  // Otherwise DoUpdateLoad() is used. The difference of two cases are:
-  // - When we could load from cache, DoInitialLoad runs callback immediately
-  //   and further operations (check changestamp and load from server if needed)
-  //   in background.
-  // - Even when |directory_fetch_info| is set, DoInitialLoad runs change list
-  //   loading after directory loading is finished.
-  void DoInitialLoad(const DirectoryFetchInfo& directory_fetch_info,
-                     int64 local_changestamp);
-  void DoUpdateLoad(const DirectoryFetchInfo& directory_fetch_info,
-                    int64 local_changestamp);
+  void LoadAfterGetLargestChangestamp(
+      const DirectoryFetchInfo& directory_fetch_info,
+      bool is_initial_load,
+      int64 local_changestamp);
+  void LoadAfterGetAboutResource(
+      const DirectoryFetchInfo& directory_fetch_info,
+      bool is_initial_load,
+      int64 local_changestamp,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+  void LoadAfterLoadDirectory(
+      const DirectoryFetchInfo& directory_fetch_info,
+      scoped_ptr<google_apis::AboutResource> about_resource,
+      bool is_initial_load,
+      int64 start_changestamp,
+      FileError error);
 
   // Part of Load().
   // This function should be called when the change list load is complete.
@@ -136,31 +140,6 @@ class ChangeListLoader {
                                FileError error);
 
   // ================= Implementation for change list loading =================
-
-  // Initiates the change list loading from the server when |local_changestamp|
-  // is older than the server changestamp. If |directory_fetch_info| is set,
-  // do directory loading before change list loading.
-  void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                              int64 local_changestamp);
-
-  // Part of LoadFromServerIfNeeded().
-  // Called after GetAboutResource() for getting remote changestamp is complete.
-  void LoadFromServerIfNeededAfterGetAbout(
-      const DirectoryFetchInfo& directory_fetch_info,
-      int64 local_changestamp,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-
-  // Part of LoadFromServerIfNeeded().
-  // When LoadFromServerIfNeeded is called with |directory_fetch_info| for a
-  // specific directory, it tries to load the directory before loading the
-  // content of full filesystem. This method is called after directory loading
-  // is finished, and proceeds to the normal pass: LoadChangeListServer.
-  void LoadFromServerIfNeededAfterLoadDirectory(
-      const DirectoryFetchInfo& directory_fetch_info,
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      int64 start_changestamp,
-      FileError error);
 
   // Part of LoadFromServerIfNeeded().
   // Starts loading the change list since |start_changestamp|, or the full
@@ -196,13 +175,6 @@ class ChangeListLoader {
   // Runs |callback| when it is finished.
   void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
                                  const FileOperationCallback& callback);
-
-  // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
-  void DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Part of DoLoadDirectoryFromServer() for a normal directory.
   void DoLoadDirectoryFromServerAfterLoad(
