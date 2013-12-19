@@ -43,8 +43,8 @@ class MultiProfileUserController {
   // Starts to observe the multiprofile user behavior pref of the given profile.
   void StartObserving(Profile* user_profile);
 
-  // Removes the cached value for the given user.
-  void RemoveCachedValue(const std::string& user_email);
+  // Removes the cached values for the given user.
+  void RemoveCachedValues(const std::string& user_email);
 
   // Possible behavior values.
   static const char kBehaviorUnrestricted[];

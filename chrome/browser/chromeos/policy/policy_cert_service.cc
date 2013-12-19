@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 
@@ -21,20 +21,32 @@ PolicyCertService::~PolicyCertService() {
 }
 
 PolicyCertService::PolicyCertService(
+    const std::string& user_id,
     UserNetworkConfigurationUpdater* net_conf_updater,
-    PrefService* user_prefs)
+    chromeos::UserManager* user_manager)
     : cert_verifier_(NULL),
+      user_id_(user_id),
       net_conf_updater_(net_conf_updater),
-      user_prefs_(user_prefs),
+      user_manager_(user_manager),
+      has_trust_anchors_(false),
       weak_ptr_factory_(this) {
   DCHECK(net_conf_updater_);
-  DCHECK(user_prefs_);
+  DCHECK(user_manager_);
 }
 
+PolicyCertService::PolicyCertService(const std::string& user_id,
+                                     PolicyCertVerifier* verifier,
+                                     chromeos::UserManager* user_manager)
+    : cert_verifier_(verifier),
+      user_id_(user_id),
+      net_conf_updater_(NULL),
+      user_manager_(user_manager),
+      has_trust_anchors_(false),
+      weak_ptr_factory_(this) {}
+
 scoped_ptr<PolicyCertVerifier> PolicyCertService::CreatePolicyCertVerifier() {
-  base::Closure callback =
-      base::Bind(&PolicyCertService::SetUsedPolicyCertificatesOnce,
-                 weak_ptr_factory_.GetWeakPtr());
+  base::Closure callback = base::Bind(
+      &PolicyCertServiceFactory::SetUsedPolicyCertificates, user_id_);
   cert_verifier_ = new PolicyCertVerifier(
       base::Bind(base::IgnoreResult(&content::BrowserThread::PostTask),
                  content::BrowserThread::UI,
@@ -55,6 +67,19 @@ scoped_ptr<PolicyCertVerifier> PolicyCertService::CreatePolicyCertVerifier() {
 void PolicyCertService::OnTrustAnchorsChanged(
     const net::CertificateList& trust_anchors) {
   DCHECK(cert_verifier_);
+
+  // Do not use certificates installed via ONC policy if the current session has
+  // multiple profiles. This is important to make sure that any possibly tainted
+  // data is absolutely confined to the managed profile and never, ever leaks to
+  // any other profile.
+  if (!trust_anchors.empty() && user_manager_->GetLoggedInUsers().size() > 1u) {
+    LOG(ERROR) << "Ignoring ONC-pushed certificates update because multiple "
+               << "users are logged in.";
+    return;
+  }
+
+  has_trust_anchors_ = !trust_anchors.empty();
+
   // It's safe to use base::Unretained here, because it's guaranteed that
   // |cert_verifier_| outlives this object (see description of
   // CreatePolicyCertVerifier).
@@ -69,19 +94,24 @@ void PolicyCertService::OnTrustAnchorsChanged(
 }
 
 bool PolicyCertService::UsedPolicyCertificates() const {
-  return user_prefs_->GetBoolean(prefs::kUsedPolicyCertificatesOnce);
+  return PolicyCertServiceFactory::UsedPolicyCertificates(user_id_);
 }
 
 void PolicyCertService::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
-  net_conf_updater_->RemoveTrustedCertsObserver(this);
+  if (net_conf_updater_)
+    net_conf_updater_->RemoveTrustedCertsObserver(this);
   OnTrustAnchorsChanged(net::CertificateList());
   net_conf_updater_ = NULL;
-  user_prefs_ = NULL;
 }
 
-void PolicyCertService::SetUsedPolicyCertificatesOnce() {
-  user_prefs_->SetBoolean(prefs::kUsedPolicyCertificatesOnce, true);
+// static
+scoped_ptr<PolicyCertService> PolicyCertService::CreateForTesting(
+    const std::string& user_id,
+    PolicyCertVerifier* verifier,
+    chromeos::UserManager* user_manager) {
+  return make_scoped_ptr(
+      new PolicyCertService(user_id, verifier, user_manager));
 }
 
 }  // namespace policy

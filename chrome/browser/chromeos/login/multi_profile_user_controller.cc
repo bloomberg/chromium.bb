@@ -11,7 +11,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/chromeos/login/multi_profile_user_controller_delegate.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -67,9 +70,10 @@ bool MultiProfileUserController::IsUserAllowedInSession(
   UserManager* user_manager = UserManager::Get();
   CHECK(user_manager);
 
+  const User* primary_user = user_manager->GetPrimaryUser();
   std::string primary_user_email;
-  if (user_manager->GetPrimaryUser())
-    primary_user_email = user_manager->GetPrimaryUser()->email();
+  if (primary_user)
+    primary_user_email = primary_user->email();
 
   // Always allow if there is no primary user or user being checked is the
   // primary user.
@@ -78,6 +82,30 @@ bool MultiProfileUserController::IsUserAllowedInSession(
 
   // Owner is not allowed to be secondary user.
   if (user_manager->GetOwnerEmail() == user_email)
+    return false;
+
+  // Don't allow profiles potentially tainted by data fetched with policy-pushed
+  // certificates to join a multiprofile session.
+  if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(user_email))
+    return false;
+
+  // Don't allow any secondary profiles if the primary profile is tainted.
+  if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(
+          primary_user_email)) {
+    // Check directly in local_state before checking if the primary user has
+    // a PolicyCertService. His profile may have been tainted previously though
+    // he didn't get a PolicyCertService created for this session.
+    return false;
+  }
+
+  // If the primary profile already has policy certificates installed but hasn't
+  // used them yet then it can become tainted at any time during this session;
+  // disable secondary profiles in this case too.
+  Profile* profile =
+      primary_user ? user_manager->GetProfileByUser(primary_user) : NULL;
+  policy::PolicyCertService* service =
+      profile ? policy::PolicyCertServiceFactory::GetForProfile(profile) : NULL;
+  if (service && service->has_policy_certificates())
     return false;
 
   // No user is allowed if the primary user policy forbids it.
@@ -107,11 +135,12 @@ void MultiProfileUserController::StartObserving(Profile* user_profile) {
   OnUserPrefChanged(user_profile);
 }
 
-void MultiProfileUserController::RemoveCachedValue(
+void MultiProfileUserController::RemoveCachedValues(
     const std::string& user_email) {
   DictionaryPrefUpdate update(local_state_,
                               prefs::kCachedMultiProfileUserBehavior);
   update->RemoveWithoutPathExpansion(user_email, NULL);
+  policy::PolicyCertServiceFactory::ClearUsedPolicyCertificates(user_email);
 }
 
 std::string MultiProfileUserController::GetCachedValue(

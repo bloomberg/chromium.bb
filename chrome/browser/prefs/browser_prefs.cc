@@ -154,6 +154,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
@@ -306,6 +307,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::AutoEnrollmentClient::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);
+  policy::PolicyCertServiceFactory::RegisterPrefs(registry);
 #endif
 
 #if defined(OS_MACOSX)

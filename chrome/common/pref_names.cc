@@ -2259,6 +2259,10 @@ const char kOobeComplete[] = "OobeComplete";
 // A boolean pref of the device registered flag (second part after first login).
 const char kDeviceRegistered[] = "DeviceRegistered";
 
+// List of usernames that used certificates pushed by policy before.
+// This is used to prevent these users from joining multiprofile sessions.
+const char kUsedPolicyCertificates[] = "policy.used_policy_certificates";
+
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

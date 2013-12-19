@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_FACTORY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,6 +14,7 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
+class PrefRegistrySimple;
 class Profile;
 
 namespace policy {
@@ -36,6 +39,14 @@ class PolicyCertServiceFactory : public BrowserContextKeyedServiceFactory {
   static scoped_ptr<PolicyCertVerifier> CreateForProfile(Profile* profile);
 
   static PolicyCertServiceFactory* GetInstance();
+
+  // Used to mark or clear |user_id| as having used certificates pushed by
+  // policy before.
+  static void SetUsedPolicyCertificates(const std::string& user_id);
+  static void ClearUsedPolicyCertificates(const std::string& user_id);
+  static bool UsedPolicyCertificates(const std::string& user_id);
+
+  static void RegisterPrefs(PrefRegistrySimple* local_state);
 
  private:
   friend struct DefaultSingletonTraits<PolicyCertServiceFactory>;

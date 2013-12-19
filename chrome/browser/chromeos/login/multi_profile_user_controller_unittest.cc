@@ -5,10 +5,14 @@
 #include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -16,6 +20,8 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -78,6 +84,15 @@ const BehaviorTestCase kBehaviorTestCases[] = {
   },
 };
 
+policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
+
+BrowserContextKeyedService* TestPolicyCertServiceFactory(
+    content::BrowserContext* context) {
+  return policy::PolicyCertService::CreateForTesting(
+      kUsers[0], g_policy_cert_verifier_for_factory, UserManager::Get())
+      .release();
+}
+
 }  // namespace
 
 class MultiProfileUserControllerTest
@@ -98,13 +113,15 @@ class MultiProfileUserControllerTest
 
     for (size_t i = 0; i < arraysize(kUsers); ++i) {
       const std::string user_email(kUsers[i]);
-      fake_user_manager_->AddUser(user_email);
+      const User* user = fake_user_manager_->AddUser(user_email);
 
       // Note that user profiles are created after user login in reality.
       TestingProfile* user_profile =
           profile_manager_.CreateTestingProfile(user_email);
       user_profile->set_profile_name(user_email);
       user_profiles_.push_back(user_profile);
+
+      fake_user_manager_->SetProfileForUser(user, user_profile);
     }
   }
 
@@ -148,7 +165,12 @@ class MultiProfileUserControllerTest
   MultiProfileUserController* controller() { return controller_.get(); }
   int user_not_allowed_count() const { return user_not_allowed_count_; }
 
+  TestingProfile* profile(int index) {
+    return user_profiles_[index];
+  }
+
  private:
+  content::TestBrowserThreadBundle threads_;
   TestingProfileManager profile_manager_;
   FakeUserManager* fake_user_manager_;  // Not owned
   ScopedUserManagerEnabler user_manager_enabler_;
@@ -261,6 +283,77 @@ TEST_F(MultiProfileUserControllerTest, NoSecondaryOwner) {
   EXPECT_EQ(0, user_not_allowed_count());
   LoginUser(1);
   EXPECT_EQ(1, user_not_allowed_count());
+}
+
+TEST_F(MultiProfileUserControllerTest,
+       UsedPolicyCertificatesAllowedForPrimary) {
+  // Verifies that any user can sign-in as the primary user, regardless of the
+  // tainted state.
+  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[0]);
+  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[0]));
+  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[1]));
+}
+
+TEST_F(MultiProfileUserControllerTest,
+       UsedPolicyCertificatesDisallowedForSecondary) {
+  // Verifies that if a regular user is signed-in then other regular users can
+  // be added but tainted users can't.
+  LoginUser(1);
+  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[0]));
+  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[0]);
+  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[0]));
+}
+
+TEST_F(MultiProfileUserControllerTest,
+       UsedPolicyCertificatesDisallowsSecondaries) {
+  // Verifies that if a tainted user is signed-in then no other users can
+  // be added.
+  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[0]);
+  LoginUser(0);
+
+  // Double parenthesis to avoid http://en.wikipedia.org/wiki/Most_vexing_parse.
+  policy::PolicyCertVerifier verifier((base::Closure()));
+  g_policy_cert_verifier_for_factory = &verifier;
+  ASSERT_TRUE(
+      policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(0), TestPolicyCertServiceFactory));
+
+  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[1]);
+  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+
+  // Flush tasks posted to IO.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(MultiProfileUserControllerTest,
+       PolicyCertificatesInMemoryDisallowsSecondaries) {
+  // Verifies that if a user is signed-in and has policy certificates installed
+  // then no other users can be added.
+  LoginUser(0);
+
+  // Double parenthesis to avoid http://en.wikipedia.org/wiki/Most_vexing_parse.
+  policy::PolicyCertVerifier verifier((base::Closure()));
+  g_policy_cert_verifier_for_factory = &verifier;
+  ASSERT_TRUE(
+      policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(0), TestPolicyCertServiceFactory));
+  policy::PolicyCertService* service =
+      policy::PolicyCertServiceFactory::GetForProfile(profile(0));
+  ASSERT_TRUE(service);
+
+  EXPECT_FALSE(service->has_policy_certificates());
+  EXPECT_TRUE(controller()->IsUserAllowedInSession(kUsers[1]));
+
+  net::CertificateList certificates;
+  certificates.push_back(new net::X509Certificate(
+      "subject", "issuer", base::Time(), base::Time()));
+  service->OnTrustAnchorsChanged(certificates);
+  EXPECT_TRUE(service->has_policy_certificates());
+  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1]));
+
+  // Flush tasks posted to IO.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

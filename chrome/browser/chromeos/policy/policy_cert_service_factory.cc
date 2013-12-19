@@ -5,9 +5,15 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -38,6 +44,42 @@ PolicyCertServiceFactory* PolicyCertServiceFactory::GetInstance() {
   return Singleton<PolicyCertServiceFactory>::get();
 }
 
+// static
+void PolicyCertServiceFactory::SetUsedPolicyCertificates(
+    const std::string& user_id) {
+  if (UsedPolicyCertificates(user_id))
+    return;
+  ListPrefUpdate update(g_browser_process->local_state(),
+                        prefs::kUsedPolicyCertificates);
+  update->AppendString(user_id);
+}
+
+// static
+void PolicyCertServiceFactory::ClearUsedPolicyCertificates(
+    const std::string& user_id) {
+  ListPrefUpdate update(g_browser_process->local_state(),
+                        prefs::kUsedPolicyCertificates);
+  update->Remove(base::StringValue(user_id), NULL);
+}
+
+// static
+bool PolicyCertServiceFactory::UsedPolicyCertificates(
+    const std::string& user_id) {
+  base::StringValue value(user_id);
+  const base::ListValue* list =
+      g_browser_process->local_state()->GetList(prefs::kUsedPolicyCertificates);
+  if (!list) {
+    NOTREACHED();
+    return false;
+  }
+  return list->Find(value) != list->end();
+}
+
+// static
+void PolicyCertServiceFactory::RegisterPrefs(PrefRegistrySimple* local_state) {
+  local_state->RegisterListPref(prefs::kUsedPolicyCertificates);
+}
+
 PolicyCertServiceFactory::PolicyCertServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "PolicyCertService",
@@ -50,15 +92,41 @@ PolicyCertServiceFactory::~PolicyCertServiceFactory() {}
 BrowserContextKeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
+
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  chromeos::User* user =
+      user_manager->GetUserByProfile(profile->GetOriginalProfile());
+  if (!user)
+    return NULL;
+
+  // Backwards compatibility: profiles that used policy-pushed certificates used
+  // to have this condition marked in their prefs. This signal has moved to
+  // local_state though, to support checking it before the profile is loaded.
+  // Check the profile here and update the local_state, if appropriate.
+  // TODO(joaodasilva): remove this, eventually.
+  PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
+  if (prefs->GetBoolean(prefs::kUsedPolicyCertificatesOnce)) {
+    SetUsedPolicyCertificates(user->email());
+    prefs->ClearPref(prefs::kUsedPolicyCertificatesOnce);
+
+    if (user_manager->GetLoggedInUsers().size() > 1u) {
+      // This login should not have been allowed. After rebooting, local_state
+      // will contain the updated list of users that used policy-pushed
+      // certificates and this won't happen again.
+      // Note that a user becomes logged in before his profile is created.
+      LOG(ERROR) << "Shutdown session because a tainted profile was added.";
+      g_browser_process->local_state()->CommitPendingWrite();
+      prefs->CommitPendingWrite();
+      chrome::AttemptUserExit();
+    }
+  }
+
   UserNetworkConfigurationUpdater* net_conf_updater =
       UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
   if (!net_conf_updater)
     return NULL;
 
-  // In case of usage of additional trust anchors from an incognito profile, the
-  // prefs of the original profile have to be marked.
-  return new PolicyCertService(net_conf_updater,
-                               profile->GetOriginalProfile()->GetPrefs());
+  return new PolicyCertService(user->email(), net_conf_updater, user_manager);
 }
 
 content::BrowserContext* PolicyCertServiceFactory::GetBrowserContextToUse(
@@ -68,6 +136,8 @@ content::BrowserContext* PolicyCertServiceFactory::GetBrowserContextToUse(
 
 void PolicyCertServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // TODO(joaodasilva): this is used for backwards compatibility.
+  // Remove once it's not necessary anymore.
   registry->RegisterBooleanPref(
       prefs::kUsedPolicyCertificatesOnce,
       false,

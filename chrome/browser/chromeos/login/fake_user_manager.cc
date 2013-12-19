@@ -27,11 +27,12 @@ FakeUserManager::~FakeUserManager() {
   }
 }
 
-void FakeUserManager::AddUser(const std::string& email) {
+const User* FakeUserManager::AddUser(const std::string& email) {
   User* user = User::CreateRegularUser(email);
   user->set_username_hash(email + kUserIdHashSuffix);
   user->SetStubImage(User::kProfileImageIndex, false);
   user_list_.push_back(user);
+  return user;
 }
 
 void FakeUserManager::AddKioskAppUser(const std::string& kiosk_app_username) {
@@ -42,6 +43,10 @@ void FakeUserManager::AddKioskAppUser(const std::string& kiosk_app_username) {
 
 void FakeUserManager::LoginUser(const std::string& email) {
   UserLoggedIn(email, email + kUserIdHashSuffix, false);
+}
+
+void FakeUserManager::SetProfileForUser(const User* user, Profile* profile) {
+  user_to_profile_[user] = profile;
 }
 
 const UserList& FakeUserManager::GetUsers() const {
@@ -173,8 +178,9 @@ User* FakeUserManager::GetUserByProfile(Profile* profile) const {
 }
 
 Profile* FakeUserManager::GetProfileByUser(const User* user) const {
-  NOTIMPLEMENTED();
-  return NULL;
+  std::map<const User*, Profile*>::const_iterator it =
+      user_to_profile_.find(user);
+  return it == user_to_profile_.end() ? NULL : it->second;
 }
 
 base::string16 FakeUserManager::GetUserDisplayName(

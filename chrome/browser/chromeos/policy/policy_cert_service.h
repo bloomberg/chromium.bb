@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -15,7 +16,9 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
-class PrefService;
+namespace chromeos {
+class UserManager;
+}
 
 namespace net {
 class X509Certificate;
@@ -35,18 +38,21 @@ class PolicyCertService
     : public BrowserContextKeyedService,
       public UserNetworkConfigurationUpdater::WebTrustedCertsObserver {
  public:
-  PolicyCertService(UserNetworkConfigurationUpdater* net_conf_updater,
-                    PrefService* user_prefs);
+  PolicyCertService(const std::string& user_id,
+                    UserNetworkConfigurationUpdater* net_conf_updater,
+                    chromeos::UserManager* user_manager);
   virtual ~PolicyCertService();
 
   // Creates an associated PolicyCertVerifier. The returned object must only be
   // used on the IO thread and must outlive this object.
   scoped_ptr<PolicyCertVerifier> CreatePolicyCertVerifier();
 
-  // Returns true if the profile with |user_prefs| has used certificates
+  // Returns true if the profile that owns this service has used certificates
   // installed via policy to establish a secure connection before. This means
   // that it may have cached content from an untrusted source.
   bool UsedPolicyCertificates() const;
+
+  bool has_policy_certificates() const { return has_trust_anchors_; }
 
   // UserNetworkConfigurationUpdater::WebTrustedCertsObserver:
   virtual void OnTrustAnchorsChanged(const net::CertificateList& trust_anchors)
@@ -55,12 +61,21 @@ class PolicyCertService
   // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
+  static scoped_ptr<PolicyCertService> CreateForTesting(
+      const std::string& user_id,
+      PolicyCertVerifier* verifier,
+      chromeos::UserManager* user_manager);
+
  private:
-  void SetUsedPolicyCertificatesOnce();
+  PolicyCertService(const std::string& user_id,
+                    PolicyCertVerifier* verifier,
+                    chromeos::UserManager* user_manager);
 
   PolicyCertVerifier* cert_verifier_;
+  std::string user_id_;
   UserNetworkConfigurationUpdater* net_conf_updater_;
-  PrefService* user_prefs_;
+  chromeos::UserManager* user_manager_;
+  bool has_trust_anchors_;
 
   // Weak pointers to handle callbacks from PolicyCertVerifier on the IO thread.
   // The factory and the created WeakPtrs must only be used on the UI thread.

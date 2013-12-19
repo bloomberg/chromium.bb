@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_FAKE_USER_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_FAKE_USER_MANAGER_H_
 
+#include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -25,13 +26,16 @@ class FakeUserManager : public UserManager {
   virtual ~FakeUserManager();
 
   // Create and add a new user.
-  void AddUser(const std::string& email);
+  const User* AddUser(const std::string& email);
 
   // Create and add a kiosk app user.
   void AddKioskAppUser(const std::string& kiosk_app_username);
 
    // Calculates the user name hash and calls UserLoggedIn to login a user.
    void LoginUser(const std::string& email);
+
+   // Associates |profile| with |user|, for GetProfileByUser().
+   void SetProfileForUser(const User* user, Profile* profile);
 
   // UserManager overrides.
   virtual const UserList& GetUsers() const OVERRIDE;
@@ -136,6 +140,7 @@ class FakeUserManager : public UserManager {
   UserList logged_in_users_;
   std::string owner_email_;
   User* primary_user_;
+  std::map<const User*, Profile*> user_to_profile_;
 
   // If set this is the active user. If empty, the first created user is the
   // active user.

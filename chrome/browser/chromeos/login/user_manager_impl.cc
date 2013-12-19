@@ -1380,7 +1380,7 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& user_id) {
 
   supervised_user_manager_->RemoveNonCryptohomeData(user_id);
 
-  multi_profile_user_controller_->RemoveCachedValue(user_id);
+  multi_profile_user_controller_->RemoveCachedValues(user_id);
 }
 
 User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
