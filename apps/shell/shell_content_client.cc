@@ -22,7 +22,7 @@ std::string ShellContentClient::GetUserAgent() const {
   return webkit_glue::BuildUserAgentFromProduct("Chrome");
 }
 
-string16 ShellContentClient::GetLocalizedString(int message_id) const {
+base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }
 

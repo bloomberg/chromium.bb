@@ -268,7 +268,7 @@ class ShellWindow : public content::NotificationObserver,
 
   // NativeAppWindows should call this to determine what the window's title
   // is on startup and from within UpdateWindowTitle().
-  string16 GetTitle() const;
+  base::string16 GetTitle() const;
 
   // Call to notify ShellRegistry and delete the window. Subclasses should
   // invoke this method instead of using "delete this".
