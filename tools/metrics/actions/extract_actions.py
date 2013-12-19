@@ -239,6 +239,7 @@ def AddAndroidActions(actions):
   actions.add('MobileContextMenuText')
   actions.add('MobileContextMenuVideo')
   actions.add('MobileContextMenuViewImage')
+  actions.add('MobileFirstEditInOmnibox')
   actions.add('MobileFocusedFakeboxOnNtp')
   actions.add('MobileFocusedOmniboxNotOnNtp')
   actions.add('MobileFocusedOmniboxOnNtp')
