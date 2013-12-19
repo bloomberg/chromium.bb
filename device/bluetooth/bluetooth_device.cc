@@ -24,7 +24,7 @@ BluetoothDevice::BluetoothDevice() {
 BluetoothDevice::~BluetoothDevice() {
 }
 
-string16 BluetoothDevice::GetName() const {
+base::string16 BluetoothDevice::GetName() const {
   std::string name = GetDeviceName();
   if (!name.empty()) {
     return UTF8ToUTF16(name);
@@ -33,8 +33,8 @@ string16 BluetoothDevice::GetName() const {
   }
 }
 
-string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
-  string16 address_utf16 = UTF8ToUTF16(GetAddress());
+base::string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
+  base::string16 address_utf16 = UTF8ToUTF16(GetAddress());
   BluetoothDevice::DeviceType device_type = GetDeviceType();
   switch (device_type) {
     case DEVICE_COMPUTER:

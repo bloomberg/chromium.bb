@@ -188,7 +188,7 @@ class BluetoothDevice {
   // Returns the name of the device suitable for displaying, this may
   // be a synthesized string containing the address and localized type name
   // if the device has no obtained name.
-  virtual string16 GetName() const;
+  virtual base::string16 GetName() const;
 
   // Returns the type of the device, limited to those we support or are
   // aware of, by decoding the bluetooth class information. The returned
@@ -369,7 +369,7 @@ class BluetoothDevice {
  private:
   // Returns a localized string containing the device's bluetooth address and
   // a device type for display when |name_| is empty.
-  string16 GetAddressWithLocalizedDeviceTypeName() const;
+  base::string16 GetAddressWithLocalizedDeviceTypeName() const;
 };
 
 }  // namespace device
