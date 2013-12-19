@@ -43,7 +43,7 @@ void AssertFileErrorEq(const tracked_objects::Location& from_here,
   ASSERT_EQ(expected, actual) << from_here.ToString();
 }
 
-}  // namespace (anonymous)
+}  // namespace
 
 // Test class for FileSystemOperationImpl.
 class FileSystemOperationImplTest
@@ -103,7 +103,7 @@ class FileSystemOperationImplTest
         quota_manager_proxy_.get());
   }
 
- FileSystemFileUtil* file_util() {
+  FileSystemFileUtil* file_util() {
     return sandbox_file_system_.file_util();
   }
 
@@ -269,6 +269,7 @@ class FileSystemOperationImplTest
                               quota + quota_delta);
   }
 
+ private:
   base::MessageLoop message_loop_;
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
@@ -458,6 +459,26 @@ TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcDirRecursive) {
   EXPECT_EQ(2, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_from_count());
+  EXPECT_TRUE(change_observer()->HasNoChange());
+}
+
+TEST_F(FileSystemOperationImplTest, TestMoveSuccessSamePath) {
+  FileSystemURL src_dir(CreateDirectory("src"));
+  CreateDirectory("src/dir");
+  CreateFile("src/dir/sub");
+
+  operation_runner()->Move(src_dir, src_dir,
+                           FileSystemOperation::OPTION_NONE,
+                           RecordStatusCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_TRUE(DirectoryExists("src/dir"));
+  EXPECT_TRUE(FileExists("src/dir/sub"));
+
+  EXPECT_EQ(0, change_observer()->get_and_reset_remove_directory_count());
+  EXPECT_EQ(0, change_observer()->get_and_reset_create_directory_count());
+  EXPECT_EQ(0, change_observer()->get_and_reset_remove_file_count());
+  EXPECT_EQ(0, change_observer()->get_and_reset_create_file_from_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -659,6 +680,27 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(2, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_from_count());
+  EXPECT_TRUE(change_observer()->HasNoChange());
+}
+
+TEST_F(FileSystemOperationImplTest, TestCopySuccessSamePath) {
+  FileSystemURL src_dir(CreateDirectory("src"));
+  CreateDirectory("src/dir");
+  CreateFile("src/dir/sub");
+
+  operation_runner()->Copy(src_dir, src_dir,
+                           FileSystemOperation::OPTION_NONE,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_TRUE(DirectoryExists("src/dir"));
+  EXPECT_TRUE(FileExists("src/dir/sub"));
+
+  EXPECT_EQ(0, change_observer()->get_and_reset_create_directory_count());
+  EXPECT_EQ(0, change_observer()->get_and_reset_remove_file_count());
+  EXPECT_EQ(0, change_observer()->get_and_reset_create_file_from_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 

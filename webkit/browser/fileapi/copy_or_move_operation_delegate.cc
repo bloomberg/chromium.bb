@@ -711,9 +711,11 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
     return;
   }
 
-  // It is an error to copy/move an entry into the same path.
   if (same_file_system_ && src_root_.path() == dest_root_.path()) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_EXISTS);
+    // In JS API this should return error, but we return success because Pepper
+    // wants to return success and we have a code path that returns error in
+    // Blink for JS (http://crbug.com/329517).
+    callback_.Run(base::PLATFORM_FILE_OK);
     return;
   }
 
