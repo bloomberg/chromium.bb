@@ -1,20 +1,11 @@
 <h1>Match Patterns</h1>
 
 <p>
-<a href="content_scripts.html">Content scripts</a> operate on
-a set of URLs defined by match patterns.
-You can put one or more match patterns
-in the <code>"matches"</code> part of
-a content script's section of the manifest,
-as well as in the <code>"exclude_matches"</code> section.
-This page describes the match pattern syntax &mdash;
-the rules you need to follow when you specify
-which URLs your content script affects.
-</p>
-
-<p>
-A match pattern is essentially a URL
-that begins with a permitted scheme (<code>http</code>,
+<a href="declare_permissions.html#host-permissions">Host
+permissions</a> and <a href="content_scripts.html">content
+script</a> matching are based on a set of URLs defined by
+<dfn>match patterns</dfn>.  A match pattern is essentially a
+URL that begins with a permitted scheme (<code>http</code>,
 <code>https</code>, <code>file</code>, <code>ftp</code>, or
 <code>chrome-extension</code>),
 and that can contain '<code>*</code>' characters.
@@ -43,8 +34,10 @@ Each match pattern has 3 parts:</p>
     there is no <em>host</em> part
   </li>
   <li> <em>path</em> &mdash;
-    for example, <code>/*</code>, <code>/foo* </code>,
-    or <code>/foo/bar </code>
+    for example, <code>/*</code>, <code>/foo*</code>,
+    or <code>/foo/bar</code>. The path must be present in a
+    host permission, but is always treated
+    as <code>/*</code>.
   </li>
 </ul>
 
