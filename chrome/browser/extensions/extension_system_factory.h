@@ -44,6 +44,10 @@ class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
 
   static ExtensionSystemFactory* GetInstance();
 
+  // Provides a custom ExtensionSystem to use instead of building a new
+  // ExtensionSystemImpl. The BrowserContextKeyedService system takes ownership.
+  void SetCustomInstance(ExtensionSystem* extension_system);
+
  private:
   friend struct DefaultSingletonTraits<ExtensionSystemFactory>;
 
@@ -55,6 +59,8 @@ class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+
+  ExtensionSystem* custom_instance_;  // Not owned.
 };
 
 }  // namespace extensions

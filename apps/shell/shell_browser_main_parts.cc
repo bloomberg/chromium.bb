@@ -4,17 +4,18 @@
 
 #include "apps/shell/shell_browser_main_parts.h"
 
-#include "apps/app_load_service.h"
 #include "apps/shell/shell_browser_context.h"
+#include "apps/shell/shell_extension_system.h"
 #include "apps/shell/shell_extensions_browser_client.h"
 #include "apps/shell/shell_extensions_client.h"
 #include "apps/shell/web_view_window.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/extension_paths.h"
@@ -25,42 +26,17 @@
 #include "ui/gfx/screen.h"
 #include "ui/wm/test/wm_test_helper.h"
 
+using content::BrowserContext;
+using extensions::Extension;
+
 namespace apps {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
-    const content::MainFunctionParams& parameters) {
+    const content::MainFunctionParams& parameters)
+    : extension_system_(NULL) {
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
-}
-
-void ShellBrowserMainParts::CreateRootWindow() {
-  // TODO(jamescook): Replace this with a real Screen implementation.
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
-  // Set up basic pieces of views::corewm.
-  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
-  // Ensure the X window gets mapped.
-  wm_test_helper_->root_window()->host()->Show();
-}
-
-void ShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
-  base::FilePath current_dir;
-  CHECK(file_util::GetCurrentDirectory(&current_dir));
-
-  // HACK: This allows us to see how far we can get without crashing.
-  Profile* profile = reinterpret_cast<Profile*>(browser_context_.get());
-  LOG(WARNING) << "-----------------------------------";
-  LOG(WARNING) << "app_shell is expected to crash now.";
-  LOG(WARNING) << "-----------------------------------";
-
-  apps::AppLoadService* app_load_service =
-      apps::AppLoadService::Get(profile);
-  DCHECK(app_load_service);
-  if (!app_load_service->LoadAndLaunch(
-           app_dir, *CommandLine::ForCurrentProcess(), current_dir)) {
-    LOG(ERROR) << "Unable to launch app at \"" << app_dir.value() << "\"";
-  }
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
@@ -106,9 +82,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   // TODO(jamescook): Initialize policy::ProfilePolicyConnector.
-  // TODO(jamescook): Initialize ExtensionSystem and InitForRegularProfile.
-  // TODO(jamescook): CreateBrowserContextServices using
-  // BrowserContextDependencyManager.
+
+  CreateExtensionSystem();
+
+  // TODO(jamescook): Create the rest of the services using
+  // BrowserContextDependencyManager::CreateBrowserContextServices.
 
   CreateRootWindow();
 
@@ -118,9 +96,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
     LoadAndLaunchApp(app_dir);
   } else {
-    // TODO(jamescook): Create an apps::ShellWindow here. For now, create a
-    // window with a WebView just to ensure that the content module is properly
-    // initialized.
+    // TODO(jamescook): For demo purposes create a window with a WebView just
+    // to ensure that the content module is properly initialized.
     ShowWebViewWindow(browser_context_.get(),
                       wm_test_helper_->root_window()->window());
   }
@@ -134,11 +111,72 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  DestroyRootWindow();
+  // TODO(jamescook): Destroy the rest of the services with
+  // BrowserContextDependencyManager::DestroyBrowserContextServices.
   extensions::ExtensionsBrowserClient::Set(NULL);
   extensions_browser_client_.reset();
   browser_context_.reset();
-  wm_test_helper_.reset();
   aura::Env::DeleteInstance();
+
+  LOG(WARNING) << "-----------------------------------";
+  LOG(WARNING) << "app_shell is expected to crash now.";
+  LOG(WARNING) << "-----------------------------------";
+}
+
+void ShellBrowserMainParts::OnRootWindowHostCloseRequested(
+    const aura::RootWindow* root) {
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+}
+
+void ShellBrowserMainParts::CreateRootWindow() {
+  // TODO(jamescook): Replace this with a real Screen implementation.
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
+  // Set up basic pieces of views::corewm.
+  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
+  // Ensure the X window gets mapped.
+  wm_test_helper_->root_window()->host()->Show();
+  // Watch for the user clicking the close box.
+  wm_test_helper_->root_window()->AddRootWindowObserver(this);
+}
+
+void ShellBrowserMainParts::DestroyRootWindow() {
+  wm_test_helper_->root_window()->RemoveRootWindowObserver(this);
+  wm_test_helper_->root_window()->PrepareForShutdown();
+  wm_test_helper_.reset();
+}
+
+void ShellBrowserMainParts::CreateExtensionSystem() {
+  DCHECK(browser_context_);
+  extension_system_ =
+      new extensions::ShellExtensionSystem(browser_context_.get());
+  extensions::ExtensionSystemFactory::GetInstance()->SetCustomInstance(
+      extension_system_);
+  // Must occur after setting the instance above, as it will end up calling
+  // ExtensionSystem::Get().
+  extension_system_->InitForRegularProfile(true);
+}
+
+bool ShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
+  DCHECK(extension_system_);
+  std::string load_error;
+  scoped_refptr<Extension> extension =
+      extension_file_util::LoadExtension(app_dir,
+                                         extensions::Manifest::COMMAND_LINE,
+                                         Extension::NO_FLAGS,
+                                         &load_error);
+  if (!extension) {
+    LOG(ERROR) << "Loading extension at " << app_dir.value()
+        << " failed with: " << load_error;
+    return false;
+  }
+
+  // TODO(jamescook): Add to ExtensionRegistry.
+  // TODO(jamescook): Set ExtensionSystem ready.
+  // TODO(jamescook): Send NOTIFICATION_EXTENSION_LOADED.
+  return true;
 }
 
 }  // namespace apps

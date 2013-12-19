@@ -55,5 +55,23 @@ void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext8() {
 void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext9() {
   NOTREACHED();
 }
+void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext10() {
+  NOTREACHED();
+}
+void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext11() {
+  NOTREACHED();
+}
+void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext12() {
+  NOTREACHED();
+}
+void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext13() {
+  NOTREACHED();
+}
+void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext14() {
+  NOTREACHED();
+}
+void ShellBrowserContext::ProfileFunctionCallOnNonProfileBrowserContext15() {
+  NOTREACHED();
+}
 
 }  // namespace apps

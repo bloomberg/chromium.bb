@@ -132,6 +132,8 @@
             'shell/shell_content_browser_client.h',
             'shell/shell_content_client.cc',
             'shell/shell_content_client.h',
+            'shell/shell_extension_system.cc',
+            'shell/shell_extension_system.h',
             'shell/shell_extensions_browser_client.cc',
             'shell/shell_extensions_browser_client.h',
             'shell/shell_extensions_client.cc',

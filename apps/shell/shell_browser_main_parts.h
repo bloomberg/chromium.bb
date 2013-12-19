@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "ui/aura/root_window_observer.h"
 
 namespace base {
 class FilePath;
@@ -19,8 +20,8 @@ class ShellBrowserContext;
 struct MainFunctionParams;
 }
 
-namespace views {
-class ViewsDelegate;
+namespace extensions {
+class ShellExtensionSystem;
 }
 
 namespace wm {
@@ -34,7 +35,8 @@ class ShellExtensionsBrowserClient;
 class ShellExtensionsClient;
 
 // Handles initialization of AppShell.
-class ShellBrowserMainParts : public content::BrowserMainParts {
+class ShellBrowserMainParts : public content::BrowserMainParts,
+                              public aura::RootWindowObserver {
  public:
   explicit ShellBrowserMainParts(
       const content::MainFunctionParams& parameters);
@@ -43,12 +45,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   ShellBrowserContext* browser_context() {
     return browser_context_.get();
   }
-
-  // Creates the window that hosts the apps.
-  void CreateRootWindow();
-
-  // Launches an application from a directory.
-  void LoadAndLaunchApp(const base::FilePath& app_dir);
 
   // BrowserMainParts overrides.
   virtual void PreEarlyInitialization() OVERRIDE;
@@ -59,13 +55,33 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
+  // aura::RootWindowObserver overrides:
+  virtual void OnRootWindowHostCloseRequested(const aura::RootWindow* root)
+      OVERRIDE;
+
  private:
+  // Creates the window that hosts the apps.
+  void CreateRootWindow();
+
+  // Closes and destroys the root window hosting the app.
+  void DestroyRootWindow();
+
+  // Creates and initializes the ExtensionSystem.
+  void CreateExtensionSystem();
+
+  // Loads an unpacked application from a directory and attempts to launch it.
+  // Returns true on success.
+  bool LoadAndLaunchApp(const base::FilePath& app_dir);
+
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
+
+  // Owned by the BrowserContextKeyedService system.
+  extensions::ShellExtensionSystem* extension_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

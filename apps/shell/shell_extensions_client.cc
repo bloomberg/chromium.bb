@@ -5,6 +5,7 @@
 #include "apps/shell/shell_extensions_client.h"
 
 #include "base/logging.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
@@ -109,8 +110,8 @@ ShellExtensionsClient::GetPermissionMessageProvider() const {
 
 extensions::FeatureProvider* ShellExtensionsClient::GetFeatureProviderByName(
     const std::string& name) const {
-  NOTIMPLEMENTED();
-  return NULL;
+  // TODO(jamescook): Factor out an extensions module feature provider.
+  return extensions::BaseFeatureProvider::GetByName(name);
 }
 
 void ShellExtensionsClient::FilterHostPermissions(

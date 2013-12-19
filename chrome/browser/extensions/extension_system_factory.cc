@@ -69,15 +69,23 @@ ExtensionSystemFactory* ExtensionSystemFactory::GetInstance() {
 ExtensionSystemFactory::ExtensionSystemFactory()
     : BrowserContextKeyedServiceFactory(
         "ExtensionSystem",
-        BrowserContextDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()),
+      custom_instance_(NULL) {
   DependsOn(ExtensionSystemSharedFactory::GetInstance());
 }
 
 ExtensionSystemFactory::~ExtensionSystemFactory() {
 }
 
+void ExtensionSystemFactory::SetCustomInstance(
+    ExtensionSystem* extension_system) {
+  custom_instance_ = extension_system;
+}
+
 BrowserContextKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
+  if (custom_instance_)
+    return custom_instance_;
   return new ExtensionSystemImpl(static_cast<Profile*>(profile));
 }
 

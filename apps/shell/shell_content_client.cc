@@ -6,6 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/common/user_agent/user_agent_util.h"
@@ -15,6 +16,15 @@ namespace apps {
 ShellContentClient::ShellContentClient() {}
 
 ShellContentClient::~ShellContentClient() {}
+
+void ShellContentClient::AddAdditionalSchemes(
+    std::vector<std::string>* standard_schemes,
+    std::vector<std::string>* savable_schemes) {
+  standard_schemes->push_back(extensions::kExtensionScheme);
+  savable_schemes->push_back(extensions::kExtensionScheme);
+  standard_schemes->push_back(extensions::kExtensionResourceScheme);
+  savable_schemes->push_back(extensions::kExtensionResourceScheme);
+}
 
 std::string ShellContentClient::GetUserAgent() const {
   // TODO(derat): Figure out what this should be for app_shell and determine

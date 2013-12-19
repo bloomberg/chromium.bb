@@ -28,6 +28,12 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual void ProfileFunctionCallOnNonProfileBrowserContext7();
   virtual void ProfileFunctionCallOnNonProfileBrowserContext8();
   virtual void ProfileFunctionCallOnNonProfileBrowserContext9();
+  virtual void ProfileFunctionCallOnNonProfileBrowserContext10();
+  virtual void ProfileFunctionCallOnNonProfileBrowserContext11();
+  virtual void ProfileFunctionCallOnNonProfileBrowserContext12();
+  virtual void ProfileFunctionCallOnNonProfileBrowserContext13();
+  virtual void ProfileFunctionCallOnNonProfileBrowserContext14();
+  virtual void ProfileFunctionCallOnNonProfileBrowserContext15();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);

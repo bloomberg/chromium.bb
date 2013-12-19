@@ -1,5 +1,4 @@
 include_rules = [
-  "-chrome",
   "+chromeos",
   "+components/user_prefs",
   "+sync/api",
@@ -8,7 +7,8 @@ include_rules = [
   # TODO(jamescook): Remove these. http://crbug.com/305404
   # Chrome pieces for bring-up.
   "+chrome/common/chrome_paths.h",
-  "+chrome/browser/extensions/extension_prefs.h",
+  "+chrome/common/extensions/extension_file_util.h",
+  "+chrome/common/extensions/features/base_feature_provider.h",
 
   # Pieces of content_shell reused in app_shell.
   "+content/shell/browser/shell_browser_context.h",

@@ -128,8 +128,9 @@ URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
       match_all_urls_(false),
       match_subdomains_(false),
       port_("*") {
-  if (PARSE_SUCCESS != Parse(pattern))
-    NOTREACHED() << "URLPattern is invalid: " << pattern;
+  ParseResult result = Parse(pattern);
+  if (PARSE_SUCCESS != result)
+    NOTREACHED() << "URLPattern invalid: " << pattern << " result " << result;
 }
 
 URLPattern::~URLPattern() {

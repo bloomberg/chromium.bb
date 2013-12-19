@@ -88,6 +88,7 @@ namespace extensions {
 // static
 scoped_refptr<UnpackedInstaller> UnpackedInstaller::Create(
     ExtensionService* extension_service) {
+  DCHECK(extension_service);
   return scoped_refptr<UnpackedInstaller>(
       new UnpackedInstaller(extension_service));
 }
