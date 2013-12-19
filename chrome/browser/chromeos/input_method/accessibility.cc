@@ -48,7 +48,7 @@ void Accessibility::InputMethodChanged(InputMethodManager* imm,
   const std::string medium_name = UTF16ToUTF8(
       imm_->GetInputMethodUtil()->GetInputMethodMediumName(descriptor));
 
-  AccessibilityAlertInfo event(ProfileManager::GetDefaultProfile(),
+  AccessibilityAlertInfo event(ProfileManager::GetActiveUserProfile(),
                                medium_name);
   SendControlAccessibilityNotification(
       ui::AccessibilityTypes::EVENT_ALERT, &event);

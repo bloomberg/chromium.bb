@@ -34,8 +34,7 @@ class InputMethodPersistenceTest : public testing::Test {
       : mock_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   virtual void SetUp() OVERRIDE {
-    // Set up a profile that will be returned by
-    // ProfileManager::GetDefaultProfile().
+    // Set up a valid profile for our test.
     ASSERT_TRUE(mock_profile_manager_.SetUp());
     TestingProfile* mock_profile =
         mock_profile_manager_.CreateTestingProfile(chrome::kTestUserProfileDir);
@@ -43,7 +42,7 @@ class InputMethodPersistenceTest : public testing::Test {
     cl->AppendSwitchASCII(switches::kLoginProfile, chrome::kTestUserProfileDir);
     mock_profile_manager_.SetLoggedIn(true);
     ProfileManager::AllowGetDefaultProfile();
-    EXPECT_TRUE(ProfileManager::GetDefaultProfile() != NULL);
+    EXPECT_TRUE(ProfileManager::GetActiveUserProfile() != NULL);
     mock_user_prefs_ = mock_profile->GetTestingPrefService();
   }
 

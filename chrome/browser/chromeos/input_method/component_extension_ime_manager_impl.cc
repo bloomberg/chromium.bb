@@ -87,7 +87,11 @@ struct WhitelistedComponentExtensionIME {
 };
 
 extensions::ComponentLoader* GetComponentLoader() {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  // TODO(skuhne, nkostylev): At this time the only thing which makes sense here
+  // is to use the active profile. Nkostylev is working on getting IME settings
+  // to work for multi user by collecting all settings from all users. Once that
+  // is done we might have to re-visit this decision.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionService* extension_service = extension_system->extension_service();

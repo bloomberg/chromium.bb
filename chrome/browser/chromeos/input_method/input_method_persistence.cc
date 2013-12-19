@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -30,7 +31,8 @@ void PersistSystemInputMethod(const std::string& input_method) {
 // Update user LRU keyboard layout for login screen
 static void SetUserLRUInputMethod(
     const std::string& input_method,
-    const chromeos::input_method::InputMethodManager* const manager) {
+    const chromeos::input_method::InputMethodManager* const manager,
+    Profile* profile) {
   // Skip if it's not a keyboard layout. Drop input methods including
   // extension ones.
   if (!manager->IsLoginKeyboard(input_method))
@@ -38,12 +40,7 @@ static void SetUserLRUInputMethod(
 
   PrefService* const local_state = g_browser_process->local_state();
 
-  Profile* const profile = ProfileManager::GetDefaultProfile();
-
   if (profile == NULL)
-    return;
-
-  if (!manager->IsLoginKeyboard(input_method))
     return;
 
   const std::string username = profile->GetProfileName();
@@ -83,14 +80,25 @@ static void SetUserLRUInputMethod(
 
 void PersistUserInputMethod(const std::string& input_method,
                             InputMethodManager* const manager) {
+  // TODO(nkostylev): This feature is currently broken in various ways (see for
+  // example crbug.com/328541). Furthermore it is planned to combine all IME
+  // settings of all users in a session, which means that the user might not
+  // have the used IME setting installed. We therefore do not persist the IME
+  // in a multi profile session. This should be fixed in M34.
+  if (UserManager::IsInitialized() &&
+      UserManager::Get()->GetLoggedInUsers().size() > 1)
+    return;
+
   PrefService* user_prefs = NULL;
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  // Persist the method on a per user basis. Note that the keyboard settings are
+  // stored per user desktop and a visiting window will use the same input
+  // method as the desktop it is on (and not of the owner of the window).
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   if (profile)
     user_prefs = profile->GetPrefs();
   if (!user_prefs)
     return;
-
-  SetUserLRUInputMethod(input_method, manager);
+  SetUserLRUInputMethod(input_method, manager, profile);
 
   const std::string current_input_method_on_pref =
       user_prefs->GetString(prefs::kLanguageCurrentInputMethod);
