@@ -149,8 +149,7 @@ namespace policy {
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
-    : message_loop_(base::MessageLoop::TYPE_UI),
-      ui_thread_(content::BrowserThread::UI, &message_loop_),
+    : ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
       io_thread_(content::BrowserThread::IO, &message_loop_),
       user_manager_(new chromeos::MockUserManager()),
@@ -257,7 +256,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   // Since this is a unit test running in browser_tests we must do additional
   // unit test setup and make a TestingBrowserProcess. Must be first member.
   TestingBrowserProcessInitializer initializer_;
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

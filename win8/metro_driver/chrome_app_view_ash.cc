@@ -496,8 +496,7 @@ class ChromeAppViewAsh::PointerInfoHandler {
 ChromeAppViewAsh::ChromeAppViewAsh()
     : mouse_down_flags_(ui::EF_NONE),
       ui_channel_(nullptr),
-      core_window_hwnd_(NULL),
-      ui_loop_(base::MessageLoop::TYPE_UI) {
+      core_window_hwnd_(NULL) {
   DVLOG(1) << __FUNCTION__;
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;

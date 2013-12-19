@@ -107,7 +107,7 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
 
 int DemoMain() {
   // Create the message-loop here before creating the root window.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = false;

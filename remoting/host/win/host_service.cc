@@ -238,7 +238,7 @@ int HostService::RunAsService() {
 }
 
 void HostService::RunAsServiceImpl() {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
   weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -296,7 +296,7 @@ void HostService::RunAsServiceImpl() {
 }
 
 int HostService::RunInConsole() {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
   weak_ptr_ = weak_factory_.GetWeakPtr();

@@ -196,8 +196,7 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 }
 
 DeviceSettingsTestBase::DeviceSettingsTestBase()
-    : loop_(base::MessageLoop::TYPE_UI),
-      ui_thread_(content::BrowserThread::UI, &loop_),
+    : ui_thread_(content::BrowserThread::UI, &loop_),
       file_thread_(content::BrowserThread::FILE, &loop_),
       owner_key_util_(new MockOwnerKeyUtil()) {}
 

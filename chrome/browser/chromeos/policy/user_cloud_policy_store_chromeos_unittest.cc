@@ -51,8 +51,7 @@ ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
 
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:
-  UserCloudPolicyStoreChromeOSTest()
-      : loop_(base::MessageLoop::TYPE_UI) {}
+  UserCloudPolicyStoreChromeOSTest() {}
 
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(cryptohome_client_,
@@ -220,7 +219,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     return tmp_dir_.path().AppendASCII("policy");
   }
 
-  base::MessageLoop loop_;
+  base::MessageLoopForUI loop_;
   chromeos::MockCryptohomeClient cryptohome_client_;
   chromeos::MockSessionManagerClient session_manager_client_;
   UserPolicyBuilder policy_;

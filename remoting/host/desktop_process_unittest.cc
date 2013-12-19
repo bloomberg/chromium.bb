@@ -144,7 +144,7 @@ class DesktopProcessTest : public testing::Test {
   MockDaemonListener daemon_listener_;
 
   // Runs the daemon's end of the channel.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
@@ -155,8 +155,7 @@ class DesktopProcessTest : public testing::Test {
   MockNetworkListener network_listener_;
 };
 
-DesktopProcessTest::DesktopProcessTest()
-    : message_loop_(base::MessageLoop::TYPE_UI) {}
+DesktopProcessTest::DesktopProcessTest() {}
 
 DesktopProcessTest::~DesktopProcessTest() {
 }

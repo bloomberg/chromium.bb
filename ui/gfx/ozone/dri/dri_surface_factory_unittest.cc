@@ -211,7 +211,7 @@ class DriSurfaceFactoryTest : public testing::Test {
 };
 
 void DriSurfaceFactoryTest::SetUp() {
-  message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  message_loop_.reset(new base::MessageLoopForUI);
   factory_.reset(new MockDriSurfaceFactory());
 }
 

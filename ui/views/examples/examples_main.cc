@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   CommandLine::Init(argc, argv);
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
 
   base::RunLoop().Run();
 

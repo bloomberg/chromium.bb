@@ -106,7 +106,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    loop_ = new base::MessageLoop(base::MessageLoop::TYPE_UI);
+    loop_ = new base::MessageLoopForUI;
     device_ = new ui::MockTouchEventConverterEvdev(-1, 2);
     base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(device_);
   }

@@ -39,9 +39,7 @@ namespace extensions {
 class UserScriptMasterTest : public testing::Test,
                              public content::NotificationObserver {
  public:
-  UserScriptMasterTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        shared_memory_(NULL) {
+  UserScriptMasterTest() : shared_memory_(NULL) {
   }
 
   virtual void SetUp() {
@@ -80,7 +78,7 @@ class UserScriptMasterTest : public testing::Test,
   content::NotificationRegistrar registrar_;
 
   // MessageLoop used in tests.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;

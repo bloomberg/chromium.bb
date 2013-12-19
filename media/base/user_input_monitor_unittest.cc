@@ -49,7 +49,7 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 #if defined(OS_LINUX)
   base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 #else
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
 #endif  // defined(OS_LINUX)
 
   base::RunLoop run_loop;

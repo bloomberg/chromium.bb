@@ -26,8 +26,7 @@ namespace chromeos {
 class KioskModeSettingsTest : public testing::Test {
  protected:
   KioskModeSettingsTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {
     CrosSettings* cros_settings = CrosSettings::Get();
 
@@ -70,7 +69,7 @@ class KioskModeSettingsTest : public testing::Test {
     KioskModeSettings::Get()->set_initialized(false);
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

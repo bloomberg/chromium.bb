@@ -57,7 +57,7 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
 #define MAYBE_DidStartPolling DidStartPolling
 #endif
 TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   scoped_ptr<MockDeviceMotionListener> listener(new MockDeviceMotionListener);
   scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump(
       new DeviceMotionEventPumpForTesting);
@@ -114,7 +114,7 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
     DidStartPollingNotAllSensorsActive
 #endif
 TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPollingNotAllSensorsActive) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   scoped_ptr<MockDeviceMotionListener> listener(new MockDeviceMotionListener);
   scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump(
       new DeviceMotionEventPumpForTesting);

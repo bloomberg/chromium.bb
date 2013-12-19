@@ -52,7 +52,7 @@ int PluginMain(const MainFunctionParams& parameters) {
 #endif
   InitializeChromeApplication();
 #endif
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI main_message_loop;
   base::PlatformThread::SetName("CrPluginMain");
   base::debug::TraceLog::GetInstance()->SetProcessName("Plugin Process");
   base::debug::TraceLog::GetInstance()->SetProcessSortIndex(

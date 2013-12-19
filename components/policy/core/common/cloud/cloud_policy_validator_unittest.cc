@@ -32,8 +32,7 @@ ACTION_P(CheckStatus, expected_status) {
 class CloudPolicyValidatorTest : public testing::Test {
  public:
   CloudPolicyValidatorTest()
-      : loop_(base::MessageLoop::TYPE_UI),
-        timestamp_(base::Time::UnixEpoch() +
+      : timestamp_(base::Time::UnixEpoch() +
                    base::TimeDelta::FromMilliseconds(
                        PolicyBuilder::kFakeTimestamp)),
         timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_REQUIRED),
@@ -89,7 +88,7 @@ class CloudPolicyValidatorTest : public testing::Test {
               validator->payload()->SerializeAsString());
   }
 
-  base::MessageLoop loop_;
+  base::MessageLoopForUI loop_;
   base::Time timestamp_;
   CloudPolicyValidatorBase::ValidateTimestampOption timestamp_option_;
   CloudPolicyValidatorBase::ValidateDMTokenOption ignore_missing_dm_token_;

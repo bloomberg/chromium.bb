@@ -81,7 +81,7 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
 
 SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() {
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
-  message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  message_loop_.reset(new base::MessageLoopForUI);
 }
 
 SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {

@@ -67,8 +67,7 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
   CommandLine::Init(0, 0);
   mojo::shell::InitializeLogging();
 
-  g_java_message_loop.Get().reset(
-      new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  g_java_message_loop.Get().reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
 
   // TODO(abarth): At which point should we switch to cross-platform

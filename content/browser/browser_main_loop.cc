@@ -433,7 +433,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   // Create a MessageLoop if one does not already exist for the current thread.
   if (!base::MessageLoop::current())
-    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+    main_message_loop_.reset(new base::MessageLoopForUI);
 
   InitializeMainThread();
 

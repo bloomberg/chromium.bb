@@ -18,8 +18,7 @@ class SpellcheckMacTest: public testing::Test {
   SpellcheckMacTest()
       : callback_(base::Bind(&SpellcheckMacTest::CompletionCallback,
                              base::Unretained(this))),
-        callback_finished_(false),
-        message_loop_(base::MessageLoop::TYPE_UI) {}
+        callback_finished_(false) {}
 
   void WaitForCallback() {
     content::RunMessageLoop();
@@ -43,7 +42,7 @@ class SpellcheckMacTest: public testing::Test {
                                       base::Unretained(this)));
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   spellcheck_mac::ScopedEnglishLanguageForTest scoped_language_;
 };
 

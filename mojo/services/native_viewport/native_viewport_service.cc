@@ -182,7 +182,7 @@ extern "C" MOJO_NATIVE_VIEWPORT_EXPORT MojoResult MojoMain(
   mojo::common::BindingsSupportImpl bindings_support_impl;
   mojo::BindingsSupport::Set(&bindings_support_impl);
 
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   mojo::services::NativeViewportService app(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
   base::MessageLoop::current()->Run();

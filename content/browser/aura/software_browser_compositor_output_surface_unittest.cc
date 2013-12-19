@@ -81,7 +81,7 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
 SoftwareBrowserCompositorOutputSurfaceTest::
     SoftwareBrowserCompositorOutputSurfaceTest() {
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
-  message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  message_loop_.reset(new base::MessageLoopForUI);
 }
 
 SoftwareBrowserCompositorOutputSurfaceTest::

@@ -32,8 +32,7 @@ class TestFileIconSource : public FileIconSource {
 class FileIconSourceTest : public testing::Test {
  public:
   FileIconSourceTest()
-      : loop_(base::MessageLoop::TYPE_UI),
-        ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   static TestFileIconSource* CreateFileIconSource() {
@@ -41,7 +40,7 @@ class FileIconSourceTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop loop_;
+  base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };

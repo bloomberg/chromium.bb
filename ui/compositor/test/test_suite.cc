@@ -40,7 +40,7 @@ void CompositorTestSuite::Initialize() {
   gfx::InitDeviceScaleFactor(1.0f);
 #endif
 
-  message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  message_loop_.reset(new base::MessageLoopForUI);
 }
 
 void CompositorTestSuite::Shutdown() {

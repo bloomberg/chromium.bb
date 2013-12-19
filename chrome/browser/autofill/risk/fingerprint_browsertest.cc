@@ -65,8 +65,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
         content_bounds_(11, 13, 17, 37),
         screen_bounds_(0, 0, 101, 71),
         available_screen_bounds_(0, 11, 101, 60),
-        unavailable_screen_bounds_(0, 0, 101, 11),
-        message_loop_(base::MessageLoop::TYPE_UI) {}
+        unavailable_screen_bounds_(0, 0, 101, 11) {}
 
   void GetFingerprintTestCallback(scoped_ptr<Fingerprint> fingerprint) {
     // Verify that all fields Chrome can fill have been filled.
@@ -167,7 +166,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
   const gfx::Rect unavailable_screen_bounds_;
 
   // A message loop to block on the asynchronous loading of the fingerprint.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 // Test that getting a fingerprint works on some basic level.

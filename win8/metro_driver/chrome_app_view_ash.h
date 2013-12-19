@@ -218,7 +218,7 @@ class ChromeAppViewAsh
   HWND core_window_hwnd_;
 
   // UI message loop to allow message passing into this thread.
-  base::MessageLoop ui_loop_;
+  base::MessageLoopForUI ui_loop_;
 
   // For IME support.
   scoped_ptr<metro_driver::InputSource> input_source_;

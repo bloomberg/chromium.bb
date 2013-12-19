@@ -30,7 +30,7 @@ int DesktopProcessMain() {
   if (channel_name.empty())
     return kUsageExitCode;
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner =
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),

@@ -220,7 +220,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
 void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
   AddProxyToCommandLine();
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, enabled_at_startup);
   SetProbeResult(
       kProbeURLWithOKResponse, "OK", true, enabled_at_startup ? 1 : 0);
@@ -477,7 +477,7 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
       settings_->GetOriginalProfilePrefs());
 
   // TODO(bengr): Test enabling/disabling while a probe is outstanding.
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   // The proxy is enabled and unrestructed initially.
   // Request succeeded but with bad response, expect proxy to be restricted.
   CheckProbe(true, kProbeURLWithBadResponse, "Bad", true, true, true);
@@ -492,7 +492,7 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
 
 TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
   AddProxyToCommandLine();
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   // The proxy is enabled initially.
   settings_->enabled_by_user_ = true;
   settings_->restricted_by_carrier_ = false;
@@ -511,7 +511,7 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
 TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {
   AddProxyToCommandLine();
   settings_->InitPrefMembers();
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   // The proxy is enabled initially.
   settings_->enabled_by_user_ = true;
   settings_->SetProxyConfigs(true, false, true);

@@ -31,7 +31,6 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   static const syncer::ModelType kType = syncer::PREFERENCES;
 
   SyncGenericChangeProcessorTest() :
-      loop_(base::MessageLoop::TYPE_UI),
       sync_merge_result_(kType),
       merge_result_ptr_factory_(&sync_merge_result_),
       syncable_service_ptr_factory_(&fake_syncable_service_) {
@@ -78,7 +77,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop loop_;
+  base::MessageLoopForUI loop_;
 
   syncer::SyncMergeResult sync_merge_result_;
   base::WeakPtrFactory<syncer::SyncMergeResult> merge_result_ptr_factory_;

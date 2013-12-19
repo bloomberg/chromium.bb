@@ -299,7 +299,7 @@ int main(int argc, char** argv) {
   base::i18n::InitializeICU();
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
   aura::Env::CreateInstance();
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::CreateFullscreen());

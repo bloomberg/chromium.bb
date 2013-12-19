@@ -121,8 +121,7 @@ class CustomFakeCryptohomeClient : public FakeCryptohomeClient {
 class PlatformVerificationFlowTest : public ::testing::Test {
  public:
   PlatformVerificationFlowTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
         certificate_success_(true),
         fake_certificate_index_(0),
         sign_challenge_success_(true),
@@ -306,7 +305,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   StrictMock<MockAttestationFlow> mock_attestation_flow_;
   cryptohome::MockAsyncMethodCaller mock_async_caller_;

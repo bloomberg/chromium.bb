@@ -79,8 +79,7 @@ class FakeDBusData {
 class AttestationPolicyObserverTest : public ::testing::Test {
  public:
   AttestationPolicyObserverTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &message_loop_) {
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
     // Remove the real DeviceSettingsProvider and replace it with a stub.
     CrosSettings* cros_settings = CrosSettings::Get();
     device_settings_provider_ =
@@ -167,7 +166,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     return serialized;
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;

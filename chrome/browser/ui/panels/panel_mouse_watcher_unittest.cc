@@ -23,7 +23,7 @@ class PanelMouseWatcherTest : public testing::Test {
 };
 
 TEST_F(PanelMouseWatcherTest, StartStopWatching) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
 
   scoped_ptr<PanelMouseWatcher> watcher(PanelMouseWatcher::Create());
   EXPECT_FALSE(watcher->IsActive());

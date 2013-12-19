@@ -34,7 +34,7 @@ void RunUntilIdle() {
 
 class UserCloudPolicyStoreTest : public testing::Test {
  public:
-  UserCloudPolicyStoreTest() : loop_(base::MessageLoop::TYPE_UI) {}
+  UserCloudPolicyStoreTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
@@ -89,7 +89,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
   // CloudPolicyValidator() requires a FILE thread so declare one here. Both
   // |ui_thread_| and |file_thread_| share the same MessageLoop |loop_| so
   // callers can use RunLoop to manage both virtual threads.
-  base::MessageLoop loop_;
+  base::MessageLoopForUI loop_;
 
   base::ScopedTempDir tmp_dir_;
 

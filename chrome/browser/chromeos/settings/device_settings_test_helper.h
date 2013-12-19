@@ -168,7 +168,7 @@ class DeviceSettingsTestBase : public testing::Test {
   // |device_settings_service_| and flushes the resulting load operation.
   void ReloadDeviceSettings();
 
-  base::MessageLoop loop_;
+  base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

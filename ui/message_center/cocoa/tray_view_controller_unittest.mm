@@ -21,8 +21,7 @@ namespace message_center {
 class TrayViewControllerTest : public ui::CocoaTest {
  public:
   TrayViewControllerTest()
-    : center_(NULL),
-      message_loop_(base::MessageLoop::TYPE_UI) {
+    : center_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -61,7 +60,7 @@ class TrayViewControllerTest : public ui::CocoaTest {
 
   message_center::MessageCenter* center_;  // Weak, global.
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<base::RunLoop> nested_run_loop_;
   base::scoped_nsobject<MCTrayViewController> tray_;
 };

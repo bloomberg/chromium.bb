@@ -1157,7 +1157,7 @@ int HostProcessMain() {
   media::InitializeCPUSpecificMediaFeatures();
 
   // Create the main message loop and start helper threads.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI message_loop;
   scoped_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
           message_loop.message_loop_proxy(), base::MessageLoop::QuitClosure()));

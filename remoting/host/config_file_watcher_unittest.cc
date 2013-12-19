@@ -49,7 +49,7 @@ class ConfigFileWatcherTest : public testing::Test {
   void StopWatcher();
 
  protected:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   base::RunLoop run_loop_;
 
   ConfigFileWatcherDelegate delegate_;
@@ -61,8 +61,7 @@ class ConfigFileWatcherTest : public testing::Test {
   scoped_ptr<ConfigFileWatcher> watcher_;
 };
 
-ConfigFileWatcherTest::ConfigFileWatcherTest()
-    : message_loop_(base::MessageLoop::TYPE_UI) {
+ConfigFileWatcherTest::ConfigFileWatcherTest() {
 }
 
 ConfigFileWatcherTest::~ConfigFileWatcherTest() {

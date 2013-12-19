@@ -819,7 +819,7 @@ ChromeAppView::Run() {
   }
 
   // Create a message loop to allow message passing into this thread.
-  base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI msg_loop;
 
   // Announce our message loop to the world.
   globals.appview_msg_loop = msg_loop.message_loop_proxy();

@@ -21,8 +21,7 @@ namespace message_center {
 
 class PopupCollectionTest : public ui::CocoaTest {
  public:
-  PopupCollectionTest()
-    : message_loop_(base::MessageLoop::TYPE_UI) {
+  PopupCollectionTest() {
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
     collection_.reset(
@@ -109,7 +108,7 @@ class PopupCollectionTest : public ui::CocoaTest {
     nested_run_loop_.reset();
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<base::RunLoop> nested_run_loop_;
   message_center::MessageCenter* center_;
   base::scoped_nsobject<MCPopupCollection> collection_;

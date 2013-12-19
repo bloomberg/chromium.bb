@@ -45,7 +45,7 @@ class DistillerURLFetcherTest : public testing::Test {
 
   void Fetch(const std::string& url,
              const std::string& expected_response) {
-    base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+    base::MessageLoopForUI loop;
     url_fetcher_->FetchURL(
         url,
         base::Bind(&DistillerURLFetcherTest::FetcherCallback,

@@ -124,7 +124,7 @@ ACTION_P2(CreateMockDistillerPage, list, kurl) {
 }
 
 TEST_F(DistillerTest, DistillPage) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoopForUI loop;
   scoped_ptr<base::ListValue> list(new base::ListValue());
   list->AppendString(kTitle);
   list->AppendString(kContent);
