@@ -243,7 +243,7 @@ class Dispatcher : public content::RenderProcessObserver {
 
   // Returns the Feature::Context type of context for a JavaScript context.
   Feature::Context ClassifyJavaScriptContext(
-      const std::string& extension_id,
+      const Extension* extension,
       int extension_group,
       const GURL& url,
       const blink::WebSecurityOrigin& origin);

@@ -39,6 +39,11 @@ class Feature {
 
     // A normal web page. This should have an associated URL matching pattern.
     WEB_PAGE_CONTEXT,
+
+    // A web page context which has been blessed by the user. Typically this
+    // will be via the installation of a hosted app, so this may host an
+    // extension. This is not affected by the URL matching pattern.
+    BLESSED_WEB_PAGE_CONTEXT,
   };
 
   // The location required of extensions the feature is supported in.

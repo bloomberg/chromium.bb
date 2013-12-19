@@ -427,6 +427,9 @@ bool AllowHostedAppAPICall(const Extension& extension,
   if (!extension.web_extent().MatchesURL(source_url))
     return false;
 
+  // Note: Not BLESSED_WEB_PAGE_CONTEXT here because these component hosted app
+  // entities have traditionally been treated as blessed extensions, for better
+  // or worse.
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
           function_name, &extension, Feature::BLESSED_EXTENSION_CONTEXT,

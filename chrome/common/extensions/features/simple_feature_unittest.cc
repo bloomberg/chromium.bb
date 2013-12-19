@@ -430,10 +430,11 @@ TEST_F(ExtensionSimpleFeatureTest, ParseContexts) {
   contexts->Append(new base::StringValue("unblessed_extension"));
   contexts->Append(new base::StringValue("content_script"));
   contexts->Append(new base::StringValue("web_page"));
+  contexts->Append(new base::StringValue("blessed_web_page"));
   value->Set("contexts", contexts);
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
-  EXPECT_EQ(4u, feature->GetContexts()->size());
+  EXPECT_EQ(5u, feature->GetContexts()->size());
   EXPECT_TRUE(
       feature->GetContexts()->count(Feature::BLESSED_EXTENSION_CONTEXT));
   EXPECT_TRUE(
@@ -442,6 +443,8 @@ TEST_F(ExtensionSimpleFeatureTest, ParseContexts) {
       feature->GetContexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
   EXPECT_TRUE(
       feature->GetContexts()->count(Feature::WEB_PAGE_CONTEXT));
+  EXPECT_TRUE(
+      feature->GetContexts()->count(Feature::BLESSED_WEB_PAGE_CONTEXT));
 
   value->SetString("contexts", "all");
   scoped_ptr<SimpleFeature> feature2(new SimpleFeature());

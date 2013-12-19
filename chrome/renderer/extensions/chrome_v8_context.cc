@@ -121,6 +121,7 @@ std::string ChromeV8Context::GetContextTypeDescription() {
     case Feature::UNBLESSED_EXTENSION_CONTEXT: return "UNBLESSED_EXTENSION";
     case Feature::CONTENT_SCRIPT_CONTEXT:      return "CONTENT_SCRIPT";
     case Feature::WEB_PAGE_CONTEXT:            return "WEB_PAGE";
+    case Feature::BLESSED_WEB_PAGE_CONTEXT:    return "BLESSED_WEB_PAGE";
   }
   NOTREACHED();
   return std::string();

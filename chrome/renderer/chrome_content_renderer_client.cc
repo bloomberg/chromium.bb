@@ -993,11 +993,22 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 bool ChromeContentRendererClient::AllowPopup() {
   extensions::ChromeV8Context* current_context =
       extension_dispatcher_->v8_context_set().GetCurrent();
-  return current_context && current_context->extension() &&
-      (current_context->context_type() ==
-       extensions::Feature::BLESSED_EXTENSION_CONTEXT ||
-       current_context->context_type() ==
-       extensions::Feature::CONTENT_SCRIPT_CONTEXT);
+  if (!current_context || !current_context->extension())
+    return false;
+  // See http://crbug.com/117446 for the subtlety of this check.
+  switch (current_context->context_type()) {
+    case extensions::Feature::UNSPECIFIED_CONTEXT:
+    case extensions::Feature::WEB_PAGE_CONTEXT:
+    case extensions::Feature::UNBLESSED_EXTENSION_CONTEXT:
+      return false;
+    case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
+    case extensions::Feature::CONTENT_SCRIPT_CONTEXT:
+      return true;
+    case extensions::Feature::BLESSED_WEB_PAGE_CONTEXT:
+      return !current_context->web_frame()->parent();
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
