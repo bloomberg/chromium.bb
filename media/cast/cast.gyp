@@ -112,7 +112,7 @@
             '<(DEPTH)/media/media.gyp:media',
             '<(DEPTH)/testing/gtest.gyp:gtest',
             '<(DEPTH)/third_party/opus/opus.gyp:opus',
-            '<(DEPTH)/media/cast/test/transport/transport.gyp:cast_transport',
+            '<(DEPTH)/media/cast/net/transport/transport.gyp:cast_transport',
             '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',
           ],
           'sources': [
@@ -133,7 +133,7 @@
             '<(DEPTH)/media/cast/cast_receiver.gyp:*',
             '<(DEPTH)/media/media.gyp:media',
             '<(DEPTH)/testing/gtest.gyp:gtest',
-            '<(DEPTH)/media/cast/test/transport/transport.gyp:cast_transport',
+            '<(DEPTH)/media/cast/net/transport/transport.gyp:cast_transport',
             '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',
             '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
           ],

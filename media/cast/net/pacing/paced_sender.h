@@ -63,6 +63,8 @@ class PacedSender : public PacedPacketSender,
   void UpdateBurstSize(size_t num_of_packets);
 
   scoped_refptr<CastEnvironment> cast_environment_;
+  PacketSender* transport_;
+
   size_t burst_size_;
   size_t packets_sent_in_burst_;
   base::TimeTicks time_last_process_;
@@ -70,7 +72,6 @@ class PacedSender : public PacedPacketSender,
   // since then we might get reordering of the retransmitted packets.
   PacketList packet_list_;
   PacketList resend_packet_list_;
-  PacketSender* transport_;
 
   base::WeakPtrFactory<PacedSender> weak_factory_;
 

@@ -18,9 +18,9 @@ static const size_t kPacingMaxBurstsPerFrame = 3;
 PacedSender::PacedSender(scoped_refptr<CastEnvironment> cast_environment,
                          PacketSender* transport)
     : cast_environment_(cast_environment),
+      transport_(transport),
       burst_size_(1),
       packets_sent_in_burst_(0),
-      transport_(transport),
       weak_factory_(this) {
   ScheduleNextSend();
 }

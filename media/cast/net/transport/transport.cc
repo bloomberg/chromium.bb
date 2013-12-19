@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/test/transport/transport.h"
+#include "media/cast/net/transport/transport.h"
 
 #include <string>
 
@@ -18,7 +18,6 @@
 
 namespace media {
 namespace cast {
-namespace test {
 
 const int kMaxPacketSize = 1500;
 
@@ -109,7 +108,6 @@ class LocalPacketSender : public PacketSender,
                     scoped_refptr<base::TaskRunner> io_thread_proxy)
       : udp_socket_(udp_socket),
         send_address_(),
-        loss_limit_(0),
         io_thread_proxy_(io_thread_proxy) {}
 
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
@@ -121,15 +119,6 @@ class LocalPacketSender : public PacketSender,
   virtual void SendPacketToNetwork(const Packet& packet) {
     DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
     const uint8* data = packet.data();
-    if (loss_limit_ > 0) {
-      int r = base::RandInt(0, 100);
-      if (r < loss_limit_) {
-        VLOG(1) << "Drop packet f:" << static_cast<int>(data[12 + 1])
-                << " p:" << static_cast<int>(data[12 + 3])
-                << " m:" << static_cast<int>(data[12 + 5]);
-        return;
-      }
-    }
     net::TestCompletionCallback callback;
     scoped_refptr<net::WrappedIOBuffer> buffer(
         new net::WrappedIOBuffer(reinterpret_cast<const char*>(data)));
@@ -146,12 +135,6 @@ class LocalPacketSender : public PacketSender,
     return out_val;
   }
 
-  void SetPacketLoss(int percentage) {
-    DCHECK_GE(percentage, 0);
-    DCHECK_LT(percentage, 100);
-    loss_limit_ = percentage;
-  }
-
   void SetSendAddress(const net::IPEndPoint& send_address) {
     send_address_ = send_address;
   }
@@ -164,7 +147,6 @@ class LocalPacketSender : public PacketSender,
 
   net::UDPServerSocket* udp_socket_;  // Not owned by this class.
   net::IPEndPoint send_address_;
-  int loss_limit_;
   scoped_refptr<base::TaskRunner> io_thread_proxy_;
 };
 
@@ -180,10 +162,6 @@ Transport::~Transport() {}
 
 PacketSender* Transport::packet_sender() {
   return static_cast<PacketSender*>(packet_sender_.get());
-}
-
-void Transport::SetSendSidePacketLoss(int percentage) {
-  packet_sender_->SetPacketLoss(percentage);
 }
 
 void Transport::StopReceiving() {
@@ -213,6 +191,5 @@ void Transport::SetSendDestination(std::string ip_address, int port) {
   packet_sender_->SetSendAddress(send_address);
 }
 
-}  // namespace test
 }  // namespace cast
 }  // namespace media

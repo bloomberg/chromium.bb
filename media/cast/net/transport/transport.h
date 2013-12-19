@@ -13,7 +13,6 @@
 
 namespace media {
 namespace cast {
-namespace test {
 
 class LocalUdpTransportData;
 class LocalPacketSender;
@@ -36,8 +35,6 @@ class Transport {
 
   PacketSender* packet_sender();
 
-  void SetSendSidePacketLoss(int percentage);
-
   void StopReceiving();
 
  private:
@@ -49,7 +46,6 @@ class Transport {
   DISALLOW_COPY_AND_ASSIGN(Transport);
 };
 
-}  // namespace test
 }  // namespace cast
 }  // namespace media
 

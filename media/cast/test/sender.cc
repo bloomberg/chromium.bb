@@ -15,8 +15,8 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/net/transport/transport.h"
 #include "media/cast/test/audio_utility.h"
-#include "media/cast/test/transport/transport.h"
 #include "media/cast/test/utility/input_helper.h"
 #include "media/cast/test/video_utility.h"
 #include "ui/gfx/size.h"
@@ -28,7 +28,6 @@ namespace cast {
 #define DEFAULT_RECEIVE_PORT "2346"
 #define DEFAULT_SEND_IP "127.0.0.1"
 #define DEFAULT_READ_FROM_FILE "0"
-#define DEFAULT_PACKET_LOSS "0"
 #define DEFAULT_AUDIO_SENDER_SSRC "1"
 #define DEFAULT_AUDIO_RECEIVER_SSRC "2"
 #define DEFAULT_AUDIO_PAYLOAD_TYPE "127"
@@ -65,12 +64,6 @@ void GetPorts(int* tx_port, int* rx_port) {
   test::InputBuilder rx_input("Enter receive port.",
       DEFAULT_RECEIVE_PORT, 1, INT_MAX);
   *rx_port = rx_input.GetIntInput();
-}
-
-int GetPacketLoss() {
-  test::InputBuilder input("Enter send side packet loss %.",
-      DEFAULT_PACKET_LOSS, 0, 99);
-  return input.GetIntInput();
 }
 
 std::string GetIpAddress(const std::string display_text) {
@@ -329,8 +322,8 @@ int main(int argc, char** argv) {
   media::cast::VideoSenderConfig video_config =
       media::cast::GetVideoSenderConfig();
 
-  scoped_ptr<media::cast::test::Transport> transport(
-      new media::cast::test::Transport(io_message_loop.message_loop_proxy()));
+  scoped_ptr<media::cast::Transport> transport(
+      new media::cast::Transport(io_message_loop.message_loop_proxy()));
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(cast_environment,
       audio_config,
@@ -344,12 +337,11 @@ int main(int argc, char** argv) {
   media::cast::GetPorts(&send_to_port, &receive_port);
   std::string ip_address = media::cast::GetIpAddress("Enter destination IP.");
   std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
-  int packet_loss_percentage = media::cast::GetPacketLoss();
 
   transport->SetLocalReceiver(packet_receiver, ip_address, local_ip_address,
                               receive_port);
   transport->SetSendDestination(ip_address, send_to_port);
-  transport->SetSendSidePacketLoss(packet_loss_percentage);
+  // TODO(mikhal): Add option to simulate packet loss.
 
   media::cast::FrameInput* frame_input = cast_sender->frame_input();
   scoped_ptr<media::cast::SendProcess> send_process(new

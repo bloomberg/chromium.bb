@@ -21,7 +21,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/test/transport/transport.h"
+#include "media/cast/net/transport/transport.h"
 #include "media/cast/test/utility/input_helper.h"
 
 #if defined(OS_LINUX)
@@ -239,8 +239,8 @@ int main(int argc, char** argv) {
   media::cast::VideoReceiverConfig video_config =
       media::cast::GetVideoReceiverConfig();
 
-  scoped_ptr<media::cast::test::Transport> transport(
-      new media::cast::test::Transport(main_message_loop.message_loop_proxy()));
+  scoped_ptr<media::cast::Transport> transport(
+      new media::cast::Transport(main_message_loop.message_loop_proxy()));
   scoped_ptr<media::cast::CastReceiver> cast_receiver(
       media::cast::CastReceiver::CreateCastReceiver(
       cast_environment,
