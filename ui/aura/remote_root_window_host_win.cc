@@ -492,20 +492,17 @@ void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
 }
 
 void RemoteRootWindowHostWin::OnMouseButton(
-    int32 x,
-    int32 y,
-    int32 extra,
-    ui::EventType type,
-    ui::EventFlags flags) {
-  gfx::Point location(x, y);
-  // TODO: this needs to pass in changed flags.
-  ui::MouseEvent mouse_event(type, location, location, flags, 0);
+    const MetroViewerHostMsg_MouseButtonParams& params) {
+  gfx::Point location(params.x, params.y);
+  ui::MouseEvent mouse_event(params.event_type, location, location,
+                             static_cast<int>(params.flags),
+                             static_cast<int>(params.changed_button));
 
-  SetEventFlags(flags | key_event_flags());
-  if (type == ui::ET_MOUSEWHEEL) {
-    ui::MouseWheelEvent wheel_event(mouse_event, 0, extra);
+  SetEventFlags(params.flags | key_event_flags());
+  if (params.event_type == ui::ET_MOUSEWHEEL) {
+    ui::MouseWheelEvent wheel_event(mouse_event, 0, params.extra);
     delegate_->OnHostMouseEvent(&wheel_event);
-  } else if (type == ui::ET_MOUSE_PRESSED) {
+  } else if (params.event_type == ui::ET_MOUSE_PRESSED) {
     // TODO(shrikant): Ideally modify code in event.cc by adding automatic
     // tracking of double clicks in synthetic MouseEvent constructor code.
     // Non-synthetic MouseEvent constructor code does automatically track

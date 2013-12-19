@@ -17,6 +17,18 @@
 IPC_ENUM_TRAITS(ui::EventType)
 IPC_ENUM_TRAITS(ui::EventFlags)
 
+// Contains the parameters sent for a mousebutton message.
+IPC_STRUCT_BEGIN(MetroViewerHostMsg_MouseButtonParams)
+
+  IPC_STRUCT_MEMBER(int32, x)
+  IPC_STRUCT_MEMBER(int32, y)
+  IPC_STRUCT_MEMBER(int32, extra)
+  IPC_STRUCT_MEMBER(ui::EventType, event_type)
+  IPC_STRUCT_MEMBER(uint32, flags)
+  IPC_STRUCT_MEMBER(ui::EventFlags, changed_button)
+
+IPC_STRUCT_END()
+
 // Messages sent from the viewer to the browser:
 
 // Inform the browser of the surface to target for compositing.
@@ -28,12 +40,8 @@ IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
                      int32,       /* y-coordinate */
                      int32        /* flags */)
 // Informs the brower that a mouse button was pressed.
-IPC_MESSAGE_CONTROL5(MetroViewerHostMsg_MouseButton,
-                     int32,           /* x-coordinate */
-                     int32,           /* y-coordinate */
-                     int32,           /* extra */
-                     ui::EventType,   /* event type */
-                     ui::EventFlags   /* event flags */)
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_MouseButton,
+                     MetroViewerHostMsg_MouseButtonParams)
 // Informs the browser that a key was pressed.
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyDown,
                      uint32,       /* virtual key */

@@ -107,6 +107,8 @@ class ChromeAppViewAsh
 
 
  private:
+  class PointerInfoHandler;
+
   // ImePopupObserver overrides.
   virtual void OnImePopupChanged(ImePopupObserver::EventType event) OVERRIDE;
 
@@ -120,6 +122,23 @@ class ChromeAppViewAsh
       int32 selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) OVERRIDE;
   virtual void OnTextCommitted(const string16& text) OVERRIDE;
+
+  // Convenience for sending a MetroViewerHostMsg_MouseButton with the specified
+  // parameters.
+  void SendMouseButton(int x,
+                       int y,
+                       int extra,
+                       ui::EventType event_type,
+                       uint32 flags,
+                       ui::EventFlags changed_button);
+
+  // Win8 only generates a mouse press for the initial button that goes down and
+  // a release when the last button is released. Any intermediary presses (or
+  // releases) do not result in a new press/release event. Instead a move is
+  // generated with the winui::Input::PointerUpdateKind identifying what
+  // changed. This function generates the necessary intermediary events (as
+  // necessary).
+  void GenerateMouseEventFromMoveIfNecessary(const PointerInfoHandler& pointer);
 
   HRESULT OnActivate(winapp::Core::ICoreApplicationView* view,
                      winapp::Activation::IActivatedEventArgs* args);
@@ -185,8 +204,9 @@ class ChromeAppViewAsh
   EventRegistrationToken edgeevent_token_;
 
   // Keep state about which button is currently down, if any, as PointerMoved
-  // events do not contain that state, but Ash's MouseEvents need it.
-  ui::EventFlags mouse_down_flags_;
+  // events do not contain that state, but Ash's MouseEvents need it. Value is
+  // as a bitmask of ui::EventFlags.
+  uint32 mouse_down_flags_;
 
   // Set the D3D swap chain and nothing else.
   metro_driver::Direct3DHelper direct3d_helper_;

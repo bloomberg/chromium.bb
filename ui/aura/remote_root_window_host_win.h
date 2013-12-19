@@ -17,6 +17,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/metro_viewer/ime_types.h"
 
+struct MetroViewerHostMsg_MouseButtonParams;
+
 namespace base {
 class FilePath;
 }
@@ -162,11 +164,7 @@ class AURA_EXPORT RemoteRootWindowHostWin
 
   // IPC message handing methods:
   void OnMouseMoved(int32 x, int32 y, int32 flags);
-  void OnMouseButton(int32 x,
-                     int32 y,
-                     int32 extra,
-                     ui::EventType type,
-                     ui::EventFlags flags);
+  void OnMouseButton(const MetroViewerHostMsg_MouseButtonParams& params);
   void OnKeyDown(uint32 vkey,
                  uint32 repeat_count,
                  uint32 scan_code,

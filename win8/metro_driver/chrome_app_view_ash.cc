@@ -280,107 +280,6 @@ bool WaitForChromeIPCConnection(const std::string& channel_name) {
   return IPC::Channel::IsNamedServerInitialized(channel_name);
 }
 
-// This class helps decoding the pointer properties of an event.
-class PointerInfoHandler {
- public:
-  PointerInfoHandler()
-      : x_(0),
-        y_(0),
-        wheel_delta_(0),
-        update_kind_(winui::Input::PointerUpdateKind_Other),
-        timestamp_(0),
-        pointer_id_(0) {}
-
-  HRESULT Init(winui::Core::IPointerEventArgs* args) {
-    HRESULT hr = args->get_CurrentPoint(&pointer_point_);
-    if (FAILED(hr))
-      return hr;
-
-    winfoundtn::Point point;
-    hr = pointer_point_->get_Position(&point);
-    if (FAILED(hr))
-      return hr;
-
-    mswr::ComPtr<winui::Input::IPointerPointProperties> properties;
-    hr = pointer_point_->get_Properties(&properties);
-    if (FAILED(hr))
-      return hr;
-
-    hr = properties->get_PointerUpdateKind(&update_kind_);
-    if (FAILED(hr))
-      return hr;
-
-    hr = properties->get_MouseWheelDelta(&wheel_delta_);
-    if (FAILED(hr))
-      return hr;
-    x_ = point.X;
-    y_ = point.Y;
-    pointer_point_->get_Timestamp(&timestamp_);
-    pointer_point_->get_PointerId(&pointer_id_);
-    // Map the OS touch event id to a range allowed by the gesture recognizer.
-    if (IsTouch())
-      pointer_id_ %= ui::GestureSequence::kMaxGesturePoints;
-    return S_OK;
-  }
-
-  bool IsType(windevs::Input::PointerDeviceType type) const {
-    mswr::ComPtr<windevs::Input::IPointerDevice> pointer_device;
-    CheckHR(pointer_point_->get_PointerDevice(&pointer_device));
-    windevs::Input::PointerDeviceType device_type;
-    CheckHR(pointer_device->get_PointerDeviceType(&device_type));
-    return  (device_type == type);
-  }
-
-  bool IsMouse() const {
-    return IsType(windevs::Input::PointerDeviceType_Mouse);
-  }
-
-  bool IsTouch() const {
-    return IsType(windevs::Input::PointerDeviceType_Touch);
-  }
-
-  int32 wheel_delta() const {
-    return wheel_delta_;
-  }
-
-  ui::EventFlags flags() {
-    switch (update_kind_) {
-      case winui::Input::PointerUpdateKind_LeftButtonPressed:
-        return ui::EF_LEFT_MOUSE_BUTTON;
-      case winui::Input::PointerUpdateKind_LeftButtonReleased:
-        return ui::EF_LEFT_MOUSE_BUTTON;
-      case winui::Input::PointerUpdateKind_RightButtonPressed:
-        return ui::EF_RIGHT_MOUSE_BUTTON;
-      case winui::Input::PointerUpdateKind_RightButtonReleased:
-        return ui::EF_RIGHT_MOUSE_BUTTON;
-      case winui::Input::PointerUpdateKind_MiddleButtonPressed:
-        return ui::EF_MIDDLE_MOUSE_BUTTON;
-      case winui::Input::PointerUpdateKind_MiddleButtonReleased:
-        return ui::EF_MIDDLE_MOUSE_BUTTON;
-      default:
-        return ui::EF_NONE;
-    };
-  }
-
-  int x() const { return x_; }
-  int y() const { return y_; }
-
-  uint32 pointer_id() const {
-    return pointer_id_;
-  }
-
-  uint64 timestamp() const { return timestamp_; }
-
- private:
-  int x_;
-  int y_;
-  int wheel_delta_;
-  uint32 pointer_id_;
-  winui::Input::PointerUpdateKind update_kind_;
-  mswr::ComPtr<winui::Input::IPointerPoint> pointer_point_;
-  uint64 timestamp_;
-};
-
 void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
   // We're entering a nested message loop, let's allow dispatching
   // tasks while we're in there.
@@ -457,6 +356,142 @@ bool LaunchChromeBrowserProcess(const wchar_t* additional_parameters,
 }
 
 }  // namespace
+
+// This class helps decoding the pointer properties of an event.
+class ChromeAppViewAsh::PointerInfoHandler {
+ public:
+  PointerInfoHandler()
+      : x_(0),
+        y_(0),
+        wheel_delta_(0),
+        update_kind_(winui::Input::PointerUpdateKind_Other),
+        timestamp_(0),
+        pointer_id_(0),
+        mouse_down_flags_(0) {}
+
+  HRESULT Init(winui::Core::IPointerEventArgs* args) {
+    HRESULT hr = args->get_CurrentPoint(&pointer_point_);
+    if (FAILED(hr))
+      return hr;
+
+    winfoundtn::Point point;
+    hr = pointer_point_->get_Position(&point);
+    if (FAILED(hr))
+      return hr;
+
+    mswr::ComPtr<winui::Input::IPointerPointProperties> properties;
+    hr = pointer_point_->get_Properties(&properties);
+    if (FAILED(hr))
+      return hr;
+
+    hr = properties->get_PointerUpdateKind(&update_kind_);
+    if (FAILED(hr))
+      return hr;
+
+    hr = properties->get_MouseWheelDelta(&wheel_delta_);
+    if (FAILED(hr))
+      return hr;
+
+    x_ = point.X;
+    y_ = point.Y;
+    pointer_point_->get_Timestamp(&timestamp_);
+    pointer_point_->get_PointerId(&pointer_id_);
+    // Map the OS touch event id to a range allowed by the gesture recognizer.
+    if (IsTouch())
+      pointer_id_ %= ui::GestureSequence::kMaxGesturePoints;
+
+    boolean left_button_state;
+    hr = properties->get_IsLeftButtonPressed(&left_button_state);
+    if (FAILED(hr))
+      return hr;
+    if (left_button_state)
+      mouse_down_flags_ |= ui::EF_LEFT_MOUSE_BUTTON;
+
+    boolean right_button_state;
+    hr = properties->get_IsRightButtonPressed(&right_button_state);
+    if (FAILED(hr))
+      return hr;
+    if (right_button_state)
+      mouse_down_flags_ |= ui::EF_RIGHT_MOUSE_BUTTON;
+
+    boolean middle_button_state;
+    hr = properties->get_IsMiddleButtonPressed(&middle_button_state);
+    if (FAILED(hr))
+      return hr;
+    if (middle_button_state)
+      mouse_down_flags_ |= ui::EF_MIDDLE_MOUSE_BUTTON;
+
+    return S_OK;
+  }
+
+  bool IsType(windevs::Input::PointerDeviceType type) const {
+    mswr::ComPtr<windevs::Input::IPointerDevice> pointer_device;
+    CheckHR(pointer_point_->get_PointerDevice(&pointer_device));
+    windevs::Input::PointerDeviceType device_type;
+    CheckHR(pointer_device->get_PointerDeviceType(&device_type));
+    return  (device_type == type);
+  }
+
+  bool IsMouse() const {
+    return IsType(windevs::Input::PointerDeviceType_Mouse);
+  }
+
+  bool IsTouch() const {
+    return IsType(windevs::Input::PointerDeviceType_Touch);
+  }
+
+  int32 wheel_delta() const {
+    return wheel_delta_;
+  }
+
+  // Identifies the button that changed.
+  ui::EventFlags changed_button() const {
+    switch (update_kind_) {
+      case winui::Input::PointerUpdateKind_LeftButtonPressed:
+        return ui::EF_LEFT_MOUSE_BUTTON;
+      case winui::Input::PointerUpdateKind_LeftButtonReleased:
+        return ui::EF_LEFT_MOUSE_BUTTON;
+      case winui::Input::PointerUpdateKind_RightButtonPressed:
+        return ui::EF_RIGHT_MOUSE_BUTTON;
+      case winui::Input::PointerUpdateKind_RightButtonReleased:
+        return ui::EF_RIGHT_MOUSE_BUTTON;
+      case winui::Input::PointerUpdateKind_MiddleButtonPressed:
+        return ui::EF_MIDDLE_MOUSE_BUTTON;
+      case winui::Input::PointerUpdateKind_MiddleButtonReleased:
+        return ui::EF_MIDDLE_MOUSE_BUTTON;
+      default:
+        return ui::EF_NONE;
+    }
+  }
+
+  uint32 mouse_down_flags() const { return mouse_down_flags_; }
+
+  int x() const { return x_; }
+  int y() const { return y_; }
+
+  uint32 pointer_id() const {
+    return pointer_id_;
+  }
+
+  uint64 timestamp() const { return timestamp_; }
+
+  winui::Input::PointerUpdateKind update_kind() const { return update_kind_; }
+
+ private:
+  int x_;
+  int y_;
+  int wheel_delta_;
+  uint32 pointer_id_;
+  winui::Input::PointerUpdateKind update_kind_;
+  mswr::ComPtr<winui::Input::IPointerPoint> pointer_point_;
+  uint64 timestamp_;
+
+  // Bitmask of ui::EventFlags corresponding to the buttons that are currently
+  // down.
+  uint32 mouse_down_flags_;
+
+  DISALLOW_COPY_AND_ASSIGN(PointerInfoHandler);
+};
 
 ChromeAppViewAsh::ChromeAppViewAsh()
     : mouse_down_flags_(ui::EF_NONE),
@@ -894,6 +929,48 @@ void ChromeAppViewAsh::OnTextCommitted(const string16& text) {
   ui_channel_->Send(new MetroViewerHostMsg_ImeTextCommitted(text));
 }
 
+void ChromeAppViewAsh::SendMouseButton(int x,
+                                       int y,
+                                       int extra,
+                                       ui::EventType event_type,
+                                       uint32 flags,
+                                       ui::EventFlags changed_button) {
+  MetroViewerHostMsg_MouseButtonParams params;
+  params.x = static_cast<int32>(x);
+  params.y = static_cast<int32>(y);
+  params.extra = static_cast<int32>(extra);
+  params.event_type = event_type;
+  params.flags = static_cast<int32>(flags);
+  params.changed_button = changed_button;
+  ui_channel_->Send(new MetroViewerHostMsg_MouseButton(params));
+}
+
+void ChromeAppViewAsh::GenerateMouseEventFromMoveIfNecessary(
+    const PointerInfoHandler& pointer) {
+  ui::EventType event_type;
+  // For aura we want the flags to include the button that was released, thus
+  // we or the old and new.
+  uint32 mouse_down_flags = pointer.mouse_down_flags() | mouse_down_flags_;
+  mouse_down_flags_ = pointer.mouse_down_flags();
+  switch (pointer.update_kind()) {
+    case winui::Input::PointerUpdateKind_LeftButtonPressed:
+    case winui::Input::PointerUpdateKind_RightButtonPressed:
+    case winui::Input::PointerUpdateKind_MiddleButtonPressed:
+      event_type = ui::ET_MOUSE_PRESSED;
+      break;
+    case winui::Input::PointerUpdateKind_LeftButtonReleased:
+    case winui::Input::PointerUpdateKind_RightButtonReleased:
+    case winui::Input::PointerUpdateKind_MiddleButtonReleased:
+      event_type = ui::ET_MOUSE_RELEASED;
+      break;
+    default:
+      return;
+  }
+  SendMouseButton(pointer.x(), pointer.y(), 0, event_type,
+                  mouse_down_flags | GetKeyboardEventFlags(),
+                  pointer.changed_button());
+}
+
 HRESULT ChromeAppViewAsh::OnActivate(
     winapp::Core::ICoreApplicationView*,
     winapp::Activation::IActivatedEventArgs* args) {
@@ -932,6 +1009,7 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
     return hr;
 
   if (pointer.IsMouse()) {
+    GenerateMouseEventFromMoveIfNecessary(pointer);
     ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(
         pointer.x(),
         pointer.y(),
@@ -950,7 +1028,8 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
 // event for the first button pressed and the last button released in a sequence
 // of mouse events.
 // For example, a sequence of LEFT_DOWN, RIGHT_DOWN, LEFT_UP, RIGHT_UP results
-// only in PointerPressed(LEFT)/PointerReleased(RIGHT) events.
+// only in PointerPressed(LEFT)/PointerReleased(RIGHT) events. Intermediary
+// presses and releases are tracked in OnPointMoved().
 HRESULT ChromeAppViewAsh::OnPointerPressed(
     winui::Core::ICoreWindow* sender,
     winui::Core::IPointerEventArgs* args) {
@@ -960,15 +1039,10 @@ HRESULT ChromeAppViewAsh::OnPointerPressed(
     return hr;
 
   if (pointer.IsMouse()) {
-    // TODO: this is wrong, more than one pointer may be down at a time.
-    mouse_down_flags_ = pointer.flags();
-    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(
-        pointer.x(),
-        pointer.y(),
-        0,
-        ui::ET_MOUSE_PRESSED,
-        static_cast<ui::EventFlags>(
-            mouse_down_flags_ | GetKeyboardEventFlags())));
+    mouse_down_flags_ = pointer.mouse_down_flags();
+    SendMouseButton(pointer.x(), pointer.y(), 0, ui::ET_MOUSE_PRESSED,
+                    mouse_down_flags_ | GetKeyboardEventFlags(),
+                    pointer.changed_button());
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchDown(pointer.x(),
@@ -988,15 +1062,11 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(
     return hr;
 
   if (pointer.IsMouse()) {
-    // TODO: this is wrong, more than one pointer may be down at a time.
     mouse_down_flags_ = ui::EF_NONE;
-    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(
-        pointer.x(),
-        pointer.y(),
-        0,
-        ui::ET_MOUSE_RELEASED,
-        static_cast<ui::EventFlags>(
-            pointer.flags() | GetKeyboardEventFlags())));
+    SendMouseButton(pointer.x(), pointer.y(), 0, ui::ET_MOUSE_RELEASED,
+                    static_cast<uint32>(pointer.changed_button()) |
+                    GetKeyboardEventFlags(),
+                    pointer.changed_button());
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchUp(pointer.x(),
@@ -1015,10 +1085,8 @@ HRESULT ChromeAppViewAsh::OnWheel(
   if (FAILED(hr))
     return hr;
   DCHECK(pointer.IsMouse());
-  ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(), pointer.y(),
-                                                       pointer.wheel_delta(),
-                                                       ui::ET_MOUSEWHEEL,
-                                                       ui::EF_NONE));
+  SendMouseButton(pointer.x(), pointer.y(), pointer.wheel_delta(),
+                  ui::ET_MOUSEWHEEL, ui::EF_NONE, ui::EF_NONE);
   return S_OK;
 }
 
