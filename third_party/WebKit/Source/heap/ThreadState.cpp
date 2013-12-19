@@ -48,9 +48,19 @@ static Mutex& threadAttachMutex()
 ThreadState::ThreadState(intptr_t* startOfStack)
     : m_thread(currentThread())
     , m_startOfStack(startOfStack)
+    , m_gcRequested(false)
+    , m_noAllocationCount(0)
+    , m_atSafePoint(false)
+    , m_heapContainsCache(new HeapContainsCache())
 {
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
+
+    // First allocate the general heap, second iterate through to
+    // allocate the type specific heaps
+    m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this);
+    for (int i = GeneralHeap + 1; i < NumberOfHeaps; i++)
+        m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this);
 
     // FIXME: This is to silence clang that complains about unused private
     // member. Remove once we implement stack scanning that uses it.
@@ -122,6 +132,24 @@ static bool increasedEnoughToForceConservativeGC(size_t newSize, size_t oldSize)
 bool ThreadState::shouldForceConservativeGC()
 {
     return increasedEnoughToForceConservativeGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
+}
+
+bool ThreadState::gcRequested()
+{
+    checkThread();
+    return m_gcRequested;
+}
+
+void ThreadState::setGCRequested()
+{
+    checkThread();
+    m_gcRequested = true;
+}
+
+void ThreadState::clearGCRequested()
+{
+    checkThread();
+    m_gcRequested = false;
 }
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()

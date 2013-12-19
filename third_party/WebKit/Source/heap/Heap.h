@@ -778,12 +778,61 @@ public:
     static void init(intptr_t* startOfStack);
     static void shutdown();
 
+    template<typename T> Address allocate(size_t);
+    template<typename T> Address reallocate(void* previous, size_t);
+
     static void collectGarbage(ThreadState::StackState, GCType = Normal)
     {
         // FIXME: Implement.
         ASSERT_NOT_REACHED();
     }
 };
+
+// FIXME: Allocate objects that do not need finalization separately
+// and use separate sweeping to not have to check for finalizers.
+template<typename T>
+Address Heap::allocate(size_t size)
+{
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::State();
+    ASSERT(state->isAllocationAllowed());
+    BaseHeap* heap = state->heap(HeapTrait<T>::index);
+    Address addr =
+        static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
+    return addr;
+}
+
+// FIXME: Allocate objects that do not need finalization separately
+// and use separate sweeping to not have to check for finalizers.
+template<typename T>
+Address Heap::reallocate(void* previous, size_t size)
+{
+    if (!size) {
+        // If the new size is 0 this is equivalent to either
+        // free(previous) or malloc(0). In both cases we do
+        // nothing and return 0.
+        return 0;
+    }
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::State();
+    ASSERT(state->isAllocationAllowed());
+    // FIXME: Currently only supports raw allocation on the
+    // GeneralHeap. Hence we assume the header is a
+    // FinalizedHeapObjectHeader.
+    ASSERT(HeapTrait<T>::index == GeneralHeap);
+    BaseHeap* heap = state->heap(HeapTrait<T>::index);
+    Address address = static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
+    if (!previous) {
+        // This is equivalent to malloc(size).
+        return address;
+    }
+    FinalizedHeapObjectHeader* previousHeader = FinalizedHeapObjectHeader::fromPayload(previous);
+    ASSERT(!previousHeader->hasFinalizer());
+    ASSERT(previousHeader->gcInfo() == GCInfoTrait<T>::get());
+    size_t copySize = previousHeader->payloadSize();
+    if (copySize > size)
+        copySize = size;
+    memcpy(address, previous, copySize);
+    return address;
+}
 
 template<typename Header>
 size_t allocationSizeFromSize(size_t size)
@@ -809,7 +858,7 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
         if (threadState()->shouldForceConservativeGC())
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         else
-            threadState()->setGCRequested(true);
+            threadState()->setGCRequested();
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
     return allocate(size, gcInfo);

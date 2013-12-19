@@ -33,7 +33,7 @@
 
 #include "heap/ThreadState.h"
 
-#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 #if OS(POSIX)
 #include <sys/mman.h>
@@ -958,6 +958,11 @@ void LargeHeapObject<Header>::getStats(HeapStats& stats)
 {
     stats.increaseAllocatedSpace(size());
     stats.increaseObjectSpace(payloadSize());
+}
+
+HeapContainsCache::HeapContainsCache()
+    : m_entries(adoptArrayPtr(new Entry[HeapContainsCache::numberOfEntries]))
+{
 }
 
 void HeapContainsCache::flush()

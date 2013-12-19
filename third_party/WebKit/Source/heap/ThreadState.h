@@ -37,7 +37,69 @@
 
 namespace WebCore {
 
+class BaseHeap;
+class FinalizedHeapObjectHeader;
 class HeapContainsCache;
+class HeapObjectHeader;
+template<typename Header> class ThreadHeap;
+
+// ThreadAffinity indicates which threads objects can be used on. We
+// distinguish between objects that can be used on the main thread
+// only and objects that can be used on any thread.
+//
+// For objects that can only be used on the main thread we avoid going
+// through thread-local storage to get to the thread state.
+//
+// FIXME: We should evaluate the performance gain. Having
+// ThreadAffinity is complicating the implementation and we should get
+// rid of it if it is fast enough to go through thread-local storage
+// always.
+enum ThreadAffinity {
+    AnyThread,
+    MainThreadOnly,
+};
+
+// By default all types are considered to be used on the main thread only.
+template<typename T>
+struct ThreadingTrait {
+    static const ThreadAffinity Affinity = MainThreadOnly;
+};
+
+// List of typed heaps used to generate the implementation of typed
+// heaps.
+//
+// To create a new typed heap add a H(<ClassName>) to the
+// FOR_EACH_TYPED_HEAP macro below.
+#define FOR_EACH_TYPED_HEAP(H)  \
+    H(Node)
+
+#define TypedHeapEnumName(Type) Type##Heap,
+
+enum TypedHeaps {
+    GeneralHeap,
+    FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
+    NumberOfHeaps
+};
+
+// Trait to give an index in the thread state to all the
+// type-specialized heaps. The general heap is at index 0 in the
+// thread state. The index for other type-specialized heaps are given
+// by the TypedHeaps enum above.
+template<typename T>
+struct HeapTrait {
+    static const int index = GeneralHeap;
+    typedef ThreadHeap<FinalizedHeapObjectHeader> HeapType;
+};
+
+#define DEFINE_HEAP_INDEX_TRAIT(Type)                  \
+    class Type;                                        \
+    template<>                                         \
+    struct HeapTrait<class Type> {                     \
+        static const int index = Type##Heap;           \
+        typedef ThreadHeap<HeapObjectHeader> HeapType; \
+    };
+
+FOR_EACH_TYPED_HEAP(DEFINE_HEAP_INDEX_TRAIT)
 
 // A HeapStats structure keeps track of the amount of memory allocated
 // for a Blink heap and how much of that memory is used for actual
@@ -139,10 +201,24 @@ public:
 
     // If gcRequested returns true when a thread returns to its event
     // loop the thread will initiate a garbage collection.
+    bool gcRequested();
+    void setGCRequested();
+    void clearGCRequested();
+
+    // Support for disallowing allocation. Mainly used for sanity
+    // checks asserts.
+    bool isAllocationAllowed() const { return !isAtSafePoint() && !m_noAllocationCount; }
+    void enterNoAllocationScope() { m_noAllocationCount++; }
+    void leaveNoAllocationScope() { m_noAllocationCount--; }
+
+    bool isAtSafePoint() const { return m_atSafePoint; }
+
+    // Get one of the heap structures for this thread.
     //
-    // FIXME: Implement.
-    void setGCRequested(bool) { ASSERT_NOT_REACHED(); }
-    bool gcRequested() { ASSERT_NOT_REACHED(); return false; }
+    // The heap is split into multiple heap parts based on object
+    // types. To get the index for a given type, use
+    // HeapTrait<Type>::index.
+    BaseHeap* heap(int index) const { return m_heaps[index]; }
 
     HeapContainsCache* heapContainsCache() { return m_heapContainsCache; }
 
@@ -169,9 +245,30 @@ private:
 
     ThreadIdentifier m_thread;
     intptr_t* m_startOfStack;
+    bool m_gcRequested;
+    size_t m_noAllocationCount;
+    bool m_atSafePoint;
+    BaseHeap* m_heaps[NumberOfHeaps];
     HeapContainsCache* m_heapContainsCache;
     HeapStats m_stats;
     HeapStats m_statsAfterLastGC;
+};
+
+template<ThreadAffinity affinity> class ThreadStateFor;
+
+template<> class ThreadStateFor<MainThreadOnly> {
+public:
+    static ThreadState* state()
+    {
+        // This specialization must only be used from the main thread.
+        ASSERT(ThreadState::isMainThread());
+        return ThreadState::mainThreadState();
+    }
+};
+
+template<> class ThreadStateFor<AnyThread> {
+public:
+    static ThreadState* state() { return ThreadState::current(); }
 };
 
 }

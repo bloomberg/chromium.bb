@@ -31,6 +31,8 @@
 #ifndef Visitor_h
 #define Visitor_h
 
+#include "wtf/Assertions.h"
+
 #define TRACE_GC_MARKING 0
 #define TRACE_GC_FINALIZATION 0
 
@@ -70,6 +72,39 @@ struct GCInfo {
     ClassOfCallback m_classOf;
 #endif
 };
+
+// Macros to declare and define GCInfo structures for objects
+// allocated in the Blink garbage-collected heap.
+#define DECLARE_GC_INFO                                                       \
+public:                                                                       \
+    static const GCInfo s_gcInfo;                                             \
+    template<typename Any> friend struct FinalizerTrait;                      \
+private:                                                                      \
+
+#define DEFINE_GC_INFO(Type)                                                  \
+const GCInfo Type::s_gcInfo = {                                               \
+    #Type,                                                                    \
+    TraceTrait<Type>::trace,                                                  \
+    FinalizerTrait<Type>::finalize,                                           \
+    FinalizerTrait<Type>::nonTrivialFinalizer,                                \
+    CLASSOF_FUNC(Type)                                                        \
+};                                                                            \
+
+// Trait to get the GCInfo structure for types that have their
+// instances allocated in the Blink garbage-collected heap.
+template<typename T>
+struct GCInfoTrait {
+    static const GCInfo* get()
+    {
+        return &T::s_gcInfo;
+    }
+};
+
+template<typename T>
+const char* getTypeMarker()
+{
+    return GCInfoTrait<T>::get()->m_typeMarker;
+}
 
 // Visitor is used to traverse the Blink object graph. Used for the
 // marking phase of the mark-sweep garbage collector.
