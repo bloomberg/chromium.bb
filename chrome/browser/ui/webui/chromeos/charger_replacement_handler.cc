@@ -80,6 +80,9 @@ void ChargerReplacementHandler::GetLocalizedValues(
       "us",
       l10n_util::GetStringUTF16(IDS_CHARGER_REPLACEMENT_US));
   localized_strings->SetString(
+      "ca",
+      l10n_util::GetStringUTF16(IDS_CHARGER_REPLACEMENT_CA));
+  localized_strings->SetString(
       "uk",
       l10n_util::GetStringUTF16(IDS_CHARGER_REPLACEMENT_UK));
   localized_strings->SetString(

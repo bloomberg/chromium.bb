@@ -3908,16 +3908,19 @@ Battery full
   <message name="IDS_CHARGER_REPLACEMENT_SELECT_A_COUNTRY" desc="The text in the select country drop down box asking user to select a country">
     Please select a country
   </message>
-  <message name="IDS_CHARGER_REPLACEMENT_US" desc="The textn the select country drop down as us">
+  <message name="IDS_CHARGER_REPLACEMENT_US" desc="The text in the select country drop down as us">
     United States
   </message>
-  <message name="IDS_CHARGER_REPLACEMENT_UK" desc="The textn the select country drop down as uk">
+  <message name="IDS_CHARGER_REPLACEMENT_CA" desc="The text in the select country drop down as canada">
+    Canada
+  </message>
+  <message name="IDS_CHARGER_REPLACEMENT_UK" desc="The text in the select country drop down as uk">
     United Kingdom
   </message>
-  <message name="IDS_CHARGER_REPLACEMENT_AU" desc="The textn the select country drop down as austrilia">
+  <message name="IDS_CHARGER_REPLACEMENT_AU" desc="The text in the select country drop down as australia">
     Australia
   </message>
-  <message name="IDS_CHARGER_REPLACEMENT_IRE" desc="The textn the select country drop down as ireland">
+  <message name="IDS_CHARGER_REPLACEMENT_IRE" desc="The text in the select country drop down as ireland">
     Ireland
   </message>  
   <message name="IDS_CHARGER_REPLACEMENT_NEXT_STEP" desc="Text on the button leading user to the next step">
@@ -3999,7 +4002,7 @@ Battery full
     Refer to the  <ph name="BEGIN_LINK">&lt;a class="link" id="privacy-link" href="#"&gt;</ph>Privacy Policy<ph name="END_LINK">&lt;/a&gt;</ph> for more details on how we handle this information.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_OFFLINE_ORDER_PHONE_NUMBER" desc="Text for offline charger order phone numbers">
-    Please call (866) 628-1371 (US) or 0800 026 0613 (UK) to request your free replacement charger.
+    Please call (866) 628-1371 (US), (866) 628-1372 (Canada), or 0800 026 0613 (UK) to request your free replacement charger.
   </message>
   <message name="IDS_CHARGER_REPLACEMENT_CHARGER_STILL_BAD" desc="Title of the page warning user if they keep plug in bad charger.">
     Your order is being processed

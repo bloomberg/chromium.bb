@@ -53,6 +53,7 @@ cr.define('chargerReplacement', function() {
    */
   var COUNTRY = {
     AU: 'au',
+    CA: 'ca',
     IRE: 'ire',
     UK: 'uk',
     US: 'us',
@@ -156,7 +157,7 @@ cr.define('chargerReplacement', function() {
    */
   function selectCountry() {
     var country = $('select-device-country').value;
-    if (country == COUNTRY.US) {
+    if (country == COUNTRY.US || country == COUNTRY.CA) {
       $('new-charger').src = $('new-charger-us').src;
       $('original-charger').src = $('original-charger-us').src;
     } else if (country == COUNTRY.AU) {
