@@ -304,6 +304,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   if (!buffer)
     return;
 #if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
+  bool flip = false;
   uint8* yplane = reinterpret_cast<uint8*>(buffer->data());
   uint8* uplane =
       yplane +
@@ -352,6 +353,13 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       break;
     case media::PIXEL_FORMAT_RGB24:
       origin_colorspace = libyuv::FOURCC_RAW;
+#if defined(OS_WIN)
+      // TODO(wjia): Currently, for RGB24 on WIN, capture device always
+      // passes in positive src_width and src_height. Remove this hardcoded
+      // value when nagative src_height is supported. The negative src_height
+      // indicates that vertical flipping is needed.
+      flip = true;
+#endif
       break;
     case media::PIXEL_FORMAT_ARGB:
       origin_colorspace = libyuv::FOURCC_ARGB;
@@ -363,48 +371,23 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       NOTREACHED();
   }
 
-  int need_convert_rgb24_on_win = false;
-#if defined(OS_WIN)
-  // TODO(wjia): Use libyuv::ConvertToI420 since support for image inversion
-  // (vertical flipping) has been added. Use negative src_height as indicator.
-  if (frame_format.pixel_format == media::PIXEL_FORMAT_RGB24) {
-    // Rotation is not supported in kRGB24 and OS_WIN case.
-    DCHECK(!rotation);
-    need_convert_rgb24_on_win = true;
-  }
-#endif
-  if (need_convert_rgb24_on_win) {
-    int rgb_stride = -3 * (new_unrotated_width + chopped_width);
-    const uint8* rgb_src =
-        data + 3 * (new_unrotated_width + chopped_width) *
-                   (new_unrotated_height - 1 + chopped_height);
-    media::ConvertRGB24ToYUV(rgb_src,
-                             yplane,
-                             uplane,
-                             vplane,
-                             new_unrotated_width,
-                             new_unrotated_height,
-                             rgb_stride,
-                             yplane_stride,
-                             uv_plane_stride);
-  } else {
-    libyuv::ConvertToI420(data,
-                          length,
-                          yplane,
-                          yplane_stride,
-                          uplane,
-                          uv_plane_stride,
-                          vplane,
-                          uv_plane_stride,
-                          crop_x,
-                          crop_y,
-                          new_unrotated_width + chopped_width,
-                          new_unrotated_height,
-                          new_unrotated_width,
-                          new_unrotated_height,
-                          rotation_mode,
-                          origin_colorspace);
-  }
+  libyuv::ConvertToI420(data,
+                        length,
+                        yplane,
+                        yplane_stride,
+                        uplane,
+                        uv_plane_stride,
+                        vplane,
+                        uv_plane_stride,
+                        crop_x,
+                        crop_y,
+                        frame_format.frame_size.width(),
+                        (flip ? -frame_format.frame_size.height() :
+                                frame_format.frame_size.height()),
+                        new_unrotated_width,
+                        new_unrotated_height,
+                        rotation_mode,
+                        origin_colorspace);
 #else
   // Libyuv is not linked in for Android WebView builds, but video capture is
   // not used in those builds either. Whenever libyuv is added in that build,
