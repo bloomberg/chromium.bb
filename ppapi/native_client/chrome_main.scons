@@ -39,7 +39,6 @@ ppapi_scons_files['nonvariant_test_scons_files'] = [
     'tests/nacl_browser/browser_dynamic_library/nacl.scons',
     'tests/nacl_browser/manifest_file/nacl.scons',
     'tests/nacl_browser/nameservice/nacl.scons',
-    'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/extension_mime_handler/nacl.scons',
     'tests/ppapi_browser/manifest/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
