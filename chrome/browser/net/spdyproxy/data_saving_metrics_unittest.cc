@@ -9,7 +9,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/net/chrome_network_data_saving_metrics.h"
+#include "chrome/browser/net/spdyproxy/data_saving_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,18 +71,18 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
   const int64 kOriginalLength = 200;
   const int64 kReceivedLength = 100;
 
-  chrome_browser_net::UpdateContentLengthPrefs(
+  spdyproxy::UpdateContentLengthPrefs(
       kReceivedLength, kOriginalLength,
-      false, chrome_browser_net::UNKNOWN_TYPE, &pref_service_);
+      false, spdyproxy::UNKNOWN_TYPE, &pref_service_);
   EXPECT_EQ(kReceivedLength,
             pref_service_.GetInt64(prefs::kHttpReceivedContentLength));
   EXPECT_EQ(kOriginalLength,
             pref_service_.GetInt64(prefs::kHttpOriginalContentLength));
 
   // Record the same numbers again, and total lengths should be dobuled.
-  chrome_browser_net::UpdateContentLengthPrefs(
+  spdyproxy::UpdateContentLengthPrefs(
       kReceivedLength, kOriginalLength,
-      false, chrome_browser_net::UNKNOWN_TYPE, &pref_service_);
+      false, spdyproxy::UNKNOWN_TYPE, &pref_service_);
   EXPECT_EQ(kReceivedLength * 2,
             pref_service_.GetInt64(prefs::kHttpReceivedContentLength));
   EXPECT_EQ(kOriginalLength * 2,
@@ -243,9 +243,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, OneResponse) {
   int64 original[] = {kOriginalLength};
   int64 received[] = {kReceivedLength};
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1,
@@ -258,17 +258,17 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
   const int64 kReceivedLength = 100;
   int64 original[] = {kOriginalLength};
   int64 received[] = {kReceivedLength};
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      false, chrome_browser_net::UNKNOWN_TYPE,
+      false, spdyproxy::UNKNOWN_TYPE,
       FakeNow(), &pref_service_);
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1,
       NULL, 0, NULL, 0, NULL, 0, NULL, 0);
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::UNKNOWN_TYPE,
+      true, spdyproxy::UNKNOWN_TYPE,
       FakeNow(), &pref_service_);
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
@@ -279,9 +279,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
       original_proxy_enabled, 1, received_proxy_enabled, 1,
       NULL, 0, NULL, 0);
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
@@ -294,9 +294,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
       original_proxy_enabled, 1, received_proxy_enabled, 1,
       original_via_proxy, 1, received_via_proxy, 1);
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::UNKNOWN_TYPE, FakeNow(), &pref_service_);
+      true, spdyproxy::UNKNOWN_TYPE, FakeNow(), &pref_service_);
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   original_proxy_enabled[0] += kOriginalLength;
@@ -306,9 +306,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
       original_proxy_enabled, 1, received_proxy_enabled, 1,
       original_via_proxy, 1, received_via_proxy, 1);
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      false, chrome_browser_net::UNKNOWN_TYPE, FakeNow(), &pref_service_);
+      false, spdyproxy::UNKNOWN_TYPE, FakeNow(), &pref_service_);
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -324,9 +324,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   int64 total_received[] = {0};
   int64 proxy_enabled_received[] = {0};
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
-      true, chrome_browser_net::HTTPS,
+      true, spdyproxy::HTTPS,
       FakeNow(), &pref_service_);
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
@@ -340,9 +340,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
       received, 0);  // unknown
 
   // Data reduction proxy is not enabled.
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
-      false, chrome_browser_net::HTTPS,
+      false, spdyproxy::HTTPS,
       FakeNow(), &pref_service_);
   total_received[0] += kContentLength;
   VerifyDailyRequestTypeContentLengthPrefLists(
@@ -353,9 +353,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
       received, 0,  // long bypass
       received, 0);  // unknown
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
-      true, chrome_browser_net::HTTPS,
+      true, spdyproxy::HTTPS,
       FakeNow(), &pref_service_);
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
@@ -368,9 +368,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
       received, 0,  // long bypass
       received, 0);  // unknown
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
-      true, chrome_browser_net::SHORT_BYPASS,
+      true, spdyproxy::SHORT_BYPASS,
       FakeNow(), &pref_service_);
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
@@ -383,9 +383,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
       received, 0,  // long bypass
       received, 0);  // unknown
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
-      true, chrome_browser_net::LONG_BYPASS,
+      true, spdyproxy::LONG_BYPASS,
       FakeNow(), &pref_service_);
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
@@ -397,9 +397,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
       received, 1,  // long bypass
       received, 0);  // unknown
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
-      true, chrome_browser_net::UNKNOWN_TYPE,
+      true, spdyproxy::UNKNOWN_TYPE,
       FakeNow(), &pref_service_);
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
@@ -416,18 +416,18 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
   const int64 kOriginalLength = 200;
   const int64 kReceivedLength = 100;
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
 
   // Forward one day.
   SetFakeTimeDeltaInHours(24);
 
   // Proxy not enabled. Not via proxy.
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      false, chrome_browser_net::UNKNOWN_TYPE, FakeNow(), &pref_service_);
+      false, spdyproxy::UNKNOWN_TYPE, FakeNow(), &pref_service_);
 
   int64 original[] = {kOriginalLength, kOriginalLength};
   int64 received[] = {kReceivedLength, kReceivedLength};
@@ -444,9 +444,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
       received_via_data_reduction_proxy, 2);
 
   // Proxy enabled. Not via proxy.
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::UNKNOWN_TYPE, FakeNow(), &pref_service_);
+      true, spdyproxy::UNKNOWN_TYPE, FakeNow(), &pref_service_);
   original[1] += kOriginalLength;
   received[1] += kReceivedLength;
   original_with_data_reduction_proxy_enabled[1] += kOriginalLength;
@@ -460,9 +460,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
       received_via_data_reduction_proxy, 2);
 
   // Proxy enabled and via proxy.
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   original[1] += kOriginalLength;
   received[1] += kReceivedLength;
@@ -485,9 +485,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
   int64 original[] = {0, kOriginalLength};
   int64 received[] = {0, kReceivedLength};
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 2, received, 2,
@@ -497,9 +497,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
   // Forward 10 hours, stay in the same day.
   // See kLastUpdateTime: "Now" in test is 03:45am.
   SetFakeTimeDeltaInHours(10);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   original[1] += kOriginalLength;
   received[1] += kReceivedLength;
@@ -510,9 +510,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
 
   // Forward 11 more hours, comes to tomorrow.
   AddFakeTimeDeltaInHours(11);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   int64 original2[] = {kOriginalLength * 2, kOriginalLength};
   int64 received2[] = {kReceivedLength * 2, kReceivedLength};
@@ -525,17 +525,17 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
 TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
   const int64 kOriginalLength = 200;
   const int64 kReceivedLength = 100;
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
 
   // Forward three days.
   SetFakeTimeDeltaInHours(3 * 24);
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
 
   int64 original[] = {kOriginalLength, 0, 0, kOriginalLength};
@@ -547,9 +547,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
 
   // Forward four more days.
   AddFakeTimeDeltaInHours(4 * 24);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   int64 original2[] = {
     kOriginalLength, 0, 0, kOriginalLength, 0, 0, 0, kOriginalLength,
@@ -564,9 +564,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
 
   // Forward |kNumDaysInHistory| more days.
   AddFakeTimeDeltaInHours(kNumDaysInHistory * 24);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   int64 original3[] = {kOriginalLength};
   int64 received3[] = {kReceivedLength};
@@ -577,9 +577,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
 
   // Forward |kNumDaysInHistory| + 1 more days.
   AddFakeTimeDeltaInHours((kNumDaysInHistory + 1)* 24);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   VerifyDailyDataSavingContentLengthPrefLists(
       original3, 1, received3, 1,
@@ -593,16 +593,16 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardAndForwardOneDay) {
   int64 original[] = {kOriginalLength};
   int64 received[] = {kReceivedLength};
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
 
   // Backward one day.
   SetFakeTimeDeltaInHours(-24);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
@@ -613,9 +613,9 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardAndForwardOneDay) {
 
   // Then, Forward one day
   AddFakeTimeDeltaInHours(24);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   int64 original2[] = {kOriginalLength * 2, kOriginalLength};
   int64 received2[] = {kReceivedLength * 2, kReceivedLength};
@@ -631,15 +631,15 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardTwoDays) {
   int64 original[] = {kOriginalLength};
   int64 received[] = {kReceivedLength};
 
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   // Backward two days.
   SetFakeTimeDeltaInHours(-2 * 24);
-  chrome_browser_net::UpdateContentLengthPrefsForDataReductionProxy(
+  spdyproxy::UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, chrome_browser_net::VIA_DATA_REDUCTION_PROXY,
+      true, spdyproxy::VIA_DATA_REDUCTION_PROXY,
       FakeNow(), &pref_service_);
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1,

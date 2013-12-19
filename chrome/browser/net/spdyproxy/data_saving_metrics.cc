@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/chrome_network_data_saving_metrics.h"
+#include "chrome/browser/net/spdyproxy/data_saving_metrics.h"
 
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -371,7 +371,7 @@ bool IsDataReductionProxyReponse(
 
 }  // namespace
 
-namespace chrome_browser_net {
+namespace spdyproxy {
 
 DataReductionRequestType GetDataReductionRequestType(
     const net::URLRequest* request) {
@@ -397,7 +397,7 @@ int64 GetAdjustedOriginalContentLength(
   // Since there was no indication of the original content length, presume
   // it is no different from the number of bytes read.
   if (original_content_length == -1 ||
-      data_reduction_type != chrome_browser_net::VIA_DATA_REDUCTION_PROXY) {
+      data_reduction_type != spdyproxy::VIA_DATA_REDUCTION_PROXY) {
     return received_content_length;
   }
   return original_content_length;
@@ -547,4 +547,4 @@ void UpdateContentLengthPrefs(
 
 }
 
-}  // namespace chrome_browser_net
+}  // namespace spdyproxy

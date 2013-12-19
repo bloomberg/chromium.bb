@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_CHROME_NETWORK_DATA_SAVING_METRICS_H_
-#define CHROME_BROWSER_NET_CHROME_NETWORK_DATA_SAVING_METRICS_H_
+#ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_SAVING_METRICS_H_
+#define CHROME_BROWSER_NET_SPDYPROXY_DATA_SAVING_METRICS_H_
 
 #include "base/time/time.h"
 
@@ -13,7 +13,7 @@ class URLRequest;
 
 class PrefService;
 
-namespace chrome_browser_net {
+namespace spdyproxy {
 
 enum DataReductionRequestType {
   VIA_DATA_REDUCTION_PROXY,  // A request served by the data reduction proxy.
@@ -58,6 +58,6 @@ void UpdateContentLengthPrefs(
     DataReductionRequestType data_reduction_type,
     PrefService* prefs);
 
-}  // namespace chrome_browser_net
+}  // namespace spdyproxy
 
-#endif  // CHROME_BROWSER_NET_CHROME_NETWORK_DATA_SAVING_METRICS_H_
+#endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_SAVING_METRICS_H_
