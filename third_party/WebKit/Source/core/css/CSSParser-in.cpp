@@ -3265,14 +3265,14 @@ bool CSSParser::parseShorthand(CSSPropertyID propId, const StylePropertyShorthan
 
     bool found = false;
     unsigned propertiesParsed = 0;
-    bool propertyFound[6]= { false, false, false, false, false, false }; // 6 is enough size.
+    bool propertyFound[6] = { false, false, false, false, false, false }; // 6 is enough size.
 
     while (m_valueList->current()) {
         found = false;
         for (unsigned propIndex = 0; !found && propIndex < shorthand.length(); ++propIndex) {
             if (!propertyFound[propIndex] && parseValue(shorthand.properties()[propIndex], important)) {
-                    propertyFound[propIndex] = found = true;
-                    propertiesParsed++;
+                propertyFound[propIndex] = found = true;
+                propertiesParsed++;
             }
         }
 
