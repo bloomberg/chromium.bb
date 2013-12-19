@@ -108,7 +108,7 @@ class CONTENT_EXPORT IndexedDBFactory
   IndexedDBContextImpl* context_;
 
   typedef std::map<IndexedDBDatabase::Identifier,
-                   scoped_refptr<IndexedDBDatabase> > IndexedDBDatabaseMap;
+                   IndexedDBDatabase*> IndexedDBDatabaseMap;
   IndexedDBDatabaseMap database_map_;
 
   typedef std::map<GURL, scoped_refptr<IndexedDBBackingStore> >

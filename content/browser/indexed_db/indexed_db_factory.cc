@@ -334,7 +334,7 @@ std::vector<IndexedDBDatabase*> IndexedDBFactory::GetOpenDatabasesForOrigin(
        it != database_map_.end();
        ++it) {
     if (it->first.first == origin_url)
-      result.push_back(it->second.get());
+      result.push_back(it->second);
   }
   return result;
 }
