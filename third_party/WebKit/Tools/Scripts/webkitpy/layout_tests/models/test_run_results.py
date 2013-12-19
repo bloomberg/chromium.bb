@@ -205,15 +205,25 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
             if not result.has_stderr and only_include_failing:
                 continue
         elif result_type != test_expectations.SKIP and test_name in initial_results.unexpected_results_by_name:
-            if retry_results and test_name not in retry_results.unexpected_results_by_name:
-                actual.extend(expectations.get_expectations_string(test_name).split(" "))
-                num_flaky += 1
-            elif retry_results:
-                retry_result_type = retry_results.unexpected_results_by_name[test_name].type
-                num_regressions += 1
-                if not keywords[retry_result_type] in actual:
-                    actual.append(keywords[retry_result_type])
+            if retry_results:
+                if test_name not in retry_results.unexpected_results_by_name:
+                    # The test failed unexpectedly at first, but ran as expected the second time -> flaky.
+                    actual.extend(expectations.get_expectations_string(test_name).split(" "))
+                    num_flaky += 1
+                else:
+                    retry_result_type = retry_results.unexpected_results_by_name[test_name].type
+                    if retry_result_type == test_expectations.PASS:
+                        #  The test failed unexpectedly at first, then passed unexpectedly -> unexpected pass.
+                        num_passes += 1
+                        if not result.has_stderr and only_include_failing:
+                            continue
+                    else:
+                        # The test failed unexpectedly both times -> regression.
+                        num_regressions += 1
+                        if not keywords[retry_result_type] in actual:
+                            actual.append(keywords[retry_result_type])
             else:
+                # The test failed unexpectedly, but we didn't do any retries -> regression.
                 num_regressions += 1
 
         test_dict = {}

@@ -185,3 +185,14 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertTrue('time' not in summary['tests']['failures']['expected']['audio.html'])
         self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['time'], 0.1)
         self.assertTrue('time' not in summary['tests']['failures']['expected']['crash.html'])
+
+    def test_timeout_then_unexpected_pass(self):
+        tests = ['failures/expected/image.html']
+        expectations = test_expectations.TestExpectations(self.port, tests)
+        initial_results = test_run_results.TestRunResults(expectations, len(tests))
+        initial_results.add(get_result('failures/expected/image.html', test_expectations.TIMEOUT, run_time=1), False, False)
+        retry_results = test_run_results.TestRunResults(expectations, len(tests))
+        retry_results.add(get_result('failures/expected/image.html', test_expectations.PASS, run_time=0.1), False, False)
+        summary = test_run_results.summarize_results(self.port, expectations, initial_results, retry_results, enabled_pixel_tests_in_retry=True, only_include_failing=True)
+        self.assertEquals(summary['num_regressions'], 0)
+        self.assertEquals(summary['num_passes'], 1)
