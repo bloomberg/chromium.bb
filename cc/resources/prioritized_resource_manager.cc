@@ -326,10 +326,14 @@ void PrioritizedResourceManager::ReduceWastedMemory(
       continue;
     wasted_memory += (*it)->bytes();
   }
-  size_t ten_percent_of_memory = memory_available_bytes_ / 10;
-  if (wasted_memory > ten_percent_of_memory)
+  size_t wasted_memory_to_allow = memory_available_bytes_ / 10;
+  // If the external priority cutoff indicates that unused memory should be
+  // freed, then do not allow any memory for texture recycling.
+  if (external_priority_cutoff_ != PriorityCalculator::AllowEverythingCutoff())
+    wasted_memory_to_allow = 0;
+  if (wasted_memory > wasted_memory_to_allow)
     EvictBackingsToReduceMemory(MemoryUseBytes() -
-                                (wasted_memory - ten_percent_of_memory),
+                                (wasted_memory - wasted_memory_to_allow),
                                 PriorityCalculator::AllowEverythingCutoff(),
                                 EVICT_ONLY_RECYCLABLE,
                                 DO_NOT_UNLINK_BACKINGS,

@@ -227,6 +227,9 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   uint64 max_surfaces_with_frontbuffer_soft_limit_;
 
+  // The priority cutoff used for all renderers.
+  gpu::MemoryAllocation::PriorityCutoff priority_cutoff_;
+
   // The maximum amount of memory that may be allocated for GPU resources
   uint64 bytes_available_gpu_memory_;
   bool bytes_available_gpu_memory_overridden_;

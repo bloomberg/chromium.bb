@@ -54,6 +54,7 @@ GpuMemoryManager::GpuMemoryManager(
       manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
+      priority_cutoff_(MemoryAllocation::CUTOFF_ALLOW_EVERYTHING),
       bytes_available_gpu_memory_(0),
       bytes_available_gpu_memory_overridden_(false),
       bytes_minimum_per_client_(0),
@@ -68,12 +69,23 @@ GpuMemoryManager::GpuMemoryManager(
 {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
+  // Use a more conservative memory allocation policy on Linux and Mac because
+  // the platform is unstable when under memory pressure.
+  // http://crbug.com/145600 (Linux)
+  // http://crbug.com/141377 (Mac)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  priority_cutoff_ = MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
+#endif
+
 #if defined(OS_ANDROID)
   bytes_default_per_client_ = 8 * 1024 * 1024;
   bytes_minimum_per_client_ = 8 * 1024 * 1024;
 #elif defined(OS_CHROMEOS)
   bytes_default_per_client_ = 64 * 1024 * 1024;
   bytes_minimum_per_client_ = 4 * 1024 * 1024;
+#elif defined(OS_MACOSX)
+  bytes_default_per_client_ = 128 * 1024 * 1024;
+  bytes_minimum_per_client_ = 128 * 1024 * 1024;
 #else
   bytes_default_per_client_ = 64 * 1024 * 1024;
   bytes_minimum_per_client_ = 64 * 1024 * 1024;
@@ -659,16 +671,7 @@ void GpuMemoryManager::AssignSurfacesAllocations() {
 
     allocation.bytes_limit_when_visible =
         client_state->bytes_allocation_when_visible_;
-    // Use a more conservative memory allocation policy on Linux and Mac
-    // because the platform is unstable when under memory pressure.
-    // http://crbug.com/145600 (Linux)
-    // http://crbug.com/141377 (Mac)
-    allocation.priority_cutoff_when_visible =
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-        MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
-#else
-        MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
-#endif
+    allocation.priority_cutoff_when_visible = priority_cutoff_;
 
     client_state->client_->SetMemoryAllocation(allocation);
     client_state->client_->SuggestHaveFrontBuffer(!client_state->hibernated_);
