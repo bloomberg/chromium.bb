@@ -28,8 +28,6 @@ class Context : public gin::Wrappable<Context> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
-
   static gin::Handle<Context> Create(v8::Isolate* isolate, uint64_t encoded,
                                      int width, int height);
   static gin::Handle<Shader> CreateShader(const gin::Arguments& arguments,
@@ -40,6 +38,9 @@ class Context : public gin::Wrappable<Context> {
                             gin::Handle<Shader> shader);
 
  private:
+  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) OVERRIDE;
+
   Context(uint64_t encoded, int width, int height);
 
   uint64_t encoded_;

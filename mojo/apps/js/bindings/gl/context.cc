@@ -21,16 +21,6 @@ gin::Handle<Context> Context::Create(v8::Isolate* isolate, uint64_t encoded,
   return gin::CreateHandle(isolate, new Context(encoded, width, height));
 }
 
-v8::Local<v8::ObjectTemplate> Context::GetObjectTemplate(
-    v8::Isolate* isolate) {
-  return gin::ObjectTemplateBuilder(isolate)
-      .SetValue("VERTEX_SHADER", GL_VERTEX_SHADER)
-      .SetMethod("createShader", CreateShader)
-      .SetMethod("shaderSource", ShaderSource)
-      .SetMethod("compileShader", CompileShader)
-      .Build();
-}
-
 gin::Handle<Shader> Context::CreateShader(const gin::Arguments& args,
                                           GLenum type) {
   gin::Handle<Shader> result;
@@ -58,6 +48,15 @@ void Context::CompileShader(const gin::Arguments& args,
     args.ThrowTypeError("Could not compile shader");
     return;
   }
+}
+
+gin::ObjectTemplateBuilder Context::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return gin::Wrappable<Context>::GetObjectTemplateBuilder(isolate)
+      .SetValue("VERTEX_SHADER", GL_VERTEX_SHADER)
+      .SetMethod("createShader", CreateShader)
+      .SetMethod("shaderSource", ShaderSource)
+      .SetMethod("compileShader", CompileShader);
 }
 
 Context::Context(uint64_t encoded, int width, int height)

@@ -75,17 +75,6 @@ gin::WrapperInfo StatsCollectionController::kWrapperInfo = {
 };
 
 // static
-v8::Local<v8::ObjectTemplate> StatsCollectionController::GetObjectTemplate(
-    v8::Isolate* isolate) {
-  return gin::ObjectTemplateBuilder(isolate)
-      .SetMethod("getHistogram", &StatsCollectionController::GetHistogram)
-      .SetMethod("getBrowserHistogram",
-                 &StatsCollectionController::GetBrowserHistogram)
-      .SetMethod("tabLoadTiming", &StatsCollectionController::GetTabLoadTiming)
-      .Build();
-}
-
-// static
 void StatsCollectionController::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -105,6 +94,16 @@ void StatsCollectionController::Install(blink::WebFrame* frame) {
 StatsCollectionController::StatsCollectionController() {}
 
 StatsCollectionController::~StatsCollectionController() {}
+
+gin::ObjectTemplateBuilder StatsCollectionController::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return gin::Wrappable<StatsCollectionController>::GetObjectTemplateBuilder(
+      isolate)
+      .SetMethod("getHistogram", &StatsCollectionController::GetHistogram)
+      .SetMethod("getBrowserHistogram",
+                 &StatsCollectionController::GetBrowserHistogram)
+      .SetMethod("tabLoadTiming", &StatsCollectionController::GetTabLoadTiming);
+}
 
 std::string StatsCollectionController::GetHistogram(
     const std::string& histogram_name) {

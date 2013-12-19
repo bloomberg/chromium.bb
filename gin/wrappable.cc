@@ -17,18 +17,9 @@ WrappableBase::~WrappableBase() {
   wrapper_.Reset();
 }
 
-v8::Handle<v8::Object> WrappableBase::GetWrapperImpl(
-    v8::Isolate* isolate,
-    WrapperInfo* wrapper_info,
-    GetObjectTemplateFunction template_getter) {
-    if (wrapper_.IsEmpty())
-      CreateWrapper(isolate, wrapper_info, template_getter);
-    return v8::Local<v8::Object>::New(isolate, wrapper_);
-}
-
-v8::Local<v8::ObjectTemplate> WrappableBase::GetObjectTemplate(
+ObjectTemplateBuilder WrappableBase::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return ObjectTemplateBuilder(isolate).Build();
+  return ObjectTemplateBuilder(isolate);
 }
 
 void WrappableBase::WeakCallback(
@@ -38,14 +29,16 @@ void WrappableBase::WeakCallback(
   delete wrappable;
 }
 
-v8::Handle<v8::Object> WrappableBase::CreateWrapper(
-    v8::Isolate* isolate,
-    WrapperInfo* info,
-    GetObjectTemplateFunction template_getter) {
+v8::Handle<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
+                                                     WrapperInfo* info) {
+  if (!wrapper_.IsEmpty()) {
+    return v8::Local<v8::Object>::New(isolate, wrapper_);
+  }
+
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(info);
   if (templ.IsEmpty()) {
-    templ = template_getter(isolate);
+    templ = GetObjectTemplateBuilder(isolate).Build();
     CHECK(!templ.IsEmpty());
     data->SetObjectTemplate(info, templ);
   }

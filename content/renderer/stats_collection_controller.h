@@ -22,13 +22,16 @@ class StatsCollectionController
     : public gin::Wrappable<StatsCollectionController> {
  public:
   static gin::WrapperInfo kWrapperInfo;
-  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
 
   static void Install(blink::WebFrame* frame);
 
  private:
   StatsCollectionController();
   virtual ~StatsCollectionController();
+
+  // gin::WrappableBase
+  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) OVERRIDE;
 
   // Retrieves a histogram and returns a JSON representation of it.
   std::string GetHistogram(const std::string& histogram_name);

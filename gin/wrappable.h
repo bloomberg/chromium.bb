@@ -53,31 +53,22 @@ GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
 template<typename T>
 class Wrappable;
 
+class ObjectTemplateBuilder;
 
 // Non-template base class to share code between templates instances.
 class GIN_EXPORT WrappableBase {
  protected:
-  typedef v8::Local<v8::ObjectTemplate>(*GetObjectTemplateFunction)(
-      v8::Isolate*);
-
   WrappableBase();
   virtual ~WrappableBase();
 
-  v8::Handle<v8::Object> GetWrapperImpl(
-      v8::Isolate* isolate,
-      WrapperInfo* wrapper_info,
-      GetObjectTemplateFunction template_getter);
+  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate);
 
-  static v8::Local<v8::ObjectTemplate> GetObjectTemplate(v8::Isolate* isolate);
+  v8::Handle<v8::Object> GetWrapperImpl(v8::Isolate* isolate,
+                                        WrapperInfo* wrapper_info);
 
  private:
   static void WeakCallback(
       const v8::WeakCallbackData<v8::Object, WrappableBase>& data);
-
-  v8::Handle<v8::Object> CreateWrapper(
-      v8::Isolate* isolate,
-      WrapperInfo* wrapper_info,
-      GetObjectTemplateFunction template_getter);
 
   v8::Persistent<v8::Object> wrapper_;  // Weak
 
@@ -92,7 +83,7 @@ class Wrappable : public WrappableBase {
   // To customize the wrapper created for a subclass, override GetWrapperInfo()
   // instead of overriding this function.
   v8::Handle<v8::Object> GetWrapper(v8::Isolate* isolate) {
-    return GetWrapperImpl(isolate, &T::kWrapperInfo, &T::GetObjectTemplate);
+    return GetWrapperImpl(isolate, &T::kWrapperInfo);
   }
 
  protected:
@@ -107,7 +98,7 @@ class Wrappable : public WrappableBase {
 // This converter handles any subclass of Wrappable.
 template<typename T>
 struct Converter<T*, typename base::enable_if<
-                       base::is_convertible<T*, Wrappable<T>*>::value>::type> {
+                       base::is_convertible<T*, WrappableBase*>::value>::type> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
     return val->GetWrapper(isolate);
   }
