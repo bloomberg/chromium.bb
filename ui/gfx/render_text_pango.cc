@@ -399,6 +399,23 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
       render_params.antialiasing,
       use_subpixel_rendering && !background_is_transparent());
 
+  SkPaint::Hinting skia_hinting = SkPaint::kNormal_Hinting;
+  switch (render_params.hinting) {
+    case gfx::FontRenderParams::HINTING_NONE:
+      skia_hinting = SkPaint::kNo_Hinting;
+      break;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      skia_hinting = SkPaint::kSlight_Hinting;
+      break;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      skia_hinting = SkPaint::kNormal_Hinting;
+      break;
+    case gfx::FontRenderParams::HINTING_FULL:
+      skia_hinting = SkPaint::kFull_Hinting;
+      break;
+  }
+  renderer.SetFontHinting(skia_hinting);
+
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
 

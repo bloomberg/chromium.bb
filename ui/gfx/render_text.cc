@@ -168,6 +168,7 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
   paint_.setAntiAlias(true);
   paint_.setSubpixelText(true);
   paint_.setLCDRenderText(true);
+  paint_.setHinting(SkPaint::kNormal_Hinting);
   bounds_.setEmpty();
 }
 
@@ -195,6 +196,10 @@ void SkiaTextRenderer::SetFontSmoothingSettings(bool enable_smoothing,
   paint_.setAntiAlias(enable_smoothing);
   paint_.setSubpixelText(enable_smoothing);
   paint_.setLCDRenderText(enable_lcd_text);
+}
+
+void SkiaTextRenderer::SetFontHinting(SkPaint::Hinting hinting) {
+  paint_.setHinting(hinting);
 }
 
 void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
