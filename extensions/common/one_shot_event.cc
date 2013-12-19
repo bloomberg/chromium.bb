@@ -31,6 +31,9 @@ OneShotEvent::OneShotEvent() : signaled_(false) {
   // immediately move it to another thread.
   thread_checker_.DetachFromThread();
 }
+OneShotEvent::OneShotEvent(bool signaled) : signaled_(signaled) {
+  thread_checker_.DetachFromThread();
+}
 OneShotEvent::~OneShotEvent() {}
 
 void OneShotEvent::Post(const tracked_objects::Location& from_here,

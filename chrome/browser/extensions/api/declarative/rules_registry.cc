@@ -73,26 +73,22 @@ namespace extensions {
 
 // RulesRegistry
 
-RulesRegistry::RulesRegistry(
-    Profile* profile,
-    const std::string& event_name,
-    content::BrowserThread::ID owner_thread,
-    RulesCacheDelegate* cache_delegate,
-    const WebViewKey& webview_key)
+RulesRegistry::RulesRegistry(Profile* profile,
+                             const std::string& event_name,
+                             content::BrowserThread::ID owner_thread,
+                             RulesCacheDelegate* cache_delegate,
+                             const WebViewKey& webview_key)
     : profile_(profile),
       owner_thread_(owner_thread),
       event_name_(event_name),
       webview_key_(webview_key),
+      ready_(/*signaled=*/!cache_delegate),  // Immediately ready if no cache
+                                             // delegate to wait for.
       weak_ptr_factory_(profile ? this : NULL),
       last_generated_rule_identifier_id_(0) {
   if (cache_delegate) {
     cache_delegate_ = cache_delegate->GetWeakPtr();
     cache_delegate->Init(this);
-  } else {
-    content::BrowserThread::PostTask(
-        owner_thread,
-        FROM_HERE,
-        base::Bind(&RulesRegistry::MarkReady, this, base::Time::Now()));
   }
 }
 

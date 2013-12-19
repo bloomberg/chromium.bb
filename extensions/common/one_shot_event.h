@@ -35,6 +35,11 @@ namespace extensions {
 class OneShotEvent {
  public:
   OneShotEvent();
+  // Use the following constructor to create an already signaled event. This is
+  // useful if you construct the event on a different thread from where it is
+  // used, in which case it is not possible to call Signal() just after
+  // construction.
+  explicit OneShotEvent(bool signaled);
   ~OneShotEvent();
 
   // True if Signal has been called.  This function is mostly for
