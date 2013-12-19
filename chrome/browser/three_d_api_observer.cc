@@ -167,6 +167,8 @@ void ThreeDAPIObserver::DidBlock3DAPIs(const GURL& url,
                                        content::ThreeDAPIType requester) {
   content::WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);
+  if (!web_contents)
+    return;
   ThreeDAPIInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), url, requester);
 }
