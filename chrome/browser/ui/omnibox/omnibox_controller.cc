@@ -40,19 +40,22 @@ namespace {
 // matches, we think the likelihood of the user selecting them is low enough
 // that prefetching isn't worth doing.
 const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
+  // If the default match should be prefetched, do that.
   const AutocompleteResult::const_iterator default_match(
       result.default_match());
-  if (default_match == result.end())
-    return NULL;
-
-  if (SearchProvider::ShouldPrefetch(*default_match))
+  if ((default_match != result.end()) &&
+      SearchProvider::ShouldPrefetch(*default_match))
     return &(*default_match);
 
-  return ((result.ShouldHideTopMatch() ||
-              result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches()) &&
-          (result.size() > 1) &&
-          SearchProvider::ShouldPrefetch(result.match_at(1))) ?
-              &result.match_at(1) : NULL;
+  // Otherwise, if the top match is a verbatim match and the very next match is
+  // prefetchable, fetch that.
+  if ((result.ShouldHideTopMatch() ||
+       result.TopMatchIsStandaloneVerbatimMatch()) &&
+      (result.size() > 1) &&
+      SearchProvider::ShouldPrefetch(result.match_at(1)))
+    return &result.match_at(1);
+
+  return NULL;
 }
 
 }  // namespace

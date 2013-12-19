@@ -24,19 +24,37 @@
 
 namespace {
 
-// Creates an AutocompleteMatch using |destination_url| and |type| and appends
-// it to |matches|.
-void AddMatch(const std::string& destination_url, AutocompleteMatch::Type type,
-              ACMatches* matches) {
+struct AutocompleteMatchTestData {
+  std::string destination_url;
+  AutocompleteMatch::Type type;
+};
+
+const AutocompleteMatchTestData kVerbatimMatches[] = {
+  { "http://search-what-you-typed/",
+    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+  { "http://url-what-you-typed/", AutocompleteMatchType::URL_WHAT_YOU_TYPED },
+};
+
+const AutocompleteMatchTestData kNonVerbatimMatches[] = {
+  { "http://search-history/", AutocompleteMatchType::SEARCH_HISTORY },
+  { "http://history-title/", AutocompleteMatchType::HISTORY_TITLE },
+};
+
+// Adds |count| AutocompleteMatches to |matches|.
+void PopulateAutocompleteMatchesFromTestData(
+    const AutocompleteMatchTestData* data,
+    size_t count,
+    ACMatches* matches) {
   ASSERT_TRUE(matches != NULL);
-  AutocompleteMatch* last_match =
-    !matches->empty() ? &((*matches)[matches->size() - 1]) : NULL;
-  AutocompleteMatch match;
-  match.destination_url = GURL(destination_url);
-  match.relevance = last_match ? last_match->relevance - 100 : 1300;
-  match.allowed_to_be_default_match = true;
-  match.type = type;
-  matches->push_back(match);
+  for (size_t i = 0; i < count; ++i) {
+    AutocompleteMatch match;
+    match.destination_url = GURL(data[i].destination_url);
+    match.relevance =
+        matches->empty() ? 1300 : (matches->back().relevance - 100);
+    match.allowed_to_be_default_match = true;
+    match.type = data[i].type;
+    matches->push_back(match);
+  }
 }
 
 }  // namespace
@@ -337,16 +355,17 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   // Add some matches.
   ACMatches matches;
-  AddMatch("http://history-url/", AutocompleteMatchType::HISTORY_URL, &matches);
-  AddMatch("http://search-what-you-typed/",
-           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
+  const AutocompleteMatchTestData data[] = {
+    { "http://history-url/", AutocompleteMatchType::HISTORY_URL },
+    { "http://search-what-you-typed/",
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+    { "http://history-title/", AutocompleteMatchType::HISTORY_TITLE },
+    { "http://search-history/", AutocompleteMatchType::SEARCH_HISTORY },
+  };
+  PopulateAutocompleteMatchesFromTestData(data, arraysize(data), &matches);
 
-  // Add a search history type match and demote its relevance score.
-  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
-           &matches);
-  matches[matches.size() - 1].relevance = 500;
+  // Demote the search history match relevance score.
+  matches.back().relevance = 500;
 
   // Add a rule demoting history-url and killing history-title.
   {
@@ -485,129 +504,84 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
 }
 
 TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
-  // Add some matches.
-  ACMatches matches;
-  AddMatch("http://search-what-you-typed/",
-           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
-           &matches);
-
   base::FieldTrialList::CreateFieldTrial("InstantExtended",
                                          "Group1 hide_verbatim:1");
+  ACMatches matches;
+
+  // Case 1: Top match is a verbatim match.
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
   AutocompleteResult result;
   result.AppendMatches(matches);
   EXPECT_TRUE(result.ShouldHideTopMatch());
-}
+  matches.clear();
+  result.Reset();
 
-TEST_F(AutocompleteResultTest, DoNotHideTopMatch) {
-  ACMatches matches;
-  AddMatch("http://search-what-you-typed/",
-           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://url-what-you-typed/",
-           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
-           &matches);
-
-  base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                         "Group1 hide_verbatim:1");
-  AutocompleteResult result;
+  // Case 2: If the verbatim first match is followed by another verbatim match,
+  // don't hide the top verbatim match.
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
+                                          arraysize(kVerbatimMatches),
+                                          &matches);
   result.AppendMatches(matches);
-  // If the verbatim first match is followed by another verbatim match, don't
-  // hide the top verbatim match.
   EXPECT_FALSE(result.ShouldHideTopMatch());
-}
+  matches.clear();
+  result.Reset();
 
-TEST_F(AutocompleteResultTest, DoNotHideTopMatch_TopMatchIsNotVerbatim) {
-  ACMatches matches;
-  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
-           &matches);
-  AddMatch("http://search-what-you-typed/",
-           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-
-  base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                         "Group1 hide_verbatim:1");
-  AutocompleteResult result;
+  // Case 3: Top match is not a verbatim match. Do not hide the top match.
+  PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
+                                          arraysize(kVerbatimMatches),
+                                          &matches);
   result.AppendMatches(matches);
-  // Top match is not a verbatim type match. Do not hide the top match.
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }
 
 TEST_F(AutocompleteResultTest, DoNotHideTopMatch_FieldTrialFlagDisabled) {
-  // Add some matches. This test config is identical to ShouldHideTopMatch test
-  // except that the "hide_verbatim" flag is disabled in the field trials.
-  ACMatches matches;
-  AddMatch("http://search-what-you-typed/",
-           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-  AddMatch("http://search-history/", AutocompleteMatchType::SEARCH_HISTORY,
-           &matches);
-
+  // This test config is identical to ShouldHideTopMatch test ("Case 1") except
+  // that the "hide_verbatim" flag is disabled in the field trials.
   base::FieldTrialList::CreateFieldTrial("InstantExtended",
                                          "Group1 hide_verbatim:0");
+  ACMatches matches;
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
   AutocompleteResult result;
   result.AppendMatches(matches);
   // Field trial flag "hide_verbatim" is disabled. Do not hide top match.
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }
 
-TEST_F(AutocompleteResultTest,
-       TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches) {
-  ACMatches matches;
-  AddMatch("http://url-what-you-typed/",
-           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-
-  AutocompleteResult result;
-  result.AppendMatches(matches);
-  EXPECT_TRUE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
-}
-
-TEST_F(AutocompleteResultTest,
-       TopMatchIsVerbatimAndHasConsecutiveVerbatimMatches) {
-  ACMatches matches;
-  AddMatch("http://search-what-you-typed/",
-           AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://url-what-you-typed/",
-           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-
-  AutocompleteResult result;
-  result.AppendMatches(matches);
-  EXPECT_FALSE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
-}
-
-TEST_F(AutocompleteResultTest, TopMatchIsNotVerbatim) {
+TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   ACMatches matches;
   AutocompleteResult result;
   result.AppendMatches(matches);
 
-  // Result set is empty.
-  EXPECT_FALSE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
+  // Case 1: Result set is empty.
+  EXPECT_FALSE(result.TopMatchIsStandaloneVerbatimMatch());
 
-  // Add a non-verbatim match to the result.
-  AddMatch("http://history-title/", AutocompleteMatchType::HISTORY_TITLE,
-           &matches);
-
+  // Case 2: Top match is not a verbatim match.
+  PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
   result.AppendMatches(matches);
-  EXPECT_FALSE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
-}
+  EXPECT_FALSE(result.TopMatchIsStandaloneVerbatimMatch());
+  result.Reset();
+  matches.clear();
 
-TEST_F(AutocompleteResultTest,
-       TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches_SingleMatchFound) {
-  ACMatches matches;
-  AddMatch("http://url-what-you-typed/",
-           AutocompleteMatchType::URL_WHAT_YOU_TYPED, &matches);
-
-  AutocompleteResult result;
+  // Case 3: Top match is a verbatim match.
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
   result.AppendMatches(matches);
-  EXPECT_TRUE(result.TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches());
+  EXPECT_TRUE(result.TopMatchIsStandaloneVerbatimMatch());
+  result.Reset();
+  matches.clear();
+
+  // Case 4: Standalone verbatim match found in AutocompleteResult.
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
+  PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
+  result.AppendMatches(matches);
+  EXPECT_TRUE(result.TopMatchIsStandaloneVerbatimMatch());
+  result.Reset();
+  matches.clear();
+
+  // Case 5: Multiple verbatim matches found in AutocompleteResult.
+  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
+                                          arraysize(kVerbatimMatches),
+                                          &matches);
+  result.AppendMatches(matches);
+  EXPECT_FALSE(result.ShouldHideTopMatch());
 }

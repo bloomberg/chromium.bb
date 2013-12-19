@@ -258,16 +258,13 @@ AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
 }
 
 bool AutocompleteResult::ShouldHideTopMatch() const {
-  // Gate on our field trial flag.
   return chrome::ShouldHideTopVerbatimMatch() &&
-      TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches();
+      TopMatchIsStandaloneVerbatimMatch();
 }
 
-bool AutocompleteResult::TopMatchIsVerbatimAndHasNoConsecutiveVerbatimMatches()
-    const {
-  if (empty() || !match_at(0).IsVerbatimType())
-    return false;
-  return !(size() > 1) || !match_at(1).IsVerbatimType();
+bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
+  return !empty() && match_at(0).IsVerbatimType() &&
+      ((size() == 1) || !match_at(1).IsVerbatimType());
 }
 
 void AutocompleteResult::Reset() {
