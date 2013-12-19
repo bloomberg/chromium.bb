@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebPageSerializer.h"
 
+#include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
-#include "WebFrameClient.h"
 #include "WebView.h"
 #include "core/dom/Document.h"
 #include "public/platform/Platform.h"
@@ -52,12 +52,9 @@ using blink::URLTestHelpers::toKURL;
 
 namespace {
 
-class TestWebFrameClient : public WebFrameClient {
-};
-
 class WebPageSerializerTest : public testing::Test {
 public:
-    WebPageSerializerTest() : m_webView(0), m_supportedSchemes(static_cast<size_t>(3))
+    WebPageSerializerTest() : m_supportedSchemes(static_cast<size_t>(3))
     {
         m_supportedSchemes[0] = "http";
         m_supportedSchemes[1] = "https";
@@ -67,17 +64,12 @@ public:
 protected:
     virtual void SetUp()
     {
-        // Create and initialize the WebView.
-        m_webView = WebView::create(0);
-        m_mainFrame = WebFrame::create(&m_webFrameClient);
-        m_webView->setMainFrame(m_mainFrame);
+        m_helper.initialize();
     }
 
     virtual void TearDown()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
-        m_webView->close();
-        m_mainFrame->close();
     }
 
     void registerMockedURLLoad(const std::string& url, const WebString& fileName)
@@ -90,7 +82,7 @@ protected:
         WebURLRequest urlRequest;
         urlRequest.initialize();
         urlRequest.setURL(url);
-        m_webView->mainFrame()->loadRequest(urlRequest);
+        m_helper.webView()->mainFrame()->loadRequest(urlRequest);
         // Make sure any pending request get served.
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
@@ -107,12 +99,12 @@ protected:
             printf("%s\n", urls[i].spec().data());
     }
 
-    WebView* m_webView;
+    WebView* webView() const { return m_helper.webView(); }
+
     WebVector<WebCString> m_supportedSchemes;
 
 private:
-    TestWebFrameClient m_webFrameClient;
-    WebFrame* m_mainFrame;
+    FrameTestHelpers::WebViewHelper m_helper;
 };
 
 TEST_F(WebPageSerializerTest, HTMLNodes)
@@ -127,7 +119,7 @@ TEST_F(WebPageSerializerTest, HTMLNodes)
     WebVector<WebURL> frames;
     WebVector<WebURL> resources;
     ASSERT_TRUE(WebPageSerializer::retrieveAllResources(
-        m_webView, m_supportedSchemes, &resources, &frames));
+        webView(), m_supportedSchemes, &resources, &frames));
 
     // Tests that all resources from the frame have been retrieved.
     EXPECT_EQ(1U, frames.size()); // There should be no duplicates.
@@ -171,7 +163,7 @@ TEST_F(WebPageSerializerTest, MultipleFrames)
     // OBJECT/EMBED have some delay to start to load their content. The first
     // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
     // before the start.
-    RefPtr<Document> document = static_cast<PassRefPtr<Document> >(m_webView->mainFrame()->document());
+    RefPtr<Document> document = static_cast<PassRefPtr<Document> >(webView()->mainFrame()->document());
     document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
@@ -179,7 +171,7 @@ TEST_F(WebPageSerializerTest, MultipleFrames)
     WebVector<WebURL> frames;
     WebVector<WebURL> resources;
     ASSERT_TRUE(WebPageSerializer::retrieveAllResources(
-        m_webView, m_supportedSchemes, &resources, &frames));
+        webView(), m_supportedSchemes, &resources, &frames));
 
     // Tests that all resources from the frame have been retrieved.
     EXPECT_EQ(4U, frames.size()); // There should be no duplicates.

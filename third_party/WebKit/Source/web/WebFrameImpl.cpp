@@ -2163,22 +2163,6 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     ASSERT(m_client);
     WebFrameImpl* webframe = toWebFrameImpl(m_client->createChildFrame(this, request.frameName()));
 
-    // If the embedder is returning 0 from createChildFrame(), it has not been
-    // updated to the new ownership semantics where the embedder creates the
-    // WebFrame. In that case, fall back to the old logic where the
-    // WebFrameImpl is created here and published back to the embedder. To
-    // bridge between the two ownership semantics, webframeLifetimeHack is
-    // needeed to balance out the refcounting.
-    //
-    // FIXME: Remove once all embedders return non-null from createChildFrame().
-    RefPtr<WebFrameImpl> webframeLifetimeHack;
-    bool mustCallDidCreateFrame = false;
-    if (!webframe) {
-        mustCallDidCreateFrame = true;
-        webframeLifetimeHack = adoptRef(WebFrameImpl::create(m_client));
-        webframe = webframeLifetimeHack.get();
-    }
-
     // Add an extra ref on behalf of the page/FrameLoader, which references the
     // WebFrame via the FrameLoaderClient interface. See the comment at the top
     // of this file for more info.
@@ -2192,10 +2176,6 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     childFrame->tree().setName(request.frameName());
 
     frame()->tree().appendChild(childFrame);
-
-    // FIXME: Remove once all embedders return non-null from createChildFrame().
-    if (mustCallDidCreateFrame)
-        m_client->didCreateFrame(this, webframe);
 
     // Frame::init() can trigger onload event in the parent frame,
     // which may detach this frame and trigger a null-pointer access

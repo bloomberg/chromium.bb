@@ -32,7 +32,6 @@
 
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
-#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewImpl.h"
@@ -57,11 +56,6 @@ using blink::URLTestHelpers::registerMockedURLLoad;
 
 namespace {
 
-class TestWebFrameClient : public WebFrameClient {
-public:
-    virtual ~TestWebFrameClient() { }
-};
-
 class PageSerializerTest : public testing::Test {
 public:
     PageSerializerTest()
@@ -73,26 +67,13 @@ public:
 protected:
     virtual void SetUp()
     {
-        // Create and initialize the WebView.
-        m_webViewImpl = toWebViewImpl(WebView::create(0));
-
         // We want the images to load and JavaScript to be on.
-        WebSettings* settings = m_webViewImpl->settings();
-        settings->setImagesEnabled(true);
-        settings->setLoadsImagesAutomatically(true);
-        settings->setJavaScriptEnabled(true);
-
-        m_mainFrame = WebFrame::create(&m_webFrameClient);
-        m_webViewImpl->setMainFrame(m_mainFrame);
+        m_helper.initialize(true, 0, 0, &configureSettings);
     }
 
     virtual void TearDown()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
-        m_webViewImpl->close();
-        m_webViewImpl = 0;
-        m_mainFrame->close();
-        m_mainFrame = 0;
     }
 
     void setBaseUrl(const char* url)
@@ -129,7 +110,7 @@ protected:
         WebURLRequest urlRequest;
         urlRequest.initialize();
         urlRequest.setURL(KURL(m_baseUrl, url));
-        m_webViewImpl->mainFrame()->loadRequest(urlRequest);
+        m_helper.webView()->mainFrame()->loadRequest(urlRequest);
         // Make sure any pending request get served.
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
         // Some requests get delayed, run the timer.
@@ -138,7 +119,7 @@ protected:
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
         PageSerializer serializer(&m_resources);
-        serializer.serialize(m_webViewImpl->mainFrameImpl()->frame()->page());
+        serializer.serialize(m_helper.webViewImpl()->mainFrameImpl()->frame()->page());
     }
 
     Vector<SerializedResource>& getResources()
@@ -173,11 +154,15 @@ protected:
         return String();
     }
 
-    WebViewImpl* m_webViewImpl;
-
 private:
-    TestWebFrameClient m_webFrameClient;
-    WebFrame* m_mainFrame;
+    static void configureSettings(WebSettings* settings)
+    {
+        settings->setImagesEnabled(true);
+        settings->setLoadsImagesAutomatically(true);
+        settings->setJavaScriptEnabled(true);
+    }
+
+    FrameTestHelpers::WebViewHelper m_helper;
     WebString m_folder;
     KURL m_baseUrl;
     Vector<SerializedResource> m_resources;

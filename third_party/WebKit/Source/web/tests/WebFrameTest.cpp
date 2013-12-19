@@ -109,10 +109,6 @@ const int touchPointPadding = 32;
     EXPECT_EQ(a.width(), b.width()); \
     EXPECT_EQ(a.height(), b.height());
 
-class FakeWebFrameClient : public WebFrameClient {
-    // To make the destructor public.
-};
-
 class FakeCompositingWebViewClient : public WebViewClient {
 public:
     virtual ~FakeCompositingWebViewClient()
@@ -129,8 +125,6 @@ public:
     {
         return m_layerTreeView.get();
     }
-
-    FakeWebFrameClient m_fakeWebFrameClient;
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
@@ -2061,7 +2055,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 
     OwnPtr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initialize(true, &fakeCompositingWebViewClient->m_fakeWebFrameClient, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
+    webViewHelper.initialize(true, 0, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
 
     webViewHelper.webView()->resize(WebSize(viewWidth, viewHeight));
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "large-div.html");
@@ -2663,7 +2657,7 @@ TEST_F(WebFrameTest, ClearFocusedNodeTest)
 
 // Implementation of WebFrameClient that tracks the v8 contexts that are created
 // and destroyed for verification.
-class ContextLifetimeTestWebFrameClient : public WebFrameClient {
+class ContextLifetimeTestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     struct Notification {
     public:
@@ -3002,39 +2996,7 @@ TEST_F(WebFrameTest, ExecuteScriptDuringDidCreateScriptContext)
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 }
 
-class TestDidCreateFrameWebFrameClient : public WebFrameClient {
-public:
-    TestDidCreateFrameWebFrameClient() : m_frameCount(0), m_parent(0)
-    {
-    }
-
-    virtual void didCreateFrame(WebFrame* parent, WebFrame* child)
-    {
-        m_frameCount++;
-        if (!m_parent)
-            m_parent = parent;
-    }
-
-    int m_frameCount;
-    WebFrame* m_parent;
-};
-
-TEST_F(WebFrameTest, DidCreateFrame)
-{
-    registerMockedHttpURLLoad("iframes_test.html");
-    registerMockedHttpURLLoad("visible_iframe.html");
-    registerMockedHttpURLLoad("invisible_iframe.html");
-    registerMockedHttpURLLoad("zero_sized_iframe.html");
-
-    TestDidCreateFrameWebFrameClient webFrameClient;
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "iframes_test.html", false, &webFrameClient);
-
-    EXPECT_EQ(webFrameClient.m_frameCount, 3);
-    EXPECT_EQ(webFrameClient.m_parent, webViewHelper.webView()->mainFrame());
-}
-
-class FindUpdateWebFrameClient : public WebFrameClient {
+class FindUpdateWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     FindUpdateWebFrameClient()
         : m_findResultsAreReady(false)
@@ -4903,7 +4865,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite)
     TestMainFrameUserOrProgrammaticScrollFrameClient client;
     OwnPtr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initialize(true, &fakeCompositingWebViewClient->m_fakeWebFrameClient, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
+    webViewHelper.initialize(true, 0, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
 
     webViewHelper.webView()->resize(WebSize(100, 100));
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "non-scrollable.html");

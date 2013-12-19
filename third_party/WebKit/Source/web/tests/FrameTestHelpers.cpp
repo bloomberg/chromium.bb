@@ -33,7 +33,6 @@
 
 #include "URLTestHelpers.h"
 #include "wtf/StdLibExtras.h"
-#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
@@ -68,7 +67,7 @@ public:
 
 WebFrameClient* defaultWebFrameClient()
 {
-    DEFINE_STATIC_LOCAL(WebFrameClient, client, ());
+    DEFINE_STATIC_LOCAL(TestWebFrameClient, client, ());
     return &client;
 }
 
@@ -150,6 +149,11 @@ void WebViewHelper::reset()
         m_mainFrame->close();
         m_mainFrame = 0;
     }
+}
+
+WebFrame* TestWebFrameClient::createChildFrame(WebFrame* parent, const WebString& frameName)
+{
+    return WebFrame::create(this);
 }
 
 } // namespace FrameTestHelpers

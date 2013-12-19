@@ -30,9 +30,9 @@
 
 #include "config.h"
 
+#include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
-#include "WebFrameClient.h"
 #include "WebURLLoaderOptions.h"
 #include "WebView.h"
 #include "public/platform/Platform.h"
@@ -53,9 +53,6 @@ using namespace blink;
 using blink::URLTestHelpers::toKURL;
 
 namespace {
-
-class TestWebFrameClient : public WebFrameClient {
-};
 
 class AssociatedURLLoaderTest : public testing::Test,
                                 public WebURLLoaderClient {
@@ -91,9 +88,7 @@ public:
 
     void SetUp()
     {
-        m_webView = WebView::create(0);
-        m_mainFrame = WebFrame::create(&m_webFrameClient);
-        m_webView->setMainFrame(m_mainFrame);
+        m_helper.initialize();
 
         std::string urlRoot = "http://www.test.com/";
         WebCore::KURL url = RegisterMockedUrl(urlRoot, "iframes_test.html");
@@ -109,7 +104,7 @@ public:
         WebURLRequest request;
         request.initialize();
         request.setURL(url);
-        m_webView->mainFrame()->loadRequest(request);
+        mainFrame()->loadRequest(request);
         serveRequests();
 
         Platform::current()->unitTestSupport()->unregisterMockedURL(url);
@@ -118,8 +113,6 @@ public:
     void TearDown()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
-        m_webView->close();
-        m_mainFrame->close();
     }
 
     void serveRequests()
@@ -129,7 +122,7 @@ public:
 
     WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions options = WebURLLoaderOptions())
     {
-        return m_webView->mainFrame()->createAssociatedURLLoader(options);
+        return mainFrame()->createAssociatedURLLoader(options);
     }
 
     // WebURLLoaderClient implementation.
@@ -272,12 +265,12 @@ public:
         return !m_actualResponse.httpHeaderField(headerNameString).isEmpty();
     }
 
+    WebFrame* mainFrame() const { return m_helper.webView()->mainFrame(); }
+
 protected:
     WTF::String m_baseFilePath;
     WTF::String m_frameFilePath;
-    TestWebFrameClient m_webFrameClient;
-    WebView* m_webView;
-    WebFrame* m_mainFrame;
+    FrameTestHelpers::WebViewHelper m_helper;
 
     WebURLLoader* m_expectedLoader;
     WebURLResponse m_actualResponse;
