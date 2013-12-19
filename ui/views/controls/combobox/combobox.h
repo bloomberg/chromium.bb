@@ -113,7 +113,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   virtual base::string16 GetTextForRow(int row) OVERRIDE;
 
   // Overriden from ComboboxModelObserver:
-  virtual void OnModelChanged() OVERRIDE;
+  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) OVERRIDE;
 
   // Overriden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;

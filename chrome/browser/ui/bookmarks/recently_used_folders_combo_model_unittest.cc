@@ -17,8 +17,8 @@
 
 using content::BrowserThread;
 
-// Implementation of ComboboxModelObserver that records when OnModelChanged()
-// is invoked.
+// Implementation of ComboboxModelObserver that records when
+// OnComboboxModelChanged() is invoked.
 class TestComboboxModelObserver : public ui::ComboboxModelObserver {
  public:
   TestComboboxModelObserver() : changed_(false) {}
@@ -32,7 +32,7 @@ class TestComboboxModelObserver : public ui::ComboboxModelObserver {
   }
 
   // ComboboxModelObserver:
-  virtual void OnModelChanged() OVERRIDE {
+  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) OVERRIDE {
     changed_ = true;
   }
 

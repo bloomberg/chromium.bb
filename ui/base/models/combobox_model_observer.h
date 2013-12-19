@@ -9,12 +9,14 @@
 
 namespace ui {
 
+class ComboboxModel;
+
 // Observer for the ComboboxModel.
 class UI_EXPORT ComboboxModelObserver {
  public:
-  // Invoked when the model has changed in some way. The observer should assume
+  // Invoked when |model| has changed in some way. The observer should assume
   // everything changed.
-  virtual void OnModelChanged() = 0;
+  virtual void OnComboboxModelChanged(ComboboxModel* model) = 0;
 
  protected:
   virtual ~ComboboxModelObserver() {}

@@ -174,8 +174,10 @@ void RecentlyUsedFoldersComboModel::OnWillRemoveBookmarks(
       ++i;
     }
   }
-  if (changed)
-    FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_, OnModelChanged());
+  if (changed) {
+    FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_,
+                      OnComboboxModelChanged(this));
+  }
 }
 
 void RecentlyUsedFoldersComboModel::BookmarkNodeRemoved(
@@ -215,8 +217,10 @@ void RecentlyUsedFoldersComboModel::BookmarkAllNodesRemoved(
       ++i;
     }
   }
-  if (changed)
-    FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_, OnModelChanged());
+  if (changed) {
+    FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_,
+                      OnComboboxModelChanged(this));
+  }
 }
 
 void RecentlyUsedFoldersComboModel::MaybeChangeParent(

@@ -553,7 +553,8 @@ void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
   state->count = model_->GetItemCount();
 }
 
-void Combobox::OnModelChanged() {
+void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
+  DCHECK_EQ(model, model_);
   ModelChanged();
 }
 
