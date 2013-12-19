@@ -1228,7 +1228,7 @@ def CMDstatus(parser, args):
     if not sys.stdout.isatty():
       color = ''
       reset = ''
-    print '  %*s: %s%s%s' % (
+    print '  %*s : %s%s%s' % (
           alignment, ShortBranchName(branch), color, issue, reset)
 
   cl = Changelist()

@@ -54,7 +54,7 @@ setup_gitsvn
       "git show | grep -q 'foo-quux'"
 
   test_expect_success "issue no longer has a branch" \
-      "$GIT_CL_STATUS | grep -q 'work: None'"
+      "$GIT_CL_STATUS | grep -q 'work : None'"
 
   test_expect_success "upstream svn has our commit" \
       "svn log $REPO_URL 2>/dev/null | grep -q 'foo-quux'"
