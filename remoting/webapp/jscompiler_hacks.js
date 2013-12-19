@@ -130,7 +130,9 @@ chrome.app.window = {
  */
 chrome.contextMenus = {
   /** @type {chrome.Event} */
-  onClicked: null
+  onClicked: null,
+  /** @param {Object} createParams */
+  create: function(createParams) {}
 };
 
 /** @type {Object} */

@@ -73,38 +73,36 @@ found in the LICENSE file.
 
     <div class="inset" data-ui-mode="home" hidden>
 
-    <header>
-      <div>
-        <img src="chromoting48.webp">
-        <h1 class="icon-label" i18n-content="PRODUCT_NAME"></h1>
-      </div>
-      <div class="box-spacer"></div>
-      <div id="top-secondary">
-        <span id="current-email"></span>
-        <span data-ui-mode="home" class="apps-v1-only">
-          <a id="sign-out" href="#" i18n-content="SIGN_OUT_BUTTON"></a>
-          <!-- TODO(jamiewalch): Add this back in when we support it.
-          <a id="connection-history"
-             i18n-content="CONNECTION_HISTORY_BUTTON"></a> |
-          -->
-        </span> |
-        <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
-           target="_blank" i18n-content="HELP"></a>
-      </div>
-    </header>
+      <header>
+        <div>
+          <img src="chromoting48.webp">
+          <h1 class="icon-label" i18n-content="PRODUCT_NAME"></h1>
+        </div>
+        <div class="box-spacer"></div>
+        <div id="top-secondary">
+          <span id="current-email"></span>
+          <span data-ui-mode="home" class="apps-v1-only">
+            <a id="sign-out" href="#" i18n-content="SIGN_OUT_BUTTON"></a>
+            <!-- TODO(jamiewalch): Add this back in when we support it.
+                 <a id="connection-history"
+                    i18n-content="CONNECTION_HISTORY_BUTTON"></a> |
+                 -->
+          </span> |
+          <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
+             target="_blank" i18n-content="HELP"></a>
+        </div>
+      </header>
 
-    <div data-ui-mode="home">
-      <div id="butter-bar" hidden>
-        <p>
-          <span id="butter-bar-message"></span>
-          <a id="butter-bar-dismiss" href="#">
-            <img src="icon_cross.webp" class="close-icon">
-          </a>
-        </p>
+      <div data-ui-mode="home">
+        <div id="butter-bar" hidden>
+          <p>
+            <span id="butter-bar-message"></span>
+            <a id="butter-bar-dismiss" href="#">
+              <img src="icon_cross.webp" class="close-icon">
+            </a>
+          </p>
+        </div>
       </div>
-    </div>
-
-    <div>
 
       <section>
         <h2 i18n-content="MODE_IT2ME"></h2>
@@ -212,15 +210,14 @@ found in the LICENSE file.
                     class="host-list-edit"
                     tabIndex="0"
                     i18n-title="TOOLTIP_RENAME">
-                <img id="this-host-rename"
-                     class="host-list-rename-icon"
+                <img class="host-list-rename-icon"
                      src="icon_pencil.webp">
               </span>
               <button type="button"
                       id="stop-daemon"
                       i18n-content="HOME_DAEMON_STOP_BUTTON">
               </button>
-            </div> <!-- enabled -->
+            </div> <!-- this-host-connect -->
             <div data-daemon-state="enabled">
               <div>
                 <span i18n-content="HOME_DAEMON_ACTIVE_MESSAGE"></span>
@@ -233,23 +230,23 @@ found in the LICENSE file.
                 <a href="#"
                    id="open-paired-client-manager-dialog"
                    i18n-content="HOME_DAEMON_MANAGE_PAIRINGS"></a>
+              </div>
+            </div> <!-- enabled -->
+            <div id="host-list-empty" hidden>
+              <div id="host-list-empty-hosting-supported"
+                   class="host-list-empty-instructions"
+                   i18n-content="HOST_LIST_EMPTY_HOSTING_SUPPORTED"
+                   i18n-value-name-1="HOME_DAEMON_START_BUTTON">
+              </div>
+              <div id="host-list-empty-hosting-unsupported"
+                   class="host-list-empty-instructions"
+                   i18n-content="HOST_LIST_EMPTY_HOSTING_UNSUPPORTED"
+                   i18n-value-name-1="HOME_DAEMON_START_BUTTON">
+              </div>
             </div>
           </div> <!-- daemon-control -->
-          <div id="host-list-empty" hidden>
-            <div id="host-list-empty-hosting-supported"
-                 class="host-list-empty-instructions"
-                 i18n-content="HOST_LIST_EMPTY_HOSTING_SUPPORTED"
-                 i18n-value-name-1="HOME_DAEMON_START_BUTTON">
-            </div>
-            <div id="host-list-empty-hosting-unsupported"
-                 class="host-list-empty-instructions"
-                 i18n-content="HOST_LIST_EMPTY_HOSTING_UNSUPPORTED"
-                 i18n-value-name-1="HOME_DAEMON_START_BUTTON">
-            </div>
-          </div>
         </div> <!-- me2me-content -->
       </section> <!-- host-list-div -->
-    </div>
     </div> <!-- inset -->
 
     <div id="auth-dialog" hidden>
@@ -391,7 +388,7 @@ found in the LICENSE file.
         </div>
         <div data-ui-mode="home.host-setup.install-pending" hidden>
           <div class="message"
-                    i18n-content="HOST_SETUP_INSTALL_PENDING"></div>
+               i18n-content="HOST_SETUP_INSTALL_PENDING"></div>
           <div class="button-row">
             <button id="host-config-install-retry"
                     autofocus="autofocus"
@@ -726,6 +723,7 @@ found in the LICENSE file.
                 hidden></span>
           <button id="delete-all-paired-clients"
                   i18n-content="DELETE_ALL_PAIRED_CLIENTS">
+          </button>
           <button id="close-paired-client-manager-dialog"
                   i18n-content="CLOSE">
           </button>
@@ -746,7 +744,7 @@ found in the LICENSE file.
            hidden>
         <div class="toolbar-border">
           <div id="session-status-message"
-                i18n-content="LABEL_CONNECTED"></div>
+               i18n-content="LABEL_CONNECTED"></div>
           <div id="connected-to"></div>
           <div id="new-connection" class="icon-black apps-v2-only">
             <img src="plus.webp" i18n-title="NEW_CONNECTION">
