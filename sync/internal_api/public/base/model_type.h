@@ -99,6 +99,9 @@ enum ModelType {
   // by this user and can have restrictions applied. MANAGED_USERS and
   // MANAGED_USER_SETTINGS can not be encrypted.
   MANAGED_USERS,
+  // Managed user shared settings. Shared settings can be modified both by the
+  // manager and the supervised user.
+  MANAGED_USER_SHARED_SETTINGS,
   // Distilled articles.
   ARTICLES,
   // App List items

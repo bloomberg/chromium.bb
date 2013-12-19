@@ -341,6 +341,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncManagedUsers;
     case syncer::ARTICLES:
       return prefs::kSyncArticles;
+    case syncer::MANAGED_USER_SHARED_SETTINGS:
+      return prefs::kSyncManagedUserSharedSettings;
     default:
       break;
   }

@@ -110,6 +110,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case MANAGED_USERS:
       specifics->mutable_managed_user();
       break;
+    case MANAGED_USER_SHARED_SETTINGS:
+      specifics->mutable_managed_user_shared_setting();
+      break;
     case ARTICLES:
       specifics->mutable_article();
       break;
@@ -206,6 +209,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber;
     case MANAGED_USERS:
       return sync_pb::EntitySpecifics::kManagedUserFieldNumber;
+    case MANAGED_USER_SHARED_SETTINGS:
+      return sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber;
     case ARTICLES:
       return sync_pb::EntitySpecifics::kArticleFieldNumber;
     default:
@@ -330,6 +335,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_managed_user())
     return MANAGED_USERS;
 
+  if (specifics.has_managed_user_shared_setting())
+    return MANAGED_USER_SHARED_SETTINGS;
+
   if (specifics.has_article())
     return ARTICLES;
 
@@ -386,6 +394,9 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(MANAGED_USER_SETTINGS);
   // Managed users are not encrypted since they are managed server-side.
   encryptable_user_types.Remove(MANAGED_USERS);
+  // Managed user shared settings are not encrypted since they are managed
+  // server-side and shared between manager and supervised user.
+  encryptable_user_types.Remove(MANAGED_USER_SHARED_SETTINGS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
@@ -500,6 +511,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Managed User Settings";
     case MANAGED_USERS:
       return "Managed Users";
+    case MANAGED_USER_SHARED_SETTINGS:
+      return "Managed User Shared Settings";
     case ARTICLES:
       return "Articles";
     case PROXY_TABS:
@@ -577,6 +590,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 28;
     case APP_LIST:
       return 29;
+    case MANAGED_USER_SHARED_SETTINGS:
+      return 30;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -664,6 +679,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return MANAGED_USER_SETTINGS;
   else if (model_type_string == "Managed Users")
     return MANAGED_USERS;
+  else if (model_type_string == "Managed User Shared Settings")
+    return MANAGED_USER_SHARED_SETTINGS;
   else if (model_type_string == "Articles")
     return ARTICLES;
   else if (model_type_string == "Tabs")
@@ -760,6 +777,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_managed_user_settings";
     case MANAGED_USERS:
       return "google_chrome_managed_users";
+    case MANAGED_USER_SHARED_SETTINGS:
+      return "google_chrome_managed_user_shared_settings";
     case ARTICLES:
       return "google_chrome_articles";
     case PROXY_TABS:
@@ -802,6 +821,8 @@ const char kFaviconImageNotificationType[] = "FAVICON_IMAGE";
 const char kFaviconTrackingNotificationType[] = "FAVICON_TRACKING";
 const char kManagedUserSettingNotificationType[] = "MANAGED_USER_SETTING";
 const char kManagedUserNotificationType[] = "MANAGED_USER";
+const char kManagedUserSharedSettingNotificationType[] =
+    "MANAGED_USER_SHARED_SETTING";
 const char kArticleNotificationType[] = "ARTICLE";
 }  // namespace
 
@@ -885,6 +906,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case MANAGED_USERS:
       *notification_type = kManagedUserNotificationType;
+      return true;
+    case MANAGED_USER_SHARED_SETTINGS:
+      *notification_type = kManagedUserSharedSettingNotificationType;
       return true;
     case ARTICLES:
       *notification_type = kArticleNotificationType;
@@ -975,6 +999,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kManagedUserNotificationType) {
     *model_type = MANAGED_USERS;
+    return true;
+  } else if (notification_type == kManagedUserSharedSettingNotificationType) {
+    *model_type = MANAGED_USER_SHARED_SETTINGS;
     return true;
   } else if (notification_type == kArticleNotificationType) {
     *model_type = ARTICLES;

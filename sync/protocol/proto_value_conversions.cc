@@ -567,6 +567,16 @@ base::DictionaryValue* ManagedUserSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* ManagedUserSharedSettingSpecificsToValue(
+    const sync_pb::ManagedUserSharedSettingSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(mu_id);
+  SET_STR(key);
+  SET_STR(value);
+  SET_BOOL(acknowledged);
+  return value;
+}
+
 base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -725,6 +735,8 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(favicon_tracking, FaviconTrackingSpecificsToValue);
   SET_FIELD(history_delete_directive, HistoryDeleteDirectiveSpecificsToValue);
   SET_FIELD(managed_user_setting, ManagedUserSettingSpecificsToValue);
+  SET_FIELD(managed_user_shared_setting,
+            ManagedUserSharedSettingSpecificsToValue);
   SET_FIELD(managed_user, ManagedUserSpecificsToValue);
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);

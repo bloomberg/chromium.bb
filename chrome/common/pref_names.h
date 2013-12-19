@@ -625,6 +625,7 @@ extern const char kSyncFaviconImages[];
 extern const char kSyncFaviconTracking[];
 extern const char kSyncHistoryDeleteDirectives[];
 extern const char kSyncManagedUserSettings[];
+extern const char kSyncManagedUserSharedSettings[];
 extern const char kSyncManagedUsers[];
 extern const char kSyncArticles[];
 extern const char kSyncPasswords[];

@@ -35,6 +35,7 @@ import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
 import "nigori_specifics.proto";
 import "managed_user_setting_specifics.proto";
+import "managed_user_shared_setting_specifics.proto";
 import "managed_user_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
@@ -120,6 +121,8 @@ message EntitySpecifics {
   optional FaviconImageSpecifics favicon_image = 182019;
   optional ManagedUserSettingSpecifics managed_user_setting = 186662;
   optional ManagedUserSpecifics managed_user = 194582;
+  optional ManagedUserSharedSettingSpecifics managed_user_shared_setting =
+      202026;
   optional ArticleSpecifics article = 223759;
   optional AppListSpecifics app_list = 229170;
 }

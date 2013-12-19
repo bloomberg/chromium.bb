@@ -55,6 +55,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::FAVICON_IMAGES,
   syncer::FAVICON_TRACKING,
   syncer::MANAGED_USER_SETTINGS,
+  syncer::MANAGED_USER_SHARED_SETTINGS,
   syncer::ARTICLES,
 };
 

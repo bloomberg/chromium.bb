@@ -40,6 +40,7 @@ import favicon_tracking_specifics_pb2
 import history_delete_directive_specifics_pb2
 import managed_user_setting_specifics_pb2
 import managed_user_specifics_pb2
+import managed_user_shared_setting_specifics_pb2
 import nigori_specifics_pb2
 import password_specifics_pb2
 import preference_specifics_pb2
@@ -74,6 +75,7 @@ ALL_TYPES = (
     EXTENSIONS,
     HISTORY_DELETE_DIRECTIVE,
     MANAGED_USER_SETTING,
+    MANAGED_USER_SHARED_SETTING,
     MANAGED_USER,
     NIGORI,
     PASSWORD,
@@ -86,7 +88,7 @@ ALL_TYPES = (
     TYPED_URL,
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
-    FAVICON_TRACKING) = range(28)
+    FAVICON_TRACKING) = range(29)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -119,6 +121,8 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     FAVICON_IMAGES: SYNC_TYPE_FIELDS['favicon_image'],
     FAVICON_TRACKING: SYNC_TYPE_FIELDS['favicon_tracking'],
     HISTORY_DELETE_DIRECTIVE: SYNC_TYPE_FIELDS['history_delete_directive'],
+    MANAGED_USER_SHARED_SETTING:
+        SYNC_TYPE_FIELDS['managed_user_shared_setting'],
     MANAGED_USER_SETTING: SYNC_TYPE_FIELDS['managed_user_setting'],
     MANAGED_USER: SYNC_TYPE_FIELDS['managed_user'],
     NIGORI: SYNC_TYPE_FIELDS['nigori'],
@@ -526,6 +530,9 @@ class SyncDataModel(object):
       PermanentItem('google_chrome_managed_users',
                     name='Managed Users',
                     parent_tag=ROOT_ID, sync_type=MANAGED_USER),
+      PermanentItem('google_chrome_managed_user_shared_settings',
+                    name='Managed User Shared Settings',
+                    parent_tag=ROOT_ID, sync_type=MANAGED_USER_SHARED_SETTING),
       PermanentItem('google_chrome_nigori', name='Nigori',
                     parent_tag=ROOT_ID, sync_type=NIGORI),
       PermanentItem('google_chrome_passwords', name='Passwords',

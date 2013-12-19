@@ -242,7 +242,7 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
                                     bool encrypt_everything,
                                     sync_pb::NigoriSpecifics* nigori) {
   nigori->set_encrypt_everything(encrypt_everything);
-  COMPILE_ASSERT(30 == MODEL_TYPE_COUNT, UpdateEncryptedTypes);
+  COMPILE_ASSERT(31 == MODEL_TYPE_COUNT, UpdateEncryptedTypes);
   nigori->set_encrypt_bookmarks(
       encrypted_types.Has(BOOKMARKS));
   nigori->set_encrypt_preferences(
@@ -278,7 +278,7 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     return ModelTypeSet::All();
 
   ModelTypeSet encrypted_types;
-  COMPILE_ASSERT(30 == MODEL_TYPE_COUNT, UpdateEncryptedTypes);
+  COMPILE_ASSERT(31 == MODEL_TYPE_COUNT, UpdateEncryptedTypes);
   if (nigori.encrypt_bookmarks())
     encrypted_types.Put(BOOKMARKS);
   if (nigori.encrypt_preferences())
