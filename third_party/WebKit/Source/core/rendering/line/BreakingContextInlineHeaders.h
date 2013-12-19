@@ -26,11 +26,11 @@
 
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/LineWidth.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/break_lines.h"
 #include "core/rendering/line/LineInfo.h"
+#include "core/rendering/line/LineWidth.h"
 #include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 

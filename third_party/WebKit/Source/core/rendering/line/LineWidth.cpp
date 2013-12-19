@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/LineWidth.h"
+#include "core/rendering/line/LineWidth.h"
 
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderRubyRun.h"

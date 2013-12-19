@@ -24,6 +24,8 @@
 #ifndef LineInfo_h
 #define LineInfo_h
 
+#include "core/rendering/line/LineWidth.h"
+
 namespace WebCore {
 
 class LineInfo {
