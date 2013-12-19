@@ -423,7 +423,8 @@ TEST_F(CoreImplTest, MessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h[1]));
 }
 
-TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing) {
+// Tests passing a message pipe handle.
+TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing1) {
   const char kHello[] = "hello";
   const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
   const char kWorld[] = "world!!!";
@@ -535,6 +536,244 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passed[0]));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_received));
+}
+
+TEST_F(CoreImplTest, DataPipe) {
+  MojoHandle ph, ch;  // p is for producer and c is for consumer.
+
+  EXPECT_EQ(MOJO_RESULT_OK, core()->CreateDataPipe(NULL, &ph, &ch));
+  // Should get two distinct, valid handles.
+  EXPECT_NE(ph, MOJO_HANDLE_INVALID);
+  EXPECT_NE(ch, MOJO_HANDLE_INVALID);
+  EXPECT_NE(ph, ch);
+
+  // Producer should be never-readable, but already writable.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            core()->Wait(ph, MOJO_WAIT_FLAG_READABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(ph, MOJO_WAIT_FLAG_WRITABLE, 0));
+
+  // Consumer should be never-writable, and not yet readable.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            core()->Wait(ch, MOJO_WAIT_FLAG_WRITABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
+            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+
+  // Write.
+  char elements[2] = { 'A', 'B' };
+  uint32_t num_bytes = 2u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteData(ph, elements, &num_bytes,
+                              MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(2u, num_bytes);
+
+  // Consumer should now be readable.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+
+  // Read one character.
+  elements[0] = -1;
+  elements[1] = -1;
+  num_bytes = 1u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch, elements, &num_bytes,
+                             MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ('A', elements[0]);
+  EXPECT_EQ(-1, elements[1]);
+
+  // Two-phase write.
+  void* buffer = NULL;
+  num_bytes = 0u;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->BeginWriteData(ph, &buffer, &num_bytes,
+                                   MOJO_WRITE_DATA_FLAG_NONE));
+  // We count on the default options providing a decent buffer size.
+  ASSERT_GE(num_bytes, 3u);
+
+  // Trying to do a normal write during a two-phase write should fail.
+  elements[0] = 'X';
+  num_bytes = 1u;
+  EXPECT_EQ(MOJO_RESULT_BUSY,
+            core()->WriteData(ph, elements, &num_bytes,
+                              MOJO_WRITE_DATA_FLAG_NONE));
+
+  // Actually write the data, and complete it now.
+  static_cast<char*>(buffer)[0] = 'C';
+  static_cast<char*>(buffer)[1] = 'D';
+  static_cast<char*>(buffer)[2] = 'E';
+  EXPECT_EQ(MOJO_RESULT_OK, core()->EndWriteData(ph, 3u));
+
+  // Query how much data we have.
+  num_bytes = 0;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch, NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY));
+  EXPECT_EQ(4u, num_bytes);
+
+  // Try to discard ten characters, in all-or-none mode. Should fail.
+  num_bytes = 10;
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            core()->ReadData(ch, NULL, &num_bytes,
+                             MOJO_READ_DATA_FLAG_DISCARD |
+                                 MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+
+  // Discard two characters.
+  num_bytes = 2;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch, NULL, &num_bytes,
+                             MOJO_READ_DATA_FLAG_DISCARD |
+                                 MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+
+  // Read the remaining two characters, in two-phase mode (all-or-none).
+  const void* read_buffer = NULL;
+  num_bytes = 2;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->BeginReadData(ch, &read_buffer, &num_bytes,
+                                  MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+  // Note: Count on still being able to do the contiguous read here.
+  ASSERT_EQ(2u, num_bytes);
+
+  // Discarding right now should fail.
+  num_bytes = 1;
+  EXPECT_EQ(MOJO_RESULT_BUSY,
+            core()->ReadData(ch, NULL, &num_bytes,
+                             MOJO_READ_DATA_FLAG_DISCARD));
+
+  // Actually check our data and end the two-phase read.
+  EXPECT_EQ('D', static_cast<const char*>(read_buffer)[0]);
+  EXPECT_EQ('E', static_cast<const char*>(read_buffer)[1]);
+  EXPECT_EQ(MOJO_RESULT_OK, core()->EndReadData(ch, 2u));
+
+  // Consumer should now be no longer readable.
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
+            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+
+  // TODO(vtl): More.
+
+  // Close the producer.
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ph));
+
+  // The consumer should now be never-readable.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch));
+}
+
+// Tests passing data pipe producer and consumer handles.
+TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
+  const char kHello[] = "hello";
+  const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
+  const char kWorld[] = "world!!!";
+  const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
+  char buffer[100];
+  const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
+  uint32_t num_bytes;
+  MojoHandle handles[10];
+  uint32_t num_handles;
+  MojoHandle ch_received, ph_received;
+
+  MojoHandle h_passing[2];
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessagePipe(&h_passing[0], &h_passing[1]));
+
+  MojoHandle ph, ch;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->CreateDataPipe(NULL, &ph, &ch));
+
+  // Send |ch| from |h_passing[0]| to |h_passing[1]|.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 &ch, 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(1u, num_handles);
+  ch_received = handles[0];
+  EXPECT_NE(ch_received, MOJO_HANDLE_INVALID);
+  EXPECT_NE(ch_received, h_passing[0]);
+  EXPECT_NE(ch_received, h_passing[1]);
+  EXPECT_NE(ch_received, ph);
+
+  // Note: We rely on the Mojo system not re-using handle values very often.
+  EXPECT_NE(ch_received, ch);
+
+  // |ch| should no longer be valid; check that trying to close it fails. See
+  // above note.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(ch));
+
+  // Write to |ph|. Should receive on |ch_received|.
+  num_bytes = kWorldSize;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteData(ph, kWorld, &num_bytes,
+                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(ch_received, MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch_received, buffer, &num_bytes,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kWorldSize, num_bytes);
+  EXPECT_STREQ(kWorld, buffer);
+
+  // Now pass |ph| in the same direction.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0],
+                                 kWorld, kWorldSize,
+                                 &ph, 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kWorldSize, num_bytes);
+  EXPECT_STREQ(kWorld, buffer);
+  EXPECT_EQ(1u, num_handles);
+  ph_received = handles[0];
+  EXPECT_NE(ph_received, MOJO_HANDLE_INVALID);
+  EXPECT_NE(ph_received, h_passing[0]);
+  EXPECT_NE(ph_received, h_passing[1]);
+  EXPECT_NE(ph_received, ch_received);
+
+  // Again, rely on the Mojo system not re-using handle values very often.
+  EXPECT_NE(ph_received, ph);
+
+  // |ph| should no longer be valid; check that trying to close it fails. See
+  // above note.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(ph));
+
+  // Write to |ph_received|. Should receive on |ch_received|.
+  num_bytes = kHelloSize;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteData(ph_received, kHello, &num_bytes,
+                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(ch_received, MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch_received, buffer, &num_bytes,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ph_received));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch_received));
 }
 
 }  // namespace
