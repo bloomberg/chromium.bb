@@ -33,8 +33,8 @@
 
 namespace WebCore {
 
-PartitionAllocator<3072> Partitions::m_objectModelAllocator;
-PartitionAllocator<1024> Partitions::m_renderingAllocator;
+SizeSpecificPartitionAllocator<3072> Partitions::m_objectModelAllocator;
+SizeSpecificPartitionAllocator<1024> Partitions::m_renderingAllocator;
 
 void Partitions::init()
 {

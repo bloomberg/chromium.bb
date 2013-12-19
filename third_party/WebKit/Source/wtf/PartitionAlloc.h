@@ -43,10 +43,10 @@
 // is returned to the system but the address space remains reserved.
 //
 // THE ONLY LEGITIMATE WAY TO OBTAIN A PartitionRoot IS THROUGH THE
-// PartitionAllocator / PartitionAllocatorGeneric classes. To minimize the
-// instruction count to the fullest extent possible, the PartitonRoot is really
-// just a header adjacent to other data areas provided by the allocator
-// class.
+// SizeSpecificPartitionAllocator / PartitionAllocatorGeneric classes. To
+// minimize the instruction count to the fullest extent possible, the
+// PartitonRoot is really just a header adjacent to other data areas provided
+// by the allocator class.
 //
 // The partitionAlloc() variant of the API has the following caveats:
 // - Allocations and frees against a single partition must be single threaded.
@@ -604,10 +604,10 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
 }
 
 // N (or more accurately, N - sizeof(void*)) represents the largest size in
-// bytes that will be handled by a PartitionAlloctor.
+// bytes that will be handled by a SizeSpecificPartitionAllocator.
 // Attempts to partitionAlloc() more than this amount will fail.
 template <size_t N>
-class PartitionAllocator {
+class SizeSpecificPartitionAllocator {
 public:
     static const size_t kMaxAllocation = N - kAllocationGranularity;
     static const size_t kNumBuckets = N / kAllocationGranularity;
@@ -630,7 +630,7 @@ private:
 
 } // namespace WTF
 
-using WTF::PartitionAllocator;
+using WTF::SizeSpecificPartitionAllocator;
 using WTF::PartitionAllocatorGeneric;
 using WTF::PartitionRoot;
 using WTF::partitionAllocInit;

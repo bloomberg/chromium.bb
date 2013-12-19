@@ -28,6 +28,7 @@
 #include "wtf/ArrayBufferContents.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/PartitionAlloc.h"
 #include "wtf/WTF.h"
 #include <string.h>
 

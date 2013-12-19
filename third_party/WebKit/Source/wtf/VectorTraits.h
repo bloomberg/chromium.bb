@@ -42,6 +42,8 @@ namespace WTF {
         static const bool canCopyWithMemcpy = isPod;
         static const bool canFillWithMemset = isPod && (sizeof(T) == sizeof(char));
         static const bool canCompareWithMemcmp = isPod;
+        static const bool needsTracing = NeedsTracing<T>::value;
+        static const bool isWeak = IsWeak<T>::value;
     };
 
     template<typename T>
@@ -78,6 +80,8 @@ namespace WTF {
         static const bool canCopyWithMemcpy = FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
         static const bool canFillWithMemset = false;
         static const bool canCompareWithMemcmp = FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
+        static const bool needsTracing = FirstTraits::needsTracing || SecondTraits::needsTracing;
+        static const bool isWeak = FirstTraits::isWeak || SecondTraits::isWeak;
     };
 
 } // namespace WTF

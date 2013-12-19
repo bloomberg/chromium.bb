@@ -22,6 +22,7 @@
 #ifndef WTF_ListHashSet_h
 #define WTF_ListHashSet_h
 
+#include "wtf/DefaultAllocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -64,9 +65,9 @@ namespace WTF {
         typedef ListHashSetNodeHashFunctions<HashArg> NodeHash;
         typedef ListHashSetTranslator<HashArg> BaseTranslator;
 
-        typedef HashTable<Node*, Node*, IdentityExtractor, NodeHash, NodeTraits, NodeTraits> ImplType;
-        typedef HashTableIterator<Node*, Node*, IdentityExtractor, NodeHash, NodeTraits, NodeTraits> ImplTypeIterator;
-        typedef HashTableConstIterator<Node*, Node*, IdentityExtractor, NodeHash, NodeTraits, NodeTraits> ImplTypeConstIterator;
+        typedef HashTable<Node*, Node*, IdentityExtractor, NodeHash, NodeTraits, NodeTraits, DefaultAllocator> ImplType;
+        typedef HashTableIterator<Node*, Node*, IdentityExtractor, NodeHash, NodeTraits, NodeTraits, DefaultAllocator> ImplTypeIterator;
+        typedef HashTableConstIterator<Node*, Node*, IdentityExtractor, NodeHash, NodeTraits, NodeTraits, DefaultAllocator> ImplTypeConstIterator;
 
         typedef HashArg HashFunctions;
 

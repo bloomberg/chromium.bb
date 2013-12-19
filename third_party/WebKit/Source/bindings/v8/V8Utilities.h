@@ -32,6 +32,7 @@
 #define V8Utilities_h
 
 #include "wtf/Forward.h"
+#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace WTF {

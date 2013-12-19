@@ -68,12 +68,15 @@ namespace WTF {
     template<> struct IsFloatingPoint<double>       { static const bool value = true; };
     template<> struct IsFloatingPoint<long double>  { static const bool value = true; };
 
-    template<typename T> struct IsArithmetic     { static const bool value = IsInteger<T>::value || IsFloatingPoint<T>::value; };
+    template<typename T> struct IsArithmetic        { static const bool value = IsInteger<T>::value || IsFloatingPoint<T>::value; };
+
+    template<typename T> struct NeedsTracing        { static const bool value = false; };
+    template<typename T> struct IsWeak              { static const bool value = false; };
 
     // IsPod is misnamed as it doesn't cover all plain old data (pod) types.
     // Specifically, it doesn't allow for enums or for structs.
-    template <typename T> struct IsPod           { static const bool value = IsArithmetic<T>::value; };
-    template <typename P> struct IsPod<P*>       { static const bool value = true; };
+    template <typename T> struct IsPod              { static const bool value = IsArithmetic<T>::value; };
+    template <typename P> struct IsPod<P*>          { static const bool value = true; };
 
     template<typename T> class IsConvertibleToInteger {
         // Avoid "possible loss of data" warning when using Microsoft's C++ compiler

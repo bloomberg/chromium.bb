@@ -38,6 +38,7 @@
             'DateMath.h',
             'DecimalNumber.cpp',
             'DecimalNumber.h',
+            'DefaultAllocator.h',
             'Deque.h',
             'DoublyLinkedList.h',
             'DynamicAnnotations.cpp',

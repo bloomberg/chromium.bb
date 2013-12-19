@@ -21,6 +21,8 @@
 #ifndef RefPtrHashMap_h
 #define RefPtrHashMap_h
 
+#include "wtf/DefaultAllocator.h"
+
 namespace WTF {
 
     // This specialization is a copy of HashMap for use with RefPtr keys, with overloaded functions
@@ -29,8 +31,7 @@ namespace WTF {
      // FIXME: Find a way to do this with traits that doesn't require a copy of the HashMap template.
 
     template<typename T, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg>
-    class HashMap<RefPtr<T>, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> {
-        WTF_MAKE_FAST_ALLOCATED;
+    class HashMap<RefPtr<T>, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, DefaultAllocator> {
     private:
         typedef KeyTraitsArg KeyTraits;
         typedef MappedTraitsArg MappedTraits;
@@ -51,8 +52,8 @@ namespace WTF {
 
         typedef HashArg HashFunctions;
 
-        typedef HashTable<KeyType, ValueType, KeyValuePairKeyExtractor<ValueType>,
-            HashFunctions, ValueTraits, KeyTraits> HashTableType;
+        typedef HashTable<KeyType, ValueType, KeyValuePairKeyExtractor,
+            HashFunctions, ValueTraits, KeyTraits, DefaultAllocator> HashTableType;
 
         typedef HashMapTranslator<ValueTraits, HashFunctions>
             Translator;
@@ -112,106 +113,106 @@ namespace WTF {
     };
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline void HashMap<RefPtr<T>, U, V, W, X>::swap(HashMap& other)
+    inline void HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::swap(HashMap& other)
     {
         m_impl.swap(other.m_impl);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline unsigned HashMap<RefPtr<T>, U, V, W, X>::size() const
+    inline unsigned HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::size() const
     {
         return m_impl.size();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline unsigned HashMap<RefPtr<T>, U, V, W, X>::capacity() const
+    inline unsigned HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::capacity() const
     {
         return m_impl.capacity();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline bool HashMap<RefPtr<T>, U, V, W, X>::isEmpty() const
+    inline bool HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::isEmpty() const
     {
         return m_impl.isEmpty();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::iterator HashMap<RefPtr<T>, U, V, W, X>::begin()
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::begin()
     {
         return m_impl.begin();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::iterator HashMap<RefPtr<T>, U, V, W, X>::end()
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::end()
     {
         return m_impl.end();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::const_iterator HashMap<RefPtr<T>, U, V, W, X>::begin() const
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::const_iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::begin() const
     {
         return m_impl.begin();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::const_iterator HashMap<RefPtr<T>, U, V, W, X>::end() const
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::const_iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::end() const
     {
         return m_impl.end();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::iterator HashMap<RefPtr<T>, U, V, W, X>::find(const KeyType& key)
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::find(const KeyType& key)
     {
         return m_impl.find(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::iterator HashMap<RefPtr<T>, U, V, W, X>::find(RawKeyType key)
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::find(RawKeyType key)
     {
         return m_impl.template find<Translator>(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::const_iterator HashMap<RefPtr<T>, U, V, W, X>::find(const KeyType& key) const
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::const_iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::find(const KeyType& key) const
     {
         return m_impl.find(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::const_iterator HashMap<RefPtr<T>, U, V, W, X>::find(RawKeyType key) const
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::const_iterator HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::find(RawKeyType key) const
     {
         return m_impl.template find<Translator>(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline bool HashMap<RefPtr<T>, U, V, W, X>::contains(const KeyType& key) const
+    inline bool HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::contains(const KeyType& key) const
     {
         return m_impl.contains(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline bool HashMap<RefPtr<T>, U, V, W, X>::contains(RawKeyType key) const
+    inline bool HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::contains(RawKeyType key) const
     {
         return m_impl.template contains<Translator>(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(const KeyType& key, MappedPassInReferenceType mapped)
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::AddResult
+    HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::inlineAdd(const KeyType& key, MappedPassInReferenceType mapped)
     {
         return m_impl.template add<Translator>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(RawKeyType key, MappedPassInReferenceType mapped)
+    inline typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::AddResult
+    HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::inlineAdd(RawKeyType key, MappedPassInReferenceType mapped)
     {
         return m_impl.template add<Translator>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::set(const KeyType& key, MappedPassInType mapped)
+    typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::AddResult
+    HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::set(const KeyType& key, MappedPassInType mapped)
     {
         AddResult result = inlineAdd(key, mapped);
         if (!result.isNewEntry) {
@@ -222,8 +223,8 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::set(RawKeyType key, MappedPassInType mapped)
+    typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::AddResult
+    HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::set(RawKeyType key, MappedPassInType mapped)
     {
         AddResult result = inlineAdd(key, mapped);
         if (!result.isNewEntry) {
@@ -234,22 +235,22 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::add(const KeyType& key, MappedPassInType mapped)
+    typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::AddResult
+    HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::add(const KeyType& key, MappedPassInType mapped)
     {
         return inlineAdd(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    typename HashMap<RefPtr<T>, U, V, W, X>::AddResult
-    HashMap<RefPtr<T>, U, V, W, X>::add(RawKeyType key, MappedPassInType mapped)
+    typename HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::AddResult
+    HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::add(RawKeyType key, MappedPassInType mapped)
     {
         return inlineAdd(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename MappedTraits>
-    typename HashMap<RefPtr<T>, U, V, W, MappedTraits>::MappedPeekType
-    HashMap<RefPtr<T>, U, V, W, MappedTraits>::get(const KeyType& key) const
+    typename HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::MappedPeekType
+    HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::get(const KeyType& key) const
     {
         ValueType* entry = const_cast<HashTableType&>(m_impl).lookup(key);
         if (!entry)
@@ -258,8 +259,8 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename MappedTraits>
-    typename HashMap<RefPtr<T>, U, V, W, MappedTraits>::MappedPeekType
-    inline HashMap<RefPtr<T>, U, V, W, MappedTraits>::inlineGet(RawKeyType key) const
+    typename HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::MappedPeekType
+    inline HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::inlineGet(RawKeyType key) const
     {
         ValueType* entry = const_cast<HashTableType&>(m_impl).template lookup<Translator>(key);
         if (!entry)
@@ -268,14 +269,14 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename MappedTraits>
-    typename HashMap<RefPtr<T>, U, V, W, MappedTraits>::MappedPeekType
-    HashMap<RefPtr<T>, U, V, W, MappedTraits>::get(RawKeyType key) const
+    typename HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::MappedPeekType
+    HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::get(RawKeyType key) const
     {
         return inlineGet(key);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline void HashMap<RefPtr<T>, U, V, W, X>::remove(iterator it)
+    inline void HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::remove(iterator it)
     {
         if (it.m_impl == m_impl.end())
             return;
@@ -283,26 +284,26 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline void HashMap<RefPtr<T>, U, V, W, X>::remove(const KeyType& key)
+    inline void HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::remove(const KeyType& key)
     {
         remove(find(key));
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline void HashMap<RefPtr<T>, U, V, W, X>::remove(RawKeyType key)
+    inline void HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::remove(RawKeyType key)
     {
         remove(find(key));
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline void HashMap<RefPtr<T>, U, V, W, X>::clear()
+    inline void HashMap<RefPtr<T>, U, V, W, X, DefaultAllocator>::clear()
     {
         m_impl.clear();
     }
 
     template<typename T, typename U, typename V, typename W, typename MappedTraits>
-    typename HashMap<RefPtr<T>, U, V, W, MappedTraits>::MappedPassOutType
-    HashMap<RefPtr<T>, U, V, W, MappedTraits>::take(const KeyType& key)
+    typename HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::MappedPassOutType
+    HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::take(const KeyType& key)
     {
         iterator it = find(key);
         if (it == end())
@@ -313,8 +314,8 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename MappedTraits>
-    typename HashMap<RefPtr<T>, U, V, W, MappedTraits>::MappedPassOutType
-    HashMap<RefPtr<T>, U, V, W, MappedTraits>::take(RawKeyType key)
+    typename HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::MappedPassOutType
+    HashMap<RefPtr<T>, U, V, W, MappedTraits, DefaultAllocator>::take(RawKeyType key)
     {
         iterator it = find(key);
         if (it == end())

@@ -45,8 +45,8 @@ public:
     ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return m_renderingAllocator.root(); }
 
 private:
-    static PartitionAllocator<3072> m_objectModelAllocator;
-    static PartitionAllocator<1024> m_renderingAllocator;
+    static SizeSpecificPartitionAllocator<3072> m_objectModelAllocator;
+    static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
 };
 
 } // namespace WebCore

@@ -51,7 +51,7 @@
 namespace {
 
 static const size_t kTestMaxAllocation = 4096;
-static PartitionAllocator<kTestMaxAllocation> allocator;
+static SizeSpecificPartitionAllocator<kTestMaxAllocation> allocator;
 static PartitionAllocatorGeneric genericAllocator;
 
 static const size_t kTestAllocSize = sizeof(void*);

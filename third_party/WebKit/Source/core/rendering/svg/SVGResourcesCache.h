@@ -21,6 +21,7 @@
 #define SVGResourcesCache_h
 
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"

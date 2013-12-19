@@ -8,9 +8,7 @@
  * version 2 of the License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU * Library General Public License for more details.
  *
  * You should have received a copy of the GNU Library General Public License
  * along with this library; see the file COPYING.LIB.  If not, write to
@@ -24,10 +22,9 @@
 
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
+#include "wtf/DefaultAllocator.h"
 #include "wtf/HashTraits.h"
-#include "wtf/PartitionAlloc.h"
 #include "wtf/WTF.h"
-#include <string.h>
 
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
@@ -58,27 +55,27 @@ namespace WTF {
 
 #endif
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTable;
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableIterator;
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableConstIterator;
 
     typedef enum { HashItemKnownGood } HashItemKnownGoodTag;
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableConstIterator {
     private:
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> HashTableType;
-        typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> iterator;
-        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> const_iterator;
+        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
+        typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
+        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
         typedef Value ValueType;
         typedef const ValueType& ReferenceType;
         typedef const ValueType* PointerType;
 
-        friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>;
-        friend class HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>;
+        friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
+        friend class HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
 
         void skipEmptyBuckets()
         {
@@ -142,17 +139,17 @@ namespace WTF {
         PointerType m_endPosition;
     };
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableIterator {
     private:
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> HashTableType;
-        typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> iterator;
-        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> const_iterator;
+        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
+        typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
+        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
         typedef Value ValueType;
-        typedef ValueType& ReferenceType;
+        typedef typename Traits::IteratorGetType GetType;
         typedef ValueType* PointerType;
 
-        friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>;
+        friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
 
         HashTableIterator(HashTableType* table, PointerType pos, PointerType end) : m_iterator(table, pos, end) { }
         HashTableIterator(HashTableType* table, PointerType pos, PointerType end, HashItemKnownGoodTag tag) : m_iterator(table, pos, end, tag) { }
@@ -162,9 +159,9 @@ namespace WTF {
 
         // default copy, assignment and destructor are OK
 
-        PointerType get() const { return const_cast<PointerType>(m_iterator.get()); }
-        ReferenceType operator*() const { return *get(); }
-        PointerType operator->() const { return get(); }
+        GetType get() const { return const_cast<GetType>(m_iterator.get()); }
+        typename Traits::IteratorReferenceType operator*() const { return Traits::getToReferenceConversion(get()); }
+        GetType operator->() const { return get(); }
 
         iterator& operator++() { ++m_iterator; return *this; }
 
@@ -213,14 +210,24 @@ namespace WTF {
         bool isNewEntry;
     };
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Value, typename Extractor, typename KeyTraits>
+    struct HashTableHelper {
+        static bool isEmptyBucket(const Value& value) { return isHashTraitsEmptyValue<KeyTraits>(Extractor::extract(value)); }
+        static bool isDeletedBucket(const Value& value) { return KeyTraits::isDeletedValue(Extractor::extract(value)); }
+        static bool isEmptyOrDeletedBucket(const Value& value) { return isEmptyBucket(value) || isDeletedBucket(value); }
+    };
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTable {
     public:
-        typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> iterator;
-        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> const_iterator;
+        typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
+        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
         typedef Traits ValueTraits;
         typedef Key KeyType;
+        typedef typename KeyTraits::PeekInType KeyPeekInType;
+        typedef typename KeyTraits::PassInType KeyPassInType;
         typedef Value ValueType;
+        typedef typename Traits::PeekInType ValuePeekInType;
         typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
         typedef HashTableAddResult<iterator> AddResult;
 
@@ -294,7 +301,10 @@ namespace WTF {
         unsigned capacity() const { return m_tableSize; }
         bool isEmpty() const { return !m_keyCount; }
 
-        AddResult add(const ValueType& value) { return add<IdentityTranslatorType>(Extractor::extract(value), value); }
+        AddResult add(ValuePeekInType value)
+        {
+            return add<IdentityTranslatorType>(Extractor::extract(value), value);
+        }
 
         // A special version of add() that finds the object by hashing and comparing
         // with some other type, to avoid the cost of type conversion if the object is already
@@ -302,25 +312,31 @@ namespace WTF {
         template<typename HashTranslator, typename T, typename Extra> AddResult add(const T& key, const Extra&);
         template<typename HashTranslator, typename T, typename Extra> AddResult addPassingHashCode(const T& key, const Extra&);
 
-        iterator find(const KeyType& key) { return find<IdentityTranslatorType>(key); }
-        const_iterator find(const KeyType& key) const { return find<IdentityTranslatorType>(key); }
-        bool contains(const KeyType& key) const { return contains<IdentityTranslatorType>(key); }
+        iterator find(KeyPeekInType key) { return find<IdentityTranslatorType>(key); }
+        const_iterator find(KeyPeekInType key) const { return find<IdentityTranslatorType>(key); }
+        bool contains(KeyPeekInType key) const { return contains<IdentityTranslatorType>(key); }
 
         template<typename HashTranslator, typename T> iterator find(const T&);
         template<typename HashTranslator, typename T> const_iterator find(const T&) const;
         template<typename HashTranslator, typename T> bool contains(const T&) const;
 
-        void remove(const KeyType&);
+        void remove(KeyPeekInType);
         void remove(iterator);
         void remove(const_iterator);
         void clear();
 
         static bool isEmptyBucket(const ValueType& value) { return isHashTraitsEmptyValue<KeyTraits>(Extractor::extract(value)); }
         static bool isDeletedBucket(const ValueType& value) { return KeyTraits::isDeletedValue(Extractor::extract(value)); }
-        static bool isEmptyOrDeletedBucket(const ValueType& value) { return isEmptyBucket(value) || isDeletedBucket(value); }
+        static bool isEmptyOrDeletedBucket(const ValueType& value) { return HashTableHelper<ValueType, Extractor, KeyTraits>:: isEmptyOrDeletedBucket(value); }
 
-        ValueType* lookup(const Key& key) { return lookup<IdentityTranslatorType>(key); }
+        ValueType* lookup(KeyPeekInType key) { return lookup<IdentityTranslatorType>(key); }
         template<typename HashTranslator, typename T> ValueType* lookup(const T&);
+
+        void trace(typename Allocator::Visitor*)
+        {
+            // FIXME: Implement.
+            ASSERT_NOT_REACHED();
+        }
 
     private:
         static ValueType* allocateTable(unsigned size);
@@ -408,8 +424,8 @@ namespace WTF {
         COMPILE_ASSERT(value > (2 * size), HashTableCapacityHoldsContentSize);
     };
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::HashTable()
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::HashTable()
         : m_table(0)
         , m_tableSize(0)
         , m_tableSizeMask(0)
@@ -431,9 +447,9 @@ namespace WTF {
         return key;
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T>
-    inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::lookup(const T& key)
+    inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(const T& key)
     {
         int k = 0;
         int sizeMask = m_tableSizeMask;
@@ -487,9 +503,9 @@ namespace WTF {
         }
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T>
-    inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::LookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::lookupForWriting(const T& key)
+    inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::LookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookupForWriting(const T& key)
     {
         ASSERT(m_table);
 
@@ -549,9 +565,9 @@ namespace WTF {
         }
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T>
-    inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::FullLookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::fullLookupForWriting(const T& key)
+    inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::FullLookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::fullLookupForWriting(const T& key)
     {
         ASSERT(m_table);
 
@@ -630,15 +646,15 @@ namespace WTF {
         }
     };
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::initializeBucket(ValueType& bucket)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::initializeBucket(ValueType& bucket)
     {
         HashTableBucketInitializer<Traits::emptyValueIsZero>::template initialize<Traits>(bucket);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T, typename Extra>
-    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::add(const T& key, const Extra& extra)
+    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::add(const T& key, const Extra& extra)
     {
         if (!m_table)
             expand();
@@ -714,7 +730,7 @@ namespace WTF {
             // FIXME: This makes an extra copy on expand. Probably not that bad since
             // expand is rare, but would be better to have a version of expand that can
             // follow a pivot entry and return the new position.
-            KeyType enteredKey = Extractor::extract(*entry);
+            typename WTF::RemoveReference<KeyPassInType>::Type enteredKey = Extractor::extract(*entry);
             expand();
             AddResult result(find(enteredKey), true);
             ASSERT(result.iterator != end());
@@ -724,9 +740,9 @@ namespace WTF {
         return AddResult(makeKnownGoodIterator(entry), true);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T, typename Extra>
-    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::addPassingHashCode(const T& key, const Extra& extra)
+    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::addPassingHashCode(const T& key, const Extra& extra)
     {
         if (!m_table)
             expand();
@@ -751,7 +767,7 @@ namespace WTF {
             // FIXME: This makes an extra copy on expand. Probably not that bad since
             // expand is rare, but would be better to have a version of expand that can
             // follow a pivot entry and return the new position.
-            KeyType enteredKey = Extractor::extract(*entry);
+            typename WTF::RemoveReference<KeyPassInType>::Type enteredKey = Extractor::extract(*entry);
             expand();
             AddResult result(find(enteredKey), true);
             ASSERT(result.iterator != end());
@@ -761,8 +777,8 @@ namespace WTF {
         return AddResult(makeKnownGoodIterator(entry), true);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::reinsert(ValueType& entry)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reinsert(ValueType& entry)
     {
         ASSERT(m_table);
         ASSERT(!lookupForWriting(Extractor::extract(entry)).second);
@@ -777,9 +793,9 @@ namespace WTF {
         Mover<ValueType, Traits::needsDestruction>::move(entry, *lookupForWriting(Extractor::extract(entry)).first);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template <typename HashTranslator, typename T>
-    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::find(const T& key)
+    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key)
     {
         if (!m_table)
             return end();
@@ -791,9 +807,9 @@ namespace WTF {
         return makeKnownGoodIterator(entry);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template <typename HashTranslator, typename T>
-    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::const_iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::find(const T& key) const
+    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::const_iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key) const
     {
         if (!m_table)
             return end();
@@ -805,9 +821,9 @@ namespace WTF {
         return makeKnownGoodConstIterator(entry);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template <typename HashTranslator, typename T>
-    bool HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::contains(const T& key) const
+    bool HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::contains(const T& key) const
     {
         if (!m_table)
             return false;
@@ -815,8 +831,8 @@ namespace WTF {
         return const_cast<HashTable*>(this)->lookup<HashTranslator>(key);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::remove(ValueType* pos)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::remove(ValueType* pos)
     {
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numRemoves);
@@ -833,8 +849,8 @@ namespace WTF {
             shrink();
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::remove(iterator it)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::remove(iterator it)
     {
         if (it == end())
             return;
@@ -842,8 +858,8 @@ namespace WTF {
         remove(const_cast<ValueType*>(it.m_iterator.m_position));
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::remove(const_iterator it)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::remove(const_iterator it)
     {
         if (it == end())
             return;
@@ -851,28 +867,31 @@ namespace WTF {
         remove(const_cast<ValueType*>(it.m_position));
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::remove(const KeyType& key)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::remove(KeyPeekInType key)
     {
         remove(find(key));
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::allocateTable(unsigned size)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::allocateTable(unsigned size)
     {
+        typedef typename Allocator::template HashTableBackingHelper<Key, Value, Extractor, Traits, KeyTraits>::Type HashTableBacking;
+
         size_t allocSize = size * sizeof(ValueType);
-        ValueType* result = static_cast<ValueType*>(partitionAllocGeneric(WTF::Partitions::getBufferPartition(), allocSize));
+        ValueType* result;
         if (Traits::emptyValueIsZero) {
-            memset(result, '\0', allocSize);
+            result = Allocator::template zeroedBackingMalloc<ValueType*, HashTableBacking>(allocSize);
         } else {
+            result = Allocator::template backingMalloc<ValueType*, HashTableBacking>(allocSize);
             for (unsigned i = 0; i < size; i++)
                 initializeBucket(result[i]);
         }
         return result;
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::deallocateTable(ValueType* table, unsigned size)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::deallocateTable(ValueType* table, unsigned size)
     {
         if (Traits::needsDestruction) {
             for (unsigned i = 0; i < size; ++i) {
@@ -880,11 +899,11 @@ namespace WTF {
                     table[i].~ValueType();
             }
         }
-        partitionFreeGeneric(WTF::Partitions::getBufferPartition(), table);
+        Allocator::backingFree(table);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::expand()
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::expand()
     {
         unsigned newSize;
         if (!m_tableSize) {
@@ -899,8 +918,8 @@ namespace WTF {
         rehash(newSize);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::rehash(unsigned newTableSize)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::rehash(unsigned newTableSize)
     {
         unsigned oldTableSize = m_tableSize;
         ValueType* oldTable = m_table;
@@ -915,9 +934,9 @@ namespace WTF {
             ++m_stats->numRehashes;
 #endif
 
+        m_table = allocateTable(newTableSize);
         m_tableSize = newTableSize;
         m_tableSizeMask = newTableSize - 1;
-        m_table = allocateTable(newTableSize);
 
         for (unsigned i = 0; i != oldTableSize; ++i)
             if (!isEmptyOrDeletedBucket(oldTable[i]))
@@ -928,8 +947,8 @@ namespace WTF {
         deallocateTable(oldTable, oldTableSize);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::clear()
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::clear()
     {
         if (!m_table)
             return;
@@ -941,8 +960,8 @@ namespace WTF {
         m_keyCount = 0;
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::HashTable(const HashTable& other)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::HashTable(const HashTable& other)
         : m_table(0)
         , m_tableSize(0)
         , m_tableSizeMask(0)
@@ -959,8 +978,8 @@ namespace WTF {
             add(*it);
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::swap(HashTable& other)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::swap(HashTable& other)
     {
         ValueType* tmp_table = m_table;
         m_table = other.m_table;
@@ -987,8 +1006,8 @@ namespace WTF {
 #endif
     }
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>& HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::operator=(const HashTable& other)
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>& HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::operator=(const HashTable& other)
     {
         HashTable tmp(other);
         swap(tmp);
@@ -997,13 +1016,15 @@ namespace WTF {
 
     // iterator adapters
 
-    template<typename HashTableType, typename ValueType> struct HashTableConstIteratorAdapter {
+    template<typename HashTableType, typename Traits> struct HashTableConstIteratorAdapter {
         HashTableConstIteratorAdapter() {}
         HashTableConstIteratorAdapter(const typename HashTableType::const_iterator& impl) : m_impl(impl) {}
+        typedef typename Traits::IteratorConstGetType GetType;
+        typedef typename HashTableType::ValueTraits::IteratorConstGetType SourceGetType;
 
-        const ValueType* get() const { return (const ValueType*)m_impl.get(); }
-        const ValueType& operator*() const { return *get(); }
-        const ValueType* operator->() const { return get(); }
+        GetType get() const { return (GetType)SourceGetType(m_impl.get()); }
+        typename Traits::IteratorConstReferenceType operator*() const { return Traits::getToReferenceConstConversion(get()); }
+        GetType operator->() const { return get(); }
 
         HashTableConstIteratorAdapter& operator++() { ++m_impl; return *this; }
         // postfix ++ intentionally omitted
@@ -1011,18 +1032,22 @@ namespace WTF {
         typename HashTableType::const_iterator m_impl;
     };
 
-    template<typename HashTableType, typename ValueType> struct HashTableIteratorAdapter {
+    template<typename HashTableType, typename Traits> struct HashTableIteratorAdapter {
+        typedef typename Traits::IteratorGetType GetType;
+        typedef typename HashTableType::ValueTraits::IteratorGetType SourceGetType;
+
         HashTableIteratorAdapter() {}
         HashTableIteratorAdapter(const typename HashTableType::iterator& impl) : m_impl(impl) {}
 
-        ValueType* get() const { return (ValueType*)m_impl.get(); }
-        ValueType& operator*() const { return *get(); }
-        ValueType* operator->() const { return get(); }
+        GetType get() const { return (GetType)SourceGetType(m_impl.get()); }
+        typename Traits::IteratorReferenceType operator*() const { return Traits::getToReferenceConversion(get()); }
+        GetType operator->() const { return get(); }
 
         HashTableIteratorAdapter& operator++() { ++m_impl; return *this; }
         // postfix ++ intentionally omitted
 
-        operator HashTableConstIteratorAdapter<HashTableType, ValueType>() {
+        operator HashTableConstIteratorAdapter<HashTableType, Traits>()
+        {
             typename HashTableType::const_iterator i = m_impl;
             return i;
         }
