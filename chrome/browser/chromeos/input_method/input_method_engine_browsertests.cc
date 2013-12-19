@@ -403,6 +403,40 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_EQ("COMMIT_TEXT", mock_input_context->last_commit_text());
   }
   {
+    SCOPED_TRACE("sendKeyEvents test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+
+    const char send_key_events_test_script[] =
+        "chrome.input.ime.sendKeyEvents({"
+        "  contextID: engineBridge.getFocusedContextID().contextID,"
+        "  keyData : [{"
+        "    type : 'keydown',"
+        "    requestId : '0',"
+        "    key : 'z',"
+        "    code : 'KeyZ',"
+        "  },{"
+        "    type : 'keyup',"
+        "    requestId : '1',"
+        "    key : 'z',"
+        "    code : 'KeyZ',"
+        "  }]"
+        "});";
+
+    ExtensionTestMessageListener keyevent_listener_down(
+        "onKeyEvent:keydown:z:KeyZ:false:false:false:false", false);
+    ExtensionTestMessageListener keyevent_listener_up(
+        "onKeyEvent:keyup:z:KeyZ:false:false:false:false", false);
+
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       send_key_events_test_script));
+
+    ASSERT_TRUE(keyevent_listener_down.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener_down.was_satisfied());
+    ASSERT_TRUE(keyevent_listener_up.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener_up.was_satisfied());
+  }
+  {
     SCOPED_TRACE("setComposition test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();

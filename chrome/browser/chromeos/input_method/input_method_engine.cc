@@ -11,6 +11,7 @@
 #include <X11/Xutil.h>
 #undef FocusIn
 #undef FocusOut
+#undef RootWindow
 #include <map>
 
 #include "ash/shell.h"
@@ -25,7 +26,10 @@
 #include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/ibus_text.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/keyboard/keyboard_controller.h"
 
@@ -193,6 +197,47 @@ bool InputMethodEngine::CommitText(int context_id, const char* text,
   }
 
   IBusBridge::Get()->GetInputContextHandler()->CommitText(text);
+  return true;
+}
+
+bool InputMethodEngine::SendKeyEvents(
+    int context_id,
+    const std::vector<KeyboardEvent>& events) {
+  if (!active_) {
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    return false;
+  }
+
+  aura::WindowEventDispatcher* dispatcher =
+      ash::Shell::GetPrimaryRootWindow()->GetDispatcher();
+
+  for (size_t i = 0; i < events.size(); ++i) {
+    const KeyboardEvent& event = events[i];
+    const ui::EventType type =
+        (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
+
+    // KeyboardCodeFromXKyeSym assumes US keyboard layout.
+    ui::KeycodeConverter* conv = ui::KeycodeConverter::GetInstance();
+    DCHECK(conv);
+
+     // DOM code (KeyA) -> XKB -> XKeySym (XK_A) -> KeyboardCode (VKEY_A)
+    const uint16 native_keycode =
+        conv->CodeToNativeKeycode(event.code.c_str());
+    const uint xkeysym = ui::DefaultXKeysymFromHardwareKeycode(native_keycode);
+    const ui::KeyboardCode key_code = ui::KeyboardCodeFromXKeysym(xkeysym);
+
+    const std::string code = event.code;
+    int flags = ui::EF_NONE;
+    flags |= event.alt_key   ? ui::EF_ALT_DOWN       : ui::EF_NONE;
+    flags |= event.ctrl_key  ? ui::EF_CONTROL_DOWN   : ui::EF_NONE;
+    flags |= event.shift_key ? ui::EF_SHIFT_DOWN     : ui::EF_NONE;
+    flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
+
+    ui::KeyEvent ui_event(type, key_code, code, flags, false /* is_char */);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&ui_event);
+  }
   return true;
 }
 

@@ -512,7 +512,38 @@ bool InputImeHideInputViewFunction::RunImpl() {
 }
 
 bool InputImeSendKeyEventsFunction::RunImpl() {
-  // TODO(komatsu): Implement here.
+  scoped_ptr<SendKeyEvents::Params> parent_params(
+      SendKeyEvents::Params::Create(*args_));
+  const SendKeyEvents::Params::Parameters& params =
+      parent_params->parameters;
+  chromeos::InputMethodEngineInterface* engine =
+      InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
+  if (!engine) {
+    error_ = kErrorEngineNotAvailable;
+    return false;
+  }
+
+  const std::vector<linked_ptr<input_ime::KeyboardEvent> >& key_data =
+      params.key_data;
+  std::vector<chromeos::InputMethodEngine::KeyboardEvent> key_data_out;
+
+  for (size_t i = 0; i < key_data.size(); ++i) {
+    chromeos::InputMethodEngine::KeyboardEvent event;
+    event.type = input_ime::KeyboardEvent::ToString(key_data[i]->type);
+    event.key = key_data[i]->key;
+    event.code = key_data[i]->code;
+    if (key_data[i]->alt_key)
+      event.alt_key = *(key_data[i]->alt_key);
+    if (key_data[i]->ctrl_key)
+      event.ctrl_key = *(key_data[i]->ctrl_key);
+    if (key_data[i]->shift_key)
+      event.shift_key = *(key_data[i]->shift_key);
+    if (key_data[i]->caps_lock)
+      event.caps_lock = *(key_data[i]->caps_lock);
+    key_data_out.push_back(event);
+  }
+
+  engine->SendKeyEvents(params.context_id, key_data_out);
   return true;
 }
 

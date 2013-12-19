@@ -53,6 +53,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
   virtual bool ClearComposition(int context_id, std::string* error) OVERRIDE;
   virtual bool CommitText(int context_id, const char* text,
                           std::string* error) OVERRIDE;
+  virtual bool SendKeyEvents(int context_id,
+                             const std::vector<KeyboardEvent>& events) OVERRIDE;
   virtual const CandidateWindowProperty&
     GetCandidateWindowProperty() const OVERRIDE;
   virtual void SetCandidateWindowProperty(

@@ -186,6 +186,10 @@ class InputMethodEngineInterface : public IBusEngineHandlerInterface {
   virtual bool CommitText(int context_id, const char* text,
                           std::string* error) = 0;
 
+  // Send the sequence of key events.
+  virtual bool SendKeyEvents(int context_id,
+                             const std::vector<KeyboardEvent>& events) = 0;
+
   // This function returns the current property of the candidate window.
   // The caller can use the returned value as the default property and
   // modify some of specified items.
