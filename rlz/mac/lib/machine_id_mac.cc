@@ -118,7 +118,7 @@ CFStringRef CopySerialNumber() {
 
 }  // namespace
 
-bool GetRawMachineId(string16* data, int* more_data) {
+bool GetRawMachineId(base::string16* data, int* more_data) {
   uint8_t mac_address[kIOEthernetAddressSize];
 
   data->clear();

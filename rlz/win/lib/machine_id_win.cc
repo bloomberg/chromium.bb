@@ -103,7 +103,7 @@ std::wstring ConvertSidToString(SID* sid) {
 
 }  // namespace
 
-bool GetRawMachineId(string16* sid_string, int* volume_id) {
+bool GetRawMachineId(base::string16* sid_string, int* volume_id) {
   // Calculate the Windows SID.
 
   wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1] = {0};

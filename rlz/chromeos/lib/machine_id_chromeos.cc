@@ -6,7 +6,7 @@
 
 namespace rlz_lib {
 
-bool GetRawMachineId(string16* data, int* more_data) {
+bool GetRawMachineId(base::string16* data, int* more_data) {
   // Machine IDs are not tracked for ChromeOS.
   return false;
 }

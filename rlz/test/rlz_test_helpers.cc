@@ -33,14 +33,14 @@ const wchar_t kHKLMAccessProviders[] =
     L"System\\CurrentControlSet\\Control\\Lsa\\AccessProviders";
 
 struct RegistryValue {
-  string16 name;
+  base::string16 name;
   DWORD type;
   std::vector<uint8> data;
 };
 
 struct RegistryKeyData {
   std::vector<RegistryValue> values;
-  std::map<string16, RegistryKeyData> keys;
+  std::map<base::string16, RegistryKeyData> keys;
 };
 
 void ReadRegistryTree(const base::win::RegKey& src, RegistryKeyData* data) {
@@ -63,7 +63,7 @@ void ReadRegistryTree(const base::win::RegKey& src, RegistryKeyData* data) {
   for (base::win::RegistryKeyIterator i(src.Handle(), L"");
        i.Valid(); ++i) {
     ReadRegistryTree(base::win::RegKey(src.Handle(), i.Name(), KEY_READ),
-                     &data->keys[string16(i.Name())]);
+                     &data->keys[base::string16(i.Name())]);
   }
 }
 
@@ -78,7 +78,7 @@ void WriteRegistryTree(const RegistryKeyData& data, base::win::RegKey* dest) {
   }
 
   // Next write values recursively.
-  for (std::map<string16, RegistryKeyData>::const_iterator iter =
+  for (std::map<base::string16, RegistryKeyData>::const_iterator iter =
            data.keys.begin();
        iter != data.keys.end(); ++iter) {
     WriteRegistryTree(iter->second,
