@@ -44,7 +44,6 @@ namespace WebCore {
 
         static PassRefPtr<BarProp> create(Frame* frame, Type type) { return adoptRef(new BarProp(frame, type)); }
 
-        Type type() const;
         bool visible() const;
 
     private:

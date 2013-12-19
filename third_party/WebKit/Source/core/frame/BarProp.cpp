@@ -42,11 +42,6 @@ BarProp::BarProp(Frame* frame, Type type)
     ScriptWrappable::init(this);
 }
 
-BarProp::Type BarProp::type() const
-{
-    return m_type;
-}
-
 bool BarProp::visible() const
 {
     if (!m_frame)

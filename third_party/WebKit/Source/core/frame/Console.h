@@ -60,7 +60,6 @@ protected:
 
 private:
     explicit Console(Frame*);
-    inline Page* page() const;
 
     virtual void refConsole() { ref(); }
     virtual void derefConsole() { deref(); }
