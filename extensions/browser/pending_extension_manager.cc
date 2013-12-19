@@ -65,15 +65,7 @@ bool PendingExtensionManager::Remove(const std::string& id) {
 }
 
 bool PendingExtensionManager::IsIdPending(const std::string& id) const {
-  PendingExtensionList::const_iterator iter;
-  for (iter = pending_extension_list_.begin();
-       iter != pending_extension_list_.end();
-       ++iter) {
-    if (id == iter->id())
-      return true;
-  }
-
-  return false;
+  return GetById(id) != NULL;
 }
 
 bool PendingExtensionManager::HasPendingExtensions() const {

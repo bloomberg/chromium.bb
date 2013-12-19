@@ -1444,6 +1444,11 @@ bool ExtensionService::PopulateExtensionErrorUI(
        iter != extensions_.end(); ++iter) {
     const Extension* e = iter->get();
 
+    // Skip for extensions that have pending updates. They will be checked again
+    // once the pending update is finished.
+    if (pending_extension_manager()->IsIdPending(e->id()))
+      continue;
+
     // Extensions disabled by policy. Note: this no longer includes blacklisted
     // extensions, though we still show the same UI.
     if (!system_->management_policy()->UserMayLoad(e, NULL)) {
