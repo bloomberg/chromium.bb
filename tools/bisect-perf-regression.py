@@ -2245,6 +2245,13 @@ class BisectPerformanceMetrics(object):
 
     return results
 
+  def _PrintConfidence(self, results_dict):
+    # The perf dashboard specifically looks for the string
+    # "Confidence in Bisection Results: 100%" to decide whether or not
+    # to cc the author(s). If you change this, please update the perf
+    # dashboard as well.
+    print 'Confidence in Bisection Results: %d%%' % results_dict['confidence']
+
   def _PrintBanner(self, results_dict):
     print
     print " __o_\___          Aw Snap! We hit a speed bump!"
@@ -2253,11 +2260,14 @@ class BisectPerformanceMetrics(object):
     print 'Bisect reproduced a %.02f%% (+-%.02f%%) change in the %s metric.' % (
         results_dict['regression_size'], results_dict['regression_std_err'],
         '/'.join(self.opts.metric))
-    # The perf dashboard specifically looks for the string
-    # "Confidence in Bisection Results: 100%" to decide whether or not
-    # to cc the author(s). If you change this, please update the perf
-    # dashboard as well.
-    print 'Confidence in Bisection Results: %d%%' % results_dict['confidence']
+    self._PrintConfidence(results_dict)
+
+  def _PrintFailedBanner(self, results_dict):
+    print
+    print ('Bisect could not reproduce a change in the '
+        '%s/%s metric.' % (self.opts.metric[0], self.opts.metric[1]))
+    print
+    self._PrintConfidence(results_dict)
 
   def _PrintRevisionInfo(self, cl, info, depot=None):
     # The perf dashboard specifically looks for the string
@@ -2285,7 +2295,7 @@ class BisectPerformanceMetrics(object):
     print 'Date    : %s' % info['date']
 
   def _PrintTestedCommitsTable(self, revision_data_sorted,
-                               first_working_revision, last_broken_revision):
+      first_working_revision, last_broken_revision, confidence):
     print
     print 'Tested commits:'
     print '  %20s  %40s  %12s %14s %13s' % ('Depot'.center(20, ' '),
@@ -2296,7 +2306,10 @@ class BisectPerformanceMetrics(object):
       if current_data['value']:
         if (current_id == last_broken_revision or
             current_id == first_working_revision):
-          print
+          # If confidence is too low, don't add this empty line since it's
+          # used to put focus on a suspected CL.
+          if confidence:
+            print
           state += 1
 
         state_str = 'Bad'
@@ -2304,6 +2317,10 @@ class BisectPerformanceMetrics(object):
           state_str = 'Suspected CL'
         elif state == 2:
           state_str = 'Good'
+
+        # If confidence is too low, don't bother outputting good/bad.
+        if not confidence:
+          state_str = ''
         state_str = state_str.center(13, ' ')
 
         std_error = ('+-%.02f' %
@@ -2522,10 +2539,16 @@ class BisectPerformanceMetrics(object):
       self.warnings.append('Tests were only set to run once. This may '
                            'be insufficient to get meaningful results.')
     if confidence < 100:
-      self.warnings.append(
-          'Confidence is less than 100%. There could be other candidates for '
-          'this regression. Try bisecting again with increased repeat_count or '
-          'on a sub-metric that shows the regression more clearly.')
+      if confidence:
+        self.warnings.append(
+            'Confidence is less than 100%. There could be other candidates for '
+            'this regression. Try bisecting again with increased repeat_count '
+            'or on a sub-metric that shows the regression more clearly.')
+      else:
+        self.warnings.append(
+          'Confidence is 0%. Try bisecting again on another platform, with '
+          'increased repeat_count or on a sub-metric that shows the regression '
+          'more clearly.')
 
     return {
         'first_working_revision': first_working_revision,
@@ -2572,7 +2595,7 @@ class BisectPerformanceMetrics(object):
       # bugs. If you change this, please update the perf dashboard as well.
       bisect_utils.OutputAnnotationStepStart('Results')
 
-    if results_dict['culprit_revisions']:
+    if results_dict['culprit_revisions'] and results_dict['confidence']:
       self._PrintBanner(results_dict)
       for culprit in results_dict['culprit_revisions']:
         cl, info, depot = culprit
@@ -2581,10 +2604,14 @@ class BisectPerformanceMetrics(object):
       if results_dict['other_regressions']:
         self._PrintOtherRegressions(results_dict['other_regressions'],
                                     revision_data)
+    else:
+      self._PrintFailedBanner(results_dict)
+      self._PrintReproSteps()
 
     self._PrintTestedCommitsTable(revision_data_sorted,
                                   results_dict['first_working_revision'],
-                                  results_dict['last_broken_revision'])
+                                  results_dict['last_broken_revision'],
+                                  results_dict['confidence'])
     self._PrintStepTime(revision_data_sorted)
     self._PrintWarnings()
 
