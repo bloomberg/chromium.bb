@@ -152,9 +152,24 @@ static inline String targetReferenceFromResource(SVGElement* element)
     return SVGURIReference::fragmentIdentifierFromIRIString(target, element->document());
 }
 
+static inline bool svgPaintTypeHasURL(SVGPaint::SVGPaintType paintType)
+{
+    switch (paintType) {
+    case SVGPaint::SVG_PAINTTYPE_URI_NONE:
+    case SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR:
+    case SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR:
+    case SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
+    case SVGPaint::SVG_PAINTTYPE_URI:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
 static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(Document& document, const SVGPaint::SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
 {
-    if (paintType != SVGPaint::SVG_PAINTTYPE_URI && paintType != SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR)
+    if (!svgPaintTypeHasURL(paintType))
         return 0;
 
     id = SVGURIReference::fragmentIdentifierFromIRIString(paintUri, document);

@@ -86,6 +86,12 @@ public:
         return paint.release();
     }
 
+    static PassRefPtr<SVGPaint> createURIAndCurrentColor(const String& uri)
+    {
+        RefPtr<SVGPaint> paint = adoptRef(new SVGPaint(SVG_PAINTTYPE_URI_CURRENTCOLOR, uri));
+        return paint.release();
+    }
+
     const SVGPaintType& paintType() const { return m_paintType; }
     String uri() const { return m_uri; }
 

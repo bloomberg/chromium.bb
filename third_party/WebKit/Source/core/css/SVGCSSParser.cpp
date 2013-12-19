@@ -197,6 +197,8 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
                         parsedValue = SVGPaint::createURIAndColor(value->string, c);
                     else if (m_valueList->current()->id == CSSValueNone)
                         parsedValue = SVGPaint::createURIAndNone(value->string);
+                    else if (m_valueList->current()->id == CSSValueCurrentcolor)
+                        parsedValue = SVGPaint::createURIAndCurrentColor(value->string);
                 }
                 if (!parsedValue)
                     parsedValue = SVGPaint::createURI(value->string);
