@@ -647,18 +647,18 @@ static bool rubberBandingEnabledForSystem()
 }
 #endif
 
-bool ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float multiplier)
+bool ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
     m_haveScrolledSincePageLoad = true;
 
     if (!scrollAnimationEnabledForSystem() || !m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimator::scroll(orientation, granularity, step, multiplier);
+        return ScrollAnimator::scroll(orientation, granularity, step, delta);
 
     if (granularity == ScrollByPixel)
-        return ScrollAnimator::scroll(orientation, granularity, step, multiplier);
+        return ScrollAnimator::scroll(orientation, granularity, step, delta);
 
     float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
-    float newPos = std::max<float>(std::min<float>(currentPos + (step * multiplier), m_scrollableArea->maximumScrollPosition(orientation)), m_scrollableArea->minimumScrollPosition(orientation));
+    float newPos = std::max<float>(std::min<float>(currentPos + (step * delta), m_scrollableArea->maximumScrollPosition(orientation)), m_scrollableArea->minimumScrollPosition(orientation));
     if (currentPos == newPos)
         return false;
 

@@ -85,7 +85,7 @@ private:
     Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float multiplier);
+    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
 #if USE(RUBBER_BANDING)

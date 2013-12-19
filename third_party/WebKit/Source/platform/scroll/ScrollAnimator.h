@@ -56,7 +56,7 @@ public:
     // already at the destination.  Otherwise, starts scrolling towards the
     // destination and returns true.  Scrolling may be immediate or animated.
     // The base class implementation always scrolls immediately, never animates.
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float multiplier);
+    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
 
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 

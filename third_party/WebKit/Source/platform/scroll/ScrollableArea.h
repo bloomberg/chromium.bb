@@ -48,7 +48,7 @@ public:
     static float minFractionToStepWhenPaging();
     static int maxOverlapBetweenPages();
 
-    bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1);
+    bool scroll(ScrollDirection, ScrollGranularity, float delta = 1);
     void scrollToOffsetWithoutAnimation(const FloatPoint&);
     void scrollToOffsetWithoutAnimation(ScrollbarOrientation, float offset);
 

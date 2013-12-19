@@ -51,16 +51,17 @@ ScrollAnimator::~ScrollAnimator()
 {
 }
 
-bool ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float multiplier)
+bool ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float delta)
 {
     float* currentPos = (orientation == HorizontalScrollbar) ? &m_currentPosX : &m_currentPosY;
-    float newPos = clampScrollPosition(orientation, *currentPos + step * multiplier);
-    float delta = *currentPos - newPos;
+    float newPos = clampScrollPosition(orientation, *currentPos + step * delta);
+    float scrolledDelta = *currentPos - newPos;
     if (*currentPos == newPos)
         return false;
     *currentPos = newPos;
 
-    notifyPositionChanged(orientation == HorizontalScrollbar ? FloatSize(delta, 0) : FloatSize(0, delta));
+    notifyPositionChanged(
+        orientation == HorizontalScrollbar ? FloatSize(scrolledDelta, 0) : FloatSize(0, scrolledDelta));
 
     return true;
 }

@@ -223,14 +223,14 @@ void ScrollAnimatorNone::PerAxisData::reset()
 }
 
 
-bool ScrollAnimatorNone::PerAxisData::updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, Parameters* parameters)
+bool ScrollAnimatorNone::PerAxisData::updateDataFromParameters(float step, float delta, float scrollableSize, double currentTime, Parameters* parameters)
 {
-    float delta = step * multiplier;
-    if (!m_startTime || !delta || (delta < 0) != (m_desiredPosition - *m_currentPosition < 0)) {
+    float pixelDelta = step * delta;
+    if (!m_startTime || !pixelDelta || (pixelDelta < 0) != (m_desiredPosition - *m_currentPosition < 0)) {
         m_desiredPosition = *m_currentPosition;
         m_startTime = 0;
     }
-    float newPosition = m_desiredPosition + delta;
+    float newPosition = m_desiredPosition + pixelDelta;
 
     if (newPosition < 0 || newPosition > scrollableSize)
         newPosition = max(min(newPosition, scrollableSize), 0.0f);
@@ -395,10 +395,10 @@ ScrollAnimatorNone::Parameters ScrollAnimatorNone::parametersForScrollGranularit
     return Parameters();
 }
 
-bool ScrollAnimatorNone::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float multiplier)
+bool ScrollAnimatorNone::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
     if (!m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimator::scroll(orientation, granularity, step, multiplier);
+        return ScrollAnimator::scroll(orientation, granularity, step, delta);
 
     TRACE_EVENT0("webkit", "ScrollAnimatorNone::scroll");
 
@@ -413,18 +413,18 @@ bool ScrollAnimatorNone::scroll(ScrollbarOrientation orientation, ScrollGranular
         parameters = parametersForScrollGranularity(granularity);
         break;
     case ScrollByPrecisePixel:
-        return ScrollAnimator::scroll(orientation, granularity, step, multiplier);
+        return ScrollAnimator::scroll(orientation, granularity, step, delta);
     }
 
     // If the individual input setting is disabled, bail.
     if (!parameters.m_isEnabled)
-        return ScrollAnimator::scroll(orientation, granularity, step, multiplier);
+        return ScrollAnimator::scroll(orientation, granularity, step, delta);
 
     // This is an animatable scroll. Set the animation in motion using the appropriate parameters.
     float scrollableSize = static_cast<float>(m_scrollableArea->scrollSize(orientation));
 
     PerAxisData& data = (orientation == VerticalScrollbar) ? m_verticalData : m_horizontalData;
-    bool needToScroll = data.updateDataFromParameters(step, multiplier, scrollableSize, WTF::monotonicallyIncreasingTime(), &parameters);
+    bool needToScroll = data.updateDataFromParameters(step, delta, scrollableSize, WTF::monotonicallyIncreasingTime(), &parameters);
     if (needToScroll && !animationTimerActive()) {
         m_startTime = data.m_startTime;
         animationWillStart();

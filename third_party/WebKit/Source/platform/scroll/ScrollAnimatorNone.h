@@ -48,7 +48,7 @@ public:
     explicit ScrollAnimatorNone(ScrollableArea*);
     virtual ~ScrollAnimatorNone();
 
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float multiplier);
+    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
     virtual void cancelAnimations();
@@ -98,7 +98,7 @@ protected:
     struct PLATFORM_EXPORT PerAxisData {
         PerAxisData(ScrollAnimatorNone* parent, float* currentPos, int visibleLength);
         void reset();
-        bool updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, Parameters*);
+        bool updateDataFromParameters(float step, float delta, float scrollableSize, double currentTime, Parameters*);
         bool animateScroll(double currentTime);
         void updateVisibleLength(int visibleLength);
 

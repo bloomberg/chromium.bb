@@ -99,7 +99,7 @@ void ScrollableArea::setScrollOrigin(const IntPoint& origin)
     }
 }
 
-bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
+bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
     ScrollbarOrientation orientation;
 
@@ -129,9 +129,9 @@ bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granula
     }
 
     if (direction == ScrollUp || direction == ScrollLeft)
-        multiplier = -multiplier;
+        delta = -delta;
 
-    return scrollAnimator()->scroll(orientation, granularity, step, multiplier);
+    return scrollAnimator()->scroll(orientation, granularity, step, delta);
 }
 
 void ScrollableArea::scrollToOffsetWithoutAnimation(const FloatPoint& offset)

@@ -793,7 +793,7 @@ int RenderBox::instrinsicScrollbarLogicalWidth() const
     return 0;
 }
 
-bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
+bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
     // Logical scroll is a higher level concept, all directions by here must be physical
     ASSERT(!isLogical(direction));
@@ -801,7 +801,7 @@ bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity,
     if (!layer() || !layer()->scrollableArea())
         return false;
 
-    return layer()->scrollableArea()->scroll(direction, granularity, multiplier);
+    return layer()->scrollableArea()->scroll(direction, granularity, delta);
 }
 
 bool RenderBox::canBeScrolledAndHasScrollableArea() const
