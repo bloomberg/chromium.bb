@@ -21,6 +21,8 @@ class URLRequestContextGetter;
 
 namespace component_updater {
 
+struct CrxUpdateItem;
+
 // An update protocol request starts with a common preamble which includes
 // version and platform information for Chrome and the operating system,
 // followed by a request body, which is the actual payload of the request.
@@ -59,6 +61,9 @@ bool FetchSuccess(const net::URLFetcher& fetcher);
 // network error, an http response code, or the status of the fetch, if the
 // fetch is pending or canceled.
 int GetFetchError(const net::URLFetcher& fetcher);
+
+// Returns true if the |update_item| contains a valid differential update url.
+bool HasDiffUpdate(const CrxUpdateItem* update_item);
 
 // Returns true if the |status_code| represents a server error 5xx.
 bool IsHttpServerError(int status_code);

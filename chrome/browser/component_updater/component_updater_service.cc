@@ -104,16 +104,11 @@ net::URLFetcherDelegate* MakeContextDelegate(Del* delegate, Ctx* context) {
   return new DelegateWithContext<Del, Ctx>(delegate, context);
 }
 
-// Returns true if a differential update is available for the update item.
-bool IsDiffUpdateAvailable(const CrxUpdateItem* update_item) {
-  return update_item->diff_crx_url.is_valid();
-}
-
 // Returns true if a differential update is available, it has not failed yet,
 // and the configuration allows it.
 bool CanTryDiffUpdate(const CrxUpdateItem* update_item,
                       const ComponentUpdateService::Configurator& config) {
-  return IsDiffUpdateAvailable(update_item) &&
+  return component_updater::HasDiffUpdate(update_item) &&
          !update_item->diff_update_failed &&
          config.DeltasEnabled();
 }
@@ -674,12 +669,12 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
   crx_context->id = workitem->id;
   crx_context->installer = workitem->component.installer;
   crx_context->fingerprint = workitem->next_fp;
-  GURL package_url;
+  const std::vector<GURL>* urls = NULL;
   if (CanTryDiffUpdate(workitem, *config_)) {
-    package_url = workitem->diff_crx_url;
+    urls = &workitem->crx_diffurls;
     ChangeItemState(workitem, CrxUpdateItem::kDownloadingDiff);
   } else {
-    package_url = workitem->crx_url;
+    urls = &workitem->crx_urls;
     ChangeItemState(workitem, CrxUpdateItem::kDownloading);
   }
 
@@ -694,7 +689,7 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
       base::Bind(&CrxUpdateService::DownloadComplete,
                  base::Unretained(this),
                  base::Passed(&crx_context))));
-  crx_downloader_->StartDownloadFromUrl(package_url);
+  crx_downloader_->StartDownload(*urls);
 }
 
 // Sets the state of the component to be checked for updates. After the
@@ -740,8 +735,8 @@ void CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
 
   ChangeItemState(item, CrxUpdateItem::kChecking);
   item->last_check = base::Time::Now();
-  item->crx_url = GURL();
-  item->diff_crx_url = GURL();
+  item->crx_urls.clear();
+  item->crx_diffurls.clear();
   item->previous_version = item->component.version;
   item->next_version = Version();
   item->previous_fp = item->component.fingerprint;
@@ -861,12 +856,17 @@ void CrxUpdateService::OnParseUpdateResponseSucceeded(
     const Package& package(it->manifest.packages[0]);
     crx->next_fp = package.fingerprint;
 
-    // Select the first url from the list of urls until support for
-    // fall back urls is implemented.
-    if (!it->crx_urls.empty())
-      crx->crx_url = it->crx_urls[0].Resolve(package.name);
-    if (!it->crx_diffurls.empty())
-      crx->diff_crx_url = it->crx_diffurls[0].Resolve(package.namediff);
+    // Resolve the urls by combining the base urls with the package names.
+    for (size_t i = 0; i != it->crx_urls.size(); ++i) {
+      const GURL url(it->crx_urls[i].Resolve(package.name));
+      if (url.is_valid())
+         crx->crx_urls.push_back(url);
+    }
+    for (size_t i = 0; i != it->crx_diffurls.size(); ++i) {
+      const GURL url(it->crx_diffurls[i].Resolve(package.namediff));
+      if (url.is_valid())
+         crx->crx_diffurls.push_back(url);
+    }
 
     ChangeItemState(crx, CrxUpdateItem::kCanUpdate);
     ++num_updates_pending;

@@ -66,6 +66,23 @@ const char* valid_xml_with_invalid_sizes =
 " </app>"
 "</response>";
 
+const char* kInvalidValidXmlMissingCodebase =
+"<?xml version='1.0' encoding='UTF-8'?>"
+"<response protocol='3.0'>"
+" <app appid='12345'>"
+"   <updatecheck status='ok'>"
+"     <urls>"
+"       <url codebasediff='http://diff.example.com/'/>"
+"     </urls>"
+"     <manifest version='1.2.3.4' prodversionmin='2.0.143.0'>"
+"       <packages>"
+"         <package namediff='extension_1_2_3_4.crx'/>"
+"       </packages>"
+"     </manifest>"
+"   </updatecheck>"
+" </app>"
+"</response>";
+
 const char* kMissingAppId =
 "<?xml version='1.0'?>"
 "<response protocol='3.0'>"
@@ -211,6 +228,10 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_FALSE(parser.errors().empty());
 
   EXPECT_TRUE(parser.Parse(kInvalidVersion));
+  EXPECT_TRUE(parser.results().list.empty());
+  EXPECT_FALSE(parser.errors().empty());
+
+  EXPECT_TRUE(parser.Parse(kInvalidValidXmlMissingCodebase));
   EXPECT_TRUE(parser.results().list.empty());
   EXPECT_FALSE(parser.errors().empty());
 

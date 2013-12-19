@@ -104,7 +104,8 @@ void CrxDownloaderTest::TearDown() {
 }
 
 void CrxDownloaderTest::Quit() {
-  quit_closure_.Run();
+  if (!quit_closure_.is_null())
+    quit_closure_.Run();
 }
 
 void CrxDownloaderTest::DownloadComplete(
@@ -131,6 +132,18 @@ void CrxDownloaderTest::RunThreads() {
 
 void CrxDownloaderTest::RunThreadsUntilIdle() {
   base::RunLoop().RunUntilIdle();
+}
+
+// Tests that starting a download without a url results in an error.
+TEST_F(CrxDownloaderTest, NoUrl) {
+  std::vector<GURL> urls;
+  crx_downloader_->StartDownload(urls);
+
+  RunThreadsUntilIdle();
+  EXPECT_EQ(-1, error_);
+  EXPECT_EQ(kExpectedContext, crx_context_);
+
+  EXPECT_EQ(1, num_calls_);
 }
 
 // Tests that downloading from one url is successful.

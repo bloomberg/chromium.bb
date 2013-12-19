@@ -90,6 +90,7 @@ class UpdateResponse {
     std::string extension_id;
 
     // The list of fallback urls, for full and diff updates respectively.
+    // These urls are base urls; they don't include the filename.
     std::vector<GURL> crx_urls;
     std::vector<GURL> crx_diffurls;
 

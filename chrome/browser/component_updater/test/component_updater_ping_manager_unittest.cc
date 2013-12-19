@@ -116,7 +116,7 @@ TEST_F(ComponentUpdaterPingManagerTest, PingManagerTest) {
   item.diff_error_code = 20;
   item.diff_extra_code1 = -10;
   item.diff_update_failed = true;
-  item.diff_crx_url = GURL("http://host/path");
+  item.crx_diffurls.push_back(GURL("http://host/path"));
 
   ping_manager_->OnUpdateComplete(&item);
   base::RunLoop().RunUntilIdle();

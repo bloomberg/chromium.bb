@@ -82,11 +82,11 @@ class CrxDownloader {
   virtual ~CrxDownloader();
 
   // Starts the download. One instance of the class handles one download only.
-  // Returns true if success or false in case of errors. One instance of
-  // CrxDownloader can only be started once, otherwise the behavior is
-  // undefined.
-  bool StartDownloadFromUrl(const GURL& url);
-  bool StartDownload(const std::vector<GURL>& urls);
+  // One instance of CrxDownloader can only be started once, otherwise the
+  // behavior is undefined. The callback gets invoked if the download can't
+  // be started.
+  void StartDownloadFromUrl(const GURL& url);
+  void StartDownload(const std::vector<GURL>& urls);
 
   const std::vector<DownloadMetrics> download_metrics() const;
 

@@ -79,9 +79,9 @@ struct CrxUpdateItem {
 
   base::Time last_check;
 
-  // The url the full and differential update CRXs are downloaded from.
-  GURL crx_url;
-  GURL diff_crx_url;
+  // A component can be made available for download from several urls.
+  std::vector<GURL> crx_urls;
+  std::vector<GURL> crx_diffurls;
 
   // The from/to version and fingerprint values.
   Version previous_version;

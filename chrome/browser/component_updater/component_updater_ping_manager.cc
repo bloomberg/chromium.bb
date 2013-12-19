@@ -16,11 +16,6 @@
 
 namespace component_updater {
 
-// Returns true if the |update_item| contains a valid differential update url.
-bool HasDiffUpdate(const CrxUpdateItem* update_item) {
-  return update_item->diff_crx_url.is_valid();
-}
-
 // Returns a string literal corresponding to the value of the downloader |d|.
 const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
   switch (d) {
@@ -107,8 +102,8 @@ std::string PingSender::BuildDownloadCompleteEventElements(
   std::string download_events;
   for (size_t i = 0; i != item->download_metrics.size(); ++i) {
     const CrxDownloader::DownloadMetrics& metrics = item->download_metrics[i];
-    std::string event("<event eventtype=\"14\" ");
-    StringAppendF(&event, "eventresult=\"%d\"", metrics.error == 0);
+    std::string event("<event eventtype=\"14\"");
+    StringAppendF(&event, " eventresult=\"%d\"", metrics.error == 0);
     StringAppendF(&event,
                   " downloader=\"%s\"", DownloaderToString(metrics.downloader));
     if (metrics.error)
@@ -118,9 +113,10 @@ std::string PingSender::BuildDownloadCompleteEventElements(
       StringAppendF(&event, " downloaded=\"%s\"",
                     base::Uint64ToString(metrics.bytes_downloaded).c_str());
     }
-    if (metrics.bytes_total)
+    if (metrics.bytes_total) {
       StringAppendF(&event, " total=\"%s\"",
                     base::Uint64ToString(metrics.bytes_total).c_str());
+    }
     if (metrics.download_time_ms) {
       StringAppendF(&event, " download_time_ms=\"%s\"",
                     base::Uint64ToString(metrics.download_time_ms).c_str());

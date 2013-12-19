@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/component_updater/crx_update_item.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "net/base/load_flags.h"
@@ -22,7 +23,8 @@ std::string BuildProtocolRequest(const std::string& request_body,
                                  const std::string& additional_attributes) {
   const std::string prod_id(chrome::OmahaQueryParams::GetProdIdString(
       chrome::OmahaQueryParams::CHROME));
-  const std::string chrome_version(chrome::VersionInfo().Version().c_str());
+  const chrome::VersionInfo chrome_version_info;
+  const std::string chrome_version(chrome_version_info.Version());
 
   std::string request(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -117,6 +119,10 @@ int GetFetchError(const net::URLFetcher& fetcher) {
     default:
       return -1;
   }
+}
+
+bool HasDiffUpdate(const CrxUpdateItem* update_item) {
+  return !update_item->crx_diffurls.empty();
 }
 
 bool IsHttpServerError(int status_code) {

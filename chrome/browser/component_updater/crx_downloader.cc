@@ -74,17 +74,22 @@ CrxDownloader::download_metrics() const {
   return retval;
 }
 
-bool CrxDownloader::StartDownloadFromUrl(const GURL& url) {
+void CrxDownloader::StartDownloadFromUrl(const GURL& url) {
   std::vector<GURL> urls;
   urls.push_back(url);
-  return StartDownload(urls);
+  StartDownload(urls);
 }
 
-bool CrxDownloader::StartDownload(const std::vector<GURL>& urls) {
+void CrxDownloader::StartDownload(const std::vector<GURL>& urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (urls.empty())
-    return false;
+  if (urls.empty()) {
+    // Make a result and complete the download with a generic error for now.
+    Result result;
+    result.error = -1;
+    download_callback_.Run(result);
+    return;
+  }
 
   // If the urls are mutated while this downloader is active, then the
   // behavior is undefined in the sense that the outcome of the download could
@@ -94,7 +99,6 @@ bool CrxDownloader::StartDownload(const std::vector<GURL>& urls) {
   current_url_ = urls_.begin();
 
   DoStartDownload(*current_url_);
-  return true;
 }
 
 void CrxDownloader::OnDownloadComplete(
@@ -128,8 +132,10 @@ void CrxDownloader::OnDownloadComplete(
     // the request over to it so that the successor can try the pruned list
     // of urls. Otherwise, the request ends here since the current downloader
     // has tried all urls and it can't fall back on any other downloader.
-    if (successor_ && successor_->StartDownload(urls_))
+    if (successor_ && !urls_.empty()) {
+      successor_->StartDownload(urls_);
       return;
+    }
   }
 
   download_callback_.Run(result);
