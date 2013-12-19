@@ -150,9 +150,9 @@ class TestLauncher {
 
   int cycles_;  // Number of remaining test itreations, or -1 for infinite.
 
-  // Test filters (empty means no filter). Entries are separated by colons.
-  std::string positive_test_filter_;
-  std::string negative_test_filter_;
+  // Test filters (empty means no filter).
+  std::vector<std::string> positive_test_filter_;
+  std::vector<std::string> negative_test_filter_;
 
   // Number of tests started in this iteration.
   size_t test_started_count_;

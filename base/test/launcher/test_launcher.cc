@@ -22,6 +22,8 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -186,47 +188,6 @@ bool BotModeEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTestLauncherBotMode) ||
       env->HasVar("CHROMIUM_TEST_LAUNCHER_BOT_MODE");
-}
-
-// For a basic pattern matching for gtest_filter options.  (Copied from
-// gtest.cc, see the comment below and http://crbug.com/44497)
-bool PatternMatchesString(const char* pattern, const char* str) {
-  switch (*pattern) {
-    case '\0':
-    case ':':  // Either ':' or '\0' marks the end of the pattern.
-      return *str == '\0';
-    case '?':  // Matches any single character.
-      return *str != '\0' && PatternMatchesString(pattern + 1, str + 1);
-    case '*':  // Matches any string (possibly empty) of characters.
-      return (*str != '\0' && PatternMatchesString(pattern, str + 1)) ||
-          PatternMatchesString(pattern + 1, str);
-    default:  // Non-special character.  Matches itself.
-      return *pattern == *str &&
-          PatternMatchesString(pattern + 1, str + 1);
-  }
-}
-
-// TODO(phajdan.jr): Avoid duplicating gtest code. (http://crbug.com/44497)
-// For basic pattern matching for gtest_filter options.  (Copied from
-// gtest.cc)
-bool MatchesFilter(const std::string& name, const std::string& filter) {
-  const char *cur_pattern = filter.c_str();
-  for (;;) {
-    if (PatternMatchesString(cur_pattern, name.c_str())) {
-      return true;
-    }
-
-    // Finds the next pattern in the filter.
-    cur_pattern = strchr(cur_pattern, ':');
-
-    // Returns if no more pattern can be found.
-    if (cur_pattern == NULL) {
-      return false;
-    }
-
-    // Skips the pattern separater (the ':' character).
-    cur_pattern++;
-  }
 }
 
 void RunCallback(
@@ -682,17 +643,47 @@ bool TestLauncher::Init() {
   worker_pool_owner_.reset(
       new SequencedWorkerPoolOwner(parallel_jobs_, "test_launcher"));
 
-  // Split --gtest_filter at '-', if there is one, to separate into
-  // positive filter and negative filter portions.
-  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
-  positive_test_filter_ = filter;
-  size_t dash_pos = filter.find('-');
-  if (dash_pos != std::string::npos) {
-    // Everything up to the dash.
-    positive_test_filter_ = filter.substr(0, dash_pos);
+  if (command_line->HasSwitch(switches::kTestLauncherFilterFile) &&
+      command_line->HasSwitch(kGTestFilterFlag)) {
+    LOG(ERROR) << "Only one of --test-launcher-filter-file and --gtest_filter "
+               << "at a time is allowed.";
+    return false;
+  }
 
-    // Everything after the dash.
-    negative_test_filter_ = filter.substr(dash_pos + 1);
+  if (command_line->HasSwitch(switches::kTestLauncherFilterFile)) {
+    std::string filter;
+    if (!ReadFileToString(
+            command_line->GetSwitchValuePath(switches::kTestLauncherFilterFile),
+            &filter)) {
+      LOG(ERROR) << "Failed to read the filter file.";
+      return false;
+    }
+
+    std::vector<std::string> filter_lines;
+    SplitString(filter, '\n', &filter_lines);
+    for (size_t i = 0; i < filter_lines.size(); i++) {
+      if (filter_lines[i].empty())
+        continue;
+
+      if (filter_lines[i][0] == '-')
+        negative_test_filter_.push_back(filter_lines[i].substr(1));
+      else
+        positive_test_filter_.push_back(filter_lines[i]);
+    }
+  } else {
+    // Split --gtest_filter at '-', if there is one, to separate into
+    // positive filter and negative filter portions.
+    std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
+    size_t dash_pos = filter.find('-');
+    if (dash_pos == std::string::npos) {
+      SplitString(filter, ':', &positive_test_filter_);
+    } else {
+      // Everything up to the dash.
+      SplitString(filter.substr(0, dash_pos), ':', &positive_test_filter_);
+
+      // Everything after the dash.
+      SplitString(filter.substr(dash_pos + 1), ':', &negative_test_filter_);
+    }
   }
 
   if (!results_tracker_.Init(*command_line)) {
@@ -728,12 +719,28 @@ void TestLauncher::RunTests() {
       std::string filtering_test_name =
           launcher_delegate_->GetTestNameForFiltering(test_case, test_info);
 
-      // Skip the test that doesn't match the filter string (if given).
-      if ((!positive_test_filter_.empty() &&
-           !MatchesFilter(filtering_test_name, positive_test_filter_)) ||
-          MatchesFilter(filtering_test_name, negative_test_filter_)) {
-        continue;
+      // Skip the test that doesn't match the filter (if given).
+      if (!positive_test_filter_.empty()) {
+        bool found = false;
+        for (size_t k = 0; k < positive_test_filter_.size(); ++k) {
+          if (MatchPattern(filtering_test_name, positive_test_filter_[k])) {
+            found = true;
+            break;
+          }
+        }
+
+        if (!found)
+          continue;
       }
+      bool excluded = false;
+      for (size_t k = 0; k < negative_test_filter_.size(); ++k) {
+        if (MatchPattern(filtering_test_name, negative_test_filter_[k])) {
+          excluded = true;
+          break;
+        }
+      }
+      if (excluded)
+        continue;
 
       if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
         continue;
