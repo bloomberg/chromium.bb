@@ -1660,8 +1660,8 @@ public:
 
     static GridAutoFlow initialGridAutoFlow() { return AutoFlowNone; }
 
-    static GridTrackSize initialGridAutoColumns() { return GridTrackSize(Auto); }
-    static GridTrackSize initialGridAutoRows() { return GridTrackSize(Auto); }
+    static GridTrackSize initialGridAutoColumns() { return GridTrackSize(Length(Auto)); }
+    static GridTrackSize initialGridAutoRows() { return GridTrackSize(Length(Auto)); }
 
     static NamedGridLinesMap initialNamedGridColumnLines() { return NamedGridLinesMap(); }
     static NamedGridLinesMap initialNamedGridRowLines() { return NamedGridLinesMap(); }

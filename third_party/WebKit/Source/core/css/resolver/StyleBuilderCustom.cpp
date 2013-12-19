@@ -860,53 +860,32 @@ if (isInitial) { \
     return; \
 }
 
-static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state, GridLength& workingLength)
+static GridLength createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state)
 {
-    if (primitiveValue->getValueID() == CSSValueMinContent) {
-        workingLength = Length(MinContent);
-        return true;
-    }
+    if (primitiveValue->getValueID() == CSSValueMinContent)
+        return Length(MinContent);
 
-    if (primitiveValue->getValueID() == CSSValueMaxContent) {
-        workingLength = Length(MaxContent);
-        return true;
-    }
+    if (primitiveValue->getValueID() == CSSValueMaxContent)
+        return Length(MaxContent);
 
-    if (primitiveValue->isFlex()) {
-        // Fractional unit.
-        workingLength.setFlex(primitiveValue->getDoubleValue());
-        return true;
-    }
+    // Fractional unit.
+    if (primitiveValue->isFlex())
+        return GridLength(primitiveValue->getDoubleValue());
 
-    workingLength = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-    if (primitiveValue->isLength())
-        workingLength.length().setQuirk(primitiveValue->isQuirkValue());
-
-    return true;
+    return primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
 }
 
-static bool createGridTrackSize(CSSValue* value, GridTrackSize& trackSize, const StyleResolverState& state)
+static GridTrackSize createGridTrackSize(CSSValue* value, const StyleResolverState& state)
 {
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        GridLength workingLength;
-        if (!createGridTrackBreadth(primitiveValue, state, workingLength))
-            return false;
-
-        trackSize.setLength(workingLength);
-        return true;
-    }
+    if (value->isPrimitiveValue())
+        return GridTrackSize(createGridTrackBreadth(toCSSPrimitiveValue(value), state));
 
     CSSFunctionValue* minmaxFunction = toCSSFunctionValue(value);
     CSSValueList* arguments = minmaxFunction->arguments();
     ASSERT_WITH_SECURITY_IMPLICATION(arguments->length() == 2);
-    GridLength minTrackBreadth;
-    GridLength maxTrackBreadth;
-    if (!createGridTrackBreadth(toCSSPrimitiveValue(arguments->itemWithoutBoundsCheck(0)), state, minTrackBreadth) || !createGridTrackBreadth(toCSSPrimitiveValue(arguments->itemWithoutBoundsCheck(1)), state, maxTrackBreadth))
-        return false;
-
-    trackSize.setMinMax(minTrackBreadth, maxTrackBreadth);
-    return true;
+    GridLength minTrackBreadth(createGridTrackBreadth(toCSSPrimitiveValue(arguments->itemWithoutBoundsCheck(0)), state));
+    GridLength maxTrackBreadth(createGridTrackBreadth(toCSSPrimitiveValue(arguments->itemWithoutBoundsCheck(1)), state));
+    return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
 static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, const StyleResolverState& state)
@@ -936,11 +915,7 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
         }
 
         ++currentNamedGridLine;
-        GridTrackSize trackSize;
-        if (!createGridTrackSize(currValue, trackSize, state))
-            return false;
-
-        trackSizes.append(trackSize);
+        trackSizes.append(createGridTrackSize(currValue, state));
     }
 
     // The parser should have rejected any <track-list> without any <track-size> as
@@ -1610,18 +1585,12 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     }
     case CSSPropertyGridAutoColumns: {
         HANDLE_INHERIT_AND_INITIAL(gridAutoColumns, GridAutoColumns);
-        GridTrackSize trackSize;
-        if (!createGridTrackSize(value, trackSize, state))
-            return;
-        state.style()->setGridAutoColumns(trackSize);
+        state.style()->setGridAutoColumns(createGridTrackSize(value, state));
         return;
     }
     case CSSPropertyGridAutoRows: {
         HANDLE_INHERIT_AND_INITIAL(gridAutoRows, GridAutoRows);
-        GridTrackSize trackSize;
-        if (!createGridTrackSize(value, trackSize, state))
-            return;
-        state.style()->setGridAutoRows(trackSize);
+        state.style()->setGridAutoRows(createGridTrackSize(value, state));
         return;
     }
     case CSSPropertyGridDefinitionColumns: {

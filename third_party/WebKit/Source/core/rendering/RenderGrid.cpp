@@ -492,7 +492,7 @@ const GridTrackSize& RenderGrid::gridTrackSize(GridTrackSizingDirection directio
     if (trackSize.isPercentage()) {
         Length logicalSize = direction == ForColumns ? style()->logicalWidth() : style()->logicalHeight();
         if (logicalSize.isIntrinsicOrAuto()) {
-            DEFINE_STATIC_LOCAL(GridTrackSize, autoTrackSize, (Auto));
+            DEFINE_STATIC_LOCAL(GridTrackSize, autoTrackSize, (Length(Auto)));
             return autoTrackSize;
         }
     }
