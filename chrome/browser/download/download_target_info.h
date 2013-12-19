@@ -41,7 +41,7 @@ struct DownloadTargetInfo {
   // to be opened with a file:// URL. This can be used later to decide how file
   // opens should be handled. The file is considered to be handled safely if the
   // filetype is supported by the renderer or a sandboxed plug-in.
-  bool is_filetype_handled_securely;
+  bool is_filetype_handled_safely;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_INFO_H_

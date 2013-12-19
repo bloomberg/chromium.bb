@@ -705,7 +705,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!target_info->target_path.empty() && item &&
       IsOpenInBrowserPreferreredForFile(target_info->target_path) &&
-      target_info->is_filetype_handled_securely)
+      target_info->is_filetype_handled_safely)
     DownloadItemModel(item).SetShouldPreferOpeningInBrowser(true);
   callback.Run(target_info->target_path,
                target_info->target_disposition,

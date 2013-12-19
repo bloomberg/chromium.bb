@@ -92,7 +92,7 @@ class DownloadTargetDeterminer
     STATE_PROMPT_USER_FOR_DOWNLOAD_PATH,
     STATE_DETERMINE_LOCAL_PATH,
     STATE_DETERMINE_MIME_TYPE,
-    STATE_DETERMINE_IF_HANDLED_BY_BROWSER,
+    STATE_DETERMINE_IF_HANDLED_SAFELY_BY_BROWSER,
     STATE_CHECK_DOWNLOAD_URL,
     STATE_CHECK_VISITED_REFERRER_BEFORE,
     STATE_DETERMINE_INTERMEDIATE_PATH,
@@ -195,26 +195,22 @@ class DownloadTargetDeterminer
   // resulting MIME type is only valid for determining whether the browser can
   // handle the download if it were opened via a file:// URL.
   // Next state:
-  // - STATE_DETERMINE_IF_HANDLED_BY_BROWSER.
+  // - STATE_DETERMINE_IF_HANDLED_SAFELY_BY_BROWSER.
   Result DoDetermineMimeType();
 
   // Callback invoked when the MIME type is available. Since determination of
   // the MIME type can involve disk access, it is done in the blocking pool.
   void DetermineMimeTypeDone(const std::string& mime_type);
 
-  // Determine if the file type can be handled by the browser if it were to be
-  // opened via a file:// URL.
+  // Determine if the file type can be handled safely by the browser if it were
+  // to be opened via a file:// URL.
   // Next state:
   // - STATE_CHECK_DOWNLOAD_URL.
-  Result DoDetermineIfHandledByBrowser();
+  Result DoDetermineIfHandledSafely();
 
   // Callback invoked when a decision is available about whether the file type
-  // can be handled by the browser. The actual decision depends on the profile
-  // and has to be made on the UI thread. Therefore this method receives a
-  // callback that can determine whether the download is handled by the browser
-  // based on a passed-in Profile* parameter.
-  void DetermineIfHandledByBrowserDone(
-      const base::Callback<bool(Profile*)>& per_profile_handler_checker);
+  // can be handled safely by the browser.
+  void DetermineIfHandledSafelyDone(bool is_handled_safely);
 
   // Checks whether the downloaded URL is malicious. Invokes the
   // DownloadProtectionService via the delegate.
@@ -290,7 +286,7 @@ class DownloadTargetDeterminer
   base::FilePath local_path_;
   base::FilePath intermediate_path_;
   std::string mime_type_;
-  bool is_filetype_handled_securely_;
+  bool is_filetype_handled_safely_;
 
   content::DownloadItem* download_;
   const bool is_resumption_;

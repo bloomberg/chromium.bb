@@ -59,7 +59,7 @@ void VisitCountsToVisitedBefore(
 } // namespace
 
 DownloadTargetInfo::DownloadTargetInfo()
-    : is_filetype_handled_securely(false) {}
+    : is_filetype_handled_safely(false) {}
 
 DownloadTargetInfo::~DownloadTargetInfo() {}
 
@@ -79,7 +79,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
       conflict_action_(DownloadPathReservationTracker::OVERWRITE),
       danger_type_(download->GetDangerType()),
       virtual_path_(initial_virtual_path),
-      is_filetype_handled_securely_(false),
+      is_filetype_handled_safely_(false),
       download_(download),
       is_resumption_(download_->GetLastReason() !=
                          content::DOWNLOAD_INTERRUPT_REASON_NONE &&
@@ -128,8 +128,8 @@ void DownloadTargetDeterminer::DoLoop() {
       case STATE_DETERMINE_MIME_TYPE:
         result = DoDetermineMimeType();
         break;
-      case STATE_DETERMINE_IF_HANDLED_BY_BROWSER:
-        result = DoDetermineIfHandledByBrowser();
+      case STATE_DETERMINE_IF_HANDLED_SAFELY_BY_BROWSER:
+        result = DoDetermineIfHandledSafely();
         break;
       case STATE_CHECK_DOWNLOAD_URL:
         result = DoCheckDownloadUrl();
@@ -354,7 +354,7 @@ DownloadTargetDeterminer::Result
   DCHECK(!local_path_.empty());
   DCHECK(mime_type_.empty());
 
-  next_state_ = STATE_DETERMINE_IF_HANDLED_BY_BROWSER;
+  next_state_ = STATE_DETERMINE_IF_HANDLED_SAFELY_BY_BROWSER;
 
   if (virtual_path_ == local_path_) {
     delegate_->GetFileMimeType(
@@ -375,64 +375,74 @@ void DownloadTargetDeterminer::DetermineMimeTypeDone(
 }
 
 #if defined(ENABLE_PLUGINS)
-// The code below is used by DoDetermineIfHandledByBrowser to determine if the
+// The code below is used by DoDetermineIfHandledSafely to determine if the
 // file type is handled by a sandboxed plugin.
 namespace {
 
-typedef std::vector<content::WebPluginInfo> PluginVector;
-
-// Returns true if there is a plugin in |plugins| that is sandboxed and enabled
-// for |profile|.
-bool IsSafePluginAvailableForProfile(scoped_ptr<PluginVector> plugins,
-                                     Profile* profile) {
-  using content::WebPluginInfo;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (plugins->size() == 0)
-    return false;
-
-  scoped_refptr<PluginPrefs> plugin_prefs = PluginPrefs::GetForProfile(profile);
-  if (!plugin_prefs)
-    return false;
-
-  for (PluginVector::iterator plugin = plugins->begin();
-       plugin != plugins->end(); ++plugin) {
-    if (plugin_prefs->IsPluginEnabled(*plugin) &&
-        (plugin->type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
-         plugin->type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS))
-      return true;
-  }
-  return false;
+void InvokeClosureAfterGetPluginCallback(
+    const base::Closure& closure,
+    const std::vector<content::WebPluginInfo>& unused) {
+  closure.Run();
 }
 
-// Returns a callback that determines if a sandboxed plugin is available to
-// handle |mime_type| for a specific profile. The returned callback must be
-// invoked on the UI thread, while this function should be called on the IO
-// thread.
-base::Callback<bool(Profile*)> GetSafePluginChecker(
-    const GURL& url,
-    const std::string& mime_type) {
+enum ActionOnStalePluginList {
+  RETRY_IF_STALE_PLUGIN_LIST,
+  IGNORE_IF_STALE_PLUGIN_LIST
+};
+
+void IsHandledBySafePlugin(content::ResourceContext* resource_context,
+                           const GURL& url,
+                           const std::string& mime_type,
+                           ActionOnStalePluginList stale_plugin_action,
+                           const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!mime_type.empty());
+  using content::WebPluginInfo;
 
-  scoped_ptr<PluginVector> plugins(new PluginVector);
+  std::string actual_mime_type;
+  bool is_stale = false;
+  WebPluginInfo plugin_info;
+
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
-  if (plugin_service)
-    plugin_service->GetPluginInfoArray(
-        url, mime_type, false, plugins.get(), NULL);
-  return base::Bind(&IsSafePluginAvailableForProfile, base::Passed(&plugins));
+  bool plugin_found = plugin_service->GetPluginInfo(-1, -1, resource_context,
+                                                    url, GURL(), mime_type,
+                                                    false, &is_stale,
+                                                    &plugin_info,
+                                                    &actual_mime_type);
+  if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
+    // The GetPlugins call causes the plugin list to be refreshed. Once that's
+    // done we can retry the GetPluginInfo call. We break out of this cycle
+    // after a single retry in order to avoid retrying indefinitely.
+    plugin_service->GetPlugins(
+        base::Bind(&InvokeClosureAfterGetPluginCallback,
+                   base::Bind(&IsHandledBySafePlugin,
+                              resource_context,
+                              url,
+                              mime_type,
+                              IGNORE_IF_STALE_PLUGIN_LIST,
+                              callback)));
+    return;
+  }
+  // In practice, we assume that retrying once is enough.
+  DCHECK(!is_stale);
+  bool is_handled_safely =
+      plugin_found &&
+      (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
+       plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(callback, is_handled_safely));
 }
 
 } // namespace
 #endif  // ENABLE_PLUGINS
 
 DownloadTargetDeterminer::Result
-    DownloadTargetDeterminer::DoDetermineIfHandledByBrowser() {
+    DownloadTargetDeterminer::DoDetermineIfHandledSafely() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!virtual_path_.empty());
   DCHECK(!local_path_.empty());
-  DCHECK(!is_filetype_handled_securely_);
+  DCHECK(!is_filetype_handled_safely_);
 
   next_state_ = STATE_CHECK_DOWNLOAD_URL;
 
@@ -440,30 +450,33 @@ DownloadTargetDeterminer::Result
     return CONTINUE;
 
   if (net::IsSupportedMimeType(mime_type_)) {
-    is_filetype_handled_securely_ = true;
+    is_filetype_handled_safely_ = true;
     return CONTINUE;
   }
 
 #if defined(ENABLE_PLUGINS)
-  BrowserThread::PostTaskAndReplyWithResult(
+  BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GetSafePluginChecker,
-                 net::FilePathToFileURL(local_path_), mime_type_),
-      base::Bind(&DownloadTargetDeterminer::DetermineIfHandledByBrowserDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(
+          &IsHandledBySafePlugin,
+          GetProfile()->GetResourceContext(),
+          net::FilePathToFileURL(local_path_),
+          mime_type_,
+          RETRY_IF_STALE_PLUGIN_LIST,
+          base::Bind(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
+                     weak_ptr_factory_.GetWeakPtr())));
   return QUIT_DOLOOP;
 #else
   return CONTINUE;
 #endif
 }
 
-void DownloadTargetDeterminer::DetermineIfHandledByBrowserDone(
-    const base::Callback<bool(Profile*)>& callback) {
+void DownloadTargetDeterminer::DetermineIfHandledSafelyDone(
+    bool is_handled_safely) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  is_filetype_handled_securely_ = callback.Run(GetProfile());
-  DVLOG(20) << "Is file type handled securely: "
-            << is_filetype_handled_securely_;
+  is_filetype_handled_safely_ = is_handled_safely;
+  DVLOG(20) << "Is file type handled safely: " << is_filetype_handled_safely_;
   DoLoop();
 }
 
@@ -633,7 +646,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
   target_info->danger_type = danger_type_;
   target_info->intermediate_path = intermediate_path_;
   target_info->mime_type = mime_type_;
-  target_info->is_filetype_handled_securely = is_filetype_handled_securely_;
+  target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(completion_callback_, base::Passed(&target_info)));

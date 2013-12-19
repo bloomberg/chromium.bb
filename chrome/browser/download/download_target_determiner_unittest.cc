@@ -38,8 +38,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/plugin_service_filter.h"
 #include "content/public/common/webplugininfo.h"
 #endif
 
@@ -2022,19 +2022,24 @@ void ForceRefreshOfPlugins() {
 #endif
 }
 
-void PluginEnabledCallback(const base::Closure& closure,
-                           bool result) {
-  EXPECT_TRUE(result);
-  closure.Run();
-}
+class MockPluginServiceFilter : public content::PluginServiceFilter {
+ public:
+  MOCK_METHOD1(MockPluginAvailable, bool(const base::FilePath&));
 
-void EnablePlugin(bool enable, PluginPrefs* prefs, const base::FilePath& path) {
-  base::RunLoop run_loop;
-  prefs->EnablePlugin(enable, path,
-                      base::Bind(&PluginEnabledCallback,
-                                 run_loop.QuitClosure()));
-  run_loop.Run();
-}
+  virtual bool IsPluginAvailable(int render_process_id,
+                                 int render_view_id,
+                                 const void* context,
+                                 const GURL& url,
+                                 const GURL& policy_url,
+                                 content::WebPluginInfo* plugin) OVERRIDE {
+    return MockPluginAvailable(plugin->path);
+  }
+
+  virtual bool CanLoadPlugin(int render_process_id,
+                             const base::FilePath& path) OVERRIDE {
+    return true;
+  }
+};
 
 class ScopedRegisterInternalPlugin {
  public:
@@ -2080,13 +2085,28 @@ class ScopedRegisterInternalPlugin {
 class DownloadTargetDeterminerTestWithPlugin :
   public DownloadTargetDeterminerTest {
  public:
+  DownloadTargetDeterminerTestWithPlugin()
+      : old_plugin_service_filter_(NULL) {}
+
   virtual void SetUp() OVERRIDE {
-    content::PluginService::GetInstance()->Init();
-    content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
+    content::PluginService* plugin_service =
+        content::PluginService::GetInstance();
+    plugin_service->Init();
+    plugin_service->DisablePluginsDiscoveryForTesting();
+    old_plugin_service_filter_ = plugin_service->GetFilter();
+    plugin_service->SetFilter(&mock_plugin_filter_);
     DownloadTargetDeterminerTest::SetUp();
   }
 
+  virtual void TearDown() OVERRIDE {
+    content::PluginService::GetInstance()->SetFilter(
+        old_plugin_service_filter_);
+    DownloadTargetDeterminerTest::TearDown();
+  }
+
  protected:
+  content::PluginServiceFilter* old_plugin_service_filter_;
+  testing::StrictMock<MockPluginServiceFilter> mock_plugin_filter_;
   // The ShadowingAtExitManager destroys the tainted PluginService instance.
   base::ShadowingAtExitManager at_exit_manager_;
 };
@@ -2116,9 +2136,6 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
 
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
-  // This creates a PluginPrefs for our TestingProfile.
-  scoped_refptr<PluginPrefs> plugin_prefs =
-      PluginPrefs::GetForTestingProfile(profile());
 
   // Verify our test assumptions.
   {
@@ -2139,7 +2156,7 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   scoped_ptr<DownloadTargetInfo> target_info =
       RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
                                   item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
 
   // Register a PPAPI plugin. This should count as handling the filetype
   // securely.
@@ -2149,16 +2166,19 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       test_download_dir().AppendASCII("ppapi"),
       kTestMIMEType,
       "fakeext");
+  EXPECT_CALL(mock_plugin_filter_, MockPluginAvailable(ppapi_plugin.path()))
+      .WillRepeatedly(Return(true));
 
   target_info = RunDownloadTargetDeterminer(
       GetPathInDownloadDir(kInitialPath), item.get());
-  EXPECT_TRUE(target_info->is_filetype_handled_securely);
+  EXPECT_TRUE(target_info->is_filetype_handled_safely);
 
   // Try disabling the plugin. Handling should no longer be considered secure.
-  EnablePlugin(false, plugin_prefs, ppapi_plugin.path());
+  EXPECT_CALL(mock_plugin_filter_, MockPluginAvailable(ppapi_plugin.path()))
+      .WillRepeatedly(Return(false));
   target_info = RunDownloadTargetDeterminer(
       GetPathInDownloadDir(kInitialPath), item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
 
   // Now register an unsandboxed PPAPI plug-in. This plugin should not be
   // considered secure.
@@ -2168,10 +2188,13 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       test_download_dir().AppendASCII("ppapi-nosandbox"),
       kTestMIMEType,
       "fakeext");
+  EXPECT_CALL(mock_plugin_filter_,
+              MockPluginAvailable(ppapi_unsandboxed_plugin.path()))
+      .WillRepeatedly(Return(true));
 
   target_info = RunDownloadTargetDeterminer(
       GetPathInDownloadDir(kInitialPath), item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
 }
 
 // Check if secure handling of filetypes is determined correctly for NPAPI
@@ -2204,10 +2227,6 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   if (!plugin_service->NPAPIPluginsSupported())
     return;
 
-  // This creates a PluginPrefs for our TestingProfile.
-  scoped_refptr<PluginPrefs> plugin_prefs =
-      PluginPrefs::GetForTestingProfile(profile());
-
   // Verify our test assumptions.
   {
     ForceRefreshOfPlugins();
@@ -2227,7 +2246,7 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   scoped_ptr<DownloadTargetInfo> target_info =
       RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
                                   item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
 
   // Register a NPAPI plugin. This should not count as handling the filetype
   // securely.
@@ -2237,10 +2256,12 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       test_download_dir().AppendASCII("npapi"),
       kTestMIMEType,
       "fakeext");
+  EXPECT_CALL(mock_plugin_filter_, MockPluginAvailable(npapi_plugin.path()))
+      .WillRepeatedly(Return(true));
 
   target_info = RunDownloadTargetDeterminer(
       GetPathInDownloadDir(kInitialPath), item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
 }
 #endif // ENABLE_PLUGINS
 
