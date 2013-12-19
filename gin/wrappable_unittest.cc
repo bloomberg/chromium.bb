@@ -15,7 +15,19 @@
 
 namespace gin {
 
-class MyObject : public Wrappable<MyObject> {
+class BaseClass {
+ public:
+  BaseClass() : value_(23) {}
+  virtual ~BaseClass() {}
+
+ private:
+  int value_;
+
+  DISALLOW_COPY_AND_ASSIGN(BaseClass);
+};
+
+class MyObject : public BaseClass,
+                 public Wrappable<MyObject> {
  public:
   static WrapperInfo kWrapperInfo;
 

@@ -31,17 +31,18 @@ GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
 //   static WrapperInfo kWrapperInfo;
 //
 //   // Optional, only required if non-empty template should be used.
-//   static v8::Local<v8::ObjectTemplate> GetObjectTemplate(
+//   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
 //       v8::Isolate* isolate);
 //   ...
 // };
 //
 // // my_class.cc
-// WrapperInfo MyClass::kWrapperInfo = { kEmbedderNativeGin };
+// WrapperInfo MyClass::kWrapperInfo = {kEmbedderNativeGin};
 //
-// v8::Local<v8::ObjectTemplate> MyClass::GetObjectTemplate(
+// gin::ObjectTemplateBuilder MyClass::GetObjectTemplateBuilder(
 //     v8::Isolate* isolate) {
-//   return ObjectTemplateBuilder(isolate).SetValue("foobar", 42).Build();
+//   return Wrappable<MyClass>::GetObjectTemplateBuilder(isolate)
+//       .SetValue("foobar", 42);
 // }
 //
 // Subclasses should also typically have private constructors and expose a
@@ -104,8 +105,8 @@ struct Converter<T*, typename base::enable_if<
   }
 
   static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val, T** out) {
-    *out = static_cast<T*>(internal::FromV8Impl(isolate, val,
-                                                &T::kWrapperInfo));
+    *out = static_cast<T*>(static_cast<WrappableBase*>(
+        internal::FromV8Impl(isolate, val, &T::kWrapperInfo)));
     return *out != NULL;
   }
 };
