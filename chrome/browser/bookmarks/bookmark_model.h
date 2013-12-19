@@ -431,6 +431,9 @@ class BookmarkModel : public content::NotificationObserver,
   void SetNodeSyncTransactionVersion(const BookmarkNode* node,
                                      int64 sync_transaction_version);
 
+  // Returns the profile that corresponds to this BookmarkModel.
+  Profile* profile() { return profile_; }
+
  private:
   friend class BookmarkCodecTest;
   friend class BookmarkModelTest;
