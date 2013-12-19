@@ -84,9 +84,9 @@ AwAutofillManagerDelegate::GetDatabase() {
 void AwAutofillManagerDelegate::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    const std::vector<string16>& icons,
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels,
+    const std::vector<base::string16>& icons,
     const std::vector<int>& identifiers,
     base::WeakPtr<autofill::AutofillPopupDelegate> delegate) {
 
@@ -108,8 +108,8 @@ void AwAutofillManagerDelegate::ShowAutofillPopup(
 
 void AwAutofillManagerDelegate::ShowAutofillPopupImpl(
     const gfx::RectF& element_bounds,
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels,
     const std::vector<int>& identifiers) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

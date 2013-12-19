@@ -67,7 +67,7 @@ void AwNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
 }
 
 void AwNetworkDelegate::OnPACScriptError(int line_number,
-                                         const string16& error) {
+                                         const base::string16& error) {
 }
 
 net::NetworkDelegate::AuthRequiredResponse AwNetworkDelegate::OnAuthRequired(

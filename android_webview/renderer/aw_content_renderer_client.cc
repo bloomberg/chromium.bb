@@ -145,7 +145,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     const blink::WebURLError& error,
     const std::string& accept_languages,
     std::string* error_html,
-    string16* error_description) {
+    base::string16* error_description) {
   if (error_html) {
     GURL error_url(failed_request.url());
     std::string err = UTF16ToUTF8(error.localizedDescription);

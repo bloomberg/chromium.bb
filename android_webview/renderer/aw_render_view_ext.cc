@@ -37,11 +37,12 @@ namespace android_webview {
 
 namespace {
 
-GURL GetAbsoluteUrl(const blink::WebNode& node, const string16& url_fragment) {
+GURL GetAbsoluteUrl(const blink::WebNode& node,
+                    const base::string16& url_fragment) {
   return GURL(node.document().completeURL(url_fragment));
 }
 
-string16 GetHref(const blink::WebElement& element) {
+base::string16 GetHref(const blink::WebElement& element) {
   // Get the actual 'href' attribute, which might relative if valid or can
   // possibly contain garbage otherwise, so not using absoluteLinkURL here.
   return element.getAttribute("href");
@@ -73,7 +74,7 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
     url_util::DecodeURLEscapeSequences(spec.data() + prefix.length(),
         spec.length() - prefix.length(), &output);
     std::string decoded_url = UTF16ToUTF8(
-        string16(output.data(), output.length()));
+        base::string16(output.data(), output.length()));
     dest->assign(decoded_url.begin(), decoded_url.end());
     return true;
   }

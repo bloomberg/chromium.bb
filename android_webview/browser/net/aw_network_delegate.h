@@ -40,7 +40,7 @@ class AwNetworkDelegate : public net::NetworkDelegate {
   virtual void OnCompleted(net::URLRequest* request, bool started) OVERRIDE;
   virtual void OnURLRequestDestroyed(net::URLRequest* request) OVERRIDE;
   virtual void OnPACScriptError(int line_number,
-                                const string16& error) OVERRIDE;
+                                const base::string16& error) OVERRIDE;
   virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,

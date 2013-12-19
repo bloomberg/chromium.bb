@@ -108,5 +108,5 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_OnContentsSizeChanged,
 // or creating a URLRequest for the main frame resource.
 IPC_SYNC_MESSAGE_CONTROL2_1(AwViewHostMsg_ShouldOverrideUrlLoading,
                             int /* routing id */,
-                            string16 /* in - url */,
+                            base::string16 /* in - url */,
                             bool /* out - result */)

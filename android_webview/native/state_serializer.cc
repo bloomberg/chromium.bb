@@ -226,7 +226,7 @@ bool RestoreNavigationEntryFromPickle(PickleIterator* iterator,
   }
 
   {
-    string16 title;
+    base::string16 title;
     if (!iterator->ReadString16(&title))
       return false;
     entry->SetTitle(title);

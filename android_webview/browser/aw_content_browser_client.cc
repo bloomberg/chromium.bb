@@ -119,7 +119,7 @@ class AwAccessTokenStore : public content::AccessTokenStore {
     request.Run(access_token_set, NULL);
   }
   virtual void SaveAccessToken(const GURL& server_url,
-                               const string16& access_token) OVERRIDE { }
+                               const base::string16& access_token) OVERRIDE { }
 
  private:
   virtual ~AwAccessTokenStore() { }
@@ -285,8 +285,8 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
 
 bool AwContentBrowserClient::AllowWorkerDatabase(
     const GURL& url,
-    const string16& name,
-    const string16& display_name,
+    const base::string16& name,
+    const base::string16& display_name,
     unsigned long estimated_size,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames) {
@@ -304,7 +304,7 @@ bool AwContentBrowserClient::AllowWorkerFileSystem(
 
 bool AwContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames) {
   // Android WebView does not yet support web workers.

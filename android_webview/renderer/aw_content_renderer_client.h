@@ -34,7 +34,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
       const blink::WebURLError& error,
       const std::string& accept_languages,
       std::string* error_html,
-      string16* error_description) OVERRIDE;
+      base::string16* error_description) OVERRIDE;
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;

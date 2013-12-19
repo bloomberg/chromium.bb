@@ -66,8 +66,8 @@ AwLoginDelegate::~AwLoginDelegate() {
   DCHECK(aw_http_auth_handler_ == NULL);
 }
 
-void AwLoginDelegate::Proceed(const string16& user,
-                              const string16& password) {
+void AwLoginDelegate::Proceed(const base::string16& user,
+                              const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&AwLoginDelegate::ProceedOnIOThread,
@@ -112,8 +112,8 @@ void AwLoginDelegate::CancelOnIOThread() {
   DeleteAuthHandlerSoon();
 }
 
-void AwLoginDelegate::ProceedOnIOThread(const string16& user,
-                                        const string16& password) {
+void AwLoginDelegate::ProceedOnIOThread(const base::string16& user,
+                                        const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (request_) {
     request_->SetAuth(net::AuthCredentials(user, password));

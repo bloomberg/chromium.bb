@@ -32,7 +32,7 @@ class FindHelper : public content::WebContentsObserver {
   void SetListener(Listener* listener);
 
   // Asynchronous API.
-  void FindAllAsync(const string16& search_string);
+  void FindAllAsync(const base::string16& search_string);
   void HandleFindReply(int request_id,
                        int match_count,
                        int active_ordinal,
@@ -43,7 +43,7 @@ class FindHelper : public content::WebContentsObserver {
   void ClearMatches();
 
  private:
-  void StartNewRequest(const string16& search_string);
+  void StartNewRequest(const base::string16& search_string);
   void NotifyResults(int active_ordinal, int match_count, bool finished);
 
   // Listener results are reported to.
@@ -59,7 +59,7 @@ class FindHelper : public content::WebContentsObserver {
   int current_request_id_;
 
   // Required by FindNext and the incremental find replies.
-  string16 last_search_string_;
+  base::string16 last_search_string_;
   int last_match_count_;
   int last_active_ordinal_;
 

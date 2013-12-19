@@ -35,7 +35,7 @@ void FindHelper::SetListener(Listener* listener) {
   listener_ = listener;
 }
 
-void FindHelper::FindAllAsync(const string16& search_string) {
+void FindHelper::FindAllAsync(const base::string16& search_string) {
   // Stop any ongoing asynchronous request.
   web_contents()->GetRenderViewHost()->StopFinding(
       content::STOP_FIND_ACTION_KEEP_SELECTION);
@@ -90,7 +90,7 @@ void FindHelper::ClearMatches() {
   last_active_ordinal_ = -1;
 }
 
-void FindHelper::StartNewRequest(const string16& search_string) {
+void FindHelper::StartNewRequest(const base::string16& search_string) {
   current_request_id_ = find_request_id_counter_++;
   last_search_string_ = search_string;
   last_match_count_ = -1;

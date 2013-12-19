@@ -74,9 +74,9 @@ class AwAutofillManagerDelegate
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
-      const std::vector<string16>& values,
-      const std::vector<string16>& labels,
-      const std::vector<string16>& icons,
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels,
+      const std::vector<base::string16>& icons,
       const std::vector<int>& identifiers,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void UpdateAutofillPopupDataListValues(
@@ -95,8 +95,8 @@ class AwAutofillManagerDelegate
   friend class content::WebContentsUserData<AwAutofillManagerDelegate>;
 
   void ShowAutofillPopupImpl(const gfx::RectF& element_bounds,
-                             const std::vector<string16>& values,
-                             const std::vector<string16>& labels,
+                             const std::vector<base::string16>& values,
+                             const std::vector<base::string16>& labels,
                              const std::vector<int>& identifiers);
 
   // The web_contents associated with this delegate.
@@ -105,7 +105,7 @@ class AwAutofillManagerDelegate
   JavaObjectWeakGlobalRef java_ref_;
 
   // The current Autofill query values.
-  std::vector<string16> values_;
+  std::vector<base::string16> values_;
   std::vector<int> identifiers_;
   base::WeakPtr<autofill::AutofillPopupDelegate> delegate_;
 

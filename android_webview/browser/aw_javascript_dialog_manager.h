@@ -20,13 +20,13 @@ class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
       const GURL& origin_url,
       const std::string& accept_lang,
       content::JavaScriptMessageType message_type,
-      const string16& message_text,
-      const string16& default_prompt_text,
+      const base::string16& message_text,
+      const base::string16& default_prompt_text,
       const DialogClosedCallback& callback,
       bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadDialog(
       content::WebContents* web_contents,
-      const string16& message_text,
+      const base::string16& message_text,
       bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
   virtual void CancelActiveAndPendingDialogs(

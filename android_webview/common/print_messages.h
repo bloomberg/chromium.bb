@@ -47,8 +47,8 @@ struct PrintMsg_Print_Params {
   blink::WebPrintScalingOption print_scaling_option;
   bool print_to_pdf;
   bool display_header_footer;
-  string16 title;
-  string16 url;
+  base::string16 title;
+  base::string16 url;
   bool should_print_backgrounds;
 };
 

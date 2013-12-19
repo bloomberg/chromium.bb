@@ -429,13 +429,13 @@ void AwContents::AddVisitedLinks(JNIEnv* env,
                                    jobject obj,
                                    jobjectArray jvisited_links) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<string16> visited_link_strings;
+  std::vector<base::string16> visited_link_strings;
   base::android::AppendJavaStringArrayToStringVector(
       env, jvisited_links, &visited_link_strings);
 
   std::vector<GURL> visited_link_gurls;
-  for (std::vector<string16>::const_iterator itr = visited_link_strings.begin();
-       itr != visited_link_strings.end();
+  std::vector<base::string16>::const_iterator itr;
+  for (itr = visited_link_strings.begin(); itr != visited_link_strings.end();
        ++itr) {
     visited_link_gurls.push_back(GURL(*itr));
   }

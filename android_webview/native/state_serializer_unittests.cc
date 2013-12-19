@@ -46,7 +46,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   content::Referrer referrer;
   referrer.url = GURL("http://referrer_url");
   referrer.policy = blink::WebReferrerPolicyOrigin;
-  const string16 title(UTF8ToUTF16("title"));
+  const base::string16 title(UTF8ToUTF16("title"));
   const content::PageState page_state =
       content::PageState::CreateFromEncodedData("completely bogus state");
   const bool has_post_data = true;

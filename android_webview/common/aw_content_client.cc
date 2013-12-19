@@ -31,7 +31,7 @@ std::string AwContentClient::GetUserAgent() const {
   return webkit_glue::BuildUserAgentFromProduct(product);
 }
 
-string16 AwContentClient::GetLocalizedString(int message_id) const {
+base::string16 AwContentClient::GetLocalizedString(int message_id) const {
   // TODO(boliu): Used only by WebKit, so only bundle those resources for
   // Android WebView.
   return l10n_util::GetStringUTF16(message_id);
