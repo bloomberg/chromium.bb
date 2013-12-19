@@ -161,12 +161,17 @@ void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
 
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
-  BubbleDelegateView::OnWidgetActivationChanged(widget, active);
   // Dismiss only if the window being activated is not owned by this popup's
   // window. In particular, don't dismiss when we lose activation to a child
   // dialog box. Possibly relevant: http://crbug.com/106723 and
   // http://crbug.com/179786
   views::Widget* this_widget = GetWidget();
+
+  // TODO(msw): Resolve crashes and remove checks. See: http://crbug.com/327776
+  CHECK(!close_on_deactivate());
+  CHECK(this_widget);
+  CHECK(widget);
+
   gfx::NativeView activated_view = widget->GetNativeView();
   gfx::NativeView this_view = this_widget->GetNativeView();
   if (active && !inspect_with_devtools_ && activated_view != this_view &&
