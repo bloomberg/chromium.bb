@@ -52,10 +52,12 @@ namespace chromeos {
 OAuth2LoginVerifier::OAuth2LoginVerifier(
     OAuth2LoginVerifier::Delegate* delegate,
     net::URLRequestContextGetter* system_request_context,
-    net::URLRequestContextGetter* user_request_context)
+    net::URLRequestContextGetter* user_request_context,
+    const std::string& oauthlogin_access_token)
     : delegate_(delegate),
       system_request_context_(system_request_context),
       user_request_context_(user_request_context),
+      access_token_(oauthlogin_access_token),
       retry_count_(0) {
   DCHECK(delegate);
 }
@@ -86,9 +88,15 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
     return;
   }
 
-  access_token_.clear();
   gaia_token_.clear();
-  StartFetchingOAuthLoginAccessToken(profile);
+  if (access_token_.empty()) {
+    // Fetch /OAuthLogin scoped access token.
+    StartFetchingOAuthLoginAccessToken(profile);
+  } else {
+    // If OAuthLogin-scoped access token already exists (if it's generated
+    // together with freshly minted refresh token), then fetch GAIA uber token.
+    StartOAuthLoginForUberToken();
+  }
 }
 
 void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken(Profile* profile) {

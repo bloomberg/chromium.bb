@@ -66,6 +66,7 @@ void OAuth2LoginManager::RestoreSession(
   auth_request_context_ = auth_request_context;
   restore_strategy_ = restore_strategy;
   refresh_token_ = oauth2_refresh_token;
+  oauthlogin_access_token_ = std::string();
   auth_code_ = auth_code;
   session_restore_start_ = base::Time::Now();
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
@@ -231,6 +232,7 @@ void OAuth2LoginManager::OnOAuth2TokensAvailable(
   VLOG(1) << "OAuth2 tokens fetched";
   DCHECK(refresh_token_.empty());
   refresh_token_.assign(oauth2_tokens.refresh_token);
+  oauthlogin_access_token_ = oauth2_tokens.access_token;
   StoreOAuth2Token();
 }
 
@@ -248,7 +250,8 @@ void OAuth2LoginManager::RestoreSessionCookies() {
   login_verifier_.reset(
       new OAuth2LoginVerifier(this,
                               g_browser_process->system_request_context(),
-                              user_profile_->GetRequestContext()));
+                              user_profile_->GetRequestContext(),
+                              oauthlogin_access_token_));
   login_verifier_->VerifyProfileTokens(user_profile_);
 }
 

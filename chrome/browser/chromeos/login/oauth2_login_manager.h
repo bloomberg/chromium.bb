@@ -218,6 +218,9 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // OAuth2 refresh token.
   std::string refresh_token_;
 
+  // OAuthLogin scoped access token.
+  std::string oauthlogin_access_token_;
+
   // Authorization code for fetching OAuth2 tokens.
   std::string auth_code_;
 

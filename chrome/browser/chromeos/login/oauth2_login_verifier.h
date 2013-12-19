@@ -49,7 +49,8 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
 
   OAuth2LoginVerifier(OAuth2LoginVerifier::Delegate* delegate,
                       net::URLRequestContextGetter* system_request_context,
-                      net::URLRequestContextGetter* user_request_context);
+                      net::URLRequestContextGetter* user_request_context,
+                      const std::string& oauthlogin_access_token);
   virtual ~OAuth2LoginVerifier();
 
   // Attempts to restore session from OAuth2 refresh token minting all necesarry
