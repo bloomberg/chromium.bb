@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
@@ -683,6 +684,17 @@ void URLRequest::StartJob(URLRequestJob* job) {
   is_redirecting_ = false;
 
   response_info_.was_cached = false;
+
+  // If the referrer is secure, but the requested URL is not, the referrer
+  // policy should be something non-default. If you hit this, please file a
+  // bug.
+  if (referrer_policy_ ==
+          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE &&
+      GURL(referrer_).SchemeIsSecure() && !url().SchemeIsSecure()) {
+    DLOG(FATAL) << "Trying to send secure referrer for insecure load";
+    base::debug::DumpWithoutCrashing();
+    referrer_.clear();
+  }
 
   // Don't allow errors to be sent from within Start().
   // TODO(brettw) this may cause NotifyDone to be sent synchronously,
