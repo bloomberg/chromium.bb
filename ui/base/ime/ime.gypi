@@ -103,10 +103,6 @@
       'sources!': [
         'input_method_auralinux.cc',
         'input_method_auralinux.h',
-      ],
-    }],
-    ['use_aura==0 or (desktop_linux==0 and use_ozone==0)', {
-      'sources!': [
         'linux/fake_input_method_context.cc',
         'linux/fake_input_method_context.h',
         'linux/fake_input_method_context_factory.cc',

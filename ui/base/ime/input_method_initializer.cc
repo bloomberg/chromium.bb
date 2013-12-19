@@ -4,18 +4,14 @@
 
 #include "ui/base/ime/input_method_initializer.h"
 
-#if defined(TOOLKIT_VIEWS) || defined(USE_AURA)
-#include "ui/base/ime/input_method_factory.h"
-#endif
-
 #if defined(OS_CHROMEOS)
-#include "base/logging.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "ui/base/ime/input_method_auralinux.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #endif
 
@@ -41,9 +37,6 @@ void InitializeInputMethod() {
 }
 
 void ShutdownInputMethod() {
-#if defined(TOOLKIT_VIEWS) || defined(USE_AURA)
-  InputMethodFactory::ClearInstance();
-#endif
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Shutdown();
 #elif defined(OS_WIN)
@@ -76,9 +69,6 @@ void InitializeInputMethodForTesting() {
 }
 
 void ShutdownInputMethodForTesting() {
-#if defined(TOOLKIT_VIEWS) || defined(USE_AURA)
-  InputMethodFactory::ClearInstance();
-#endif
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Shutdown();
 #elif defined(USE_AURA) && defined(OS_LINUX)
