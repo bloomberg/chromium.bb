@@ -67,7 +67,7 @@ class ViewRequestDelegate {
 class TaskTracker {
  public:
   typedef base::Callback<void(TaskTracker*)> CancelCallback;
-  typedef base::Callback<void(const ArticleEntry&, DistilledPageProto*)>
+  typedef base::Callback<void(const ArticleEntry&, DistilledPageProto*, bool)>
       SaveCallback;
 
   TaskTracker(const ArticleEntry& entry, CancelCallback callback);
@@ -77,17 +77,25 @@ class TaskTracker {
   void StartDistiller(DistillerFactory* factory);
   void StartBlobFetcher();
 
-  void SetSaveCallback(SaveCallback callback);
+  void AddSaveCallback(const SaveCallback& callback);
+
+  void CancelSaveCallbacks();
 
   // The ViewerHandle should be destroyed before the ViewRequestDelegate.
   scoped_ptr<ViewerHandle> AddViewer(ViewRequestDelegate* delegate);
 
+  const std::string& GetEntryId() const;
   bool HasEntryId(const std::string& entry_id) const;
   bool HasUrl(const GURL& url) const;
 
  private:
   void OnDistilledDataReady(scoped_ptr<DistilledPageProto> distilled_page);
-  void DoSaveCallback();
+  // Posts a task to run DoSaveCallbacks with |distillation_succeeded|.
+  void ScheduleSaveCallbacks(bool distillation_succeeded);
+
+  // Runs all callbacks passing |distillation_succeeded| and clears them. Should
+  // be called through ScheduleSaveCallbacks.
+  void DoSaveCallbacks(bool distillation_succeeded);
 
   void RemoveViewer(ViewRequestDelegate* delegate);
   void NotifyViewer(ViewRequestDelegate* delegate);
@@ -95,7 +103,7 @@ class TaskTracker {
   void MaybeCancel();
 
   CancelCallback cancel_callback_;
-  SaveCallback save_callback_;
+  std::vector<SaveCallback> save_callbacks_;
 
   scoped_ptr<Distiller> distiller_;
 

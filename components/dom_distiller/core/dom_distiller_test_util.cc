@@ -62,7 +62,6 @@ void ObserverUpdatesMatcher::DescribeUpdates(std::ostream* os) const {
            expected_updates_.begin();
        i != expected_updates_.end();
        ++i) {
-
     if (start) {
       start = false;
     } else {
@@ -72,6 +71,7 @@ void ObserverUpdatesMatcher::DescribeUpdates(std::ostream* os) const {
         << " )";
   }
 }
+
 void ObserverUpdatesMatcher::DescribeTo(std::ostream* os) const {
   *os << " has updates: { ";
   DescribeUpdates(os);

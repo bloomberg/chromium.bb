@@ -36,7 +36,7 @@ class TestCancelCallback {
 
 class MockSaveCallback {
  public:
-  MOCK_METHOD2(Save, void(const ArticleEntry&, DistilledPageProto*));
+  MOCK_METHOD3(Save, void(const ArticleEntry&, DistilledPageProto*, bool));
 };
 
 class DomDistillerTaskTrackerTest : public testing::Test {
@@ -109,7 +109,7 @@ TEST_F(DomDistillerTaskTrackerTest, TestViewerCancelledWithSaveRequest) {
   EXPECT_FALSE(cancel_callback.Cancelled());
 
   MockSaveCallback save_callback;
-  task_tracker.SetSaveCallback(
+  task_tracker.AddSaveCallback(
       base::Bind(&MockSaveCallback::Save, base::Unretained(&save_callback)));
   handle.reset();
 
@@ -148,11 +148,11 @@ TEST_F(DomDistillerTaskTrackerTest,
   TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
 
   MockSaveCallback save_callback;
-  task_tracker.SetSaveCallback(
+  task_tracker.AddSaveCallback(
       base::Bind(&MockSaveCallback::Save, base::Unretained(&save_callback)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(save_callback, Save(_, _));
+  EXPECT_CALL(save_callback, Save(_, _, _));
 
   task_tracker.StartDistiller(&distiller_factory);
   distiller->RunDistillerCallback(make_scoped_ptr(new DistilledPageProto));
