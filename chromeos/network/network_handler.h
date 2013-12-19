@@ -22,6 +22,7 @@ class NetworkCertMigrator;
 class NetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkDeviceHandler;
+class NetworkDeviceHandlerImpl;
 class NetworkProfileHandler;
 class NetworkStateHandler;
 class NetworkSmsHandler;
@@ -69,7 +70,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   // The order of these determines the (inverse) destruction order.
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkDeviceHandler> network_device_handler_;
+  scoped_ptr<NetworkDeviceHandlerImpl> network_device_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandlerImpl>

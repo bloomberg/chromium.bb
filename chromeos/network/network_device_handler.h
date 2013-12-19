@@ -8,16 +8,12 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
 namespace base {
-
 class Value;
-
-}  // namespace base
+}
 
 namespace chromeos {
 
@@ -29,16 +25,13 @@ namespace chromeos {
 // basically a singleton, but with explicit lifetime management.
 //
 // Note on callbacks: Because all the functions here are meant to be
-// asynchronous, they all take a |callback| of some type, and an
-// |error_callback|. When the operation succeeds, |callback| will be called, and
-// when it doesn't, |error_callback| will be called with information about the
-// error, including a symbolic name for the error and often some error message
-// that is suitable for logging. None of the error message text is meant for
-// user consumption.
-
+// asynchronous, they take a |callback| of some type, and an |error_callback|.
+// When the operation succeeds, |callback| will be called, and when it doesn't,
+// |error_callback| will be called with information about the error, including a
+// symbolic name for the error and often some error message that is suitable for
+// logging. None of the error message text is meant for user consumption.
 class CHROMEOS_EXPORT NetworkDeviceHandler {
  public:
-
   // Constants for |error_name| from |error_callback|.
   static const char kErrorFailure[];
   static const char kErrorIncorrectPin[];
@@ -48,31 +41,32 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   static const char kErrorPinRequired[];
   static const char kErrorUnknown[];
 
+  NetworkDeviceHandler();
   virtual ~NetworkDeviceHandler();
 
   // Gets the properties of the device with id |device_path|. See note on
   // |callback| and |error_callback|, in class description above.
-  void GetDeviceProperties(
+  virtual void GetDeviceProperties(
       const std::string& device_path,
       const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const;
+      const network_handler::ErrorCallback& error_callback) const = 0;
 
   // Sets the value of property |name| on device with id |device_path| to
   // |value|.
-  void SetDeviceProperty(
+  virtual void SetDeviceProperty(
       const std::string& device_path,
       const std::string& name,
       const base::Value& value,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Requests a refresh of the IP configuration for the device specified by
   // |device_path| if it exists. This will apply any newly configured
   // properties and renew the DHCP lease.
-  void RequestRefreshIPConfigs(
+  virtual void RequestRefreshIPConfigs(
       const std::string& device_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Requests a network scan on the device specified by |device_path|.
   // For cellular networks, the result of this call gets asynchronously stored
@@ -84,10 +78,10 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   // of requesting a network scan is Manager.RequestScan, however shill
   // currently doesn't support cellular network scans via Manager.RequestScan.
   // Remove this method once shill supports it (crbug.com/262356).
-  void ProposeScan(
+  virtual void ProposeScan(
       const std::string& device_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Tells the device specified by |device_path| to register to the cellular
   // network with id |network_id|. If |network_id| is empty then registration
@@ -95,11 +89,11 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   // with the home network.
   // This call is only available on cellular devices and will fail with
   // Error.NotSupported on all other technologies.
-  void RegisterCellularNetwork(
+  virtual void RegisterCellularNetwork(
       const std::string& device_path,
       const std::string& network_id,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Tells the device to set the modem carrier firmware, as specified by
   // |carrier|.
@@ -110,11 +104,11 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   //    - |carrier| doesn't match one of the supported carriers, as reported by
   //    - Shill.
   //    - Operation is not supported by the device.
-  void SetCarrier(
+  virtual void SetCarrier(
       const std::string& device_path,
       const std::string& carrier,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // SIM PIN/PUK methods
 
@@ -133,12 +127,12 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  void RequirePin(
+  virtual void RequirePin(
       const std::string& device_path,
       bool require_pin,
       const std::string& pin,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Sends the PIN code |pin| to the device |device_path|.
   //
@@ -150,11 +144,11 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  void EnterPin(
+  virtual void EnterPin(
       const std::string& device_path,
       const std::string& pin,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Sends the PUK code |puk| to the SIM to unblock a blocked SIM. On success,
   // the SIM will be unblocked and its PIN code will be set to |pin|.
@@ -166,12 +160,12 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  void UnblockPin(
+  virtual void UnblockPin(
       const std::string& device_path,
       const std::string& puk,
       const std::string& new_pin,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Tells the device to change the PIN code used to unlock a locked SIM card.
   //
@@ -184,19 +178,15 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  void ChangePin(
+  virtual void ChangePin(
       const std::string& device_path,
       const std::string& old_pin,
       const std::string& new_pin,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      const network_handler::ErrorCallback& error_callback) = 0;
+
 
  private:
-  friend class NetworkHandler;
-  friend class NetworkDeviceHandlerTest;
-
-  NetworkDeviceHandler();
-
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandler);
 };
 

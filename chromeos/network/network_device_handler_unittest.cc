@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/network_device_handler.h"
-
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/fake_shill_device_client.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/network/network_device_handler_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -26,23 +26,23 @@ const char kResultSuccess[] = "success";
 
 class NetworkDeviceHandlerTest : public testing::Test {
  public:
-  NetworkDeviceHandlerTest() {}
+  NetworkDeviceHandlerTest() : fake_device_client_(NULL) {}
   virtual ~NetworkDeviceHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    DBusThreadManager::InitializeWithStub();
+    FakeDBusThreadManager* dbus_manager = new FakeDBusThreadManager;
+    dbus_manager->SetFakeShillClients();
+
+    fake_device_client_ = new FakeShillDeviceClient;
+    dbus_manager->SetShillDeviceClient(
+        scoped_ptr<ShillDeviceClient>(fake_device_client_));
+    DBusThreadManager::InitializeForTesting(dbus_manager);
 
     ShillDeviceClient::TestInterface* device_test =
-        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
-    device_test->ClearDevices();
+        fake_device_client_->GetTestInterface();
     device_test->AddDevice(
         kDefaultCellularDevicePath, shill::kTypeCellular, "cellular1");
     device_test->AddDevice(kDefaultWifiDevicePath, shill::kTypeWifi, "wifi1");
-
-    base::FundamentalValue allow_roaming(false);
-    device_test->SetDeviceProperty(kDefaultCellularDevicePath,
-                                   shill::kCellularAllowRoamingProperty,
-                                   allow_roaming);
 
     base::ListValue test_ip_configs;
     test_ip_configs.AppendString("ip_config1");
@@ -56,7 +56,8 @@ class NetworkDeviceHandlerTest : public testing::Test {
                    base::Unretained(this));
     error_callback_ = base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
                                  base::Unretained(this));
-    network_device_handler_.reset(new NetworkDeviceHandler);
+
+    network_device_handler_.reset(new NetworkDeviceHandlerImpl);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -82,6 +83,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
  protected:
   std::string result_;
 
+  FakeShillDeviceClient* fake_device_client_;
   scoped_ptr<NetworkDeviceHandler> network_device_handler_;
   base::MessageLoopForUI message_loop_;
   base::Closure success_callback_;
@@ -104,24 +106,13 @@ TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
 }
 
 TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
-  // Check that GetDeviceProperties returns the expected initial values.
-  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
-                                               properties_success_callback_,
-                                               error_callback_);
-  message_loop_.RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  bool allow_roaming;
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_FALSE(allow_roaming);
 
   // Set the shill::kCellularAllowRoamingProperty to true. The call
   // should succeed and the value should be set.
-  base::FundamentalValue allow_roaming_value(true);
   network_device_handler_->SetDeviceProperty(
       kDefaultCellularDevicePath,
       shill::kCellularAllowRoamingProperty,
-      allow_roaming_value,
+      base::FundamentalValue(true),
       success_callback_,
       error_callback_);
   message_loop_.RunUntilIdle();
@@ -133,15 +124,35 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
                                                error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
+  bool allow_roaming = false;
   EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
       shill::kCellularAllowRoamingProperty, &allow_roaming));
   EXPECT_TRUE(allow_roaming);
+
+  // Repeat the same with value false.
+  network_device_handler_->SetDeviceProperty(
+      kDefaultCellularDevicePath,
+      shill::kCellularAllowRoamingProperty,
+      base::FundamentalValue(false),
+      success_callback_,
+      error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+
+  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
+                                               properties_success_callback_,
+                                               error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
+      shill::kCellularAllowRoamingProperty, &allow_roaming));
+  EXPECT_FALSE(allow_roaming);
 
   // Set property on an invalid path.
   network_device_handler_->SetDeviceProperty(
       kUnknownCellularDevicePath,
       shill::kCellularAllowRoamingProperty,
-      allow_roaming_value,
+      base::FundamentalValue(true),
       success_callback_,
       error_callback_);
   message_loop_.RunUntilIdle();

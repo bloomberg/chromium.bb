@@ -31,6 +31,9 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   // Creates and sets all fake DBusClients and the PowerPolicyController.
   void SetFakeClients();
 
+  // Creates and sets all fake Shill DBusClients.
+  void SetFakeShillClients();
+
   void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
   void SetBluetoothAgentManagerClient(
       scoped_ptr<BluetoothAgentManagerClient> client);

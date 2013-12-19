@@ -265,6 +265,8 @@
         'network/network_connection_handler.h',
         'network/network_device_handler.cc',
         'network/network_device_handler.h',
+        'network/network_device_handler_impl.cc',
+        'network/network_device_handler_impl.h',
         'network/network_event_log.cc',
         'network/network_event_log.h',
         'network/network_handler.cc',

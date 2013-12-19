@@ -69,16 +69,8 @@ void FakeDBusThreadManager::SetFakeClients() {
   SetCryptohomeClient(scoped_ptr<CryptohomeClient>(new FakeCryptohomeClient));
   SetDebugDaemonClient(
       scoped_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
-  SetShillManagerClient(
-      scoped_ptr<ShillManagerClient>(new FakeShillManagerClient));
-  SetShillDeviceClient(
-      scoped_ptr<ShillDeviceClient>(new FakeShillDeviceClient));
-  SetShillIPConfigClient(
-      scoped_ptr<ShillIPConfigClient>(new FakeShillIPConfigClient));
-  SetShillServiceClient(
-      scoped_ptr<ShillServiceClient>(new FakeShillServiceClient));
-  SetShillProfileClient(
-      scoped_ptr<ShillProfileClient>(new FakeShillProfileClient));
+
+  SetFakeShillClients();
 
   FakeGsmSMSClient* gsm_sms_client = new FakeGsmSMSClient();
   gsm_sms_client->set_sms_test_message_switch_present(
@@ -110,6 +102,19 @@ void FakeDBusThreadManager::SetFakeClients() {
       scoped_ptr<UpdateEngineClient>(UpdateEngineClient::Create(client_type)));
 
   SetPowerPolicyController(make_scoped_ptr(new PowerPolicyController));
+}
+
+void FakeDBusThreadManager::SetFakeShillClients() {
+  SetShillManagerClient(
+      scoped_ptr<ShillManagerClient>(new FakeShillManagerClient));
+  SetShillDeviceClient(
+      scoped_ptr<ShillDeviceClient>(new FakeShillDeviceClient));
+  SetShillIPConfigClient(
+      scoped_ptr<ShillIPConfigClient>(new FakeShillIPConfigClient));
+  SetShillServiceClient(
+      scoped_ptr<ShillServiceClient>(new FakeShillServiceClient));
+  SetShillProfileClient(
+      scoped_ptr<ShillProfileClient>(new FakeShillProfileClient));
 }
 
 void FakeDBusThreadManager::SetBluetoothAdapterClient(

@@ -13,7 +13,7 @@
 #include "chromeos/network/network_cert_migrator.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
-#include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/network_device_handler_impl.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_profile_observer.h"
@@ -32,7 +32,7 @@ NetworkHandler::NetworkHandler()
   network_event_log::Initialize();
 
   network_state_handler_.reset(new NetworkStateHandler());
-  network_device_handler_.reset(new NetworkDeviceHandler());
+  network_device_handler_.reset(new NetworkDeviceHandlerImpl());
   network_profile_handler_.reset(new NetworkProfileHandler());
   network_configuration_handler_.reset(new NetworkConfigurationHandler());
   managed_network_configuration_handler_.reset(
