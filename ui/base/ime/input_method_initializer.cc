@@ -6,7 +6,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/chromeos/ibus_bridge.h"
-#elif defined(USE_AURA) && defined(OS_LINUX)
+#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
 #include "ui/base/ime/input_method_auralinux.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #elif defined(OS_WIN)
@@ -17,7 +17,8 @@
 
 namespace {
 
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX) && \
+    !defined(USE_OZONE)
 const ui::LinuxInputMethodContextFactory* g_linux_input_method_context_factory;
 #endif
 
@@ -28,7 +29,7 @@ namespace ui {
 void InitializeInputMethod() {
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Initialize();
-#elif defined(USE_AURA) && defined(OS_LINUX)
+#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
   InputMethodAuraLinux::Initialize();
 #elif defined(OS_WIN)
   if (base::win::IsTSFAwareRequired())
@@ -49,7 +50,7 @@ void ShutdownInputMethod() {
 void InitializeInputMethodForTesting() {
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Initialize();
-#elif defined(USE_AURA) && defined(OS_LINUX)
+#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
   if (!g_linux_input_method_context_factory)
     g_linux_input_method_context_factory = new FakeInputMethodContextFactory();
   const LinuxInputMethodContextFactory* factory =
@@ -71,7 +72,7 @@ void InitializeInputMethodForTesting() {
 void ShutdownInputMethodForTesting() {
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Shutdown();
-#elif defined(USE_AURA) && defined(OS_LINUX)
+#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();
   CHECK(!factory || factory == g_linux_input_method_context_factory)
