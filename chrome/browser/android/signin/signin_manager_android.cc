@@ -170,7 +170,7 @@ void SigninManagerAndroid::OnPolicyRegisterDone(
     const std::string& dm_token,
     const std::string& client_id) {
   dm_token_ = dm_token;
-  client_id_ = client_id_;
+  client_id_ = client_id;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> domain;
