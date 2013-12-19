@@ -95,18 +95,19 @@
   -webkit-margin-end: 10px;
 }
 
-#delete-profile-message,
 #delete-managed-profile-addendum {
   -webkit-padding-start: 48px;
-  background-repeat: no-repeat;
-}
-
-#delete-managed-profile-addendum {
   margin-top: 10px;
 }
 
-html[dir='rtl'] #delete-profile-message {
-  background-position: right;
+html[dir='ltr'] #delete-profile-icon {
+  float: left;
+  margin-right: 10px;
+}
+
+html[dir='rtl'] #delete-profile-icon {
+  float: right;
+  margin-left: 10px;
 }
 
 #create-profile-managed-not-signed-in {

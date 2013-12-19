@@ -409,10 +409,10 @@ cr.define('options', function() {
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = true;
       $('manage-profile-overlay-delete').hidden = false;
-      $('delete-profile-message').textContent =
-          loadTimeData.getStringF('deleteProfileMessage', profileInfo.name);
-      $('delete-profile-message').style.backgroundImage =
+      $('delete-profile-icon').style.content =
           imageset(profileInfo.iconURL + '@scalefactorx');
+      $('delete-profile-text').textContent =
+          loadTimeData.getStringF('deleteProfileMessage', profileInfo.name);
       $('delete-managed-profile-addendum').hidden = !profileInfo.isManaged;
 
       // Because this dialog isn't useful when refreshing or as part of the
