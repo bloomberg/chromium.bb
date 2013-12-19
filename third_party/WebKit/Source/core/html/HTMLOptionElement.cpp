@@ -146,8 +146,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionSta
 
 void HTMLOptionElement::accessKeyAction(bool)
 {
-    HTMLSelectElement* select = ownerSelectElement();
-    if (select)
+    if (HTMLSelectElement* select = ownerSelectElement())
         select->accessKeySetSelectedIndex(index());
 }
 
@@ -368,11 +367,10 @@ String HTMLOptionElement::collectOptionInnerText() const
 
 HTMLFormElement* HTMLOptionElement::form() const
 {
-    HTMLSelectElement* selectElement = ownerSelectElement();
-    if (!selectElement)
-        return 0;
+    if (HTMLSelectElement* selectElement = ownerSelectElement())
+        return selectElement->formOwner();
 
-    return selectElement->formOwner();
+    return 0;
 }
 
 } // namespace WebCore
