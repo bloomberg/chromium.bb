@@ -491,8 +491,8 @@ void ChromeContentClient::AddAdditionalSchemes(
     std::vector<std::string>* savable_schemes) {
   standard_schemes->push_back(extensions::kExtensionScheme);
   savable_schemes->push_back(extensions::kExtensionScheme);
-  standard_schemes->push_back(chrome::kExtensionResourceScheme);
-  savable_schemes->push_back(chrome::kExtensionResourceScheme);
+  standard_schemes->push_back(extensions::kExtensionResourceScheme);
+  savable_schemes->push_back(extensions::kExtensionResourceScheme);
   standard_schemes->push_back(chrome::kChromeSearchScheme);
   savable_schemes->push_back(chrome::kChromeSearchScheme);
 #if defined(OS_CHROMEOS)

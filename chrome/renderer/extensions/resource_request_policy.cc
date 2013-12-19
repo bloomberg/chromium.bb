@@ -108,7 +108,7 @@ bool ResourceRequestPolicy::CanRequestResource(
 bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
     const GURL& resource_url,
     blink::WebFrame* frame) {
-  CHECK(resource_url.SchemeIs(chrome::kExtensionResourceScheme));
+  CHECK(resource_url.SchemeIs(extensions::kExtensionResourceScheme));
 
   GURL frame_url = frame->document().url();
   if (!frame_url.is_empty() &&

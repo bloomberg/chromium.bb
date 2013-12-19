@@ -678,7 +678,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     chrome::kFileScheme,
     chrome::kChromeDevToolsScheme,
     extensions::kExtensionScheme,
-    chrome::kExtensionResourceScheme,
+    extensions::kExtensionResourceScheme,
     chrome::kChromeUIScheme,
     chrome::kDataScheme,
 #if defined(OS_CHROMEOS)
@@ -1093,7 +1093,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
                                      extension_info_map_.get()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
-      chrome::kExtensionResourceScheme,
+      extensions::kExtensionResourceScheme,
       CreateExtensionResourceProtocolHandler());
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(

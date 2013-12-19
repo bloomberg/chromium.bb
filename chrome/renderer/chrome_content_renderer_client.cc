@@ -329,7 +329,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
 
   WebString extension_resource_scheme(
-      ASCIIToUTF16(chrome::kExtensionResourceScheme));
+      ASCIIToUTF16(extensions::kExtensionResourceScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_resource_scheme);
 
   // chrome-extension-resource: resources should be allowed to receive CORS
@@ -1111,7 +1111,7 @@ bool ChromeContentRendererClient::WillSendRequest(
     return true;
   }
 
-  if (url.SchemeIs(chrome::kExtensionResourceScheme) &&
+  if (url.SchemeIs(extensions::kExtensionResourceScheme) &&
       !extensions::ResourceRequestPolicy::CanRequestExtensionResourceScheme(
           url,
           frame)) {

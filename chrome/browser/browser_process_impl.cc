@@ -179,7 +179,7 @@ BrowserProcessImpl::BrowserProcessImpl(
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       extensions::kExtensionScheme);
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      chrome::kExtensionResourceScheme);
+      extensions::kExtensionResourceScheme);
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
 

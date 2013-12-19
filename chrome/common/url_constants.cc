@@ -644,7 +644,6 @@ const char* const kChromeDebugURLs[] = {
 const int kNumberOfChromeDebugURLs =
     static_cast<int>(arraysize(kChromeDebugURLs));
 
-const char kExtensionResourceScheme[] = "chrome-extension-resource";
 const char kChromeNativeScheme[] = "chrome-native";
 
 const char kChromeSearchScheme[] = "chrome-search";

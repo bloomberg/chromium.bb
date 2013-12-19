@@ -454,9 +454,6 @@ extern const size_t kNumberOfChromeHostURLs;
 extern const char* const kChromeDebugURLs[];
 extern const int kNumberOfChromeDebugURLs;
 
-// Canonical schemes you can use as input to GURL.SchemeIs().
-extern const char kExtensionResourceScheme[];
-
 // The chrome-native: scheme is used show pages rendered with platform specific
 // widgets instead of using HTML.
 extern const char kChromeNativeScheme[];

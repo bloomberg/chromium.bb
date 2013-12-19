@@ -12,6 +12,9 @@ namespace extensions {
 // Scheme we serve extension content from.
 extern const char kExtensionScheme[];
 
+// Canonical schemes you can use as input to GURL.SchemeIs().
+extern const char kExtensionResourceScheme[];
+
 // The name of the manifest inside an extension.
 extern const base::FilePath::CharType kManifestFilename[];
 
