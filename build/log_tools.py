@@ -58,8 +58,7 @@ def CheckCall(command, **kwargs):
     **kwargs: Keyword args.
   """
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
-  logging.info('Running: subprocess.check_call(%r, cwd=%r)' %
-               (' '.join(command), cwd))
+  logging.info('Running: subprocess.check_call(%r, cwd=%r)' % (command, cwd))
   p = subprocess.Popen(
       command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
 
