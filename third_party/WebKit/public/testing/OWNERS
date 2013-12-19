@@ -1,0 +1,7 @@
+# The TestRunner library is being migrated to chromium. To avoid missing
+# changes to the TestRunner library, we temporarily lock down ownership.
+#
+# For more information, please see http://crbug.com/324658
+set noparent
+abarth@chromium.org
+jochen@chromium.org
