@@ -17,7 +17,7 @@ import command
 import toolchain_main
 
 GIT_REVISIONS = {
-    'binutils': '237df3fa4a1d939e6fd1af0c3e5029a25a137310', # tag binutils-2_24
+    'binutils': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
     'gcc': '145a627d95b98f54915d037dddbcbb0f7b283494',
     'newlib': '9f95ad0b4875d153b9d138090e61ac4c24e9a87d',
     }
@@ -119,9 +119,12 @@ def CollectSources():
 
 # Map of native host tuple to extra tuples that it cross-builds for.
 EXTRA_HOSTS_MAP = {
-# TODO(mcgrathr): Cross-building binutils is waiting for an upstream
-# makefile fix, see https://sourceware.org/ml/binutils/2013-12/msg00107.html
-#    'i686-linux': ['arm-linux-gnueabihf'],
+    'i686-linux': [
+        'arm-linux-gnueabihf',
+        # TODO(mcgrathr): Enable this if the binaries are proven to
+        # actually work, and bots get needed mingw* packages installed.
+        #'i686-w64-mingw32',
+        ],
     }
 
 # The list of targets to build toolchains for.
