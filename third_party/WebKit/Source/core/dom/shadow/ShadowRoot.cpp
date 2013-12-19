@@ -166,6 +166,11 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     // ShadowRoot doesn't support custom callbacks.
     ASSERT(!hasCustomStyleCallbacks());
 
+    // If we're propagating an Inherit change and this ShadowRoot resets
+    // inheritance we don't need to look at the children.
+    if (change <= Inherit && resetStyleInheritance() && !needsStyleRecalc() && !childNeedsStyleRecalc())
+        return;
+
     StyleResolver& styleResolver = document().ensureStyleResolver();
     styleResolver.pushParentShadowRoot(*this);
 
