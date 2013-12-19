@@ -195,9 +195,10 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
 
 void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
                                     base::TimeDelta retry_delay,
-                                    const std::string& proxy_key,
+                                    const ProxyServer& proxy_to_retry,
                                     const BoundNetLog& net_log) const {
   // Mark this proxy as bad.
+  std::string proxy_key = proxy_to_retry.ToURI();
   ProxyRetryInfoMap::iterator iter = proxy_retry_info->find(proxy_key);
   if (iter != proxy_retry_info->end()) {
     // TODO(nsylvain): This is not the first time we get this. We should
@@ -236,21 +237,13 @@ void ProxyList::UpdateRetryInfoOnFallback(
   }
 
   if (!proxies_[0].is_direct()) {
-    std::string key = proxies_[0].ToURI();
-    AddProxyToRetryList(proxy_retry_info, retry_delay, key, net_log);
+    AddProxyToRetryList(proxy_retry_info, retry_delay, proxies_[0], net_log);
 
-    // If additional proxies to bypass are specified, add these to the retry
-    // map as well.
+    // If an additional proxy to bypass is specified, add it to the retry map
+    // as well.
     if (another_proxy_to_bypass.is_valid()) {
-      // Start at index 1 because index 0 is already handled above.
-      for (size_t j = 1; j < proxies_.size(); ++j) {
-        if (proxies_[j].is_direct())
-          break;
-        if (another_proxy_to_bypass == proxies_[j]) {
-          key = proxies_[j].ToURI();
-          AddProxyToRetryList(proxy_retry_info, retry_delay, key, net_log);
-        }
-      }
+      AddProxyToRetryList(proxy_retry_info, retry_delay,
+                          another_proxy_to_bypass, net_log);
     }
   }
 }

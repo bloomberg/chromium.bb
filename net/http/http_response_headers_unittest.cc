@@ -2013,6 +2013,22 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
       86400,
       false,
     },
+    { "HTTP/1.1 200 OK\n"
+      "connection: proxy-bypass\n"
+      "Chrome-Proxy: block=-1\n"
+      "Content-Length: 999\n",
+      false,
+      0,
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: proxy-bypass\n"
+      "Chrome-Proxy: block=99999999999999999999\n"
+      "Content-Length: 999\n",
+      false,
+      0,
+      false,
+    },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     std::string headers(tests[i].headers);
