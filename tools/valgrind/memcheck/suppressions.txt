@@ -6319,3 +6319,12 @@
    ...
    fun:_ZN3net5tools4test12_GLOBAL__N_151QuicSpdyServerStreamTest_TestSendErrorResponse_Test8TestBodyEv
 }
+{
+   bug_329960
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore22V8PerContextDataHolder7installEN2v86HandleINS1_7ContextEEE
+   fun:_ZN7WebCore22WorkerScriptController25initializeContextIfNeededEv
+   ...
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
+}
