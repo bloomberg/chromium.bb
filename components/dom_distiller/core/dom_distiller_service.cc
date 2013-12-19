@@ -24,6 +24,14 @@ ArticleEntry CreateSkeletonEntryForUrl(const GURL& url) {
   return skeleton;
 }
 
+void RunArticleAvailableCallback(
+    const DomDistillerService::ArticleAvailableCallback& article_cb,
+    const ArticleEntry& entry,
+    DistilledPageProto* proto,
+    bool distillation_succeeded) {
+  article_cb.Run(distillation_succeeded);
+}
+
 }  // namespace
 
 DomDistillerService::DomDistillerService(
@@ -37,14 +45,42 @@ syncer::SyncableService* DomDistillerService::GetSyncableService() const {
   return store_->GetSyncableService();
 }
 
-void DomDistillerService::AddToList(const GURL& url) {
-  if (store_->GetEntryByUrl(url, NULL)) {
-    return;
+const std::string DomDistillerService::AddToList(
+    const GURL& url,
+    const ArticleAvailableCallback& article_cb) {
+  ArticleEntry entry;
+  const bool is_already_added = store_->GetEntryByUrl(url, &entry);
+
+  TaskTracker* task_tracker;
+  if (is_already_added) {
+    task_tracker = GetTaskTrackerForEntry(entry);
+    if (task_tracker == NULL) {
+      // Entry is in the store but there is no task tracker. This could
+      // happen when distillation has already completed. For now just return
+      // true.
+      // TODO(shashishekhar): Change this to check if article is available,
+      // An article may not be available for a variety of reasons, e.g.
+      // distillation failure or blobs not available locally.
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::Bind(article_cb, true));
+      return entry.entry_id();
+    }
+  } else {
+    task_tracker = GetOrCreateTaskTrackerForUrl(url);
   }
-  TaskTracker* task_tracker = GetTaskTrackerForUrl(url);
-  task_tracker->SetSaveCallback(base::Bind(
-      &DomDistillerService::AddDistilledPageToList, base::Unretained(this)));
-  task_tracker->StartDistiller(distiller_factory_.get());
+
+  if (!article_cb.is_null()) {
+    task_tracker->AddSaveCallback(
+        base::Bind(&RunArticleAvailableCallback, article_cb));
+  }
+
+  if (!is_already_added) {
+    task_tracker->AddSaveCallback(base::Bind(
+        &DomDistillerService::AddDistilledPageToList, base::Unretained(this)));
+    task_tracker->StartDistiller(distiller_factory_.get());
+  }
+
+  return task_tracker->GetEntryId();
 }
 
 std::vector<ArticleEntry> DomDistillerService::GetEntries() const {
@@ -57,6 +93,12 @@ void DomDistillerService::RemoveEntry(
   if (!store_->GetEntryById(entry_id, &entry)) {
     return;
   }
+
+  TaskTracker* task_tracker = GetTaskTrackerForEntry(entry);
+  if (task_tracker != NULL) {
+    task_tracker->CancelSaveCallbacks();
+  }
+
   store_->RemoveEntry(entry);
 }
 
@@ -68,7 +110,7 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
     return scoped_ptr<ViewerHandle>();
   }
 
-  TaskTracker* task_tracker = GetTaskTrackerForEntry(entry);
+  TaskTracker* task_tracker = GetOrCreateTaskTrackerForEntry(entry);
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
   task_tracker->StartDistiller(distiller_factory_.get());
 
@@ -82,17 +124,18 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
     return scoped_ptr<ViewerHandle>();
   }
 
-  TaskTracker* task_tracker = GetTaskTrackerForUrl(url);
+  TaskTracker* task_tracker = GetOrCreateTaskTrackerForUrl(url);
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
   task_tracker->StartDistiller(distiller_factory_.get());
 
   return viewer_handle.Pass();
 }
 
-TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) {
+TaskTracker* DomDistillerService::GetOrCreateTaskTrackerForUrl(
+    const GURL& url) {
   ArticleEntry entry;
   if (store_->GetEntryByUrl(url, &entry)) {
-    return GetTaskTrackerForEntry(entry);
+    return GetOrCreateTaskTrackerForEntry(entry);
   }
 
   for (TaskList::iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
@@ -108,16 +151,22 @@ TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) {
 }
 
 TaskTracker* DomDistillerService::GetTaskTrackerForEntry(
-    const ArticleEntry& entry) {
+    const ArticleEntry& entry) const {
   const std::string& entry_id = entry.entry_id();
-  for (TaskList::iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
+  for (TaskList::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
     if ((*it)->HasEntryId(entry_id)) {
       return *it;
     }
   }
+  return NULL;
+}
 
-  TaskTracker* task_tracker = CreateTaskTracker(entry);
-
+TaskTracker* DomDistillerService::GetOrCreateTaskTrackerForEntry(
+    const ArticleEntry& entry) {
+  TaskTracker* task_tracker = GetTaskTrackerForEntry(entry);
+  if (task_tracker == NULL) {
+    task_tracker = CreateTaskTracker(entry);
+  }
   return task_tracker;
 }
 
@@ -138,11 +187,13 @@ void DomDistillerService::CancelTask(TaskTracker* task) {
 }
 
 void DomDistillerService::AddDistilledPageToList(const ArticleEntry& entry,
-                                                 DistilledPageProto* proto) {
+                                                 DistilledPageProto* proto,
+                                                 bool distillation_succeeded) {
   DCHECK(IsEntryValid(entry));
-  DCHECK(proto);
-
-  store_->UpdateEntry(entry);
+  if (distillation_succeeded) {
+    DCHECK(proto);
+    store_->UpdateEntry(entry);
+  }
 }
 
 void DomDistillerService::AddObserver(DomDistillerObserver* observer) {
