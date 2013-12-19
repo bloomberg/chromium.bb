@@ -76,6 +76,7 @@ bool NSSProfileFilterChromeOS::IsCertAllowed(
     if (IsModuleAllowed(slot_element->slot)) {
       DVLOG(3) << "cert from " << CertSlotsString(cert)
                << " allowed: " << cert->subject().GetDisplayName();
+      PK11_FreeSlotListElement(slots_for_cert.get(), slot_element);
       return true;
     }
   }
