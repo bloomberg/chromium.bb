@@ -48,7 +48,6 @@ Event::Event()
     , m_eventPhase(0)
     , m_currentTarget(0)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
-    , m_eventPath(this)
 {
     ScriptWrappable::init(this);
 }
@@ -65,7 +64,6 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_eventPhase(0)
     , m_currentTarget(0)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
-    , m_eventPath(this)
 {
     ScriptWrappable::init(this);
 }
@@ -82,7 +80,6 @@ Event::Event(const AtomicString& eventType, const EventInit& initializer)
     , m_eventPhase(0)
     , m_currentTarget(0)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
-    , m_eventPath(this)
 {
     ScriptWrappable::init(this);
 }
@@ -193,16 +190,23 @@ void Event::setUnderlyingEvent(PassRefPtr<Event> ue)
     m_underlyingEvent = ue;
 }
 
+EventPath& Event::ensureEventPath()
+{
+    if (!m_eventPath)
+        m_eventPath = adoptPtr(new EventPath(this));
+    return *m_eventPath;
+}
+
 PassRefPtr<NodeList> Event::path() const
 {
     if (!m_currentTarget || !m_currentTarget->toNode())
         return StaticNodeList::createEmpty();
     Node* node = m_currentTarget->toNode();
-    size_t eventPathSize = m_eventPath.size();
+    size_t eventPathSize = m_eventPath->size();
     for (size_t i = 0; i < eventPathSize; ++i) {
-        if (node == m_eventPath[i].node()) {
-            ASSERT(m_eventPath[i].eventPath());
-            return m_eventPath[i].eventPath();
+        if (node == (*m_eventPath)[i].node()) {
+            ASSERT((*m_eventPath)[i].eventPath());
+            return (*m_eventPath)[i].eventPath();
         }
     }
     return StaticNodeList::createEmpty();

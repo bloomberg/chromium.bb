@@ -60,7 +60,7 @@ EventDispatcher::EventDispatcher(Node* node, PassRefPtr<Event> event)
     ASSERT(m_event.get());
     ASSERT(!m_event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
     m_view = node->document().view();
-    m_event->eventPath().resetWith(m_node.get());
+    m_event->ensureEventPath().resetWith(m_node.get());
 }
 
 void EventDispatcher::dispatchScopedEvent(Node* node, PassRefPtr<EventDispatchMediator> mediator)
