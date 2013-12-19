@@ -22,5 +22,8 @@ var SubPixelLayout = (function() {
         ceilToLayoutUnit: function(f) {
             return isEnabled() ? Math.ceil(f * 64) / 64 : Math.ceil(f); // see ceiledLayoutUnit(), LayoutUnit.h
         },
+        resolution: function() {
+            return isEnabled() ? 1/64 : 1;
+        }
     }
 }());

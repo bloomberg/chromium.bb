@@ -68,9 +68,11 @@ const Shape* ShapeInfo<RenderType>::computedShape() const
         ASSERT(shapeValue->image());
         m_shape = Shape::createShape(shapeValue->image(), shapeImageThreshold, m_shapeLogicalSize, writingMode, margin, padding);
         break;
-    case ShapeValue::Box:
-        m_shape = Shape::createLayoutBoxShape(m_shapeLogicalSize, writingMode, margin, padding);
+    case ShapeValue::Box: {
+        const RoundedRect& shapeRect = m_renderer->style()->getRoundedBorderFor(LayoutRect(LayoutPoint(), m_shapeLogicalSize), m_renderer->view());
+        m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin, padding);
         break;
+    }
     case ShapeValue::Outside:
         // Outside should have already resolved to a different shape value.
         ASSERT_NOT_REACHED();

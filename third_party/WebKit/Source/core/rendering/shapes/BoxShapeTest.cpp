@@ -31,6 +31,8 @@
 
 #include "core/rendering/shapes/BoxShape.h"
 
+#include "platform/geometry/RoundedRect.h"
+
 #include <gtest/gtest.h>
 
 namespace WebCore {
@@ -39,9 +41,9 @@ class BoxShapeTest : public ::testing::Test {
 protected:
     BoxShapeTest() { }
 
-    PassOwnPtr<Shape> createBoxShape(const LayoutSize& size, float shapeMargin, float shapePadding)
+    PassOwnPtr<Shape> createBoxShape(const RoundedRect& bounds, float shapeMargin, float shapePadding)
     {
-        return Shape::createLayoutBoxShape(size, TopToBottomWritingMode, Length(shapeMargin, Fixed), Length(shapePadding, Fixed));
+        return Shape::createLayoutBoxShape(bounds, TopToBottomWritingMode, Length(shapeMargin, Fixed), Length(shapePadding, Fixed));
     }
 };
 
@@ -69,7 +71,7 @@ using namespace WebCore;
 
 TEST_F(BoxShapeTest, zeroRadii)
 {
-    OwnPtr<Shape> shape = createBoxShape(LayoutSize(100, 50), 10, 20);
+    OwnPtr<Shape> shape = createBoxShape(RoundedRect(0, 0, 100, 50), 10, 20);
     EXPECT_FALSE(shape->isEmpty());
 
     EXPECT_EQ(LayoutRect(-10, -10, 120, 70), shape->shapeMarginLogicalBoundingBox());

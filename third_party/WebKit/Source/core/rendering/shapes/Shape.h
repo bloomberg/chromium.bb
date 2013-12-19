@@ -33,6 +33,7 @@
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/StyleImage.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/RoundedRect.h"
 #include "platform/text/WritingMode.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -62,7 +63,7 @@ class Shape {
 public:
     static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
     static PassOwnPtr<Shape> createShape(const StyleImage*, float threshold, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
-    static PassOwnPtr<Shape> createLayoutBoxShape(const LayoutSize& logicalBoxSize, WritingMode, const Length& margin, const Length& padding);
+    static PassOwnPtr<Shape> createLayoutBoxShape(const RoundedRect&, WritingMode, const Length& margin, const Length& padding);
 
     virtual ~Shape() { }
 
