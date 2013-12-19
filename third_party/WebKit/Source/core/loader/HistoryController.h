@@ -141,7 +141,7 @@ public:
     void goToItem(HistoryItem*);
 
     void updateBackForwardListForFragmentScroll(Frame*, HistoryItem*);
-    void updateForCommit(Frame*, HistoryItem*);
+    void updateForCommit(Frame*, HistoryItem*, HistoryCommitType);
 
     PassRefPtr<HistoryItem> currentItemForExport(Frame*);
     PassRefPtr<HistoryItem> previousItemForExport(Frame*);

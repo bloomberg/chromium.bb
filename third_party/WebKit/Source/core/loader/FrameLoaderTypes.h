@@ -104,6 +104,13 @@ enum HistoryLoadType {
     HistoryDifferentDocumentLoad
 };
 
+enum HistoryCommitType {
+    StandardCommit,
+    BackForwardCommit,
+    InitialCommitInChildFrame,
+    HistoryInertCommit
+};
+
 }
 
 #endif

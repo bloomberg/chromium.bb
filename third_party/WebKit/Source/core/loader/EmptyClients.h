@@ -203,7 +203,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad() OVERRIDE { }
     virtual void dispatchDidReceiveTitle(const String&) OVERRIDE { }
     virtual void dispatchDidChangeIcons(IconType) OVERRIDE { }
-    virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, NavigationHistoryPolicy) OVERRIDE { }
+    virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, HistoryCommitType) OVERRIDE { }
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFailLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE { }

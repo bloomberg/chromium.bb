@@ -342,9 +342,9 @@ void FrameLoaderClientImpl::dispatchDidReceiveServerRedirectForProvisionalLoad()
         m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(NavigationHistoryPolicy navigationHistoryPolicy, HistoryItem* item)
+void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(HistoryItem* item, HistoryCommitType commitType)
 {
-    bool shouldCreateHistoryEntry = navigationHistoryPolicy == NavigationCreatedHistoryEntry;
+    bool shouldCreateHistoryEntry = commitType == StandardCommit;
     if (shouldCreateHistoryEntry)
         m_webFrame->frame()->page()->historyController().updateBackForwardListForFragmentScroll(m_webFrame->frame(), item);
     m_webFrame->viewImpl()->didCommitLoad(shouldCreateHistoryEntry, true);
@@ -376,12 +376,12 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(WebCore::IconType type)
         m_webFrame->client()->didChangeIcon(m_webFrame, static_cast<WebIconURL::Type>(type));
 }
 
-void FrameLoaderClientImpl::dispatchDidCommitLoad(Frame* frame, HistoryItem* item, NavigationHistoryPolicy navigationHistoryPolicy)
+void FrameLoaderClientImpl::dispatchDidCommitLoad(Frame* frame, HistoryItem* item, HistoryCommitType commitType)
 {
-    m_webFrame->frame()->page()->historyController().updateForCommit(frame, item);
-    m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, false);
+    m_webFrame->frame()->page()->historyController().updateForCommit(frame, item, commitType);
+    m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
     if (m_webFrame->client())
-        m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, navigationHistoryPolicy == NavigationCreatedHistoryEntry);
+        m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, commitType == StandardCommit);
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(

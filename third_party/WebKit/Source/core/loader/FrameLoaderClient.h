@@ -84,11 +84,6 @@ class FetchRequest;
     class SubstituteData;
     class Widget;
 
-    enum NavigationHistoryPolicy {
-        NavigationCreatedHistoryEntry,
-        NavigationReusedHistoryEntry
-    };
-
     class FrameLoaderClient {
     public:
         virtual ~FrameLoaderClient() { }
@@ -107,12 +102,12 @@ class FetchRequest;
 
         virtual void dispatchDidHandleOnloadEvents() = 0;
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
-        virtual void dispatchDidNavigateWithinPage(NavigationHistoryPolicy, HistoryItem*) { }
+        virtual void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType) { }
         virtual void dispatchWillClose() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
-        virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, NavigationHistoryPolicy) = 0;
+        virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, HistoryCommitType) = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;

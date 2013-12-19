@@ -335,22 +335,35 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPoli
     m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
 }
 
+static HistoryCommitType loadTypeToCommitType(FrameLoadType type, bool isStandardLoadWithValidURL)
+{
+    switch (type) {
+    case FrameLoadTypeStandard:
+        return isStandardLoadWithValidURL ? StandardCommit : HistoryInertCommit;
+    case FrameLoadTypeInitialInChildFrame:
+        return InitialCommitInChildFrame;
+    case FrameLoadTypeBackForward:
+        return BackForwardCommit;
+    default:
+        break;
+    }
+    return HistoryInertCommit;
+}
+
 void FrameLoader::receivedFirstData()
 {
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
-    NavigationHistoryPolicy navigationHistoryPolicy = NavigationReusedHistoryEntry;
-    if (m_loadType == FrameLoadTypeStandard && m_documentLoader->isURLValidForNewHistoryEntry())
-        navigationHistoryPolicy = NavigationCreatedHistoryEntry;
     HistoryItemPolicy historyItemPolicy = DoNotCreateNewHistoryItem;
-    if (m_loadType == FrameLoadTypeInitialInChildFrame || navigationHistoryPolicy == NavigationCreatedHistoryEntry)
+    bool isStandardLoadWithValidURL = m_loadType == FrameLoadTypeStandard && m_documentLoader->isURLValidForNewHistoryEntry();
+    if ((!m_currentItem && m_loadType == FrameLoadTypeInitialInChildFrame) || isStandardLoadWithValidURL)
         historyItemPolicy = CreateNewHistoryItem;
     setHistoryItemStateForCommit(historyItemPolicy);
 
-    if (!m_stateMachine.committedMultipleRealLoads() && navigationHistoryPolicy == NavigationCreatedHistoryEntry)
+    if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
 
-    m_client->dispatchDidCommitLoad(m_frame, m_currentItem.get(), navigationHistoryPolicy);
+    m_client->dispatchDidCommitLoad(m_frame, m_currentItem.get(), loadTypeToCommitType(m_loadType, isStandardLoadWithValidURL));
 
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);
@@ -553,12 +566,12 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressStartedNotification();
 
-    NavigationHistoryPolicy navigationHistoryPolicy = NavigationReusedHistoryEntry;
+    HistoryCommitType historyCommitType = HistoryInertCommit;
     if (updateBackForwardList == UpdateBackForwardList || (sameDocumentNavigationSource == SameDocumentNavigationPushState && m_currentItem)) {
-        navigationHistoryPolicy = NavigationCreatedHistoryEntry;
+        historyCommitType = StandardCommit;
         setHistoryItemStateForCommit(CreateNewHistoryItem);
     }
-    m_client->dispatchDidNavigateWithinPage(navigationHistoryPolicy, m_currentItem.get());
+    m_client->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
 
     if (m_currentItem) {
@@ -663,6 +676,8 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeStandard;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
+    if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeBackForward)
+        return FrameLoadTypeBackForward;
     if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
     if (!request.originDocument() && shouldTreatURLAsSameAsCurrent(request.resourceRequest().url()))
@@ -1199,13 +1214,13 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
 
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
 {
-    ASSERT(loadType != FrameLoadTypeBackForward);
     ASSERT(loadType != FrameLoadTypeReloadFromOrigin);
     // We don't do this if we are submitting a form with method other than "GET", explicitly reloading,
     // currently displaying a frameset, or if the URL does not have a fragment.
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))
         && loadType != FrameLoadTypeReload
         && loadType != FrameLoadTypeSame
+        && loadType != FrameLoadTypeBackForward
         && url.hasFragmentIdentifier()
         && equalIgnoringFragmentIdentifier(m_frame->document()->url(), url)
         // We don't want to just scroll if a link from within a

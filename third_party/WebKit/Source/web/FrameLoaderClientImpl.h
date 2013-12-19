@@ -81,12 +81,12 @@ public:
     virtual void dispatchDidLoadResourceFromMemoryCache(const WebCore::ResourceRequest&, const WebCore::ResourceResponse&);
     virtual void dispatchDidHandleOnloadEvents();
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad();
-    virtual void dispatchDidNavigateWithinPage(WebCore::NavigationHistoryPolicy, WebCore::HistoryItem*);
+    virtual void dispatchDidNavigateWithinPage(WebCore::HistoryItem*, WebCore::HistoryCommitType);
     virtual void dispatchWillClose();
     virtual void dispatchDidStartProvisionalLoad();
     virtual void dispatchDidReceiveTitle(const String&);
     virtual void dispatchDidChangeIcons(WebCore::IconType);
-    virtual void dispatchDidCommitLoad(WebCore::Frame*, WebCore::HistoryItem*, WebCore::NavigationHistoryPolicy);
+    virtual void dispatchDidCommitLoad(WebCore::Frame*, WebCore::HistoryItem*, WebCore::HistoryCommitType);
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);
     virtual void dispatchDidFailLoad(const WebCore::ResourceError&);
     virtual void dispatchDidFinishDocumentLoad();

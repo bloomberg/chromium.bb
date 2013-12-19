@@ -146,8 +146,6 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry)
     if (m_differentDocumentLoadsInProgress.isEmpty()) {
         m_previousEntry = m_currentEntry.release();
         m_currentEntry = m_provisionalEntry.release();
-    } else {
-        m_page->mainFrame()->loader().stopAllLoaders();
     }
 
     for (HistoryFrameLoadSet::iterator it = m_sameDocumentLoadsInProgress.begin(); it != m_sameDocumentLoadsInProgress.end(); ++it)
@@ -214,18 +212,20 @@ void HistoryController::setDefersLoading(bool defer)
 void HistoryController::updateForInitialLoadInChildFrame(Frame* frame, HistoryItem* item)
 {
     ASSERT(frame->tree().parent());
-    if (!m_currentEntry)
+    if (!m_currentEntry || m_currentEntry->historyNodeForFrame(frame))
         return;
-    if (HistoryNode* existingChildHistoryNode = m_currentEntry->historyNodeForFrame(frame))
-        existingChildHistoryNode->updateValue(item);
-    else if (HistoryNode* parentHistoryNode = m_currentEntry->historyNodeForFrame(frame->tree().parent()))
+    if (HistoryNode* parentHistoryNode = m_currentEntry->historyNodeForFrame(frame->tree().parent()))
         parentHistoryNode->addChild(item);
 }
 
-void HistoryController::updateForCommit(Frame* frame, HistoryItem* item)
+void HistoryController::updateForCommit(Frame* frame, HistoryItem* item, HistoryCommitType commitType)
 {
-    FrameLoadType type = frame->loader().loadType();
-    if (isBackForwardLoadType(type) && m_provisionalEntry) {
+    if (commitType != BackForwardCommit)
+        m_provisionalEntry.clear();
+
+    if (commitType == BackForwardCommit) {
+        if (!m_provisionalEntry)
+            return;
         // Once committed, we want to use current item for saving DocState, and
         // the provisional item for restoring state.
         // Note previousItem must be set before we close the URL, which will
@@ -233,14 +233,11 @@ void HistoryController::updateForCommit(Frame* frame, HistoryItem* item)
         m_previousEntry = m_currentEntry.release();
         ASSERT(m_provisionalEntry);
         m_currentEntry = m_provisionalEntry.release();
-    } else if (type != FrameLoadTypeRedirectWithLockedBackForwardList) {
-        m_provisionalEntry.clear();
-    }
-
-    if (type == FrameLoadTypeStandard)
+    } else if (commitType == StandardCommit) {
         createNewBackForwardItem(frame, item, true);
-    else if (type == FrameLoadTypeInitialInChildFrame)
+    } else if (commitType == InitialCommitInChildFrame) {
         updateForInitialLoadInChildFrame(frame, item);
+    }
 }
 
 static PassRefPtr<HistoryItem> itemForExport(HistoryNode* historyNode)
