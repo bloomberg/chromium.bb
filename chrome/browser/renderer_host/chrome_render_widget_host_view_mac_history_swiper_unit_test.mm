@@ -328,3 +328,27 @@ TEST_F(MacHistorySwiperTest, NoSwipe) {
   EXPECT_EQ(begin_count_, 0);
   EXPECT_EQ(end_count_, 0);
 }
+
+// After a gesture is successfully recognized, momentum events should be
+// swallowed, but new events should pass through.
+TEST_F(MacHistorySwiperTest, TouchEventAfterGestureFinishes) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
+  // Successfully pass through a gesture.
+  startGestureInMiddle();
+  moveGestureInMiddle();
+  moveGestureAtPoint(makePoint(0.8, 0.5));
+  endGestureAtPoint(makePoint(0.8, 0.5));
+  EXPECT_TRUE(navigated_right_);
+
+  // Momentum events should be swallowed.
+  NSEvent* momentumEvent = scrollWheelEventWithPhase(NSEventPhaseNone);
+  EXPECT_TRUE([historySwiper_ handleEvent:momentumEvent]);
+
+  // New events should not be swallowed.
+  NSEvent* beganEvent = scrollWheelEventWithPhase(NSEventPhaseBegan);
+  EXPECT_FALSE([historySwiper_ handleEvent:beganEvent]);
+}

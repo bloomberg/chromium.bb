@@ -282,9 +282,18 @@
 - (BOOL)maybeHandleHistorySwiping:(NSEvent*)theEvent {
   // We've already processed this gesture.
   if (lastProcessedGestureId_ == currentGestureId_) {
+    // A new event may come in before it's recognized as a gesture.
+    // We have not yet reset the state from the last gesture.
+    // Let it pass through.
+    if ([theEvent phase] == NSEventPhaseBegan ||
+        [theEvent phase] == NSEventPhaseMayBegin) {
+      return NO;
+    }
+
     // The user cancelled the history swiper. Ignore all events.
     if (historySwipeCancelled_)
       return NO;
+
     // The user completed the history swiper. Swallow all events.
     return YES;
   }
