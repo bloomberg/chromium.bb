@@ -136,7 +136,7 @@ v8::Handle<v8::Value> GetOrCreateChrome(ChromeV8Context* context) {
   v8::Handle<v8::Object> global(context->v8_context()->Global());
   v8::Handle<v8::Value> chrome(global->Get(chrome_string));
   if (chrome->IsUndefined()) {
-    chrome = v8::Object::New();
+    chrome = v8::Object::New(context->isolate());
     global->Set(chrome_string, chrome);
   }
   return chrome;
@@ -233,7 +233,7 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
     std::string api_name = *v8::String::Utf8Value(args[0]->ToString());
     Feature::Availability availability = context_->GetAvailability(api_name);
 
-    v8::Handle<v8::Object> ret = v8::Object::New();
+    v8::Handle<v8::Object> ret = v8::Object::New(isolate);
     ret->Set(v8::String::NewFromUtf8(isolate, "is_available"),
              v8::Boolean::New(isolate, availability.is_available()));
     ret->Set(v8::String::NewFromUtf8(isolate, "message"),
@@ -694,7 +694,7 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
     return v8::Handle<v8::Object>::Cast(value);
   }
 
-  v8::Handle<v8::Object> new_object = v8::Object::New();
+  v8::Handle<v8::Object> new_object = v8::Object::New(isolate);
   object->Set(key, new_object);
   return new_object;
 }

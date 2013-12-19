@@ -105,7 +105,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         DocumentState* document_state =
             DocumentState::FromDataSource(data_source);
         v8::Isolate* isolate = args.GetIsolate();
-        v8::Local<v8::Object> load_times = v8::Object::New();
+        v8::Local<v8::Object> load_times = v8::Object::New(isolate);
         load_times->Set(
             v8::String::NewFromUtf8(isolate, "requestTime"),
             v8::Number::New(isolate,
@@ -174,7 +174,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         DocumentState* document_state =
             DocumentState::FromDataSource(data_source);
         v8::Isolate* isolate = args.GetIsolate();
-        v8::Local<v8::Object> csi = v8::Object::New();
+        v8::Local<v8::Object> csi = v8::Object::New(isolate);
         base::Time now = base::Time::Now();
         base::Time start = document_state->request_time().is_null() ?
             document_state->start_load_time() :

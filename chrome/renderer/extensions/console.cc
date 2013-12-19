@@ -177,7 +177,7 @@ void AddMessage(v8::Handle<v8::Context> context,
 v8::Local<v8::Object> AsV8Object() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::EscapableHandleScope handle_scope(isolate);
-  v8::Local<v8::Object> console_object = v8::Object::New();
+  v8::Local<v8::Object> console_object = v8::Object::New(isolate);
   BindLogMethod(isolate, console_object, "debug", &Debug);
   BindLogMethod(isolate, console_object, "log", &Log);
   BindLogMethod(isolate, console_object, "warn", &Warn);

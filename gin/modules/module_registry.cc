@@ -94,7 +94,7 @@ v8::Handle<String> GetHiddenValueKey(Isolate* isolate) {
 }  // namespace
 
 ModuleRegistry::ModuleRegistry(Isolate* isolate)
-    : modules_(isolate, Object::New()) {
+    : modules_(isolate, Object::New(isolate)) {
 }
 
 ModuleRegistry::~ModuleRegistry() {

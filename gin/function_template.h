@@ -343,6 +343,7 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
   gin::Handle<HolderT> holder = CreateHandle(
       isolate, new HolderT(callback, callback_flags));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::Dispatcher<Sig>::DispatchToCallback,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }

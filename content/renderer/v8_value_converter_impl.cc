@@ -201,7 +201,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
     v8::Isolate* isolate,
     const base::DictionaryValue* val) const {
-  v8::Handle<v8::Object> result(v8::Object::New());
+  v8::Handle<v8::Object> result(v8::Object::New(isolate));
 
   for (base::DictionaryValue::Iterator iter(*val);
        !iter.IsAtEnd(); iter.Advance()) {

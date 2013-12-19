@@ -220,7 +220,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         buffer_pixels[i + 3] = SkGetPackedA32(c);
     }
 
-    v8::Handle<v8::Object> result = v8::Object::New();
+    v8::Handle<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8::String::NewFromUtf8(isolate, "width"),
                 v8::Number::New(snapped_clip.width()));
     result->Set(v8::String::NewFromUtf8(isolate, "height"),
@@ -246,7 +246,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     v8::Local<v8::Array> result = v8::Array::New(isolate, canvas.getSize());
     for (int i = 0; i < canvas.getSize(); ++i) {
       DrawType cmd_type = canvas.getDrawCommandAt(i)->getType();
-      v8::Handle<v8::Object> cmd = v8::Object::New();
+      v8::Handle<v8::Object> cmd = v8::Object::New(isolate);
       cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_type"),
                v8::Integer::New(isolate, cmd_type));
       cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_string"),

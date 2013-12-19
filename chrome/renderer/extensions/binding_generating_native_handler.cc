@@ -32,7 +32,7 @@ v8::Handle<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
       create_binding->Call(binding, arraysize(argv), argv)->ToObject();
   v8::Handle<v8::Function> generate = binding_instance
       ->Get(v8::String::NewFromUtf8(isolate, "generate")).As<v8::Function>();
-  v8::Local<v8::Object> object = v8::Object::New();
+  v8::Local<v8::Object> object = v8::Object::New(isolate);
   v8::Handle<v8::Value> compiled_schema =
       generate->Call(binding_instance, 0, NULL);
   if (!compiled_schema.IsEmpty()) {

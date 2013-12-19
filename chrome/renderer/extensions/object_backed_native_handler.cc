@@ -62,7 +62,7 @@ void ObjectBackedNativeHandler::RouteFunction(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());
 
-  v8::Persistent<v8::Object> data(isolate, v8::Object::New());
+  v8::Persistent<v8::Object> data(isolate, v8::Object::New(isolate));
   v8::Local<v8::Object> local_data = v8::Local<v8::Object>::New(isolate, data);
   local_data->Set(
       v8::String::NewFromUtf8(isolate, kHandlerFunction),

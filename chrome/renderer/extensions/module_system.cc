@@ -132,12 +132,13 @@ ModuleSystem::ModuleSystem(ChromeV8Context* context, SourceMap* source_map)
       base::Bind(&ModuleSystem::Private, base::Unretained(this)));
 
   v8::Handle<v8::Object> global(context->v8_context()->Global());
+  v8::Isolate* isolate = context->isolate();
   global->SetHiddenValue(
-      v8::String::NewFromUtf8(context->isolate(), kModulesField),
-      v8::Object::New());
+      v8::String::NewFromUtf8(isolate, kModulesField),
+      v8::Object::New(isolate));
   global->SetHiddenValue(
-      v8::String::NewFromUtf8(context->isolate(), kModuleSystem),
-      v8::External::New(context->isolate(), this));
+      v8::String::NewFromUtf8(isolate, kModuleSystem),
+      v8::External::New(isolate, this));
 }
 
 ModuleSystem::~ModuleSystem() {
@@ -234,7 +235,7 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
 
   v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(func_as_value);
 
-  exports = v8::Object::New();
+  exports = v8::Object::New(GetIsolate());
   v8::Handle<v8::Object> natives(NewInstance());
   CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
 
@@ -454,7 +455,7 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
                                 const std::string& module_field,
                                 v8::AccessorGetterCallback getter) {
   v8::HandleScope handle_scope(GetIsolate());
-  v8::Handle<v8::Object> parameters = v8::Object::New();
+  v8::Handle<v8::Object> parameters = v8::Object::New(GetIsolate());
   parameters->Set(v8::String::NewFromUtf8(GetIsolate(), kModuleName),
                   v8::String::NewFromUtf8(GetIsolate(), module_name.c_str()));
   parameters->Set(v8::String::NewFromUtf8(GetIsolate(), kModuleField),
@@ -575,7 +576,7 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
       v8::String::NewFromUtf8(GetIsolate(), "privates");
   v8::Local<v8::Value> privates = obj->GetHiddenValue(privates_key);
   if (privates.IsEmpty()) {
-    privates = v8::Object::New();
+    privates = v8::Object::New(args.GetIsolate());
     obj->SetHiddenValue(privates_key, privates);
   }
   args.GetReturnValue().Set(privates);

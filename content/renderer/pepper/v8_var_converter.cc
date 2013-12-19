@@ -150,7 +150,7 @@ bool GetOrCreateV8Value(v8::Isolate* isolate,
       *result = v8::Array::New(isolate);
       break;
     case PP_VARTYPE_DICTIONARY:
-      *result = v8::Object::New();
+      *result = v8::Object::New(isolate);
       break;
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_RESOURCE:

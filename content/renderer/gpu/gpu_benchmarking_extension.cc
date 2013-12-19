@@ -423,7 +423,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     context.render_view_impl()->GetGpuRenderingStats(&gpu_stats);
     BrowserRenderingStats browser_stats;
     context.render_view_impl()->GetBrowserRenderingStats(&browser_stats);
-    v8::Handle<v8::Object> stats_object = v8::Object::New();
+    v8::Handle<v8::Object> stats_object = v8::Object::New(args.GetIsolate());
 
     RenderingStatsEnumerator enumerator(args.GetIsolate(), stats_object);
     stats.rendering_stats.EnumerateFields(&enumerator);
@@ -486,13 +486,17 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   static void OnSyntheticGestureCompleted(
       CallbackAndContext* callback_and_context) {
-    v8::HandleScope scope(callback_and_context->isolate());
+    v8::Isolate* isolate = callback_and_context->isolate();
+    v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
     v8::Context::Scope context_scope(context);
     WebFrame* frame = WebFrame::frameForContext(context);
     if (frame) {
       frame->callFunctionEvenIfScriptDisabled(
-          callback_and_context->GetCallback(), v8::Object::New(), 0, NULL);
+          callback_and_context->GetCallback(),
+          v8::Object::New(isolate),
+          0,
+          NULL);
     }
   }
 
@@ -744,7 +748,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       v8::Handle<v8::Value> argv[] = { result };
 
       frame->callFunctionEvenIfScriptDisabled(
-          callback_and_context->GetCallback(), v8::Object::New(), 1, argv);
+          callback_and_context->GetCallback(),
+          v8::Object::New(isolate),
+          1,
+          argv);
     }
   }
 
@@ -777,7 +784,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
   static void OnMicroBenchmarkCompleted(
       CallbackAndContext* callback_and_context,
       scoped_ptr<base::Value> result) {
-    v8::HandleScope scope(callback_and_context->isolate());
+    v8::Isolate* isolate = callback_and_context->isolate();
+    v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
     v8::Context::Scope context_scope(context);
     WebFrame* frame = WebFrame::frameForContext(context);
@@ -788,7 +796,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       v8::Handle<v8::Value> argv[] = { value };
 
       frame->callFunctionEvenIfScriptDisabled(
-          callback_and_context->GetCallback(), v8::Object::New(), 1, argv);
+          callback_and_context->GetCallback(),
+          v8::Object::New(isolate),
+          1,
+          argv);
     }
   }
 
