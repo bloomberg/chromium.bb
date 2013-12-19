@@ -101,14 +101,14 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   // Thread on which we can run DnsConfigService.
   scoped_ptr<DnsConfigServiceThread> dns_config_service_thread_;
 
+  mutable base::Lock last_computed_connection_type_lock_;
+  ConnectionType last_computed_connection_type_;
+
   // Result of IsOffline() when NotifyObserversOfConnectionTypeChange()
   // was last called.
   bool last_announced_offline_;
   // Number of times polled to check if still offline.
   int offline_polls_;
-
-  mutable base::Lock last_computed_connection_type_lock_;
-  ConnectionType last_computed_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierWin);
 };
