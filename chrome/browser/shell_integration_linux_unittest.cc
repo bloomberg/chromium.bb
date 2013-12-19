@@ -479,7 +479,11 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Type=Application\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+#if defined(GOOGLE_CHROME_BUILD)
+      "Icon=google-chrome\n"
+#else
       "Icon=chromium-browser\n"
+#endif
       "StartupWMClass=gmail.com\n"
     },
 
@@ -601,7 +605,11 @@ TEST(ShellIntegrationTest, GetDirectoryFileContents) {
       "Version=1.0\n"
       "Type=Directory\n"
       "Name=Chrome Apps\n"
+#if defined(GOOGLE_CHROME_BUILD)
+      "Icon=google-chrome\n"
+#else
       "Icon=chromium-browser\n"
+#endif
     },
   };
 
