@@ -20,11 +20,6 @@ bool FakeInputMethodContextOzone::DispatchKeyEvent(
 void FakeInputMethodContextOzone::Reset() {
 }
 
-base::i18n::TextDirection FakeInputMethodContextOzone::GetInputTextDirection()
-    const {
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 void FakeInputMethodContextOzone::OnTextInputTypeChanged(
     ui::TextInputType /* text_input_type */) {
 }
