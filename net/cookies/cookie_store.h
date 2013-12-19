@@ -68,6 +68,18 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
                                             const base::Time& delete_end,
                                             const DeleteCallback& callback) = 0;
 
+  // Deletes all of the cookies that match the host of the given URL
+  // regardless of path and that have a creation_date greater than or
+  // equal to |delete_begin| and less then |delete_end|. This includes
+  // all http_only and secure cookies, but does not include any domain
+  // cookies that may apply to this host.
+  // Returns the number of cookies deleted.
+  virtual void DeleteAllCreatedBetweenForHostAsync(
+      const base::Time delete_begin,
+      const base::Time delete_end,
+      const GURL& url,
+      const DeleteCallback& callback) = 0;
+
   virtual void DeleteSessionCookiesAsync(const DeleteCallback&) = 0;
 
   // Returns the underlying CookieMonster.

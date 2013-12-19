@@ -201,14 +201,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DeleteAllForHostAsync(const GURL& url,
                              const DeleteCallback& callback);
 
-  // Same as DeleteAllForHostAsync, except it deletes cookies between
-  // [|delete_begin|, |delete_end|).
-  // Returns the number of cookies deleted.
-  void DeleteAllCreatedBetweenForHostAsync(const base::Time delete_begin,
-                                           const base::Time delete_end,
-                                           const GURL& url,
-                                           const DeleteCallback& callback);
-
   // Deletes one specific cookie.
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   const DeleteCookieCallback& callback);
@@ -272,11 +264,23 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const base::Closure& callback) OVERRIDE;
 
   // Deletes all of the cookies that have a creation_date greater than or equal
-  // to |delete_begin| and less than |delete_end|
+  // to |delete_begin| and less than |delete_end|.
   // Returns the number of cookies that have been deleted.
   virtual void DeleteAllCreatedBetweenAsync(
       const base::Time& delete_begin,
       const base::Time& delete_end,
+      const DeleteCallback& callback) OVERRIDE;
+
+  // Deletes all of the cookies that match the host of the given URL
+  // regardless of path and that have a creation_date greater than or
+  // equal to |delete_begin| and less then |delete_end|. This includes
+  // all http_only and secure cookies, but does not include any domain
+  // cookies that may apply to this host.
+  // Returns the number of cookies deleted.
+  virtual void DeleteAllCreatedBetweenForHostAsync(
+      const base::Time delete_begin,
+      const base::Time delete_end,
+      const GURL& url,
       const DeleteCallback& callback) OVERRIDE;
 
   virtual void DeleteSessionCookiesAsync(const DeleteCallback&) OVERRIDE;

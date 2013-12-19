@@ -50,12 +50,12 @@ void ClearCookiesOnIOThread(
   net::CookieStore* cookie_store = rq_context->
       GetURLRequestContext()->cookie_store();
   if (remove_origin.is_empty()) {
-    cookie_store->GetCookieMonster()->DeleteAllCreatedBetweenAsync(
+    cookie_store->DeleteAllCreatedBetweenAsync(
         begin,
         end,
         base::Bind(&OnClearedCookies, callback));
   } else {
-    cookie_store->GetCookieMonster()->DeleteAllCreatedBetweenForHostAsync(
+    cookie_store->DeleteAllCreatedBetweenForHostAsync(
         begin,
         end,
         remove_origin, base::Bind(&OnClearedCookies, callback));
