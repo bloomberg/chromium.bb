@@ -31,6 +31,7 @@
 #include "config.h"
 #include "heap/ThreadState.h"
 
+#include "heap/Heap.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
@@ -42,6 +43,24 @@ static Mutex& threadAttachMutex()
 {
     AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
     return mutex;
+}
+
+ThreadState::ThreadState(intptr_t* startOfStack)
+    : m_thread(currentThread())
+    , m_startOfStack(startOfStack)
+{
+    ASSERT(!**s_threadSpecific);
+    **s_threadSpecific = this;
+
+    // FIXME: This is to silence clang that complains about unused private
+    // member. Remove once we implement stack scanning that uses it.
+    (void) m_startOfStack;
+}
+
+ThreadState::~ThreadState()
+{
+    checkThread();
+    **s_threadSpecific = 0;
 }
 
 void ThreadState::init(intptr_t* startOfStack)
@@ -71,22 +90,38 @@ void ThreadState::detach()
     delete state;
 }
 
-ThreadState::ThreadState(intptr_t* startOfStack)
-    : m_thread(currentThread())
-    , m_startOfStack(startOfStack)
+// Trigger garbage collection on a 50% increase in size, but not for
+// less than 2 pages.
+static bool increasedEnoughToGC(size_t newSize, size_t oldSize)
 {
-    ASSERT(!**s_threadSpecific);
-    **s_threadSpecific = this;
-
-    // FIXME: This is to silence clang that complains about unused private
-    // member. Remove once we implement stack scanning that uses it.
-    (void) m_startOfStack;
+    if (newSize < 2 * blinkPagePayloadSize())
+        return false;
+    return newSize > oldSize + (oldSize >> 1);
 }
 
-ThreadState::~ThreadState()
+// FIXME: The heuristics are local for a thread at this
+// point. Consider using heuristics that take memory for all threads
+// into account.
+bool ThreadState::shouldGC()
 {
-    checkThread();
-    **s_threadSpecific = 0;
+    return increasedEnoughToGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
+}
+
+// Trigger conservative garbage collection on a 100% increase in size,
+// but not for less than 2 pages.
+static bool increasedEnoughToForceConservativeGC(size_t newSize, size_t oldSize)
+{
+    if (newSize < 2 * blinkPagePayloadSize())
+        return false;
+    return newSize > 2 * oldSize;
+}
+
+// FIXME: The heuristics are local for a thread at this
+// point. Consider using heuristics that take memory for all threads
+// into account.
+bool ThreadState::shouldForceConservativeGC()
+{
+    return increasedEnoughToForceConservativeGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
 }
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()

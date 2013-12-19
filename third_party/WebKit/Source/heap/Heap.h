@@ -768,27 +768,76 @@ private:
     PagePoolEntry* m_pagePool;
 };
 
+class HEAP_EXPORT Heap {
+public:
+    enum GCType {
+        Normal,
+        ForcedForTesting
+    };
+
+    static void init(intptr_t* startOfStack);
+    static void shutdown();
+
+    static void collectGarbage(ThreadState::StackState, GCType = Normal)
+    {
+        // FIXME: Implement.
+        ASSERT_NOT_REACHED();
+    }
+};
+
+template<typename Header>
+size_t allocationSizeFromSize(size_t size)
+{
+    // Check the size before computing the actual allocation size. The
+    // allocation size calculation can overflow for large sizes and
+    // the check therefore has to happen before any calculation on the
+    // size.
+    RELEASE_ASSERT(size < maxHeapObjectSize);
+
+    // Add space for header.
+    size_t allocationSize = size + sizeof(Header);
+    // Align size with allocation granularity.
+    allocationSize = (allocationSize + allocationMask) & ~allocationMask;
+    return allocationSize;
+}
+
 template<typename Header>
 Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
 {
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
-    return 0;
+    size_t allocationSize = allocationSizeFromSize<Header>(size);
+    if (threadState()->shouldGC()) {
+        if (threadState()->shouldForceConservativeGC())
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        else
+            threadState()->setGCRequested(true);
+    }
+    ensureCurrentAllocation(allocationSize, gcInfo);
+    return allocate(size, gcInfo);
 }
 
 template<typename Header>
 Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 {
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
-    return 0;
+    size_t allocationSize = allocationSizeFromSize<Header>(size);
+    bool isLargeObject = allocationSize > blinkPageSize / 2;
+    if (isLargeObject)
+        return allocateLargeObject(allocationSize, gcInfo);
+    if (m_remainingAllocationSize < allocationSize)
+        return outOfLineAllocate(size, gcInfo);
+    Address headerAddress = m_currentAllocationPoint;
+    m_currentAllocationPoint += allocationSize;
+    m_remainingAllocationSize -= allocationSize;
+    Header* header = new (NotNull, headerAddress) Header(allocationSize, gcInfo);
+    size_t payloadSize = allocationSize - sizeof(Header);
+    stats().increaseObjectSpace(payloadSize);
+    Address result = headerAddress + sizeof(*header);
+    ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
+    // Unpoison the memory used for the object (payload).
+    ASAN_UNPOISON_MEMORY_REGION(result, payloadSize);
+    memset(result, 0, payloadSize);
+    ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
+    return result;
 }
-
-class HEAP_EXPORT Heap {
-public:
-    static void init(intptr_t* startOfStack);
-    static void shutdown();
-};
 
 }
 

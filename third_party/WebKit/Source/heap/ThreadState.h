@@ -91,6 +91,15 @@ private:
 
 class ThreadState {
 public:
+    // When garbage collecting we need to know whether or not there
+    // can be pointers to Blink GC managed objects on the stack for
+    // each thread. When threads reach a safe point they record
+    // whether or not they have pointers on the stack.
+    enum StackState {
+        NoHeapPointersOnStack,
+        HeapPointersOnStack
+    };
+
     // Initialize threading infrastructure. Should be called from the main
     // thread.
     static void init(intptr_t* startOfStack);
@@ -117,6 +126,23 @@ public:
     {
         ASSERT(m_thread == currentThread());
     }
+
+    // shouldGC and shouldForceConservativeGC implement the heuristics
+    // that are used to determine when to collect garbage. If
+    // shouldForceConservativeGC returns true, we force the garbage
+    // collection immediately. Otherwise, if shouldGC returns true, we
+    // record that we should garbage collect the next time we return
+    // to the event loop. If both return false, we don't need to
+    // collect garbage at this point.
+    bool shouldGC();
+    bool shouldForceConservativeGC();
+
+    // If gcRequested returns true when a thread returns to its event
+    // loop the thread will initiate a garbage collection.
+    //
+    // FIXME: Implement.
+    void setGCRequested(bool) { ASSERT_NOT_REACHED(); }
+    bool gcRequested() { ASSERT_NOT_REACHED(); return false; }
 
     HeapContainsCache* heapContainsCache() { return m_heapContainsCache; }
 
