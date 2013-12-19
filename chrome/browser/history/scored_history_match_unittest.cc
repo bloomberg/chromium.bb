@@ -240,7 +240,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringDiscountFrecency) {
   ScoredHistoryMatch scored(row, visits, std::string(), ASCIIToUTF16("fed"),
                             Make1Term("fed"), word_starts, now, NULL);
 
-  // With properly discounted scores, thr final raw_score should be lower.
+  // With properly discounted scores, the final raw_score should be lower.
   base::AutoReset<bool> reset(
       &ScoredHistoryMatch::discount_frecency_when_few_visits_, true);
   ScoredHistoryMatch scored_with_discount_frecency(

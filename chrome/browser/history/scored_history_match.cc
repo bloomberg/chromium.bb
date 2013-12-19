@@ -528,8 +528,8 @@ float ScoredHistoryMatch::GetFrecency(const base::Time& now,
     summed_visit_points += (value_of_transition * bucket_weight);
   }
   return visits.size() * summed_visit_points /
-      (discount_frecency_when_few_visits_ ? kMaxVisitsToScore :
-       total_sampled_visits);
+      (discount_frecency_when_few_visits_ ?
+          kMaxVisitsToScore : total_sampled_visits);
 }
 
 // static

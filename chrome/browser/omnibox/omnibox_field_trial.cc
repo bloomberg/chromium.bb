@@ -320,24 +320,21 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
 }
 
 bool OmniboxFieldTrial::HQPDiscountFrecencyWhenFewVisits() {
-  std::string discount_frecency_str = chrome_variations::
-      GetVariationParamValue(kBundledExperimentFieldTrialName,
-                             kHQPDiscountFrecencyWhenFewVisitsRule);
-  return discount_frecency_str == "true";
+  return chrome_variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPDiscountFrecencyWhenFewVisitsRule) == "true";
 }
 
 bool OmniboxFieldTrial::HQPAllowMatchInTLDValue() {
-  std::string allow_match_in_tld_str = chrome_variations::
-      GetVariationParamValue(kBundledExperimentFieldTrialName,
-                             kHQPAllowMatchInTLDRule);
-  return allow_match_in_tld_str == "true";
+  return chrome_variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPAllowMatchInTLDRule) == "true";
 }
 
 bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
-  std::string allow_match_in_scheme_str = chrome_variations::
-      GetVariationParamValue(kBundledExperimentFieldTrialName,
-                             kHQPAllowMatchInSchemeRule);
-  return allow_match_in_scheme_str == "true";
+  return chrome_variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPAllowMatchInSchemeRule) == "true";
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
