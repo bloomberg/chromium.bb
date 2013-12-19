@@ -6,16 +6,60 @@
     to { left: 20px; }
   }
   @-webkit-keyframes test2 {
+    from { left: 10px; }
+    to { left: 20px; }
+    30% { left: 30px; }
+    60% { left: 60px; }
+    20% { left: 50px; }
+  }
+  @-webkit-keyframes test3 {
     0% { left: 10px; }
     50% , 60% { left: 30px; }
     -10% { left: 50px; }
     90%, 100% { left: 20px; }
   }
-  @-webkit-keyframes test-from-to {
+  @-webkit-keyframes test4 {
     from { left: 10px; }
-    -10% { left: 50px; }
     50% { left: 30px; }
     to { left: 20px; }
+  }
+  @-webkit-keyframes test5 {
+    0% { left: 10px; }
+    50% , 60% { left: 30px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test6 {
+    from { left: 10px; }
+    50% { left: 30px; }
+    to { left: 20px; }
+  }
+  @-webkit-keyframes test7 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test8 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test9 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test10 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test11 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test12 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
+  }
+  @-webkit-keyframes test13 {
+    0% { left: 10px; }
+    90%, 100% { left: 20px; }
   }
 </style>
 <script src="../resources/js-test.js"></script>
@@ -25,6 +69,7 @@
 
 description("This tests the CSSKeyframeRule and CSSKeyframesRule interfaces.");
 
+debug("Constants");
 if (window.CSSKeyframeRule)
     testPassed("CSSKeyframeRule exists on Window object");
 else
@@ -56,28 +101,26 @@ else
     testFailed("KEYFRAMES_RULE does not exist on Window.CSSRule object");
 
 debug("");
+debug("Basic queries");
 
 var keyframes1 = document.styleSheets.item(0).cssRules.item(0);
-
 shouldBe("keyframes1.type", "window.CSSRule.WEBKIT_KEYFRAMES_RULE");
 shouldBe("keyframes1.name", "'test1'");
 
-debug("");
-
 var rules1 = keyframes1.cssRules;
 shouldBe("rules1.length", "2");
-
 shouldBe("rules1.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rules1.item(0).cssText", "'0% { left: 10px; }'");
 shouldBe("rules1.item(1).cssText", "'100% { left: 20px; }'");
 
 debug("");
-debug("Insert three new rules");
+debug("Insert new rules");
+
 keyframes1.insertRule("30% { left: 30px; }");
 keyframes1.insertRule("60% { left: 60px; }");
 keyframes1.insertRule("20% { left: 50px; }");
-shouldBe("rules1.length", "5");
 
+shouldBe("rules1.length", "5");
 shouldBe("rules1.item(0).cssText", "'0% { left: 10px; }'");
 shouldBe("rules1.item(1).cssText", "'100% { left: 20px; }'");
 shouldBe("rules1.item(2).cssText", "'30% { left: 30px; }'");
@@ -86,81 +129,74 @@ shouldBe("rules1.item(4).cssText", "'20% { left: 50px; }'");
 
 debug("");
 debug("Insert invalid rules");
-keyframes1.insertRule("foo");
-keyframes1.insertRule("foo { left: 30px; }");
-keyframes1.insertRule("-10% { left: 30px; }");
-keyframes1.insertRule("10% { left: 30px; }");
-shouldBe("rules1.length", "6");
-shouldBe("rules1.item(5).cssText", "'10% { left: 30px; }'");
-
-debug("");
 
 var keyframes2 = document.styleSheets.item(0).cssRules.item(1);
-
-shouldBe("keyframes2.type", "window.CSSRule.WEBKIT_KEYFRAMES_RULE");
-shouldBe("keyframes2.name", "'test2'");
+keyframes2.insertRule("foo");
+keyframes2.insertRule("foo { left: 30px; }");
+keyframes2.insertRule("-10% { left: 30px; }");
+keyframes2.insertRule("10% { left: 30px; }");
 
 var rules2 = keyframes2.cssRules;
+shouldBe("rules2.length", "6");
+shouldBe("rules2.item(5).cssText", "'10% { left: 30px; }'");
 
 debug("");
+debug("Keys");
 
-shouldBe("rules2.length", "3");
+var keyframes3 = document.styleSheets.item(0).cssRules.item(2);
+shouldBe("keyframes3.type", "window.CSSRule.WEBKIT_KEYFRAMES_RULE");
+shouldBe("keyframes3.name", "'test3'");
 
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-shouldBe("rules2.item(0).keyText", "'0%'");
-shouldBe("rules2.item(1).keyText", "'50%,60%'");
-shouldBe("rules2.item(2).keyText", "'90%,100%'");
-
-shouldBe("rules2.item(0).cssText", "'0% { left: 10px; }'");
-shouldBe("rules2.item(1).cssText", "'50%,60% { left: 30px; }'");
-shouldBe("rules2.item(2).cssText", "'90%,100% { left: 20px; }'");
-
-debug("");
-
-shouldBeType("rules2.item(0).style", "CSSStyleDeclaration");
-shouldBe("rules2.item(0).style.length", "1");
+var rules3 = keyframes3.cssRules;
+shouldBe("rules3.length", "3");
+shouldBe("rules3.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rules3.item(0).keyText", "'0%'");
+shouldBe("rules3.item(1).keyText", "'50%,60%'");
+shouldBe("rules3.item(2).keyText", "'90%,100%'");
+shouldBe("rules3.item(0).cssText", "'0% { left: 10px; }'");
+shouldBe("rules3.item(1).cssText", "'50%,60% { left: 30px; }'");
+shouldBe("rules3.item(2).cssText", "'90%,100% { left: 20px; }'");
 
 debug("");
 debug("Find a rule");
 
-var rule = keyframes2.findRule("0%");
+shouldBeType("rules3.item(0).style", "CSSStyleDeclaration");
+shouldBe("rules3.item(0).style.length", "1");
+var rule = keyframes3.findRule("0%");
 
-if (!rule) 
+if (!rule)
   testFailed("Could not extract '0%' keyframe rule");
-
 shouldBe("rule.type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rule.cssText", "'0% { left: 10px; }'");
 
 debug("");
 debug("Find a rule with multiple key values");
+var rule = keyframes3.findRule("50%,60%");
 
-var rule = keyframes2.findRule("50%,60%");
-
-if (!rule) 
+if (!rule)
   testFailed("Could not extract '50%,60%' keyframe rule");
-
 shouldBe("rule.type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rule.cssText", "'50%,60% { left: 30px; }'");
 
 debug("");
 debug("Find a rule using from and to");
 
-var keyframesFromTo = document.styleSheets.item(0).cssRules.item(2);
-shouldBe("keyframesFromTo.type", "window.CSSRule.WEBKIT_KEYFRAMES_RULE");
-rule = keyframesFromTo.findRule("From");
+var keyframes4 = document.styleSheets.item(0).cssRules.item(3);
+shouldBe("keyframes4.type", "window.CSSRule.WEBKIT_KEYFRAMES_RULE");
+
+rule = keyframes4.findRule("From");
 shouldBe("rule.type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rule.cssText", "'0% { left: 10px; }'");
 
-rule = keyframesFromTo.findRule("TO");
+rule = keyframes4.findRule("TO");
 shouldBe("rule.type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rule.cssText", "'100% { left: 20px; }'");
 
 debug("");
 debug("Try to find a rule that doesn't exist");
 
-rule = keyframes2.findRule("70%");
-
-if (rule) 
+rule = keyframes4.findRule("70%");
+if (rule)
   testFailed("Was able to find the non-existent '70%' keyframe rule");
 else
   testPassed("Non-existent rule was not found");
@@ -168,89 +204,100 @@ else
 debug("");
 debug("Delete a rule");
 
-keyframes2.deleteRule("50%,60%");
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-shouldBe("rules2.item(0).keyText", "'0%'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+var keyframes5 = document.styleSheets.item(0).cssRules.item(4);
+keyframes5.deleteRule("50%,60%");
+var rules5 = keyframes5.cssRules;
+shouldBe("rules5.length", "2");
+shouldBe("rules5.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rules5.item(0).keyText", "'0%'");
+shouldBe("rules5.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Delete a from rule");
-keyframesFromTo.deleteRule("0%");
-var rulesFromTo = keyframesFromTo.cssRules;
-shouldBe("rulesFromTo.length", "2");
-shouldBe("rulesFromTo.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-shouldBe("rulesFromTo.item(0).keyText", "'50%'");
-shouldBe("rulesFromTo.item(1).keyText", "'100%'");
 
+var keyframes6 = document.styleSheets.item(0).cssRules.item(5);
+keyframes6.deleteRule("0%");
+var rules6 = keyframes6.cssRules;
+shouldBe("rules6.length", "2");
+shouldBe("rules6.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rules6.item(0).keyText", "'50%'");
+shouldBe("rules6.item(1).keyText", "'100%'");
 
 debug("");
 debug("Delete a rule that doesn't exist");
 
-keyframes2.deleteRule("70%");
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-shouldBe("rules2.item(0).keyText", "'0%'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+var keyframes7 = document.styleSheets.item(0).cssRules.item(6);
+keyframes7.deleteRule("70%");
+var rules7 = keyframes7.cssRules;
+shouldBe("rules7.length", "2");
+shouldBe("rules7.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rules7.item(0).keyText", "'0%'");
+shouldBe("rules7.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key");
 
-rules2.item(0).keyText = "70%";
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-shouldBe("rules2.item(0).keyText", "'70%'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+var rules8 = document.styleSheets.item(0).cssRules.item(7).cssRules;
+rules8.item(0).keyText = "70%";
+shouldBe("rules8.length", "2");
+shouldBe("rules8.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rules8.item(0).keyText", "'70%'");
+shouldBe("rules8.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with 'from'");
 
-rules2.item(0).keyText = "from";
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-// FIXME: Should this be converted to '0px'?
-shouldBe("rules2.item(0).keyText", "'from'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+var rules9 = document.styleSheets.item(0).cssRules.item(8).cssRules;
+rules9.item(0).keyText = "from";
+shouldBe("rules9.length", "2");
+shouldBe("rules9.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+// FIXME: Should this be converted to '0%'?
+shouldBe("rules9.item(0).keyText", "'from'");
+shouldBe("rules9.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with multiple values");
 
-rules2.item(0).keyText = "10%, 20%, 30%";
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+var rules10 = document.styleSheets.item(0).cssRules.item(9).cssRules;
+rules10.item(0).keyText = "10%, 20%, 30%";
+shouldBe("rules10.length", "2");
+shouldBe("rules10.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 // FIXME: Should we strip spaces to match the keyText parsed from a keyframe rule?
-shouldBe("rules2.item(0).keyText", "'10%, 20%, 30%'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+shouldBe("rules10.item(0).keyText", "'10%, 20%, 30%'");
+shouldBe("rules10.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with an out-of-range value");
 
-rules2.item(0).keyText = "40%, -50%, 60%";
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+var rules11 = document.styleSheets.item(0).cssRules.item(10).cssRules;
+rules11.item(0).keyText = "40%, -50%, 60%";
+shouldBe("rules11.length", "2");
+shouldBe("rules11.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 // FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
-shouldBe("rules2.item(0).keyText", "'40%, -50%, 60%'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+shouldBe("rules11.item(0).keyText", "'40%, -50%, 60%'");
+shouldBe("rules11.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with an invalid value");
 
-rules2.item(0).keyText = "foo";
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+var rules12 = document.styleSheets.item(0).cssRules.item(11).cssRules;
+rules12.item(0).keyText = "foo";
+shouldBe("rules12.length", "2");
+shouldBe("rules12.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 // FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
-shouldBe("rules2.item(0).keyText", "'foo'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+shouldBe("rules12.item(0).keyText", "'foo'");
+shouldBe("rules12.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Set a keyframe key with a null value");
 
-rules2.item(0).keyText = null;
-shouldBe("rules2.length", "2");
-shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+var rules13 = document.styleSheets.item(0).cssRules.item(12).cssRules;
+rules13.item(0).keyText = null;
+shouldBe("rules13.length", "2");
+shouldBe("rules13.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 // FIXME: Should we leave keyText unchanged when attempting to set to something invalid?
-shouldBe("rules2.item(0).keyText", "'null'");
-shouldBe("rules2.item(1).keyText", "'90%,100%'");
+shouldBe("rules13.item(0).keyText", "'null'");
+shouldBe("rules13.item(1).keyText", "'90%,100%'");
 
 </script>
 </body>

@@ -3,6 +3,7 @@ This tests the CSSKeyframeRule and CSSKeyframesRule interfaces.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+Constants
 PASS CSSKeyframeRule exists on Window object
 PASS CSSKeyframesRule exists on Window object
 PASS WEBKIT_KEYFRAME_RULE exists on Window.CSSRule object
@@ -10,15 +11,15 @@ PASS WEBKIT_KEYFRAMES_RULE exists on Window.CSSRule object
 PASS KEYFRAME_RULE exists on Window.CSSRule object
 PASS KEYFRAMES_RULE exists on Window.CSSRule object
 
+Basic queries
 PASS keyframes1.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
 PASS keyframes1.name is 'test1'
-
 PASS rules1.length is 2
 PASS rules1.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rules1.item(0).cssText is '0% { left: 10px; }'
 PASS rules1.item(1).cssText is '100% { left: 20px; }'
 
-Insert three new rules
+Insert new rules
 PASS rules1.length is 5
 PASS rules1.item(0).cssText is '0% { left: 10px; }'
 PASS rules1.item(1).cssText is '100% { left: 20px; }'
@@ -27,25 +28,24 @@ PASS rules1.item(3).cssText is '60% { left: 60px; }'
 PASS rules1.item(4).cssText is '20% { left: 50px; }'
 
 Insert invalid rules
-PASS rules1.length is 6
-PASS rules1.item(5).cssText is '10% { left: 30px; }'
+PASS rules2.length is 6
+PASS rules2.item(5).cssText is '10% { left: 30px; }'
 
-PASS keyframes2.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
-PASS keyframes2.name is 'test2'
-
-PASS rules2.length is 3
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is '0%'
-PASS rules2.item(1).keyText is '50%,60%'
-PASS rules2.item(2).keyText is '90%,100%'
-PASS rules2.item(0).cssText is '0% { left: 10px; }'
-PASS rules2.item(1).cssText is '50%,60% { left: 30px; }'
-PASS rules2.item(2).cssText is '90%,100% { left: 20px; }'
-
-PASS rules2.item(0).style is an instance of CSSStyleDeclaration
-PASS rules2.item(0).style.length is 1
+Keys
+PASS keyframes3.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
+PASS keyframes3.name is 'test3'
+PASS rules3.length is 3
+PASS rules3.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules3.item(0).keyText is '0%'
+PASS rules3.item(1).keyText is '50%,60%'
+PASS rules3.item(2).keyText is '90%,100%'
+PASS rules3.item(0).cssText is '0% { left: 10px; }'
+PASS rules3.item(1).cssText is '50%,60% { left: 30px; }'
+PASS rules3.item(2).cssText is '90%,100% { left: 20px; }'
 
 Find a rule
+PASS rules3.item(0).style is an instance of CSSStyleDeclaration
+PASS rules3.item(0).style.length is 1
 PASS rule.type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rule.cssText is '0% { left: 10px; }'
 
@@ -54,7 +54,7 @@ PASS rule.type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rule.cssText is '50%,60% { left: 30px; }'
 
 Find a rule using from and to
-PASS keyframesFromTo.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
+PASS keyframes4.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
 PASS rule.type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rule.cssText is '0% { left: 10px; }'
 PASS rule.type is window.CSSRule.WEBKIT_KEYFRAME_RULE
@@ -64,58 +64,58 @@ Try to find a rule that doesn't exist
 PASS Non-existent rule was not found
 
 Delete a rule
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is '0%'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules5.length is 2
+PASS rules5.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules5.item(0).keyText is '0%'
+PASS rules5.item(1).keyText is '90%,100%'
 
 Delete a from rule
-PASS rulesFromTo.length is 2
-PASS rulesFromTo.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rulesFromTo.item(0).keyText is '50%'
-PASS rulesFromTo.item(1).keyText is '100%'
+PASS rules6.length is 2
+PASS rules6.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules6.item(0).keyText is '50%'
+PASS rules6.item(1).keyText is '100%'
 
 Delete a rule that doesn't exist
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is '0%'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules7.length is 2
+PASS rules7.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules7.item(0).keyText is '0%'
+PASS rules7.item(1).keyText is '90%,100%'
 
 Set a keyframe key
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is '70%'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules8.length is 2
+PASS rules8.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules8.item(0).keyText is '70%'
+PASS rules8.item(1).keyText is '90%,100%'
 
 Set a keyframe key with 'from'
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is 'from'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules9.length is 2
+PASS rules9.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules9.item(0).keyText is 'from'
+PASS rules9.item(1).keyText is '90%,100%'
 
 Set a keyframe key with multiple values
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is '10%, 20%, 30%'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules10.length is 2
+PASS rules10.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules10.item(0).keyText is '10%, 20%, 30%'
+PASS rules10.item(1).keyText is '90%,100%'
 
 Set a keyframe key with an out-of-range value
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is '40%, -50%, 60%'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules11.length is 2
+PASS rules11.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules11.item(0).keyText is '40%, -50%, 60%'
+PASS rules11.item(1).keyText is '90%,100%'
 
 Set a keyframe key with an invalid value
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is 'foo'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules12.length is 2
+PASS rules12.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules12.item(0).keyText is 'foo'
+PASS rules12.item(1).keyText is '90%,100%'
 
 Set a keyframe key with a null value
-PASS rules2.length is 2
-PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rules2.item(0).keyText is 'null'
-PASS rules2.item(1).keyText is '90%,100%'
+PASS rules13.length is 2
+PASS rules13.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules13.item(0).keyText is 'null'
+PASS rules13.item(1).keyText is '90%,100%'
 PASS successfullyParsed is true
 
 TEST COMPLETE
