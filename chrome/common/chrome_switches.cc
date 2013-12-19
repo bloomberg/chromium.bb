@@ -662,6 +662,9 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
 
+// Enables experimentation with launching ephemeral apps via hyperlinks.
+const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
+
 // Enable always using the local NTP for the first NTP load of a new window.
 const char kEnableLocalFirstLoadNTP[] = "enable-local-first-load-ntp";
 

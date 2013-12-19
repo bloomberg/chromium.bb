@@ -76,6 +76,8 @@
         'browser/apps/ephemeral_app_service.h',
         'browser/apps/ephemeral_app_service_factory.cc',
         'browser/apps/ephemeral_app_service_factory.h',
+        'browser/apps/ephemeral_app_throttle.cc',
+        'browser/apps/ephemeral_app_throttle.h',
         'browser/apps/shortcut_manager.cc',
         'browser/apps/shortcut_manager.h',
         'browser/apps/shortcut_manager_factory.cc',

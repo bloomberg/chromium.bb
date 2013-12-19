@@ -1842,6 +1842,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableEphemeralApps)
   },
   {
+    "enable-linkable-ephemeral-apps",
+    IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_NAME,
+    IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableLinkableEphemeralApps)
+  },
+  {
     "enable-service-worker",
     IDS_FLAGS_ENABLE_SERVICE_WORKER_NAME,
     IDS_FLAGS_ENABLE_SERVICE_WORKER_DESCRIPTION,
