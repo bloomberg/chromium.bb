@@ -27,68 +27,36 @@
 #include "config.h"
 #include "core/dom/DocumentSharedObjectPool.h"
 
-#include "core/dom/Element.h"
+#include "core/dom/ElementData.h"
 
 namespace WebCore {
 
-class ShareableElementDataCacheKey {
-public:
-    ShareableElementDataCacheKey(const Attribute* attributes, unsigned attributeCount)
-        : m_attributes(attributes)
-        , m_attributeCount(attributeCount)
-    { }
+inline unsigned attributeHash(const Vector<Attribute>& attributes)
+{
+    return StringHasher::hashMemory(attributes.data(), attributes.size() * sizeof(Attribute));
+}
 
-    bool operator!=(const ShareableElementDataCacheKey& other) const
-    {
-        if (m_attributeCount != other.m_attributeCount)
-            return true;
-        return memcmp(m_attributes, other.m_attributes, sizeof(Attribute) * m_attributeCount);
-    }
-
-    unsigned hash() const
-    {
-        return StringHasher::hashMemory(m_attributes, m_attributeCount * sizeof(Attribute));
-    }
-
-private:
-    const Attribute* m_attributes;
-    unsigned m_attributeCount;
-};
-
-class ShareableElementDataCacheEntry {
-public:
-    ShareableElementDataCacheEntry(const ShareableElementDataCacheKey& k, PassRefPtr<ShareableElementData> v)
-        : key(k)
-        , value(v)
-    { }
-
-    ShareableElementDataCacheKey key;
-    RefPtr<ShareableElementData> value;
-};
+inline bool hasSameAttributes(const Vector<Attribute>& attributes, ShareableElementData& elementData)
+{
+    if (attributes.size() != elementData.length())
+        return false;
+    return !memcmp(attributes.data(), elementData.m_attributeArray, attributes.size() * sizeof(Attribute));
+}
 
 PassRefPtr<ShareableElementData> DocumentSharedObjectPool::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
 {
     ASSERT(!attributes.isEmpty());
 
-    ShareableElementDataCacheKey cacheKey(attributes.data(), attributes.size());
-    unsigned cacheHash = cacheKey.hash();
+    ShareableElementDataCache::iterator it = m_shareableElementDataCache.add(attributeHash(attributes), 0).iterator;
 
-    ShareableElementDataCache::iterator cacheIterator = m_shareableElementDataCache.add(cacheHash, nullptr).iterator;
-    if (cacheIterator->value && cacheIterator->value->key != cacheKey)
-        cacheHash = 0;
+    // FIXME: This prevents sharing when there's a hash collision.
+    if (it->value && !hasSameAttributes(attributes, *it->value))
+        return ShareableElementData::createWithAttributes(attributes);
 
-    RefPtr<ShareableElementData> elementData;
-    if (cacheHash && cacheIterator->value)
-        elementData = cacheIterator->value->value;
-    else
-        elementData = ShareableElementData::createWithAttributes(attributes);
+    if (!it->value)
+        it->value = ShareableElementData::createWithAttributes(attributes);
 
-    if (!cacheHash || cacheIterator->value)
-        return elementData.release();
-
-    cacheIterator->value = adoptPtr(new ShareableElementDataCacheEntry(ShareableElementDataCacheKey(elementData->m_attributeArray, elementData->length()), elementData));
-
-    return elementData.release();
+    return it->value.get();
 }
 
 DocumentSharedObjectPool::DocumentSharedObjectPool()
