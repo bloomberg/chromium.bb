@@ -90,6 +90,7 @@ SRC_RESOURCES= \
 	src/js/effects/cinema.js \
 	src/js/effects/colorize.js \
 	src/js/effects/funky.js \
+	src/js/effects/ghost.js \
 	src/js/effects/grayscale.js \
 	src/js/effects/modern.js \
 	src/js/effects/newspaper.js \
@@ -156,6 +157,7 @@ GLFX_RESOURCES= \
 	third_party/glfx/src/filters/fun/colorhalftone.js \
 	third_party/glfx/src/filters/fun/dotscreen.js \
 	third_party/glfx/src/filters/fun/edgework.js \
+	third_party/glfx/src/filters/fun/ghost.js \
 	third_party/glfx/src/filters/fun/hexagonalpixelate.js \
 	third_party/glfx/src/filters/fun/ink.js \
 	third_party/glfx/src/filters/fun/modern.js \

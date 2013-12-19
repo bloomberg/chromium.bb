@@ -180,6 +180,7 @@ exports.canvas = function() {
     canvas.sepia = wrap(sepia);
     canvas.photolab = wrap(photolab);
     canvas.modern = wrap(modern);
+    canvas.ghost = wrap(ghost);
 
     return canvas;
 };
