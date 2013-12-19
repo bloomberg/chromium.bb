@@ -507,6 +507,8 @@ widget_set_axis_handler(struct widget *widget,
 			widget_axis_handler_t handler);
 void
 widget_schedule_redraw(struct widget *widget);
+void
+widget_set_use_cairo(struct widget *widget, int use_cairo);
 
 struct widget *
 window_frame_create(struct window *window, void *data);

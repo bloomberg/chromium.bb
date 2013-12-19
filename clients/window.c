@@ -285,6 +285,11 @@ struct widget {
 	int opaque;
 	int tooltip_count;
 	int default_cursor;
+	/* If this is set to false then no cairo surface will be
+	 * created before redrawing the surface. This is useful if the
+	 * redraw handler is going to do completely custom rendering
+	 * such as using EGL directly */
+	int use_cairo;
 };
 
 struct touch_point {
@@ -1609,6 +1614,7 @@ widget_create(struct window *window, struct surface *surface, void *data)
 	widget->tooltip = NULL;
 	widget->tooltip_count = 0;
 	widget->default_cursor = CURSOR_LEFT_PTR;
+	widget->use_cairo = 1;
 
 	return widget;
 }
@@ -1706,6 +1712,8 @@ widget_get_cairo_surface(struct widget *widget)
 {
 	struct surface *surface = widget->surface;
 	struct window *window = widget->window;
+
+	assert(widget->use_cairo);
 
 	if (!surface->cairo_surface) {
 		if (surface == window->main_surface)
@@ -1937,6 +1945,13 @@ widget_schedule_redraw(struct widget *widget)
 	DBG_OBJ(widget->surface->surface, "widget %p\n", widget);
 	widget->surface->redraw_needed = 1;
 	window_schedule_redraw_task(widget->window);
+}
+
+void
+widget_set_use_cairo(struct widget *widget,
+		     int use_cairo)
+{
+	widget->use_cairo = use_cairo;
 }
 
 cairo_surface_t *
@@ -3971,7 +3986,8 @@ surface_redraw(struct surface *surface)
 		wl_callback_destroy(surface->frame_cb);
 	}
 
-	if (!widget_get_cairo_surface(surface->widget)) {
+	if (surface->widget->use_cairo &&
+	    !widget_get_cairo_surface(surface->widget)) {
 		DBG_OBJ(surface->surface, "cancelled due buffer failure\n");
 		return -1;
 	}
