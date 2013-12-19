@@ -815,6 +815,8 @@
             'css/StyleSheetContents.h',
             'css/StyleSheetList.cpp',
             'css/StyleSheetList.h',
+            'css/VariablesIterator.cpp',
+            'css/VariablesIterator.h',
             'css/TreeBoundaryCrossingRules.cpp',
             'css/TreeBoundaryCrossingRules.h',
             'css/resolver/AnimatedStyleBuilder.cpp',
