@@ -12,13 +12,6 @@
         'compile_suid_client': 0,
         'compile_credentials': 0,
       }],
-      ['((OS=="linux" or OS=="android") and '
-             '(target_arch=="ia32" or target_arch=="x64" or '
-              'target_arch=="arm"))', {
-        'compile_seccomp_bpf': 1,
-      }, {
-        'compile_seccomp_bpf': 0,
-      }],
       ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
         'compile_seccomp_bpf_demo': 1,
       }, {
@@ -40,8 +33,8 @@
   'targets': [
     # We have two principal targets: sandbox and sandbox_linux_unittests
     # All other targets are listed as dependencies.
-    # FIXME(jln): for historial reasons, sandbox_linux is the setuid sandbox
-    # and is its own target.
+    # There is one notable exception: for historical reasons, chrome_sandbox is
+    # the setuid sandbox and is its own target.
     {
       'target_name': 'sandbox',
       'type': 'none',
@@ -55,7 +48,7 @@
           ],
         }],
         # Compile seccomp BPF when we support it.
-        [ 'compile_seccomp_bpf==1', {
+        [ 'use_seccomp_bpf==1', {
           'dependencies': [
             'seccomp_bpf',
             'seccomp_bpf_helpers',

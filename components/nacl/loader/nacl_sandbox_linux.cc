@@ -13,6 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+
+#if defined(USE_SECCOMP_BPF)
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
@@ -151,12 +153,22 @@ void RunSandboxSanityChecks() {
 
 }  // namespace
 
+#else
+
+#if !defined(ARCH_CPU_MIPS_FAMILY)
+#error "Seccomp-bpf disabled on supported architecture!"
+#endif
+
+#endif  // defined(USE_SECCOMP_BPF)
+
 bool InitializeBPFSandbox() {
+#if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
       scoped_ptr<SandboxBPFPolicy>(new NaClBPFSandboxPolicy()));
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;
   }
+#endif  // defined(USE_SECCOMP_BPF)
   return false;
 }

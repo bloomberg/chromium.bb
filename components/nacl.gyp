@@ -216,6 +216,14 @@
                     }],
                   ],
                 }],
+                ['use_seccomp_bpf == 0', {
+                  'sources!': [
+                    '../content/common/sandbox_linux/sandbox_bpf_base_policy_linux.cc',
+                    '../content/common/sandbox_linux/sandbox_init_linux.cc',
+                  ],
+                }, {
+                  'defines': ['USE_SECCOMP_BPF'],
+                }],
               ],
               'cflags': ['-fPIE'],
               'link_settings': {

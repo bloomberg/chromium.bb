@@ -636,5 +636,21 @@
       },
      ]
     }],
+    ['use_seccomp_bpf==0', {
+      'sources!': [
+        'common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc',
+        'common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h',
+        'common/sandbox_linux/bpf_gpu_policy_linux.cc',
+        'common/sandbox_linux/bpf_gpu_policy_linux.h',
+        'common/sandbox_linux/bpf_ppapi_policy_linux.cc',
+        'common/sandbox_linux/bpf_ppapi_policy_linux.h',
+        'common/sandbox_linux/bpf_renderer_policy_linux.cc',
+        'common/sandbox_linux/bpf_renderer_policy_linux.h',
+        'common/sandbox_linux/sandbox_bpf_base_policy_linux.cc',
+        'common/sandbox_linux/sandbox_bpf_base_policy_linux.h',
+      ],
+    }, {
+      'defines': ['USE_SECCOMP_BPF'],
+    }],
   ],
 }

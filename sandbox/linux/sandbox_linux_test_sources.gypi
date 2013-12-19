@@ -25,7 +25,7 @@
         'suid/client/setuid_sandbox_client_unittest.cc',
       ],
     }],
-    [ 'compile_seccomp_bpf==1', {
+    [ 'use_seccomp_bpf==1', {
       'sources': [
         'seccomp-bpf/bpf_tests.h',
         'seccomp-bpf/codegen_unittest.cc',

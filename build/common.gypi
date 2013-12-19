@@ -1915,6 +1915,17 @@
           }],
         ],
       }],
+      # The seccomp-bpf sandbox is only supported on three architectures
+      # currently.
+      # Do not disable seccomp_bpf anywhere without talking to
+      # security@chromium.org!
+      ['((OS=="linux" or OS=="android") and '
+           '(target_arch=="ia32" or target_arch=="x64" or '
+             'target_arch=="arm"))', {
+         'use_seccomp_bpf%': 1,
+      }, {
+         'use_seccomp_bpf%': 0,
+      }],
     ],
 
     # The path to the ANGLE library.

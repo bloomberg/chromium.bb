@@ -17,14 +17,10 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 
-// These are the only architectures supported for now.
-#if defined(__i386__) || defined(__x86_64__) || \
-    (defined(__arm__) && (defined(__thumb__) || defined(__ARM_EABI__)))
-#define SECCOMP_BPF_SANDBOX
-#endif
+#if defined(USE_SECCOMP_BPF)
 
-#if defined(SECCOMP_BPF_SANDBOX)
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
@@ -37,14 +33,24 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::BaselinePolicy;
 using sandbox::SyscallSets;
 
+#else
+
+// Make sure that seccomp-bpf does not get disabled by mistake. Also make sure
+// that we think twice about this when adding a new architecture.
+#if !defined(ARCH_CPU_MIPS_FAMILY)
+#error "Seccomp-bpf disabled on supported architecture!"
+#endif  // !defined(ARCH_CPU_MIPS_FAMILY)
+
+#endif  //
+
 namespace content {
 
+#if defined(USE_SECCOMP_BPF)
 namespace {
 
 void StartSandboxWithPolicy(sandbox::SandboxBPFPolicy* policy);
@@ -214,7 +220,7 @@ bool StartBPFSandbox(const CommandLine& command_line,
 
 }  // namespace
 
-#endif  // SECCOMP_BPF_SANDBOX
+#endif  // USE_SECCOMP_BPF
 
 // Is seccomp BPF globally enabled?
 bool SandboxSeccompBPF::IsSeccompBPFDesired() {
@@ -229,18 +235,18 @@ bool SandboxSeccompBPF::IsSeccompBPFDesired() {
 
 bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
     const std::string& process_type) {
-#if defined(SECCOMP_BPF_SANDBOX)
+#if defined(USE_SECCOMP_BPF)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (process_type == switches::kGpuProcess)
     return !command_line.HasSwitch(switches::kDisableGpuSandbox);
 
   return true;
-#endif  // SECCOMP_BPF_SANDBOX
+#endif  // USE_SECCOMP_BPF
   return false;
 }
 
 bool SandboxSeccompBPF::SupportsSandbox() {
-#if defined(SECCOMP_BPF_SANDBOX)
+#if defined(USE_SECCOMP_BPF)
   // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
   // here.
   SandboxBPF::SandboxStatus bpf_sandbox_status =
@@ -257,7 +263,7 @@ bool SandboxSeccompBPF::SupportsSandbox() {
 }
 
 bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
-#if defined(SECCOMP_BPF_SANDBOX)
+#if defined(USE_SECCOMP_BPF)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   if (IsSeccompBPFDesired() &&  // Global switches policy.
@@ -275,23 +281,23 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
     scoped_ptr<sandbox::SandboxBPFPolicy> policy) {
-#if defined(SECCOMP_BPF_SANDBOX)
+#if defined(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
     StartSandboxWithPolicy(policy.release());
     return true;
   }
-#endif  // defined(SECCOMP_BPF_SANDBOX)
+#endif  // defined(USE_SECCOMP_BPF)
   return false;
 }
 
 scoped_ptr<sandbox::SandboxBPFPolicy>
 SandboxSeccompBPF::GetBaselinePolicy() {
-#if defined(SECCOMP_BPF_SANDBOX)
+#if defined(USE_SECCOMP_BPF)
   return scoped_ptr<sandbox::SandboxBPFPolicy>(new BaselinePolicy);
 #else
   return scoped_ptr<sandbox::SandboxBPFPolicy>();
-#endif  // defined(SECCOMP_BPF_SANDBOX)
+#endif  // defined(USE_SECCOMP_BPF)
 }
 
 }  // namespace content
