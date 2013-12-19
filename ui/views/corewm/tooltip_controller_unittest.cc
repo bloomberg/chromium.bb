@@ -528,7 +528,10 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   widget2.reset();
 }
 
-#if !defined(OS_CHROMEOS)
+// These tests search for a specific aura::Window to identify the
+// tooltip. Windows shows the tooltip using a native tooltip, so these tests
+// don't apply.
+#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
 // This test creates two top level windows and verifies that the tooltip
 // displays correctly when mouse moves are dispatched to these windows.
 // Additionally it also verifies that the tooltip is reparented to the new
@@ -641,7 +644,6 @@ TEST_F(TooltipControllerTest, TooltipAtTopOfZOrderAfterActivation) {
       widget_->GetNativeWindow()->GetRootWindow()->children().back()->type(),
       aura::client::WINDOW_TYPE_TOOLTIP);
 }
-
 #endif
 
 }  // namespace test

@@ -819,6 +819,13 @@
           'include_dirs': [
             '../third_party/wtl/include',
           ],
+          'msvs_settings': {
+            'VCManifestTool': {
+              'AdditionalManifestFiles': [
+                '$(ProjectDir)\\test\\views_unittest.manifest',
+              ],
+            },
+          },
         }],
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
@@ -853,12 +860,6 @@
         ['use_ozone==1', {
           'sources!': [
             'corewm/capture_controller_unittest.cc',
-          ],
-        }],
-        # Native tooltip class doesn't run well from unit tests.
-        ['use_aura==1 and OS=="win"', {
-          'sources!': [
-            'corewm/tooltip_controller_unittest.cc',
           ],
         }],
       ],
