@@ -87,7 +87,7 @@ bool WavAudioHandler::CopyTo(AudioBus* bus,
   if (!bus)
     return false;
   if (bus->channels() != num_channels_) {
-    LOG(ERROR) << "Number of channel mismatch.";
+    DLOG(ERROR) << "Number of channel mismatch.";
     return false;
   }
   if (AtEnd(cursor)) {
@@ -113,14 +113,14 @@ int WavAudioHandler::ParseSubChunk(const base::StringPiece& data) {
     if (!ParseDataChunk(data.substr(kChunkHeaderSize, chunk_length)))
       return -1;
   } else {
-    LOG(ERROR) << "Unknown data chunk: " << data.substr(0, 4) << ".";
+    DVLOG(1) << "Unknown data chunk: " << data.substr(0, 4) << ".";
   }
   return chunk_length + kChunkHeaderSize;
 }
 
 bool WavAudioHandler::ParseFmtChunk(const base::StringPiece& data) {
   if (data.size() < kFmtChunkMinimumSize) {
-    LOG(ERROR) << "Data size " << data.size() << " is too short.";
+    DLOG(ERROR) << "Data size " << data.size() << " is too short.";
     return false;
   }
   DCHECK_EQ(ReadInt<uint16>(data, kAudioFormatOffset), kAudioFormatPCM);
