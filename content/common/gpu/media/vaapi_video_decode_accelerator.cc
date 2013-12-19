@@ -84,10 +84,6 @@ class VaapiVideoDecodeAccelerator::TFPPicture {
     return picture_buffer_id_;
   }
 
-  uint32 texture_id() {
-    return texture_id_;
-  }
-
   gfx::Size size() {
     return size_;
   }
@@ -382,7 +378,8 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
   DVLOG(4) << "Notifying output picture id " << output_id
            << " for input "<< input_id << " is ready";
-  client_->PictureReady(media::Picture(output_id, input_id));
+  if (client_)
+    client_->PictureReady(media::Picture(output_id, input_id));
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputSurface() {
@@ -630,7 +627,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   for (TFPPictures::iterator iter = tfp_pictures_.begin();
        iter != tfp_pictures_.end(); ++iter) {
     DVLOG(2) << "Dismissing picture id: " << iter->first;
-    client_->DismissPictureBuffer(iter->first);
+    if (client_)
+      client_->DismissPictureBuffer(iter->first);
   }
   tfp_pictures_.clear();
 

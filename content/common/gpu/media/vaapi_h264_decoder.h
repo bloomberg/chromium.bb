@@ -284,9 +284,6 @@ class VaapiH264Decoder {
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;
 
-  // Maximum size of DPB required by codec level.
-  int max_dpb_size_;
-
   DISALLOW_COPY_AND_ASSIGN(VaapiH264Decoder);
 };
 

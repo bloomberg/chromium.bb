@@ -125,9 +125,6 @@ class CONTENT_EXPORT VaapiWrapper {
   // return values from public methods.
   base::Closure report_error_to_uma_cb_;
 
-  // Has static initialization of pre-sandbox components completed successfully?
-  static bool pre_sandbox_init_done_;
-
   DISALLOW_COPY_AND_ASSIGN(VaapiWrapper);
 };
 

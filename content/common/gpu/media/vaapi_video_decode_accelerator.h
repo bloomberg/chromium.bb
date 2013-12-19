@@ -61,9 +61,6 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   virtual void Destroy() OVERRIDE;
 
 private:
-  // Notify the client that |output_id| is ready for displaying.
-  void NotifyPictureReady(int32 input_id, int32 output_id);
-
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
 
