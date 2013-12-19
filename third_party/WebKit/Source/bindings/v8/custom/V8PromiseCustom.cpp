@@ -136,7 +136,7 @@ void promiseAllFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8PromiseCustom::resolve(promise, results, isolate);
         return;
     }
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(countdown->Value() - 1, isolate));
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(isolate, countdown->Value() - 1));
 }
 
 v8::Local<v8::Object> promiseAllEnvironment(v8::Handle<v8::Object> promise, v8::Handle<v8::Object> countdownWrapper, int index, v8::Handle<v8::Array> results, v8::Isolate* isolate)
@@ -146,7 +146,7 @@ v8::Local<v8::Object> promiseAllEnvironment(v8::Handle<v8::Object> promise, v8::
 
     environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentPromiseIndex, promise);
     environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentCountdownIndex, countdownWrapper);
-    environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentIndexIndex, v8::Integer::New(index, isolate));
+    environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentIndexIndex, v8::Integer::New(isolate, index));
     environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentResultsIndex, results);
     return environment;
 }
@@ -590,7 +590,7 @@ void V8Promise::allMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
     v8::Local<v8::Object> countdownWrapper = objectTemplate->NewInstance();
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(iterable->Length(), isolate));
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(isolate, iterable->Length()));
 
     v8::Local<v8::Function> onRejected = createClosure(promiseRejectCallback, promise, isolate);
     for (unsigned i = 0, length = iterable->Length(); i < length; ++i) {
@@ -638,7 +638,7 @@ void V8PromiseCustom::setState(v8::Handle<v8::Object> internal, PromiseState sta
 {
     ASSERT(!value.IsEmpty());
     ASSERT(state == Pending || state == Fulfilled || state == Rejected || state == Following);
-    internal->SetInternalField(InternalStateIndex, v8::Integer::New(state, isolate));
+    internal->SetInternalField(InternalStateIndex, v8::Integer::New(isolate, state));
     internal->SetInternalField(InternalResultIndex, value);
 }
 

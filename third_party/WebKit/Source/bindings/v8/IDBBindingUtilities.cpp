@@ -173,7 +173,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; ++i) {
-            v8::Local<v8::Value> item = array->Get(v8::Int32::New(i, isolate));
+            v8::Local<v8::Value> item = array->Get(v8::Int32::New(isolate, i));
             RefPtr<IDBKey> subkey = createIDBKeyFromValue(item, stack, isolate);
             if (!subkey)
                 subkeys.append(IDBKey::createInvalid());

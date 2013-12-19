@@ -1647,7 +1647,7 @@ private:
         uint32_t rawValue;
         if (!doReadUint32(&rawValue))
             return false;
-        *value = v8::Integer::New(static_cast<int32_t>(ZigZag::decode(rawValue)), m_isolate);
+        *value = v8::Integer::New(m_isolate, static_cast<int32_t>(ZigZag::decode(rawValue)));
         return true;
     }
 
@@ -1656,7 +1656,7 @@ private:
         uint32_t rawValue;
         if (!doReadUint32(&rawValue))
             return false;
-        *value = v8::Integer::NewFromUnsigned(rawValue, m_isolate);
+        *value = v8::Integer::NewFromUnsigned(m_isolate, rawValue);
         return true;
     }
 

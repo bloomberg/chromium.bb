@@ -131,19 +131,19 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& args, v8::Handle<v8:
         const Vector<bool>& value = args.getBoolArray();
         v8::Local<v8::Array> array = v8::Array::New(isolate, value.size());
         for (size_t ii = 0; ii < value.size(); ++ii)
-            array->Set(v8::Integer::New(ii, isolate), v8Boolean(value[ii], isolate));
+            array->Set(v8::Integer::New(isolate, ii), v8Boolean(value[ii], isolate));
         return array;
     }
     case WebGLGetInfo::kTypeFloat:
         return v8::Number::New(isolate, args.getFloat());
     case WebGLGetInfo::kTypeInt:
-        return v8::Integer::New(args.getInt(), isolate);
+        return v8::Integer::New(isolate, args.getInt());
     case WebGLGetInfo::kTypeNull:
         return v8::Null(isolate);
     case WebGLGetInfo::kTypeString:
         return v8String(isolate, args.getString());
     case WebGLGetInfo::kTypeUnsignedInt:
-        return v8::Integer::NewFromUnsigned(args.getUnsignedInt(), isolate);
+        return v8::Integer::NewFromUnsigned(isolate, args.getUnsignedInt());
     case WebGLGetInfo::kTypeWebGLBuffer:
         return toV8(args.getWebGLBuffer(), creationContext, isolate);
     case WebGLGetInfo::kTypeWebGLFloatArray:
@@ -329,7 +329,7 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
     }
     v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), shaders.size());
     for (size_t ii = 0; ii < shaders.size(); ++ii)
-        array->Set(v8::Integer::New(ii, info.GetIsolate()), toV8(shaders[ii].get(), info.Holder(), info.GetIsolate()));
+        array->Set(v8::Integer::New(info.GetIsolate(), ii), toV8(shaders[ii].get(), info.Holder(), info.GetIsolate()));
     v8SetReturnValue(info, array);
 }
 
@@ -430,7 +430,7 @@ void V8WebGLRenderingContext::getSupportedExtensionsMethodCustom(const v8::Funct
     Vector<String> value = imp->getSupportedExtensions();
     v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), value.size());
     for (size_t ii = 0; ii < value.size(); ++ii)
-        array->Set(v8::Integer::New(ii, info.GetIsolate()), v8String(info.GetIsolate(), value[ii]));
+        array->Set(v8::Integer::New(info.GetIsolate(), ii), v8String(info.GetIsolate(), value[ii]));
     v8SetReturnValue(info, array);
 }
 

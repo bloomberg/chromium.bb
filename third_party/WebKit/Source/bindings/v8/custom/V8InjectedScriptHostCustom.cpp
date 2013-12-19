@@ -208,9 +208,9 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     int columnNumber = function->GetScriptColumnNumber();
 
     v8::Local<v8::Object> location = v8::Object::New(isolate);
-    location->Set(v8AtomicString(isolate, "lineNumber"), v8::Integer::New(lineNumber, isolate));
-    location->Set(v8AtomicString(isolate, "columnNumber"), v8::Integer::New(columnNumber, isolate));
-    location->Set(v8AtomicString(isolate, "scriptId"), v8::Integer::New(function->ScriptId(), isolate)->ToString());
+    location->Set(v8AtomicString(isolate, "lineNumber"), v8::Integer::New(isolate, lineNumber));
+    location->Set(v8AtomicString(isolate, "columnNumber"), v8::Integer::New(isolate, columnNumber));
+    location->Set(v8AtomicString(isolate, "scriptId"), v8::Integer::New(isolate, function->ScriptId())->ToString());
 
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8AtomicString(isolate, "location"), location);

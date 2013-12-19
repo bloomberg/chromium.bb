@@ -61,7 +61,7 @@ void createHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> 
     }
 
     v8::Local<v8::Array> cacheArray = v8::Local<v8::Array>::Cast(cache);
-    cacheArray->Set(v8::Integer::New(cacheArray->Length(), isolate), value);
+    cacheArray->Set(v8::Integer::New(isolate, cacheArray->Length()), value);
 }
 
 bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
@@ -147,7 +147,7 @@ void removeHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> 
         return;
     v8::Local<v8::Array> cacheArray = v8::Local<v8::Array>::Cast(cache);
     for (int i = cacheArray->Length() - 1; i >= 0; --i) {
-        v8::Local<v8::Value> cached = cacheArray->Get(v8::Integer::New(i, isolate));
+        v8::Local<v8::Value> cached = cacheArray->Get(v8::Integer::New(isolate, i));
         if (cached->StrictEquals(value)) {
             cacheArray->Delete(i);
             return;

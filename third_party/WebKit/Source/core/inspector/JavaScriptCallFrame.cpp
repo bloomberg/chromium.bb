@@ -171,7 +171,7 @@ ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String&
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "setVariableValue")));
     v8::Handle<v8::Value> argv[] = {
-        v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, m_isolate)),
+        v8::Handle<v8::Value>(v8::Integer::New(m_isolate, scopeNumber)),
         v8String(m_isolate, variableName),
         newValue.v8Value()
     };

@@ -110,7 +110,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
 bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, bool normalizeLineEndingsToNative, BlobData& blobData, v8::Isolate* isolate)
 {
     for (uint32_t i = 0; i < blobPartsLength; ++i) {
-        v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(i, isolate));
+        v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(isolate, i));
         if (item.IsEmpty())
             return false;
 

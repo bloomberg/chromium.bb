@@ -91,8 +91,8 @@ String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBrea
 
     v8::Local<v8::Object> info = v8::Object::New(m_isolate);
     info->Set(v8AtomicString(m_isolate, "sourceID"), v8String(debuggerContext->GetIsolate(), sourceID));
-    info->Set(v8AtomicString(m_isolate, "lineNumber"), v8::Integer::New(scriptBreakpoint.lineNumber, debuggerContext->GetIsolate()));
-    info->Set(v8AtomicString(m_isolate, "columnNumber"), v8::Integer::New(scriptBreakpoint.columnNumber, debuggerContext->GetIsolate()));
+    info->Set(v8AtomicString(m_isolate, "lineNumber"), v8::Integer::New(debuggerContext->GetIsolate(), scriptBreakpoint.lineNumber));
+    info->Set(v8AtomicString(m_isolate, "columnNumber"), v8::Integer::New(debuggerContext->GetIsolate(), scriptBreakpoint.columnNumber));
     info->Set(v8AtomicString(m_isolate, "interstatementLocation"), v8Boolean(interstatementLocation, debuggerContext->GetIsolate()));
     info->Set(v8AtomicString(m_isolate, "condition"), v8String(debuggerContext->GetIsolate(), scriptBreakpoint.condition));
 
@@ -161,7 +161,7 @@ void ScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pauseOn
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
-    v8::Handle<v8::Value> argv[] = { v8::Int32::New(pauseOnExceptionsState, m_isolate) };
+    v8::Handle<v8::Value> argv[] = { v8::Int32::New(m_isolate, pauseOnExceptionsState) };
     callDebuggerMethod("setPauseOnExceptionsState", 1, argv);
 }
 
@@ -319,9 +319,9 @@ PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8:
     v8::Handle<v8::Value> currentCallFrameV8;
     if (executionState.IsEmpty()) {
         v8::Handle<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "currentCallFrame")));
-        currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(maximumLimit, m_isolate));
+        currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(m_isolate, maximumLimit));
     } else {
-        v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(maximumLimit, m_isolate) };
+        v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(m_isolate, maximumLimit) };
         currentCallFrameV8 = callDebuggerMethod("currentCallFrame", 2, argv);
     }
     ASSERT(!currentCallFrameV8.IsEmpty());
@@ -547,7 +547,7 @@ v8::Handle<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Handle<v8:
 
     v8::Handle<v8::Value> argv[] = {
         functionValue,
-        v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, debuggerContext->GetIsolate())),
+        v8::Handle<v8::Value>(v8::Integer::New(debuggerContext->GetIsolate(), scopeNumber)),
         v8String(debuggerContext->GetIsolate(), variableName),
         newValue
     };

@@ -70,7 +70,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* cont
         if (error.IsEmpty())
             error = v8::Null(isolate);
 
-        v8::Handle<v8::Value> parameters[5] = { v8String(isolate, errorEvent->message()), v8String(isolate, errorEvent->filename()), v8::Integer::New(errorEvent->lineno(), isolate), v8::Integer::New(errorEvent->colno(), isolate), error };
+        v8::Handle<v8::Value> parameters[5] = { v8String(isolate, errorEvent->message()), v8String(isolate, errorEvent->filename()), v8::Integer::New(isolate, errorEvent->lineno()), v8::Integer::New(isolate, errorEvent->colno()), error };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
         if (worldType(isolate) == WorkerWorld)

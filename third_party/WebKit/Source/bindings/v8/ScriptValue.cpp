@@ -88,7 +88,7 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
         RefPtr<JSONArray> inspectorArray = JSONArray::create();
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> value = array->Get(v8::Int32::New(i, isolate));
+            v8::Local<v8::Value> value = array->Get(v8::Int32::New(isolate, i));
             RefPtr<JSONValue> element = v8ToJSONValue(value, maxDepth, isolate);
             if (!element)
                 return 0;
@@ -102,7 +102,7 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
         v8::Local<v8::Array> propertyNames = object->GetPropertyNames();
         uint32_t length = propertyNames->Length();
         for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> name = propertyNames->Get(v8::Int32::New(i, isolate));
+            v8::Local<v8::Value> name = propertyNames->Get(v8::Int32::New(isolate, i));
             // FIXME(yurys): v8::Object should support GetOwnPropertyNames
             if (name->IsString() && !object->HasRealNamedProperty(v8::Handle<v8::String>::Cast(name)))
                 continue;
