@@ -3,8 +3,7 @@
 {% filter conditional(method.conditional_string) %}
 static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {% if method.is_raises_exception or method.is_check_security_for_frame or
-          method.name in ['addEventListener', 'removeEventListener'] %}
+    {% if method.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if method.name in ['addEventListener', 'removeEventListener'] %}
@@ -14,7 +13,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
         {{throw_type_error(method,
               'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-                  method.number_of_required_arguments)}}
+                  method.number_of_required_arguments) | indent(8)}}
         return;
     }
     {% endif %}
@@ -91,7 +90,7 @@ if (UNLIKELY(info.Length() <= {{argument.index}})) {
    throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
 if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
     {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
-                               (argument.index + 1, argument.idl_type))}}
+                               (argument.index + 1, argument.idl_type)) | indent}}
     return;
 }
 {% endif %}
@@ -104,17 +103,15 @@ if (!std::isnan({{argument.name}}NativeValue))
        IDL integer types have same internal C++ type (int or unsigned) #}
     {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
 {% elif argument.idl_type == 'SerializedScriptValue' %}
-{% set did_throw = argument.name + 'DidThrow' %}
-bool {{did_throw}} = false;
-{{argument.cpp_type}} {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, {{did_throw}}, info.GetIsolate());
-if ({{did_throw}})
+{{argument.cpp_type}} {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, exceptionState, info.GetIsolate());
+if (exceptionState.throwIfNeeded())
     return;
 {% elif argument.is_variadic_wrapper_type %}
 Vector<{{argument.cpp_type}} > {{argument.name}};
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
         {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
-                                   (argument.index + 1, argument.idl_type))}}
+                                   (argument.index + 1, argument.idl_type)) | indent(8)}}
         return;
     }
     {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(info[i])));
@@ -128,14 +125,14 @@ String string = {{argument.name}};
 if (!({{argument.enum_validation_expression}})) {
     {{throw_type_error(method,
           '"parameter %s (\'" + string + "\') is not a valid enum value."' %
-              (argument.index + 1))}}
+              (argument.index + 1)) | indent}}
     return;
 }
 {% endif %}
 {% if argument.idl_type in ['Dictionary', 'Promise'] %}
 if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
     {{throw_type_error(method, '"parameter %s (\'%s\') is not an object."' %
-                               (argument.index + 1, argument.name))}}
+                               (argument.index + 1, argument.name)) | indent}}
     return;
 }
 {% endif %}
@@ -180,7 +177,10 @@ if (state.hadException()) {
 
 {######################################}
 {% macro throw_type_error(method, error_message) %}
-{% if method.is_constructor %}
+{% if method.has_exception_state %}
+exceptionState.throwTypeError({{error_message}});
+exceptionState.throwIfNeeded();
+{%- elif method.is_constructor %}
 throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
 {%- else %}
 throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
@@ -201,15 +201,13 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% if overloads.minimum_number_of_required_arguments %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.minimum_number_of_required_arguments}}, info.Length()));
-        exceptionState.throwIfNeeded();
+        {{throw_type_error(overloads,
+              'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
+              overloads.minimum_number_of_required_arguments) | indent(8)}}
         return;
     }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
-    {% else %}
-    {{throw_type_error(overloads, '"No function was found that matched the signature provided."')}}
     {% endif %}
+    {{throw_type_error(overloads, '"No function was found that matched the signature provided."') | indent}}
 }
 {% endmacro %}
 
@@ -300,7 +298,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     if (UNLIKELY(info.Length() < {{interface_length}})) {
         {{throw_type_error(constructor,
             'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-                interface_length)}}
+                interface_length) | indent(8)}}
         return;
     }
     {% endif %}
@@ -357,14 +355,9 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% endif %}
     {% if constructor.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
-        {% if is_constructor_raises_exception %}
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{constructor.number_of_required_arguments}}, info.Length()));
-        exceptionState.throwIfNeeded();
-        {% else %}
         {{throw_type_error(constructor,
               'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-                  constructor.number_of_required_arguments)}}
-        {% endif %}
+                  constructor.number_of_required_arguments) | indent(8)}}
         return;
     }
     {% endif %}

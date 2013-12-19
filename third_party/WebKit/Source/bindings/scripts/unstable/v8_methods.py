@@ -79,6 +79,15 @@ def generate_method(interface, method):
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
+    # Used for 'has_exception_state' (do we have an ExceptionState variable?)
+    has_serialized_script_value_argument = any(
+        argument for argument in arguments
+        if argument.idl_type == 'SerializedScriptValue')
+    is_check_security_for_frame = (
+        'CheckSecurity' in interface.extended_attributes and
+        'DoNotCheckSecurity' not in extended_attributes)
+    is_raises_exception = 'RaisesException' in extended_attributes
+
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
@@ -94,18 +103,21 @@ def generate_method(interface, method):
                  'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
         'idl_type': idl_type,
+        'has_exception_state':
+            is_raises_exception or is_check_security_for_frame or
+            has_serialized_script_value_argument or
+            name in ['addEventListener', 'removeEventListener'],
+        'has_serialized_script_value_argument': has_serialized_script_value_argument,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
-        'is_check_security_for_frame': (
-            'CheckSecurity' in interface.extended_attributes and
-            'DoNotCheckSecurity' not in extended_attributes),
+        'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
-        'is_raises_exception': 'RaisesException' in extended_attributes,
+        'is_raises_exception': is_raises_exception,
         'is_read_only': 'ReadOnly' in extended_attributes,
         'is_static': is_static,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,

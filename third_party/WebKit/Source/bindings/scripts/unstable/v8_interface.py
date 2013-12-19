@@ -276,12 +276,14 @@ def generate_overloads_by_type(methods, is_static):
         if method['overload_index'] != overloaded_method_counts[name]:
             continue
         overloads = method_overloads[name]
+        minimum_number_of_required_arguments = min(
+            overload['number_of_required_arguments']
+            for overload in overloads)
         method['overloads'] = {
-            'name': name,
+            'has_exception_state': bool(minimum_number_of_required_arguments),
             'methods': overloads,
-            'minimum_number_of_required_arguments': min(
-                overload['number_of_required_arguments']
-                for overload in overloads),
+            'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
+            'name': name,
         }
 
 
@@ -324,8 +326,7 @@ def overload_check_argument(index, argument):
     idl_type = argument['idl_type']
     # FIXME: proper type checking, sharing code with attributes and methods
     if idl_type == 'DOMString' and argument['is_strict_type_checking']:
-        return ' || '.join(['%s->IsNull()' % cpp_value,
-                            '%s->IsUndefined()' % cpp_value,
+        return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
                             '%s->IsString()' % cpp_value,
                             '%s->IsObject()' % cpp_value])
     if v8_types.array_or_sequence_type(idl_type):
@@ -346,6 +347,7 @@ def generate_constructor(interface, constructor):
         'argument_list': constructor_argument_list(interface, constructor),
         'arguments': [constructor_argument(argument, index)
                       for index, argument in enumerate(constructor.arguments)],
+        'has_exception_state': interface.extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_constructor': True,
         'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
