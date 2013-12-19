@@ -576,7 +576,7 @@ class ProfileSyncService
       syncer::ModelTypeSet preferred_types);
 
   // Returns the set of types which are preferred for enabling. This is a
-  // superset of the active types (see GetActiveTypes()).
+  // superset of the active types (see GetActiveDataTypes()).
   virtual syncer::ModelTypeSet GetPreferredDataTypes() const;
 
   // Gets the set of all data types that could be allowed (the set that
