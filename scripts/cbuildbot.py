@@ -1318,18 +1318,45 @@ def _FinishParsing(options, args):
   if constants.BRANCH_UTIL_CONFIG in options.build_targets:
     if options.remote:
       cros_build_lib.Die(
-          'Running branch-util as a remote tryjob is not yet supported.')
+          'Running %s as a remote tryjob is not yet supported.',
+          constants.BRANCH_UTIL_CONFIG)
     if len(options.build_targets) > 1:
       cros_build_lib.Die(
-          'Cannot run branch-util with any other configs.')
+          'Cannot run %s with any other configs.',
+          constants.BRANCH_UTIL_CONFIG)
     if not options.branch_name:
       cros_build_lib.Die(
-          'Must specify --branch-name with the branch-util config.')
-    if not any([options.force_version, options.delete_branch,
-                options.rename_to]):
+          'Must specify --branch-name with the %s config.',
+          constants.BRANCH_UTIL_CONFIG)
+    if options.branch and options.branch != options.branch_name:
       cros_build_lib.Die(
-          'Must specify --version with the branch-util config, unless '
-          'running with --delete-branch or --rename-to.')
+          'If --branch is specified with the %s config, it must'
+          ' have the same value as --branch-name.',
+          constants.BRANCH_UTIL_CONFIG)
+
+    exclusive_opts = {'--version': options.force_version,
+                      '--delete-branch': options.delete_branch,
+                      '--rename-to': options.rename_to,
+                     }
+    if 1 != sum(1 for x in exclusive_opts.values() if x):
+      cros_build_lib.Die('When using the %s config, you must'
+                         ' specifiy one and only one of the following'
+                         ' options: %s.', constants.BRANCH_UTIL_CONFIG,
+                         ', '.join(exclusive_opts.keys()))
+
+    # When deleting or renaming a branch, the --branch and --nobootstrap
+    # options are implied.
+    if options.delete_branch or options.rename_to:
+      if not options.branch:
+        cros_build_lib.Info('Automatically enabling sync to branch %s'
+                            ' for this %s flow.', options.branch_name,
+                            constants.BRANCH_UTIL_CONFIG)
+        options.branch = options.branch_name
+      if options.bootstrap:
+        cros_build_lib.Info('Automatically disabling bootstrap step for'
+                            ' this %s flow.', constants.BRANCH_UTIL_CONFIG)
+        options.bootstrap = False
+
   elif any([options.delete_branch, options.rename_to, options.branch_name]):
     cros_build_lib.Die(
         'Cannot specify --delete-branch, --rename-to or --branch-name when not '

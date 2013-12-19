@@ -5,6 +5,7 @@
 
 """Unit tests for chromite.lib.git and helpers for testing that module."""
 
+import functools
 import os
 import sys
 
@@ -36,6 +37,73 @@ class ManifestCheckoutMock(partial_mock.PartialMock):
 
   def _GetManifestsBranch(self, _root):
     return 'default'
+
+
+class NormalizeRefTest(cros_test_lib.TestCase):
+  """Test the Normalize*Ref functions."""
+
+  def _TestNormalize(self, functor, tests):
+    """Helper function for testing Normalize*Ref functions.
+
+    Args:
+      functor: Normalize*Ref functor that only needs the input
+        ref argument.
+      tests: Dict of test inputs to expected test outputs.
+    """
+    for test_input, test_output in tests.iteritems():
+      result = functor(test_input)
+      msg = ('Expected %s to translate %r to %r, but got %r.' %
+             (functor.__name__, test_input, test_output, result))
+      self.assertEquals(test_output, result, msg)
+
+  def testNormalizeRef(self):
+    """Test git.NormalizeRef function."""
+    tests = {
+        # These should all get 'refs/heads/' prefix.
+        'foo': 'refs/heads/foo',
+        'foo-bar-123': 'refs/heads/foo-bar-123',
+
+        # If input starts with 'refs/' it should be left alone.
+        'refs/foo/bar': 'refs/foo/bar',
+        'refs/heads/foo': 'refs/heads/foo',
+
+        # Plain 'refs' is nothing special.
+        'refs': 'refs/heads/refs',
+
+        None: None,
+    }
+    self._TestNormalize(git.NormalizeRef, tests)
+
+  def testNormalizeRemoteRef(self):
+    """Test git.NormalizeRemoteRef function."""
+    remote = 'TheRemote'
+    tests = {
+        # These should all get 'refs/remotes/TheRemote' prefix.
+        'foo': 'refs/remotes/%s/foo' % remote,
+        'foo-bar-123': 'refs/remotes/%s/foo-bar-123' % remote,
+
+        # These should be translated from local to remote ref.
+        'refs/heads/foo': 'refs/remotes/%s/foo' % remote,
+        'refs/heads/foo-bar-123': 'refs/remotes/%s/foo-bar-123' % remote,
+
+        # These should be moved from one remote to another.
+        'refs/remotes/OtherRemote/foo': 'refs/remotes/%s/foo' % remote,
+
+        # These should be left alone.
+        'refs/remotes/%s/foo' % remote: 'refs/remotes/%s/foo' % remote,
+        'refs/foo/bar': 'refs/foo/bar',
+
+        # Plain 'refs' is nothing special.
+        'refs': 'refs/remotes/%s/refs' % remote,
+
+        None: None,
+    }
+
+    # Add remote arg to git.NormalizeRemoteRef.
+    functor = functools.partial(git.NormalizeRemoteRef, remote)
+    functor.__name__ = git.NormalizeRemoteRef.__name__
+
+    self._TestNormalize(functor, tests)
 
 
 class GitPushTest(cros_test_lib.MockTestCase):

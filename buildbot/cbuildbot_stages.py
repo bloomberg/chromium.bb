@@ -1701,7 +1701,7 @@ class BranchUtilStage(bs.BuilderStage):
   newly created branch needs to be incremented.  Additionally, in some cases
   the Chrome major version (i.e, R29) and/or the Chrome OS version (i.e.,
   4319.0.0) of the source branch must be incremented
-  (see IncrementVersionOnDiskForSourceBranch docstring).  Finally, the external
+  (see _IncrementVersionOnDiskForSourceBranch docstring).  Finally, the external
   and internal manifests of the new branch need to be fixed up (see
   FixUpManifests docstring).
   """
@@ -1711,10 +1711,10 @@ class BranchUtilStage(bs.BuilderStage):
   def __init__(self, builder_run, **kwargs):
     super(BranchUtilStage, self).__init__(builder_run, **kwargs)
     self.dryrun = self._run.options.debug_forced
-    self.branch_name = git.NormalizeRef(self._run.options.branch_name)
-    self.rename_to = git.NormalizeRef(self._run.options.rename_to)
+    self.branch_name = self._run.options.branch_name
+    self.rename_to = self._run.options.rename_to
 
-  def RunPush(self, checkout, src_ref, dest_ref, force=False):
+  def _RunPush(self, checkout, src_ref, dest_ref, force=False):
     """Perform a git push for a checkout.
 
     Args:
@@ -1723,12 +1723,11 @@ class BranchUtilStage(bs.BuilderStage):
       dest_ref: The destination ref name.
       force: Whether to override non-fastforward checks.
     """
-    remote = checkout['push_remote']
-    push_to = git.RemoteRef(remote, dest_ref)
+    push_to = git.RemoteRef(checkout['push_remote'], dest_ref)
     git.GitPush(checkout['local_path'], src_ref, push_to, dryrun=self.dryrun,
                 force=force)
 
-  def FetchAndCheckoutTo(self, checkout_dir, remote_ref):
+  def _FetchAndCheckoutTo(self, checkout_dir, remote_ref):
     """Fetch a remote ref and check out to it.
 
     Args:
@@ -1739,7 +1738,7 @@ class BranchUtilStage(bs.BuilderStage):
                print_cmd=True)
     git.RunGit(checkout_dir, ['checkout', 'FETCH_HEAD'], print_cmd=True)
 
-  def GetBranchSuffix(self, manifest, checkout):
+  def _GetBranchSuffix(self, manifest, checkout):
     """Return the branch suffix for the given checkout.
 
     If a given project is checked out to multiple locations, it is necessary
@@ -1762,7 +1761,7 @@ class BranchUtilStage(bs.BuilderStage):
         suffix = re.sub('^-%s-' % re.escape(default_branch), '-', suffix)
     return suffix
 
-  def GetSHA1(self, checkout, branch):
+  def _GetSHA1(self, checkout, branch):
     """Get the SHA1 for the specified |branch| in the specified |checkout|.
 
     Args:
@@ -1771,14 +1770,44 @@ class BranchUtilStage(bs.BuilderStage):
 
     Returns:
       If the branch exists, returns the SHA1 of the branch. Otherwise, returns
-      the empty string.
+      the empty string.  If branch is None, return None.
     """
-    cmd = ['ls-remote', checkout['remote_alias'], branch]
-    ls_remote = git.RunGit(checkout['local_path'], cmd).output.strip()
-    # Extract the sha1 from the ls-remote output ('<sha1>\t<refname>')
-    return ls_remote.partition('\t')[0]
+    if branch:
+      cmd = ['show-ref', branch]
+      result = git.RunGit(checkout['local_path'], cmd, error_code_ok=True)
+      if result.returncode == 0:
+        # Output looks like:
+        # a00733b...30ee40e0c2c1 refs/remotes/cros/test-4980.B
+        return result.output.strip().split()[0]
 
-  def ProcessCheckout(self, src_manifest, src_checkout):
+      return ''
+
+  def _CopyBranch(self, src_checkout, src_branch, dst_branch, force=False):
+    """Copy the given |src_branch| to |dst_branch|.
+
+    Args:
+      src_checkout: The ProjectCheckout to work in.
+      src_branch: The remote branch ref to copy from.
+      dst_branch: The remote branch ref to copy to.
+      force: If True then execute the copy even if dst_branch exists.
+    """
+    cros_build_lib.Info('Creating new branch "%s" for %s.',
+                        dst_branch, src_checkout['name'])
+    self._RunPush(src_checkout, src_ref=src_branch, dest_ref=dst_branch,
+                  force=force)
+
+  def _DeleteBranch(self, src_checkout, branch):
+    """Delete the given |branch| in the given |src_checkout|.
+
+    Args:
+      src_checkout: The ProjectCheckout to work in.
+      branch: The branch ref to delete.  Must be a remote branch.
+    """
+    cros_build_lib.Info('Deleting branch "%s" for %s.',
+                        branch, src_checkout['name'])
+    self._RunPush(src_checkout, src_ref='', dest_ref=branch)
+
+  def _ProcessCheckout(self, src_manifest, src_checkout):
     """Performs per-checkout push operations.
 
     Args:
@@ -1790,39 +1819,75 @@ class BranchUtilStage(bs.BuilderStage):
       # use TOT instead.
       return
 
-    # Look up the name of the branch we should create or delete.
+    checkout_name = src_checkout['name']
+    remote = src_checkout['push_remote']
     src_ref = src_checkout['revision']
-    suffix = self.GetBranchSuffix(src_manifest, src_checkout)
-    new_branch_prefix = self.rename_to if self.rename_to else self.branch_name
-    new_branch = '%s%s' % (new_branch_prefix, suffix)
+    suffix = self._GetBranchSuffix(src_manifest, src_checkout)
 
-    # Complain if the branch already exists.
-    dest_sha1 = self.GetSHA1(src_checkout, new_branch)
-    force = (self._run.options.force_create or self._run.options.delete_branch)
-    if dest_sha1 and not force:
-      src_sha1 = self.GetSHA1(src_checkout, src_ref) or src_ref
-      if src_sha1 != dest_sha1:
+    # The source/destination branches depend on options.
+    if self.rename_to:
+      # Rename flow.  Both src and dst branches exist.
+      src_branch = '%s%s' % (self.branch_name, suffix)
+      dst_branch = '%s%s' % (self.rename_to, suffix)
+    elif self._run.options.delete_branch:
+      # Delete flow.  Only dst branch exists.
+      src_branch = None
+      dst_branch = '%s%s' % (self.branch_name, suffix)
+    else:
+      # Create flow (default).  Only dst branch exists.  Source
+      # for the branch will just be src_ref.
+      src_branch = None
+      dst_branch = '%s%s' % (self.branch_name, suffix)
+
+    # Normalize branch refs to remote.  We only process remote branches.
+    src_branch = git.NormalizeRemoteRef(remote, src_branch)
+    dst_branch = git.NormalizeRemoteRef(remote, dst_branch)
+
+    # Determine whether src/dst branches exist now, by getting their sha1s.
+    if src_branch:
+      src_sha1 = self._GetSHA1(src_checkout, src_branch)
+    elif git.IsSHA1(src_ref):
+      src_sha1 = src_ref
+    dst_sha1 = self._GetSHA1(src_checkout, dst_branch)
+
+    # Complain if the branch already exists, unless that is expected.
+    force = self._run.options.force_create or self._run.options.delete_branch
+    if dst_sha1 and not force:
+      # We are either creating a branch or renaming a branch, and the
+      # destination branch unexpectedly exists.  Accept this only if the
+      # destination branch is already at the revision we want.
+      if src_sha1 != dst_sha1:
         raise BranchError('Checkout %s already contains branch %s.  Run with '
                           '--force-create to overwrite.'
-                          % (src_checkout['name'], new_branch))
+                          % (checkout_name, dst_branch))
+
       cros_build_lib.Info('Checkout %s already contains branch %s and it '
-                          'already points to revision %s', src_checkout['name'],
-                          new_branch, dest_sha1)
-    elif self._run.options.delete_branch or self.rename_to:
-      # Create the new branch (if needed).
-      old_branch = '%s%s' % (self.branch_name, suffix)
-      if self.rename_to:
-        git.RunGit(src_checkout['local_path'], ['remote', 'update'])
-        self.RunPush(src_checkout, src_ref=old_branch, dest_ref=new_branch)
+                          'already points to revision %s', checkout_name,
+                          dst_branch, dst_sha1)
 
-      # Delete the old branch (if needed).
-      if self.GetSHA1(src_checkout, old_branch):
-        self.RunPush(src_checkout, src_ref='', dest_ref=old_branch)
+    elif self._run.options.delete_branch:
+      # Delete the dst_branch, if it exists.
+      if dst_sha1:
+        self._DeleteBranch(src_checkout, dst_branch)
+      else:
+        raise BranchError('Checkout %s does not contain branch %s to delete.'
+                          % (checkout_name, dst_branch))
+
+    elif self.rename_to:
+      # Copy src_branch to dst_branch, if it exists, then delete src_branch.
+      if src_sha1:
+        self._CopyBranch(src_checkout, src_branch, dst_branch)
+        self._DeleteBranch(src_checkout, src_branch)
+      else:
+        raise BranchError('Checkout %s does not contain branch %s to rename.'
+                          % (checkout_name, src_branch))
+
     else:
-      self.RunPush(src_checkout, src_ref=src_ref, dest_ref=new_branch,
-                   force=self._run.options.force_create)
+      # Copy src_ref to dst_branch.
+      self._CopyBranch(src_checkout, src_ref, dst_branch,
+                       force=self._run.options.force_create)
 
-  def UpdateManifest(self, manifest_path):
+  def _UpdateManifest(self, manifest_path):
     """Rewrite |manifest_path| to point at the right branch.
 
     Args:
@@ -1832,7 +1897,11 @@ class BranchUtilStage(bs.BuilderStage):
                                                manifest_path=manifest_path)
     doc = ElementTree.parse(manifest_path)
     root = doc.getroot()
+
+    # Use the local branch ref.
     new_branch_name = self.rename_to if self.rename_to else self.branch_name
+    new_branch_name = git.NormalizeRef(new_branch_name)
+
     for node in root.findall('project'):
       path = node.attrib['path']
       checkout = src_manifest.FindCheckoutFromPath(path)
@@ -1840,7 +1909,7 @@ class BranchUtilStage(bs.BuilderStage):
         # Point at the new branch.
         node.attrib.pop('revision', None)
         node.attrib.pop('upstream', None)
-        suffix = self.GetBranchSuffix(src_manifest, checkout)
+        suffix = self._GetBranchSuffix(src_manifest, checkout)
         if suffix:
           node.attrib['revision'] = '%s%s' % (new_branch_name, suffix)
       else:
@@ -1855,7 +1924,7 @@ class BranchUtilStage(bs.BuilderStage):
 
     doc.write(manifest_path)
 
-  def FixUpManifests(self, repo_manifest):
+  def _FixUpManifests(self, repo_manifest):
     """Points the checkouts at the new branch in the manifests.
 
     The 'master' branch manifest (full.xml) contains checkouts that are checked
@@ -1863,26 +1932,35 @@ class BranchUtilStage(bs.BuilderStage):
     these should all be checked out to 'refs/heads/<new_branch>', so we go
     through the manifest and fix those checkouts.
     """
-    assert not self._run.options.delete_branch, 'Can\'t fix a deleted branch.'
+    assert not self._run.options.delete_branch, 'Cannot fix a deleted branch.'
 
+    # Use local branch ref.
+    branch_ref = git.NormalizeRef(self.branch_name)
+
+    cros_build_lib.Debug('Fixing manifest projects for new branch.')
     for project in constants.MANIFEST_PROJECTS:
       manifest_checkout = repo_manifest.FindCheckout(project)
       manifest_dir = manifest_checkout['local_path']
       manifest_path = os.path.join(manifest_dir, 'full.xml')
 
       push_remote = manifest_checkout['push_remote']
+
+      # Checkout revision can be either a sha1 or a branch ref.
+      src_ref = manifest_checkout['revision']
+      if not git.IsSHA1(src_ref):
+        src_ref = git.NormalizeRemoteRef(push_remote, src_ref)
+
       git.CreateBranch(
-          manifest_dir, manifest_version.PUSH_BRANCH,
-          branch_point=manifest_checkout['revision'])
-      self.UpdateManifest(manifest_path)
+          manifest_dir, manifest_version.PUSH_BRANCH, src_ref)
+      self._UpdateManifest(manifest_path)
       git.RunGit(manifest_dir, ['add', '-A'], print_cmd=True)
-      message = 'Fix up manifest after branching %s.' % self.branch_name
+      message = 'Fix up manifest after branching %s.' % branch_ref
       git.RunGit(manifest_dir, ['commit', '-m', message], print_cmd=True)
-      push_to = git.RemoteRef(push_remote, self.branch_name)
+      push_to = git.RemoteRef(push_remote, branch_ref)
       git.GitPush(manifest_dir, manifest_version.PUSH_BRANCH, push_to,
                   dryrun=self.dryrun, force=self.dryrun)
 
-  def IncrementVersionOnDisk(self, incr_type, push_to, message):
+  def _IncrementVersionOnDisk(self, incr_type, push_to, message):
     """Bumps the version found in chromeos_version.sh on a branch.
 
     Args:
@@ -1918,7 +1996,7 @@ class BranchUtilStage(bs.BuilderStage):
     else:
       return 'branch', 'branch build number'
 
-  def IncrementVersionOnDiskForNewBranch(self, push_remote):
+  def _IncrementVersionOnDiskForNewBranch(self, push_remote):
     """Bumps the version found in chromeos_version.sh on the new branch
 
     When a new branch is created, the branch component of the new branch's
@@ -1928,25 +2006,28 @@ class BranchUtilStage(bs.BuilderStage):
     The new branch's version needs to be bumped to 4230.1.0.
 
     Args:
-      push_remote: a git.RemoteRef identifying the new branch.
+      push_remote: a git remote name where the new branch lives.
     """
     # This needs to happen before the source branch version bumping above
     # because we rely on the fact that since our current overlay checkout
     # is what we just pushed to the new branch, we don't need to do another
     # sync.  This also makes it easier to implement dryrun functionality (the
     # new branch doesn't actually get created in dryrun mode).
-    push_to = git.RemoteRef(push_remote, self.branch_name)
+
+    # Use local branch ref.
+    branch_ref = git.NormalizeRef(self.branch_name)
+    push_to = git.RemoteRef(push_remote, branch_ref)
     version_info = manifest_version.VersionInfo(
         version_string=self._run.options.force_version)
     incr_type, incr_target = self.DetermineBranchIncrParams(version_info)
     message = self.COMMIT_MESSAGE % {
         'target': incr_target,
-        'branch': self.branch_name,
+        'branch': branch_ref,
     }
-    self.IncrementVersionOnDisk(incr_type, push_to, message)
+    self._IncrementVersionOnDisk(incr_type, push_to, message)
 
-  def IncrementVersionOnDiskForSourceBranch(self, overlay_dir, push_remote,
-                                            source_branch):
+  def _IncrementVersionOnDiskForSourceBranch(self, overlay_dir, push_remote,
+                                             source_branch):
     """Bumps the version found in chromeos_version.sh on the source branch
 
     The source branch refers to the branch that the manifest used for creating
@@ -1970,24 +2051,26 @@ class BranchUtilStage(bs.BuilderStage):
       source_branch: The branch that the manifest we are using comes from.
     """
     push_to = git.RemoteRef(push_remote, source_branch)
-    self.FetchAndCheckoutTo(overlay_dir, push_to)
+    self._FetchAndCheckoutTo(overlay_dir, push_to)
 
+    # Use local branch ref.
+    branch_ref = git.NormalizeRef(self.branch_name)
     tot_version_info = manifest_version.VersionInfo.from_repo(self._build_root)
-    if (self.branch_name.startswith('refs/heads/release-') or
+    if (branch_ref.startswith('refs/heads/release-') or
         tot_version_info.VersionString() == self._run.options.force_version):
       incr_type, incr_target = self.DetermineSourceIncrParams(
-          source_branch, self.branch_name)
+          source_branch, branch_ref)
       message = self.COMMIT_MESSAGE % {
           'target': incr_target,
-          'branch': self.branch_name,
+          'branch': branch_ref,
       }
       try:
-        self.IncrementVersionOnDisk(incr_type, push_to, message)
+        self._IncrementVersionOnDisk(incr_type, push_to, message)
       except cros_build_lib.RunCommandError:
         # There's a chance we are racing against the buildbots for this
         # increment.  We shouldn't quit the script because of this.  Instead, we
         # print a warning.
-        self.FetchAndCheckoutTo(overlay_dir, push_to)
+        self._FetchAndCheckoutTo(overlay_dir, push_to)
         new_version =  manifest_version.VersionInfo.from_repo(self._build_root)
         if new_version.VersionString() != tot_version_info.VersionString():
           logging.warning('Version number for branch %s was bumped by another '
@@ -2002,24 +2085,26 @@ class BranchUtilStage(bs.BuilderStage):
 
     repo_manifest = git.ManifestCheckout.Cached(self._build_root)
     checkouts = repo_manifest.ListCheckouts()
+
+    cros_build_lib.Debug(
+        'Processing %d checkouts from manifest in parallel.', len(checkouts))
     args = [[repo_manifest, x] for x in checkouts]
-    parallel.RunTasksInProcessPool(self.ProcessCheckout, args, processes=16)
+    parallel.RunTasksInProcessPool(self._ProcessCheckout, args, processes=16)
 
     if not self._run.options.delete_branch:
-      self.FixUpManifests(repo_manifest)
+      self._FixUpManifests(repo_manifest)
 
-    if self._run.options.delete_branch or self.rename_to:
-      return
+    # Increment versions for a new branch.
+    if not (self._run.options.delete_branch or self.rename_to):
+      overlay_name = 'chromiumos/overlays/chromiumos-overlay'
+      overlay_checkout = repo_manifest.FindCheckout(overlay_name)
+      overlay_dir = overlay_checkout['local_path']
+      push_remote = overlay_checkout['push_remote']
+      self._IncrementVersionOnDiskForNewBranch(push_remote)
 
-    overlay_name = 'chromiumos/overlays/chromiumos-overlay'
-    overlay_checkout = repo_manifest.FindCheckout(overlay_name)
-    overlay_dir = overlay_checkout['local_path']
-    push_remote = overlay_checkout['push_remote']
-    self.IncrementVersionOnDiskForNewBranch(push_remote)
-
-    source_branch = repo_manifest.default['revision']
-    self.IncrementVersionOnDiskForSourceBranch(overlay_dir, push_remote,
-                                               source_branch)
+      source_branch = repo_manifest.default['revision']
+      self._IncrementVersionOnDiskForSourceBranch(overlay_dir, push_remote,
+                                                  source_branch)
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):

@@ -239,6 +239,19 @@ def NormalizeRef(ref):
   return ref
 
 
+def NormalizeRemoteRef(remote, ref):
+  """Convert git branch refs into fully qualified remote form."""
+  if ref:
+    # Support changing local ref to remote ref, or changing the remote
+    # for a remote ref.
+    ref = StripRefs(ref)
+
+    if not ref.startswith('refs/'):
+      ref = 'refs/remotes/%s/%s' % (remote, ref)
+
+  return ref
+
+
 class ProjectCheckout(dict):
   """Attributes of a given project in the manifest checkout.
 
@@ -1040,7 +1053,9 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
   cmd = ['push', push_to.remote, '%s:%s' % (refspec, push_to.ref)]
 
   if dryrun:
+    # The 'git push' command has --dry-run support built in, so leverage that.
     cmd.append('--dry-run')
+
   if force:
     cmd.append('--force')
 

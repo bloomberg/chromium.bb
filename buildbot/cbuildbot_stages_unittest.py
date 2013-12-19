@@ -2370,6 +2370,13 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
 
     self.norm_name = git.NormalizeRef(self.RELEASE_BRANCH_NAME)
 
+  def _Prepare(self, bot_id=None, **kwargs):
+    if 'cmd_args' not in kwargs:
+      # Fill in cmd_args so we do not use the default, which specifies
+      # --branch.  That is incompatible with some branch-util flows.
+      kwargs['cmd_args'] = ['-r', self.build_root]
+    super(BranchUtilStageTest, self)._Prepare(bot_id, **kwargs)
+
   def ConstructStage(self):
     return stages.BranchUtilStage(self.run)
 
@@ -2377,15 +2384,19 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     """Verify that |new_branch| has been created.
 
     Args:
-      new_branch: The new branch to create (or delete).
+      new_branch: The new remote branch to create (or delete).
       rename_from: If set, |rename_from| is being renamed to |new_branch|.
       delete: If set, |new_branch| is being deleted.
     """
+    # Pushes all operate on remote branch refs.
+    new_branch = git.NormalizeRemoteRef('cros', new_branch)
+
     # Calculate source and destination revisions.
     suffixes = ['', '-new-special-branch', '-old-special-branch']
     if delete:
       src_revs = [''] * len(suffixes)
     elif rename_from is not None:
+      rename_from = git.NormalizeRemoteRef('cros', rename_from)
       src_revs = ['%s%s' % (rename_from, suffix) for suffix in suffixes]
     else:
       src_revs = [CHROMITE_REVISION, SPECIAL_REVISION1, SPECIAL_REVISION2]
@@ -2403,6 +2414,11 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     """Run-through of branch creation."""
     self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--version', self.DEFAULT_VERSION])
+    # Simulate branch not existing.
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git show-ref .*%s' % self.RELEASE_BRANCH_NAME),
+        returncode=1)
+
     before = manifest_version.VersionInfo.from_repo(self.build_root)
     self.RunStage()
     after = manifest_version.VersionInfo.from_repo(self.build_root)
@@ -2425,17 +2441,23 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
                 (project_data['path'], branch_name, project_data['revision'])
         )
         self.assertEquals(project_data['revision'], branch_name, msg)
+
     self._VerifyPush(self.norm_name)
 
   def testNonRelease(self):
     """Non-release branch creation."""
     self._Prepare(extra_cmd_args=['--branch-name', 'refs/heads/test-branch',
                                   '--version', self.DEFAULT_VERSION])
+    # Simulate branch not existing.
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git show-ref .*test-branch'),
+        returncode=1)
+
     before = manifest_version.VersionInfo.from_repo(self.build_root)
     # Disable the new branch increment so that
     # IncrementVersionOnDiskForSourceBranch detects we need to bump the version.
     self.PatchObject(stages.BranchUtilStage,
-                     'IncrementVersionOnDiskForNewBranch', autospec=True)
+                     '_IncrementVersionOnDiskForNewBranch', autospec=True)
     self.RunStage()
     after = manifest_version.VersionInfo.from_repo(self.build_root)
     # Verify only branch number is bumped.
@@ -2446,11 +2468,10 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
   def testDeletion(self):
     """Branch deletion."""
     self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
-                                  '--delete-branch',
-                                  '--version', self.DEFAULT_VERSION])
+                                  '--delete-branch'])
     self.rc_mock.AddCmdResult(
-        partial_mock.ListRegex('git ls-remote .*release-test-branch.*'),
-        output='remote'
+        partial_mock.ListRegex('git show-ref .*release-test-branch.*'),
+        output='SomeSHA1Value'
     )
     self.RunStage()
     self._VerifyPush(self.norm_name, delete=True)
@@ -2458,11 +2479,14 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
   def testRename(self):
     """Branch rename."""
     self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
-                                  '--rename-to', 'refs/heads/release-rename',
-                                  '--version', self.DEFAULT_VERSION])
+                                  '--rename-to', 'refs/heads/release-rename'])
+    # Simulate source branch existing and destination branch not existing.
     self.rc_mock.AddCmdResult(
-        partial_mock.ListRegex('git ls-remote .*release-test-branch.*'),
-        output='remote')
+        partial_mock.ListRegex('git show-ref .*%s' % self.RELEASE_BRANCH_NAME),
+        output='SomeSHA1Value')
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git show-ref .*release-rename'),
+        returncode=1)
     self.RunStage()
     self._VerifyPush(self.run.options.rename_to, rename_from=self.norm_name)
 
@@ -2470,6 +2494,11 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     """Verify all pushes are done with --dryrun when --debug is set."""
     def VerifyDryRun(cmd, *_args, **_kwargs):
       self.assertTrue('--dry-run' in cmd)
+
+    # Simulate branch not existing.
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git show-ref .*%s' % self.RELEASE_BRANCH_NAME),
+        returncode=1)
 
     self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--debug',
@@ -2508,11 +2537,11 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     self.rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128)
     stage = self.ConstructStage()
     args = (overlay_dir, 'gerrit', 'refs/heads/master')
-    stage.IncrementVersionOnDiskForSourceBranch(*args)
+    stage._IncrementVersionOnDiskForSourceBranch(*args)
 
   def testSourceIncrementWarning(self):
     """Test the warning case for incrementing failure."""
-    # Since all git commands are mocked out, the FetchAndCheckoutTo function
+    # Since all git commands are mocked out, the _FetchAndCheckoutTo function
     # does nothing, and leaves the chromeos_version.sh file in the bumped state,
     # so it looks like TOT version was indeed bumped by another bot.
     with cros_test_lib.LoggingCapturer() as logger:
@@ -2525,7 +2554,7 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
       self._CreateVersionFile()
 
     # Simulate a git checkout of TOT.
-    self.PatchObject(stages.BranchUtilStage, 'FetchAndCheckoutTo',
+    self.PatchObject(stages.BranchUtilStage, '_FetchAndCheckoutTo',
                      side_effect=FetchAndCheckoutTo, autospec=True)
     self.assertRaises(cros_build_lib.RunCommandError,
                       self._SimulateIncrementFailure)

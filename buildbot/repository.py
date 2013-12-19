@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Repository module to handle different types of repositories the Builders use.
-"""
+"""Repository module to handle different types of repositories."""
 
 import constants
 import logging
@@ -340,6 +338,7 @@ class RepoRepository(object):
         if not targets:
           # No directories to wipe, thus nothing we can fix.
           raise
+
         cros_build_lib.SudoRunCommand(['rm', '-rf'] + sorted(targets),
                                       cwd=self.directory)
 
@@ -429,7 +428,7 @@ class RepoRepository(object):
     May blacklists certain repos as part of the diff.
 
     Args:
-      other_manfiest: Second manifest file to compare against.
+      other_manifest: Second manifest file to compare against.
 
     Returns:
       True: If the manifests are different
