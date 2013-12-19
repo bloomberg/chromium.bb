@@ -54,7 +54,7 @@ class ScreenPositionControllerTest : public test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     window_.reset(new aura::Window(&window_delegate_));
-    window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);

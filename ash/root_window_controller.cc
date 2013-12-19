@@ -51,7 +51,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -68,6 +67,7 @@
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/wm/public/window_types.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/wm/boot_splash_screen_chromeos.h"
@@ -288,7 +288,7 @@ RootWindowController* RootWindowController::ForTargetRootWindow() {
 aura::Window* RootWindowController::GetContainerForWindow(
     aura::Window* window) {
   aura::Window* container = window->parent();
-  while (container && container->type() != aura::client::WINDOW_TYPE_UNKNOWN)
+  while (container && container->type() != ui::wm::WINDOW_TYPE_UNKNOWN)
     container = container->parent();
   return container;
 }
@@ -566,8 +566,8 @@ const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
   const aura::Window* topmost_window = NULL;
   for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
        iter != windows.rend(); ++iter) {
-    if (((*iter)->type() == aura::client::WINDOW_TYPE_NORMAL ||
-         (*iter)->type() == aura::client::WINDOW_TYPE_PANEL) &&
+    if (((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+         (*iter)->type() == ui::wm::WINDOW_TYPE_PANEL) &&
         (*iter)->layer()->GetTargetVisibility()) {
       topmost_window = *iter;
       break;

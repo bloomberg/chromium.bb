@@ -275,7 +275,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
       windows[i]->AddObserver(this);
     observed_windows_.insert(windows[i]);
 
-    if (windows[i]->type() == aura::client::WINDOW_TYPE_PANEL &&
+    if (windows[i]->type() == ui::wm::WINDOW_TYPE_PANEL &&
         wm::GetWindowState(windows[i])->panel_attached()) {
       // Attached panel windows are grouped into a single overview item per
       // root window (display).
@@ -393,8 +393,8 @@ void WindowSelector::CancelSelection() {
 }
 
 void WindowSelector::OnWindowAdded(aura::Window* new_window) {
-  if (new_window->type() != aura::client::WINDOW_TYPE_NORMAL &&
-      new_window->type() != aura::client::WINDOW_TYPE_PANEL) {
+  if (new_window->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+      new_window->type() != ui::wm::WINDOW_TYPE_PANEL) {
     return;
   }
 

@@ -31,12 +31,14 @@ TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
   SetChildWindowVisibilityChangesAnimated(root_window());
 
   aura::test::TestWindowDelegate d;
-  scoped_ptr<aura::Window> animatable(
-      aura::test::CreateTestWindowWithDelegate(
-          &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
+  scoped_ptr<aura::Window> animatable(aura::test::CreateTestWindowWithDelegate(
+      &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
   scoped_ptr<aura::Window> non_animatable(
       aura::test::CreateTestWindowWithDelegateAndType(
-          &d, aura::client::WINDOW_TYPE_CONTROL, -3, gfx::Rect(51, 51, 50, 50),
+          &d,
+          ui::wm::WINDOW_TYPE_CONTROL,
+          -3,
+          gfx::Rect(51, 51, 50, 50),
           root_window()));
   EXPECT_TRUE(animatable->IsVisible());
   EXPECT_TRUE(animatable->layer()->visible());

@@ -162,7 +162,7 @@ void DesktopRootWindowHostWin::OnRootWindowCreated(
   root_window_->window()->SetProperty(kDesktopRootWindowHostKey, this);
 
   should_animate_window_close_ =
-      content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
+      content_window_->type() != ui::wm::WINDOW_TYPE_NORMAL &&
       !views::corewm::WindowAnimationsDisabled(content_window_);
 
 // TODO this is not invoked *after* Init(), but should be ok.

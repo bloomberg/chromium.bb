@@ -962,7 +962,7 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
       web_contents_,
       current_overscroll_gesture_);
   overscroll_window_.reset(new aura::Window(overscroll_delegate));
-  overscroll_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  overscroll_window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   overscroll_window_->SetTransparent(true);
   overscroll_window_->Init(ui::LAYER_TEXTURED);
   overscroll_window_->layer()->SetMasksToBounds(false);
@@ -1215,7 +1215,7 @@ void WebContentsViewAura::CreateView(
   aura::Env::CreateInstance();
   window_.reset(new aura::Window(this));
   window_->set_owned_by_parent(false);
-  window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
   aura::Window* root_window = context ? context->GetRootWindow() : NULL;

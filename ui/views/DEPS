@@ -9,8 +9,9 @@ include_rules = [
   "+ui/compositor",
   "+ui/events",
   "+ui/gfx",
-  "+ui/ozone",
   "+ui/native_theme",
+  "+ui/ozone",
+  "+ui/wm/public",
 
   "-testing/gmock",
 ]

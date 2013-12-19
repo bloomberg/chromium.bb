@@ -232,9 +232,9 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {
   return (details_.window_component == HTCAPTION) &&
-      !GetTarget()->transient_parent() &&
-      (GetTarget()->type() == aura::client::WINDOW_TYPE_NORMAL ||
-       GetTarget()->type() == aura::client::WINDOW_TYPE_PANEL);
+         !GetTarget()->transient_parent() &&
+         (GetTarget()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+          GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
 }
 
 TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
@@ -246,9 +246,9 @@ TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
   // Check that this is a drag move operation from a suitable window.
   if (details_.window_component != HTCAPTION ||
       GetTarget()->transient_parent() ||
-      (GetTarget()->type() != aura::client::WINDOW_TYPE_NORMAL &&
-       GetTarget()->type() != aura::client::WINDOW_TYPE_PANEL &&
-       GetTarget()->type() != aura::client::WINDOW_TYPE_POPUP))
+      (GetTarget()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+       GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
+       GetTarget()->type() != ui::wm::WINDOW_TYPE_POPUP))
     return NULL;
 
   // We only allow to drag the window onto a tray of it's own RootWindow.

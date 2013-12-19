@@ -43,25 +43,25 @@ ROW_COUNT
 base::string16 PropertyWithWindowType(int type) {
   std::string property = "Type: ";
   switch (type) {
-    case aura::client::WINDOW_TYPE_UNKNOWN:
+    case ui::wm::WINDOW_TYPE_UNKNOWN:
       property.append("WINDOW_TYPE_UNKNOWN");
       break;
-    case aura::client::WINDOW_TYPE_NORMAL:
+    case ui::wm::WINDOW_TYPE_NORMAL:
       property.append("WINDOW_TYPE_NORMAL");
       break;
-    case aura::client::WINDOW_TYPE_POPUP:
+    case ui::wm::WINDOW_TYPE_POPUP:
       property.append("WINDOW_TYPE_POPUP");
       break;
-    case aura::client::WINDOW_TYPE_CONTROL:
+    case ui::wm::WINDOW_TYPE_CONTROL:
       property.append("WINDOW_TYPE_CONTROL");
       break;
-    case aura::client::WINDOW_TYPE_PANEL:
+    case ui::wm::WINDOW_TYPE_PANEL:
       property.append("WINDOW_TYPE_PANEL");
       break;
-    case aura::client::WINDOW_TYPE_MENU:
+    case ui::wm::WINDOW_TYPE_MENU:
       property.append("WINDOW_TYPE_MENU");
       break;
-    case aura::client::WINDOW_TYPE_TOOLTIP:
+    case ui::wm::WINDOW_TYPE_TOOLTIP:
       property.append("WINDOW_TYPE_TOOLTIP");
       break;
     default:

@@ -19,7 +19,7 @@ TestShelfItemDelegate::~TestShelfItemDelegate() {
 
 bool TestShelfItemDelegate::ItemSelected(const ui::Event& event) {
   if (window_) {
-    if (window_->type() == aura::client::WINDOW_TYPE_PANEL)
+    if (window_->type() == ui::wm::WINDOW_TYPE_PANEL)
       wm::MoveWindowToEventRoot(window_, event);
     window_->Show();
     wm::ActivateWindow(window_);

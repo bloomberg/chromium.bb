@@ -241,15 +241,12 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegate(
     int id,
     const gfx::Rect& bounds) {
   return CreateTestWindowInShellWithDelegateAndType(
-      delegate,
-      aura::client::WINDOW_TYPE_NORMAL,
-      id,
-      bounds);
+      delegate, ui::wm::WINDOW_TYPE_NORMAL, id, bounds);
 }
 
 aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     aura::WindowDelegate* delegate,
-    aura::client::WindowType type,
+    ui::wm::WindowType type,
     int id,
     const gfx::Rect& bounds) {
   aura::Window* window = new aura::Window(delegate);

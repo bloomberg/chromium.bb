@@ -179,10 +179,8 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
   aura::Window* found = NULL;
   for (int i = index + windows.size(); i >= 0; i--) {
     aura::Window* window = windows[i % windows.size()];
-    if (window != exclude &&
-        window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-        window->GetRootWindow() == root_window &&
-        window->TargetVisibility() &&
+    if (window != exclude && window->type() == ui::wm::WINDOW_TYPE_NORMAL &&
+        window->GetRootWindow() == root_window && window->TargetVisibility() &&
         wm::GetWindowState(window)->window_position_managed()) {
       if (found && found != window) {
         // no need to check !signle_window because the function must have

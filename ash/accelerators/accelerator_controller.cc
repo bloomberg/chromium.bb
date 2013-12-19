@@ -580,7 +580,7 @@ bool HandleWindowSnap(int action) {
   // Disable window snapping shortcut key for full screen window due to
   // http://crbug.com/135487.
   if (!window_state ||
-      window_state->window()->type() != aura::client::WINDOW_TYPE_NORMAL ||
+      window_state->window()->type() != ui::wm::WINDOW_TYPE_NORMAL ||
       window_state->IsFullscreen()) {
     return false;
   }

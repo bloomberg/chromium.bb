@@ -34,15 +34,11 @@ Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,
                                      const gfx::Rect& bounds,
                                      Window* parent) {
   return CreateTestWindowWithDelegateAndType(
-      delegate,
-      aura::client::WINDOW_TYPE_NORMAL,
-      id,
-      bounds,
-      parent);
+      delegate, ui::wm::WINDOW_TYPE_NORMAL, id, bounds, parent);
 }
 
 Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
-                                            client::WindowType type,
+                                            ui::wm::WindowType type,
                                             int id,
                                             const gfx::Rect& bounds,
                                             Window* parent) {

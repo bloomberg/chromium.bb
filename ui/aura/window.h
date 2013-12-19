@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/window_layer_type.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -29,6 +28,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/wm/public/window_types.h"
 
 namespace gfx {
 class Display;
@@ -100,8 +100,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // A type is used to identify a class of Windows and customize behavior such
   // as event handling and parenting.  This field should only be consumed by the
   // shell -- Aura itself shouldn't contain type-specific logic.
-  client::WindowType type() const { return type_; }
-  void SetType(client::WindowType type);
+  ui::wm::WindowType type() const { return type_; }
+  void SetType(ui::wm::WindowType type);
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
@@ -548,7 +548,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   WindowEventDispatcher* dispatcher_;
 
-  client::WindowType type_;
+  ui::wm::WindowType type_;
 
   // True if the Window is owned by its parent - i.e. it will be deleted by its
   // parent during its parents destruction. True is the default.

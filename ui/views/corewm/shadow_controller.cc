@@ -29,10 +29,10 @@ namespace {
 
 ShadowType GetShadowTypeFromWindow(aura::Window* window) {
   switch (window->type()) {
-    case aura::client::WINDOW_TYPE_NORMAL:
-    case aura::client::WINDOW_TYPE_PANEL:
-    case aura::client::WINDOW_TYPE_MENU:
-    case aura::client::WINDOW_TYPE_TOOLTIP:
+    case ui::wm::WINDOW_TYPE_NORMAL:
+    case ui::wm::WINDOW_TYPE_PANEL:
+    case ui::wm::WINDOW_TYPE_MENU:
+    case ui::wm::WINDOW_TYPE_TOOLTIP:
       return SHADOW_TYPE_RECTANGULAR;
     default:
       break;
@@ -42,8 +42,8 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
 
 bool ShouldUseSmallShadowForWindow(aura::Window* window) {
   switch (window->type()) {
-    case aura::client::WINDOW_TYPE_MENU:
-    case aura::client::WINDOW_TYPE_TOOLTIP:
+    case ui::wm::WINDOW_TYPE_MENU:
+    case ui::wm::WINDOW_TYPE_TOOLTIP:
       return true;
     default:
       break;

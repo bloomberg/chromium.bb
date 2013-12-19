@@ -63,10 +63,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL,
-        aura::client::WINDOW_TYPE_PANEL,
-        0,
-        bounds);
+        NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     test::TestShelfDelegate* shelf_delegate =
         test::TestShelfDelegate::instance();
     shelf_delegate->AddLauncherItem(window);

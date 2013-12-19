@@ -56,11 +56,10 @@ bool GetTargetVisibility(aura::Window* child) {
 // * Modal alerts (it looks odd for headers to change when an alert opens)
 // * Constrained windows (ditto)
 bool IsValidCandidate(aura::Window* window) {
-  return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      window->layer() &&
-      window->layer()->type() != ui::LAYER_NOT_DRAWN &&
-      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE &&
-      !window->GetProperty(aura::client::kConstrainedWindowKey);
+  return window->type() == ui::wm::WINDOW_TYPE_NORMAL && window->layer() &&
+         window->layer()->type() != ui::LAYER_NOT_DRAWN &&
+         window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE &&
+         !window->GetProperty(aura::client::kConstrainedWindowKey);
 }
 
 // Schedule's a paint of the window's entire bounds.

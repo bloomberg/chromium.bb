@@ -15,7 +15,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -39,6 +38,7 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/window_reorderer.h"
+#include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
@@ -130,7 +130,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (!params.child) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
-    if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
+    if (parent && parent->type() != ui::wm::WINDOW_TYPE_UNKNOWN) {
       parent->AddTransientChild(window_);
       if (!context)
         context = parent;

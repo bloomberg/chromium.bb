@@ -63,8 +63,8 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
   DCHECK((modal_background_ && child == modal_background_->GetNativeView()) ||
-         child->type() == aura::client::WINDOW_TYPE_NORMAL ||
-         child->type() == aura::client::WINDOW_TYPE_POPUP);
+         child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+         child->type() == ui::wm::WINDOW_TYPE_POPUP);
   DCHECK(
       container_->id() != internal::kShellWindowId_LockSystemModalContainer ||
       Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked());

@@ -39,7 +39,7 @@ bool IsSystemModal(aura::Window* window) {
 
 bool HasTransientParentWindow(aura::Window* window) {
   return window->transient_parent() &&
-      window->transient_parent()->type() != aura::client::WINDOW_TYPE_UNKNOWN;
+         window->transient_parent()->type() != ui::wm::WINDOW_TYPE_UNKNOWN;
 }
 
 internal::AlwaysOnTopController*
@@ -74,27 +74,27 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
   }
 
   switch (window->type()) {
-    case aura::client::WINDOW_TYPE_NORMAL:
-    case aura::client::WINDOW_TYPE_POPUP:
+    case ui::wm::WINDOW_TYPE_NORMAL:
+    case ui::wm::WINDOW_TYPE_POPUP:
       if (IsSystemModal(window))
         return GetSystemModalContainer(target_root, window);
       else if (HasTransientParentWindow(window))
         return internal::RootWindowController::GetContainerForWindow(
             window->transient_parent());
       return GetAlwaysOnTopController(target_root)->GetContainer(window);
-    case aura::client::WINDOW_TYPE_CONTROL:
+    case ui::wm::WINDOW_TYPE_CONTROL:
       return GetContainerById(
           target_root, internal::kShellWindowId_UnparentedControlContainer);
-    case aura::client::WINDOW_TYPE_PANEL:
+    case ui::wm::WINDOW_TYPE_PANEL:
       if (wm::GetWindowState(window)->panel_attached())
         return GetContainerById(target_root,
                                 internal::kShellWindowId_PanelContainer);
       else
         return GetAlwaysOnTopController(target_root)->GetContainer(window);
-    case aura::client::WINDOW_TYPE_MENU:
+    case ui::wm::WINDOW_TYPE_MENU:
       return GetContainerById(
           target_root, internal::kShellWindowId_MenuContainer);
-    case aura::client::WINDOW_TYPE_TOOLTIP:
+    case ui::wm::WINDOW_TYPE_TOOLTIP:
       return GetContainerById(
           target_root, internal::kShellWindowId_DragImageAndTooltipContainer);
     default:

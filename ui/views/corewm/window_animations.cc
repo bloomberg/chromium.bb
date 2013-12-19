@@ -87,7 +87,7 @@ const int kWindowAnimation_Bounce_GrowShrinkDurationPercent = 40;
 base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
   int duration =
       window->GetProperty(kWindowVisibilityAnimationDurationKey);
-  if (duration == 0 && window->type() == aura::client::WINDOW_TYPE_MENU) {
+  if (duration == 0 && window->type() == ui::wm::WINDOW_TYPE_MENU) {
     return base::TimeDelta::FromMilliseconds(
         kDefaultAnimationDurationForMenuMS);
   }
@@ -99,10 +99,10 @@ base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
 int GetWindowVisibilityAnimationType(aura::Window* window) {
   int type = window->GetProperty(kWindowVisibilityAnimationTypeKey);
   if (type == WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT) {
-    return (window->type() == aura::client::WINDOW_TYPE_MENU ||
-            window->type() == aura::client::WINDOW_TYPE_TOOLTIP) ?
-        WINDOW_VISIBILITY_ANIMATION_TYPE_FADE :
-        WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
+    return (window->type() == ui::wm::WINDOW_TYPE_MENU ||
+            window->type() == ui::wm::WINDOW_TYPE_TOOLTIP)
+               ? WINDOW_VISIBILITY_ANIMATION_TYPE_FADE
+               : WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
   }
   return type;
 }

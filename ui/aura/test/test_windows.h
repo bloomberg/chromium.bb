@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/client/window_types.h"
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/wm/public/window_types.h"
 
 namespace aura {
 namespace test {
@@ -27,7 +27,7 @@ Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,
                                      const gfx::Rect& bounds,
                                      Window* parent);
 Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
-                                            client::WindowType type,
+                                            ui::wm::WindowType type,
                                             int id,
                                             const gfx::Rect& bounds,
                                             Window* parent);

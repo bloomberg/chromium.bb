@@ -93,15 +93,16 @@ aura::Window* WindowWatcher::GetWindowByID(ash::LauncherID id) {
 
 // aura::WindowObserver overrides:
 void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
-  if (new_window->type() != aura::client::WINDOW_TYPE_NORMAL &&
-      new_window->type() != aura::client::WINDOW_TYPE_PANEL)
+  if (new_window->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+      new_window->type() != ui::wm::WINDOW_TYPE_PANEL)
     return;
 
   static int image_count = 0;
   ShelfModel* model = Shell::GetInstance()->shelf_model();
   LauncherItem item;
-  item.type = new_window->type() == aura::client::WINDOW_TYPE_PANEL ?
-      ash::TYPE_APP_PANEL : ash::TYPE_PLATFORM_APP;
+  item.type = new_window->type() == ui::wm::WINDOW_TYPE_PANEL
+                  ? ash::TYPE_APP_PANEL
+                  : ash::TYPE_PLATFORM_APP;
   ash::LauncherID id = model->next_id();
   id_to_window_[id] = new_window;
 

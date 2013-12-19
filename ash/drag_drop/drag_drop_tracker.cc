@@ -22,7 +22,7 @@ namespace {
 aura::Window* CreateCaptureWindow(aura::Window* context_root,
                                   aura::WindowDelegate* delegate) {
   aura::Window* window = new aura::Window(delegate);
-  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   aura::client::ParentWindowWithContext(window, context_root, gfx::Rect());
   window->Show();

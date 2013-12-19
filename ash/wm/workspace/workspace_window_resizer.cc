@@ -29,7 +29,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -37,6 +36,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
+#include "ui/wm/public/window_types.h"
 
 namespace ash {
 
@@ -91,7 +91,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     window_resizer = internal::DragWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
-  if (window_resizer && window->type() == aura::client::WINDOW_TYPE_PANEL) {
+  if (window_resizer && window->type() == ui::wm::WINDOW_TYPE_PANEL) {
     window_resizer = PanelWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
@@ -443,7 +443,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   // out of a maximized window, it's already in the normal show state when this
   // is called, so it does not matter.
   if (window_state()->IsNormalShowState() &&
-      (window()->type() != aura::client::WINDOW_TYPE_PANEL ||
+      (window()->type() != ui::wm::WINDOW_TYPE_PANEL ||
        !window_state()->panel_attached() ||
        dock_layout_->is_dragged_window_docked()) &&
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {

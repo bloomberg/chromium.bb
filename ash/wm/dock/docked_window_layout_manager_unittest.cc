@@ -40,7 +40,7 @@ namespace internal {
 
 class DockedWindowLayoutManagerTest
     : public test::AshTestBase,
-      public testing::WithParamInterface<aura::client::WindowType> {
+      public testing::WithParamInterface<ui::wm::WindowType> {
  public:
   DockedWindowLayoutManagerTest() : window_type_(GetParam()) {}
   virtual ~DockedWindowLayoutManagerTest() {}
@@ -73,7 +73,7 @@ class DockedWindowLayoutManagerTest
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, window_type_, 0, bounds);
-    if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
+    if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
       shelf_delegate->AddLauncherItem(window);
@@ -90,7 +90,7 @@ class DockedWindowLayoutManagerTest
       aura::test::TestWindowDelegate* delegate) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, window_type_, 0, bounds);
-    if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
+    if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
       shelf_delegate->AddLauncherItem(window);
@@ -151,21 +151,19 @@ class DockedWindowLayoutManagerTest
   // All other windows that we are testing here have default container as a
   // parent.
   int CorrectContainerIdDuringDrag() {
-    if (window_type_ == aura::client::WINDOW_TYPE_PANEL)
+    if (window_type_ == ui::wm::WINDOW_TYPE_PANEL)
       return internal::kShellWindowId_PanelContainer;
     return internal::kShellWindowId_DockedContainer;
   }
 
   // Test dragging the window vertically (to detach if it is a panel) and then
   // horizontally to the edge with an added offset from the edge of |dx|.
-  void DragRelativeToEdge(DockedEdge edge,
-                          aura::Window* window,
-                          int dx) {
+  void DragRelativeToEdge(DockedEdge edge, aura::Window* window, int dx) {
     DragVerticallyAndRelativeToEdge(
         edge,
         window,
         dx,
-        window_type_ == aura::client::WINDOW_TYPE_PANEL ? -100 : 20);
+        window_type_ == ui::wm::WINDOW_TYPE_PANEL ? -100 : 20);
   }
 
   void DragToVerticalPositionAndToEdge(DockedEdge edge,
@@ -216,7 +214,7 @@ class DockedWindowLayoutManagerTest
  private:
   scoped_ptr<WindowResizer> resizer_;
   scoped_ptr<test::ShelfViewTestAPI> shelf_view_test_;
-  aura::client::WindowType window_type_;
+  ui::wm::WindowType window_type_;
 
   // Location at start of the drag in |window->parent()|'s coordinates.
   gfx::Point initial_location_in_parent_;
@@ -813,7 +811,7 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsHeightRestrictions) {
 // Tests run twice - on both panels and normal windows
 INSTANTIATE_TEST_CASE_P(NormalOrPanel,
                         DockedWindowLayoutManagerTest,
-                        testing::Values(aura::client::WINDOW_TYPE_NORMAL,
-                                        aura::client::WINDOW_TYPE_PANEL));
+                        testing::Values(ui::wm::WINDOW_TYPE_NORMAL,
+                                        ui::wm::WINDOW_TYPE_PANEL));
 }  // namespace internal
 }  // namespace ash

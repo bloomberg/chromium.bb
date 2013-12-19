@@ -85,7 +85,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
   aura::Window* CreateTestWindowUnparented() {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     return window;
   }
@@ -93,7 +93,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     ParentWindowInPrimaryRootWindow(window);
     return window;
@@ -1114,12 +1114,8 @@ TEST_F(WorkspaceControllerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
 // with a real browser the browser here has a transient child window
 // (corresponds to the status bubble).
 TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
-  scoped_ptr<Window> browser(
-      aura::test::CreateTestWindowWithDelegate(
-          NULL,
-          aura::client::WINDOW_TYPE_NORMAL,
-          gfx::Rect(5, 6, 7, 8),
-          NULL));
+  scoped_ptr<Window> browser(aura::test::CreateTestWindowWithDelegate(
+      NULL, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 6, 7, 8), NULL));
   browser->SetName("browser");
   ParentWindowInPrimaryRootWindow(browser.get());
   browser->Show();
@@ -1131,21 +1127,16 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
       aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
   status_bubble_delegate->set_can_focus(false);
   Window* status_bubble =
-      aura::test::CreateTestWindowWithDelegate(
-          status_bubble_delegate,
-          aura::client::WINDOW_TYPE_POPUP,
-          gfx::Rect(5, 6, 7, 8),
-          NULL);
+      aura::test::CreateTestWindowWithDelegate(status_bubble_delegate,
+                                               ui::wm::WINDOW_TYPE_POPUP,
+                                               gfx::Rect(5, 6, 7, 8),
+                                               NULL);
   browser->AddTransientChild(status_bubble);
   ParentWindowInPrimaryRootWindow(status_bubble);
   status_bubble->SetName("status_bubble");
 
-  scoped_ptr<Window> app(
-      aura::test::CreateTestWindowWithDelegate(
-          NULL,
-          aura::client::WINDOW_TYPE_NORMAL,
-          gfx::Rect(5, 6, 7, 8),
-          NULL));
+  scoped_ptr<Window> app(aura::test::CreateTestWindowWithDelegate(
+      NULL, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 6, 7, 8), NULL));
   app->SetName("app");
   ParentWindowInPrimaryRootWindow(app.get());
 
@@ -1281,11 +1272,8 @@ class WorkspaceControllerTestDragging
 TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
-  scoped_ptr<Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&delegate,
-                                               aura::client::WINDOW_TYPE_NORMAL,
-                                               gfx::Rect(5, 5, 100, 50),
-                                               NULL));
+  scoped_ptr<Window> w1(aura::test::CreateTestWindowWithDelegate(
+      &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(w1.get());
 
   ShelfLayoutManager* shelf = shelf_layout_manager();

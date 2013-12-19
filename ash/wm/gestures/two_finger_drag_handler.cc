@@ -8,7 +8,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -16,6 +15,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/wm/public/window_types.h"
 
 namespace {
 
@@ -98,7 +98,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 2) {
     if (!in_gesture_drag_ && window_state->IsNormalShowState() &&
-      target->type() == aura::client::WINDOW_TYPE_NORMAL) {
+        target->type() == ui::wm::WINDOW_TYPE_NORMAL) {
       if (WindowComponentsAllowMoving(first_finger_hittest_,
           target->delegate()->GetNonClientComponent(event.location()))) {
         in_gesture_drag_ = true;
@@ -120,7 +120,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
   if (!in_gesture_drag_) {
     // Consume all two-finger gestures on a normal window.
     return event.details().touch_points() == 2 &&
-           target->type() == aura::client::WINDOW_TYPE_NORMAL &&
+           target->type() == ui::wm::WINDOW_TYPE_NORMAL &&
            window_state->IsNormalShowState();
   }
   // Since |in_gesture_drag_| is true a resizer was either created above or

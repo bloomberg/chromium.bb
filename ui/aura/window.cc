@@ -214,7 +214,7 @@ class ScopedCursorHider {
 
 Window::Window(WindowDelegate* delegate)
     : dispatcher_(NULL),
-      type_(client::WINDOW_TYPE_UNKNOWN),
+      type_(ui::wm::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
       delegate_(delegate),
       parent_(NULL),
@@ -348,7 +348,7 @@ ui::Layer* Window::RecreateLayer() {
   return old_layer;
 }
 
-void Window::SetType(client::WindowType type) {
+void Window::SetType(ui::wm::WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer_);
   type_ = type;

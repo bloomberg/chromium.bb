@@ -132,8 +132,7 @@ bool WindowState::CanActivate() const {
 }
 
 bool WindowState::CanSnap() const {
-  if (!CanResize() ||
-      window_->type() == aura::client::WINDOW_TYPE_PANEL ||
+  if (!CanResize() || window_->type() == ui::wm::WINDOW_TYPE_PANEL ||
       window_->transient_parent())
     return false;
   // If a window has a maximum size defined, snapping may make it too big.

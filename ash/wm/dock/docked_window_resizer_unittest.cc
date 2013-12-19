@@ -39,7 +39,7 @@ namespace internal {
 
 class DockedWindowResizerTest
     : public test::AshTestBase,
-      public testing::WithParamInterface<aura::client::WindowType> {
+      public testing::WithParamInterface<ui::wm::WindowType> {
  public:
   DockedWindowResizerTest() : model_(NULL), window_type_(GetParam()) {}
   virtual ~DockedWindowResizerTest() {}
@@ -79,7 +79,7 @@ class DockedWindowResizerTest
         window_type_,
         0,
         bounds);
-    if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
+    if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
       shelf_delegate->AddLauncherItem(window);
@@ -96,7 +96,7 @@ class DockedWindowResizerTest
   aura::Window* CreateModalWindow(const gfx::Rect& bounds) {
     aura::Window* window = new aura::Window(&delegate_);
     window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     window->Show();
 
@@ -169,7 +169,7 @@ class DockedWindowResizerTest
   // All other windows that are tested here are parented by dock container
   // during drags.
   int CorrectContainerIdDuringDrag() {
-    if (window_type_ == aura::client::WINDOW_TYPE_PANEL)
+    if (window_type_ == ui::wm::WINDOW_TYPE_PANEL)
       return internal::kShellWindowId_PanelContainer;
     return internal::kShellWindowId_DockedContainer;
   }
@@ -182,8 +182,10 @@ class DockedWindowResizerTest
     DragVerticallyAndRelativeToEdge(
         edge,
         window,
-        dx, window_type_ == aura::client::WINDOW_TYPE_PANEL ? -100 : 20,
-        25, 5);
+        dx,
+        window_type_ == ui::wm::WINDOW_TYPE_PANEL ? -100 : 20,
+        25,
+        5);
   }
 
   void DragToVerticalPositionAndToEdge(DockedEdge edge,
@@ -236,9 +238,7 @@ class DockedWindowResizerTest
     }
   }
 
-  bool test_panels() const {
-    return window_type_ == aura::client::WINDOW_TYPE_PANEL;
-  }
+  bool test_panels() const { return window_type_ == ui::wm::WINDOW_TYPE_PANEL; }
 
   const gfx::Point& initial_location_in_parent() const {
     return initial_location_in_parent_;
@@ -247,7 +247,7 @@ class DockedWindowResizerTest
  private:
   scoped_ptr<WindowResizer> resizer_;
   ShelfModel* model_;
-  aura::client::WindowType window_type_;
+  ui::wm::WindowType window_type_;
   aura::test::TestWindowDelegate delegate_;
 
   // Location at start of the drag in |window->parent()|'s coordinates.
@@ -541,7 +541,7 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
   scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegateAndType(
-      NULL, aura::client::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
+      NULL, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
   wm::GetWindowState(w2.get())->Maximize();
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
@@ -1296,7 +1296,7 @@ TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
   // Create a window with a transient child.
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
-      NULL, aura::client::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
+      NULL, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
   window->AddTransientChild(child.get());
   if (window->parent() != child->parent())
     window->parent()->AddChild(child.get());
@@ -1430,7 +1430,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
 // Tests run twice - on both panels and normal windows
 INSTANTIATE_TEST_CASE_P(NormalOrPanel,
                         DockedWindowResizerTest,
-                        testing::Values(aura::client::WINDOW_TYPE_NORMAL,
-                                        aura::client::WINDOW_TYPE_PANEL));
+                        testing::Values(ui::wm::WINDOW_TYPE_NORMAL,
+                                        ui::wm::WINDOW_TYPE_PANEL));
 }  // namespace internal
 }  // namespace ash

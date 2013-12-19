@@ -126,7 +126,7 @@ class WindowSelectorTest : public test::AshTestBase {
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
+        NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     test::TestShelfDelegate::instance()->AddLauncherItem(window);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;

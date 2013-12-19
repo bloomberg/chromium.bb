@@ -54,20 +54,20 @@ class DragWindowResizerTest : public test::AshTestBase {
     EXPECT_EQ(800, root_bounds.width());
     Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
-    window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);
 
     always_on_top_window_.reset(new aura::Window(&delegate2_));
-    always_on_top_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    always_on_top_window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     always_on_top_window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
     always_on_top_window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(always_on_top_window_.get());
     always_on_top_window_->set_id(2);
 
     system_modal_window_.reset(new aura::Window(&delegate3_));
-    system_modal_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    system_modal_window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     system_modal_window_->SetProperty(aura::client::kModalKey,
                                       ui::MODAL_TYPE_SYSTEM);
     system_modal_window_->Init(ui::LAYER_NOT_DRAWN);
@@ -75,20 +75,20 @@ class DragWindowResizerTest : public test::AshTestBase {
     system_modal_window_->set_id(3);
 
     transient_child_ = new aura::Window(&delegate4_);
-    transient_child_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    transient_child_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     transient_child_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(transient_child_);
     transient_child_->set_id(4);
 
     transient_parent_.reset(new aura::Window(&delegate5_));
-    transient_parent_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    transient_parent_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     transient_parent_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(transient_parent_.get());
     transient_parent_->AddTransientChild(transient_child_);
     transient_parent_->set_id(5);
 
     panel_window_.reset(new aura::Window(&delegate6_));
-    panel_window_->SetType(aura::client::WINDOW_TYPE_PANEL);
+    panel_window_->SetType(ui::wm::WINDOW_TYPE_PANEL);
     panel_window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(panel_window_.get());
   }
@@ -292,7 +292,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
 
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindowInPrimaryRootWindow(window.get());
   window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),

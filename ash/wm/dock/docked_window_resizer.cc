@@ -210,7 +210,7 @@ void DockedWindowResizer::StartedDragging() {
   // Reparent workspace windows during the drag to elevate them above workspace.
   // Other windows for which the DockedWindowResizer is instantiated include
   // panels and windows that are already docked. Those do not need reparenting.
-  if (GetTarget()->type() != aura::client::WINDOW_TYPE_PANEL &&
+  if (GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
       GetTarget()->parent()->id() == kShellWindowId_DefaultContainer) {
     // The window is going to be reparented - avoid completing the drag.
     window_state->set_continue_drag_after_reparent(true);
@@ -234,9 +234,8 @@ void DockedWindowResizer::FinishedDragging() {
   did_move_or_resize_ = false;
   aura::Window* window = GetTarget();
   wm::WindowState* window_state = wm::GetWindowState(window);
-  const bool is_attached_panel =
-      window->type() == aura::client::WINDOW_TYPE_PANEL &&
-      window_state->panel_attached();
+  const bool is_attached_panel = window->type() == ui::wm::WINDOW_TYPE_PANEL &&
+                                 window_state->panel_attached();
   const bool is_resized =
       (details_.bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
 

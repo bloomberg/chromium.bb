@@ -74,7 +74,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
   // Helpers methods to create test windows in the primary root window.
   aura::Window* CreateWindowInPrimary() {
     aura::Window* window = new aura::Window(NULL);
-    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     window->SetBounds(gfx::Rect(100, 100));
     ParentWindowInPrimaryRootWindow(window);
@@ -82,7 +82,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
   }
   aura::Window* CreateAlwaysOnTopWindowInPrimary() {
     aura::Window* window = new aura::Window(NULL);
-    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     window->SetBounds(gfx::Rect(100, 100));
     window->SetProperty(aura::client::kAlwaysOnTopKey, true);
@@ -91,7 +91,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
   }
   aura::Window* CreatePanelWindowInPrimary() {
     aura::Window* window = new aura::Window(NULL);
-    window->SetType(aura::client::WINDOW_TYPE_PANEL);
+    window->SetType(ui::wm::WINDOW_TYPE_PANEL);
     window->Init(ui::LAYER_TEXTURED);
     window->SetBounds(gfx::Rect(100, 100));
     ParentWindowInPrimaryRootWindow(window);
@@ -296,7 +296,7 @@ TEST_F(SoloWindowTrackerTest, NotDrawn) {
 
   // Create non-drawing window similar to DragDropTracker.
   aura::Window* not_drawn = new aura::Window(NULL);
-  not_drawn->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  not_drawn->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   not_drawn->Init(ui::LAYER_NOT_DRAWN);
   ParentWindowInPrimaryRootWindow(not_drawn);
   not_drawn->Show();
@@ -395,7 +395,7 @@ TEST_F(SoloWindowTrackerTest, ChildWindowVisibility) {
 
   // Create a child window. This should not affect the solo-ness of |w1|.
   aura::Window* child = new aura::Window(NULL);
-  child->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   child->SetBounds(gfx::Rect(100, 100));
   w->AddChild(child);

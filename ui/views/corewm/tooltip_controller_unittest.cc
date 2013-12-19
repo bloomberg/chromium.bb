@@ -8,7 +8,6 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -26,6 +25,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -595,8 +595,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleRootWindows) {
 
   bool tooltip_reparented = false;
   for (size_t i = 0; i < root_window2->children().size(); ++i) {
-    if (root_window2->children()[i]->type() ==
-        aura::client::WINDOW_TYPE_TOOLTIP) {
+    if (root_window2->children()[i]->type() == ui::wm::WINDOW_TYPE_TOOLTIP) {
       tooltip_reparented = true;
       break;
     }
@@ -642,7 +641,7 @@ TEST_F(TooltipControllerTest, TooltipAtTopOfZOrderAfterActivation) {
 
   EXPECT_EQ(
       widget_->GetNativeWindow()->GetRootWindow()->children().back()->type(),
-      aura::client::WINDOW_TYPE_TOOLTIP);
+      ui::wm::WINDOW_TYPE_TOOLTIP);
 }
 #endif
 

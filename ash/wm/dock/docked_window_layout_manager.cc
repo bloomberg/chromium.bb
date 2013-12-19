@@ -180,7 +180,7 @@ namespace {
 
 // Returns true if a window is a popup or a transient child.
 bool IsPopupOrTransient(const aura::Window* window) {
-  return (window->type() == aura::client::WINDOW_TYPE_POPUP ||
+  return (window->type() == ui::wm::WINDOW_TYPE_POPUP ||
           window->transient_parent());
 }
 
@@ -896,7 +896,7 @@ void DockedWindowLayoutManager::RecordUmaAction(DockedAction action,
     if (!IsUsedByLayout(window))
       continue;
     docked_visible_count++;
-    if (window->type() == aura::client::WINDOW_TYPE_PANEL)
+    if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
       docked_panels_count++;
     const wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state->HasRestoreBounds()) {

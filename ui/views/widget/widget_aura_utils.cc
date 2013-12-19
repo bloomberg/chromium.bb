@@ -8,27 +8,27 @@
 
 namespace views {
 
-aura::client::WindowType GetAuraWindowTypeForWidgetType(
+ui::wm::WindowType GetAuraWindowTypeForWidgetType(
     Widget::InitParams::Type type) {
   switch (type) {
     case Widget::InitParams::TYPE_WINDOW:
-      return aura::client::WINDOW_TYPE_NORMAL;
+      return ui::wm::WINDOW_TYPE_NORMAL;
     case Widget::InitParams::TYPE_PANEL:
-      return aura::client::WINDOW_TYPE_PANEL;
+      return ui::wm::WINDOW_TYPE_PANEL;
     case Widget::InitParams::TYPE_CONTROL:
-      return aura::client::WINDOW_TYPE_CONTROL;
+      return ui::wm::WINDOW_TYPE_CONTROL;
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
     case Widget::InitParams::TYPE_POPUP:
     case Widget::InitParams::TYPE_BUBBLE:
     case Widget::InitParams::TYPE_DRAG:
-      return aura::client::WINDOW_TYPE_POPUP;
+      return ui::wm::WINDOW_TYPE_POPUP;
     case Widget::InitParams::TYPE_MENU:
-      return aura::client::WINDOW_TYPE_MENU;
+      return ui::wm::WINDOW_TYPE_MENU;
     case Widget::InitParams::TYPE_TOOLTIP:
-      return aura::client::WINDOW_TYPE_TOOLTIP;
+      return ui::wm::WINDOW_TYPE_TOOLTIP;
     default:
       NOTREACHED() << "Unhandled widget type " << type;
-      return aura::client::WINDOW_TYPE_UNKNOWN;
+      return ui::wm::WINDOW_TYPE_UNKNOWN;
   }
 }
 

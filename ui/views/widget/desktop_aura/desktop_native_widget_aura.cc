@@ -161,7 +161,7 @@ class DesktopNativeWidgetAuraWindowTreeClient :
                                          const gfx::Rect& bounds) OVERRIDE {
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
         ui::SHOW_STATE_FULLSCREEN;
-    bool is_menu = window->type() == aura::client::WINDOW_TYPE_MENU;
+    bool is_menu = window->type() == ui::wm::WINDOW_TYPE_MENU;
     if (is_fullscreen || is_menu) {
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
           window, bounds, is_fullscreen);

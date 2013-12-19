@@ -24,7 +24,7 @@ WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() {
 
 bool WindowWatcherShelfItemDelegate::ItemSelected(const ui::Event& event) {
   aura::Window* window = watcher_->GetWindowByID(id_);
-  if (window->type() == aura::client::WINDOW_TYPE_PANEL)
+  if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     wm::MoveWindowToEventRoot(window, event);
   window->Show();
   wm::ActivateWindow(window);

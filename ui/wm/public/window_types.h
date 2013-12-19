@@ -1,16 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_WINDOW_TYPES_H_
-#define UI_AURA_WINDOW_TYPES_H_
+#ifndef UI_WM_PUBLIC_WINDOW_TYPES_H_
+#define UI_WM_PUBLIC_WINDOW_TYPES_H_
 
-namespace aura {
-namespace client {
+namespace ui {
+namespace wm {
 
 // This isn't a property because it can't change after the window has been
-// initialized. It's in client because the Aura Client application derives
-// meaning from these values, not Aura itself.
+// initialized.
 enum WindowType {
   WINDOW_TYPE_UNKNOWN = 0,
 
@@ -27,10 +26,11 @@ enum WindowType {
   WINDOW_TYPE_PANEL,
 
   WINDOW_TYPE_MENU,
+
   WINDOW_TYPE_TOOLTIP,
 };
 
-}  // namespace client
-}  // namespace aura
+}  // namespace wm
+}  // namespace ui
 
-#endif  // UI_AURA_WINDOW_TYPES_H_
+#endif  // UI_WM_PUBLIC_WINDOW_TYPES_H_

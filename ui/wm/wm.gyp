@@ -8,6 +8,13 @@
   },
   'targets': [
     {
+      'target_name': 'wm_public',
+      'type': 'static_library',
+      'sources': [
+        'public/window_types.h',
+      ],
+    },
+    {
       'target_name': 'wm_test_support',
       'type': 'static_library',
       'dependencies': [

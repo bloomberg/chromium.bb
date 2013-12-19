@@ -13,8 +13,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -83,7 +83,7 @@ class AshTestBase : public testing::Test {
       const gfx::Rect& bounds);
   aura::Window* CreateTestWindowInShellWithDelegateAndType(
       aura::WindowDelegate* delegate,
-      aura::client::WindowType type,
+      ui::wm::WindowType type,
       int id,
       const gfx::Rect& bounds);
 

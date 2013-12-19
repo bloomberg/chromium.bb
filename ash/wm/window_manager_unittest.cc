@@ -376,7 +376,7 @@ TEST_F(WindowManagerTest, PanelActivation) {
       &wd, -1, gfx::Rect(10, 10, 50, 50)));
   aura::test::TestWindowDelegate pd;
   scoped_ptr<aura::Window> p1(CreateTestWindowInShellWithDelegateAndType(
-      &pd, aura::client::WINDOW_TYPE_PANEL, -1, gfx::Rect(10, 10, 50, 50)));
+      &pd, ui::wm::WINDOW_TYPE_PANEL, -1, gfx::Rect(10, 10, 50, 50)));
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(w1.get());
 

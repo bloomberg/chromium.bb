@@ -1119,13 +1119,13 @@ class DesktopAuraTopLevelWindowTest
     widget_.Init(init_params);
 
     owned_window_ = new aura::Window(&child_window_delegate_);
-    owned_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    owned_window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     owned_window_->SetName("TestTopLevelWindow");
     if (fullscreen) {
       owned_window_->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_FULLSCREEN);
     } else {
-      owned_window_->SetType(aura::client::WINDOW_TYPE_MENU);
+      owned_window_->SetType(ui::wm::WINDOW_TYPE_MENU);
     }
     owned_window_->Init(ui::LAYER_TEXTURED);
     aura::client::ParentWindowWithContext(
