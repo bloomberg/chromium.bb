@@ -99,6 +99,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_velocity_y_ordinal_(0),
         velocity_x_ordinal_(0),
         velocity_y_ordinal_(0),
+        scroll_x_hint_(0),
+        scroll_y_hint_(0),
         tap_count_(0),
         wait_until_event_(ui::ET_UNKNOWN) {
   }
@@ -142,6 +144,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_velocity_y_ordinal_ = 0;
     velocity_x_ordinal_ = 0;
     velocity_y_ordinal_ = 0;
+    scroll_x_hint_ = 0;
+    scroll_y_hint_ = 0;
     tap_count_ = 0;
   }
 
@@ -188,6 +192,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_velocity_y_ordinal() const { return scroll_velocity_y_ordinal_; }
   float velocity_x_ordinal() const { return velocity_x_ordinal_; }
   float velocity_y_ordinal() const { return velocity_y_ordinal_; }
+  float scroll_x_hint() const { return scroll_x_hint_; }
+  float scroll_y_hint() const { return scroll_y_hint_; }
   int touch_id() const { return touch_id_; }
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
@@ -223,6 +229,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       case ui::ET_GESTURE_SCROLL_BEGIN:
         scroll_begin_ = true;
         scroll_begin_position_ = gesture->location();
+        scroll_x_hint_ = gesture->details().scroll_x_hint();
+        scroll_y_hint_ = gesture->details().scroll_y_hint();
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         scroll_update_ = true;
@@ -327,6 +335,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_velocity_y_ordinal_;
   float velocity_x_ordinal_;
   float velocity_y_ordinal_;
+  float scroll_x_hint_;
+  float scroll_y_hint_;
   int touch_id_;
   gfx::Rect bounding_box_;
   int tap_count_;
@@ -1651,6 +1661,8 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(29, delegate->scroll_x());
   EXPECT_EQ(29, delegate->scroll_y());
+  EXPECT_EQ(29, delegate->scroll_x_hint());
+  EXPECT_EQ(29, delegate->scroll_y_hint());
 
   // Move some more to generate a few more scroll updates.
   delegate->Reset();
@@ -1665,6 +1677,8 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(-20, delegate->scroll_x());
   EXPECT_EQ(-19, delegate->scroll_y());
+  EXPECT_EQ(0, delegate->scroll_x_hint());
+  EXPECT_EQ(0, delegate->scroll_y_hint());
 
   delegate->Reset();
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215),
@@ -3479,6 +3493,7 @@ TEST_F(GestureRecognizerTest, NoDriftInScroll) {
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_EQ(-4, delegate->scroll_y());
+  EXPECT_EQ(-4, delegate->scroll_y_hint());
 
   delegate->Reset();
 

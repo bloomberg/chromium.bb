@@ -41,7 +41,7 @@ void GesturePoint::ResetVelocity() {
   same_direction_count_ = gfx::Vector2d();
 }
 
-gfx::Vector2d GesturePoint::ScrollDelta() {
+gfx::Vector2d GesturePoint::ScrollDelta() const {
   return last_touch_position_ - second_last_touch_position_;
 }
 

@@ -178,6 +178,10 @@ blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       gesture_event.type = blink::WebInputEvent::GestureScrollBegin;
+      gesture_event.data.scrollBegin.deltaXHint =
+          event.details().scroll_x_hint();
+      gesture_event.data.scrollBegin.deltaYHint =
+          event.details().scroll_y_hint();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       gesture_event.type = blink::WebInputEvent::GestureScrollUpdate;

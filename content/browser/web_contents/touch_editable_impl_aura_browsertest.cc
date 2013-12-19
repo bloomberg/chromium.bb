@@ -285,7 +285,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
                                   0,
                                   ui::EventTimeForNow(),
                                   ui::GestureEventDetails(
-                                      ui::ET_GESTURE_LONG_PRESS, 0, 0),
+                                      ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
                                   1);
     rwhva->OnGestureEvent(&scroll_begin);
     EXPECT_FALSE(touch_editable->touch_selection_controller_.get());
@@ -297,7 +297,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
                                 0,
                                 ui::EventTimeForNow(),
                                 ui::GestureEventDetails(
-                                    ui::ET_GESTURE_LONG_PRESS, 0, 0),
+                                    ui::ET_GESTURE_SCROLL_END, 0, 0),
                                 1);
     rwhva->OnGestureEvent(&scroll_end);
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());

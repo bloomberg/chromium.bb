@@ -937,8 +937,9 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
                                                const gfx::Point& location,
                                                Gestures* gestures) {
+  gfx::Vector2dF d = point.ScrollDelta();
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
+      GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, d.x(), d.y()),
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),

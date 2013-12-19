@@ -72,7 +72,7 @@ class GesturePoint {
 
   bool in_use() const { return point_id_ >= 0; }
 
-  gfx::Vector2d ScrollDelta();
+  gfx::Vector2d ScrollDelta() const;
 
   float XVelocity() { return velocity_calculator_.XVelocity(); }
   float YVelocity() { return velocity_calculator_.YVelocity(); }

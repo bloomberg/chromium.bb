@@ -12,6 +12,11 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
     : type_(type),
       touch_points_(1) {
   switch (type_) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      data.scroll_begin.x_hint = delta_x;
+      data.scroll_begin.y_hint = delta_y;
+      break;
+
     case ui::ET_GESTURE_SCROLL_UPDATE:
       data.scroll_update.x = delta_x;
       data.scroll_update.y = delta_y;

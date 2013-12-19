@@ -33,6 +33,16 @@ struct EVENTS_EXPORT GestureEventDetails {
   void SetScrollVelocity(float velocity_x, float velocity_y,
                          float velocity_x_ordinal, float velocity_y_ordinal);
 
+  float scroll_x_hint() const {
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_BEGIN, type_);
+    return data.scroll_begin.x_hint;
+  }
+
+  float scroll_y_hint() const {
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_BEGIN, type_);
+    return data.scroll_begin.y_hint;
+  }
+
   float scroll_x() const {
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
     return data.scroll_update.x;
@@ -132,6 +142,13 @@ struct EVENTS_EXPORT GestureEventDetails {
  private:
   ui::EventType type_;
   union {
+    struct {  // SCROLL start details.
+      // Distance that caused the scroll to start.  Generally redundant with
+      // the x/y values from the first scroll_update.
+      float x_hint;
+      float y_hint;
+    } scroll_begin;
+
     struct {  // SCROLL delta.
       float x;
       float y;
