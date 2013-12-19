@@ -45,5 +45,9 @@ ui::WindowShowState ToWindowShowState(WindowShowType type) {
   return ui::SHOW_STATE_DEFAULT;
 }
 
+bool IsMaximizedOrFullscreenWindowShowType(WindowShowType type) {
+  return type == SHOW_TYPE_MAXIMIZED || type == SHOW_TYPE_FULLSCREEN;
+}
+
 }  // namespace wm
 }  // namespace ash

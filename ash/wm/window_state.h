@@ -41,8 +41,6 @@ class WindowStateObserver;
 // accessing the window using |window()| is cheap.
 class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
-  static bool IsMaximizedOrFullscreenState(ui::WindowShowState state);
-
   explicit WindowState(aura::Window* window);
   virtual ~WindowState();
 

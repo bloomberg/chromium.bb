@@ -10,12 +10,12 @@
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
+#include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/events/event_handler.h"
 
 namespace aura {
@@ -87,9 +87,9 @@ class ASH_EXPORT BaseLayoutManager
     ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED,
   };
 
-  // Invoked from OnWindowPropertyChanged() if |kShowStateKey| changes.
-  virtual void ShowStateChanged(wm::WindowState* window_state,
-                                ui::WindowShowState last_show_state);
+  // Invoked from OnWindowShowTypeChanged().
+  virtual void ShowTypeChanged(wm::WindowState* window_state,
+                               wm::WindowShowType last_show_type);
 
   // Adjusts the window's bounds when the display area changes for given
   // window. This happens when the display size, work area insets or
@@ -111,8 +111,8 @@ class ASH_EXPORT BaseLayoutManager
   aura::Window* root_window() { return root_window_; }
 
  private:
-  // Update window bounds based on a change in show state.
-  void UpdateBoundsFromShowState(wm::WindowState* controller);
+  // Update window bounds based on a change in show type.
+  void UpdateBoundsFromShowType(wm::WindowState* controller);
 
   // Set of windows we're listening to.
   WindowSet windows_;

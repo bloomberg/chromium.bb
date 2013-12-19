@@ -9,9 +9,9 @@
 
 #include "ash/shell_observer.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
 
@@ -63,8 +63,6 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
 
  private:
   // Overridden from BaseLayoutManager:
-  virtual void ShowStateChanged(wm::WindowState* window_state,
-                                ui::WindowShowState last_show_state) OVERRIDE;
   virtual void AdjustAllWindowsBoundsForWorkAreaChange(
       AdjustWindowReason reason) OVERRIDE;
   virtual void AdjustWindowBoundsForWorkAreaChange(
@@ -80,10 +78,10 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   // has changed.
   void UpdateFullscreenState();
 
-  // Updates the bounds of the window for a show state change from
-  // |last_show_state|.
-  void UpdateBoundsFromShowState(wm::WindowState* window_state,
-                                 ui::WindowShowState last_show_state);
+  // Updates the bounds of the window for a show type change from
+  // |old_show_type|.
+  void UpdateBoundsFromShowType(wm::WindowState* window_state,
+                                wm::WindowShowType old_show_type);
 
   // If |window_state| is maximized or fullscreen the bounds of the
   // window are set and true is returned. Does nothing otherwise.

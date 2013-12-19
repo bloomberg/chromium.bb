@@ -24,12 +24,6 @@
 namespace ash {
 namespace wm {
 
-// static
-bool WindowState::IsMaximizedOrFullscreenState(ui::WindowShowState show_state) {
-  return show_state == ui::SHOW_STATE_FULLSCREEN ||
-      show_state == ui::SHOW_STATE_MAXIMIZED;
-}
-
 WindowState::WindowState(aura::Window* window)
     : window_(window),
       window_position_managed_(false),
@@ -88,7 +82,9 @@ bool WindowState::IsFullscreen() const {
 }
 
 bool WindowState::IsMaximizedOrFullscreen() const {
-  return IsMaximizedOrFullscreenState(GetShowState());
+  ui::WindowShowState show_state(GetShowState());
+  return show_state == ui::SHOW_STATE_FULLSCREEN ||
+      show_state == ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool WindowState::IsNormalShowState() const {
@@ -281,13 +277,6 @@ void WindowState::SnapWindow(WindowShowType left_or_right,
   // which width to use when the snapped window is moved to the edge.
   SetRestoreBoundsInParent(bounds);
 
-  bool was_maximized = IsMaximizedOrFullscreen();
-  // Before we can set the bounds we need to restore the window.
-  // Restoring the window will set the window to its restored bounds set above.
-  // Restore will cause OnWindowPropertyChanged() so it needs to be done
-  // before notifying that the WindowShowType has changed to |left_or_right|.
-  if (was_maximized)
-    Restore();
   DCHECK(left_or_right == SHOW_TYPE_LEFT_SNAPPED ||
          left_or_right == SHOW_TYPE_RIGHT_SNAPPED);
   SetWindowShowType(left_or_right);
