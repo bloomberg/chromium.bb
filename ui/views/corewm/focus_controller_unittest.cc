@@ -78,65 +78,138 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
   DISALLOW_COPY_AND_ASSIGN(FocusNotificationObserver);
 };
 
-// ActivationChangeObserver that keeps a vector of all the windows that lost
-// active.
-class RecordingActivationChangeObserver
-    : public aura::client::ActivationChangeObserver {
+class WindowDeleter {
  public:
-  explicit RecordingActivationChangeObserver(aura::Window* root)
-      : root_(root) {
+  virtual aura::Window* GetDeletedWindow() = 0;
+
+ protected:
+  virtual ~WindowDeleter() {}
+};
+
+// ActivationChangeObserver and FocusChangeObserver that keeps track of whether
+// it was notified about activation changes or focus changes with a deleted
+// window.
+class RecordingActivationAndFocusChangeObserver
+    : public aura::client::ActivationChangeObserver,
+      public aura::client::FocusChangeObserver {
+ public:
+  RecordingActivationAndFocusChangeObserver(aura::Window* root,
+                                            WindowDeleter* deleter)
+      : root_(root),
+        deleter_(deleter),
+        was_notified_with_deleted_window_(false) {
     aura::client::GetActivationClient(root_)->AddObserver(this);
+    aura::client::GetFocusClient(root_)->AddObserver(this);
   }
-  virtual ~RecordingActivationChangeObserver() {
+  virtual ~RecordingActivationAndFocusChangeObserver() {
     aura::client::GetActivationClient(root_)->RemoveObserver(this);
+    aura::client::GetFocusClient(root_)->RemoveObserver(this);
   }
 
-  // Each time we get OnWindowActivated() the |lost_active| parameter is
-  // added here.
-  const std::vector<aura::Window*>& lost() const { return lost_; }
+  bool was_notified_with_deleted_window() const {
+    return was_notified_with_deleted_window_;
+  }
 
   // Overridden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE {
-    lost_.push_back(lost_active);
+    if (lost_active && lost_active == deleter_->GetDeletedWindow())
+      was_notified_with_deleted_window_ = true;
+  }
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    if (lost_focus && lost_focus == deleter_->GetDeletedWindow())
+      was_notified_with_deleted_window_ = true;
   }
 
  private:
   aura::Window* root_;
-  std::vector<aura::Window*> lost_;
 
-  DISALLOW_COPY_AND_ASSIGN(RecordingActivationChangeObserver);
+  // Not owned.
+  WindowDeleter* deleter_;
+
+  // Whether the observer was notified about the loss of activation or the
+  // loss of focus with a window already deleted by |deleter_| as the
+  // |lost_active| or |lost_focus| parameter.
+  bool was_notified_with_deleted_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecordingActivationAndFocusChangeObserver);
 };
 
 // ActivationChangeObserver that deletes the window losing activation.
-class DeleteOnLoseActivationChangeObserver
-    : public aura::client::ActivationChangeObserver {
+class DeleteOnLoseActivationChangeObserver :
+    public aura::client::ActivationChangeObserver,
+    public WindowDeleter {
  public:
   explicit DeleteOnLoseActivationChangeObserver(aura::Window* window)
       : root_(window->GetRootWindow()),
-        window_(window) {
+        window_(window),
+        did_delete_(false) {
     aura::client::GetActivationClient(root_)->AddObserver(this);
   }
   virtual ~DeleteOnLoseActivationChangeObserver() {
     aura::client::GetActivationClient(root_)->RemoveObserver(this);
   }
 
-  bool did_delete() const { return window_ == NULL; }
-
   // Overridden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE {
     if (window_ && lost_active == window_) {
-      window_ = NULL;
       delete lost_active;
+      did_delete_ = true;
     }
+  }
+
+  // Overridden from WindowDeleter:
+  virtual aura::Window* GetDeletedWindow() OVERRIDE {
+    return did_delete_ ? window_ : NULL;
   }
 
  private:
   aura::Window* root_;
   aura::Window* window_;
+  bool did_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteOnLoseActivationChangeObserver);
+};
+
+// FocusChangeObserver that deletes the window losing focus.
+class DeleteOnLoseFocusChangeObserver
+    : public aura::client::FocusChangeObserver,
+      public WindowDeleter {
+ public:
+  explicit DeleteOnLoseFocusChangeObserver(aura::Window* window)
+      : root_(window->GetRootWindow()),
+        window_(window),
+        did_delete_(false) {
+    aura::client::GetFocusClient(root_)->AddObserver(this);
+  }
+  virtual ~DeleteOnLoseFocusChangeObserver() {
+    aura::client::GetFocusClient(root_)->RemoveObserver(this);
+  }
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    if (window_ && lost_focus == window_) {
+      delete lost_focus;
+      did_delete_ = true;
+    }
+  }
+
+  // Overridden from WindowDeleter:
+  virtual aura::Window* GetDeletedWindow() OVERRIDE {
+    return did_delete_ ? window_ : NULL;
+  }
+
+ private:
+  aura::Window* root_;
+  aura::Window* window_;
+  bool did_delete_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteOnLoseFocusChangeObserver);
 };
 
 class ScopedFocusNotificationObserver : public FocusNotificationObserver {
@@ -680,26 +753,43 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     aura::client::GetCaptureClient(root_window())->ReleaseCapture(w1);
   }
 
-  // Verfies if a window that loses activation is deleted during observer
-  // notification we don't pass the deleted window to other observers.
+  // Verifies if a window that loses activation or focus is deleted during
+  // observer notification we don't pass the deleted window to other observers.
   virtual void DontPassDeletedWindow() OVERRIDE {
     FocusWindowById(1);
 
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(1, GetFocusedWindowId());
 
-    DeleteOnLoseActivationChangeObserver observer1(
-        root_window()->GetChildById(1));
-    RecordingActivationChangeObserver observer2(root_window());
+    {
+      aura::Window* to_delete = root_window()->GetChildById(1);
+      DeleteOnLoseActivationChangeObserver observer1(to_delete);
+      RecordingActivationAndFocusChangeObserver observer2(root_window(),
+                                                          &observer1);
 
-    FocusWindowById(2);
+      FocusWindowById(2);
 
-    EXPECT_EQ(2, GetActiveWindowId());
-    EXPECT_EQ(2, GetFocusedWindowId());
+      EXPECT_EQ(2, GetActiveWindowId());
+      EXPECT_EQ(2, GetFocusedWindowId());
 
-    EXPECT_TRUE(observer1.did_delete());
-    ASSERT_EQ(1u, observer2.lost().size());
-    EXPECT_TRUE(observer2.lost()[0] == NULL);
+      EXPECT_EQ(to_delete, observer1.GetDeletedWindow());
+      EXPECT_FALSE(observer2.was_notified_with_deleted_window());
+    }
+
+    {
+      aura::Window* to_delete = root_window()->GetChildById(2);
+      DeleteOnLoseFocusChangeObserver observer1(to_delete);
+      RecordingActivationAndFocusChangeObserver observer2(root_window(),
+                                                          &observer1);
+
+      FocusWindowById(3);
+
+      EXPECT_EQ(3, GetActiveWindowId());
+      EXPECT_EQ(3, GetFocusedWindowId());
+
+      EXPECT_EQ(to_delete, observer1.GetDeletedWindow());
+      EXPECT_FALSE(observer2.was_notified_with_deleted_window());
+    }
   }
 
  private:

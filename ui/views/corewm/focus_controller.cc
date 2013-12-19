@@ -254,6 +254,11 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
 
   base::AutoReset<bool> updating_focus(&updating_focus_, true);
   aura::Window* lost_focus = focused_window_;
+  // Allow for the window losing focus to be deleted during dispatch. If it is
+  // deleted pass NULL to observers instead of a deleted window.
+  aura::WindowTracker window_tracker;
+  if (lost_focus)
+    window_tracker.Add(lost_focus);
   if (focused_window_ && observer_manager_.IsObserving(focused_window_) &&
       focused_window_ != active_window_) {
     observer_manager_.Remove(focused_window_);
@@ -264,14 +269,22 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
 
   FOR_EACH_OBSERVER(aura::client::FocusChangeObserver,
                     focus_observers_,
-                    OnWindowFocused(focused_window_, lost_focus));
+                    OnWindowFocused(focused_window_,
+                                    window_tracker.Contains(lost_focus) ?
+                                    lost_focus : NULL));
+  if (window_tracker.Contains(lost_focus)) {
+    aura::client::FocusChangeObserver* observer =
+        aura::client::GetFocusChangeObserver(lost_focus);
+    if (observer)
+      observer->OnWindowFocused(focused_window_, lost_focus);
+  }
   aura::client::FocusChangeObserver* observer =
-      aura::client::GetFocusChangeObserver(lost_focus);
-  if (observer)
-    observer->OnWindowFocused(focused_window_, lost_focus);
-  observer = aura::client::GetFocusChangeObserver(focused_window_);
-  if (observer)
-    observer->OnWindowFocused(focused_window_, lost_focus);
+      aura::client::GetFocusChangeObserver(focused_window_);
+  if (observer) {
+    observer->OnWindowFocused(
+        focused_window_,
+        window_tracker.Contains(lost_focus) ? lost_focus : NULL);
+  }
 }
 
 void FocusController::SetActiveWindow(aura::Window* requested_window,
