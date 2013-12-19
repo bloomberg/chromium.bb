@@ -48,6 +48,9 @@ function setupTests(tester, plugin) {
     addTestListener(test, 'DidChangeView');
   });
 
+  // This test does not appear to be reliable on the bots.
+  // http://crbug.com/329511
+  /*
   tester.addAsyncTest('PPP_Instance::DidChangeFocus', function(test) {
     // TODO(polina): How can I simulate focusing on Windows?
     // For now just pass explicitely.
@@ -61,6 +64,7 @@ function setupTests(tester, plugin) {
     plugin.focus();
     plugin.blur();
   });
+  */
 
   // PPP_Instance::HandleDocumentLoad is only used with full-frame plugins.
   // This is tested in tests/ppapi_browser/extension_mime_handler/
