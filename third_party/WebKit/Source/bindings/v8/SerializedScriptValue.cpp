@@ -792,10 +792,6 @@ private:
         // state.
         virtual StateBase* advance(Serializer&) = 0;
 
-        // Returns 1 if this state is currently serializing a property
-        // via an accessor and 0 otherwise.
-        virtual uint32_t execDepth() const { return 0; }
-
     protected:
         StateBase(v8::Handle<v8::Value> composite, StateBase* next)
             : m_composite(composite)
@@ -2041,30 +2037,6 @@ public:
             return false;
         *object = element(stackDepth() - 1);
         pop(1);
-        return true;
-    }
-
-    virtual bool completeArray(uint32_t length, v8::Handle<v8::Value>* value)
-    {
-        if (length > stackDepth())
-            return false;
-        v8::Local<v8::Array> array;
-        if (m_version > 0) {
-            v8::Local<v8::Value> composite;
-            if (!closeComposite(&composite))
-                return false;
-            array = composite.As<v8::Array>();
-        } else {
-            array = v8::Array::New(m_reader.isolate(), length);
-        }
-        if (array.IsEmpty())
-            return false;
-        const int depth = stackDepth() - length;
-        // The V8 API ensures space exists for any index argument to Set; it will (eg) resize arrays as necessary.
-        for (unsigned i = 0; i < length; ++i)
-            array->Set(i, element(depth + i));
-        pop(length);
-        *value = array;
         return true;
     }
 

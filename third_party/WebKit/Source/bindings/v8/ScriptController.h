@@ -130,8 +130,6 @@ public:
 
     TextPosition eventHandlerPosition() const;
 
-    const String* sourceURL() const { return m_sourceURL; } // 0 if we are not evaluating any script.
-
     void clearWindowShell();
     void updateDocument();
 
