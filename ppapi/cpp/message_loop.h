@@ -63,8 +63,8 @@ class InstanceHandle;
 /// The main thread has an implicitly created message loop. The main thread is
 /// the thread where PPP_InitializeModule and PPP_Instance functions are called.
 /// You can retrieve a reference to this message loop by calling
-/// GetForMainThread() or, if your code is on the main thread,
-/// GetForCurrentThread() will also work.
+/// GetForMainThread() or, if your code is on the main thread, GetCurrent() will
+/// also work.
 ///
 /// Some special threads created by the system can not have message loops. In
 /// particular, the background thread created for audio processing has this
