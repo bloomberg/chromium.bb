@@ -107,7 +107,8 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
 
   // TODO(creis): Make render_frame_host_ a scoped_ptr.
   render_frame_host_ = CreateRenderFrameHost(site_instance, view_routing_id,
-                                             frame_routing_id, false, false);
+                                             frame_routing_id, false,
+                                             delegate_->IsHidden());
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.

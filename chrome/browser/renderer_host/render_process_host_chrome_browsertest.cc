@@ -71,13 +71,31 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
     CHECK(wc->GetURL() == page);
 
-    // Ensure that the backgrounding / foregrounding gets a chance to run.
+    WaitForLauncherThread();
+    return wc->GetRenderProcessHost()->GetHandle();
+  }
+
+  // Loads the given url in a new background tab and returns the handle of its
+  // renderer.
+  base::ProcessHandle OpenBackgroundTab(const GURL& page) {
+    ui_test_utils::NavigateToURLWithDisposition(browser(), page,
+        NEW_BACKGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+    TabStripModel* tab_strip = browser()->tab_strip_model();
+    WebContents* wc = tab_strip->GetWebContentsAt(
+        tab_strip->active_index() + 1);
+    CHECK(wc->GetVisibleURL() == page);
+
+    WaitForLauncherThread();
+    return wc->GetRenderProcessHost()->GetHandle();
+  }
+
+  // Ensures that the backgrounding / foregrounding gets a chance to run.
+  void WaitForLauncherThread() {
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
         base::Bind(&base::DoNothing), base::MessageLoop::QuitClosure());
     base::MessageLoop::current()->Run();
-
-    return wc->GetRenderProcessHost()->GetHandle();
   }
 
   // When we hit the max number of renderers, verify that the way we do process
@@ -260,11 +278,22 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   EXPECT_TRUE(base::Process(pid1).IsProcessBackgrounded());
   EXPECT_FALSE(base::Process(pid2).IsProcessBackgrounded());
 
-  // Navigate back to first page. It should be foreground again, and the second
-  // tab should be background.
+  // Load another tab in background. The renderer of the new tab should be
+  // backgrounded, while visibility of the other renderers should not change.
+  GURL page3("data:text/html,hello world3");
+  base::ProcessHandle pid3 = OpenBackgroundTab(page3);
+  EXPECT_NE(pid3, pid1);
+  EXPECT_NE(pid3, pid2);
+  EXPECT_TRUE(base::Process(pid1).IsProcessBackgrounded());
+  EXPECT_FALSE(base::Process(pid2).IsProcessBackgrounded());
+  EXPECT_TRUE(base::Process(pid3).IsProcessBackgrounded());
+
+  // Navigate back to the first page. Its renderer should be in foreground
+  // again while the other renderers should be backgrounded.
   EXPECT_EQ(pid1, ShowSingletonTab(page1));
   EXPECT_FALSE(base::Process(pid1).IsProcessBackgrounded());
   EXPECT_TRUE(base::Process(pid2).IsProcessBackgrounded());
+  EXPECT_TRUE(base::Process(pid3).IsProcessBackgrounded());
 }
 #endif
 
