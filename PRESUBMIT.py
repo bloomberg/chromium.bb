@@ -1402,7 +1402,7 @@ def GetPreferredTrySlaves(project, change):
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
     return GetDefaultTryConfigs(['mac', 'mac_rel'])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
-    return GetDefaultTryConfigs(['win', 'win_rel', 'win7_aura'])
+    return GetDefaultTryConfigs(['win', 'win_rel'])
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'android_aosp',
