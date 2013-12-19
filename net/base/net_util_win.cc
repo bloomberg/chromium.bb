@@ -138,7 +138,8 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
   return true;
 }
 
-bool GetNetworkList(NetworkInterfaceList* networks) {
+bool GetNetworkList(NetworkInterfaceList* networks,
+                    HostScopeVirtualInterfacePolicy policy) {
   // GetAdaptersAddresses() may require IO operations.
   base::ThreadRestrictions::AssertIOAllowed();
   bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
@@ -170,7 +171,14 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
       continue;
     }
 
-    std::string name = adapter->AdapterName;
+    // Ignore any HOST side vmware adapters with a description like:
+    // VMware Virtual Ethernet Adapter for VMnet1
+    // but don't ignore any GUEST side adapters with a description like:
+    // VMware Accelerated AMD PCNet Adapter #2
+    if (policy == EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES &&
+        strstr(adapter->AdapterName, "VMnet") != NULL) {
+      continue;
+    }
 
     for (IP_ADAPTER_UNICAST_ADDRESS* address = adapter->FirstUnicastAddress;
          address; address = address->Next) {

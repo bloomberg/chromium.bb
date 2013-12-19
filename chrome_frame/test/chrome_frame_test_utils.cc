@@ -712,7 +712,8 @@ std::string GetLocalIPv4Address() {
   std::string address;
   net::NetworkInterfaceList nic_list;
 
-  if (!net::GetNetworkList(&nic_list)) {
+  if (!net::GetNetworkList(&nic_list,
+                           net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
     LOG(ERROR) << "GetNetworkList failed to look up non-loopback adapters. "
                << "Tests will be run over the loopback adapter, which may "
                << "result in hangs.";

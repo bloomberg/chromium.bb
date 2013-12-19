@@ -3299,7 +3299,7 @@ TEST(NetUtilTest, IsLocalhost) {
 // Verify GetNetworkList().
 TEST(NetUtilTest, GetNetworkList) {
   NetworkInterfaceList list;
-  ASSERT_TRUE(GetNetworkList(&list));
+  ASSERT_TRUE(GetNetworkList(&list, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES));
   for (NetworkInterfaceList::iterator it = list.begin();
        it != list.end(); ++it) {
     // Verify that the name is not empty.

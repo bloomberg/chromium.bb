@@ -67,7 +67,7 @@ IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family) {
 InterfaceIndexFamilyList GetMDnsInterfacesToBind() {
   NetworkInterfaceList network_list;
   InterfaceIndexFamilyList interfaces;
-  if (!GetNetworkList(&network_list))
+  if (!GetNetworkList(&network_list, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
     return interfaces;
   for (size_t i = 0; i < network_list.size(); ++i) {
     AddressFamily family = GetAddressFamily(network_list[i].address);

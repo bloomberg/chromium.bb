@@ -27,7 +27,8 @@ bool SystemNetworkGetNetworkInterfacesFunction::RunImpl() {
 
 void SystemNetworkGetNetworkInterfacesFunction::GetListOnFileThread() {
   net::NetworkInterfaceList interface_list;
-  if (net::GetNetworkList(&interface_list)) {
+  if (net::GetNetworkList(
+      &interface_list, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&SystemNetworkGetNetworkInterfacesFunction::
             SendResponseOnUIThread,

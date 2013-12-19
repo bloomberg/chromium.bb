@@ -325,7 +325,8 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
 
   // Network interfaces
   net::NetworkInterfaceList network_list;
-  net::GetNetworkList(&network_list);
+  net::GetNetworkList(&network_list,
+                      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   info  = "Discovered " + IntToString(network_list.size()) +
           " network interfaces:" + '\n';
   pcb.Write(info.c_str(), info.length());

@@ -113,7 +113,8 @@ void GetNetworkListOnFileThread(
     const scoped_refptr<base::MessageLoopProxy>& loop,
     const base::Callback<void(const NetworkInterfaceList& networks)>& cb) {
   NetworkInterfaceList list;
-  bool success = net::GetNetworkList(&list);
+  bool success = net::GetNetworkList(
+      &list, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   if (!success)
     DVLOG(1) << "Could not retrieve network list!";
 

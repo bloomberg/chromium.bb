@@ -24,7 +24,7 @@ void GetNetworkListOnFileThread(
     const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   net::NetworkInterfaceList networks;
-  if (!GetNetworkList(&networks))
+  if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
     return;
 
   net::NetworkInterfaceList ip4_networks;

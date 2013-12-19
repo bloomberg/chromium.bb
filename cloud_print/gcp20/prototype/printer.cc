@@ -111,7 +111,8 @@ const char kCdd[] =
 net::IPAddressNumber GetLocalIp(const std::string& interface_name,
                                 bool return_ipv6_number) {
   net::NetworkInterfaceList interfaces;
-  bool success = net::GetNetworkList(&interfaces);
+  bool success = net::GetNetworkList(
+      &interfaces, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   DCHECK(success);
 
   size_t expected_address_size = return_ipv6_number ? net::kIPv6AddressSize

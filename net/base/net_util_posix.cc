@@ -63,7 +63,8 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* path) {
   return !file_path_str.empty();
 }
 
-bool GetNetworkList(NetworkInterfaceList* networks) {
+bool GetNetworkList(NetworkInterfaceList* networks,
+                    HostScopeVirtualInterfacePolicy policy) {
 #if defined(OS_ANDROID)
   std::string network_list = android::GetNetworkList();
   base::StringTokenizer network_interfaces(network_list, "\n");
@@ -138,8 +139,14 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
       continue;
     }
 
+    const std::string& name = interface->ifa_name;
+    // Filter out VMware interfaces, typically named vmnet1 and vmnet8.
+    if (policy == EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES &&
+        ((name.find("vmnet") != std::string::npos) ||
+         (name.find("vnic") != std::string::npos))) {
+      continue;
+    }
     IPEndPoint address;
-    std::string name = interface->ifa_name;
     if (address.FromSockAddr(addr, addr_size)) {
       uint8 net_mask = 0;
       if (interface->ifa_netmask) {

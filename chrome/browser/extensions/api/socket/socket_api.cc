@@ -661,7 +661,8 @@ bool SocketGetNetworkListFunction::RunImpl() {
 
 void SocketGetNetworkListFunction::GetNetworkListOnFileThread() {
   net::NetworkInterfaceList interface_list;
-  if (GetNetworkList(&interface_list)) {
+  if (GetNetworkList(&interface_list,
+                     net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&SocketGetNetworkListFunction::SendResponseOnUIThread,
             this, interface_list));
