@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Handler;
+import android.os.Message;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -13,6 +15,7 @@ import android.webkit.WebView.HitTestResult;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -98,35 +101,53 @@ public class WebKitHitTestTest extends AwTestBase {
         }
     }
 
+    private static boolean stringEquals(String a, String b) {
+        return a == null ? b == null : a.equals(b);
+    }
+
     private boolean pollForHitTestDataOnUiThread(
-            final int type, final String extra) throws Throwable {
+            final int expectedType, final String expectedExtra) throws Throwable {
         return pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 AwContents.HitTestData data = mAwContents.getLastHitTestResult();
-                return type == data.hitTestResultType &&
-                       (extra == null ? data.hitTestResultExtraData == null :
-                       extra.equals(data.hitTestResultExtraData));
+                return expectedType == data.hitTestResultType &&
+                       stringEquals(expectedExtra, data.hitTestResultExtraData);
             }
         });
     }
 
     private boolean pollForHrefAndImageSrcOnUiThread(
-            final String href,
-            final String anchorText,
-            final String imageSrc) throws Throwable {
-        return pollOnUiThread(new Callable<Boolean>() {
+            final String expectedHref,
+            final String expectedAnchorText,
+            final String expectedImageSrc) throws Throwable {
+        boolean pollResult = pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 AwContents.HitTestData data = mAwContents.getLastHitTestResult();
-                return (href == null ? data.href == null :
-                        href.equals(data.href)) &&
-                       (anchorText == null ? data.anchorText == null :
-                        anchorText.equals(data.anchorText)) &&
-                       (imageSrc == null ? data.imgSrc == null :
-                        imageSrc.equals(data.imgSrc));
+                return stringEquals(expectedHref, data.href) &&
+                       stringEquals(expectedAnchorText, data.anchorText) &&
+                       stringEquals(expectedImageSrc, data.imgSrc);
             }
         });
+
+        Handler dummyHandler = new Handler();
+        final Message focusNodeHrefMsg = dummyHandler.obtainMessage();
+        final Message imageRefMsg = dummyHandler.obtainMessage();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAwContents.requestFocusNodeHref(focusNodeHrefMsg);
+                mAwContents.requestImageRef(imageRefMsg);
+            }
+        });
+        pollResult &= stringEquals(expectedHref, focusNodeHrefMsg.getData().getString("url"));
+        pollResult &= stringEquals(expectedAnchorText,
+                focusNodeHrefMsg.getData().getString("title"));
+        pollResult &= stringEquals(expectedImageSrc, focusNodeHrefMsg.getData().getString("src"));
+        pollResult &= stringEquals(expectedImageSrc, imageRefMsg.getData().getString("url"));
+
+        return pollResult;
     }
 
     private void srcAnchorTypeTestBody(boolean byTouch) throws Throwable {
@@ -150,13 +171,13 @@ public class WebKitHitTestTest extends AwTestBase {
     }
 
     private void blankHrefTestBody(boolean byTouch) throws Throwable {
-        String fullpath = mWebServer.getResponseUrl("/hittest.html");
+        String fullPath = mWebServer.getResponseUrl("/hittest.html");
         String page = fullPageLink("", ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
         assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.SRC_ANCHOR_TYPE, fullpath));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(fullpath, ANCHOR_TEXT, null));
+                HitTestResult.SRC_ANCHOR_TYPE, fullPath));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null));
     }
 
     @SmallTest
@@ -172,14 +193,14 @@ public class WebKitHitTestTest extends AwTestBase {
     }
 
     private void srcAnchorTypeRelativeUrlTestBody(boolean byTouch) throws Throwable {
-        String relpath = "/foo.html";
-        String fullpath = mWebServer.getResponseUrl(relpath);
-        String page = fullPageLink(relpath, ANCHOR_TEXT);
+        String relPath = "/foo.html";
+        String fullPath = mWebServer.getResponseUrl(relPath);
+        String page = fullPageLink(relPath, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
         assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.SRC_ANCHOR_TYPE, fullpath));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(fullpath, ANCHOR_TEXT, null));
+                HitTestResult.SRC_ANCHOR_TYPE, fullPath));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null));
     }
 
     @SmallTest
@@ -262,11 +283,10 @@ public class WebKitHitTestTest extends AwTestBase {
     }
 
     private void srcImgeAnchorTypeTestBody(boolean byTouch) throws Throwable {
-        String relImageSrc = "/nonexistent.jpg";
-        String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
+        String fullImageSrc = "http://foo.bar/nonexistent.jpg";
         String page = CommonResources.makeHtmlPageFrom("", "<a class=\"full_view\" href=\"" +
                 HREF + "\"onclick=\"return false;\"><img class=\"full_view\" src=\"" +
-                relImageSrc + "\"></a>");
+                fullImageSrc + "\"></a>");
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
         assertTrue(pollForHitTestDataOnUiThread(
@@ -284,6 +304,33 @@ public class WebKitHitTestTest extends AwTestBase {
     @Feature({"AndroidWebView", "WebKitHitTest"})
     public void testSrcImgeAnchorTypeByFocus() throws Throwable {
         srcImgeAnchorTypeTestBody(false);
+    }
+
+    private void srcImgeAnchorTypeRelativeUrlTestBody(boolean byTouch) throws Throwable {
+        String relImageSrc = "/nonexistent.jpg";
+        String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
+        String relPath = "/foo.html";
+        String fullPath = mWebServer.getResponseUrl(relPath);
+        String page = CommonResources.makeHtmlPageFrom("", "<a class=\"full_view\" href=\"" +
+                relPath + "\"onclick=\"return false;\"><img class=\"full_view\" src=\"" +
+                relImageSrc + "\"></a>");
+        setServerResponseAndLoad(page);
+        simulateInput(byTouch);
+        assertTrue(pollForHitTestDataOnUiThread(
+                HitTestResult.SRC_IMAGE_ANCHOR_TYPE, fullImageSrc));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(fullPath, null, fullImageSrc));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "WebKitHitTest"})
+    public void testSrcImgeAnchorTypeRelativeUrl() throws Throwable {
+        srcImgeAnchorTypeRelativeUrlTestBody(true);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "WebKitHitTest"})
+    public void testSrcImgeAnchorTypeRelativeUrlByFocus() throws Throwable {
+        srcImgeAnchorTypeRelativeUrlTestBody(false);
     }
 
     @SmallTest
