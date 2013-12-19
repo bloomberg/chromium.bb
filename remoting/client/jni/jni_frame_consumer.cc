@@ -48,7 +48,8 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
                                    const webrtc::DesktopRegion& region) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
-  if (!view_size_.equals(buffer->size())) {
+  if (bitmap_->size().width() != buffer->size().width() ||
+      bitmap_->size().height() != buffer->size().height()) {
     // Drop the frame, since the data belongs to the previous generation,
     // before SetSourceSize() called SetOutputSizeAndClip().
     FreeBuffer(buffer);
@@ -92,22 +93,21 @@ void JniFrameConsumer::SetSourceSize(const webrtc::DesktopSize& source_size,
 
   // We currently render the desktop 1:1 and perform pan/zoom scaling
   // and cropping on the managed canvas.
-  view_size_ = source_size;
-  clip_area_ = webrtc::DesktopRect::MakeSize(view_size_);
-  frame_producer_->SetOutputSizeAndClip(view_size_, clip_area_);
+  clip_area_ = webrtc::DesktopRect::MakeSize(source_size);
+  frame_producer_->SetOutputSizeAndClip(source_size, clip_area_);
 
   // Allocate buffer and start drawing frames onto it.
-  AllocateBuffer();
+  AllocateBuffer(source_size);
 }
 
 FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
   return FORMAT_RGBA;
 }
 
-void JniFrameConsumer::AllocateBuffer() {
+void JniFrameConsumer::AllocateBuffer(const webrtc::DesktopSize& source_size) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
-  webrtc::DesktopSize size(view_size_.width(), view_size_.height());
+  webrtc::DesktopSize size(source_size.width(), source_size.height());
 
   // Allocate a new Bitmap, store references here, and pass it to Java.
   JNIEnv* env = base::android::AttachCurrentThread();
