@@ -465,11 +465,11 @@ bool EnsureExtTextOut(HDC hdc, int x, int y, UINT options, const RECT * lprect,
         SkLOGFONTFromTypeface(typeface, &lf);
         VLOG(1) << "SkFontHost::EnsureTypefaceCharactersAccessible FAILED for "
                 << " FaceName = " << lf.lfFaceName
-                << " and characters: " << string16(text, characters);
+                << " and characters: " << base::string16(text, characters);
       }
     } else {
       VLOG(1) << "ExtTextOut FAILED for default FaceName "
-              << " and characters: " << string16(text, characters);
+              << " and characters: " << base::string16(text, characters);
     }
   }
   return success;
