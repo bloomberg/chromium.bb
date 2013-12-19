@@ -24,12 +24,6 @@ class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
       const std::string& client_id,
       const std::string& client_secret,
       const OAuth2TokenService::ScopeSet& scopes) OVERRIDE;
-
-  virtual void PersistCredentials(const std::string& account_id,
-                                  const std::string& refresh_token) OVERRIDE;
-
-  virtual void ClearPersistedCredentials(
-      const std::string& account_id) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_H_

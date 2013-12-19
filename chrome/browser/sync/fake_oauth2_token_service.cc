@@ -32,14 +32,3 @@ BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
   service->Initialize(profile);
   return service;
 }
-
-void FakeOAuth2TokenService::PersistCredentials(
-    const std::string& account_id,
-    const std::string& refresh_token) {
-  // Disabling the token persistence.
-}
-
-void FakeOAuth2TokenService::ClearPersistedCredentials(
-    const std::string& account_id) {
-  // Disabling the token persistence.
-}

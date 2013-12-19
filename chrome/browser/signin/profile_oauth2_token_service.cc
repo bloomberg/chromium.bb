@@ -15,7 +15,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/webdata/token_web_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -25,14 +24,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
-
-// |kAccountIdPrefix| is in the process in being moved to
-// mutable_profile_oauth2_token_service.cc. It is duplicated here for a short
-// period.
-const char kAccountIdPrefix[] = "AccountId-";
-std::string ApplyAccountIdPrefix(const std::string& account_id) {
-  return kAccountIdPrefix + account_id;
-}
 
 // This class sends a request to GAIA to revoke the given refresh token from
 // the server.  This is a best effort attempt only.  This class deletes itself
@@ -237,23 +228,17 @@ void ProfileOAuth2TokenService::RevokeCredentials(
   }
 }
 
+// TODO(msarda): Remove this method once all credentials logic has been moved
+// to MutableProfileOAuth2TokenService.
 void ProfileOAuth2TokenService::PersistCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
-  scoped_refptr<TokenWebData> token_web_data =
-      TokenWebData::FromBrowserContext(profile_);
-  if (token_web_data.get()) {
-    token_web_data->SetTokenForService(ApplyAccountIdPrefix(account_id),
-                                       refresh_token);
-  }
 }
 
+// TODO(msarda): Remove this method once all credentials logic has been moved
+// to MutableProfileOAuth2TokenService.
 void ProfileOAuth2TokenService::ClearPersistedCredentials(
     const std::string& account_id) {
-  scoped_refptr<TokenWebData> token_web_data =
-      TokenWebData::FromBrowserContext(profile_);
-  if (token_web_data.get())
-    token_web_data->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
 }
 
 void ProfileOAuth2TokenService::RevokeAllCredentials() {

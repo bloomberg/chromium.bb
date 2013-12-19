@@ -127,11 +127,17 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
   // Persists credentials for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.
+  //
+  // Note: Empty implementation as all credentials logic is being migrated to
+  // MutableProfileOAuth2TokenService.
   virtual void PersistCredentials(const std::string& account_id,
                                   const std::string& refresh_token);
 
   // Clears credentials persisted for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.
+  //
+  // Note: Empty implementation as all credentials logic is being migrated to
+  // MutableProfileOAuth2TokenService.
   virtual void ClearPersistedCredentials(const std::string& account_id);
 
   AccountInfoMap& refresh_tokens() { return refresh_tokens_; }

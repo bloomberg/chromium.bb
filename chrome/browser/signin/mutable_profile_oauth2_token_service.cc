@@ -18,6 +18,10 @@ namespace {
 const char kAccountIdPrefix[] = "AccountId-";
 const size_t kAccountIdPrefixLength = 10;
 
+std::string ApplyAccountIdPrefix(const std::string& account_id) {
+  return kAccountIdPrefix + account_id;
+}
+
 bool IsLegacyRefreshTokenId(const std::string& service_id) {
   return service_id == GaiaConstants::kGaiaOAuth2LoginRefreshToken;
 }
@@ -132,6 +136,25 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
   }
 
   FireRefreshTokensLoaded();
+}
+
+void MutableProfileOAuth2TokenService::PersistCredentials(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  scoped_refptr<TokenWebData> token_web_data =
+      TokenWebData::FromBrowserContext(profile());
+  if (token_web_data.get()) {
+    token_web_data->SetTokenForService(ApplyAccountIdPrefix(account_id),
+                                       refresh_token);
+  }
+}
+
+void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
+    const std::string& account_id) {
+  scoped_refptr<TokenWebData> token_web_data =
+      TokenWebData::FromBrowserContext(profile());
+  if (token_web_data.get())
+    token_web_data->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
 }
 
 std::string

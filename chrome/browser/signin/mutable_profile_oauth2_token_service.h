@@ -47,6 +47,16 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   void LoadAllCredentialsIntoMemory(
       const std::map<std::string, std::string>& db_tokens);
 
+  // Persists credentials for |account_id|. Enables overriding for
+  // testing purposes, or other cases, when accessing the DB is not desired.
+  virtual void PersistCredentials(const std::string& account_id,
+                                  const std::string& refresh_token) OVERRIDE;
+
+  // Clears credentials persisted for |account_id|. Enables overriding for
+  // testing purposes, or other cases, when accessing the DB is not desired.
+  virtual void ClearPersistedCredentials(
+      const std::string& account_id) OVERRIDE;
+
   // Handle to the request reading tokens from database.
   WebDataServiceBase::Handle web_data_service_request_;
 
