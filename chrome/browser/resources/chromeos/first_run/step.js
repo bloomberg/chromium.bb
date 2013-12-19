@@ -104,17 +104,59 @@ cr.define('cr.FirstRun', function() {
 
   var Bubble = cr.ui.define('div');
 
-  // Styles of .step which are used for arrow styling.
-  var ARROW_STYLES = [
-    'points-up',
-    'points-left',
-    'points-down',
-    'points-right',
-    'top',
-    'left',
-    'bottom',
-    'right'
-  ];
+  // List of rules declaring bubble's arrow position depending on text direction
+  // and shelf alignment. Every rule has required field |position| with list
+  // of classes that should be applied to arrow element if this rule choosen.
+  // The rule is suitable if its |shelf| and |dir| fields are correspond
+  // to current shelf alignment and text direction. Missing fields behaves like
+  // '*' wildcard. The last suitable rule in list is choosen for arrow style.
+  var ARROW_POSITION = {
+    'app-list': [
+      {
+        position: ['points-down', 'left']
+      },
+      {
+        dir: 'rtl',
+        position: ['points-down', 'right']
+      },
+      {
+        shelf: 'left',
+        position: ['points-left', 'top']
+      },
+      {
+        shelf: 'right',
+        position: ['points-right', 'top']
+      }
+    ],
+    'tray': [
+      {
+        position: ['points-right', 'top']
+      },
+      {
+        dir: 'rtl',
+        shelf: 'bottom',
+        position: ['points-left', 'top']
+      },
+      {
+        shelf: 'left',
+        position: ['points-left', 'top']
+      }
+    ],
+    'help': [
+      {
+        position: ['points-right', 'bottom']
+      },
+      {
+        dir: 'rtl',
+        shelf: 'bottom',
+        position: ['points-left', 'bottom']
+      },
+      {
+        shelf: 'left',
+        position: ['points-left', 'bottom']
+      }
+    ]
+  };
 
   var DISTANCE_TO_POINTEE = 10;
   var MINIMAL_SCREEN_OFFSET = 10;
@@ -138,16 +180,24 @@ cr.define('cr.FirstRun', function() {
       this.arrow_ = document.createElement('div');
       this.arrow_.classList.add('arrow');
       this.appendChild(this.arrow_);
-      ARROW_STYLES.forEach(function(style) {
-        if (!this.classList.contains(style))
-          return;
-        // Changing right to left in RTL case.
-        if (document.documentElement.getAttribute('dir') == 'rtl') {
-          style = style.replace(/right|left/, function(match) {
-            return (match == 'right') ? 'left' : 'right';
-          });
-        }
-        this.arrow_.classList.add(style);
+      var inputDirection = document.documentElement.getAttribute('dir');
+      var shelfAlignment = document.documentElement.getAttribute('shelf');
+      var isSuitable = function(rule) {
+        var inputDirectionMatch = !rule.hasOwnProperty('dir') ||
+                                  rule.dir === inputDirection;
+        var shelfAlignmentMatch = !rule.hasOwnProperty('shelf') ||
+                                  rule.shelf === shelfAlignment;
+        return inputDirectionMatch && shelfAlignmentMatch;
+      };
+      var lastSuitableRule = null;
+      var rules = ARROW_POSITION[this.getName()];
+      rules.forEach(function(rule) {
+        if (isSuitable(rule))
+          lastSuitableRule = rule;
+      });
+      assert(lastSuitableRule);
+      lastSuitableRule.position.forEach(function(cls) {
+        this.arrow_.classList.add(cls);
       }.bind(this));
       var list = this.arrow_.classList;
       if (list.contains('points-up'))

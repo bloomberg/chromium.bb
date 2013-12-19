@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,9 @@
 namespace {
 
 const char kFirstRunJSPath[] = "first_run.js";
+const char kShelfAlignmentBottom[] = "bottom";
+const char kShelfAlignmentLeft[] = "left";
+const char kShelfAlignmentRight[] = "right";
 
 void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
@@ -55,6 +59,22 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "transitionsEnabled",
       CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableFirstRunUITransitions));
+  std::string shelf_alignment;
+  ash::Shell* shell = ash::Shell::GetInstance();
+  switch (shell->GetShelfAlignment(shell->GetPrimaryRootWindow())) {
+    case ash::SHELF_ALIGNMENT_BOTTOM:
+      shelf_alignment = kShelfAlignmentBottom;
+      break;
+    case ash::SHELF_ALIGNMENT_LEFT:
+      shelf_alignment = kShelfAlignmentLeft;
+      break;
+    case ash::SHELF_ALIGNMENT_RIGHT:
+      shelf_alignment = kShelfAlignmentRight;
+      break;
+    default:
+      NOTREACHED() << "Unsupported shelf alignment";
+  }
+  localized_strings->SetString("shelfAlignment", shelf_alignment);
 }
 
 content::WebUIDataSource* CreateDataSource() {
