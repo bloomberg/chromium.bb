@@ -5,12 +5,10 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -77,14 +75,7 @@ UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   if (user != user_manager->GetPrimaryUser())
     return NULL;
 
-  BrowserPolicyConnector* browser_connector =
-      g_browser_process->browser_policy_connector();
-
-  // Allow trusted certs from policy only for accounts with managed user
-  // affiliation, i.e users that are managed by the same domain as the device.
-  bool allow_trusted_certs_from_policy =
-      browser_connector->GetUserAffiliation(user->email()) ==
-          USER_AFFILIATION_MANAGED &&
+  const bool allow_trusted_certs_from_policy =
       user->GetType() == chromeos::User::USER_TYPE_REGULAR;
 
   ProfilePolicyConnector* profile_connector =
