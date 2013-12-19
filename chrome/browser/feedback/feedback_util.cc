@@ -21,6 +21,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/feedback/feedback_data.h"
+#include "chrome/browser/feedback/feedback_uploader.h"
+#include "chrome/browser/feedback/feedback_uploader_factory.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -51,8 +53,6 @@
 
 namespace {
 
-void DispatchFeedback(Profile* profile, std::string* post_body, int64 delay);
-
 GURL GetTargetTabUrl(int session_id, int index) {
   Browser* browser = chrome::FindBrowserWithID(session_id);
   // Sanity checks.
@@ -69,22 +69,7 @@ GURL GetTargetTabUrl(int session_id, int index) {
   return GURL();
 }
 
-// URL to post bug reports to.
-const char kFeedbackPostUrl[] =
-    "https://www.google.com/tools/feedback/chrome/__submit";
-
-const char kProtBufMimeType[] = "application/x-protobuf";
 const char kPngMimeType[] = "image/png";
-
-const int kHttpPostSuccessNoContent = 204;
-const int kHttpPostFailNoConnection = -1;
-const int kHttpPostFailClientError = 400;
-const int kHttpPostFailServerError = 500;
-
-const int64 kInitialRetryDelay = 900000;  // 15 minutes
-const int64 kRetryDelayIncreaseFactor = 2;
-const int64 kRetryDelayLimit = 14400000;  // 4 hours
-
 const char kArbitraryMimeType[] = "application/octet-stream";
 const char kHistogramsAttachmentName[] = "histograms.zip";
 const char kLogsAttachmentName[] = "system_logs.zip";
@@ -94,111 +79,6 @@ const int kChromeOSProductId = 208;
 #else
 const int kChromeBrowserProductId = 237;
 #endif
-
-// Simple net::URLFetcherDelegate to clean up URLFetcher on completion.
-class PostCleanup : public net::URLFetcherDelegate {
- public:
-  PostCleanup(Profile* profile,
-              std::string* post_body,
-              int64 previous_delay) : profile_(profile),
-                                      post_body_(post_body),
-                                      previous_delay_(previous_delay) { }
-  // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
- protected:
-  virtual ~PostCleanup() {}
-
- private:
-  Profile* profile_;
-  std::string* post_body_;
-  int64 previous_delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(PostCleanup);
-};
-
-// Don't use the data parameter, instead use the pointer we pass into every
-// post cleanup object - that pointer will be deleted and deleted only on a
-// successful post to the feedback server.
-void PostCleanup::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  std::stringstream error_stream;
-  int response_code = source->GetResponseCode();
-  if (response_code == kHttpPostSuccessNoContent) {
-    // We've sent our report, delete the report data
-    delete post_body_;
-
-    error_stream << "Success";
-  } else {
-    // Uh oh, feedback failed, send it off to retry
-    if (previous_delay_) {
-      if (previous_delay_ < kRetryDelayLimit)
-        previous_delay_ *= kRetryDelayIncreaseFactor;
-    } else {
-      previous_delay_ = kInitialRetryDelay;
-    }
-    DispatchFeedback(profile_, post_body_, previous_delay_);
-
-    // Process the error for debug output
-    if (response_code == kHttpPostFailNoConnection) {
-      error_stream << "No connection to server.";
-    } else if ((response_code > kHttpPostFailClientError) &&
-        (response_code < kHttpPostFailServerError)) {
-      error_stream << "Client error: HTTP response code " << response_code;
-    } else if (response_code > kHttpPostFailServerError) {
-      error_stream << "Server error: HTTP response code " << response_code;
-    } else {
-      error_stream << "Unknown error: HTTP response code " << response_code;
-    }
-  }
-
-  LOG(WARNING) << "FEEDBACK: Submission to feedback server (" <<
-               source->GetURL() << ") status: " << error_stream.str();
-
-  // Delete the URLFetcher.
-  delete source;
-  // And then delete ourselves.
-  delete this;
-}
-
-void SendFeedback(Profile* profile,
-                  std::string* post_body,
-                  int64 previous_delay) {
-  DCHECK(post_body);
-
-  GURL post_url;
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kFeedbackServer))
-    post_url = GURL(CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kFeedbackServer));
-  else
-    post_url = GURL(kFeedbackPostUrl);
-
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      post_url, net::URLFetcher::POST,
-      new PostCleanup(profile, post_body, previous_delay));
-  fetcher->SetRequestContext(profile->GetRequestContext());
-  fetcher->SetLoadFlags(
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
-
-  net::HttpRequestHeaders headers;
-  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      fetcher->GetOriginalURL(), profile->IsOffTheRecord(), false, &headers);
-  fetcher->SetExtraRequestHeaders(headers.ToString());
-
-  fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);
-  fetcher->Start();
-}
-
-void DispatchFeedback(Profile* profile, std::string* post_body, int64 delay) {
-  DCHECK(post_body);
-
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&SendFeedback, profile, post_body, delay),
-      base::TimeDelta::FromMilliseconds(delay));
-}
-
 
 void AddFeedbackData(userfeedback::ExtensionSubmit* feedback_data,
                      const std::string& key, const std::string& value) {
@@ -359,10 +239,12 @@ void SendReport(scoped_refptr<FeedbackData> data) {
 
   // This pointer will eventually get deleted by the PostCleanup class, after
   // we've either managed to successfully upload the report or died trying.
-  std::string* post_body = new std::string;
-  feedback_data.SerializeToString(post_body);
+  scoped_ptr<std::string> post_body(new std::string);
+  feedback_data.SerializeToString(post_body.get());
 
-  DispatchFeedback(data->profile(), post_body, 0);
+  feedback::FeedbackUploader *uploader =
+      feedback::FeedbackUploaderFactory::GetForBrowserContext(data->profile());
+  uploader->QueueReport(post_body.Pass());
 }
 
 bool ZipString(const base::FilePath& filename,
