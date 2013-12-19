@@ -13,7 +13,6 @@
 #include "base/i18n/char_iterator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/ibus_text.h"
 #include "testing/gtest/include/gtest/gtest.h"

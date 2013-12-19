@@ -137,11 +137,8 @@ class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
 };
 
 
-// IBusBridge provides access of each IME related handler. This class is used
-// for IME implementation without ibus-daemon. The legacy ibus IME communicates
-// their engine with dbus protocol, but new implementation doesn't. Instead of
-// dbus communcation, new implementation calls target service(e.g. PanelService
-// or EngineService) directly by using this class.
+// IBusBridge provides access of each IME related handler. This class
+// is used for IME implementation.
 class UI_EXPORT IBusBridge {
  public:
   virtual ~IBusBridge();

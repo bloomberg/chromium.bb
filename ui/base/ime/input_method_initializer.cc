@@ -10,7 +10,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/logging.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "ui/base/ime/input_method_auralinux.h"
@@ -22,9 +21,7 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-bool dbus_thread_manager_was_initialized = false;
-#elif defined(USE_AURA) && defined(OS_LINUX)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
 const ui::LinuxInputMethodContextFactory* g_linux_input_method_context_factory;
 #endif
 
@@ -59,11 +56,6 @@ void ShutdownInputMethod() {
 void InitializeInputMethodForTesting() {
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Initialize();
-  // TODO(nona): Remove DBusThreadManager initialize.
-  if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::InitializeWithStub();
-    dbus_thread_manager_was_initialized = true;
-  }
 #elif defined(USE_AURA) && defined(OS_LINUX)
   if (!g_linux_input_method_context_factory)
     g_linux_input_method_context_factory = new FakeInputMethodContextFactory();
@@ -89,11 +81,6 @@ void ShutdownInputMethodForTesting() {
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Shutdown();
-  // TODO(nona): Remove DBusThreadManager finalize.
-  if (dbus_thread_manager_was_initialized) {
-    chromeos::DBusThreadManager::Shutdown();
-    dbus_thread_manager_was_initialized = false;
-  }
 #elif defined(USE_AURA) && defined(OS_LINUX)
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();

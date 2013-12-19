@@ -35,6 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #endif
 
@@ -118,6 +119,7 @@ void ViewEventTestBase::SetUp() {
   // also create the message center.
   message_center::MessageCenter::Initialize();
 #if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::InitializeWithStub();
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
 #endif  // OS_CHROMEOS
@@ -158,6 +160,7 @@ void ViewEventTestBase::TearDown() {
 #if defined(OS_CHROMEOS)
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
+  chromeos::DBusThreadManager::Shutdown();
 #endif
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.

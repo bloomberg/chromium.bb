@@ -17,9 +17,6 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
 
-namespace dbus {
-class ObjectPath;
-}
 namespace chromeos {
 namespace ibus {
 class IBusText;

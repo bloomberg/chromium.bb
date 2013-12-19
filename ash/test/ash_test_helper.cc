@@ -26,6 +26,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 #if defined(USE_X11)
@@ -38,7 +39,8 @@ namespace test {
 AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
     : message_loop_(message_loop),
       test_shell_delegate_(NULL),
-      test_screenshot_delegate_(NULL) {
+      test_screenshot_delegate_(NULL),
+      dbus_thread_manager_initialized_(false) {
   CHECK(message_loop_);
 #if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
@@ -65,6 +67,11 @@ void AshTestHelper::SetUp(bool start_session) {
   message_center::MessageCenter::Initialize();
 
 #if defined(OS_CHROMEOS)
+  // Create DBusThreadManager for testing.
+  if (!chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::InitializeWithStub();
+    dbus_thread_manager_initialized_ = true;
+  }
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
@@ -104,6 +111,10 @@ void AshTestHelper::TearDown() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Shutdown();
+  if (dbus_thread_manager_initialized_) {
+    chromeos::DBusThreadManager::Shutdown();
+    dbus_thread_manager_initialized_ = false;
+  }
 #endif
 
   aura::Env::DeleteInstance();

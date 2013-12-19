@@ -62,6 +62,9 @@ class AshTestHelper {
   // Owned by ash::AcceleratorController
   TestScreenshotDelegate* test_screenshot_delegate_;
 
+  // Check if DBus Thread Manager was initialized here.
+  bool dbus_thread_manager_initialized_;
+
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
 
