@@ -48,11 +48,15 @@ class MacHistorySwiperTest : public CocoaTest {
                                 event:[OCMArg any]];
     [[[[mockHistorySwiper stub] andDo:^(NSInvocation* invocation) {
       ++begin_count_;
+      // beginHistorySwipeInDirection: calls endHistorySwipe internally.
+      --end_count_;
     }] andForwardToRealObject]
         beginHistorySwipeInDirection:history_swiper::kForwards
                                event:[OCMArg any]];
     [[[[mockHistorySwiper stub] andDo:^(NSInvocation* invocation) {
       ++begin_count_;
+      // beginHistorySwipeInDirection: calls endHistorySwipe internally.
+      --end_count_;
     }] andForwardToRealObject]
         beginHistorySwipeInDirection:history_swiper::kBackwards
                                event:[OCMArg any]];
@@ -82,6 +86,7 @@ class MacHistorySwiperTest : public CocoaTest {
   void startGestureInMiddle();
   void moveGestureInMiddle();
   void moveGestureAtPoint(NSPoint point);
+  void momentumMoveGestureAtPoint(NSPoint point);
   void endGestureAtPoint(NSPoint point);
 
   HistorySwiper* historySwiper_;
@@ -112,11 +117,17 @@ id mockEventWithPoint(NSPoint point, NSEventType type) {
   return mockEvent;
 }
 
-id scrollWheelEventWithPhase(NSEventPhase phase) {
+id scrollWheelEventWithPhase(NSEventPhase phase, NSEventPhase momentumPhase) {
   // The point isn't used, so we pass in bogus data.
   id event = mockEventWithPoint(makePoint(0,0), NSScrollWheel);
   [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(phase)] phase];
+  [(NSEvent*)
+      [[event stub] andReturnValue:OCMOCK_VALUE(momentumPhase)] momentumPhase];
   return event;
+}
+
+id scrollWheelEventWithPhase(NSEventPhase phase) {
+  return scrollWheelEventWithPhase(phase, NSEventPhaseNone);
 }
 
 void MacHistorySwiperTest::startGestureInMiddle() {
@@ -141,6 +152,15 @@ void MacHistorySwiperTest::moveGestureAtPoint(NSPoint point) {
   [historySwiper_ touchesMovedWithEvent:event];
 
   NSEvent* scrollEvent = scrollWheelEventWithPhase(NSEventPhaseChanged);
+  [historySwiper_ handleEvent:scrollEvent];
+}
+
+void MacHistorySwiperTest::momentumMoveGestureAtPoint(NSPoint point) {
+  NSEvent* event = mockEventWithPoint(point, NSEventTypeGesture);
+  [historySwiper_ touchesMovedWithEvent:event];
+
+  NSEvent* scrollEvent =
+      scrollWheelEventWithPhase(NSEventPhaseNone, NSEventPhaseChanged);
   [historySwiper_ handleEvent:scrollEvent];
 }
 
@@ -258,6 +278,39 @@ TEST_F(MacHistorySwiperTest, SwipeLeftThenDown) {
   EXPECT_EQ(end_count_, 1);
   EXPECT_FALSE(navigated_right_);
   EXPECT_FALSE(navigated_left_);
+}
+
+// Sometimes Cocoa gets confused and sends us a momentum swipe event instead of
+// a swipe gesture event. We should still function appropriately.
+TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
+  startGestureInMiddle();
+
+  // Send a momentum move gesture.
+  momentumMoveGestureAtPoint(makePoint(0.5, 0.5));
+  EXPECT_EQ(begin_count_, 0);
+  EXPECT_EQ(end_count_, 0);
+
+  // Callbacks from blink to set the relevant state for history swiping.
+  [historySwiper_ gotUnhandledWheelEvent];
+  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
+  [historySwiper_ setHasHorizontalScrollbar:NO];
+
+  momentumMoveGestureAtPoint(makePoint(0.2, 0.5));
+  EXPECT_EQ(begin_count_, 1);
+  EXPECT_EQ(end_count_, 0);
+  EXPECT_FALSE(navigated_right_);
+  EXPECT_FALSE(navigated_left_);
+
+  endGestureAtPoint(makePoint(0.2, 0.5));
+  EXPECT_EQ(begin_count_, 1);
+  EXPECT_EQ(end_count_, 1);
+  EXPECT_FALSE(navigated_right_);
+  EXPECT_TRUE(navigated_left_);
 }
 
 // User starts a swipe but doesn't move.

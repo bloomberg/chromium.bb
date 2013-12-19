@@ -43,6 +43,7 @@ typedef NSInteger NSWindowAnimationBehavior;
 @interface NSEvent (LionSDK)
 + (BOOL)isSwipeTrackingFromScrollEventsEnabled;
 
+- (NSEventPhase)momentumPhase;
 - (NSEventPhase)phase;
 - (CGFloat)scrollingDeltaX;
 - (CGFloat)scrollingDeltaY;

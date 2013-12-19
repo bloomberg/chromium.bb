@@ -225,8 +225,10 @@
 - (void)beginHistorySwipeInDirection:
         (history_swiper::NavigationDirection)direction
                                event:(NSEvent*)event {
-  // There shouldn't be an existing history overlay.
-  DCHECK(historyOverlay_ == nil);
+  // We cannot make any assumptions about the current state of the
+  // historyOverlay_, since users may attempt to use multiple gesture input
+  // devices simultaneously, which confuses Cocoa.
+  [self endHistorySwipe];
 
   HistoryOverlayController* historyOverlay = [[HistoryOverlayController alloc]
       initForMode:(direction == history_swiper::kForwards)
@@ -302,7 +304,15 @@
   if (![theEvent respondsToSelector:@selector(phase)])
     return NO;
 
-  if ([theEvent phase] != NSEventPhaseChanged)
+  // If the window has a horizontal scroll bar, sometimes Cocoa gets confused
+  // and sends us momentum scroll wheel events instead of gesture scroll events
+  // (even though the user is still actively swiping).
+  if ([theEvent phase] != NSEventPhaseChanged &&
+      [theEvent momentumPhase] != NSEventPhaseChanged) {
+    return NO;
+  }
+
+  if (!inGesture_)
     return NO;
 
   CGFloat yDelta = gestureCurrentPoint_.y - gestureStartPoint_.y;
