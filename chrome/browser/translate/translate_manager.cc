@@ -82,17 +82,6 @@ const int kMaxTranslateLoadCheckAttempts = 20;
 // The field trial name to compare Translate infobar and bubble.
 const char kFieldTrialNameForUX[] = "TranslateInfobarVsBubble";
 
-bool IsEnabledTranslateNewUX() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTranslateNewUX)) {
-    return true;
-  }
-
-  std::string group_name = base::FieldTrialList::FindFullName(
-      kFieldTrialNameForUX);
-  return group_name == "Bubble";
-}
-
 }  // namespace
 
 TranslateManager::~TranslateManager() {
@@ -428,7 +417,7 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   TranslateBrowserMetrics::ReportInitiationStatus(
       TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
 
-  if (IsEnabledTranslateNewUX()) {
+  if (IsTranslateBubbleEnabled()) {
     language_state.SetTranslateEnabled(true);
     if (language_state.HasLanguageChanged()) {
       ShowBubble(web_contents,
@@ -493,7 +482,7 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
   if (!IsSupportedLanguage(source_lang))
     source_lang = std::string(translate::kUnknownLanguageCode);
 
-  if (IsEnabledTranslateNewUX()) {
+  if (IsTranslateBubbleEnabled()) {
     ShowBubble(web_contents, TranslateBubbleModel::VIEW_STATE_TRANSLATING,
                TranslateErrors::NONE);
   } else {
@@ -615,7 +604,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
     details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
 
-  if (IsEnabledTranslateNewUX()) {
+  if (IsTranslateBubbleEnabled()) {
     TranslateBubbleModel::ViewState view_state =
         (details->error_type == TranslateErrors::NONE) ?
         TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE :
@@ -689,7 +678,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
       DoTranslatePage(web_contents, translate_script,
                       request.source_lang, request.target_lang);
     } else {
-      if (IsEnabledTranslateNewUX()) {
+      if (IsTranslateBubbleEnabled()) {
         ShowBubble(web_contents, TranslateBubbleModel::VIEW_STATE_ERROR,
                    TranslateErrors::NETWORK);
       } else {
@@ -788,6 +777,18 @@ std::string TranslateManager::GetAutoTargetLanguage(
       return auto_target_lang;
   }
   return std::string();
+}
+
+// static
+bool TranslateManager::IsTranslateBubbleEnabled() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTranslateNewUX)) {
+    return true;
+  }
+
+  std::string group_name = base::FieldTrialList::FindFullName(
+      kFieldTrialNameForUX);
+  return group_name == "Bubble";
 }
 
 // static

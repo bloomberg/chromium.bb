@@ -91,6 +91,9 @@ class TranslateManager : public content::NotificationObserver {
   static std::string GetAutoTargetLanguage(const std::string& original_language,
                                            PrefService* prefs);
 
+  // Returns true if the new translate bubble is enabled.
+  static bool IsTranslateBubbleEnabled();
+
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
   // or if prefs::kEnableTranslate is set to false.

@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1534,9 +1535,11 @@ bool LocationBarView::RefreshManagePasswordsIconView() {
 }
 
 void LocationBarView::RefreshTranslateIcon() {
+  if (!TranslateManager::IsTranslateBubbleEnabled())
+    return;
+
   WebContents* web_contents = GetWebContents();
-  if (!web_contents || !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTranslateNewUX))
+  if (!web_contents)
     return;
   LanguageState& language_state = TranslateTabHelper::FromWebContents(
       web_contents)->language_state();
