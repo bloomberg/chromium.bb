@@ -56,59 +56,28 @@
         [ 'branding == "Chrome" and enable_pepper_cdms==1', {
           'dependencies': [
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
+            '<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',
             'widevine_cdm_version_h',
             'widevine_cdm_binaries',
           ],
-          'sources': [
-            '<(DEPTH)/media/cdm/ppapi/api/content_decryption_module.h',
-            '<(DEPTH)/media/cdm/ppapi/cdm_adapter.cc',
-            '<(DEPTH)/media/cdm/ppapi/cdm_adapter.h',
-            '<(DEPTH)/media/cdm/ppapi/cdm_file_io_impl.cc',
-            '<(DEPTH)/media/cdm/ppapi/cdm_file_io_impl.h',
-            '<(DEPTH)/media/cdm/ppapi/cdm_helpers.cc',
-            '<(DEPTH)/media/cdm/ppapi/cdm_helpers.h',
-            '<(DEPTH)/media/cdm/ppapi/cdm_logging.cc',
-            '<(DEPTH)/media/cdm/ppapi/cdm_logging.h',
-            '<(DEPTH)/media/cdm/ppapi/cdm_wrapper.h',
-            '<(DEPTH)/media/cdm/ppapi/linked_ptr.h',
-            '<(DEPTH)/media/cdm/ppapi/supported_cdm_versions.h',
-          ],
           'conditions': [
             [ 'os_posix == 1 and OS != "mac"', {
-              'cflags': ['-fvisibility=hidden'],
-              'type': 'loadable_module',
-              # Allow the plugin adapter to find the CDM in the same directory.
-              'ldflags': ['-Wl,-rpath=\$$ORIGIN'],
               'libraries': [
                 # Copied by widevine_cdm_binaries.
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
             [ 'OS == "win"', {
-              'type': 'shared_library',
-              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-              'msvs_disabled_warnings': [ 4267, ],
               'libraries': [
                 # Copied by widevine_cdm_binaries.
                 '<(PRODUCT_DIR)/widevinecdm.dll.lib',
               ],
             }],
             [ 'OS == "mac"', {
-              'type': 'loadable_module',
-              'product_extension': 'plugin',
               'libraries': [
                 # Copied by widevine_cdm_binaries.
                 '<(PRODUCT_DIR)/libwidevinecdm.dylib',
               ],
-              'xcode_settings': {
-                'OTHER_LDFLAGS': [
-                  # Not to strip important symbols by -Wl,-dead_strip.
-                  '-Wl,-exported_symbol,_PPP_GetInterface',
-                  '-Wl,-exported_symbol,_PPP_InitializeModule',
-                  '-Wl,-exported_symbol,_PPP_ShutdownModule',
-                ],
-                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
-              },
             }],
           ],
         }],

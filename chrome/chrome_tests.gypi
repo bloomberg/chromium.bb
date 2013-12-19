@@ -2004,7 +2004,7 @@
             ['exclude', '^browser/ui/webui/app_list/'],
           ],
         }],
-        ['enable_plugins==1', {
+        ['enable_pepper_cdms==1', {
           'dependencies': [
             # Runtime dependencies.
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
