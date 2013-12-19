@@ -24,6 +24,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
@@ -250,6 +251,10 @@ bool NativeTextfieldViews::OnKeyPressed(const ui::KeyEvent& event) {
 bool NativeTextfieldViews::OnKeyReleased(const ui::KeyEvent& event) {
   NOTREACHED();
   return false;
+}
+
+ui::TextInputClient* NativeTextfieldViews::GetTextInputClient() {
+  return textfield_->read_only() ? NULL : this;
 }
 
 bool NativeTextfieldViews::GetDropFormats(
@@ -587,10 +592,6 @@ void NativeTextfieldViews::UpdateEnabled() {
   OnTextInputTypeChanged();
 }
 
-gfx::Insets NativeTextfieldViews::CalculateInsets() {
-  return GetInsets();
-}
-
 void NativeTextfieldViews::UpdateHorizontalMargins() {
   int left, right;
   if (!textfield_->GetHorizontalMargins(&left, &right))
@@ -609,24 +610,11 @@ void NativeTextfieldViews::UpdateVerticalMargins() {
   OnBoundsChanged(GetBounds());
 }
 
-bool NativeTextfieldViews::SetFocus() {
-  return false;
-}
-
-View* NativeTextfieldViews::GetView() {
-  return this;
-}
-
-gfx::NativeView NativeTextfieldViews::GetTestingHandle() const {
-  NOTREACHED();
-  return NULL;
-}
-
 bool NativeTextfieldViews::IsIMEComposing() const {
   return model_->HasCompositionText();
 }
 
-gfx::Range NativeTextfieldViews::GetSelectedRange() const {
+const gfx::Range& NativeTextfieldViews::GetSelectedRange() const {
   return GetRenderText()->selection();
 }
 
@@ -638,7 +626,7 @@ void NativeTextfieldViews::SelectRange(const gfx::Range& range) {
       ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
 }
 
-gfx::SelectionModel NativeTextfieldViews::GetSelectionModel() const {
+const gfx::SelectionModel& NativeTextfieldViews::GetSelectionModel() const {
   return GetRenderText()->selection_model();
 }
 
@@ -704,10 +692,6 @@ void NativeTextfieldViews::HandleBlur() {
   touch_selection_controller_.reset();
 }
 
-ui::TextInputClient* NativeTextfieldViews::GetTextInputClient() {
-  return textfield_->read_only() ? NULL : this;
-}
-
 void NativeTextfieldViews::ClearEditHistory() {
   model_->ClearEditHistory();
 }
@@ -722,10 +706,6 @@ int NativeTextfieldViews::GetTextfieldBaseline() const {
 
 int NativeTextfieldViews::GetWidthNeededForText() const {
   return GetRenderText()->GetContentWidth() + GetInsets().width();
-}
-
-void NativeTextfieldViews::ExecuteTextCommand(int command_id) {
-  ExecuteCommand(command_id, 0);
 }
 
 bool NativeTextfieldViews::HasTextBeingDragged() {

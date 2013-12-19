@@ -17,7 +17,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/views/controls/textfield/native_textfield_wrapper.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
@@ -113,11 +112,6 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
-  views::NativeTextfieldWrapper* native_textfield_wrapper =
-      static_cast<views::NativeTextfieldWrapper*>(
-          omnibox_view_views->GetNativeWrapperForTesting());
-  if (!native_textfield_wrapper)
-    return;
 
   // Put an URL on the clipboard.
   {
@@ -127,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   }
 
   // Paste and go.
-  native_textfield_wrapper->ExecuteTextCommand(IDS_PASTE_AND_GO);
+  omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
 
   // The popup should not be open.
   EXPECT_FALSE(view->model()->popup_model()->IsOpen());

@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
 class FocusableBorder;

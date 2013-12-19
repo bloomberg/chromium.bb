@@ -12,10 +12,9 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/selection_model.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
@@ -33,20 +32,14 @@ namespace views {
 class FocusableBorder;
 class MenuModelAdapter;
 class MenuRunner;
+class Textfield;
 
-// A views/skia only implementation of NativeTextfieldWrapper.
-// No platform specific code is used.
-// Following features are not yet supported.
-// * BIDI/Complex script.
-// * Support surrogate pair, or maybe we should just use UTF32 internally.
-// * X selection (only if we want to support).
-// Once completed, this will replace Textfield, NativeTextfieldWin and
-// NativeTextfieldGtk.
+// A views/skia textfield implementation. No platform-specific code is used.
+// TODO(msw): Merge views::NativeTextfieldViews and views::Textfield classes.
 class VIEWS_EXPORT NativeTextfieldViews : public View,
                                           public ui::TouchEditable,
                                           public ContextMenuController,
                                           public DragController,
-                                          public NativeTextfieldWrapper,
                                           public ui::TextInputClient,
                                           public TextfieldViewsModel::Delegate {
  public:
@@ -69,6 +62,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
+  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
@@ -101,54 +95,114 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
                                    const gfx::Point& press_pt,
                                    const gfx::Point& p) OVERRIDE;
 
-  // NativeTextfieldWrapper overrides:
-  virtual base::string16 GetText() const OVERRIDE;
-  virtual void UpdateText() OVERRIDE;
-  virtual void AppendText(const base::string16& text) OVERRIDE;
-  virtual void InsertOrReplaceText(const base::string16& text) OVERRIDE;
-  virtual base::i18n::TextDirection GetTextDirection() const OVERRIDE;
-  virtual base::string16 GetSelectedText() const OVERRIDE;
-  virtual void SelectAll(bool reversed) OVERRIDE;
-  virtual void ClearSelection() OVERRIDE;
-  virtual void UpdateBorder() OVERRIDE;
-  virtual void UpdateTextColor() OVERRIDE;
-  virtual void UpdateBackgroundColor() OVERRIDE;
-  virtual void UpdateReadOnly() OVERRIDE;
-  virtual void UpdateFont() OVERRIDE;
-  virtual void UpdateIsObscured() OVERRIDE;
-  virtual void UpdateEnabled() OVERRIDE;
-  virtual gfx::Insets CalculateInsets() OVERRIDE;
-  virtual void UpdateHorizontalMargins() OVERRIDE;
-  virtual void UpdateVerticalMargins() OVERRIDE;
-  virtual bool SetFocus() OVERRIDE;
-  virtual View* GetView() OVERRIDE;
-  virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
-  virtual bool IsIMEComposing() const OVERRIDE;
-  virtual gfx::Range GetSelectedRange() const OVERRIDE;
-  virtual void SelectRange(const gfx::Range& range) OVERRIDE;
-  virtual gfx::SelectionModel GetSelectionModel() const OVERRIDE;
-  virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
-  virtual size_t GetCursorPosition() const OVERRIDE;
-  virtual bool GetCursorEnabled() const OVERRIDE;
-  virtual void SetCursorEnabled(bool enabled) OVERRIDE;
-  virtual bool HandleKeyPressed(const ui::KeyEvent& e) OVERRIDE;
-  virtual bool HandleKeyReleased(const ui::KeyEvent& e) OVERRIDE;
-  virtual void HandleFocus() OVERRIDE;
-  virtual void HandleBlur() OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
-  virtual void SetColor(SkColor value) OVERRIDE;
-  virtual void ApplyColor(SkColor value, const gfx::Range& range) OVERRIDE;
-  virtual void SetStyle(gfx::TextStyle style, bool value) OVERRIDE;
-  virtual void ApplyStyle(gfx::TextStyle style,
-                          bool value,
-                          const gfx::Range& range) OVERRIDE;
-  virtual void ClearEditHistory() OVERRIDE;
-  virtual int GetFontHeight() OVERRIDE;
-  virtual int GetTextfieldBaseline() const OVERRIDE;
-  virtual int GetWidthNeededForText() const OVERRIDE;
-  virtual void ExecuteTextCommand(int command_id) OVERRIDE;
-  virtual bool HasTextBeingDragged() OVERRIDE;
-  virtual gfx::Point GetContextMenuLocation() OVERRIDE;
+  // Gets the currently displayed text.
+  base::string16 GetText() const;
+
+  // Updates the text displayed to the text held by the parent Textfield.
+  void UpdateText();
+
+  // Adds the specified text to the text already displayed.
+  void AppendText(const base::string16& text);
+
+  // Inserts |text| at the current cursor position, replacing any selected text.
+  void InsertOrReplaceText(const base::string16& text);
+
+  // Returns the text direction.
+  base::i18n::TextDirection GetTextDirection() const;
+
+  // Returns the currently selected text.
+  base::string16 GetSelectedText() const;
+
+  // Select the entire text range. If |reversed| is true, the range will end at
+  // the logical beginning of the text; this generally shows the leading portion
+  // of text that overflows its display area.
+  void SelectAll(bool reversed);
+
+  // Clears the selection within the textfield and sets the caret to the end.
+  void ClearSelection();
+
+  // Updates whether there is a visible border.
+  void UpdateBorder();
+
+  // Updates the painted text color.
+  void UpdateTextColor();
+
+  // Updates the painted background color.
+  void UpdateBackgroundColor();
+
+  // Updates the read-only state.
+  void UpdateReadOnly();
+
+  // Updates the font used to render the text.
+  void UpdateFont();
+
+  // Updates the obscured state of the text for passwords, etc.
+  void UpdateIsObscured();
+
+  // Updates the enabled state.
+  void UpdateEnabled();
+
+  // Updates the horizontal and vertical margins.
+  void UpdateHorizontalMargins();
+  void UpdateVerticalMargins();
+
+  // Returns whether or not an IME is composing text.
+  bool IsIMEComposing() const;
+
+  // Gets the selected logical text range.
+  const gfx::Range& GetSelectedRange() const;
+
+  // Selects the specified logical text range.
+  void SelectRange(const gfx::Range& range);
+
+  // Gets the text selection model.
+  const gfx::SelectionModel& GetSelectionModel() const;
+
+  // Sets the specified text selection model.
+  void SelectSelectionModel(const gfx::SelectionModel& sel);
+
+  // Returns the current cursor position.
+  size_t GetCursorPosition() const;
+
+  // Get or set whether or not the cursor is enabled.
+  bool GetCursorEnabled() const;
+  void SetCursorEnabled(bool enabled);
+
+  // Invoked when the parent views::Textfield receives key events.
+  // returns true if the event was processed.
+  bool HandleKeyPressed(const ui::KeyEvent& e);
+  bool HandleKeyReleased(const ui::KeyEvent& e);
+
+  // Invoked when the parent views:Textfield gains or loses focus.
+  void HandleFocus();
+  void HandleBlur();
+
+  // Set the text colors; see views::Textfield for details.
+  void SetColor(SkColor value);
+  void ApplyColor(SkColor value, const gfx::Range& range);
+
+  // Set the text styles; see the corresponding Textfield functions for details.
+  void SetStyle(gfx::TextStyle style, bool value);
+  void ApplyStyle(gfx::TextStyle style, bool value, const gfx::Range& range);
+
+  // Clears the Edit history.
+  void ClearEditHistory();
+
+  // Get the height in pixels of the fonts used.
+  int GetFontHeight();
+
+  // Returns the text baseline; this value does not include any insets.
+  int GetTextfieldBaseline() const;
+
+  // Returns the width necessary to display the current text, including any
+  // necessary space for the cursor or border/margin.
+  int GetWidthNeededForText() const;
+
+  // Returns whether this view is the origin of an ongoing drag operation.
+  bool HasTextBeingDragged();
+
+  // Returns the location for keyboard-triggered context menus.
+  gfx::Point GetContextMenuLocation();
 
   // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -208,8 +262,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // Returns the TextfieldViewsModel's text/cursor/selection rendering model.
   gfx::RenderText* GetRenderText() const;
 
-  // Converts |text| according to textfield style, e.g. lower case if
-  // |textfield_| has STYLE_LOWERCASE style.
+  // Converts |text| according to the current style, e.g. STYLE_LOWERCASE.
   base::string16 GetTextForDisplay(const base::string16& text);
 
   // Updates any colors that have not been explicitly set from the theme.
@@ -232,12 +285,11 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // Helper function to call MoveCursorTo on the TextfieldViewsModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
 
-  // Utility function to inform the parent textfield (and its controller if any)
+  // Utility function to inform the parent views::Textfield (and any controller)
   // that the text in the textfield has changed.
   void PropagateTextChange();
 
-  // Does necessary updates when the text and/or the position of the cursor
-  // changed.
+  // Does necessary updates when the text and/or cursor position changes.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);
 
   // Utility function to prepare the context menu.
@@ -291,7 +343,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // is -1, existing revealed index will be cleared.
   void RevealObscuredChar(int index, const base::TimeDelta& duration);
 
-  // The parent textfield, the owner of this object.
+  // The parent views::Textfield, the owner of this object.
   Textfield* textfield_;
 
   // The text model.
@@ -302,7 +354,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // Textfield has explicitly-set margins.
   FocusableBorder* text_border_;
 
-  // The textfield's text and drop cursor visibility.
+  // The text editing cursor visibility.
   bool is_cursor_visible_;
 
   // The drop cursor is a visual cue for where dragged text will be dropped.
@@ -325,7 +377,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   gfx::Point last_click_location_;
   gfx::Range double_click_word_;
 
-  // Context menu and its content list for the textfield.
+  // Context menu related members.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<views::MenuModelAdapter> context_menu_delegate_;
   scoped_ptr<views::MenuRunner> context_menu_runner_;

@@ -19,8 +19,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/view.h"
 
 #if !defined(OS_LINUX)
@@ -39,6 +39,7 @@ class TextInputClient;
 namespace views {
 
 class ImageView;
+class NativeTextfieldViews;
 class Painter;
 class TextfieldController;
 
@@ -196,38 +197,29 @@ class VIEWS_EXPORT Textfield : public View {
   // Returns whether or not an IME is composing text.
   bool IsIMEComposing() const;
 
-  // Gets the selected range. This is views-implementation only and
-  // has to be called after the wrapper is created.
-  // TODO(msw): Return a const reference when NativeTextfieldWin is gone.
-  gfx::Range GetSelectedRange() const;
+  // Gets the selected logical text range.
+  const gfx::Range& GetSelectedRange() const;
 
-  // Selects the text given by |range|. This is views-implementation only and
-  // has to be called after the wrapper is created.
+  // Selects the specified logical text range.
   void SelectRange(const gfx::Range& range);
 
-  // Gets the selection model. This is views-implementation only and
-  // has to be called after the wrapper is created.
-  // TODO(msw): Return a const reference when NativeTextfieldWin is gone.
-  gfx::SelectionModel GetSelectionModel() const;
+  // Gets the text selection model.
+  const gfx::SelectionModel& GetSelectionModel() const;
 
-  // Selects the text given by |sel|. This is views-implementation only and
-  // has to be called after the wrapper is created.
+  // Sets the specified text selection model.
   void SelectSelectionModel(const gfx::SelectionModel& sel);
 
-  // Returns the current cursor position. This is views-implementation
-  // only and has to be called after the wrapper is created.
+  // Returns the current cursor position.
   size_t GetCursorPosition() const;
 
   // Set the text color over the entire text or a logical character range.
-  // Empty and invalid ranges are ignored. This is views-implementation only and
-  // has to be called after the wrapper is created.
+  // Empty and invalid ranges are ignored.
   void SetColor(SkColor value);
   void ApplyColor(SkColor value, const gfx::Range& range);
 
   // Set various text styles over the entire text or a logical character range.
   // The respective |style| is applied if |value| is true, or removed if false.
-  // Empty and invalid ranges are ignored. This is views-implementation only and
-  // has to be called after the wrapper is created.
+  // Empty and invalid ranges are ignored.
   void SetStyle(gfx::TextStyle style, bool value);
   void ApplyStyle(gfx::TextStyle style, bool value, const gfx::Range& range);
 
@@ -243,11 +235,8 @@ class VIEWS_EXPORT Textfield : public View {
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
 
   // Provided only for testing:
-  gfx::NativeView GetTestingHandle() const {
-    return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;
-  }
-  NativeTextfieldWrapper* GetNativeWrapperForTesting() const {
-    return native_wrapper_;
+  NativeTextfieldViews* GetTextfieldViewForTesting() const {
+    return textfield_view_;
   }
 
   // Returns whether there is a drag operation originating from the textfield.
@@ -275,8 +264,9 @@ class VIEWS_EXPORT Textfield : public View {
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
-  // The object that actually implements the native text field.
-  NativeTextfieldWrapper* native_wrapper_;
+  // The object that actually implements the native textfield view.
+  // TODO(msw): Merge views::NativeTextfieldViews and views::Textfield classes.
+  NativeTextfieldViews* textfield_view_;
 
  private:
   // Returns the insets to the rectangle where text is actually painted.

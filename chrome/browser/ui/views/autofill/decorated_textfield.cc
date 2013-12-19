@@ -10,6 +10,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace {
@@ -124,7 +125,7 @@ views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
   views::View* handler = views::Textfield::GetEventHandlerForRect(rect);
   if (handler->GetClassName() == TooltipIcon::kViewClassName)
     return handler;
-  return native_wrapper_->GetView();
+  return textfield_view_;
 }
 
 void DecoratedTextfield::OnFocus() {

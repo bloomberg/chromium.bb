@@ -44,6 +44,7 @@
 #include "ui/gfx/selection_model.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
@@ -667,7 +668,7 @@ base::string16 OmniboxViewViews::GetGrayTextAutocompletion() const {
 }
 
 int OmniboxViewViews::GetTextWidth() const {
-  return native_wrapper_->GetWidthNeededForText();
+  return textfield_view_->GetWidthNeededForText();
 }
 
 int OmniboxViewViews::GetWidth() const {

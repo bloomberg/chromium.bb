@@ -1782,16 +1782,6 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
                 WM_MOUSEWHEEL, MAKEWPARAM(0, -20), MAKELPARAM(250, 250));
   EXPECT_EQ(20, scroll_view->GetVisibleRect().y());
 
-  // Then the text-field.
-  ::SendMessage(view_with_controls->text_field_->GetTestingHandle(),
-                WM_MOUSEWHEEL, MAKEWPARAM(0, -20), MAKELPARAM(250, 250));
-  EXPECT_EQ(80, scroll_view->GetVisibleRect().y());
-
-  // Ensure we don't scroll when the mouse is not over that window.
-  ::SendMessage(view_with_controls->text_field_->GetTestingHandle(),
-                WM_MOUSEWHEEL, MAKEWPARAM(0, -20), MAKELPARAM(50, 50));
-  EXPECT_EQ(80, scroll_view->GetVisibleRect().y());
-
   window1->CloseNow();
   window2->CloseNow();
 }
