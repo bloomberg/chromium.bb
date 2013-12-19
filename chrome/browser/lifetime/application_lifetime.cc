@@ -241,6 +241,8 @@ void ExitCleanly() {
   // screen locker.
   if (!AreAllBrowsersCloseable())
     browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
+  else
+    browser_shutdown::OnShutdownStarting(browser_shutdown::BROWSER_EXIT);
   AttemptExitInternal(true);
 }
 #endif
