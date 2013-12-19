@@ -167,5 +167,4 @@ TEST_F(MessageCenterSettingsControllerChromeOSTest, NotifierGroups) {
 #endif
 
 // TODO(mukai): write a test case to reproduce the actual guest session scenario
-// in ChromeOS -- no profiles in the profile_info_cache but GetDefaultProfile
-// returns a new one.
+// in ChromeOS -- no profiles in the profile_info_cache.

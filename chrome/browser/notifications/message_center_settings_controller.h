@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/common/content_settings.h"
@@ -91,7 +92,13 @@ class MessageCenterSettingsController
   void OnFaviconLoaded(const GURL& url,
                        const chrome::FaviconImageResult& favicon_result);
 
-  Profile* GetCurrentProfile() const;
+#if defined(OS_CHROMEOS)
+  // Sets up the notifier group for the guest session. This needs to be
+  // separated from RebuildNotifierGroup() and called asynchronously to avoid
+  // the infinite loop of creating profile. See more the comment of
+  // RebuildNotifierGroups().
+  void CreateNotifierGroupForGuestLogin();
+#endif
 
   void RebuildNotifierGroups();
 
@@ -113,6 +120,8 @@ class MessageCenterSettingsController
   content::NotificationRegistrar registrar_;
 
   ProfileInfoCache* profile_info_cache_;
+
+  base::WeakPtrFactory<MessageCenterSettingsController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsController);
 };
