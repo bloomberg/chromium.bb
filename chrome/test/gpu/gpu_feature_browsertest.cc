@@ -532,6 +532,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
 
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_path));
 
+  LOG(INFO) << "did navigate";
   gfx::Rect bounds = browser()->window()->GetBounds();
   gfx::Rect new_bounds = bounds;
 
@@ -555,10 +556,13 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
 
   for (int offset_i = 0; offset_i < num_offsets; ++offset_i) {
     new_bounds.set_width(w_start + offsets[offset_i]);
+    LOG(INFO) << "before wait";
     ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
+    LOG(INFO) << "after wait";
 
     TraceEventVector resize_events;
     analyzer_->FindEvents(find_resizes, &resize_events);
+    LOG(INFO) << "num rezize events = " << resize_events.size();
     for (size_t resize_i = 0; resize_i < resize_events.size(); ++resize_i) {
       const trace_analyzer::TraceEvent* resize = resize_events[resize_i];
       // Was a create allowed:
@@ -588,6 +592,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
               old_width, new_width, num_creates, expected_creates);
     }
   }
+  LOG(INFO) << "finished test";
 }
 #endif
 

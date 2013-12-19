@@ -44,7 +44,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual bool CommitRequested() const OVERRIDE;
   virtual bool BeginMainFrameRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}
-  virtual void Start(scoped_ptr<OutputSurface> first_output_surface) OVERRIDE;
+  virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void AcquireLayerTextures() OVERRIDE {}
@@ -106,10 +106,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   LayerTreeHost* layer_tree_host_;
   LayerTreeHostSingleThreadClient* client_;
   bool created_offscreen_context_provider_;
-
-  // Holds the first output surface passed from Start. Should not be used for
-  // anything else.
-  scoped_ptr<OutputSurface> first_output_surface_;
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.

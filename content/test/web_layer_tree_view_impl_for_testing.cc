@@ -36,7 +36,7 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting() {}
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
-bool WebLayerTreeViewImplForTesting::Initialize() {
+void WebLayerTreeViewImplForTesting::Initialize() {
   cc::LayerTreeSettings settings;
 
   // For web contents, layer transforms should scale up the contents of layers
@@ -47,9 +47,7 @@ bool WebLayerTreeViewImplForTesting::Initialize() {
   settings.accelerated_animation_enabled = true;
   layer_tree_host_ =
       cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
-  if (!layer_tree_host_)
-    return false;
-  return true;
+  DCHECK(layer_tree_host_);
 }
 
 void WebLayerTreeViewImplForTesting::setSurfaceReady() {

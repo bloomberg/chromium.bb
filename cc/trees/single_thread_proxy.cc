@@ -44,11 +44,9 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       << "Threaded compositing must be enabled to use impl-side painting.";
 }
 
-void SingleThreadProxy::Start(scoped_ptr<OutputSurface> first_output_surface) {
-  DCHECK(first_output_surface);
+void SingleThreadProxy::Start() {
   DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
-  first_output_surface_ = first_output_surface.Pass();
 }
 
 SingleThreadProxy::~SingleThreadProxy() {
@@ -113,9 +111,8 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
       "cc", "SingleThreadProxy::CreateAndInitializeOutputSurface");
   DCHECK(Proxy::IsMainThread());
 
-  scoped_ptr<OutputSurface> output_surface = first_output_surface_.Pass();
-  if (!output_surface)
-    output_surface = layer_tree_host_->CreateOutputSurface();
+  scoped_ptr<OutputSurface> output_surface =
+      layer_tree_host_->CreateOutputSurface();
   if (!output_surface) {
     OnOutputSurfaceInitializeAttempted(false);
     return;

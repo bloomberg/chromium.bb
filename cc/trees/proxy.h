@@ -84,7 +84,7 @@ class CC_EXPORT Proxy {
   virtual bool BeginMainFrameRequested() const = 0;
 
   // Must be called before using the proxy.
-  virtual void Start(scoped_ptr<OutputSurface> first_output_surface) = 0;
+  virtual void Start() = 0;
   virtual void Stop() = 0;   // Must be called before deleting the proxy.
 
   // Forces 3D commands on all contexts to wait for all previous SwapBuffers

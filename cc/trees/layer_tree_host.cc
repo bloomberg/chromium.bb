@@ -69,8 +69,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   DCHECK(impl_task_runner);
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(client, manager, settings));
-  if (!layer_tree_host->InitializeThreaded(impl_task_runner))
-    return scoped_ptr<LayerTreeHost>();
+  layer_tree_host->InitializeThreaded(impl_task_runner);
   return layer_tree_host.Pass();
 }
 
@@ -81,8 +80,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     const LayerTreeSettings& settings) {
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(client, manager, settings));
-  if (!layer_tree_host->InitializeSingleThreaded(single_thread_client))
-    return scoped_ptr<LayerTreeHost>();
+  layer_tree_host->InitializeSingleThreaded(single_thread_client);
   return layer_tree_host.Pass();
 }
 
@@ -125,31 +123,25 @@ LayerTreeHost::LayerTreeHost(
       debug_state_.RecordRenderingStats());
 }
 
-bool LayerTreeHost::InitializeThreaded(
+void LayerTreeHost::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  return InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
+  InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
 }
 
-bool LayerTreeHost::InitializeSingleThreaded(
+void LayerTreeHost::InitializeSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client) {
-    return InitializeProxy(
-        SingleThreadProxy::Create(this, single_thread_client));
+  InitializeProxy(SingleThreadProxy::Create(this, single_thread_client));
 }
 
-bool LayerTreeHost::InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing) {
-  return InitializeProxy(proxy_for_testing.Pass());
+void LayerTreeHost::InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing) {
+  InitializeProxy(proxy_for_testing.Pass());
 }
 
-bool LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
+void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
 
-  scoped_ptr<OutputSurface> output_surface(CreateOutputSurface());
-  if (!output_surface)
-    return false;
-
   proxy_ = proxy.Pass();
-  proxy_->Start(output_surface.Pass());
-  return true;
+  proxy_->Start();
 }
 
 LayerTreeHost::~LayerTreeHost() {

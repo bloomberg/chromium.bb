@@ -345,6 +345,37 @@ class LayerTreeHostContextTestLostContextSucceeds
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
 
+class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
+    : public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostClientNotReadyDoesNotCreateOutputSurface()
+      : LayerTreeHostContextTest() {}
+
+  virtual void WillBeginTest() OVERRIDE {
+    // Override and do not signal SetLayerTreeHostClientReady.
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+    EndTest();
+  }
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    EXPECT_TRUE(false);
+    return scoped_ptr<OutputSurface>();
+  }
+
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
+    EXPECT_TRUE(false);
+  }
+
+  virtual void AfterTest() OVERRIDE {
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostClientNotReadyDoesNotCreateOutputSurface);
+
 class LayerTreeHostContextTestLostContextSucceedsWithContent
     : public LayerTreeHostContextTestLostContextSucceeds {
  public:
@@ -460,6 +491,97 @@ TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
   use_surface_ = true;
   RunTest(true, false, false);
 }
+
+class LayerTreeHostContextTestCreateOutputSurfaceFails
+    : public LayerTreeHostContextTest {
+ public:
+  // Run a test that initially fails OutputSurface creation |times_to_fail|
+  // times. If |expect_fallback_attempt| is |true|, an attempt to create a
+  // fallback/software OutputSurface is expected to occur.
+  LayerTreeHostContextTestCreateOutputSurfaceFails(int times_to_fail,
+                                                   bool expect_fallback_attempt,
+                                                   bool expect_to_give_up)
+      : times_to_fail_(times_to_fail),
+        expect_fallback_attempt_(expect_fallback_attempt),
+        expect_to_give_up_(expect_to_give_up),
+        did_attempt_fallback_(false),
+        times_initialized_(0) {}
+
+  virtual void BeginTest() OVERRIDE {
+    times_to_fail_create_ = times_to_fail_;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    scoped_ptr<OutputSurface> surface =
+        LayerTreeHostContextTest::CreateOutputSurface(fallback);
+
+    if (surface)
+      EXPECT_EQ(times_to_fail_, times_create_failed_);
+
+    did_attempt_fallback_ = fallback;
+    return surface.Pass();
+  }
+
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
+    if (succeeded)
+      times_initialized_++;
+    else
+      EndTest();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(times_to_fail_, times_create_failed_);
+    EXPECT_EQ(expect_to_give_up_, times_initialized_ == 0);
+    EXPECT_EQ(expect_fallback_attempt_, did_attempt_fallback_);
+  }
+
+ private:
+  int times_to_fail_;
+  bool expect_fallback_attempt_;
+  bool expect_to_give_up_;
+  bool did_attempt_fallback_;
+  int times_initialized_;
+};
+
+class LayerTreeHostContextTestCreateOutputSurfaceFailsOnce
+    : public LayerTreeHostContextTestCreateOutputSurfaceFails {
+ public:
+  LayerTreeHostContextTestCreateOutputSurfaceFailsOnce()
+      : LayerTreeHostContextTestCreateOutputSurfaceFails(1, false, false) {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostContextTestCreateOutputSurfaceFailsOnce);
+
+// After 4 failures we expect an attempt to create a fallback/software
+// OutputSurface.
+class LayerTreeHostContextTestCreateOutputSurfaceFailsWithFallback
+    : public LayerTreeHostContextTestCreateOutputSurfaceFails {
+ public:
+  LayerTreeHostContextTestCreateOutputSurfaceFailsWithFallback()
+      : LayerTreeHostContextTestCreateOutputSurfaceFails(4, true, false) {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostContextTestCreateOutputSurfaceFailsWithFallback);
+
+// If we fail that often, we should be giving up cleanly.
+class LayerTreeHostContextTestCreateOutputSurfaceIsHopeless
+    : public LayerTreeHostContextTestCreateOutputSurfaceFails {
+ public:
+  LayerTreeHostContextTestCreateOutputSurfaceIsHopeless()
+      : LayerTreeHostContextTestCreateOutputSurfaceFails(5, true, true) {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostContextTestCreateOutputSurfaceIsHopeless);
+
 
 class LayerTreeHostContextTestOffscreenContextFails
     : public LayerTreeHostContextTest {
@@ -1032,7 +1154,11 @@ class LayerTreeHostContextTestDontUseLostResources
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(
       bool fallback) OVERRIDE {
-    if (layer_tree_host()) {
+    // This will get called twice:
+    // First when we create the initial output surface...
+    if (layer_tree_host()->source_frame_number() > 0) {
+      // ... and then again after we forced the context to be lost on the third
+      // frame. Verify this assumption here.
       lost_context_ = true;
       EXPECT_EQ(layer_tree_host()->source_frame_number(), 3);
     }
@@ -1404,43 +1530,6 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext);
-
-// Not reusing LayerTreeTest because it expects creating LTH to always succeed.
-class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
-    : public testing::Test,
-      public FakeLayerTreeHostClient {
- public:
-  LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface()
-      : FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D) {}
-
-  // FakeLayerTreeHostClient implementation.
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
-      OVERRIDE {
-    return scoped_ptr<OutputSurface>();
-  }
-
-  void RunTest(bool threaded,
-               bool delegating_renderer,
-               bool impl_side_painting) {
-    LayerTreeSettings settings;
-    settings.impl_side_painting = impl_side_painting;
-    if (threaded) {
-      scoped_ptr<base::Thread> impl_thread(new base::Thread("LayerTreeTest"));
-      ASSERT_TRUE(impl_thread->Start());
-      ASSERT_TRUE(impl_thread->message_loop_proxy().get());
-      scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::CreateThreaded(
-          this, NULL, settings, impl_thread->message_loop_proxy());
-      EXPECT_FALSE(layer_tree_host);
-    } else {
-      scoped_ptr<LayerTreeHost> layer_tree_host =
-          LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
-      EXPECT_FALSE(layer_tree_host);
-    }
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface);
 
 class UIResourceLostTest : public LayerTreeHostContextTest {
  public:

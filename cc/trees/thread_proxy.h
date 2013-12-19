@@ -58,7 +58,7 @@ class ThreadProxy : public Proxy,
   virtual bool CommitRequested() const OVERRIDE;
   virtual bool BeginMainFrameRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
-  virtual void Start(scoped_ptr<OutputSurface> first_output_surface) OVERRIDE;
+  virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void AcquireLayerTextures() OVERRIDE;
@@ -224,9 +224,6 @@ class ThreadProxy : public Proxy,
   bool manage_tiles_pending_;
   // Weak pointer to use when posting tasks to the impl thread.
   base::WeakPtr<ThreadProxy> impl_thread_weak_ptr_;
-  // Holds the first output surface passed from Start. Should not be used for
-  // anything else.
-  scoped_ptr<OutputSurface> first_output_surface_;
 
   // Accessed on the main thread, or when main thread is blocked.
   bool commit_waits_for_activation_;

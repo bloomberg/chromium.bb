@@ -303,11 +303,11 @@ class CC_EXPORT LayerTreeHost {
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* manager,
                 const LayerTreeSettings& settings);
-  bool InitializeThreaded(
+  void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
-  bool InitializeSingleThreaded(
+  void InitializeSingleThreaded(
       LayerTreeHostSingleThreadClient* single_thread_client);
-  bool InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
+  void InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;
   }
@@ -315,7 +315,7 @@ class CC_EXPORT LayerTreeHost {
   MicroBenchmarkController micro_benchmark_controller_;
 
  private:
-  bool InitializeProxy(scoped_ptr<Proxy> proxy);
+  void InitializeProxy(scoped_ptr<Proxy> proxy);
 
   void PaintLayerContents(
       const RenderSurfaceLayerList& render_surface_layer_list,
