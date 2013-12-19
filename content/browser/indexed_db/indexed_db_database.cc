@@ -655,8 +655,8 @@ void IndexedDBDatabase::GetOperation(
 }
 
 static scoped_ptr<IndexedDBKey> GenerateKey(
-    scoped_refptr<IndexedDBBackingStore> backing_store,
-    scoped_refptr<IndexedDBTransaction> transaction,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBTransaction* transaction,
     int64 database_id,
     int64 object_store_id) {
   const int64 max_generator_value =
@@ -677,13 +677,12 @@ static scoped_ptr<IndexedDBKey> GenerateKey(
   return make_scoped_ptr(new IndexedDBKey(current_number, WebIDBKeyTypeNumber));
 }
 
-static bool UpdateKeyGenerator(
-    scoped_refptr<IndexedDBBackingStore> backing_store,
-    scoped_refptr<IndexedDBTransaction> transaction,
-    int64 database_id,
-    int64 object_store_id,
-    const IndexedDBKey& key,
-    bool check_current) {
+static bool UpdateKeyGenerator(IndexedDBBackingStore* backing_store,
+                               IndexedDBTransaction* transaction,
+                               int64 database_id,
+                               int64 object_store_id,
+                               const IndexedDBKey& key,
+                               bool check_current) {
   DCHECK_EQ(WebIDBKeyTypeNumber, key.type());
   return backing_store->MaybeUpdateKeyGeneratorCurrentNumber(
       transaction->BackingStoreTransaction(),
@@ -752,8 +751,8 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
   scoped_ptr<IndexedDBKey> key;
   if (params->put_mode != IndexedDBDatabase::CURSOR_UPDATE &&
       object_store.auto_increment && !params->key->IsValid()) {
-    scoped_ptr<IndexedDBKey> auto_inc_key =
-        GenerateKey(backing_store_, transaction, id(), params->object_store_id);
+    scoped_ptr<IndexedDBKey> auto_inc_key = GenerateKey(
+        backing_store_.get(), transaction, id(), params->object_store_id);
     key_was_generated = true;
     if (!auto_inc_key->IsValid()) {
       params->callbacks->OnError(
@@ -846,7 +845,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
   if (object_store.auto_increment &&
       params->put_mode != IndexedDBDatabase::CURSOR_UPDATE &&
       key->type() == WebIDBKeyTypeNumber) {
-    bool ok = UpdateKeyGenerator(backing_store_,
+    bool ok = UpdateKeyGenerator(backing_store_.get(),
                                  transaction,
                                  id(),
                                  params->object_store_id,
@@ -1268,46 +1267,35 @@ void IndexedDBDatabase::TransactionStarted(IndexedDBTransaction* transaction) {
   }
 }
 
-void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction) {
-
+void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
+                                            bool committed) {
   DCHECK(transactions_.find(transaction->id()) != transactions_.end());
   DCHECK_EQ(transactions_[transaction->id()], transaction);
   transactions_.erase(transaction->id());
+
   if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
     DCHECK_EQ(transaction, running_version_change_transaction_);
     running_version_change_transaction_ = NULL;
-  }
-}
 
-void IndexedDBDatabase::TransactionFinishedAndAbortFired(
-    IndexedDBTransaction* transaction) {
-  if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
     if (pending_second_half_open_) {
-      pending_second_half_open_->Callbacks()->OnError(
-          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionAbortError,
-                                 "Version change transaction was aborted in "
-                                 "upgradeneeded event handler."));
+      if (committed) {
+        DCHECK_EQ(pending_second_half_open_->Version(), metadata_.int_version);
+        DCHECK(metadata_.id != kInvalidId);
+
+        // Connection was already minted for OnUpgradeNeeded callback.
+        scoped_ptr<IndexedDBConnection> connection;
+        pending_second_half_open_->Callbacks()->OnSuccess(connection.Pass(),
+                                                          this->metadata());
+      } else {
+        pending_second_half_open_->Callbacks()->OnError(
+            IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionAbortError,
+                                   "Version change transaction was aborted in "
+                                   "upgradeneeded event handler."));
+      }
       pending_second_half_open_.reset();
     }
-    ProcessPendingCalls();
-  }
-}
 
-void IndexedDBDatabase::TransactionFinishedAndCompleteFired(
-    IndexedDBTransaction* transaction) {
-  if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
-    DCHECK(pending_second_half_open_);
-    if (pending_second_half_open_) {
-      DCHECK_EQ(pending_second_half_open_->Version(), metadata_.int_version);
-      DCHECK(metadata_.id != kInvalidId);
-
-      // Connection was already minted for OnUpgradeNeeded callback.
-      scoped_ptr<IndexedDBConnection> connection;
-
-      pending_second_half_open_->Callbacks()->OnSuccess(connection.Pass(),
-                                                        this->metadata());
-      pending_second_half_open_.reset();
-    }
+    // Connection queue is now unblocked.
     ProcessPendingCalls();
   }
 }
@@ -1400,18 +1388,18 @@ void IndexedDBDatabase::CreateTransaction(
   if (transactions_.find(transaction_id) != transactions_.end())
     return;
 
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
+  // The transaction will add itself to this database's coordinator, which
+  // manages the lifetime of the object.
+  TransactionCreated(new IndexedDBTransaction(
       transaction_id,
       connection->callbacks(),
       std::set<int64>(object_store_ids.begin(), object_store_ids.end()),
       static_cast<indexed_db::TransactionMode>(mode),
       this,
-      new IndexedDBBackingStore::Transaction(backing_store_));
-  TransactionCreated(transaction);
+      new IndexedDBBackingStore::Transaction(backing_store_)));
 }
 
-void IndexedDBDatabase::TransactionCreated(
-    scoped_refptr<IndexedDBTransaction> transaction) {
+void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {
   transactions_[transaction->id()] = transaction;
 }
 
@@ -1596,21 +1584,19 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                     connection.get(),
                     object_store_ids,
                     indexed_db::TRANSACTION_VERSION_CHANGE);
-  scoped_refptr<IndexedDBTransaction> transaction =
-      transactions_[transaction_id];
 
-  transaction->ScheduleTask(
-      base::Bind(&IndexedDBDatabase::VersionChangeOperation,
-                 this,
-                 requested_version,
-                 callbacks,
-                 base::Passed(&connection),
-                 data_loss,
-                 data_loss_message),
-      base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
-                 this,
-                 metadata_.version,
-                 metadata_.int_version));
+  transactions_[transaction_id]
+      ->ScheduleTask(base::Bind(&IndexedDBDatabase::VersionChangeOperation,
+                                this,
+                                requested_version,
+                                callbacks,
+                                base::Passed(&connection),
+                                data_loss,
+                                data_loss_message),
+                     base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
+                                this,
+                                metadata_.version,
+                                metadata_.int_version));
 
   DCHECK(!pending_second_half_open_);
 }

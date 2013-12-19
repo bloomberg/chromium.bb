@@ -118,11 +118,9 @@ class CONTENT_EXPORT IndexedDBDatabase
     return transaction_coordinator_;
   }
 
-  void TransactionCreated(scoped_refptr<IndexedDBTransaction> transaction);
+  void TransactionCreated(IndexedDBTransaction* transaction);
   void TransactionStarted(IndexedDBTransaction* transaction);
-  void TransactionFinished(IndexedDBTransaction* transaction);
-  void TransactionFinishedAndCompleteFired(IndexedDBTransaction* transaction);
-  void TransactionFinishedAndAbortFired(IndexedDBTransaction* transaction);
+  void TransactionFinished(IndexedDBTransaction* transaction, bool committed);
 
   // Called by transactions to report failure committing to the backing store.
   void TransactionCommitFailed();

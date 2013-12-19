@@ -173,12 +173,11 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
 #ifndef NDEBUG
   DCHECK(!database_->transaction_coordinator().IsActive(this));
 #endif
-  database_->TransactionFinished(this);
 
   if (callbacks_.get())
     callbacks_->OnAbort(id_, error);
 
-  database_->TransactionFinishedAndAbortFired(this);
+  database_->TransactionFinished(this, false);
 
   database_ = NULL;
 }
@@ -252,12 +251,11 @@ void IndexedDBTransaction::Commit() {
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
   database_->transaction_coordinator().DidFinishTransaction(this);
-  database_->TransactionFinished(this);
 
   if (committed) {
     abort_task_stack_.clear();
     callbacks_->OnComplete(id_);
-    database_->TransactionFinishedAndCompleteFired(this);
+    database_->TransactionFinished(this, true);
   } else {
     while (!abort_task_stack_.empty())
       abort_task_stack_.pop().Run(0);
@@ -266,7 +264,7 @@ void IndexedDBTransaction::Commit() {
         id_,
         IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                "Internal error committing transaction."));
-    database_->TransactionFinishedAndAbortFired(this);
+    database_->TransactionFinished(this, false);
     database_->TransactionCommitFailed();
   }
 
