@@ -52,8 +52,10 @@ void CSSSelector::createRareData()
     ASSERT(m_match != Tag);
     if (m_hasRareData)
         return;
-    // Move the value to the rare data stucture.
-    m_data.m_rareData = RareData::create(adoptRef(m_data.m_value)).leakRef();
+    AtomicString value(m_data.m_value);
+    if (m_data.m_value)
+        m_data.m_value->deref();
+    m_data.m_rareData = RareData::create(value).leakRef();
     m_hasRareData = true;
 }
 
@@ -843,8 +845,8 @@ bool CSSSelector::matchNth(int count) const
     return m_data.m_rareData->matchNth(count);
 }
 
-CSSSelector::RareData::RareData(PassRefPtr<StringImpl> value)
-    : m_value(value.leakRef())
+CSSSelector::RareData::RareData(const AtomicString& value)
+    : m_value(value)
     , m_a(0)
     , m_b(0)
     , m_attribute(anyQName())
@@ -854,8 +856,6 @@ CSSSelector::RareData::RareData(PassRefPtr<StringImpl> value)
 
 CSSSelector::RareData::~RareData()
 {
-    if (m_value)
-        m_value->deref();
 }
 
 // a helper function for parsing nth-arguments

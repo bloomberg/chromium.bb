@@ -269,13 +269,13 @@ namespace WebCore {
         CSSSelector& operator=(const CSSSelector&);
 
         struct RareData : public RefCounted<RareData> {
-            static PassRefPtr<RareData> create(PassRefPtr<StringImpl> value) { return adoptRef(new RareData(value)); }
+            static PassRefPtr<RareData> create(const AtomicString& value) { return adoptRef(new RareData(value)); }
             ~RareData();
 
             bool parseNth();
             bool matchNth(int count);
 
-            StringImpl* m_value; // Plain pointer to keep things uniform with the union.
+            AtomicString m_value;
             int m_a; // Used for :nth-*
             int m_b; // Used for :nth-*
             QualifiedName m_attribute; // used for attribute selector
@@ -283,7 +283,7 @@ namespace WebCore {
             OwnPtr<CSSSelectorList> m_selectorList; // Used for :-webkit-any and :not
 
         private:
-            RareData(PassRefPtr<StringImpl> value);
+            RareData(const AtomicString& value);
         };
         void createRareData();
 
@@ -369,10 +369,7 @@ inline void CSSSelector::setValue(const AtomicString& value)
     ASSERT(m_pseudoType == PseudoNotParsed);
     // Need to do ref counting manually for the union.
     if (m_hasRareData) {
-        if (m_data.m_rareData->m_value)
-            m_data.m_rareData->m_value->deref();
-        m_data.m_rareData->m_value = value.impl();
-        m_data.m_rareData->m_value->ref();
+        m_data.m_rareData->m_value = value;
         return;
     }
     if (m_data.m_value)
@@ -454,11 +451,12 @@ inline const QualifiedName& CSSSelector::tagQName() const
 inline const AtomicString& CSSSelector::value() const
 {
     ASSERT(m_match != Tag);
+    if (m_hasRareData)
+        return m_data.m_rareData->m_value;
     // AtomicString is really just a StringImpl* so the cast below is safe.
     // FIXME: Perhaps call sites could be changed to accept StringImpl?
-    return *reinterpret_cast<const AtomicString*>(m_hasRareData ? &m_data.m_rareData->m_value : &m_data.m_value);
+    return *reinterpret_cast<const AtomicString*>(&m_data.m_value);
 }
-
 
 } // namespace WebCore
 
