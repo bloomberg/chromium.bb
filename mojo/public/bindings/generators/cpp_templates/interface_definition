@@ -1,6 +1,0 @@
-$CLASS::$CLASS(mojo::MessageReceiver* receiver)
-    : receiver_(receiver) {
-}
-
-$PROXY_DEFINITIONS
-$STUB_DEFINITION

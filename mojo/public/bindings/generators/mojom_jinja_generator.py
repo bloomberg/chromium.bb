@@ -13,6 +13,126 @@ from functools import partial
 from template_expander import UseJinja
 
 
+_kind_to_javascript_default_value = {
+  mojom.BOOL:    "false",
+  mojom.INT8:    "0",
+  mojom.UINT8:   "0",
+  mojom.INT16:   "0",
+  mojom.UINT16:  "0",
+  mojom.INT32:   "0",
+  mojom.UINT32:  "0",
+  mojom.FLOAT:   "0",
+  mojom.HANDLE:  "core.kInvalidHandle",
+  mojom.MSGPIPE: "core.kInvalidHandle",
+  mojom.INT64:   "0",
+  mojom.UINT64:  "0",
+  mojom.DOUBLE:  "0",
+  mojom.STRING:  '""',
+}
+
+
+def JavaScriptDefaultValue(field):
+  if field.default:
+    return field.default
+  if field.kind in mojom.PRIMITIVES:
+    return _kind_to_javascript_default_value[field.kind]
+  if isinstance(field.kind, mojom.Struct):
+    return "null";
+  if isinstance(field.kind, mojom.Array):
+    return "[]";
+
+
+def JavaScriptPayloadSize(packed):
+  packed_fields = packed.packed_fields
+  if not packed_fields:
+    return 0;
+  last_field = packed_fields[-1]
+  offset = last_field.offset + last_field.size
+  pad = mojom_pack.GetPad(offset, 8)
+  return offset + pad;
+
+
+_kind_to_javascript_type = {
+  mojom.BOOL:    "codec.Uint8",
+  mojom.INT8:    "codec.Int8",
+  mojom.UINT8:   "codec.Uint8",
+  mojom.INT16:   "codec.Int16",
+  mojom.UINT16:  "codec.Uint16",
+  mojom.INT32:   "codec.Int32",
+  mojom.UINT32:  "codec.Uint32",
+  mojom.FLOAT:   "codec.Float",
+  mojom.HANDLE:  "codec.Handle",
+  mojom.MSGPIPE: "codec.Handle",
+  mojom.INT64:   "codec.Int64",
+  mojom.UINT64:  "codec.Uint64",
+  mojom.DOUBLE:  "codec.Double",
+  mojom.STRING:  "codec.String",
+}
+
+
+def GetJavaScriptType(kind):
+  if kind in mojom.PRIMITIVES:
+    return _kind_to_javascript_type[kind]
+  if isinstance(kind, mojom.Struct):
+    return "new codec.PointerTo(%s)" % GetJavaScriptType(kind.name)
+  if isinstance(kind, mojom.Array):
+    return "new codec.ArrayOf(%s)" % GetJavaScriptType(kind.kind)
+  return kind
+
+
+_kind_to_javascript_decode_snippet = {
+  mojom.BOOL:    "read8() & 1",
+  mojom.INT8:    "read8()",
+  mojom.UINT8:   "read8()",
+  mojom.INT16:   "read16()",
+  mojom.UINT16:  "read16()",
+  mojom.INT32:   "read32()",
+  mojom.UINT32:  "read32()",
+  mojom.FLOAT:   "decodeFloat()",
+  mojom.HANDLE:  "decodeHandle()",
+  mojom.MSGPIPE: "decodeHandle()",
+  mojom.INT64:   "read64()",
+  mojom.UINT64:  "read64()",
+  mojom.DOUBLE:  "decodeDouble()",
+  mojom.STRING:  "decodeStringPointer()",
+}
+
+
+def JavaScriptDecodeSnippet(kind):
+  if kind in mojom.PRIMITIVES:
+    return _kind_to_javascript_decode_snippet[kind]
+  if isinstance(kind, mojom.Struct):
+    return "decodeStructPointer(%s)" % GetJavaScriptType(kind.name);
+  if isinstance(kind, mojom.Array):
+    return "decodeArrayPointer(%s)" % GetJavaScriptType(kind.kind);
+
+
+_kind_to_javascript_encode_snippet = {
+  mojom.BOOL:    "write8(1 & ",
+  mojom.INT8:    "write8(",
+  mojom.UINT8:   "write8(",
+  mojom.INT16:   "write16(",
+  mojom.UINT16:  "write16(",
+  mojom.INT32:   "write32(",
+  mojom.UINT32:  "write32(",
+  mojom.FLOAT:   "encodeFloat(",
+  mojom.HANDLE:  "encodeHandle(",
+  mojom.MSGPIPE: "encodeHandle(",
+  mojom.INT64:   "write64(",
+  mojom.UINT64:  "write64(",
+  mojom.DOUBLE:  "encodeDouble(",
+  mojom.STRING:  "encodeStringPointer(",
+}
+
+
+def JavaScriptEncodeSnippet(kind):
+  if kind in mojom.PRIMITIVES:
+    return _kind_to_javascript_encode_snippet[kind]
+  if isinstance(kind, mojom.Struct):
+    return "encodeStructPointer(%s, " % GetJavaScriptType(kind.name);
+  if isinstance(kind, mojom.Array):
+    return "encodeArrayPointer(%s, " % GetJavaScriptType(kind.kind);
+
 _kind_to_cpp_type = {
   mojom.BOOL:    "bool",
   mojom.INT8:    "int8_t",
@@ -29,20 +149,21 @@ _kind_to_cpp_type = {
   mojom.DOUBLE:  "double",
 }
 
-def GetType(kind):
+
+def GetCppType(kind):
   if isinstance(kind, mojom.Struct):
     return "%s_Data*" % kind.name
   if isinstance(kind, mojom.Array):
-    return "mojo::internal::Array_Data<%s>*" % GetType(kind.kind)
+    return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if kind.spec == 's':
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
 
-def GetWrapperType(kind):
+def GetCppWrapperType(kind):
   if isinstance(kind, mojom.Struct):
     return "%s" % kind.name
   if isinstance(kind, mojom.Array):
-    return "mojo::Array<%s >" % GetWrapperType(kind.kind)
+    return "mojo::Array<%s >" % GetCppWrapperType(kind.kind)
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -51,11 +172,11 @@ def GetWrapperType(kind):
     return "mojo::Passable<mojo::MessagePipeHandle>"
   return _kind_to_cpp_type[kind]
 
-def GetConstWrapperType(kind):
+def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Struct):
     return "const %s&" % kind.name
   if isinstance(kind, mojom.Array):
-    return "const mojo::Array<%s >&" % GetWrapperType(kind.kind)
+    return "const mojo::Array<%s >&" % GetCppWrapperType(kind.kind)
   if kind.spec == 's':
     return "const mojo::String&"
   if kind.spec == 'h':
@@ -64,13 +185,13 @@ def GetConstWrapperType(kind):
     return "mojo::ScopedMessagePipeHandle"
   return _kind_to_cpp_type[kind]
 
-def GetFieldType(kind):
+def GetCppFieldType(kind):
   if mojom_generator.IsHandleKind(kind):
     return _kind_to_cpp_type[kind]
   if isinstance(kind, mojom.Struct):
     return "mojo::internal::StructPointer<%s_Data>" % kind.name
   if isinstance(kind, mojom.Array):
-    return "mojo::internal::ArrayPointer<%s>" % GetType(kind.kind)
+    return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if kind.spec == 's':
     return "mojo::internal::StringPointer"
   return _kind_to_cpp_type[kind]
@@ -78,6 +199,7 @@ def GetFieldType(kind):
 def GetStructInfo(exported, struct):
   struct.packed = mojom_pack.PackedStruct(struct)
   struct.exported = exported
+  struct.bytes = mojom_pack.GetByteLayout(struct.packed)
   return struct
 
 def GetStructFromMethod(interface, method):
@@ -95,12 +217,12 @@ _HEADER_SIZE = 8
 
 class JinjaGenerator(mojom_generator.Generator):
 
-  filters = {
+  cpp_filters = {
     "camel_to_underscores": mojom_generator.CamelToUnderscores,
-    "cpp_const_wrapper_type": GetConstWrapperType,
-    "cpp_field_type": GetFieldType,
-    "cpp_type": GetType,
-    "cpp_wrapper_type": GetWrapperType,
+    "cpp_const_wrapper_type": GetCppConstWrapperType,
+    "cpp_field_type": GetCppFieldType,
+    "cpp_type": GetCppType,
+    "cpp_wrapper_type": GetCppWrapperType,
     "get_pad": mojom_pack.GetPad,
     "is_handle_kind": mojom_generator.IsHandleKind,
     "is_object_kind": mojom_generator.IsObjectKind,
@@ -110,10 +232,25 @@ class JinjaGenerator(mojom_generator.Generator):
     "stylize_method": mojom_generator.StudlyCapsToCamel,
   }
 
+  js_filters = {
+    "default_value": JavaScriptDefaultValue,
+    "payload_size": JavaScriptPayloadSize,
+    "decode_snippet": JavaScriptDecodeSnippet,
+    "encode_snippet": JavaScriptEncodeSnippet,
+    "stylize_method": mojom_generator.StudlyCapsToCamel,
+  }
+
+  def GetStructsFromMethods(self):
+    result = []
+    for interface in self.module.interfaces:
+      for method in interface.methods:
+        result.append(mojom_generator.GetStructFromMethod(interface, method))
+    return map(partial(GetStructInfo, False), result)
+
   def GetStructs(self):
     return map(partial(GetStructInfo, True), self.module.structs)
 
-  @UseJinja("cpp_templates/module.h.tmpl", filters=filters)
+  @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)
   def GenerateModuleHeader(self):
     return {
       "module_name": self.module.name,
@@ -123,7 +260,7 @@ class JinjaGenerator(mojom_generator.Generator):
       "interfaces": self.module.interfaces,
     }
 
-  @UseJinja("cpp_templates/module_internal.h.tmpl", filters=filters)
+  @UseJinja("cpp_templates/module_internal.h.tmpl", filters=cpp_filters)
   def GenerateModuleInternalHeader(self):
     return {
       "module_name": self.module.name,
@@ -133,13 +270,21 @@ class JinjaGenerator(mojom_generator.Generator):
       "interfaces": self.module.interfaces,
     }
 
-  @UseJinja("cpp_templates/module.cc.tmpl", filters=filters)
+  @UseJinja("cpp_templates/module.cc.tmpl", filters=cpp_filters)
   def GenerateModuleSource(self):
     return {
       "module_name": self.module.name,
       "namespace": self.module.namespace,
       "enums": self.module.enums,
       "structs": self.GetStructs(),
+      "interfaces": self.module.interfaces,
+    }
+
+  @UseJinja("js_templates/module.js.tmpl", filters=js_filters)
+  def GenerateJsModule(self):
+    return {
+      "enums": self.module.enums,
+      "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "interfaces": self.module.interfaces,
     }
 
@@ -151,7 +296,8 @@ class JinjaGenerator(mojom_generator.Generator):
       f.write(contents)
 
   def GenerateFiles(self):
-    self.Write(self.GenerateModuleHeader(), "%s.j.h" % self.module.name)
+    self.Write(self.GenerateModuleHeader(), "%s.h" % self.module.name)
     self.Write(self.GenerateModuleInternalHeader(),
-        "%s_internal.j.h" % self.module.name)
-    self.Write(self.GenerateModuleSource(), "%s.j.cc" % self.module.name)
+        "%s_internal.h" % self.module.name)
+    self.Write(self.GenerateModuleSource(), "%s.cc" % self.module.name)
+    self.Write(self.GenerateJsModule(), "%s.js" % self.module.name)

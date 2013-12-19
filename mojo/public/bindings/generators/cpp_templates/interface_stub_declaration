@@ -1,4 +1,0 @@
-class ${CLASS}Stub : public $CLASS, public mojo::MessageReceiver {
- public:
-  virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE;
-};

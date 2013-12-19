@@ -12,8 +12,7 @@ from optparse import OptionParser
 from parse import mojo_parser
 from parse import mojo_translate
 from generators import mojom_data
-from generators import mojom_js_generator
-from generators import mojom_cpp_generator
+from generators import mojom_jinja_generator
 from generators import mojom_jinja_generator
 
 
@@ -39,12 +38,6 @@ def Main():
     tree = mojo_parser.Parse(filename)
     mojom = mojo_translate.Translate(tree, name)
     module = mojom_data.OrderedModuleFromData(mojom)
-    cpp = mojom_cpp_generator.CPPGenerator(
-        module, options.include_dir, options.output_dir)
-    cpp.GenerateFiles()
-    js = mojom_js_generator.JSGenerator(
-        module, options.include_dir, options.output_dir)
-    js.GenerateFiles()
     jinja = mojom_jinja_generator.JinjaGenerator(
         module, options.include_dir, options.output_dir)
     jinja.GenerateFiles()

@@ -1,9 +1,0 @@
-class ${CLASS}Proxy : public $CLASS {
- public:
-  explicit ${CLASS}Proxy(mojo::MessageReceiver* receiver);
-
-$METHODS
-
- private:
-  mojo::MessageReceiver* receiver_;
-};

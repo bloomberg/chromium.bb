@@ -1,9 +1,0 @@
-$CLASS::Builder::Builder(mojo::Buffer* buf)
-    : data_(Data::New(buf, $DTOR)) {
-}
-
-$CLASS $CLASS::Builder::Finish() {
-  Data* data = NULL;
-  std::swap(data, data_);
-  return mojo::internal::Wrap(data);
-}
