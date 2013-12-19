@@ -2,7 +2,9 @@
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
 
-LIBRARY  "chrome_elf.dll"
+LIBRARY  "blacklist_test_main_dll.dll"
 
 EXPORTS
-  SignalChromeElf
+  TestDll_AddDllToBlacklist=AddDllToBlacklist
+  TestDll_RemoveDllFromBlacklist=RemoveDllFromBlacklist
+  InitBlacklistTestDll
