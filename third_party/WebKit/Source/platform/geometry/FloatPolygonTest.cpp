@@ -223,4 +223,109 @@ TEST(FloatPolygonTest, triangle_evenodd)
     EXPECT_FALSE(triangle.contains(FloatPoint(201, 200.5)));
 }
 
+#define TEST_EMPTY(coordinates)                                                                        \
+{                                                                                                      \
+    FloatPolygonTestValue emptyPolygonTestValue(coordinates, SIZEOF_ARRAY(coordinates), RULE_NONZERO); \
+    const FloatPolygon& emptyPolygon = emptyPolygonTestValue.polygon();                                \
+    EXPECT_TRUE(emptyPolygon.isEmpty());                                                               \
+}
+
+TEST(FloatPolygonTest, emptyPolygons)
+{
+    const float emptyCoordinates1[] = {0, 0};
+    TEST_EMPTY(emptyCoordinates1);
+
+    const float emptyCoordinates2[] = {0, 0, 1, 1};
+    TEST_EMPTY(emptyCoordinates2);
+
+    const float emptyCoordinates3[] = {0, 0, 1, 1, 2, 2, 3, 3};
+    TEST_EMPTY(emptyCoordinates3);
+
+    const float emptyCoordinates4[] = {0, 0, 1, 1, 2, 2, 3, 3, 1, 1};
+    TEST_EMPTY(emptyCoordinates4);
+
+    const float emptyCoordinates5[] = {0, 0, 0, 1, 0, 2, 0, 3, 0, 1};
+    TEST_EMPTY(emptyCoordinates5);
+
+    const float emptyCoordinates6[] = {0, 0, 1, 0, 2, 0, 3, 0, 1, 0};
+    TEST_EMPTY(emptyCoordinates6);
+}
+
+/*
+ * Test FloatPolygon::contains() with a trapezoid. The vertices are listed in counter-clockwise order.
+ *
+ *        150,100   250,100
+ *          +----------+
+ *         /            \
+ *        /              \
+ *       +----------------+
+ *     100,150          300,150
+ */
+TEST(FloatPolygonTest, trapezoid)
+{
+    const float trapezoidCoordinates[] = {100, 150, 300, 150, 250, 100, 150, 100};
+    FloatPolygonTestValue trapezoidTestValue(trapezoidCoordinates, SIZEOF_ARRAY(trapezoidCoordinates), RULE_EVENODD);
+    const FloatPolygon& trapezoid = trapezoidTestValue.polygon();
+
+    EXPECT_FALSE(trapezoid.isEmpty());
+    EXPECT_EQ(4u, trapezoid.numberOfVertices());
+    EXPECT_EQ(FloatRect(100, 100, 200, 50), trapezoid.boundingBox());
+
+    EXPECT_TRUE(trapezoid.contains(FloatPoint(150, 100)));
+    EXPECT_TRUE(trapezoid.contains(FloatPoint(150, 101)));
+    EXPECT_TRUE(trapezoid.contains(FloatPoint(200, 125)));
+    EXPECT_FALSE(trapezoid.contains(FloatPoint(149, 100)));
+    EXPECT_FALSE(trapezoid.contains(FloatPoint(301, 150)));
+}
+
+
+/*
+ * Test FloatPolygon::contains() with a non-convex rectilinear polygon. The polygon has the same shape
+ * as the letter "H":
+ *
+ *    100,100  150,100   200,100   250,100
+ *       +--------+        +--------+
+ *       |        |        |        |
+ *       |        |        |        |
+ *       |        +--------+        |
+ *       |     150,150   200,150    |
+ *       |                          |
+ *       |     150,200   200,200    |
+ *       |        +--------+        |
+ *       |        |        |        |
+ *       |        |        |        |
+ *       +--------+        +--------+
+ *    100,250  150,250   200,250   250,250
+ */
+TEST(FloatPolygonTest, rectilinear)
+{
+    const float hCoordinates[] = {100, 100, 150, 100, 150, 150, 200, 150, 200, 100, 250, 100, 250, 250, 200, 250, 200, 200, 150, 200, 150, 250, 100, 250};
+    FloatPolygonTestValue hTestValue(hCoordinates, SIZEOF_ARRAY(hCoordinates), RULE_NONZERO);
+    const FloatPolygon& h = hTestValue.polygon();
+
+    EXPECT_FALSE(h.isEmpty());
+    EXPECT_EQ(12u, h.numberOfVertices());
+    EXPECT_EQ(FloatRect(100, 100, 150, 150), h.boundingBox());
+
+    EXPECT_TRUE(h.contains(FloatPoint(100, 100)));
+    EXPECT_TRUE(h.contains(FloatPoint(125, 100)));
+    EXPECT_TRUE(h.contains(FloatPoint(125, 125)));
+    EXPECT_TRUE(h.contains(FloatPoint(150, 100)));
+    EXPECT_TRUE(h.contains(FloatPoint(200, 200)));
+    EXPECT_TRUE(h.contains(FloatPoint(225, 225)));
+    EXPECT_TRUE(h.contains(FloatPoint(250, 250)));
+    EXPECT_TRUE(h.contains(FloatPoint(100, 250)));
+    EXPECT_TRUE(h.contains(FloatPoint(125, 250)));
+
+    EXPECT_FALSE(h.contains(FloatPoint(99, 100)));
+    EXPECT_FALSE(h.contains(FloatPoint(251, 100)));
+    EXPECT_FALSE(h.contains(FloatPoint(151, 100)));
+    EXPECT_FALSE(h.contains(FloatPoint(199, 100)));
+    EXPECT_FALSE(h.contains(FloatPoint(175, 125)));
+    EXPECT_FALSE(h.contains(FloatPoint(151, 250)));
+    EXPECT_FALSE(h.contains(FloatPoint(199, 250)));
+    EXPECT_FALSE(h.contains(FloatPoint(199, 250)));
+    EXPECT_FALSE(h.contains(FloatPoint(175, 225)));
+}
+
 } // namespace
