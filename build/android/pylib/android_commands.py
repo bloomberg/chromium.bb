@@ -98,7 +98,8 @@ def GetAttachedDevices(hardware=True, emulator=True, offline=False):
 
   Returns: List of devices.
   """
-  adb_devices_output = cmd_helper.GetCmdOutput([constants.ADB_PATH, 'devices'])
+  adb_devices_output = cmd_helper.GetCmdOutput([constants.GetAdbPath(),
+                                                'devices'])
 
   re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
   online_devices = re_device.findall(adb_devices_output)
@@ -239,7 +240,7 @@ class AndroidCommands(object):
       api_strict_mode: A boolean indicating whether fatal errors should be
           raised if this API is used improperly.
     """
-    adb_dir = os.path.dirname(constants.ADB_PATH)
+    adb_dir = os.path.dirname(constants.GetAdbPath())
     if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):
       # Required by third_party/android_testrunner to call directly 'adb'.
       os.environ['PATH'] += os.pathsep + adb_dir
@@ -509,7 +510,7 @@ class AndroidCommands(object):
 
   def KillAdbServer(self):
     """Kill adb server."""
-    adb_cmd = [constants.ADB_PATH, 'kill-server']
+    adb_cmd = [constants.GetAdbPath(), 'kill-server']
     ret = cmd_helper.RunCmd(adb_cmd)
     retry = 0
     while retry < 3:
@@ -523,7 +524,7 @@ class AndroidCommands(object):
 
   def StartAdbServer(self):
     """Start adb server."""
-    adb_cmd = ['taskset', '-c', '0', constants.ADB_PATH, 'start-server']
+    adb_cmd = ['taskset', '-c', '0', constants.GetAdbPath(), 'start-server']
     ret = cmd_helper.RunCmd(adb_cmd)
     retry = 0
     while retry < 3:
@@ -1259,7 +1260,7 @@ class AndroidCommands(object):
 
     # Spawn logcat and synchronize with it.
     for _ in range(4):
-      self._logcat = pexpect.spawn(constants.ADB_PATH, args, timeout=10,
+      self._logcat = pexpect.spawn(constants.GetAdbPath(), args, timeout=10,
                                    logfile=logfile)
       if not clear or self.SyncLogCat():
         break
@@ -1341,7 +1342,7 @@ class AndroidCommands(object):
         logging.critical('Found EOF in adb logcat. Restarting...')
         # Rerun spawn with original arguments. Note that self._logcat.args[0] is
         # the path of adb, so we don't want it in the arguments.
-        self._logcat = pexpect.spawn(constants.ADB_PATH,
+        self._logcat = pexpect.spawn(constants.GetAdbPath(),
                                      self._logcat.args[1:],
                                      timeout=self._logcat.timeout,
                                      logfile=self._logcat.logfile)

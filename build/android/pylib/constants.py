@@ -5,6 +5,7 @@
 """Defines a set of constants shared by test runners and other scripts."""
 
 import collections
+import logging
 import os
 import subprocess
 import sys
@@ -158,7 +159,18 @@ def GetOutDirectory(build_type=None):
       GetBuildType() if build_type is None else build_type))
 
 
-def _GetADBPath():
+def _Memoize(func):
+  def Wrapper():
+    try:
+      return func._result
+    except AttributeError:
+      func._result = func()
+      return func._result
+  return Wrapper
+
+
+@_Memoize
+def GetAdbPath():
   if os.environ.get('ANDROID_SDK_ROOT'):
     return 'adb'
   # If envsetup.sh hasn't been sourced and there's no adb in the path,
@@ -168,11 +180,9 @@ def _GetADBPath():
       subprocess.call(['adb', 'version'], stdout=devnull, stderr=devnull)
     return 'adb'
   except OSError:
-    print >> sys.stderr, 'No adb found in $PATH, fallback to checked in binary.'
+    logging.debug('No adb found in $PATH, fallback to checked in binary.')
     return os.path.join(ANDROID_SDK_ROOT, 'platform-tools', 'adb')
 
-
-ADB_PATH = _GetADBPath()
 
 # Exit codes
 ERROR_EXIT_CODE = 1
