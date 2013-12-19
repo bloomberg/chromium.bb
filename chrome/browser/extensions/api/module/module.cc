@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 
 namespace extensions {
 
@@ -38,6 +39,12 @@ std::string GetUpdateURLData(const ExtensionPrefs* prefs,
 bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
   std::string data;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &data));
+
+  const Extension* extension = GetExtension();
+
+  if (ManifestURL::UpdatesFromGallery(extension)) {
+    return false;
+  }
 
   ExtensionPrefs::Get(GetProfile())->UpdateExtensionPref(
       extension_id(), extension::kUpdateURLData, new base::StringValue(data));
