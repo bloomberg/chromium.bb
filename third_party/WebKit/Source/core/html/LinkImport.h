@@ -69,7 +69,7 @@ public:
 private:
     void clear();
 
-    HTMLImportChild* m_loader;
+    HTMLImportChild* m_child;
 };
 
 } // namespace WebCore

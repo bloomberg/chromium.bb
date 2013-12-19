@@ -47,7 +47,7 @@ PassOwnPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
     : LinkResource(owner)
-    , m_loader(0)
+    , m_child(0)
 {
 }
 
@@ -58,14 +58,14 @@ LinkImport::~LinkImport()
 
 Document* LinkImport::importedDocument() const
 {
-    if (!m_loader)
+    if (!m_child)
         return 0;
-    return m_loader->importedDocument();
+    return m_child->importedDocument();
 }
 
 void LinkImport::process()
 {
-    if (m_loader)
+    if (m_child)
         return;
     if (!m_owner)
         return;
@@ -85,8 +85,8 @@ void LinkImport::process()
 
     HTMLImport* parent = m_owner->document().import();
     HTMLImportsController* controller = parent->controller();
-    m_loader = controller->load(parent, this, builder.build(true));
-    if (!m_loader) {
+    m_child = controller->load(parent, this, builder.build(true));
+    if (!m_child) {
         didFinish();
         return;
     }
@@ -95,9 +95,9 @@ void LinkImport::process()
 void LinkImport::clear()
 {
     m_owner = 0;
-    if (m_loader) {
-        m_loader->removeClient(this);
-        m_loader = 0;
+    if (m_child) {
+        m_child->removeClient(this);
+        m_child = 0;
     }
 }
 
@@ -120,7 +120,7 @@ void LinkImport::importWillBeDestroyed()
 
 bool LinkImport::hasLoaded() const
 {
-    return m_loader && m_loader->isLoaded();
+    return m_child && m_child->isLoaded();
 }
 
 } // namespace WebCore
