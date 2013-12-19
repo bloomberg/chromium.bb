@@ -518,6 +518,11 @@ div.splitter {
   -webkit-margin-start: 20px;
 }
 
+select.file-type:hover {
+  /* Original value is '5 fill', which hides the dropdown triangle. */
+  border-image-slice: 5;
+}
+
 /* The container for breadcrumb elements. */
 .breadcrumbs {
   -webkit-box-align: center;
