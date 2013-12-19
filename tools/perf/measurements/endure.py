@@ -145,7 +145,8 @@ class Endure(page_measurement.PageMeasurement):
                     data_type='unimportant', chart_name=chart_name)
       # Add the result as 'unimportant' because we want it to be unmonitored
       # by default.
-      results.Add(trace_name + '_Y', units_y, value_y, data_type='unimportant')
+      results.Add(trace_name + '_Y', units_y, value_y, data_type='unimportant',
+                  chart_name=chart_name)
       # Save the value in a list so that summary stats can be calculated.
       if trace_name not in self._y_values:
         self._y_values[trace_name] = {
