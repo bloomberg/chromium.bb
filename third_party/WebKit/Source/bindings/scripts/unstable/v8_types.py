@@ -234,7 +234,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
     'Promise': 'ScriptPromise',
-    'any': 'ScriptValue',
+    'ScriptValue': 'ScriptValue',
     'boolean': 'bool',
 }
 
@@ -304,7 +304,6 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 
 
 INCLUDES_FOR_TYPE = {
-    'any': set(['bindings/v8/ScriptValue.h']),
     'object': set(),
     'Dictionary': set(['bindings/v8/Dictionary.h']),
     'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
@@ -315,12 +314,14 @@ INCLUDES_FOR_TYPE = {
     'MediaQueryListListener': set(['core/css/MediaQueryListListener.h']),
     'Promise': set(['bindings/v8/ScriptPromise.h']),
     'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
+    'ScriptValue': set(['bindings/v8/ScriptValue.h']),
 }
 
 def includes_for_type(idl_type):
+    idl_type = preprocess_idl_type(idl_type)
     if idl_type in INCLUDES_FOR_TYPE:
         return INCLUDES_FOR_TYPE[idl_type]
-    if is_basic_type(idl_type) or is_enum_type(idl_type):
+    if is_basic_type(idl_type):
         return set()
     if is_typed_array_type(idl_type):
         return set(['bindings/v8/custom/V8%sCustom.h' % idl_type])
@@ -356,13 +357,13 @@ V8_VALUE_TO_CPP_VALUE = {
     'long long': 'toInt64({arguments})',
     'unsigned long long': 'toUInt64({arguments})',
     # Interface types
-    'any': 'ScriptValue({v8_value}, info.GetIsolate())',
     'CompareHow': 'static_cast<Range::CompareHow>({v8_value}->Int32Value())',
     'Dictionary': 'Dictionary({v8_value}, info.GetIsolate())',
     'MediaQueryListListener': 'MediaQueryListListener::create(ScriptValue({v8_value}, info.GetIsolate()))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.GetIsolate())',
     'Promise': 'ScriptPromise({v8_value})',
     'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, info.GetIsolate())',
+    'ScriptValue': 'ScriptValue({v8_value}, info.GetIsolate())',
     'XPathNSResolver': 'toXPathNSResolver({v8_value}, info.GetIsolate())',
 }
 
@@ -438,7 +439,7 @@ def preprocess_idl_type(idl_type):
     if is_enum_type(idl_type):
         # Enumerations are internally DOMStrings
         return 'DOMString'
-    if is_callback_function_type(idl_type):
+    if (idl_type == 'any' or is_callback_function_type(idl_type)):
         return 'ScriptValue'
     return idl_type
 
@@ -446,7 +447,7 @@ def preprocess_idl_type(idl_type):
 def preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes):
     """Returns IDL type and value, with preliminary type conversions applied."""
     idl_type = preprocess_idl_type(idl_type)
-    if idl_type in ['Promise', 'any']:
+    if idl_type == 'Promise':
         idl_type = 'ScriptValue'
     if idl_type in ['long long', 'unsigned long long']:
         # long long and unsigned long long are not representable in ECMAScript;

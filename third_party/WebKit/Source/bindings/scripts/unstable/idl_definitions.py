@@ -146,7 +146,6 @@ class IdlCallbackFunction(BaseIdl, TypedObject):
         TypedObject.resolve_typedefs(self, typedefs)
         for argument in self.arguments:
             argument.resolve_typedefs(typedefs)
-        raise ValueError('Typedefs in callback functions are untested!')
 
     def json_serializable(self):
         return {
