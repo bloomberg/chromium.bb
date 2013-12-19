@@ -333,11 +333,6 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
         m_devToolsAgent.clear();
 }
 
-void WebViewImpl::setValidationMessageClient(void*)
-{
-    // FIXME: Remove this.
-}
-
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)
 {
     providePrerendererClientTo(m_page.get(), new PrerendererClientImpl(prerendererClient));

@@ -116,7 +116,6 @@ public:
     void reset();
 
     blink::WebSpellCheckClient *spellCheckClient() const;
-    void* validationMessageClient();
     blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&);
     blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&, const blink::WebVector<blink::WebColorSuggestion>& suggestions);
     bool runFileChooser(const blink::WebFileChooserParams&, blink::WebFileChooserCompletion*);

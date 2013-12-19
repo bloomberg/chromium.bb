@@ -99,8 +99,6 @@ public:
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
-    // FIXME: Remove setValidationMessageClient.
-    virtual void setValidationMessageClient(void*) = 0;
     virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) = 0;
 
     // Options -------------------------------------------------------------

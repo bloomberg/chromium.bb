@@ -467,11 +467,6 @@ WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
     return m_spellcheck.get();
 }
 
-void* WebTestProxyBase::validationMessageClient()
-{
-    return 0;
-}
-
 WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const blink::WebColor& color)
 {
     // This instance is deleted by WebCore::ColorInputType

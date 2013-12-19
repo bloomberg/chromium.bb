@@ -182,7 +182,6 @@ public:
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*);
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;
     virtual void setSpellCheckClient(WebSpellCheckClient*);
-    virtual void setValidationMessageClient(void*) OVERRIDE;
     virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) OVERRIDE;
     virtual WebSettings* settings();
     virtual WebString pageEncoding() const;
