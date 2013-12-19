@@ -60,14 +60,15 @@ class HttpNetworkLayerTest : public PlatformTest {
   }
 #endif
 
-  void ExecuteRequestExpectingContentAndHeader(const std::string& content,
+  void ExecuteRequestExpectingContentAndHeader(const std::string& method,
+                                               const std::string& content,
                                                const std::string& header,
                                                const std::string& value) {
     TestCompletionCallback callback;
 
     HttpRequestInfo request_info;
     request_info.url = GURL("http://www.google.com/");
-    request_info.method = "GET";
+    request_info.method = method;
     request_info.load_flags = LOAD_NORMAL;
 
     scoped_ptr<HttpTransaction> trans;
@@ -122,10 +123,31 @@ class HttpNetworkLayerTest : public PlatformTest {
                                       MockRead data_reads[],
                                       int data_reads_size,
                                       unsigned int expected_retry_info_size) {
+    TestProxyFallbackByMethodWithMockReads(bad_proxy, bad_proxy2, data_reads,
+                                           data_reads_size, "GET", "content",
+                                           true, expected_retry_info_size);
+  }
+
+  void TestProxyFallbackByMethodWithMockReads(
+      const std::string& bad_proxy,
+      const std::string& bad_proxy2,
+      MockRead data_reads[],
+      int data_reads_size,
+      std::string method,
+      std::string content,
+      bool retry_expected,
+      unsigned int expected_retry_info_size) {
+    std::string trailer =
+        (method == "HEAD" || method == "PUT" || method == "POST") ?
+        "Content-Length: 0\r\n\r\n" : "\r\n";
+    std::string request =
+        base::StringPrintf("%s http://www.google.com/ HTTP/1.1\r\n"
+                           "Host: www.google.com\r\n"
+                           "Proxy-Connection: keep-alive\r\n"
+                           "%s", method.c_str(), trailer.c_str());
+
     MockWrite data_writes[] = {
-      MockWrite("GET http://www.google.com/ HTTP/1.1\r\n"
-                "Host: www.google.com\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(request.c_str()),
     };
 
     StaticSocketDataProvider data1(data_reads, data_reads_size,
@@ -133,24 +155,29 @@ class HttpNetworkLayerTest : public PlatformTest {
     mock_socket_factory_.AddSocketDataProvider(&data1);
 
     // Second data provider returns the expected content.
-    MockRead data_reads2[] = {
-      MockRead("HTTP/1.0 200 OK\r\n"
-               "Server: not-proxy\r\n\r\n"),
-      MockRead("content"),
-      MockRead(SYNCHRONOUS, OK),
-    };
+    MockRead data_reads2[3];
+    size_t data_reads2_index = 0;
+    data_reads2[data_reads2_index++] = MockRead("HTTP/1.0 200 OK\r\n"
+                                                "Server: not-proxy\r\n\r\n");
+    if (!content.empty())
+      data_reads2[data_reads2_index++] = MockRead(content.c_str());
+    data_reads2[data_reads2_index++] = MockRead(SYNCHRONOUS, OK);
+
     MockWrite data_writes2[] = {
-      MockWrite("GET http://www.google.com/ HTTP/1.1\r\n"
-                "Host: www.google.com\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(request.c_str()),
     };
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+    StaticSocketDataProvider data2(data_reads2, data_reads2_index,
                                   data_writes2, arraysize(data_writes2));
     mock_socket_factory_.AddSocketDataProvider(&data2);
 
     // Expect that we get "content" and not "Bypass message", and that there's
     // a "not-proxy" "Server:" header in the final response.
-    ExecuteRequestExpectingContentAndHeader("content", "server", "not-proxy");
+    if (retry_expected) {
+      ExecuteRequestExpectingContentAndHeader(method, content,
+                                              "server", "not-proxy");
+    } else {
+      ExecuteRequestExpectingContentAndHeader(method, "Bypass message", "", "");
+    }
 
     // We should also observe the bad proxy in the retry list.
     TestBadProxies(expected_retry_info_size, bad_proxy, bad_proxy2);
@@ -194,7 +221,8 @@ class HttpNetworkLayerTest : public PlatformTest {
 
     // Expect that we get "content" and not "Bypass message", and that there's
     // a "not-proxy" "Server:" header in the final response.
-    ExecuteRequestExpectingContentAndHeader("content", "server", "not-proxy");
+    ExecuteRequestExpectingContentAndHeader("GET", "content",
+                                            "server", "not-proxy");
 
     // We should also observe the bad proxy in the retry list.
     TestBadProxies(1u, bad_proxy, "");
@@ -229,7 +257,7 @@ class HttpNetworkLayerTest : public PlatformTest {
       mock_socket_factory_.AddSocketDataProvider(&data2);
 
     // Expect that we get "Bypass message", and not "content"..
-    ExecuteRequestExpectingContentAndHeader("Bypass message", "", "");
+    ExecuteRequestExpectingContentAndHeader("GET", "Bypass message", "", "");
 
     // We should also observe the bad proxy or proxies in the retry list.
     TestBadProxies(proxy_count, bad_proxy, bad_proxy2);
@@ -336,6 +364,67 @@ TEST_F(HttpNetworkLayerTest, ServerTwoProxyBypassFixed) {
   ConfigureTestDependencies(
       ProxyService::CreateFixed(bad_proxy +", good:8080"));
   TestProxyFallback(bad_proxy);
+}
+
+TEST_F(HttpNetworkLayerTest, BypassAndRetryIdempotentMethods) {
+  std::string bad_proxy = GetChromeProxy();
+  const struct {
+    std::string method;
+    std::string content;
+    bool expected_to_retry;
+  } tests[] = {
+    {
+      "GET",
+      "content",
+      true,
+    },
+    {
+      "OPTIONS",
+      "content",
+      true,
+    },
+    {
+      "HEAD",
+      "",
+      true,
+    },
+    {
+      "PUT",
+      "",
+      true,
+    },
+    {
+      "DELETE",
+      "content",
+      true,
+    },
+    {
+      "TRACE",
+      "content",
+      true,
+    },
+    {
+      "POST",
+      "Bypass message",
+      false,
+    },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    ConfigureTestDependencies(
+        ProxyService::CreateFixed(bad_proxy +", good:8080"));
+    MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Chrome-Proxy: bypass=0\r\n\r\n"),
+      MockRead("Bypass message"),
+      MockRead(SYNCHRONOUS, OK),
+    };
+    TestProxyFallbackByMethodWithMockReads(bad_proxy, "", data_reads,
+                                           arraysize(data_reads),
+                                           tests[i].method,
+                                           tests[i].content,
+                                           tests[i].expected_to_retry, 1u);
+  }
 }
 
 TEST_F(HttpNetworkLayerTest, ServerOneProxyWithDirectBypassPac) {
