@@ -1834,6 +1834,13 @@ void ChromeLauncherController::MoveChromeOrApplistToFinalPosition(
 
 int ChromeLauncherController::FindInsertionPoint(bool is_app_list) {
   bool alternate = ash::switches::UseAlternateShelfLayout();
+  // Keeping this change small to backport to M33&32 (see crbug.com/329597).
+  // TODO(skuhne): With the removal of the legacy shelf layout we should remove
+  // the ability to move the app list item since this was never used. We should
+  // instead ask the ShelfModel::ValidateInsertionIndex or similir for an index.
+  if (is_app_list && alternate)
+    return 0;
+
   for (int i = model_->item_count() - 1; i > 0; --i) {
     ash::LauncherItemType type = model_->items()[i].type;
     if (type == ash::TYPE_APP_SHORTCUT ||

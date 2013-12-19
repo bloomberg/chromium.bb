@@ -1154,6 +1154,29 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
 }
 
+// Check that changing from the alternate shelf layout to the old shelflayout
+// and back does keep the app launcher at location #0.
+TEST_F(ChromeLauncherControllerTest,
+       SwitchingFromAlternateShelfLayoutToLegacyAndBack) {
+  InitLauncherController();
+
+  // We simulate this problem by intentionally placing the app list item in
+  // the middle of several apps which caused a crash (see crbug.com/329597).
+  const char kAppLauncherIdPlaceholder[] = "AppLauncherIDPlaceholder--------";
+
+  base::ListValue policy_value;
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, kAppLauncherIdPlaceholder);
+  InsertPrefValue(&policy_value, 2, extension2_->id());
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value.DeepCopy());
+  EXPECT_EQ(0, profile()->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex));
+  // Model should only contain the browser shortcut and app list items.
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_EQ("AppList, Chrome, App1, App2, ", GetPinnedAppStatus());
+}
+
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced reverse
 // order.
