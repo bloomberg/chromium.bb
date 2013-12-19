@@ -91,9 +91,6 @@ interface InspectorInstrumentation {
     [DOM, DOMDebugger, Inline=FastReturn]
     void didInvalidateStyleAttr([Keep] Node*);
 
-    [DOM, Inline=FastReturn]
-    void pseudoStateChanged([Keep] Node*);
-
     [CSS, Inline=FastReturn]
     void willMutateRules(CSSStyleSheet*);
 

@@ -39,8 +39,6 @@ crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 crbug.com/313922 [ Mac ] inspector/layer-tree-model.html [ Failure ]
 crbug.com/313922 [ Mac XP ] inspector-protocol/layers/get-layers.html [ Failure ]
 
-crbug.com/324369 [ Win ] inspector/styles/pseudo-state-change.html [ Failure Pass ]
-
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------

@@ -1939,17 +1939,6 @@ void InspectorDOMAgent::pseudoElementDestroyed(PseudoElement* pseudoElement)
     m_frontend->pseudoElementRemoved(parentId, pseudoElementId);
 }
 
-void InspectorDOMAgent::pseudoStateChanged(Node* node)
-{
-    if (!node->isElementNode())
-        return;
-
-    int nodeId = m_documentNodeToIdMap.get(node);
-    if (!nodeId)
-        return;
-    m_frontend->pseudoStateChanged(nodeId);
-}
-
 Node* InspectorDOMAgent::nodeForPath(const String& path)
 {
     // The path is of form "1,HTML,2,BODY,1,DIV"
