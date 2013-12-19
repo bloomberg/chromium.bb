@@ -289,7 +289,7 @@ TEST_F(BaseLayoutManagerTest, NotResizeWhenScreenIsLocked) {
   window->Show();
 
   internal::ShelfLayoutManager* shelf =
-      internal::ShelfLayoutManager::ForLauncher(window.get());
+      internal::ShelfLayoutManager::ForShelf(window.get());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   window->SetBounds(ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()));

@@ -4,8 +4,8 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"

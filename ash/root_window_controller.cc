@@ -269,7 +269,7 @@ void RootWindowController::CreateForVirtualKeyboardDisplay(
 }
 
 // static
-RootWindowController* RootWindowController::ForLauncher(aura::Window* window) {
+RootWindowController* RootWindowController::ForShelf(aura::Window* window) {
   return GetRootWindowController(window->GetRootWindow());
 }
 
@@ -374,18 +374,18 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
   return root_window_->window()->GetChildById(container_id);
 }
 
-void RootWindowController::ShowLauncher() {
-  if (!shelf_->launcher())
+void RootWindowController::ShowShelf() {
+  if (!shelf_->shelf())
     return;
-  shelf_->launcher()->SetVisible(true);
+  shelf_->shelf()->SetVisible(true);
   shelf_->status_area_widget()->Show();
 }
 
-void RootWindowController::OnLauncherCreated() {
+void RootWindowController::OnShelfCreated() {
   if (panel_layout_manager_)
-    panel_layout_manager_->SetLauncher(shelf_->launcher());
+    panel_layout_manager_->SetShelf(shelf_->shelf());
   if (docked_layout_manager_) {
-    docked_layout_manager_->SetLauncher(shelf_->launcher());
+    docked_layout_manager_->SetShelf(shelf_->shelf());
     if (shelf_->shelf_layout_manager())
       docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
   }
@@ -677,9 +677,9 @@ void RootWindowController::Init(RootWindowType root_window_type,
         root_window_->window());
     root_window_->host()->Show();
 
-    // Create a launcher if a user is already logged in.
+    // Create a shelf if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())
-      shelf()->CreateLauncher();
+      shelf()->CreateShelf();
   }
 
   solo_window_tracker_.reset(new SoloWindowTracker(root_window_.get()));

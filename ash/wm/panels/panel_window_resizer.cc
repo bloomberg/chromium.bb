@@ -5,8 +5,8 @@
 #include "ash/wm/panels/panel_window_resizer.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -149,9 +149,9 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
         GetPanelLayoutManager(panel_container_);
     gfx::Rect launcher_bounds = ScreenAsh::ConvertRectFromScreen(
         GetTarget()->parent(),
-        panel_layout_manager->launcher()->
+        panel_layout_manager->shelf()->
         shelf_widget()->GetWindowBoundsInScreen());
-    switch (panel_layout_manager->launcher()->alignment()) {
+    switch (panel_layout_manager->shelf()->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
         if (bounds.bottom() >= (launcher_bounds.y() -
                                 kPanelSnapToLauncherDistance)) {
@@ -233,7 +233,7 @@ void PanelWindowResizer::FinishDragging() {
 
 void PanelWindowResizer::UpdateLauncherPosition() {
   if (panel_container_) {
-    GetPanelLayoutManager(panel_container_)->launcher()->
+    GetPanelLayoutManager(panel_container_)->shelf()->
         UpdateIconPositionForWindow(GetTarget());
   }
 }

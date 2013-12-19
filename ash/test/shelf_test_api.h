@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_LAUNCHER_TEST_API_H_
-#define ASH_TEST_LAUNCHER_TEST_API_H_
+#ifndef ASH_TEST_SHELF_TEST_API_H_
+#define ASH_TEST_SHELF_TEST_API_H_
 
 #include "base/basictypes.h"
 
 namespace ash {
 
-class Launcher;
+class Shelf;
 class ShelfDelegate;
 
 namespace internal {
@@ -18,12 +18,12 @@ class ShelfView;
 
 namespace test {
 
-// Use the api in this class to access private members of Launcher.
-class LauncherTestAPI {
+// Use the api in this class to access private members of Shelf.
+class ShelfTestAPI {
  public:
-  explicit LauncherTestAPI(Launcher* launcher);
+  explicit ShelfTestAPI(Shelf* shelf);
 
-  ~LauncherTestAPI();
+  ~ShelfTestAPI();
 
   // An accessor for |shelf_view|.
   internal::ShelfView* shelf_view();
@@ -32,12 +32,12 @@ class LauncherTestAPI {
   void SetShelfDelegate(ShelfDelegate* delegate);
 
  private:
-  Launcher* launcher_;
+  Shelf* shelf_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherTestAPI);
+  DISALLOW_COPY_AND_ASSIGN(ShelfTestAPI);
 };
 
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_LAUNCHER_TEST_API_H_
+#endif  // ASH_TEST_SHELF_TEST_API_H_

@@ -31,14 +31,14 @@ LauncherID GetLauncherIDForWindow(aura::Window* window) {
   return window->GetProperty(kLauncherID);
 }
 
-void SetLauncherItemDetailsForWindow(aura::Window* window,
-                                     const LauncherItemDetails& details) {
+void SetShelfItemDetailsForWindow(aura::Window* window,
+                                  const LauncherItemDetails& details) {
   // |item_details| is owned by |window|.
   LauncherItemDetails* item_details = new LauncherItemDetails(details);
   window->SetProperty(kLauncherItemDetailsKey, item_details);
 }
 
-void ClearLauncherItemDetailsForWindow(aura::Window* window) {
+void ClearShelfItemDetailsForWindow(aura::Window* window) {
   window->ClearProperty(kLauncherItemDetailsKey);
 }
 

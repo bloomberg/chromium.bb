@@ -7,7 +7,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
-#include "ash/launcher/launcher.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -62,11 +62,11 @@ TEST_F(DIPTest, WorkArea) {
   EXPECT_EQ("0,0,47,0", display_2x.bounds().InsetsFrom(work_area).ToString());
 
   // Sanity check if the workarea's inset hight is same as
-  // the launcher's height.
-  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  // the shelf's height.
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   EXPECT_EQ(
       display_2x.bounds().InsetsFrom(work_area).height(),
-      launcher->shelf_widget()->GetNativeView()->layer()->bounds().height());
+      shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
 
 TEST_F(DIPTest, WorkAreaForLegacyShelfLayout) {
@@ -101,11 +101,11 @@ TEST_F(DIPTest, WorkAreaForLegacyShelfLayout) {
   EXPECT_EQ("0,0,48,0", display_2x.bounds().InsetsFrom(work_area).ToString());
 
   // Sanity check if the workarea's inset hight is same as
-  // the launcher's height.
-  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  // the shelf's height.
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   EXPECT_EQ(
       display_2x.bounds().InsetsFrom(work_area).height(),
-      launcher->shelf_widget()->GetNativeView()->layer()->bounds().height());
+      shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
 
 }  // namespace ash

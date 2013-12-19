@@ -55,7 +55,7 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
   // ui::EventHandler overrides:
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
-  ShelfLayoutManager* GetShelfLayoutManagerForLauncher() const;
+  ShelfLayoutManager* GetShelfLayoutManager() const;
 
   ShelfView* shelf_view_;  // Owned by views hierarchy.
   gfx::Vector2d scroll_offset_;

@@ -5,8 +5,8 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -98,28 +98,35 @@ class DockedBackgroundWidget : public views::Widget,
 
   // views::Widget:
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE {
-    const gfx::ImageSkia& launcher_background(
+    const gfx::ImageSkia& shelf_background(
         alignment_ == DOCKED_ALIGNMENT_LEFT ?
-            launcher_background_left_ : launcher_background_right_);
+            shelf_background_left_ : shelf_background_right_);
     gfx::Rect rect = gfx::Rect(GetWindowBoundsInScreen().size());
     SkPaint paint;
     paint.setAlpha(alpha_);
+    canvas->DrawImageInt(shelf_background,
+                         0,
+                         0,
+                         shelf_background.width(),
+                         shelf_background.height(),
+                         alignment_ == DOCKED_ALIGNMENT_LEFT
+                             ? rect.width() - shelf_background.width()
+                             : 0,
+                         0,
+                         shelf_background.width(),
+                         rect.height(),
+                         false,
+                         paint);
     canvas->DrawImageInt(
-        launcher_background,
-        0, 0, launcher_background.width(), launcher_background.height(),
-        alignment_ == DOCKED_ALIGNMENT_LEFT ?
-            rect.width() - launcher_background.width() : 0, 0,
-        launcher_background.width(), rect.height(),
-        false,
-        paint);
-    canvas->DrawImageInt(
-        launcher_background,
-        alignment_ == DOCKED_ALIGNMENT_LEFT ?
-            0 : launcher_background.width() - 1, 0,
-        1, launcher_background.height(),
-        alignment_ == DOCKED_ALIGNMENT_LEFT ?
-            0 : launcher_background.width(), 0,
-        rect.width() - launcher_background.width(), rect.height(),
+        shelf_background,
+        alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width() - 1,
+        0,
+        1,
+        shelf_background.height(),
+        alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(),
+        0,
+        rect.width() - shelf_background.width(),
+        rect.height(),
         false,
         paint);
   }
@@ -150,12 +157,12 @@ class DockedBackgroundWidget : public views::Widget,
     Hide();
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia launcher_background =
+    gfx::ImageSkia shelf_background =
         *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_BACKGROUND);
-    launcher_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
-        launcher_background, SkBitmapOperations::ROTATION_90_CW);
-    launcher_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(
-        launcher_background, SkBitmapOperations::ROTATION_270_CW);
+    shelf_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+        shelf_background, SkBitmapOperations::ROTATION_90_CW);
+    shelf_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+        shelf_background, SkBitmapOperations::ROTATION_270_CW);
   }
 
   DockedAlignment alignment_;
@@ -170,8 +177,8 @@ class DockedBackgroundWidget : public views::Widget,
   ui::Layer opaque_background_;
 
   // Backgrounds created from shelf background by 90 or 270 degree rotation.
-  gfx::ImageSkia launcher_background_left_;
-  gfx::ImageSkia launcher_background_right_;
+  gfx::ImageSkia shelf_background_left_;
+  gfx::ImageSkia shelf_background_right_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedBackgroundWidget);
 };
@@ -320,21 +327,21 @@ struct CompareWindowPos {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// A class that observes launcher shelf for bounds changes.
+// A class that observes shelf for bounds changes.
 class DockedWindowLayoutManager::ShelfWindowObserver : public WindowObserver {
  public:
   explicit ShelfWindowObserver(
       DockedWindowLayoutManager* docked_layout_manager)
       : docked_layout_manager_(docked_layout_manager) {
-    DCHECK(docked_layout_manager_->launcher()->shelf_widget());
-    docked_layout_manager_->launcher()->shelf_widget()->GetNativeView()
+    DCHECK(docked_layout_manager_->shelf()->shelf_widget());
+    docked_layout_manager_->shelf()->shelf_widget()->GetNativeView()
         ->AddObserver(this);
   }
 
   virtual ~ShelfWindowObserver() {
-    if (docked_layout_manager_->launcher() &&
-        docked_layout_manager_->launcher()->shelf_widget())
-      docked_layout_manager_->launcher()->shelf_widget()->GetNativeView()
+    if (docked_layout_manager_->shelf() &&
+        docked_layout_manager_->shelf()->shelf_widget())
+      docked_layout_manager_->shelf()->shelf_widget()->GetNativeView()
           ->RemoveObserver(this);
   }
 
@@ -367,7 +374,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       dragged_window_(NULL),
       is_dragged_window_docked_(false),
       is_dragged_from_dock_(false),
-      launcher_(NULL),
+      shelf_(NULL),
       workspace_controller_(workspace_controller),
       in_fullscreen_(workspace_controller_->GetWindowState() ==
           WORKSPACE_WINDOW_STATE_FULL_SCREEN),
@@ -387,13 +394,13 @@ DockedWindowLayoutManager::~DockedWindowLayoutManager() {
 }
 
 void DockedWindowLayoutManager::Shutdown() {
-  if (launcher_ && launcher_->shelf_widget()) {
-    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForLauncher(
-        launcher_->shelf_widget()->GetNativeWindow());
+  if (shelf_ && shelf_->shelf_widget()) {
+    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForShelf(
+        shelf_->shelf_widget()->GetNativeWindow());
     shelf_layout_manager->RemoveObserver(this);
     shelf_observer_.reset();
   }
-  launcher_ = NULL;
+  shelf_ = NULL;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* child = dock_container_->children()[i];
     child->RemoveObserver(this);
@@ -470,12 +477,12 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
   RecordUmaAction(action, source);
 }
 
-void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
-  DCHECK(!launcher_);
-  launcher_ = launcher;
-  if (launcher_->shelf_widget()) {
-    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForLauncher(
-        launcher_->shelf_widget()->GetNativeWindow());
+void DockedWindowLayoutManager::SetShelf(Shelf* shelf) {
+  DCHECK(!shelf_);
+  shelf_ = shelf;
+  if (shelf_->shelf_widget()) {
+    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForShelf(
+        shelf_->shelf_widget()->GetNativeWindow());
     shelf_layout_manager->AddObserver(this);
     shelf_observer_.reset(new ShelfWindowObserver(this));
   }
@@ -552,10 +559,10 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
       (edge == SNAP_RIGHT && alignment == DOCKED_ALIGNMENT_LEFT)) {
     return false;
   }
-  // Do not allow docking on the same side as launcher shelf.
+  // Do not allow docking on the same side as shelf.
   ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
-  if (launcher_)
-    shelf_alignment = launcher_->alignment();
+  if (shelf_)
+    shelf_alignment = shelf_->alignment();
   if ((edge == SNAP_LEFT && shelf_alignment == SHELF_ALIGNMENT_LEFT) ||
       (edge == SNAP_RIGHT && shelf_alignment == SHELF_ALIGNMENT_RIGHT)) {
     return false;
@@ -636,7 +643,7 @@ void DockedWindowLayoutManager::SetChildBounds(
   SetChildBoundsDirect(child, requested_bounds);
   if (IsPopupOrTransient(child))
     return;
-  ShelfLayoutManager* shelf_layout = internal::ShelfLayoutManager::ForLauncher(
+  ShelfLayoutManager* shelf_layout = internal::ShelfLayoutManager::ForShelf(
       dock_container_);
   if (shelf_layout)
     shelf_layout->UpdateVisibilityState();
@@ -688,15 +695,15 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
   if (dock_container_->GetRootWindow() != root_window)
     return;
 
-  if (!launcher_ || !launcher_->shelf_widget())
+  if (!shelf_ || !shelf_->shelf_widget())
     return;
 
   if (alignment_ == DOCKED_ALIGNMENT_NONE)
     return;
 
-  // Do not allow launcher and dock on the same side. Switch side that
+  // Do not allow shelf and dock on the same side. Switch side that
   // the dock is attached to and move all dock windows to that new side.
-  ShelfAlignment shelf_alignment = launcher_->shelf_widget()->GetAlignment();
+  ShelfAlignment shelf_alignment = shelf_->shelf_widget()->GetAlignment();
   if (alignment_ == DOCKED_ALIGNMENT_LEFT &&
       shelf_alignment == SHELF_ALIGNMENT_LEFT) {
     alignment_ = DOCKED_ALIGNMENT_RIGHT;

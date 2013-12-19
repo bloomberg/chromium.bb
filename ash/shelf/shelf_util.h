@@ -28,14 +28,14 @@ ASH_EXPORT void SetLauncherIDForWindow(LauncherID id, aura::Window* window);
 ASH_EXPORT LauncherID GetLauncherIDForWindow(aura::Window* window);
 
 // Sets LauncherItemDetails for |window|.
-ASH_EXPORT void SetLauncherItemDetailsForWindow(
+ASH_EXPORT void SetShelfItemDetailsForWindow(
     aura::Window* window,
     const LauncherItemDetails& details);
 
 // Clears LauncherItemDetails for |window|.
-// If |window| has a LauncherItem by SetLauncherItemDetailsForWindow(), it will
+// If |window| has a LauncherItem by SetShelfItemDetailsForWindow(), it will
 // be removed.
-ASH_EXPORT void ClearLauncherItemDetailsForWindow(aura::Window* window);
+ASH_EXPORT void ClearShelfItemDetailsForWindow(aura::Window* window);
 
 // Returns LauncherItemDetails for |window| or NULL if it doesn't have.
 // Returned LauncherItemDetails object is owned by the |window|.

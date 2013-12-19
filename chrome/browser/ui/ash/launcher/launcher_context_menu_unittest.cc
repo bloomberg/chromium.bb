@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/prefs/pref_service.h"

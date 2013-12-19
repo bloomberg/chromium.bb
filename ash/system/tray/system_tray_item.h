@@ -101,9 +101,9 @@ class ASH_EXPORT SystemTrayItem {
   // Returns true if item should hide the arrow.
   virtual bool ShouldHideArrow() const;
 
-  // Returns true if this item needs to force the launcher to be visible when
-  // the launcher is in the auto-hide state. Default is true.
-  virtual bool ShouldShowLauncher() const;
+  // Returns true if this item needs to force the shelf to be visible when
+  // the shelf is in the auto-hide state. Default is true.
+  virtual bool ShouldShowShelf() const;
 
   // Returns the system tray that this item belongs to.
   SystemTray* system_tray() const { return system_tray_; }

@@ -596,7 +596,7 @@ bool TrayAudio::ShouldHideArrow() const {
   return true;
 }
 
-bool TrayAudio::ShouldShowLauncher() const {
+bool TrayAudio::ShouldShowShelf() const {
   return ash::switches::ShowAudioDeviceMenu() && !pop_up_volume_view_;
 }
 

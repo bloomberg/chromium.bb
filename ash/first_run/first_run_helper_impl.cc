@@ -4,7 +4,7 @@
 
 #include "ash/first_run/first_run_helper_impl.h"
 
-#include "ash/launcher/launcher.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
@@ -64,13 +64,13 @@ void FirstRunHelperImpl::CloseAppList() {
 }
 
 gfx::Rect FirstRunHelperImpl::GetLauncherBounds() {
-  ash::Launcher* launcher = ash::Launcher::ForPrimaryDisplay();
-  return launcher->GetVisibleItemsBoundsInScreen();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  return shelf->GetVisibleItemsBoundsInScreen();
 }
 
 gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
-  ash::Launcher* launcher = ash::Launcher::ForPrimaryDisplay();
-  views::View* app_button = launcher->GetAppListButtonView();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  views::View* app_button = shelf->GetAppListButtonView();
   return app_button->GetBoundsInScreen();
 }
 
@@ -120,4 +120,3 @@ gfx::Rect FirstRunHelperImpl::GetHelpButtonBounds() {
 }
 
 }  // namespace ash
-

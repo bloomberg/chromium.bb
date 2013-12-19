@@ -22,7 +22,7 @@
 namespace {
 
 // Sets LauncherItem property by using the value of |details|.
-void SetLauncherItemDetailsForLauncherItem(
+void SetShelfItemDetailsForLauncherItem(
     ash::LauncherItem* item,
     const ash::LauncherItemDetails& details) {
   item->type = details.type;
@@ -87,7 +87,7 @@ void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
   LauncherItem item;
   LauncherID id = model_->next_id();
   item.status = ash::wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
-  SetLauncherItemDetailsForLauncherItem(&item, *item_details);
+  SetShelfItemDetailsForLauncherItem(&item, *item_details);
   SetLauncherIDForWindow(id, window);
   scoped_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window));
@@ -190,7 +190,7 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
     LauncherItem item = model_->items()[index];
     const LauncherItemDetails* details =
         GetLauncherItemDetailsForWindow(window);
-    SetLauncherItemDetailsForLauncherItem(&item, *details);
+    SetShelfItemDetailsForLauncherItem(&item, *details);
     model_->Set(index, item);
     return;
   }

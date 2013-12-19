@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_H_
-#define ASH_LAUNCHER_LAUNCHER_H_
+#ifndef ASH_SHELF_SHELF_H_
+#define ASH_SHELF_SHELF_H_
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
@@ -38,7 +38,7 @@ class ShelfView;
 }
 
 namespace test {
-class LauncherTestAPI;
+class ShelfTestAPI;
 }
 
 class ShelfDelegate;
@@ -46,21 +46,20 @@ class ShelfIconObserver;
 class ShelfModel;
 class ShelfWidget;
 
-class ASH_EXPORT Launcher {
+class ASH_EXPORT Shelf {
  public:
   static const char kNativeViewName[];
 
-  Launcher(ShelfModel* model, ShelfDelegate* delegate, ShelfWidget* widget);
-  virtual ~Launcher();
+  Shelf(ShelfModel* model, ShelfDelegate* delegate, ShelfWidget* widget);
+  virtual ~Shelf();
 
-  // Return the launcher for the primary display. NULL if no user is
-  // logged in yet.
-  static Launcher* ForPrimaryDisplay();
+  // Return the shelf for the primary display. NULL if no user is logged in yet.
+  static Shelf* ForPrimaryDisplay();
 
-  // Return the launcher for the display that |window| is currently on,
-  // or a launcher on primary display if the launcher per display feature
-  // is disabled. NULL if no user is logged in yet.
-  static Launcher* ForWindow(aura::Window* window);
+  // Return the shelf for the display that |window| is currently on, or a shelf
+  // on primary display if the shelf per display feature  is disabled. NULL if
+  // no user is logged in yet.
+  static Shelf* ForWindow(aura::Window* window);
 
   void SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
@@ -73,17 +72,17 @@ class ASH_EXPORT Launcher {
   // when dragging panels to reposition them with respect to the other panels.
   void UpdateIconPositionForWindow(aura::Window* window);
 
-  // Activates the the launcher item specified by the index in the list
-  // of launcher items.
-  void ActivateLauncherItem(int index);
+  // Activates the the shelf item specified by the index in the list of shelf
+  // items.
+  void ActivateShelfItem(int index);
 
-  // Cycles the window focus linearly over the current launcher items.
+  // Cycles the window focus linearly over the current shelf items.
   void CycleWindowLinear(CycleDirection direction);
 
   void AddIconObserver(ShelfIconObserver* observer);
   void RemoveIconObserver(ShelfIconObserver* observer);
 
-  // Returns true if the Launcher is showing a context menu.
+  // Returns true if the shelf is showing a context menu.
   bool IsShowingMenu() const;
 
   bool IsShowingOverflowBubble() const;
@@ -95,8 +94,8 @@ class ASH_EXPORT Launcher {
 
   views::View* GetAppListButtonView() const;
 
-  // Launch a 0-indexed launcher item in the Launcher.
-  // A negative index launches the last launcher item in the launcher.
+  // Launch a 0-indexed shelf item in the shelf.
+  // A negative index launches the last shelf item in the shelf.
   void LaunchAppIndexAt(int item_index);
 
   ShelfWidget* shelf_widget() { return shelf_widget_; }
@@ -105,15 +104,15 @@ class ASH_EXPORT Launcher {
   void SetShelfViewBounds(gfx::Rect bounds);
   gfx::Rect GetShelfViewBounds() const;
 
-  // Returns rectangle bounding all visible launcher items. Used screen
-  // coordinate system.
+  // Returns rectangle bounding all visible shelf items. Used screen coordinate
+  // system.
   gfx::Rect GetVisibleItemsBoundsInScreen() const;
 
-  // Returns ApplicationDragAndDropHost for this Launcher.
+  // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
  private:
-  friend class ash::test::LauncherTestAPI;
+  friend class test::ShelfTestAPI;
 
   // ShelfView used to display icons.
   internal::ShelfView* shelf_view_;
@@ -124,9 +123,9 @@ class ASH_EXPORT Launcher {
 
   ShelfWidget* shelf_widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(Launcher);
+  DISALLOW_COPY_AND_ASSIGN(Shelf);
 };
 
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_H_
+#endif  // ASH_SHELF_SHELF_H_

@@ -4,15 +4,15 @@
 
 #include "ash/shelf/shelf_widget.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/launcher_test_api.h"
+#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
@@ -27,7 +27,7 @@ namespace ash {
 namespace {
 
 ShelfWidget* GetShelfWidget() {
-  return Launcher::ForPrimaryDisplay()->shelf_widget();
+  return Shelf::ForPrimaryDisplay()->shelf_widget();
 }
 
 internal::ShelfLayoutManager* GetShelfLayoutManager() {
@@ -43,8 +43,8 @@ typedef test::AshTestBase ShelfWidgetTest;
 // TODO(mtomasz): make this test work with the FocusController.
 // crbug.com/285364.
 TEST_F(ShelfWidgetTest, DISABLED_ActivateAsFallback) {
-  Launcher* launcher = Launcher::ForPrimaryDisplay();
-  ShelfWidget* shelf_widget = launcher->shelf_widget();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
   EXPECT_FALSE(shelf_widget->CanActivate());
 
   shelf_widget->WillActivateAsFallback();
@@ -64,9 +64,9 @@ void TestLauncherAlignment(aura::Window* root,
 }
 
 TEST_F(ShelfWidgetTest, TestAlignment) {
-  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   UpdateDisplay("400x400");
-  ASSERT_TRUE(launcher);
+  ASSERT_TRUE(shelf);
   {
     SCOPED_TRACE("Single Bottom");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
@@ -128,11 +128,11 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
   }
 }
 
-// Makes sure the launcher is initially sized correctly.
+// Makes sure the shelf is initially sized correctly.
 TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
   ShelfWidget* shelf_widget = GetShelfWidget();
-  Launcher* launcher = shelf_widget->launcher();
-  ASSERT_TRUE(launcher);
+  Shelf* shelf = shelf_widget->shelf();
+  ASSERT_TRUE(shelf);
   internal::ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
   ASSERT_TRUE(shelf_layout_manager);
   ASSERT_TRUE(shelf_widget->status_area_widget());
@@ -141,11 +141,11 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
   // Test only makes sense if the status is > 0, which it better be.
   EXPECT_GT(status_width, 0);
   EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
-            test::LauncherTestAPI(launcher).shelf_view()->width());
+            test::ShelfTestAPI(shelf).shelf_view()->width());
 }
 
 // Verifies when the shell is deleted with a full screen window we don't crash.
-TEST_F(ShelfWidgetTest, DontReferenceLauncherAfterDeletion) {
+TEST_F(ShelfWidgetTest, DontReferenceShelfAfterDeletion) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -156,38 +156,38 @@ TEST_F(ShelfWidgetTest, DontReferenceLauncherAfterDeletion) {
 }
 
 #if defined(OS_CHROMEOS)
-// Verifies launcher is created with correct size after user login and when its
+// Verifies shelf is created with correct size after user login and when its
 // container and status widget has finished sizing.
 // See http://crbug.com/252533
-TEST_F(ShelfWidgetTest, LauncherInitiallySizedAfterLogin) {
+TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   SetUserLoggedIn(false);
   UpdateDisplay("300x200,400x300");
 
-  ShelfWidget* shelf = NULL;
+  ShelfWidget* shelf_widget = NULL;
   Shell::RootWindowControllerList controllers(
       Shell::GetAllRootWindowControllers());
   for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
        i != controllers.end();
        ++i) {
-    if (!(*i)->shelf()->launcher()) {
-      shelf = (*i)->shelf();
+    if (!(*i)->shelf()->shelf()) {
+      shelf_widget = (*i)->shelf();
       break;
     }
   }
-  ASSERT_TRUE(shelf != NULL);
+  ASSERT_TRUE(shelf_widget != NULL);
 
   SetUserLoggedIn(true);
-  Shell::GetInstance()->CreateLauncher();
+  Shell::GetInstance()->CreateShelf();
 
-  Launcher* launcher = shelf->launcher();
-  ASSERT_TRUE(launcher != NULL);
+  Shelf* shelf = shelf_widget->shelf();
+  ASSERT_TRUE(shelf != NULL);
 
   const int status_width =
-      shelf->status_area_widget()->GetWindowBoundsInScreen().width();
+      shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
   EXPECT_GT(status_width, 0);
   EXPECT_EQ(status_width,
-            shelf->GetContentsView()->width() -
-                test::LauncherTestAPI(launcher).shelf_view()->width());
+            shelf_widget->GetContentsView()->width() -
+                test::ShelfTestAPI(shelf).shelf_view()->width());
 }
 #endif
 

@@ -32,7 +32,7 @@ class TrayAudio : public TrayImageItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
   virtual bool ShouldHideArrow() const OVERRIDE;
-  virtual bool ShouldShowLauncher() const OVERRIDE;
+  virtual bool ShouldShowShelf() const OVERRIDE;
 
   // Overridden from chromeos::CrasAudioHandler::AudioObserver.
   virtual void OnOutputVolumeChanged() OVERRIDE;

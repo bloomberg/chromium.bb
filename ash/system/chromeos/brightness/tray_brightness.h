@@ -42,7 +42,7 @@ class TrayBrightness : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
   virtual bool ShouldHideArrow() const OVERRIDE;
-  virtual bool ShouldShowLauncher() const OVERRIDE;
+  virtual bool ShouldShowShelf() const OVERRIDE;
 
   // Overriden from PowerManagerClient::Observer.
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE;

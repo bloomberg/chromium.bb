@@ -38,7 +38,7 @@ class Widget;
 }
 
 namespace ash {
-class Launcher;
+class Shelf;
 
 namespace internal {
 class DockedBackgroundWidget;
@@ -110,8 +110,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Records |action| by |source| in UMA.
   void FinishDragging(DockedAction action, DockedActionSource source);
 
-  ash::Launcher* launcher() { return launcher_; }
-  void SetLauncher(ash::Launcher* launcher);
+  Shelf* shelf() { return shelf_; }
+  void SetShelf(Shelf* shelf);
 
   // Calculates if a window is touching the screen edges and returns edge.
   DockedAlignment GetAlignmentOfWindow(const aura::Window* window) const;
@@ -120,7 +120,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   DockedAlignment CalculateAlignment() const;
 
   // Returns true when a window can be docked. Windows cannot be docked at the
-  // edge used by the launcher shelf or the edge opposite from existing dock.
+  // edge used by the shelf or the edge opposite from existing dock.
   bool CanDockWindow(aura::Window* window, SnapType edge);
 
   aura::Window* dock_container() const { return dock_container_; }
@@ -134,7 +134,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Returns true if currently dragged window is docked at the screen edge.
   bool is_dragged_window_docked() const { return is_dragged_window_docked_; }
 
-  // Updates docked layout when launcher shelf bounds change.
+  // Updates docked layout when shelf bounds change.
   void OnShelfBoundsChanged();
 
   // aura::LayoutManager:
@@ -264,8 +264,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   // that was previously established in Relayout. This allows easier reordering.
   bool is_dragged_from_dock_;
 
-  // The launcher to respond to launcher alignment changes.
-  Launcher* launcher_;
+  // The shelf to respond to alignment changes.
+  Shelf* shelf_;
 
   // Workspace controller that can be checked for fullscreen mode.
   WorkspaceController* workspace_controller_;
@@ -291,7 +291,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Used in UMA metrics.
   base::Time last_action_time_;
 
-  // Observes launcher shelf for bounds changes.
+  // Observes shelf for bounds changes.
   scoped_ptr<ShelfWindowObserver> shelf_observer_;
 
   // Widget used to paint a background for the docked area.

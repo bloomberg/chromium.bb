@@ -8,9 +8,9 @@
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/launcher/launcher.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -402,8 +402,8 @@ ChromeLauncherController::~ChromeLauncherController() {
   // Reset the shell window controller here since it has a weak pointer to this.
   shell_window_controller_.reset();
 
-  for (std::set<ash::Launcher*>::iterator iter = launchers_.begin();
-       iter != launchers_.end();
+  for (std::set<ash::Shelf*>::iterator iter = shelves_.begin();
+       iter != shelves_.end();
        ++iter)
     (*iter)->shelf_widget()->shelf_layout_manager()->RemoveObserver(this);
 
@@ -1103,15 +1103,15 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   }
 }
 
-void ChromeLauncherController::OnLauncherCreated(ash::Launcher* launcher) {
-  launchers_.insert(launcher);
-  launcher->shelf_widget()->shelf_layout_manager()->AddObserver(this);
+void ChromeLauncherController::OnShelfCreated(ash::Shelf* shelf) {
+  shelves_.insert(shelf);
+  shelf->shelf_widget()->shelf_layout_manager()->AddObserver(this);
 }
 
-void ChromeLauncherController::OnLauncherDestroyed(ash::Launcher* launcher) {
-  launchers_.erase(launcher);
+void ChromeLauncherController::OnShelfDestroyed(ash::Shelf* shelf) {
+  shelves_.erase(shelf);
   // RemoveObserver is not called here, since by the time this method is called
-  // Launcher is already in its destructor.
+  // Shelf is already in its destructor.
 }
 
 void ChromeLauncherController::ShelfItemAdded(int index) {

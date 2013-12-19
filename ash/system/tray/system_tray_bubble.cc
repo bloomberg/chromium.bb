@@ -340,11 +340,11 @@ bool SystemTrayBubble::IsVisible() {
   return bubble_view() && bubble_view()->GetWidget()->IsVisible();
 }
 
-bool SystemTrayBubble::ShouldShowLauncher() const {
+bool SystemTrayBubble::ShouldShowShelf() const {
   for (std::vector<ash::SystemTrayItem*>::const_iterator it = items_.begin();
        it != items_.end();
        ++it) {
-    if ((*it)->ShouldShowLauncher())
+    if ((*it)->ShouldShowShelf())
       return true;
   }
   return false;

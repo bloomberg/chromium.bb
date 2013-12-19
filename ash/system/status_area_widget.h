@@ -56,10 +56,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
 
   user::LoginStatus login_status() const { return login_status_; }
 
-  // Returns true if the launcher should be visible. This is used when the
-  // launcher is configured to auto-hide and test if the shelf should force
-  // the launcher to remain visible.
-  bool ShouldShowLauncher() const;
+  // Returns true if the shelf should be visible. This is used when the
+  // shelf is configured to auto-hide and test if the shelf should force
+  // the shelf to remain visible.
+  bool ShouldShowShelf() const;
 
   // True if any message bubble is shown.
   bool IsMessageBubbleShown() const;

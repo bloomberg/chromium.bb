@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -10,7 +10,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/launcher_test_api.h"
+#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/wm/window_util.h"
@@ -25,29 +25,28 @@
 #include "base/win/windows_version.h"
 #endif
 
-typedef ash::test::AshTestBase LauncherTest;
 using ash::internal::ShelfView;
 using ash::internal::ShelfButton;
 
 namespace ash {
 
-class LauncherTest : public ash::test::AshTestBase {
+class ShelfTest : public ash::test::AshTestBase {
  public:
-  LauncherTest() : launcher_(NULL),
-                   shelf_view_(NULL),
-                   shelf_model_(NULL),
-                   item_delegate_manager_(NULL) {
-  }
+  ShelfTest()
+      : shelf_(NULL),
+        shelf_view_(NULL),
+        shelf_model_(NULL),
+        item_delegate_manager_(NULL) {}
 
-  virtual ~LauncherTest() {}
+  virtual ~ShelfTest() {}
 
   virtual void SetUp() {
     test::AshTestBase::SetUp();
 
-    launcher_ = Launcher::ForPrimaryDisplay();
-    ASSERT_TRUE(launcher_);
+    shelf_ = Shelf::ForPrimaryDisplay();
+    ASSERT_TRUE(shelf_);
 
-    ash::test::LauncherTestAPI test(launcher_);
+    test::ShelfTestAPI test(shelf_);
     shelf_view_ = test.shelf_view();
     shelf_model_ = shelf_view_->model();
     item_delegate_manager_ =
@@ -60,8 +59,8 @@ class LauncherTest : public ash::test::AshTestBase {
     test::AshTestBase::TearDown();
   }
 
-  Launcher* launcher() {
-    return launcher_;
+  Shelf* shelf() {
+    return shelf_;
   }
 
   ShelfView* shelf_view() {
@@ -81,17 +80,17 @@ class LauncherTest : public ash::test::AshTestBase {
   }
 
  private:
-  Launcher* launcher_;
+  Shelf* shelf_;
   ShelfView* shelf_view_;
   ShelfModel* shelf_model_;
   ShelfItemDelegateManager* item_delegate_manager_;
   scoped_ptr<test::ShelfViewTestAPI> test_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfTest);
 };
 
 // Confirms that LauncherItem reflects the appropriated state.
-TEST_F(LauncherTest, StatusReflection) {
+TEST_F(ShelfTest, StatusReflection) {
   // Initially we have the app list.
   int button_count = test_api()->GetButtonCount();
 
@@ -111,7 +110,7 @@ TEST_F(LauncherTest, StatusReflection) {
 
 // Confirm that using the menu will clear the hover attribute. To avoid another
 // browser test we check this here.
-TEST_F(LauncherTest, checkHoverAfterMenu) {
+TEST_F(ShelfTest, checkHoverAfterMenu) {
   // Initially we have the app list.
   int button_count = test_api()->GetButtonCount();
 
@@ -136,7 +135,7 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   shelf_model()->RemoveItemAt(index);
 }
 
-TEST_F(LauncherTest, ShowOverflowBubble) {
+TEST_F(ShelfTest, ShowOverflowBubble) {
   LauncherID first_item_id = shelf_model()->next_id();
 
   // Add platform app button until overflow.
@@ -153,14 +152,14 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
 
   // Shows overflow bubble.
   test_api()->ShowOverflowBubble();
-  EXPECT_TRUE(launcher()->IsShowingOverflowBubble());
+  EXPECT_TRUE(shelf()->IsShowingOverflowBubble());
 
   // Removes the first item in main shelf view.
   shelf_model()->RemoveItemAt(shelf_model()->ItemIndexByID(first_item_id));
 
   // Waits for all transitions to finish and there should be no crash.
   test_api()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(launcher()->IsShowingOverflowBubble());
+  EXPECT_FALSE(shelf()->IsShowingOverflowBubble());
 }
 
 }  // namespace ash

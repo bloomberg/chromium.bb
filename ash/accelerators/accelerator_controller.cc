@@ -19,7 +19,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime_control_delegate.h"
-#include "ash/launcher/launcher.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_delegate.h"
@@ -29,6 +28,7 @@
 #include "ash/rotator/screen_rotation.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
@@ -197,18 +197,18 @@ bool HandleFocusLauncher() {
   Shell* shell = Shell::GetInstance();
   content::RecordAction(content::UserMetricsAction("Accel_Focus_Launcher"));
   return shell->focus_cycler()->FocusWidget(
-      Launcher::ForPrimaryDisplay()->shelf_widget());
+      Shelf::ForPrimaryDisplay()->shelf_widget());
 }
 
 bool HandleLaunchAppN(int n) {
   content::RecordAction(UserMetricsAction("Accel_Launch_App"));
-  Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(n);
+  Shelf::ForPrimaryDisplay()->LaunchAppIndexAt(n);
   return true;
 }
 
 bool HandleLaunchLastApp() {
   content::RecordAction(UserMetricsAction("Accel_Launch_Last_App"));
-  Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(-1);
+  Shelf::ForPrimaryDisplay()->LaunchAppIndexAt(-1);
   return true;
 }
 

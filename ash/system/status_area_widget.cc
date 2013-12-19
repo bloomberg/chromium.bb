@@ -76,16 +76,16 @@ void StatusAreaWidget::Shutdown() {
   system_tray_ = NULL;
 }
 
-bool StatusAreaWidget::ShouldShowLauncher() const {
-  if ((system_tray_ && system_tray_->ShouldShowLauncher()) ||
+bool StatusAreaWidget::ShouldShowShelf() const {
+  if ((system_tray_ && system_tray_->ShouldShowShelf()) ||
       (web_notification_tray_ &&
-       web_notification_tray_->ShouldBlockLauncherAutoHide()))
+       web_notification_tray_->ShouldBlockShelfAutoHide()))
     return true;
 
-  if (!RootWindowController::ForLauncher(GetNativeView())->shelf()->IsVisible())
+  if (!RootWindowController::ForShelf(GetNativeView())->shelf()->IsVisible())
     return false;
 
-  // If the launcher is currently visible, don't hide the launcher if the mouse
+  // If the shelf is currently visible, don't hide the shelf if the mouse
   // is in any of the notification bubbles.
   return (system_tray_ && system_tray_->IsMouseInNotificationBubble()) ||
         (web_notification_tray_ &&

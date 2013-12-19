@@ -429,7 +429,7 @@ void TrayBackgroundView::SetContentsBackground() {
 }
 
 ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
-  return ShelfLayoutManager::ForLauncher(GetWidget()->GetNativeView());
+  return ShelfLayoutManager::ForShelf(GetWidget()->GetNativeView());
 }
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
@@ -623,7 +623,7 @@ void TrayBackgroundView::UpdateBubbleViewArrow(
   aura::Window* root_window =
       bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
   ash::internal::ShelfLayoutManager* shelf =
-      ShelfLayoutManager::ForLauncher(root_window);
+      ShelfLayoutManager::ForShelf(root_window);
   bubble_view->SetArrowPaintType(
       (shelf && shelf->IsVisible()) ?
       views::BubbleBorder::PAINT_NORMAL :

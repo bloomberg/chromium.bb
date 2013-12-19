@@ -59,8 +59,8 @@ class SystemTrayBubble {
   bool IsVisible();
 
   // Returns true if any of the SystemTrayItems return true from
-  // ShouldShowLauncher().
-  bool ShouldShowLauncher() const;
+  // ShouldShowShelf().
+  bool ShouldShowShelf() const;
 
  private:
   void CreateItemViews(user::LoginStatus login_status);

@@ -344,7 +344,7 @@ void Shell::OnLoginStateChanged(user::LoginStatus status) {
 }
 
 void Shell::OnLoginUserProfilePrepared() {
-  CreateLauncher();
+  CreateShelf();
   CreateKeyboard();
 }
 
@@ -375,11 +375,11 @@ void Shell::OnLockStateChanged(bool locked) {
 #endif
 }
 
-void Shell::CreateLauncher() {
+void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->shelf()->CreateLauncher();
+    (*iter)->shelf()->CreateShelf();
 }
 
 void Shell::CreateKeyboard() {
@@ -395,11 +395,11 @@ void Shell::CreateKeyboard() {
   }
 }
 
-void Shell::ShowLauncher() {
+void Shell::ShowShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->ShowLauncher();
+    (*iter)->ShowShelf();
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {
@@ -420,19 +420,19 @@ void Shell::UpdateShelfVisibility() {
 
 void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
                                      aura::Window* root_window) {
-  ash::internal::ShelfLayoutManager::ForLauncher(root_window)->
+  ash::internal::ShelfLayoutManager::ForShelf(root_window)->
       SetAutoHideBehavior(behavior);
 }
 
 ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
     aura::Window* root_window) const {
-  return ash::internal::ShelfLayoutManager::ForLauncher(root_window)->
+  return ash::internal::ShelfLayoutManager::ForShelf(root_window)->
       auto_hide_behavior();
 }
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
                               aura::Window* root_window) {
-  if (ash::internal::ShelfLayoutManager::ForLauncher(root_window)->
+  if (ash::internal::ShelfLayoutManager::ForShelf(root_window)->
       SetAlignment(alignment)) {
     FOR_EACH_OBSERVER(
         ShellObserver, observers_, OnShelfAlignmentChanged(root_window));
@@ -619,8 +619,8 @@ Shell::~Shell() {
   RemovePreTargetHandler(tooltip_controller_.get());
 
   // AppList needs to be released before shelf layout manager, which is
-  // destroyed with launcher container in the loop below. However, app list
-  // container is now on top of launcher container and released after it.
+  // destroyed with shelf container in the loop below. However, app list
+  // container is now on top of shelf container and released after it.
   // TODO(xiyuan): Move it back when app list container is no longer needed.
   app_list_controller_.reset();
 
@@ -754,7 +754,7 @@ void Shell::Init() {
     display_manager_->InitDefaultDisplay();
 
   // Install the custom factory first so that views::FocusManagers for Tray,
-  // Launcher, and WallPaper could be created by the factory.
+  // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
   // Env creates the compositor. Historically it seems to have been implicitly

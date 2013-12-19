@@ -5,9 +5,9 @@
 #include "ash/wm/app_list_controller.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -33,7 +33,7 @@ namespace {
 // Duration for show/hide animation in milliseconds.
 const int kAnimationDurationMs = 200;
 
-// Offset in pixels to animation away/towards the launcher.
+// Offset in pixels to animation away/towards the shelf.
 const int kAnimationOffset = 8;
 
 // The maximum shift in pixels when over-scroll happens.
@@ -51,7 +51,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  return ShelfLayoutManager::ForLauncher(window)->
+  return ShelfLayoutManager::ForShelf(window)->
       SelectValueForShelfAlignment(
           views::BubbleBorder::BOTTOM_CENTER,
           views::BubbleBorder::LEFT_CENTER,
@@ -167,7 +167,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
     if (ash::switches::UseAlternateShelfLayout()) {
-      gfx::Rect applist_button_bounds = Launcher::ForWindow(container)->
+      gfx::Rect applist_button_bounds = Shelf::ForWindow(container)->
           GetAppListButtonView()->GetBoundsInScreen();
       // We need the location of the button within the local screen.
       applist_button_bounds = ash::ScreenAsh::ConvertRectFromScreen(
@@ -176,9 +176,9 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
       view->InitAsBubbleAttachedToAnchor(
           container,
           pagination_model_.get(),
-          Launcher::ForWindow(container)->GetAppListButtonView(),
+          Shelf::ForWindow(container)->GetAppListButtonView(),
           GetAnchorPositionOffsetToShelf(applist_button_bounds,
-              Launcher::ForWindow(container)->GetAppListButtonView()->
+              Shelf::ForWindow(container)->GetAppListButtonView()->
                   GetWidget()),
           GetBubbleArrow(container),
           true /* border_accepts_events */);
@@ -187,7 +187,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
       view->InitAsBubbleAttachedToAnchor(
           container,
           pagination_model_.get(),
-          Launcher::ForWindow(container)->GetAppListButtonView(),
+          Shelf::ForWindow(container)->GetAppListButtonView(),
           gfx::Vector2d(),
           GetBubbleArrow(container),
           true /* border_accepts_events */);
@@ -198,11 +198,11 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             ash::switches::kAshDisableDragAndDropAppListToLauncher)) {
       SetDragAndDropHostOfCurrentAppList(
-          Launcher::ForWindow(window)->GetDragAndDropHostForAppList());
+          Shelf::ForWindow(window)->GetDragAndDropHostForAppList());
     }
   }
   // Update applist button status when app list visibility is changed.
-  Launcher::ForWindow(window)->GetAppListButtonView()->SchedulePaint();
+  Shelf::ForWindow(window)->GetAppListButtonView()->SchedulePaint();
 }
 
 bool AppListController::IsVisible() const {
@@ -230,7 +230,7 @@ void AppListController::SetView(app_list::AppListView* view) {
   views::Widget* widget = view_->GetWidget();
   widget->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
-  Launcher::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
+  Shelf::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->AddObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
 
@@ -245,7 +245,7 @@ void AppListController::ResetView() {
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
-  Launcher::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
+  Shelf::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
   view_ = NULL;

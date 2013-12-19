@@ -254,7 +254,7 @@ void ChromeShellDelegate::Observe(int type,
       break;
     case chrome::NOTIFICATION_SESSION_STARTED:
       RestoreFocus();
-      ash::Shell::GetInstance()->ShowLauncher();
+      ash::Shell::GetInstance()->ShowShelf();
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;

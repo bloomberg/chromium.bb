@@ -5,9 +5,9 @@
 #include "ash/wm/dock/docked_window_resizer.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"
@@ -1271,7 +1271,7 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
   EXPECT_EQ(DOCKED_ALIGNMENT_NONE, docked_alignment(manager));
 
   // Drag down almost to shelf. A panel will snap, a regular window won't.
-  ShelfWidget* shelf = Launcher::ForPrimaryDisplay()->shelf_widget();
+  ShelfWidget* shelf = Shelf::ForPrimaryDisplay()->shelf_widget();
   const int shelf_y = shelf->GetWindowBoundsInScreen().y();
   const int kDistanceFromShelf = 10;
   ASSERT_NO_FATAL_FAILURE(DragStart(w1.get()));

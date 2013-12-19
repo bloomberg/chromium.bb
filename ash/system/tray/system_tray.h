@@ -94,8 +94,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // Temporarily hides/unhides the notification bubble.
   void SetHideNotifications(bool hidden);
 
-  // Returns true if the launcher should be forced visible when auto-hidden.
-  bool ShouldShowLauncher() const;
+  // Returns true if the shelf should be forced visible when auto-hidden.
+  bool ShouldShowShelf() const;
 
   // Returns true if there is a system bubble (already visible or in the process
   // of being created).

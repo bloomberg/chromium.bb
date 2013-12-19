@@ -201,7 +201,7 @@ bool TrayBrightness::ShouldHideArrow() const {
   return true;
 }
 
-bool TrayBrightness::ShouldShowLauncher() const {
+bool TrayBrightness::ShouldShowShelf() const {
   return false;
 }
 

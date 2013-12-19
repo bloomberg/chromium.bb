@@ -85,7 +85,7 @@ bool SystemTrayItem::ShouldHideArrow() const {
   return false;
 }
 
-bool SystemTrayItem::ShouldShowLauncher() const {
+bool SystemTrayItem::ShouldShowShelf() const {
   return true;
 }
 

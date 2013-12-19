@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/test/launcher_test_api.h"
+#include "ash/test/shelf_test_api.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -44,9 +44,9 @@ void CloseBrowser(Browser* browser) {
 }
 
 gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root_window) {
-  ash::Launcher* launcher = ash::Launcher::ForWindow(root_window);
+  ash::Shelf* shelf = ash::Shelf::ForWindow(root_window);
   const ash::internal::ShelfView* shelf_view =
-      ash::test::LauncherTestAPI(launcher).shelf_view();
+      ash::test::ShelfTestAPI(shelf).shelf_view();
   const views::ViewModel* view_model = shelf_view->view_model_for_test();
 
   EXPECT_EQ(2, view_model->view_size());

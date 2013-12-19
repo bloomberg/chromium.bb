@@ -37,8 +37,8 @@ class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
       const HierarchyChangeParams& params) OVERRIDE;
 
   // ShelfDelegate implementation.
-  virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
-  virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
+  virtual void OnShelfCreated(Shelf* shelf) OVERRIDE;
+  virtual void OnShelfDestroyed(Shelf* shelf) OVERRIDE;
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
   virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;

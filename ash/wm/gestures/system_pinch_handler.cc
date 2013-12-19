@@ -4,8 +4,8 @@
 
 #include "ash/wm/gestures/system_pinch_handler.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"

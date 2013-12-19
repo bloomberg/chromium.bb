@@ -71,15 +71,15 @@ void TestShelfDelegate::OnWindowHierarchyChanging(
       const HierarchyChangeParams& params) {
   // The window may be legitimately reparented while staying open if it moves
   // to another display or container. If the window does not have a new parent
-  // then remove the launcher item.
+  // then remove the shelf item.
   if (!params.new_parent)
     RemoveLauncherItemForWindow(params.target);
 }
 
-void TestShelfDelegate::OnLauncherCreated(Launcher* launcher) {
+void TestShelfDelegate::OnShelfCreated(Shelf* shelf) {
 }
 
-void TestShelfDelegate::OnLauncherDestroyed(Launcher* launcher) {
+void TestShelfDelegate::OnShelfDestroyed(Shelf* shelf) {
 }
 
 LauncherID TestShelfDelegate::GetLauncherIDForAppID(const std::string& app_id) {

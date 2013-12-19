@@ -21,10 +21,10 @@ ShelfDelegateImpl::ShelfDelegateImpl(WindowWatcher* watcher)
 ShelfDelegateImpl::~ShelfDelegateImpl() {
 }
 
-void ShelfDelegateImpl::OnLauncherCreated(Launcher* launcher) {
+void ShelfDelegateImpl::OnShelfCreated(Shelf* shelf) {
 }
 
-void ShelfDelegateImpl::OnLauncherDestroyed(Launcher* launcher) {
+void ShelfDelegateImpl::OnShelfDestroyed(Shelf* shelf) {
 }
 
 LauncherID ShelfDelegateImpl::GetLauncherIDForAppID(const std::string& app_id) {

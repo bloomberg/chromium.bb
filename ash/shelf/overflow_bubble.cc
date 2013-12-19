@@ -96,8 +96,8 @@ void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   bubble_ = NULL;
   anchor_ = NULL;
   shelf_view_ = NULL;
-  ShelfLayoutManager::ForLauncher(
-      widget->GetNativeView())->shelf_widget()->launcher()->SchedulePaint();
+  ShelfLayoutManager::ForShelf(
+      widget->GetNativeView())->shelf_widget()->shelf()->SchedulePaint();
 }
 
 }  // namespace internal

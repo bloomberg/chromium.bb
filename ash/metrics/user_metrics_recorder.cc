@@ -361,7 +361,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
   internal::ShelfLayoutManager* manager =
-      internal::ShelfLayoutManager::ForLauncher(Shell::GetPrimaryRootWindow());
+      internal::ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow());
   if (manager) {
     UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentOverTime",
         manager->SelectValueForShelfAlignment(

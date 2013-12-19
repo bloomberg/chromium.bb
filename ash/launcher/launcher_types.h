@@ -91,7 +91,7 @@ enum CycleDirection {
 };
 
 // LauncherItemDetails may be set on Window (by way of
-// SetLauncherItemDetailsForWindow) to make the window appear in the shelf. See
+// SetShelfItemDetailsForWindow) to make the window appear in the shelf. See
 // ShelfWindowWatcher for details.
 struct ASH_EXPORT LauncherItemDetails {
   LauncherItemDetails();

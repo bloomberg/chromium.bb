@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/launcher_test_api.h"
+#include "ash/test/shelf_test_api.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -46,7 +46,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
         Shell::GetPrimaryRootWindowController();
     tooltip_manager_.reset(new internal::ShelfTooltipManager(
         controller->GetShelfLayoutManager(),
-        LauncherTestAPI(controller->shelf()->launcher()).shelf_view()));
+        ShelfTestAPI(controller->shelf()->shelf()).shelf_view()));
   }
 
   virtual void TearDown() OVERRIDE {

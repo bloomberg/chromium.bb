@@ -42,8 +42,8 @@ OverflowBubbleView::~OverflowBubbleView() {
 
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
                                             ShelfView* shelf_view) {
-  // set_anchor_view needs to be called before GetShelfLayoutManagerForLauncher
-  // can be called.
+  // set_anchor_view needs to be called before GetShelfLayoutManager() can be
+  // called.
   SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
   set_background(NULL);
@@ -69,10 +69,9 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 }
 
 bool OverflowBubbleView::IsHorizontalAlignment() const {
-  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManagerForLauncher();
-  return shelf_layout_manager ?
-      shelf_layout_manager->IsHorizontalAlignment() :
-      false;
+  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
+  return shelf_layout_manager ? shelf_layout_manager->IsHorizontalAlignment()
+                              : false;
 }
 
 const gfx::Size OverflowBubbleView::GetContentsSize() const {
@@ -81,7 +80,7 @@ const gfx::Size OverflowBubbleView::GetContentsSize() const {
 
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow OverflowBubbleView::GetBubbleArrow() const {
-  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManagerForLauncher();
+  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
   return shelf_layout_manager ?
       shelf_layout_manager->SelectValueForShelfAlignment(
           views::BubbleBorder::BOTTOM_LEFT,
@@ -165,12 +164,10 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return true;
 }
 
-ShelfLayoutManager*
-OverflowBubbleView::GetShelfLayoutManagerForLauncher() const {
-  return GetAnchorView() ?
-      ShelfLayoutManager::ForLauncher(
-          GetAnchorView()->GetWidget()->GetNativeView()) :
-      NULL;
+ShelfLayoutManager* OverflowBubbleView::GetShelfLayoutManager() const {
+  return GetAnchorView() ? ShelfLayoutManager::ForShelf(
+                               GetAnchorView()->GetWidget()->GetNativeView())
+                         : NULL;
 }
 
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {

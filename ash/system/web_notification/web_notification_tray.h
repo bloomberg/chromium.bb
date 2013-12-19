@@ -62,8 +62,8 @@ class ASH_EXPORT WebNotificationTray
   // shown in the system tray side.
   void SetSystemTrayHeight(int height);
 
-  // Returns true if it should block the auto hide behavior of the launcher.
-  bool ShouldBlockLauncherAutoHide() const;
+  // Returns true if it should block the auto hide behavior of the shelf.
+  bool ShouldBlockShelfAutoHide() const;
 
   // Returns true if the message center bubble is visible.
   bool IsMessageCenterBubbleVisible() const;

@@ -5,7 +5,7 @@
 #include "ash/shell/window_watcher.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/launcher/launcher.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
@@ -44,7 +44,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
     panel_container->AddObserver(watcher_);
 
     aura::Window* container =
-        Launcher::ForWindow(root)->shelf_widget()->window_container();
+        Shelf::ForWindow(root)->shelf_widget()->window_container();
     container->AddObserver(this);
     for (size_t i = 0; i < container->children().size(); ++i)
       container->children()[i]->AddObserver(watcher_);
@@ -57,7 +57,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
     panel_container->RemoveObserver(watcher_);
 
     aura::Window* container =
-        Launcher::ForWindow(root)->shelf_widget()->window_container();
+        Shelf::ForWindow(root)->shelf_widget()->window_container();
     container->RemoveObserver(this);
     for (size_t i = 0; i < container->children().size(); ++i)
       container->children()[i]->RemoveObserver(watcher_);

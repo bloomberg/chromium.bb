@@ -195,7 +195,7 @@ void WorkAreaObserver::UpdateShelf() {
   if (shelf_)
     return;
 
-  shelf_ = ShelfLayoutManager::ForLauncher(root_window_);
+  shelf_ = ShelfLayoutManager::ForShelf(root_window_);
   if (shelf_)
     shelf_->AddObserver(this);
 }
@@ -431,7 +431,7 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
         status_area_widget()->system_tray()->HasNotificationBubble());
 }
 
-bool WebNotificationTray::ShouldBlockLauncherAutoHide() const {
+bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
   return should_block_shelf_auto_hide_;
 }
 

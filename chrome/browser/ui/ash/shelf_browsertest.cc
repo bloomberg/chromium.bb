@@ -17,7 +17,7 @@ typedef InProcessBrowserTest ShelfBrowserTest;
 // Confirm that a status bubble doesn't cause the shelf to darken.
 IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
   ash::internal::ShelfLayoutManager* shelf =
-      ash::internal::RootWindowController::ForLauncher(
+      ash::internal::RootWindowController::ForShelf(
           browser()->window()->GetNativeWindow())->GetShelfLayoutManager();
   EXPECT_TRUE(shelf->IsVisible());
 

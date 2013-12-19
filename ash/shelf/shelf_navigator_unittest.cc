@@ -5,8 +5,8 @@
 #include "ash/shelf/shelf_navigator.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"

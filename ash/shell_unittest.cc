@@ -11,9 +11,9 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -394,13 +394,13 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   // We start with the usual window containers.
   ExpectAllContainers();
   // Shelf is visible.
-  ShelfWidget* launcher_widget = Launcher::ForPrimaryDisplay()->shelf_widget();
-  EXPECT_TRUE(launcher_widget->IsVisible());
+  ShelfWidget* shelf_widget = Shelf::ForPrimaryDisplay()->shelf_widget();
+  EXPECT_TRUE(shelf_widget->IsVisible());
   // Shelf is at bottom-left of screen.
-  EXPECT_EQ(0, launcher_widget->GetWindowBoundsInScreen().x());
+  EXPECT_EQ(0, shelf_widget->GetWindowBoundsInScreen().x());
   EXPECT_EQ(Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->
       GetBounds().height(),
-      launcher_widget->GetWindowBoundsInScreen().bottom());
+      shelf_widget->GetWindowBoundsInScreen().bottom());
   // We have a desktop background but not a bare layer.
   // TODO (antrim): enable once we find out why it fails component build.
   //  internal::DesktopBackgroundWidgetController* background =

@@ -121,8 +121,8 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
   aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
   // Now start the Ash shell environment.
   chrome::OpenAsh();
-  ash::Shell::GetInstance()->CreateLauncher();
-  ash::Shell::GetInstance()->ShowLauncher();
+  ash::Shell::GetInstance()->CreateShelf();
+  ash::Shell::GetInstance()->ShowShelf();
   // On Windows 8 ASH we default to SHOW_STATE_MAXIMIZED for the browser
   // window. This is to ensure that we honor metro app conventions by default.
   ash::WindowPositioner::SetMaximizeFirstWindow(true);

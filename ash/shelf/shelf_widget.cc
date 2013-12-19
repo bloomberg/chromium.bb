@@ -38,7 +38,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
-// Size of black border at bottom (or side) of launcher.
+// Size of black border at bottom (or side) of shelf.
 const int kNumBlackPixels = 3;
 // Alpha to paint dimming image with.
 const int kDimAlpha = 128;
@@ -85,7 +85,7 @@ class DimmerView : public views::View,
   int get_dimming_alpha_for_test() { return alpha_; }
 
  private:
-  // This class monitors mouse events to see if it is on top of the launcher.
+  // This class monitors mouse events to see if it is on top of the shelf.
   class DimmerEventFilter : public ui::EventHandler {
    public:
     explicit DimmerEventFilter(DimmerView* owner);
@@ -174,12 +174,12 @@ void DimmerView::ForceUndimming(bool force) {
 void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
   SkPaint paint;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia launcher_background =
+  gfx::ImageSkia shelf_background =
       *rb.GetImageNamed(IDR_AURA_LAUNCHER_DIMMING).ToImageSkia();
 
   if (shelf_->GetAlignment() != ash::SHELF_ALIGNMENT_BOTTOM) {
-    launcher_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        launcher_background,
+    shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
+        shelf_background,
         shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
             SkBitmapOperations::ROTATION_90_CW,
             SkBitmapOperations::ROTATION_90_CW,
@@ -187,12 +187,17 @@ void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
             SkBitmapOperations::ROTATION_180_CW));
   }
   paint.setAlpha(alpha_);
-  canvas->DrawImageInt(
-      launcher_background,
-      0, 0, launcher_background.width(), launcher_background.height(),
-      0, 0, width(), height(),
-      false,
-      paint);
+  canvas->DrawImageInt(shelf_background,
+                       0,
+                       0,
+                       shelf_background.width(),
+                       shelf_background.height(),
+                       0,
+                       0,
+                       width(),
+                       height(),
+                       false,
+                       paint);
 }
 
 DimmerView::DimmerEventFilter::DimmerEventFilter(DimmerView* owner)
@@ -352,7 +357,7 @@ void ShelfWidget::DelegateView::SetDimmed(bool value) {
     dimmer_->Init(params);
     dimmer_->GetNativeWindow()->SetName("ShelfDimmer");
     dimmer_->SetBounds(shelf_->GetWindowBoundsInScreen());
-    // The launcher should not take focus when it is initially shown.
+    // The shelf should not take focus when it is initially shown.
     dimmer_->set_focus_on_creation(false);
     dimmer_view_ = new DimmerView(shelf_, disable_dimming_animations_for_test_);
     dimmer_->SetContentsView(dimmer_view_);
@@ -379,11 +384,11 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 
 void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia launcher_background =
+  gfx::ImageSkia shelf_background =
       *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_BACKGROUND);
   if (SHELF_ALIGNMENT_BOTTOM != shelf_->GetAlignment())
-    launcher_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        launcher_background,
+    shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
+        shelf_background,
         shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
             SkBitmapOperations::ROTATION_90_CW,
             SkBitmapOperations::ROTATION_90_CW,
@@ -392,45 +397,59 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
   SkPaint paint;
   paint.setAlpha(alpha_);
-  canvas->DrawImageInt(
-      launcher_background,
-      0, 0, launcher_background.width(), launcher_background.height(),
-      (SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment() &&
-       dock_bounds.x() == 0 && dock_bounds.width() > 0) ?
-           dock_bounds.width() : 0, 0,
-      SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment() ?
-          width() - dock_bounds.width() : width(), height(),
-      false,
-      paint);
+  canvas->DrawImageInt(shelf_background,
+                       0,
+                       0,
+                       shelf_background.width(),
+                       shelf_background.height(),
+                       (SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment() &&
+                        dock_bounds.x() == 0 && dock_bounds.width() > 0)
+                           ? dock_bounds.width()
+                           : 0,
+                       0,
+                       SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment()
+                           ? width() - dock_bounds.width()
+                           : width(),
+                       height(),
+                       false,
+                       paint);
   if (SHELF_ALIGNMENT_BOTTOM == shelf_->GetAlignment() &&
       dock_bounds.width() > 0) {
     // The part of the shelf background that is in the corner below the docked
     // windows close to the work area is an arched gradient that blends
     // vertically oriented docked background and horizontal shelf.
-    gfx::ImageSkia launcher_corner =
+    gfx::ImageSkia shelf_corner =
         *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_CORNER);
     if (dock_bounds.x() == 0) {
-      launcher_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
-          launcher_corner, SkBitmapOperations::ROTATION_90_CW);
+      shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
+          shelf_corner, SkBitmapOperations::ROTATION_90_CW);
     }
     canvas->DrawImageInt(
-        launcher_corner,
-        0, 0, launcher_corner.width(), launcher_corner.height(),
+        shelf_corner,
+        0,
+        0,
+        shelf_corner.width(),
+        shelf_corner.height(),
         dock_bounds.x() > 0 ? dock_bounds.x() : dock_bounds.width() - height(),
         0,
-        height(), height(),
+        height(),
+        height(),
         false,
         paint);
     // The part of the shelf background that is just below the docked windows
     // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
     // This avoids showing the border 3D shadow between the shelf and the dock.
-    canvas->DrawImageInt(
-        launcher_background,
-        0, launcher_background.height() - 1, launcher_background.width(), 1,
-        dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0, 0,
-        dock_bounds.width() - height(), height(),
-        false,
-        paint);
+    canvas->DrawImageInt(shelf_background,
+                         0,
+                         shelf_background.height() - 1,
+                         shelf_background.width(),
+                         1,
+                         dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
+                         0,
+                         dock_bounds.width() - height(),
+                         height(),
+                         false,
+                         paint);
   }
   gfx::Rect black_rect =
       shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
@@ -614,8 +633,8 @@ ShelfAlignment ShelfWidget::GetAlignment() const {
 }
 
 void ShelfWidget::SetAlignment(ShelfAlignment alignment) {
-  if (launcher_)
-    launcher_->SetAlignment(alignment);
+  if (shelf_)
+    shelf_->SetAlignment(alignment);
   status_area_widget_->SetShelfAlignment(alignment);
   delegate_view_->SchedulePaint();
 }
@@ -624,8 +643,8 @@ void ShelfWidget::SetDimsShelf(bool dimming) {
   delegate_view_->SetDimmed(dimming);
   // Repaint all children, allowing updates to reflect dimmed state eg:
   // status area background, app list button and overflow button.
-  if (launcher_)
-    launcher_->SchedulePaint();
+  if (shelf_)
+    shelf_->SchedulePaint();
   status_area_widget_->GetContentsView()->SchedulePaint();
 }
 
@@ -633,38 +652,37 @@ bool ShelfWidget::GetDimsShelf() const {
   return delegate_view_->GetDimmed();
 }
 
-void ShelfWidget::CreateLauncher() {
-  if (launcher_)
+void ShelfWidget::CreateShelf() {
+  if (shelf_)
     return;
 
   Shell* shell = Shell::GetInstance();
   // This needs to be called before shelf_model().
   ShelfDelegate* shelf_delegate = shell->GetShelfDelegate();
   if (!shelf_delegate)
-    return;  // Not ready to create Launcher
+    return;  // Not ready to create Shelf.
 
-  launcher_.reset(new Launcher(shell->shelf_model(),
-                               shell->GetShelfDelegate(),
-                               this));
+  shelf_.reset(
+      new Shelf(shell->shelf_model(), shell->GetShelfDelegate(), this));
   SetFocusCycler(shell->focus_cycler());
 
   // Inform the root window controller.
-  internal::RootWindowController::ForWindow(window_container_)->
-      OnLauncherCreated();
+  internal::RootWindowController::ForWindow(window_container_)
+      ->OnShelfCreated();
 
-  launcher_->SetVisible(
+  shelf_->SetVisible(
       shell->session_state_delegate()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   Show();
 }
 
-bool ShelfWidget::IsLauncherVisible() const {
-  return launcher_.get() && launcher_->IsVisible();
+bool ShelfWidget::IsShelfVisible() const {
+  return shelf_.get() && shelf_->IsVisible();
 }
 
-void ShelfWidget::SetLauncherVisibility(bool visible) {
-  if (launcher_)
-    launcher_->SetVisible(visible);
+void ShelfWidget::SetShelfVisibility(bool visible) {
+  if (shelf_)
+    shelf_->SetVisible(visible);
 }
 
 void ShelfWidget::SetFocusCycler(internal::FocusCycler* focus_cycler) {

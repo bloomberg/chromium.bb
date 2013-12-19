@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <map>
 
-#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -49,7 +49,7 @@ const float kMaxWidthFactor = .50f;
 const int kPanelSlideDurationMilliseconds = 50;
 const int kCalloutFadeDurationMilliseconds = 50;
 
-// Offset used when sliding panel in/out of the launcher. Used for minimizing,
+// Offset used when sliding panel in/out of the shelf. Used for minimizing,
 // restoring and the initial showing of a panel.
 const int kPanelSlideInOffset = 20;
 
@@ -259,7 +259,7 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
       in_add_window_(false),
       in_layout_(false),
       dragged_panel_(NULL),
-      launcher_(NULL),
+      shelf_(NULL),
       shelf_layout_manager_(NULL),
       last_active_panel_(NULL),
       weak_factory_(this) {
@@ -283,9 +283,9 @@ void PanelLayoutManager::Shutdown() {
     delete iter->callout_widget;
   }
   panel_windows_.clear();
-  if (launcher_)
-    launcher_->RemoveIconObserver(this);
-  launcher_ = NULL;
+  if (shelf_)
+    shelf_->RemoveIconObserver(this);
+  shelf_ = NULL;
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
@@ -303,14 +303,14 @@ void PanelLayoutManager::FinishDragging() {
   Relayout();
 }
 
-void PanelLayoutManager::SetLauncher(ash::Launcher* launcher) {
-  DCHECK(!launcher_);
+void PanelLayoutManager::SetShelf(Shelf* shelf) {
+  DCHECK(!shelf_);
   DCHECK(!shelf_layout_manager_);
-  launcher_ = launcher;
-  launcher_->AddIconObserver(this);
-  if (launcher_->shelf_widget()) {
-    shelf_layout_manager_ = ash::internal::ShelfLayoutManager::ForLauncher(
-        launcher_->shelf_widget()->GetNativeWindow());
+  shelf_ = shelf;
+  shelf_->AddIconObserver(this);
+  if (shelf_->shelf_widget()) {
+    shelf_layout_manager_ = ash::internal::ShelfLayoutManager::ForShelf(
+        shelf_->shelf_widget()->GetNativeWindow());
     WillChangeVisibilityState(shelf_layout_manager_->visibility_state());
     shelf_layout_manager_->AddObserver(this);
   }
@@ -555,7 +555,7 @@ void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
       base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
   gfx::Rect bounds(panel->bounds());
   bounds.Offset(GetSlideInAnimationOffset(
-      launcher_->shelf_widget()->GetAlignment()));
+      shelf_->shelf_widget()->GetAlignment()));
   SetChildBoundsDirect(panel, bounds);
   panel->Hide();
   PanelList::iterator found =
@@ -576,18 +576,18 @@ void PanelLayoutManager::RestorePanel(aura::Window* panel) {
 }
 
 void PanelLayoutManager::Relayout() {
-  if (!launcher_ || !launcher_->shelf_widget())
+  if (!shelf_ || !shelf_->shelf_widget())
     return;
 
   if (in_layout_)
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  ShelfAlignment alignment = launcher_->shelf_widget()->GetAlignment();
+  ShelfAlignment alignment = shelf_->shelf_widget()->GetAlignment();
   bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
                     alignment == SHELF_ALIGNMENT_BOTTOM;
-  gfx::Rect launcher_bounds = ash::ScreenAsh::ConvertRectFromScreen(
-      panel_container_, launcher_->shelf_widget()->GetWindowBoundsInScreen());
+  gfx::Rect shelf_bounds = ash::ScreenAsh::ConvertRectFromScreen(
+      panel_container_, shelf_->shelf_widget()->GetWindowBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
   int panel_end_bounds = horizontal ?
       panel_container_->bounds().width() - kPanelIdealSpacing :
@@ -600,10 +600,10 @@ void PanelLayoutManager::Relayout() {
     iter->callout_widget->SetAlignment(alignment);
 
     // Consider the dragged panel as part of the layout as long as it is
-    // touching the launcher.
+    // touching the shelf.
     if (!panel->IsVisible() ||
         (panel == dragged_panel_ &&
-         !BoundsAdjacent(panel->bounds(), launcher_bounds))) {
+         !BoundsAdjacent(panel->bounds(), shelf_bounds))) {
       continue;
     }
 
@@ -615,12 +615,11 @@ void PanelLayoutManager::Relayout() {
       continue;
     }
 
-    gfx::Rect icon_bounds =
-        launcher_->GetScreenBoundsOfItemIconForWindow(panel);
+    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
 
     // If both the icon width and height are 0 then there is no icon in the
-    // launcher. If the launcher is hidden, one of the height or width will be
-    // 0 but the position in the launcher and major dimension is still reported
+    // shelf. If the shelf is hidden, one of the height or width will be
+    // 0 but the position in the shelf and major dimension is still reported
     // correctly and the panel can be aligned above where the hidden icon is.
     if (icon_bounds.width() == 0 && icon_bounds.height() == 0)
       continue;
@@ -679,19 +678,19 @@ void PanelLayoutManager::Relayout() {
     gfx::Rect bounds = visible_panels[i].window->GetTargetBounds();
     switch (alignment) {
       case SHELF_ALIGNMENT_BOTTOM:
-        bounds.set_y(launcher_bounds.y() - bounds.height());
+        bounds.set_y(shelf_bounds.y() - bounds.height());
         break;
       case SHELF_ALIGNMENT_LEFT:
-        bounds.set_x(launcher_bounds.right());
+        bounds.set_x(shelf_bounds.right());
         break;
       case SHELF_ALIGNMENT_RIGHT:
-        bounds.set_x(launcher_bounds.x() - bounds.width());
+        bounds.set_x(shelf_bounds.x() - bounds.width());
         break;
       case SHELF_ALIGNMENT_TOP:
-        bounds.set_y(launcher_bounds.bottom());
+        bounds.set_y(shelf_bounds.bottom());
         break;
     }
-    bool on_launcher = visible_panels[i].window->GetTargetBounds() == bounds;
+    bool on_shelf = visible_panels[i].window->GetTargetBounds() == bounds;
 
     if (horizontal) {
       bounds.set_x(visible_panels[i].major_pos -
@@ -703,15 +702,15 @@ void PanelLayoutManager::Relayout() {
 
     ui::Layer* layer = visible_panels[i].window->layer();
     if (slide_in) {
-      // New windows shift up from the launcher  into position.
+      // New windows shift up from the shelf into position.
       gfx::Rect initial_bounds(bounds);
       initial_bounds.Offset(GetSlideInAnimationOffset(alignment));
       SetChildBoundsDirect(visible_panels[i].window, initial_bounds);
-      // Set on launcher so that the panel animates into its target position.
-      on_launcher = true;
+      // Set on shelf so that the panel animates into its target position.
+      on_shelf = true;
     }
 
-    if (on_launcher) {
+    if (on_shelf) {
       ui::ScopedLayerAnimationSettings panel_slide_settings(
           layer->GetAnimator());
       panel_slide_settings.SetPreemptionStrategy(
@@ -722,7 +721,7 @@ void PanelLayoutManager::Relayout() {
       if (slide_in)
         layer->SetOpacity(1);
     } else {
-      // If the launcher moved don't animate, move immediately to the new
+      // If the shelf moved don't animate, move immediately to the new
       // target location.
       SetChildBoundsDirect(visible_panels[i].window, bounds);
     }
@@ -739,7 +738,7 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
     active_panel = last_active_panel_;
   }
 
-  ShelfAlignment alignment = launcher_->alignment();
+  ShelfAlignment alignment = shelf_->alignment();
   bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
                     alignment == SHELF_ALIGNMENT_BOTTOM;
 
@@ -750,7 +749,7 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
   //
   // We use the middle of each panel to figure out how to stack the panels. This
   // allows us to update the stacking when a panel is being dragged around by
-  // the titlebar--even though it doesn't update the launcher icon positions, we
+  // the titlebar--even though it doesn't update the shelf icon positions, we
   // still want the visual effect.
   std::map<int, aura::Window*> window_ordering;
   for (PanelList::const_iterator it = panel_windows_.begin();
@@ -787,7 +786,7 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
 }
 
 void PanelLayoutManager::UpdateCallouts() {
-  ShelfAlignment alignment = launcher_->alignment();
+  ShelfAlignment alignment = shelf_->alignment();
   bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
                     alignment == SHELF_ALIGNMENT_BOTTOM;
 
@@ -799,8 +798,7 @@ void PanelLayoutManager::UpdateCallouts() {
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
     gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(panel->parent(),
                                                       panel->GetTargetBounds());
-    gfx::Rect icon_bounds =
-        launcher_->GetScreenBoundsOfItemIconForWindow(panel);
+    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
     if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
         panel == dragged_panel_) {
       callout_widget->Hide();

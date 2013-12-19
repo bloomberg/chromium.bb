@@ -84,8 +84,6 @@ class DesktopBackgroundController;
 class DisplayController;
 class FirstRunHelper;
 class HighContrastController;
-class Launcher;
-class ShelfDelegate;
 class LockStateController;
 class MagnificationController;
 class MediaDelegate;
@@ -97,6 +95,8 @@ class PowerButtonController;
 class RootWindowHostFactory;
 class ScreenAsh;
 class SessionStateDelegate;
+class Shelf;
+class ShelfDelegate;
 class ShelfItemDelegateManager;
 class ShelfModel;
 class ShellDelegate;
@@ -284,15 +284,15 @@ class ASH_EXPORT Shell
   // unlocked.
   void OnLockStateChanged(bool locked);
 
-  // Initializes |launcher_|.  Does nothing if it's already initialized.
-  void CreateLauncher();
+  // Initializes |shelf_|.  Does nothing if it's already initialized.
+  void CreateShelf();
 
   // Creates virtual keyboard. Deletes the old virtual keyboard if it's already
   // exist.
   void CreateKeyboard();
 
   // Show shelf view if it was created hidden (before session has started).
-  void ShowLauncher();
+  void ShowShelf();
 
   // Adds/removes observer.
   void AddShellObserver(ShellObserver* observer);

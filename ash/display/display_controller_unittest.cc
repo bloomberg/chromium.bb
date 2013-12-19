@@ -8,8 +8,8 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
-#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -31,8 +31,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
 #include <X11/Xlib.h>
+#include "ui/gfx/x/x11_types.h"
 #undef RootWindow
 #endif
 
@@ -615,10 +615,10 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   aura::Window* secondary_root =
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
   EXPECT_NE(primary_root, secondary_root);
-  aura::Window* launcher_window =
-      Launcher::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
-  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  aura::Window* shelf_window =
+      Shelf::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
+  EXPECT_FALSE(secondary_root->Contains(shelf_window));
   EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetDisplayNearestPoint(
                 gfx::Point(-100, -100)).id());
@@ -653,8 +653,8 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_EQ(
       secondary_root,
       display_controller->GetRootWindowForDisplayId(primary_display.id()));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
-  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
+  EXPECT_FALSE(secondary_root->Contains(shelf_window));
 
   // Test if the bounds are correctly swapped.
   gfx::Display swapped_primary = Shell::GetScreen()->GetPrimaryDisplay();
@@ -681,7 +681,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
             Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
   EXPECT_TRUE(tracker.Contains(primary_root));
   EXPECT_FALSE(tracker.Contains(secondary_root));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
 }
 
 TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
@@ -709,10 +709,10 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
   aura::Window* secondary_root =
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
   EXPECT_NE(primary_root, secondary_root);
-  aura::Window* launcher_window =
-      Launcher::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
-  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  aura::Window* shelf_window =
+      Shelf::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
+  EXPECT_FALSE(secondary_root->Contains(shelf_window));
   EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetDisplayNearestPoint(
                 gfx::Point(-100, -100)).id());
@@ -747,8 +747,8 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
   EXPECT_EQ(
       secondary_root,
       display_controller->GetRootWindowForDisplayId(primary_display.id()));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
-  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
+  EXPECT_FALSE(secondary_root->Contains(shelf_window));
 
   // Test if the bounds are correctly swapped.
   gfx::Display swapped_primary = Shell::GetScreen()->GetPrimaryDisplay();
@@ -775,7 +775,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
             Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
   EXPECT_TRUE(tracker.Contains(primary_root));
   EXPECT_FALSE(tracker.Contains(secondary_root));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
 }
 
 TEST_F(DisplayControllerTest, SwapPrimaryById) {
@@ -799,10 +799,10 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
       display_controller->GetRootWindowForDisplayId(primary_display.id());
   aura::Window* secondary_root =
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
-  aura::Window* launcher_window =
-      Launcher::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
-  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  aura::Window* shelf_window =
+      Shelf::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
+  EXPECT_FALSE(secondary_root->Contains(shelf_window));
   EXPECT_NE(primary_root, secondary_root);
   EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetDisplayNearestPoint(
@@ -824,8 +824,8 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_EQ(
       secondary_root,
       display_controller->GetRootWindowForDisplayId(primary_display.id()));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
-  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
+  EXPECT_FALSE(secondary_root->Contains(shelf_window));
 
   const DisplayLayout& inverted_layout =
       display_manager->GetCurrentDisplayLayout();
@@ -852,7 +852,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
             Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
   EXPECT_TRUE(tracker.Contains(primary_root));
   EXPECT_FALSE(tracker.Contains(secondary_root));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
 
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
@@ -873,7 +873,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_NE(
       primary_root,
       display_controller->GetRootWindowForDisplayId(primary_display.id()));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
 
   // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
   // display shouldn't become primary.
@@ -899,7 +899,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_NE(
       primary_root,
       display_controller->GetRootWindowForDisplayId(third_display_info.id()));
-  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_TRUE(primary_root->Contains(shelf_window));
 }
 
 TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {

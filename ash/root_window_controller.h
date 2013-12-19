@@ -90,11 +90,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // keyboard displays.
   static void CreateForVirtualKeyboardDisplay(aura::RootWindow* root_window);
 
-  // Returns a RootWindowController that has a launcher for given
+  // Returns a RootWindowController that has a shelf for given
   // |window|. This returns the RootWindowController for the |window|'s
-  // root window when multiple launcher mode is enabled, or the primary
+  // root window when multiple shelf mode is enabled, or the primary
   // RootWindowController otherwise.
-  static RootWindowController* ForLauncher(aura::Window* window);
+  static RootWindowController* ForShelf(aura::Window* window);
 
   // Returns a RootWindowController of the window's root window.
   static RootWindowController* ForWindow(const aura::Window* window);
@@ -163,7 +163,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   ShelfLayoutManager* GetShelfLayoutManager();
 
   // Returns the system tray on this root window. Note that
-  // calling this on the root window that doesn't have a launcher will
+  // calling this on the root window that doesn't have a shelf will
   // lead to a crash.
   SystemTray* GetSystemTray();
 
@@ -185,11 +185,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  // Show launcher view if it was created hidden (before session has started).
-  void ShowLauncher();
+  // Show shelf view if it was created hidden (before session has started).
+  void ShowShelf();
 
-  // Called when the launcher associated with this root window is created.
-  void OnLauncherCreated();
+  // Called when the shelf associated with this root window is created.
+  void OnShelfCreated();
 
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
@@ -272,7 +272,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   scoped_ptr<StackingController> stacking_controller_;
 
-  // The shelf for managing the launcher and the status widget.
+  // The shelf for managing the shelf and the status widget.
   scoped_ptr<ShelfWidget> shelf_;
 
   // An invisible/empty window used as a event target for

@@ -4,17 +4,17 @@
 
 #include "ash/focus_cycler.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wm/window_util.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/shell_factory.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
@@ -74,7 +74,7 @@ class FocusCyclerTest : public AshTestBase {
 
     focus_cycler_.reset(new FocusCycler());
 
-    ASSERT_TRUE(Launcher::ForPrimaryDisplay());
+    ASSERT_TRUE(Shelf::ForPrimaryDisplay());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -116,7 +116,7 @@ class FocusCyclerTest : public AshTestBase {
   SystemTray* tray() { return tray_.get(); }
 
   ShelfWidget* shelf_widget() {
-    return Launcher::ForPrimaryDisplay()->shelf_widget();
+    return Shelf::ForPrimaryDisplay()->shelf_widget();
   }
 
   void InstallFocusCycleOnShelf() {

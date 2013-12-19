@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
@@ -53,7 +53,7 @@ namespace internal {
 
 namespace {
 
-// Delay before showing the launcher. This is after the mouse stops moving.
+// Delay before showing the shelf. This is after the mouse stops moving.
 const int kAutoHideDelayMS = 200;
 
 // To avoid hiding the shelf when the mouse transitions from a message bubble
@@ -286,15 +286,15 @@ void ShelfLayoutManager::LayoutShelf() {
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(target_bounds, false, NULL);
 
-  if (shelf_->launcher()) {
+  if (shelf_->shelf()) {
     // This is not part of UpdateBoundsAndOpacity() because
     // SetShelfViewBounds() sets the bounds immediately and does not animate.
     // The height of the ShelfView for a horizontal shelf and the width of
     // the ShelfView for a vertical shelf are set when |shelf_|'s bounds
     // are changed via UpdateBoundsAndOpacity(). This sets the origin and the
     // dimension in the other direction.
-    shelf_->launcher()->SetShelfViewBounds(
-        target_bounds.launcher_bounds_in_shelf);
+    shelf_->shelf()->SetShelfViewBounds(
+        target_bounds.shelf_bounds_in_shelf);
   }
 }
 
@@ -544,8 +544,8 @@ bool ShelfLayoutManager::IsHorizontalAlignment() const {
 }
 
 // static
-ShelfLayoutManager* ShelfLayoutManager::ForLauncher(aura::Window* window) {
-  ShelfWidget* shelf = RootWindowController::ForLauncher(window)->shelf();
+ShelfLayoutManager* ShelfLayoutManager::ForShelf(aura::Window* window) {
+  ShelfWidget* shelf = RootWindowController::ForShelf(window)->shelf();
   return shelf ? shelf->shelf_layout_manager() : NULL;
 }
 
@@ -581,7 +581,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   if (state.visibility_state == SHELF_AUTO_HIDE) {
     // When state is SHELF_AUTO_HIDE we need to track when the mouse is over the
-    // launcher to unhide the shelf. AutoHideEventFilter does that for us.
+    // shelf to unhide it. AutoHideEventFilter does that for us.
     if (!auto_hide_event_filter_)
       auto_hide_event_filter_.reset(new AutoHideEventFilter(this));
   } else {
@@ -650,15 +650,15 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     ui::ImplicitAnimationObserver* observer) {
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
 
-  ui::ScopedLayerAnimationSettings launcher_animation_setter(
+  ui::ScopedLayerAnimationSettings shelf_animation_setter(
       GetLayer(shelf_)->GetAnimator());
   ui::ScopedLayerAnimationSettings status_animation_setter(
       GetLayer(shelf_->status_area_widget())->GetAnimator());
   if (animate) {
-    launcher_animation_setter.SetTransitionDuration(
+    shelf_animation_setter.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
-    launcher_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-    launcher_animation_setter.SetPreemptionStrategy(
+    shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    shelf_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     status_animation_setter.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
@@ -667,7 +667,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   } else {
     StopAnimating();
-    launcher_animation_setter.SetTransitionDuration(base::TimeDelta());
+    shelf_animation_setter.SetTransitionDuration(base::TimeDelta());
     status_animation_setter.SetTransitionDuration(base::TimeDelta());
   }
   if (observer)
@@ -822,7 +822,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
-  target_bounds->launcher_bounds_in_shelf = SelectValueForShelfAlignment(
+  target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
       gfx::Rect(0, 0,
                 shelf_width - status_size.width(),
                 target_bounds->shelf_bounds_in_root.height()),
@@ -871,7 +871,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   }
 
   if (horizontal) {
-    // Move and size the launcher with the gesture.
+    // Move and size the shelf with the gesture.
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
     shelf_height = std::max(shelf_height, kAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
@@ -891,7 +891,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       target_bounds->status_bounds_in_shelf.set_y(status_y.y());
     }
   } else {
-    // Move and size the launcher with the gesture.
+    // Move and size the shelf with the gesture.
     int shelf_width = target_bounds->shelf_bounds_in_root.width();
     bool right_aligned = GetAlignment() == SHELF_ALIGNMENT_RIGHT;
     if (right_aligned)
@@ -988,13 +988,13 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_->status_area_widget() &&
-      shelf_->status_area_widget()->ShouldShowLauncher())
+      shelf_->status_area_widget()->ShouldShowShelf())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_->launcher() && shelf_->launcher()->IsShowingMenu())
+  if (shelf_->shelf() && shelf_->shelf()->IsShowingMenu())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_->launcher() && shelf_->launcher()->IsShowingOverflowBubble())
+  if (shelf_->shelf() && shelf_->shelf()->IsShowingOverflowBubble())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_->IsActive() || shelf_->status_area_widget()->IsActive())
@@ -1078,7 +1078,7 @@ void ShelfLayoutManager::UpdateHitTestBounds() {
   gfx::Insets mouse_insets;
   gfx::Insets touch_insets;
   if (state_.visibility_state == SHELF_VISIBLE) {
-    // Let clicks at the very top of the launcher through so windows can be
+    // Let clicks at the very top of the shelf through so windows can be
     // resized with the bottom-right corner and bottom edge.
     mouse_insets = GetInsetsForAlignment(kWorkspaceAreaVisibleInset);
   } else if (state_.visibility_state == SHELF_AUTO_HIDE) {

@@ -9,34 +9,34 @@
 #include "ash/launcher/launcher_types.h"
 
 namespace ash {
-class Launcher;
+class Shelf;
 
-// Delegate for the Launcher.
+// Delegate for the Shelf.
 class ASH_EXPORT ShelfDelegate {
  public:
-  // Launcher owns the delegate.
+  // Shelf owns the delegate.
   virtual ~ShelfDelegate() {}
 
   // Callback used to allow delegate to perform initialization actions that
-  // depend on the Launcher being in a known state.
-  virtual void OnLauncherCreated(Launcher* launcher) = 0;
+  // depend on the Shelf being in a known state.
+  virtual void OnShelfCreated(Shelf* shelf) = 0;
 
-  // Callback used to inform the delegate that a specific launcher no longer
+  // Callback used to inform the delegate that a specific shelf no longer
   // exists.
-  virtual void OnLauncherDestroyed(Launcher* launcher) = 0;
+  virtual void OnShelfDestroyed(Shelf* shelf) = 0;
 
-  // Get the launcher ID from an application ID.
+  // Get the shelf ID from an application ID.
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) = 0;
 
   // Get the application ID for a given launcher ID.
   virtual const std::string& GetAppIDForLauncherID(LauncherID id) = 0;
 
-  // Pins an app with |app_id| to launcher. A running instance will get pinned.
-  // In case there is no running instance a new launcher item is created and
+  // Pins an app with |app_id| to shelf. A running instance will get pinned.
+  // In case there is no running instance a new shelf item is created and
   // pinned.
   virtual void PinAppWithID(const std::string& app_id) = 0;
 
-  // Check if the app with |app_id_| is pinned to the launcher.
+  // Check if the app with |app_id_| is pinned to the shelf.
   virtual bool IsAppPinned(const std::string& app_id) = 0;
 
   // Checks whether the user is allowed to pin/unpin apps. Pinning may be

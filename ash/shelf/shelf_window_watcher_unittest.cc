@@ -33,11 +33,11 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
     test::AshTestBase::TearDown();
   }
 
-  ash::LauncherID CreateLauncherItem(aura::Window* window) {
+  ash::LauncherID CreateShelfItem(aura::Window* window) {
     LauncherID id = model_->next_id();
     ash::LauncherItemDetails item_details;
     item_details.type = TYPE_PLATFORM_APP;
-    SetLauncherItemDetailsForWindow(window, item_details);
+    SetShelfItemDetailsForWindow(window, item_details);
     return id;
   }
 
@@ -59,26 +59,26 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveLauncherItem) {
   scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
 
   // Create a LauncherItem for w1.
-  LauncherID id_w1 = CreateLauncherItem(w1.get());
+  LauncherID id_w1 = CreateShelfItem(w1.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
 
   // Create a LauncherItem for w2.
-  LauncherID id_w2 = CreateLauncherItem(w2.get());
+  LauncherID id_w2 = CreateShelfItem(w2.get());
   EXPECT_EQ(3, model_->item_count());
 
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
 
   // LauncherItem is removed when assoicated window is destroyed.
-  ClearLauncherItemDetailsForWindow(w1.get());
+  ClearShelfItemDetailsForWindow(w1.get());
   EXPECT_EQ(2, model_->item_count());
-  ClearLauncherItemDetailsForWindow(w2.get());
+  ClearShelfItemDetailsForWindow(w2.get());
   EXPECT_EQ(1, model_->item_count());
   // Clears twice doesn't do anything.
-  ClearLauncherItemDetailsForWindow(w2.get());
+  ClearShelfItemDetailsForWindow(w2.get());
   EXPECT_EQ(1, model_->item_count());
 
 }
@@ -90,13 +90,13 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
   scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
 
   // Create a LauncherItem for w1.
-  LauncherID id_w1 = CreateLauncherItem(w1.get());
+  LauncherID id_w1 = CreateShelfItem(w1.get());
   EXPECT_EQ(2, model_->item_count());
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
 
   // Create a LauncherItem for w2.
-  LauncherID id_w2 = CreateLauncherItem(w2.get());
+  LauncherID id_w2 = CreateShelfItem(w2.get());
   EXPECT_EQ(3, model_->item_count());
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
@@ -119,7 +119,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   // Create a LauncherItem for |window|.
-  LauncherID id = CreateLauncherItem(window.get());
+  LauncherID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
@@ -129,7 +129,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   LauncherItemDetails details;
   details.type = TYPE_PLATFORM_APP;
 
-  SetLauncherItemDetailsForWindow(window.get(), details);
+  SetShelfItemDetailsForWindow(window.get(), details);
   // No new item is created after updating a launcher item.
   EXPECT_EQ(2, model_->item_count());
   // index and id are not changed after updating a launcher item.
@@ -145,7 +145,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   // Create a LauncherItem for |window|.
-  LauncherID id = CreateLauncherItem(window.get());
+  LauncherID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);

@@ -85,7 +85,7 @@ void TestSessionStateDelegate::SetHasActiveUser(bool has_active_user) {
   if (!has_active_user)
     active_user_session_started_ = false;
   else
-    Shell::GetInstance()->ShowLauncher();
+    Shell::GetInstance()->ShowShelf();
 }
 
 void TestSessionStateDelegate::SetActiveUserSessionStarted(
@@ -93,7 +93,7 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
   active_user_session_started_ = active_user_session_started;
   if (active_user_session_started) {
     has_active_user_ = true;
-    Shell::GetInstance()->CreateLauncher();
+    Shell::GetInstance()->CreateShelf();
     Shell::GetInstance()->UpdateAfterLoginStatusChange(
         user::LOGGED_IN_USER);
   }
