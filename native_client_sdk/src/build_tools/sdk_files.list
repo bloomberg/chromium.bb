@@ -423,6 +423,7 @@ tools/irt_core_x86_64.nexe
 [win]tools/make.exe
 [linux,mac]tools/minidump_dump
 [linux,mac]tools/minidump_stackwalk
+tools/nacl_config.py
 tools/nacl_gcc.mk
 [linux]tools/nacl_helper_bootstrap_x86_32
 [linux]tools/nacl_helper_bootstrap_x86_64

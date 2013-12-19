@@ -19,6 +19,7 @@ TEST_MODULES = [
     'fix_deps_test',
     'getos_test',
     'httpd_test',
+    'nacl_config_test',
     'oshelpers_test',
     'parse_dsc_test',
     'quote_test',
