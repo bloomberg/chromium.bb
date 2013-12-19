@@ -16,7 +16,6 @@
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -80,6 +79,17 @@ void ReportMetrics(bool password_manager_enabled) {
 }
 
 }  // namespace
+
+PasswordManager::PasswordObserver::PasswordObserver(
+    PasswordManager* password_manager)
+    : password_manager_(password_manager),
+      weak_factory_(this) {
+  password_manager_->SetPasswordObserver(weak_factory_.GetWeakPtr());
+}
+
+PasswordManager::PasswordObserver::~PasswordObserver() {
+  weak_factory_.InvalidateWeakPtrs();
+}
 
 // static
 void PasswordManager::RegisterProfilePrefs(
@@ -343,6 +353,28 @@ bool PasswordManager::ShouldShowSavePasswordInfoBar() const {
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
 
+void PasswordManager::SetPasswordObserver(
+    base::WeakPtr<PasswordObserver> observer) {
+  password_observer_ = observer;
+}
+
+void PasswordManager::NotifyPasswordObserver(
+    PasswordObserver::BubbleNotification notification,
+    const autofill::PasswordFormMap& password_form_map,
+    const autofill::PasswordForm& password_form) const {
+  if (password_observer_) {
+    password_observer_->OnPasswordAction(notification, password_form_map,
+                                         password_form);
+  }
+}
+
+void PasswordManager::NotifyPasswordObserverUpdatePasswords(
+    const autofill::PasswordFormMap& password_form_map) const {
+  if (password_observer_) {
+    password_observer_->OnPasswordsUpdated(password_form_map);
+  }
+}
+
 void PasswordManager::OnPasswordFormsRendered(
     const std::vector<PasswordForm>& visible_forms) {
   if (!provisional_save_manager_.get())
@@ -369,14 +401,9 @@ void PasswordManager::OnPasswordFormsRendered(
   if (ShouldShowSavePasswordInfoBar()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {
-      ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-          ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-      if (manage_passwords_bubble_ui_controller) {
-        manage_passwords_bubble_ui_controller->OnPasswordSubmitted(
-            provisional_save_manager_.release());
-      } else {
-        provisional_save_manager_.reset();
-      }
+      NotifyPasswordObserver(PasswordObserver::SAVE_NEW_PASSWORD,
+                             provisional_save_manager_->best_matches(),
+                             provisional_save_manager_->pending_credentials());
     } else {
       delegate_->AddSavePasswordInfoBarIfPermitted(
           provisional_save_manager_.release());
@@ -458,11 +485,26 @@ void PasswordManager::Autofill(
       break;
   }
 
-  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-  if (manage_passwords_bubble_ui_controller &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {
-    manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
+    NotifyPasswordObserver(PasswordObserver::AUTOFILL_PASSWORDS, best_matches,
+                           form_for_autofill);
   }
+}
+
+void PasswordManager::UpdateBestMatches(
+    const autofill::PasswordForm& password_form) {
+  update_best_matches_password_form_manager_.reset(
+      new PasswordFormManager(delegate_->GetProfile(),
+                              this,
+                              web_contents(),
+                              password_form,
+                              true));
+  update_best_matches_password_form_manager_->
+      FetchMatchingLoginsFromPasswordStoreForBubble();
+}
+
+void PasswordManager::SendBestMatchesToManagePasswordsBubble(
+    const PasswordFormMap& best_matches) const {
+  NotifyPasswordObserverUpdatePasswords(best_matches);
 }

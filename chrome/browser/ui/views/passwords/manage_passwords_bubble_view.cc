@@ -105,9 +105,9 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
           anchor_view,
           anchor_view ?
               views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE),
-      manage_passwords_bubble_model_(
-          new ManagePasswordsBubbleModel(web_contents)),
       icon_view_(icon_view) {
+  manage_passwords_bubble_model_.reset(
+      new ManagePasswordsBubbleModel(web_contents));
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
@@ -127,8 +127,7 @@ int ManagePasswordsBubbleView::GetMaximumUsernameOrPasswordWidth(
          i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
       UpdateBiggestWidth((*i->second), username, &biggest_width);
     }
-  }
-  if (manage_passwords_bubble_model_->password_submitted()) {
+  } else {
     UpdateBiggestWidth(manage_passwords_bubble_model_->pending_credentials(),
                        username, &biggest_width);
   }
@@ -207,7 +206,7 @@ void ManagePasswordsBubbleView::Init() {
 
     layout->StartRow(0, kSingleColumnCredentialsId);
     ManagePasswordItemView* item = new ManagePasswordItemView(
-        manage_passwords_bubble_model_,
+        manage_passwords_bubble_model_.get(),
         manage_passwords_bubble_model_->pending_credentials(),
         first_field_width, second_field_width);
     item->set_border(views::Border::CreateSolidSidedBorder(
@@ -264,7 +263,7 @@ void ManagePasswordsBubbleView::Init() {
            i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
         layout->StartRow(0, kSingleColumnCredentialsId);
         ManagePasswordItemView* item = new ManagePasswordItemView(
-            manage_passwords_bubble_model_, *i->second, first_field_width,
+            manage_passwords_bubble_model_.get(), *i->second, first_field_width,
             second_field_width);
         if (i == manage_passwords_bubble_model_->best_matches().begin()) {
           item->set_border(views::Border::CreateSolidSidedBorder(
@@ -277,30 +276,12 @@ void ManagePasswordsBubbleView::Init() {
         }
         layout->AddView(item);
       }
-    } else if (!manage_passwords_bubble_model_->password_submitted()) {
+    } else {
         views::Label* empty_label = new views::Label(
             l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
         empty_label->SetMultiLine(true);
         layout->StartRow(0, kSingleColumnSetId);
         layout->AddView(empty_label);
-    }
-
-    if (manage_passwords_bubble_model_->password_submitted()) {
-      layout->StartRow(0, kSingleColumnCredentialsId);
-      ManagePasswordItemView* item = new ManagePasswordItemView(
-          manage_passwords_bubble_model_,
-          manage_passwords_bubble_model_->pending_credentials(),
-          first_field_width, second_field_width);
-      if (manage_passwords_bubble_model_->best_matches().empty()) {
-        item->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
-      } else {
-        item->set_border(views::Border::CreateSolidSidedBorder(0, 0, 1, 0,
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
-      }
-      layout->AddView(item);
     }
 
     manage_link_ =

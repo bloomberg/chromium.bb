@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -72,7 +73,7 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   // shown twice at the same time.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
 
-  ManagePasswordsBubbleModel* manage_passwords_bubble_model_;
+  scoped_ptr<ManagePasswordsBubbleModel> manage_passwords_bubble_model_;
   ManagePasswordsIconView* icon_view_;
 
   // The buttons that are shown in the bubble.

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "base/stl_util.h"
@@ -37,6 +38,37 @@ class PasswordManager : public LoginModel,
                         public content::WebContentsObserver,
                         public content::WebContentsUserData<PasswordManager> {
  public:
+  // A PasswordObserver is used to notify objects when a PasswordForm is
+  // submitted, when PasswordForms are autofilled, and when PasswordForms are
+  // updated. This passes the password forms on to the observer.
+  class PasswordObserver {
+   public:
+    enum BubbleNotification {
+      SAVE_NEW_PASSWORD,
+      AUTOFILL_PASSWORDS
+    };
+
+    explicit PasswordObserver(PasswordManager* password_manager);
+    virtual ~PasswordObserver();
+
+    // Called whenever a password form is submitted.
+    virtual void OnPasswordAction(
+        BubbleNotification notification,
+        const autofill::PasswordFormMap& password_form_map,
+        const autofill::PasswordForm& password_form) = 0;
+
+    // Called whenever passwords are updated for the bubble.
+    virtual void OnPasswordsUpdated(
+        const autofill::PasswordFormMap& password_form_map) = 0;
+
+   private:
+    PasswordManager* password_manager_;
+
+    base::WeakPtrFactory<PasswordObserver> weak_factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(PasswordObserver);
+  };
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #if defined(OS_WIN)
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
@@ -65,6 +97,15 @@ class PasswordManager : public LoginModel,
                         const autofill::PasswordFormMap& best_matches,
                         const autofill::PasswordForm& preferred_match,
                         bool wait_for_username) const;
+
+  // Called by the ManagePasswordsBubble to update its credentials. Creates a
+  // PasswordFormManager and fetches the matching logins.
+  void UpdateBestMatches(const autofill::PasswordForm& password_form);
+
+  // Called by a PasswordFormManager to pass on the best_matches to the
+  // ManagePasswordsBubble.
+  void SendBestMatchesToManagePasswordsBubble(
+      const autofill::PasswordFormMap& best_matches) const;
 
   // LoginModel implementation.
   virtual void AddObserver(LoginModelObserver* observer) OVERRIDE;
@@ -138,6 +179,18 @@ class PasswordManager : public LoginModel,
   // the password, based on inspecting the state of |provisional_save_manager_|.
   bool ShouldShowSavePasswordInfoBar() const;
 
+  void SetPasswordObserver(base::WeakPtr<PasswordObserver> observer);
+
+  // Notifies the registered PasswordObserver of a sumitted password form.
+  void NotifyPasswordObserver(
+      PasswordObserver::BubbleNotification notification,
+      const autofill::PasswordFormMap& password_form_map,
+      const autofill::PasswordForm& password_form) const;
+
+  // Notifies the registered PasswordObserver of updated passwords.
+  void NotifyPasswordObserverUpdatePasswords(
+      const autofill::PasswordFormMap& password_form_map) const;
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //
@@ -153,6 +206,8 @@ class PasswordManager : public LoginModel,
   // and stored in this collection until user navigates away from page.
 
   ScopedVector<PasswordFormManager> pending_login_managers_;
+
+  scoped_ptr<PasswordFormManager> update_best_matches_password_form_manager_;
 
   // When the user submits a password/credential, this contains the
   // PasswordFormManager for the form in question until we deem the login
@@ -176,6 +231,8 @@ class PasswordManager : public LoginModel,
 
   // Callbacks to be notified when a password form has been submitted.
   std::vector<PasswordSubmittedCallback> submission_callbacks_;
+
+  base::WeakPtr<PasswordObserver> password_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

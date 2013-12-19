@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_UI_CONTROLLER_H_
 
 #include "chrome/browser/password_manager/password_form_manager.h"
+#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -17,7 +19,9 @@ class WebContents;
 // Per-tab class to control the Omnibox password icon and bubble.
 class ManagePasswordsBubbleUIController
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<ManagePasswordsBubbleUIController> {
+      public content::WebContentsUserData<ManagePasswordsBubbleUIController>,
+      public PasswordStore::Observer,
+      public PasswordManager::PasswordObserver {
  public:
   virtual ~ManagePasswordsBubbleUIController();
 
@@ -33,12 +37,9 @@ class ManagePasswordsBubbleUIController
   // the manage password icon.
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
 
-  // TODO(npentrel) This ought to be changed. Best matches should be newly
-  // made when opening the ManagePasswordsBubble because there may have been
-  // changes to the best matches via the settings page. At the moment this also
-  // fails if one deletes a password when they are autofilled, as it still shows
-  // up after logging in and saving a password.
-  void RemoveFromBestMatches(autofill::PasswordForm password_form);
+  // Called when the credentials in the |password_form_manager_| are updated to
+  // update the local |best_matches_|.
+  void OnBestMatchesUpdated();
 
   void SavePassword();
 
@@ -67,19 +68,11 @@ class ManagePasswordsBubbleUIController
   }
 
   const autofill::PasswordForm pending_credentials() const {
-    return form_manager_->pending_credentials();
+    return pending_credentials_;
   }
 
   const autofill::PasswordFormMap best_matches() const {
     return password_form_map_;
-  }
-
-  bool password_submitted() const {
-    return password_submitted_;
-  }
-
-  void set_password_submitted(bool password_submitted) {
-    password_submitted_ = password_submitted;
   }
 
  private:
@@ -88,7 +81,22 @@ class ManagePasswordsBubbleUIController
   explicit ManagePasswordsBubbleUIController(
       content::WebContents* web_contents);
 
-  // Called when a passwordform is autofilled, when a new passwordform is
+  // ManagePasswordsBubbleUIController::PasswordObserver:
+  virtual void OnPasswordAction(
+      PasswordObserver::BubbleNotification notification,
+      const autofill::PasswordFormMap& best_matches,
+      const autofill::PasswordForm& pending_credentials) OVERRIDE;
+  virtual void OnPasswordsUpdated(
+      const autofill::PasswordFormMap& best_matches) OVERRIDE;
+
+  // Returns the password store associated with the web_contents.
+  PasswordStore* GetPasswordStore(content::WebContents* web_contents);
+
+  // Called when something in the PasswordStore changes or when the tab is
+  // changed, since the logins could have changed on a different tab.
+  void UpdateBestMatches();
+
+  // Called when a PasswordForm is autofilled, when a new passwordform is
   // submitted, or when a navigation occurs to update the visibility of the
   // manage passwords icon and bubble.
   void UpdateBubbleAndIconVisibility();
@@ -97,23 +105,24 @@ class ManagePasswordsBubbleUIController
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
-  // Set by OnPasswordSubmitted() when the user submits a form containing login
-  // information.  If the user responds to a subsequent "Do you want to save
-  // this password?" prompt, we ask this object to save or blacklist the
-  // associated login information in Chrome's password store.
-  scoped_ptr<PasswordFormManager> form_manager_;
+  // PasswordStore::Observer:
+  virtual void OnLoginsChanged() OVERRIDE;
 
   // All previously stored credentials for a specific site.  Set by
   // OnPasswordSubmitted() or OnPasswordAutofilled().
   autofill::PasswordFormMap password_form_map_;
 
+  autofill::PasswordForm pending_credentials_;
+
+  // Saves a password form such that it can be used in UpdateBestMatches().
+  autofill::PasswordForm observed_form_;
+
   bool manage_passwords_icon_to_be_shown_;
   bool password_to_be_saved_;
   bool manage_passwords_bubble_needs_showing_;
-  // Stores whether a new password has been submitted, if so we have
-  // |pending_credentials|.
-  bool password_submitted_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleUIController);
 };

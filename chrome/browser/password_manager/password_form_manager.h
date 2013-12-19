@@ -61,6 +61,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void FetchMatchingLoginsFromPasswordStore(
       PasswordStore::AuthorizationPromptPolicy prompt_policy);
 
+  // Retrieves potential matching logins from the database in order to display
+  // them in the ManagePasswordsBubble. This is an async call, when the request
+  // is completed, OnManagePasswordsBubbleRequestDone() is called. The fetched
+  // passwords are not autofilled.
+  void FetchMatchingLoginsFromPasswordStoreForBubble();
+
   // Simple state-check to verify whether this object as received a callback
   // from the PasswordStore and completed its matching phase. Note that the
   // callback in question occurs on the same (and only) main thread from which
@@ -99,6 +105,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Determines if we need to autofill given the results of the query.
   void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
+
+  // Creates the PasswordFormMap which is then given to the
+  // ManagePasswordsBubble to update its logins.
+  void OnManagePasswordsBubbleRequestDone(
+      const std::vector<autofill::PasswordForm*>& result);
 
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
@@ -314,6 +325,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   ManagerAction manager_action_;
   UserAction user_action_;
   SubmitResult submit_result_;
+
+  // If the current request to GetLogins() came from the ManagePasswordsBubble,
+  // passwords should not be autofilled but only given back to the bubble.
+  bool manage_passwords_bubble_request_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
