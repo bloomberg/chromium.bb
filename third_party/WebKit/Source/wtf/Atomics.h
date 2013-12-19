@@ -42,6 +42,18 @@ namespace WTF {
 
 #if COMPILER(MSVC)
 
+// atomicAdd returns the result of the addition.
+ALWAYS_INLINE int atomicAdd(int volatile* addend, int increment)
+{
+    return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend), static_cast<long>(increment)) + increment;
+}
+
+// atomicSubtract returns the result of the subtraction.
+ALWAYS_INLINE int atomicSubtract(int volatile* addend, int decrement)
+{
+    return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend), static_cast<long>(-decrement)) - decrement;
+}
+
 ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return InterlockedIncrement(reinterpret_cast<long volatile*>(addend)); }
 ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }
 
@@ -63,8 +75,13 @@ ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr)
 
 #else
 
-ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return __sync_add_and_fetch(addend, 1); }
-ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
+// atomicAdd returns the result of the addition.
+ALWAYS_INLINE int atomicAdd(int volatile* addend, int increment) { return __sync_add_and_fetch(addend, increment); }
+// atomicSubtract returns the result of the subtraction.
+ALWAYS_INLINE int atomicSubtract(int volatile* addend, int decrement) { return __sync_sub_and_fetch(addend, decrement); }
+
+ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return atomicAdd(addend, 1); }
+ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return atomicSubtract(addend, 1); }
 
 ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) { return __sync_add_and_fetch(addend, 1); }
 ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
@@ -86,6 +103,8 @@ ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr)
 
 } // namespace WTF
 
+using WTF::atomicAdd;
+using WTF::atomicSubtract;
 using WTF::atomicDecrement;
 using WTF::atomicIncrement;
 using WTF::atomicTestAndSetToOne;
