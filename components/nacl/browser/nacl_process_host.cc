@@ -197,6 +197,8 @@ ppapi::PpapiPermissions GetNaClPermissions(uint32 permission_bits) {
   // a compromised renderer to be able to start a nacl plugin with e.g. Flash
   // permissions which may expand the surface area of the sandbox.
   uint32 masked_bits = permission_bits & ppapi::PERMISSION_DEV;
+  if (content::PluginService::GetInstance()->PpapiDevChannelSupported())
+    masked_bits |= ppapi::PERMISSION_DEV_CHANNEL;
   return ppapi::PpapiPermissions::GetForCommandLine(masked_bits);
 }
 
@@ -806,8 +808,6 @@ void NaClProcessHost::OnPpapiChannelCreated(
     ppapi::PpapiNaClChannelArgs args;
     args.off_the_record = nacl_host_message_filter_->off_the_record();
     args.permissions = permissions_;
-    args.supports_dev_channel =
-        content::PluginService::GetInstance()->PpapiDevChannelSupported();
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     DCHECK(cmdline);
     std::string flag_whitelist[] = {switches::kV, switches::kVModule};

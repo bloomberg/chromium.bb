@@ -171,6 +171,7 @@
         'proxy/device_enumeration_resource_helper_unittest.cc',
         'proxy/file_chooser_resource_unittest.cc',
         'proxy/flash_resource_unittest.cc',
+        'proxy/interface_list_unittest.cc',
         'proxy/mock_resource.cc',
         'proxy/mock_resource.h',
         'proxy/pdf_resource_unittest.cc',

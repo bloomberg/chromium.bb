@@ -14,7 +14,8 @@ enum Permission {
   // Placeholder/uninitialized permission.
   PERMISSION_NONE = 0,
 
-  // Allows access to dev interfaces.
+  // Allows access to dev interfaces. These are experimental interfaces not
+  // tied to any particular release channel.
   PERMISSION_DEV = 1 << 0,
 
   // Allows access to Browser-internal interfaces.
@@ -30,6 +31,11 @@ enum Permission {
   // Flash-related interfaces.
   PERMISSION_FLASH = 1 << 4,
 
+  // "Dev channel" interfaces. This is different than PERMISSION_DEV above;
+  // these interfaces may only be used on Dev or Canary channel releases of
+  // Chrome.
+  PERMISSION_DEV_CHANNEL = 1 << 5,
+
   // NOTE: If you add stuff be sure to update PERMISSION_ALL_BITS.
 
   // Meta permission for initializing plugins registered on the command line
@@ -38,7 +44,8 @@ enum Permission {
                         PERMISSION_PRIVATE |
                         PERMISSION_BYPASS_USER_GESTURE |
                         PERMISSION_TESTING |
-                        PERMISSION_FLASH
+                        PERMISSION_FLASH |
+                        PERMISSION_DEV_CHANNEL
 };
 
 class PPAPI_SHARED_EXPORT PpapiPermissions {

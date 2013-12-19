@@ -364,10 +364,9 @@ IPC_STRUCT_TRAITS_END()
 
 // These are from the browser to the plugin.
 // Loads the given plugin.
-IPC_MESSAGE_CONTROL3(PpapiMsg_LoadPlugin,
+IPC_MESSAGE_CONTROL2(PpapiMsg_LoadPlugin,
                      base::FilePath /* path */,
-                     ppapi::PpapiPermissions /* permissions */,
-                     bool /* supports_dev_channel */)
+                     ppapi::PpapiPermissions /* permissions */)
 
 // Creates a channel to talk to a renderer. The plugin will respond with
 // PpapiHostMsg_ChannelCreated.

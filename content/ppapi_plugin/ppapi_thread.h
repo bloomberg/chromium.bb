@@ -93,8 +93,7 @@ class PpapiThread : public ChildThread,
 
   // Message handlers.
   void OnLoadPlugin(const base::FilePath& path,
-                    const ppapi::PpapiPermissions& permissions,
-                    bool supports_dev_channel);
+                    const ppapi::PpapiPermissions& permissions);
   void OnCreateChannel(base::ProcessId renderer_pid,
                        int renderer_child_id,
                        bool incognito);

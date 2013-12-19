@@ -16,7 +16,7 @@
 namespace ppapi {
 namespace proxy {
 
-class InterfaceList {
+class PPAPI_PROXY_EXPORT InterfaceList {
  public:
   InterfaceList();
   ~InterfaceList();
@@ -33,10 +33,7 @@ class InterfaceList {
   // plugin process. A real security check is required for all IPC messages.
   // This check just allows us to return NULL for interfaces you "shouldn't" be
   // using to keep honest plugins honest.
-  static PPAPI_PROXY_EXPORT void SetProcessGlobalPermissions(
-      const PpapiPermissions& permissions);
-  static PPAPI_PROXY_EXPORT void SetSupportsDevChannel(
-      bool supports_dev_channel);
+  static void SetProcessGlobalPermissions(const PpapiPermissions& permissions);
 
   // Looks up the factory function for the given ID. Returns NULL if not
   // supported.
@@ -48,6 +45,8 @@ class InterfaceList {
   const void* GetInterfaceForPPP(const std::string& name) const;
 
  private:
+  friend class InterfaceListTest;
+
   struct InterfaceInfo {
     InterfaceInfo()
         : iface(NULL),

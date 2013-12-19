@@ -154,7 +154,6 @@ InterfaceProxy* ProxyFactory(Dispatcher* dispatcher) {
 }
 
 base::LazyInstance<PpapiPermissions> g_process_global_permissions;
-base::LazyInstance<bool> g_supports_dev_channel;
 
 }  // namespace
 
@@ -193,8 +192,14 @@ InterfaceList::InterfaceList() {
     #include "ppapi/thunk/interfaces_ppb_private_flash.h"
 #endif  // !defined(OS_NACL)
   }
-
-  // TODO(teravest): Add dev channel interfaces here.
+  {
+    // TODO(teravest): These lines should be uncommented when a dev channel
+    // interface is added.  They're commented right now because they cause an
+    // unused variable warning.
+    //
+    // Permission current_required_permission = PERMISSION_DEV_CHANNEL;
+    // #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
+  }
 
   #undef PROXIED_API
   #undef PROXIED_IFACE
@@ -228,8 +233,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_OPENGLES2_QUERY_INTERFACE_1_0,
          PPB_OpenGLES2_Shared::GetQueryInterface(), PERMISSION_NONE);
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0,
-         PPB_Var_Shared::GetVarArrayBufferInterface1_0(),
-         PERMISSION_NONE);
+         PPB_Var_Shared::GetVarArrayBufferInterface1_0(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_1,
          PPB_Var_Shared::GetVarInterface1_1(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_0,
@@ -303,12 +307,6 @@ void InterfaceList::SetProcessGlobalPermissions(
   g_process_global_permissions.Get() = permissions;
 }
 
-// static
-void InterfaceList::SetSupportsDevChannel(
-    bool supports_dev_channel) {
-  g_supports_dev_channel.Get() = supports_dev_channel;
-}
-
 InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
   int index = static_cast<int>(id);
   COMPILE_ASSERT(API_ID_NONE == 0, none_must_be_zero);
@@ -322,8 +320,6 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
     return NULL;
-
-  // Dev channel checking goes here.
 
   if (g_process_global_permissions.Get().HasPermission(
           found->second.required_permission))
