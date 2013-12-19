@@ -221,16 +221,15 @@ class ProfileSyncServiceHarness
   bool HasPendingBackendMigration() const;
 
  private:
-  friend class StateChangeTimeoutEvent;
-
   ProfileSyncServiceHarness(
       Profile* profile,
       const std::string& username,
       const std::string& password,
       invalidation::P2PInvalidationService* invalidation_service);
 
-  // Indicates that the operation being waited on is complete.
-  void SignalStateComplete();
+  // Quits the current message loop. Called when the status change being waited
+  // on has occurred, or in the event of a timeout.
+  void QuitMessageLoop();
 
   // A helper for implementing IsDataSynced() and IsFullySynced().
   bool IsDataSyncedImpl() const;

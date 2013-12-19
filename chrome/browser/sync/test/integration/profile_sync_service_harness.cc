@@ -18,10 +18,10 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,63 +50,6 @@ using invalidation::P2PInvalidationService;
 
 // The amount of time for which we wait for a sync operation to complete.
 static const int kSyncOperationTimeoutMs = 45000;
-
-// Simple class to implement a timeout using PostDelayedTask.  If it is not
-// aborted before picked up by a message queue, then it asserts.  This class is
-// not thread safe.
-class StateChangeTimeoutEvent
-    : public base::RefCountedThreadSafe<StateChangeTimeoutEvent> {
- public:
-  explicit StateChangeTimeoutEvent(ProfileSyncServiceHarness* caller);
-
-  // The entry point to the class from PostDelayedTask.
-  void Callback();
-
-  // Cancels the actions of the callback.  Returns true if success, false
-  // if the callback has already timed out.
-  bool Abort();
-
- private:
-  friend class base::RefCountedThreadSafe<StateChangeTimeoutEvent>;
-
-  ~StateChangeTimeoutEvent();
-
-  bool aborted_;
-  bool did_timeout_;
-
-  // Due to synchronization of the IO loop, the caller will always be alive
-  // if the class is not aborted.
-  ProfileSyncServiceHarness* caller_;
-
-  DISALLOW_COPY_AND_ASSIGN(StateChangeTimeoutEvent);
-};
-
-StateChangeTimeoutEvent::StateChangeTimeoutEvent(
-    ProfileSyncServiceHarness* caller)
-    : aborted_(false), did_timeout_(false), caller_(caller) {
-}
-
-StateChangeTimeoutEvent::~StateChangeTimeoutEvent() {
-}
-
-void StateChangeTimeoutEvent::Callback() {
-  if (!aborted_) {
-    DCHECK(caller_->status_change_checker_);
-    // TODO(rsimha): Simply return false on timeout instead of repeating the
-    // exit condition check.
-    if (!caller_->status_change_checker_->IsExitConditionSatisfied()) {
-      did_timeout_ = true;
-      DCHECK(!aborted_);
-      caller_->SignalStateComplete();
-    }
-  }
-}
-
-bool StateChangeTimeoutEvent::Abort() {
-  aborted_ = true;
-  caller_ = NULL;
-  return !did_timeout_;
-}
 
 namespace {
 
@@ -371,7 +314,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   return true;
 }
 
-void ProfileSyncServiceHarness::SignalStateComplete() {
+void ProfileSyncServiceHarness::QuitMessageLoop() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
@@ -381,7 +324,7 @@ void ProfileSyncServiceHarness::OnStateChanged() {
 
   DVLOG(1) << GetClientInfoString(status_change_checker_->source());
   if (status_change_checker_->IsExitConditionSatisfied())
-    base::MessageLoop::current()->QuitWhenIdle();
+    QuitMessageLoop();
 }
 
 void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
@@ -585,22 +528,20 @@ bool ProfileSyncServiceHarness::AwaitStatusChange(
   DCHECK(status_change_checker_ == NULL);
   status_change_checker_ = checker;
 
-  scoped_refptr<StateChangeTimeoutEvent> timeout_signal(
-      new StateChangeTimeoutEvent(this));
+  base::OneShotTimer<ProfileSyncServiceHarness> timer;
+  timer.Start(FROM_HERE,
+              base::TimeDelta::FromMilliseconds(kSyncOperationTimeoutMs),
+              base::Bind(&ProfileSyncServiceHarness::QuitMessageLoop,
+                         base::Unretained(this)));
   {
     base::MessageLoop* loop = base::MessageLoop::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    loop->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&StateChangeTimeoutEvent::Callback,
-                   timeout_signal.get()),
-        base::TimeDelta::FromMilliseconds(kSyncOperationTimeoutMs));
     loop->Run();
   }
 
   status_change_checker_ = NULL;
 
-  if (timeout_signal->Abort()) {
+  if (timer.IsRunning()) {
     DVLOG(1) << GetClientInfoString("AwaitStatusChange succeeded");
     return true;
   } else {
