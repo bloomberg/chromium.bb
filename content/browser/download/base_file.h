@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "crypto/sha2.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -92,8 +93,8 @@ class CONTENT_EXPORT BaseFile {
   virtual std::string GetHashState();
 
   // Returns true if the given hash is considered empty.  An empty hash is
-  // a string of size kSha256HashLen that contains only zeros (initial value
-  // for the hash).
+  // a string of size crypto::kSHA256Length that contains only zeros (initial
+  // value for the hash).
   static bool IsEmptyHash(const std::string& hash);
 
   virtual std::string DebugString() const;
@@ -137,8 +138,7 @@ class CONTENT_EXPORT BaseFile {
       const char* operation, int os_error,
       DownloadInterruptReason reason);
 
-  static const size_t kSha256HashLen = 32;
-  static const unsigned char kEmptySha256Hash[kSha256HashLen];
+  static const unsigned char kEmptySha256Hash[crypto::kSHA256Length];
 
   // Full path to the file including the file name.
   base::FilePath full_path_;
@@ -167,7 +167,7 @@ class CONTENT_EXPORT BaseFile {
   // is set.
   scoped_ptr<crypto::SecureHash> secure_hash_;
 
-  unsigned char sha256_hash_[kSha256HashLen];
+  unsigned char sha256_hash_[crypto::kSHA256Length];
 
   // Indicates that this class no longer owns the associated file, and so
   // won't delete it on destruction.

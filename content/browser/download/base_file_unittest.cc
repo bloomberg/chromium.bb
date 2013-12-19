@@ -13,6 +13,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,8 +37,7 @@ const base::TimeDelta kElapsedTimeDelta = base::TimeDelta::FromSeconds(
 
 class BaseFileTest : public testing::Test {
  public:
-  static const size_t kSha256HashLen = 32;
-  static const unsigned char kEmptySha256Hash[kSha256HashLen];
+  static const unsigned char kEmptySha256Hash[crypto::kSHA256Length];
 
   BaseFileTest()
       : expect_file_survives_(false),
@@ -84,7 +84,7 @@ class BaseFileTest : public testing::Test {
 
   void ResetHash() {
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-    memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
+    memcpy(sha256_hash_, kEmptySha256Hash, crypto::kSHA256Length);
   }
 
   void UpdateHash(const char* data, size_t length) {
@@ -93,7 +93,7 @@ class BaseFileTest : public testing::Test {
 
   std::string GetFinalHash() {
     std::string hash;
-    secure_hash_->Finish(sha256_hash_, kSha256HashLen);
+    secure_hash_->Finish(sha256_hash_, crypto::kSHA256Length);
     hash.assign(reinterpret_cast<const char*>(sha256_hash_),
                 sizeof(sha256_hash_));
     return hash;
@@ -214,7 +214,7 @@ class BaseFileTest : public testing::Test {
   // Hash calculator.
   scoped_ptr<crypto::SecureHash> secure_hash_;
 
-  unsigned char sha256_hash_[kSha256HashLen];
+  unsigned char sha256_hash_[crypto::kSHA256Length];
 
  private:
   // Keep track of what data should be saved to the disk file.
@@ -605,11 +605,15 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
 }
 
 TEST_F(BaseFileTest, IsEmptyHash) {
-  std::string empty(BaseFile::kSha256HashLen, '\x00');
+  std::string empty(crypto::kSHA256Length, '\x00');
   EXPECT_TRUE(BaseFile::IsEmptyHash(empty));
-  std::string not_empty(BaseFile::kSha256HashLen, '\x01');
+  std::string not_empty(crypto::kSHA256Length, '\x01');
   EXPECT_FALSE(BaseFile::IsEmptyHash(not_empty));
   EXPECT_FALSE(BaseFile::IsEmptyHash(std::string()));
+
+  std::string also_not_empty = empty;
+  also_not_empty[crypto::kSHA256Length - 1] = '\x01';
+  EXPECT_FALSE(BaseFile::IsEmptyHash(also_not_empty));
 }
 
 // Test that a temporary file is created in the default download directory.

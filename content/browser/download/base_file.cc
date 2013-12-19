@@ -42,7 +42,7 @@ BaseFile::BaseFile(const base::FilePath& full_path,
       calculate_hash_(calculate_hash),
       detached_(false),
       bound_net_log_(bound_net_log) {
-  memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
+  memcpy(sha256_hash_, kEmptySha256Hash, crypto::kSHA256Length);
   if (calculate_hash_) {
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     if ((bytes_so_far_ > 0) &&  // Not starting at the beginning.
@@ -206,7 +206,7 @@ void BaseFile::Finish() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (calculate_hash_)
-    secure_hash_->Finish(sha256_hash_, kSha256HashLen);
+    secure_hash_->Finish(sha256_hash_, crypto::kSHA256Length);
 
   Close();
 }
@@ -243,8 +243,8 @@ std::string BaseFile::GetHashState() {
 
 // static
 bool BaseFile::IsEmptyHash(const std::string& hash) {
-  return (hash.size() == kSha256HashLen &&
-          0 == memcmp(hash.data(), kEmptySha256Hash, sizeof(kSha256HashLen)));
+  return (hash.size() == crypto::kSHA256Length &&
+          0 == memcmp(hash.data(), kEmptySha256Hash, crypto::kSHA256Length));
 }
 
 std::string BaseFile::DebugString() const {
