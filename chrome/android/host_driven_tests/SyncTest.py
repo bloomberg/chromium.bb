@@ -42,8 +42,10 @@ class SyncTest(test_case.HostDrivenTestCase):
       full_names.append('SyncTest.' + test_name)
     return self._RunJavaTestFilters(full_names, self.additional_flags)
 
-  @tests_annotations.Feature(['Sync'])
-  @tests_annotations.EnormousTest
+  # Disabled for http://crbug.com/329757
+  # @tests_annotations.Feature(['Sync'])
+  # @tests_annotations.EnormousTest
+  @tests_annotations.DisabledTest
   def testGetAboutSyncInfoYieldsValidData(self):
     java_tests = ['testGetAboutSyncInfoYieldsValidData']
     return self._RunSyncTests(java_tests)
