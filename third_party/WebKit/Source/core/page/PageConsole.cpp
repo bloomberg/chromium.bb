@@ -30,15 +30,13 @@
 #include "core/page/PageConsole.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ScriptableDocumentParser.h"
+#include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/frame/ConsoleBase.h"
 #include "core/page/Page.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -48,8 +46,8 @@ int muteCount = 0;
 
 }
 
-PageConsole::PageConsole(Page* page)
-    : m_page(page)
+PageConsole::PageConsole(FrameHost& frameHost)
+    : m_frameHost(frameHost)
 {
 }
 
@@ -68,7 +66,9 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (muteCount && source != ConsoleAPIMessageSource)
         return;
 
-    ExecutionContext* context = m_page->mainFrame()->document();
+    // FIXME: This should not need to reach for the main-frame.
+    // Inspector code should just take the current frame and know how to walk itself.
+    ExecutionContext* context = m_frameHost.page().mainFrame()->document();
     if (!context)
         return;
 
@@ -85,10 +85,10 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
         return;
 
     String stackTrace;
-    if (callStack && m_page->chrome().client().shouldReportDetailedMessageForSource(messageURL))
+    if (callStack && m_frameHost.chrome().client().shouldReportDetailedMessageForSource(messageURL))
         stackTrace = PageConsole::formatStackTraceString(message, callStack);
 
-    m_page->chrome().client().addMessageToConsole(source, level, message, lineNumber, messageURL, stackTrace);
+    m_frameHost.chrome().client().addMessageToConsole(source, level, message, lineNumber, messageURL, stackTrace);
 }
 
 String PageConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)

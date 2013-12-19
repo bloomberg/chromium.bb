@@ -37,11 +37,11 @@
 
 namespace WebCore {
 
-class Page;
+class FrameHost;
 
 class PageConsole FINAL {
 public:
-    static PassOwnPtr<PageConsole> create(Page* page) { return adoptPtr(new PageConsole(page)); }
+    static PassOwnPtr<PageConsole> create(FrameHost& host) { return adoptPtr(new PageConsole(host)); }
 
     void addMessage(MessageSource, MessageLevel, const String& message);
     void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtr<ScriptCallStack> = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);
@@ -52,9 +52,9 @@ public:
     static void unmute();
 
 private:
-    explicit PageConsole(Page*);
+    explicit PageConsole(FrameHost&);
 
-    Page* m_page;
+    FrameHost& m_frameHost;
 };
 
 } // namespace WebCore

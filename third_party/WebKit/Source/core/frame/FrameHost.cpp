@@ -43,7 +43,7 @@ PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 
 FrameHost::FrameHost(Page& page)
     : m_page(page)
-    , m_console(PageConsole::create(&page))
+    , m_console(PageConsole::create(*this))
 {
 }
 
