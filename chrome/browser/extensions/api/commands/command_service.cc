@@ -79,10 +79,17 @@ bool InitialBindingsHaveBeenAssigned(
 }
 
 bool IsWhitelistedGlobalShortcut(const extensions::Command& command) {
+  // Non-global shortcuts are always allowed.
   if (!command.global())
     return true;
+  // Global shortcuts must be (Ctrl|Command)-Shift-[0-9].
+#if defined OS_MACOSX
+  if (!command.accelerator().IsCmdDown())
+    return false;
+#else
   if (!command.accelerator().IsCtrlDown())
     return false;
+#endif
   if (!command.accelerator().IsShiftDown())
     return false;
   return (command.accelerator().key_code() >= ui::VKEY_0 &&
