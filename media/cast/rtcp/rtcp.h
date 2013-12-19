@@ -25,6 +25,7 @@ namespace cast {
 
 class LocalRtcpReceiverFeedback;
 class LocalRtcpRttFeedback;
+class RtcpBuilder;
 class PacedPacketSender;
 class RtcpReceiver;
 class RtcpSender;
@@ -149,6 +150,7 @@ class Rtcp {
   scoped_ptr<LocalRtcpRttFeedback> rtt_feedback_;
   scoped_ptr<LocalRtcpReceiverFeedback> receiver_feedback_;
   scoped_ptr<RtcpSender> rtcp_sender_;
+  scoped_ptr<RtcpBuilder> rtcp_builder_;
   scoped_ptr<RtcpReceiver> rtcp_receiver_;
 
   base::TimeTicks next_time_to_send_rtcp_;

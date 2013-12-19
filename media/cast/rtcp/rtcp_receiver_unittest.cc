@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/net/cast_net_defines.h"
 #include "media/cast/rtcp/mock_rtcp_receiver_feedback.h"
 #include "media/cast/rtcp/mock_rtcp_sender_feedback.h"
 #include "media/cast/rtcp/rtcp_receiver.h"

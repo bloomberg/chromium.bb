@@ -5,10 +5,54 @@
 #ifndef MEDIA_CAST_NET_CAST_NET_DEFINES_H_
 #define MEDIA_CAST_NET_CAST_NET_DEFINES_H_
 
+#include <list>
 #include "base/basictypes.h"
 
 namespace media {
 namespace cast {
+
+// Rtcp defines.
+
+// Log messages form sender to receiver.
+enum RtcpSenderFrameStatus {
+  kRtcpSenderFrameStatusUnknown = 0,
+  kRtcpSenderFrameStatusDroppedByEncoder = 1,
+  kRtcpSenderFrameStatusDroppedByFlowControl = 2,
+  kRtcpSenderFrameStatusSentToNetwork = 3,
+};
+
+struct RtcpSenderFrameLogMessage {
+  RtcpSenderFrameStatus frame_status;
+  uint32 rtp_timestamp;
+};
+
+struct RtcpSenderInfo {
+  // First three members are used for lipsync.
+  // First two members are used for rtt.
+  uint32 ntp_seconds;
+  uint32 ntp_fraction;
+  uint32 rtp_timestamp;
+  uint32 send_packet_count;
+  size_t send_octet_count;
+};
+
+struct RtcpReportBlock {
+  uint32 remote_ssrc;  // SSRC of sender of this report.
+  uint32 media_ssrc;  // SSRC of the RTP packet sender.
+  uint8 fraction_lost;
+  uint32 cumulative_lost;  // 24 bits valid.
+  uint32 extended_high_sequence_number;
+  uint32 jitter;
+  uint32 last_sr;
+  uint32 delay_since_last_sr;
+};
+
+struct RtcpDlrrReportBlock {
+  uint32 last_rr;
+  uint32 delay_since_last_rr;
+};
+
+typedef std::list<RtcpSenderFrameLogMessage> RtcpSenderLogMessage;
 
 class FrameIdWrapHelper {
  public:
@@ -73,7 +117,6 @@ class FrameIdWrapHelper {
   uint32 frame_id_wrap_count_;
   Range range_;
 };
-
 
 }  // namespace cast
 }  // namespace media

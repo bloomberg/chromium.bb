@@ -16,6 +16,7 @@
 namespace media {
 namespace cast {
 
+// TODO(mikhal): Resolve duplication between this and RtcpBuilder.
 class RtcpSender {
  public:
   RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -24,11 +25,6 @@ class RtcpSender {
              const std::string& c_name);
 
   virtual ~RtcpSender();
-
-  void SendRtcpFromRtpSender(uint32 packet_type_flags,
-                             const RtcpSenderInfo* sender_info,
-                             const RtcpDlrrReportBlock* dlrr,
-                             RtcpSenderLogMessage* sender_log);
 
   void SendRtcpFromRtpReceiver(uint32 packet_type_flags,
                                const RtcpReportBlock* report_block,
@@ -54,10 +50,6 @@ class RtcpSender {
   };
 
  private:
-  void BuildSR(const RtcpSenderInfo& sender_info,
-               const RtcpReportBlock* report_block,
-               std::vector<uint8>* packet) const;
-
   void BuildRR(const RtcpReportBlock* report_block,
                std::vector<uint8>* packet) const;
 
@@ -80,17 +72,11 @@ class RtcpSender {
 
   void BuildBye(std::vector<uint8>* packet) const;
 
-  void BuildDlrrRb(const RtcpDlrrReportBlock* dlrr,
-                   std::vector<uint8>* packet) const;
-
   void BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
                  std::vector<uint8>* packet) const;
 
   void BuildCast(const RtcpCastMessage* cast_message,
                  std::vector<uint8>* packet) const;
-
-  void BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
-                      std::vector<uint8>* packet) const;
 
   void BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
                         std::vector<uint8>* packet) const;

@@ -8,6 +8,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_receiver.h"
 #include "media/cast/rtcp/rtcp_sender.h"
@@ -189,6 +190,7 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
       rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
                                   local_ssrc, c_name)),
+      rtcp_builder_(new RtcpBuilder(paced_packet_sender, local_ssrc, c_name)),
       last_report_received_(0),
       last_received_rtp_timestamp_(0),
       last_received_ntp_seconds_(0),
@@ -336,10 +338,10 @@ void Rtcp::SendRtcpFromRtpSender(
     dlrr.delay_since_last_rr = ConvertToNtpDiff(delay_seconds, delay_fraction);
   }
 
-  rtcp_sender_->SendRtcpFromRtpSender(packet_type_flags,
-                                      &sender_info,
-                                      &dlrr,
-                                      sender_log_message);
+  rtcp_builder_->SendRtcpFromRtpSender(packet_type_flags,
+                                       &sender_info,
+                                       &dlrr,
+                                       sender_log_message);
   UpdateNextTimeToSendRtcp();
 }
 
