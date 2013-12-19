@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 #include "google_apis/drive/gdata_errorcode.h"
@@ -24,6 +23,7 @@ class GURL;
 
 namespace base {
 class SequencedTaskRunner;
+class Time;
 }  // namespace base
 
 namespace google_apis {
@@ -121,12 +121,10 @@ class ChangeListLoader {
       int64 local_changestamp,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
-  void LoadAfterLoadDirectory(
-      const DirectoryFetchInfo& directory_fetch_info,
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      bool is_initial_load,
-      int64 start_changestamp,
-      FileError error);
+  void LoadAfterLoadDirectory(const DirectoryFetchInfo& directory_fetch_info,
+                              bool is_initial_load,
+                              int64 start_changestamp,
+                              FileError error);
 
   // Part of Load().
   // This function should be called when the change list load is complete.
@@ -143,11 +141,8 @@ class ChangeListLoader {
 
   // Part of LoadFromServerIfNeeded().
   // Starts loading the change list since |start_changestamp|, or the full
-  // resource list if |start_changestamp| is zero. For full update, the
-  // largest_change_id and root_folder_id from |about_resource| will be used.
-  void LoadChangeListFromServer(
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      int64 start_changestamp);
+  // resource list if |start_changestamp| is zero.
+  void LoadChangeListFromServer(int64 start_changestamp);
 
   // Part of LoadChangeListFromServer().
   // Called when the entire change list is loaded.
@@ -159,61 +154,34 @@ class ChangeListLoader {
 
   // Part of LoadChangeListFromServer().
   // Called when the resource metadata is updated.
-  void LoadChangeListFromServerAfterUpdate();
+  void LoadChangeListFromServerAfterUpdate(
+      ChangeListProcessor* change_list_processor,
+      bool should_notify_changed_directories,
+      const base::Time& start_time,
+      FileError error);
 
   // ================= Implementation for directory loading =================
-
-  // Compares the directory's changestamp and |last_known_remote_changestamp_|.
-  // Starts DoLoadDirectoryFromServer() if the local data is old and runs
-  // |callback| when finished. If it is up to date, calls back immediately.
-  void CheckChangestampAndLoadDirectoryIfNeeded(
-      const DirectoryFetchInfo& directory_fetch_info,
-      int64 local_changestamp,
-      const FileOperationCallback& callback);
-
   // Loads the directory contents from server, and updates the local metadata.
   // Runs |callback| when it is finished.
-  void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
-                                 const FileOperationCallback& callback);
+  void LoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
+                               const FileOperationCallback& callback);
 
-  // Part of DoLoadDirectoryFromServer() for a normal directory.
-  void DoLoadDirectoryFromServerAfterLoad(
+  // Part of LoadDirectoryFromServer() for a normal directory.
+  void LoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       FeedFetcher* fetcher,
       FileError error,
       ScopedVector<ChangeList> change_lists);
 
-  // Part of DoLoadDirectoryFromServer().
-  void DoLoadDirectoryFromServerAfterRefresh(
+  // Part of LoadDirectoryFromServer().
+  void LoadDirectoryFromServerAfterRefresh(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       const base::FilePath* directory_path,
       FileError error);
 
   // ================= Implementation for other stuff =================
-
-  // Updates from the whole change list collected in |change_lists|.
-  // Record file statistics as UMA histograms.
-  //
-  // See comments at ChangeListProcessor::Apply() for
-  // |about_resource| and |is_delta_update|.
-  // |callback| must not be null.
-  void UpdateFromChangeList(
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      ScopedVector<ChangeList> change_lists,
-      bool is_delta_update,
-      const base::Closure& callback);
-
-  // Part of UpdateFromChangeList().
-  // Called when ChangeListProcessor::Apply() is complete.
-  // Notifies directory changes per the result of the change list processing.
-  void UpdateFromChangeListAfterApply(
-      ChangeListProcessor* change_list_processor,
-      bool should_notify,
-      base::Time start_time,
-      const base::Closure& callback,
-      FileError error);
 
   // Gets the about resource from the server, and caches it if successful. This
   // function calls JobScheduler::GetAboutResource internally. The cache will be

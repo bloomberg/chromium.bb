@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -493,7 +494,7 @@ void ChangeListLoader::LoadAfterGetAboutResource(
   DCHECK(about_resource);
 
   int64 remote_changestamp = about_resource->largest_change_id();
-  if (remote_changestamp > 0 && local_changestamp >= remote_changestamp) {
+  if (local_changestamp >= remote_changestamp) {
     if (local_changestamp > remote_changestamp) {
       LOG(WARNING) << "Local resource metadata is fresher than server, local = "
                    << local_changestamp << ", server = " << remote_changestamp;
@@ -508,17 +509,39 @@ void ChangeListLoader::LoadAfterGetAboutResource(
   if (directory_fetch_info.empty()) {
     // If the caller is not interested in a particular directory, just start
     // loading the change list.
-    LoadChangeListFromServer(about_resource.Pass(), start_changestamp);
+    LoadChangeListFromServer(start_changestamp);
   } else {
     // If the caller is interested in a particular directory, start loading the
     // directory first.
-    CheckChangestampAndLoadDirectoryIfNeeded(
-        directory_fetch_info,
-        local_changestamp,
+    int64 directory_changestamp = std::max(directory_fetch_info.changestamp(),
+                                           local_changestamp);
+
+    // We may not fetch from the server at all if the local metadata is new
+    // enough, but we log this message here, so "Fast-fetch start" and
+    // "Fast-fetch complete" always match.
+    // TODO(satorux): Distinguish the "not fetching at all" case.
+    util::Log(logging::LOG_INFO,
+              "Fast-fetch start: %s; Server changestamp: %s",
+              directory_fetch_info.ToString().c_str(),
+              base::Int64ToString(remote_changestamp).c_str());
+
+    // If the directory's changestamp is up-to-date, just schedule to run the
+    // callback, as there is no need to fetch the directory.
+    if (directory_changestamp >= remote_changestamp) {
+      LoadAfterLoadDirectory(directory_fetch_info, is_initial_load,
+                             start_changestamp, FILE_ERROR_OK);
+      return;
+    }
+
+    // Start fetching the directory content, and mark it with the changestamp
+    // |remote_changestamp|.
+    DirectoryFetchInfo new_directory_fetch_info(
+        directory_fetch_info.resource_id(), remote_changestamp);
+    LoadDirectoryFromServer(
+        new_directory_fetch_info,
         base::Bind(&ChangeListLoader::LoadAfterLoadDirectory,
                    weak_ptr_factory_.GetWeakPtr(),
                    directory_fetch_info,
-                   base::Passed(&about_resource),
                    is_initial_load,
                    start_changestamp));
   }
@@ -526,7 +549,6 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 
 void ChangeListLoader::LoadAfterLoadDirectory(
     const DirectoryFetchInfo& directory_fetch_info,
-    scoped_ptr<google_apis::AboutResource> about_resource,
     bool is_initial_load,
     int64 start_changestamp,
     FileError error) {
@@ -536,7 +558,7 @@ void ChangeListLoader::LoadAfterLoadDirectory(
 
   // Continue to load change list if this is the first load.
   if (is_initial_load)
-    LoadChangeListFromServer(about_resource.Pass(), start_changestamp);
+    LoadChangeListFromServer(start_changestamp);
 }
 
 void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
@@ -591,12 +613,10 @@ void ChangeListLoader::OnDirectoryLoadComplete(
   }
 }
 
-void ChangeListLoader::LoadChangeListFromServer(
-    scoped_ptr<google_apis::AboutResource> about_resource,
-    int64 start_changestamp) {
+void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!change_feed_fetcher_);
-  DCHECK(about_resource);
+  DCHECK(cached_about_resource_);
 
   bool is_delta_update = start_changestamp != 0;
 
@@ -608,10 +628,13 @@ void ChangeListLoader::LoadChangeListFromServer(
     change_feed_fetcher_.reset(new FullFeedFetcher(scheduler_));
   }
 
+  // Make a copy of cached_about_resource_ to remember at which changestamp we
+  // are fetching change list.
   change_feed_fetcher_->Run(
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&about_resource),
+                 base::Passed(make_scoped_ptr(
+                     new google_apis::AboutResource(*cached_about_resource_))),
                  is_delta_update));
 }
 
@@ -631,66 +654,60 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     return;
   }
 
-  UpdateFromChangeList(
-      about_resource.Pass(),
-      change_lists.Pass(),
-      is_delta_update,
+  ChangeListProcessor* change_list_processor =
+      new ChangeListProcessor(resource_metadata_);
+  // Don't send directory content change notification while performing
+  // the initial content retrieval.
+  const bool should_notify_changed_directories = is_delta_update;
+
+  util::Log(logging::LOG_INFO,
+            "Apply change lists (is delta: %d)",
+            is_delta_update);
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ChangeListProcessor::Apply,
+                 base::Unretained(change_list_processor),
+                 base::Passed(&about_resource),
+                 base::Passed(&change_lists),
+                 is_delta_update),
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterUpdate,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(change_list_processor),
+                 should_notify_changed_directories,
+                 base::Time::Now()));
 }
 
-void ChangeListLoader::LoadChangeListFromServerAfterUpdate() {
+void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
+    ChangeListProcessor* change_list_processor,
+    bool should_notify_changed_directories,
+    const base::Time& start_time,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  OnChangeListLoadComplete(FILE_ERROR_OK);
+  const base::TimeDelta elapsed = base::Time::Now() - start_time;
+  util::Log(logging::LOG_INFO,
+            "Change lists applied (elapsed time: %sms)",
+            base::Int64ToString(elapsed.InMilliseconds()).c_str());
+
+  if (should_notify_changed_directories) {
+    for (std::set<base::FilePath>::iterator dir_iter =
+            change_list_processor->changed_dirs().begin();
+        dir_iter != change_list_processor->changed_dirs().end();
+        ++dir_iter) {
+      FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
+                        OnDirectoryChanged(*dir_iter));
+    }
+  }
+
+  OnChangeListLoadComplete(error);
 
   FOR_EACH_OBSERVER(ChangeListLoaderObserver,
                     observers_,
                     OnLoadFromServerComplete());
 }
 
-void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeded(
-    const DirectoryFetchInfo& directory_fetch_info,
-    int64 local_changestamp,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!directory_fetch_info.empty());
-
-  int64 directory_changestamp = std::max(directory_fetch_info.changestamp(),
-                                         local_changestamp);
-
-  DCHECK(cached_about_resource_);
-  int64 last_known_remote_changestamp =
-      cached_about_resource_->largest_change_id();
-
-  // We may not fetch from the server at all if the local metadata is new
-  // enough, but we log this message here, so "Fast-fetch start" and
-  // "Fast-fetch complete" always match.
-  // TODO(satorux): Distinguish the "not fetching at all" case.
-  util::Log(logging::LOG_INFO,
-            "Fast-fetch start: %s; Server changestamp: %s",
-            directory_fetch_info.ToString().c_str(),
-            base::Int64ToString(last_known_remote_changestamp).c_str());
-
-  // If the directory's changestamp is up-to-date, just schedule to run the
-  // callback, as there is no need to fetch the directory.
-  // Note that |last_known_remote_changestamp_| is 0 when it is not received
-  // yet. In that case we conservatively assume that we need to fetch.
-  if (last_known_remote_changestamp > 0 &&
-      directory_changestamp >= last_known_remote_changestamp) {
-    callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
-  // Start fetching the directory content, and mark it with the changestamp
-  // |last_known_remote_changestamp_|.
-  DirectoryFetchInfo new_directory_fetch_info(
-      directory_fetch_info.resource_id(),
-      std::max(directory_changestamp, last_known_remote_changestamp));
-  DoLoadDirectoryFromServer(new_directory_fetch_info, callback);
-}
-
-void ChangeListLoader::DoLoadDirectoryFromServer(
+void ChangeListLoader::LoadDirectoryFromServer(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -712,7 +729,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
                    resource_metadata_,
                    google_apis::AboutResource(*cached_about_resource_),
                    changed_directory_path),
-        base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
+        base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    directory_fetch_info,
                    callback,
@@ -727,14 +744,14 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
       cached_about_resource_->root_folder_id());
   fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
-      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
+      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback,
                  fetcher));
 }
 
-void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
+void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     FeedFetcher* fetcher,
@@ -765,14 +782,14 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
                  directory_fetch_info,
                  base::Passed(&change_lists),
                  directory_path),
-      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
+      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback,
                  base::Owned(directory_path)));
 }
 
-void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
+void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     const base::FilePath* directory_path,
@@ -787,68 +804,6 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(*directory_path));
   }
-}
-
-void ChangeListLoader::UpdateFromChangeList(
-    scoped_ptr<google_apis::AboutResource> about_resource,
-    ScopedVector<ChangeList> change_lists,
-    bool is_delta_update,
-    const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(about_resource);
-
-  ChangeListProcessor* change_list_processor =
-      new ChangeListProcessor(resource_metadata_);
-  // Don't send directory content change notification while performing
-  // the initial content retrieval.
-  const bool should_notify_changed_directories = is_delta_update;
-
-  util::Log(logging::LOG_INFO,
-            "Apply change lists (is delta: %d)",
-            is_delta_update);
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ChangeListProcessor::Apply,
-                 base::Unretained(change_list_processor),
-                 base::Passed(&about_resource),
-                 base::Passed(&change_lists),
-                 is_delta_update),
-      base::Bind(&ChangeListLoader::UpdateFromChangeListAfterApply,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(change_list_processor),
-                 should_notify_changed_directories,
-                 base::Time::Now(),
-                 callback));
-}
-
-void ChangeListLoader::UpdateFromChangeListAfterApply(
-    ChangeListProcessor* change_list_processor,
-    bool should_notify_changed_directories,
-    base::Time start_time,
-    const base::Closure& callback,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(change_list_processor);
-  DCHECK(!callback.is_null());
-
-  const base::TimeDelta elapsed = base::Time::Now() - start_time;
-  util::Log(logging::LOG_INFO,
-            "Change lists applied (elapsed time: %sms)",
-            base::Int64ToString(elapsed.InMilliseconds()).c_str());
-
-  if (should_notify_changed_directories) {
-    for (std::set<base::FilePath>::iterator dir_iter =
-            change_list_processor->changed_dirs().begin();
-        dir_iter != change_list_processor->changed_dirs().end();
-        ++dir_iter) {
-      FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
-                        OnDirectoryChanged(*dir_iter));
-    }
-  }
-
-  callback.Run();
 }
 
 void ChangeListLoader::UpdateAboutResource(
