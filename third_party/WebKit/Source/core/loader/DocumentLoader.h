@@ -145,8 +145,6 @@ namespace WebCore {
 
         void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
 
-        void setDeferMainResourceDataLoad(bool defer) { m_deferMainResourceDataLoad = defer; }
-
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
         void resetTiming() { m_documentLoadTiming = DocumentLoadTiming(); }
 
@@ -161,7 +159,6 @@ namespace WebCore {
     protected:
         DocumentLoader(const ResourceRequest&, const SubstituteData&);
 
-        bool m_deferMainResourceDataLoad;
         Vector<KURL> m_redirectChain;
 
     private:
@@ -203,10 +200,7 @@ namespace WebCore {
         bool shouldContinueForResponse() const;
 
         typedef Timer<DocumentLoader> DocumentLoaderTimer;
-
-        void handleSubstituteDataLoadSoon();
         void handleSubstituteDataLoadNow(DocumentLoaderTimer*);
-        void startDataLoadTimer();
 
         Frame* m_frame;
         RefPtr<ResourceFetcher> m_fetcher;

@@ -70,7 +70,6 @@ public:
     virtual ExtraData* extraData() const;
     virtual void setExtraData(ExtraData*);
     virtual WebApplicationCacheHost* applicationCacheHost();
-    virtual void setDeferMainResourceDataLoad(bool);
     virtual void setNavigationStartTime(double);
 
     static WebNavigationType toWebNavigationType(WebCore::NavigationType type);

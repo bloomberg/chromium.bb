@@ -67,9 +67,6 @@ private:
     void prepareShadowPageForLoader();
     void onScriptLoaderFinished();
 
-    // WebFrameClient overrides, for 'shadow page' loading.
-    virtual void didCreateDataSource(WebFrame*, WebDataSource*) OVERRIDE;
-
     WebEmbeddedWorkerStartData m_workerStartData;
 
     // These are kept until startWorkerContext is called, and then passed on
@@ -90,7 +87,6 @@ private:
     // are guaranteed to exist while this object is around.
     WebView* m_webView;
     WebFrame* m_mainFrame;
-    RefPtr<WebCore::ExecutionContext> m_loadingContext;
 
     bool m_askedToTerminate;
 };

@@ -139,16 +139,6 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     int length = static_cast<int>(content.length());
     RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
     webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
-
-    // This document will be used as 'loading context' for the worker.
-    m_loadingDocument = webFrame->frame()->document();
-}
-
-void WebSharedWorkerImpl::didCreateDataSource(WebFrame*, WebDataSource* ds)
-{
-    // Tell the loader to load the data into the 'shadow page' synchronously,
-    // so we can grab the resulting Document right after load.
-    static_cast<WebDataSourceImpl*>(ds)->setDeferMainResourceDataLoad(false);
 }
 
 WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient* appcacheHostClient)
@@ -214,8 +204,7 @@ void WebSharedWorkerImpl::workerGlobalScopeDestroyedOnMainThread()
 
 void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    ASSERT(m_loadingDocument->isDocument());
-    m_loadingDocument->postTask(task);
+    toWebFrameImpl(m_mainFrame)->frame()->document()->postTask(task);
 }
 
 bool WebSharedWorkerImpl::postTaskForModeToWorkerGlobalScope(
@@ -249,7 +238,11 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
-    WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
+    // We can't get the SecurityOrigin from the Document, because the Document will be created asynchronously.
+    // Normally it's not safe to create a new SecurityOrigin from the same url and assume it will be the same, but the
+    // cases where that's risky aren't applicable here. They involve being in an iframe (e.g., sandbox origin or
+    // about:blank in a new iframe), and this codepath is always working with a main frame.
+    WebSecurityOrigin webSecurityOrigin = WebSecurityOrigin::create(url);
     providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), workerClients.release());
     setWorkerThread(SharedWorkerThread::create(name, *this, *this, startupData.release()));

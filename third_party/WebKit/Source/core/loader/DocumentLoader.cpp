@@ -71,8 +71,7 @@ static bool isArchiveMIMEType(const String& mimeType)
 }
 
 DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData& substituteData)
-    : m_deferMainResourceDataLoad(true)
-    , m_frame(0)
+    : m_frame(0)
     , m_fetcher(ResourceFetcher::create(this))
     , m_originalRequest(req)
     , m_substituteData(substituteData)
@@ -351,19 +350,6 @@ void DocumentLoader::handleSubstituteDataLoadNow(DocumentLoaderTimer*)
         dataReceived(0, m_substituteData.content()->data(), m_substituteData.content()->size());
     if (isLoadingMainResource())
         finishedLoading(0);
-}
-
-void DocumentLoader::startDataLoadTimer()
-{
-    m_dataLoadTimer.startOneShot(0);
-}
-
-void DocumentLoader::handleSubstituteDataLoadSoon()
-{
-    if (m_deferMainResourceDataLoad)
-        startDataLoadTimer();
-    else
-        handleSubstituteDataLoadNow(0);
 }
 
 bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, PolicyCheckLoadType policyCheckLoadType)
@@ -837,7 +823,7 @@ void DocumentLoader::startLoadingMainResource()
     if (m_substituteData.isValid()) {
         m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();
         frame()->fetchContext().dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, m_request, ResourceResponse());
-        handleSubstituteDataLoadSoon();
+        m_dataLoadTimer.startOneShot(0);
         return;
     }
 

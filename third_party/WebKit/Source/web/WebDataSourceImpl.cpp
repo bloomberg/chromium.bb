@@ -131,11 +131,6 @@ WebApplicationCacheHost* WebDataSourceImpl::applicationCacheHost()
     return ApplicationCacheHostInternal::toWebApplicationCacheHost(DocumentLoader::applicationCacheHost());
 }
 
-void WebDataSourceImpl::setDeferMainResourceDataLoad(bool defer)
-{
-    DocumentLoader::setDeferMainResourceDataLoad(defer);
-}
-
 void WebDataSourceImpl::setNavigationStartTime(double navigationStart)
 {
     timing()->setNavigationStart(navigationStart);

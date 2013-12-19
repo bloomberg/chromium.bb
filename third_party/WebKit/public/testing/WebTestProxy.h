@@ -208,7 +208,6 @@ protected:
     void didDetectXSS(blink::WebFrame*, const blink::WebURL& insecureURL, bool didBlockEntirePage);
     void didDispatchPingLoader(blink::WebFrame*, const blink::WebURL&);
     void willRequestResource(blink::WebFrame*, const blink::WebCachedURLRequest&);
-    void didCreateDataSource(blink::WebFrame*, blink::WebDataSource*);
     void willSendRequest(blink::WebFrame*, unsigned identifier, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse);
     void didReceiveResponse(blink::WebFrame*, unsigned identifier, const blink::WebURLResponse&);
     void didChangeResourcePriority(blink::WebFrame*, unsigned identifier, const blink::WebURLRequest::Priority&);
@@ -478,7 +477,6 @@ public:
     }
     virtual void didCreateDataSource(blink::WebFrame* frame, blink::WebDataSource* ds)
     {
-        WebTestProxyBase::didCreateDataSource(frame, ds);
         Base::didCreateDataSource(frame, ds);
     }
     virtual void willSendRequest(blink::WebFrame* frame, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)

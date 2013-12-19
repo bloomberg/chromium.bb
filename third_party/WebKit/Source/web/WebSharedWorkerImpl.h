@@ -85,7 +85,6 @@ public:
         PassOwnPtr<WebCore::ExecutionContextTask>, const WTF::String& mode);
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
-    virtual void didCreateDataSource(WebFrame*, WebDataSource*);
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*);
 
     // WebSharedWorker methods:
@@ -122,7 +121,6 @@ private:
     void workerGlobalScopeDestroyedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
-    RefPtr<WebCore::ExecutionContext> m_loadingDocument;
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;

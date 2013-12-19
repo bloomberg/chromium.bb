@@ -247,7 +247,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("dumpProgressFinishedCallback", &TestRunner::dumpProgressFinishedCallback);
     bindMethod("dumpSpellCheckCallbacks", &TestRunner::dumpSpellCheckCallbacks);
     bindMethod("dumpBackForwardList", &TestRunner::dumpBackForwardList);
-    bindMethod("setDeferMainResourceDataLoad", &TestRunner::setDeferMainResourceDataLoad);
     bindMethod("dumpSelectionRect", &TestRunner::dumpSelectionRect);
     bindMethod("testRepaint", &TestRunner::testRepaint);
     bindMethod("repaintSweepHorizontally", &TestRunner::repaintSweepHorizontally);
@@ -411,7 +410,6 @@ void TestRunner::reset()
     m_dumpProgressFinishedCallback = false;
     m_dumpSpellCheckCallbacks = false;
     m_dumpBackForwardList = false;
-    m_deferMainResourceDataLoad = true;
     m_dumpSelectionRect = false;
     m_testRepaint = false;
     m_sweepHorizontally = false;
@@ -609,11 +607,6 @@ bool TestRunner::shouldDumpSpellCheckCallbacks() const
 bool TestRunner::shouldDumpBackForwardList() const
 {
     return m_dumpBackForwardList;
-}
-
-bool TestRunner::deferMainResourceDataLoad() const
-{
-    return m_deferMainResourceDataLoad;
 }
 
 bool TestRunner::shouldDumpSelectionRect() const
@@ -1085,12 +1078,6 @@ void TestRunner::dumpBackForwardList(const CppArgumentList&, CppVariant* result)
 {
     m_dumpBackForwardList = true;
     result->setNull();
-}
-
-void TestRunner::setDeferMainResourceDataLoad(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() == 1)
-        m_deferMainResourceDataLoad = cppVariantToBool(arguments[0]);
 }
 
 void TestRunner::dumpSelectionRect(const CppArgumentList& arguments, CppVariant* result)

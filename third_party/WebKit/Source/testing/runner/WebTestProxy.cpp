@@ -1172,12 +1172,6 @@ void WebTestProxyBase::willRequestResource(WebFrame* frame, const blink::WebCach
     }
 }
 
-void WebTestProxyBase::didCreateDataSource(WebFrame*, WebDataSource* ds)
-{
-    if (!m_testInterfaces->testRunner()->deferMainResourceDataLoad())
-        ds->setDeferMainResourceDataLoad(false);
-}
-
 void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
 {
     // Need to use GURL for host() and SchemeIs()

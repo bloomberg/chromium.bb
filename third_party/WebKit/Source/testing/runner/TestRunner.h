@@ -117,7 +117,6 @@ public:
     bool shouldDumpStatusCallbacks() const;
     bool shouldDumpProgressFinishedCallback() const;
     bool shouldDumpSpellCheckCallbacks() const;
-    bool deferMainResourceDataLoad() const;
     bool shouldStayOnPageAfterHandlingBeforeUnload() const;
     const std::set<std::string>* httpHeadersToClear() const;
     void setTopLoadingFrame(blink::WebFrame*, bool);
@@ -410,7 +409,6 @@ private:
     // representation of the back/forward list. It ignores all arguments.
     void dumpBackForwardList(const CppArgumentList&, CppVariant*);
 
-    void setDeferMainResourceDataLoad(const CppArgumentList&, CppVariant*);
     void dumpSelectionRect(const CppArgumentList&, CppVariant*);
     void testRepaint(const CppArgumentList&, CppVariant*);
     void repaintSweepHorizontally(const CppArgumentList&, CppVariant*);
@@ -676,9 +674,6 @@ private:
     // If true, the test_shell will produce a dump of the back forward list as
     // well.
     bool m_dumpBackForwardList;
-
-    // If false, all new requests will not defer the main resource data load.
-    bool m_deferMainResourceDataLoad;
 
     // If true, the test_shell will draw the bounds of the current selection rect
     // taking possible transforms of the selection rect into account.
