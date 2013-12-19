@@ -52,75 +52,6 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
 }
 
 /**
- * Fake entry to be used in currentDirEntry_ when current directory is
- * unmounted DRIVE. TODO(haruki): Support "drive/root" and "drive/other".
- * @type {Object}
- * @const
- * @private
- */
-DirectoryModel.fakeDriveEntry_ = {
-  fullPath: RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT,
-  isDirectory: true,
-  rootType: RootType.DRIVE
-};
-
-/**
- * Fake entry representing a psuedo directory, which contains Drive files
- * available offline. This entry works as a trigger to start a search for
- * offline files.
- * @type {Object}
- * @const
- * @private
- */
-DirectoryModel.fakeDriveOfflineEntry_ = {
-  fullPath: RootDirectory.DRIVE_OFFLINE,
-  isDirectory: true,
-  rootType: RootType.DRIVE_OFFLINE
-};
-
-/**
- * Fake entry representing a pseudo directory, which contains shared-with-me
- * Drive files. This entry works as a trigger to start a search for
- * shared-with-me files.
- * @type {Object}
- * @const
- * @private
- */
-DirectoryModel.fakeDriveSharedWithMeEntry_ = {
-  fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
-  isDirectory: true,
-  rootType: RootType.DRIVE_SHARED_WITH_ME
-};
-
-/**
- * Fake entry representing a pseudo directory, which contains Drive files
- * accessed recently. This entry works as a trigger to start a metadata search
- * implemented as DirectoryContentsDriveRecent.
- * DirectoryModel is responsible to start the search when the UI tries to open
- * this fake entry (e.g. changeDirectory()).
- * @type {Object}
- * @const
- * @private
- */
-DirectoryModel.fakeDriveRecentEntry_ = {
-  fullPath: RootDirectory.DRIVE_RECENT,
-  isDirectory: true,
-  rootType: RootType.DRIVE_RECENT
-};
-
-/**
- * List of fake entries for special searches.
- *
- * @type {Array.<Object>}
- * @const
- */
-DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES = [
-  DirectoryModel.fakeDriveSharedWithMeEntry_,
-  DirectoryModel.fakeDriveRecentEntry_,
-  DirectoryModel.fakeDriveOfflineEntry_
-];
-
-/**
  * DirectoryModel extends cr.EventTarget.
  */
 DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
@@ -312,15 +243,15 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
 };
 
 /**
+ * TODO(hirono): Remove the method.
  * @return {string} URL of the current directory. or null if unavailable.
  */
 DirectoryModel.prototype.getCurrentDirectoryURL = function() {
   var entry = this.currentDirContents_.getDirectoryEntry();
   if (!entry)
     return null;
-  if (entry === DirectoryModel.fakeDriveOfflineEntry_)
-    return util.makeFilesystemUrl(entry.fullPath);
-  return entry.toURL();
+  return util.isFakeEntry(entry) ?
+      util.makeFilesystemUrl(entry.fullPath) : entry.toURL();
 };
 
 /**
@@ -787,13 +718,16 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  *     directory failed.
  */
 DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
+  // Increment the sequence value.
   this.changeDirectorySequence_++;
 
+  // If the entry is fake, start special search.
   if (PathUtil.isSpecialSearchRoot(path)) {
     this.specialSearch(path, '');
     return;
   }
 
+  // Otherwise, set the directory entry.
   this.resolveDirectory(
       path,
       function(sequence, directoryEntry) {
@@ -832,9 +766,11 @@ DirectoryModel.prototype.resolveDirectory = function(
     //
     // TODO(mtomasz, hashimoto): Consider rewriting this logic.
     //     crbug.com/253464.
-    if (PathUtil.getRootType(path) == RootType.DRIVE &&
-        error.code == FileError.INVALID_STATE_ERR) {
-      successCallback(DirectoryModel.fakeDriveEntry_);
+    var volumeInfo = volumeManager_.getVolumeInfo(path);
+    if (volumeInfo &&
+        volumeInfo.volumeType === util.VolumeType.DRIVE &&
+        error.code === FileError.INVALID_STATE_ERR) {
+      successCallback(volumeInfo.createFakeEntry(RootType.DRIVE));
       return;
     }
     errorCallback(error);
@@ -990,13 +926,14 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   if (driveVolume && !driveVolume.error) {
     var currentDirEntry = this.getCurrentDirEntry();
     if (currentDirEntry) {
-      if (currentDirEntry === DirectoryModel.fakeDriveEntry_) {
+      if (util.isFakeEntry(currentDirEntry) &&
+          currentDirEntry.rootType === RootType.DRIVE) {
         // Replace the fake entry by real DirectoryEntry silently.
         this.volumeManager_.resolveAbsolutePath(
-            DirectoryModel.fakeDriveEntry_.fullPath,
+            currentDirEntry.fullPath,
             function(entry) {
               // If the current entry is still fake drive entry, replace it.
-              if (this.getCurrentDirEntry() === DirectoryModel.fakeDriveEntry_)
+              if (util.isSameEntry(this.getCurrentDirEntry(), currentDirEntry))
                 this.changeDirectoryEntrySilent_(entry);
             },
             function(error) {});
@@ -1112,17 +1049,27 @@ DirectoryModel.prototype.search = function(query,
  * @param {string=} opt_query Query string used for the search.
  */
 DirectoryModel.prototype.specialSearch = function(path, opt_query) {
+  console.log('special search');
   var query = opt_query || '';
 
   this.clearSearch_();
-
   this.onSearchCompleted_ = null;
   this.onClearSearch_ = null;
+
+  // Obtains a volume information.
+  // TODO(hirono): Obtain the proper profile's volume information.
+  var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+      util.VolumeType.DRIVE);
+  if (!volumeInfo) {
+    // It seems that the volume is already unmounted or drive is disable.
+    return;
+  }
 
   var onDriveDirectoryResolved = function(sequence, driveRoot) {
     if (this.changeDirectorySequence_ !== sequence)
       return;
-    if (!driveRoot || driveRoot == DirectoryModel.fakeDriveEntry_) {
+
+    if (!driveRoot || util.isFakeEntry(driveRoot)) {
       // Drive root not available or not ready. onVolumeInfoListUpdated_()
       // handles the rescan if necessary.
       driveRoot = null;
@@ -1132,20 +1079,20 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     var searchOption;
     var dirEntry;
     if (specialSearchType == RootType.DRIVE_OFFLINE) {
-      dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
+      dirEntry = volumeInfo.fakeEntries[RootType.DRIVE_OFFLINE];
       searchOption =
           DriveMetadataSearchContentScanner.SearchType.SEARCH_OFFLINE;
     } else if (specialSearchType == RootType.DRIVE_SHARED_WITH_ME) {
-      dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
+      dirEntry = volumeInfo.fakeEntries[RootType.DRIVE_SHARED_WITH_ME];
       searchOption =
           DriveMetadataSearchContentScanner.SearchType.SEARCH_SHARED_WITH_ME;
     } else if (specialSearchType == RootType.DRIVE_RECENT) {
-      dirEntry = DirectoryModel.fakeDriveRecentEntry_;
+      dirEntry = volumeInfo.fakeEntries[RootType.DRIVE_RECENT];
       searchOption =
           DriveMetadataSearchContentScanner.SearchType.SEARCH_RECENT_FILES;
     } else {
       // Unknown path.
-      throw new Error('Unknown path for special search.');
+      throw new Error('Unknown path for special search: ' + path + '.');
     }
 
     var newDirContents = DirectoryContents.createForDriveMetadataSearch(
@@ -1160,7 +1107,8 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     this.dispatchEvent(e);
   }.bind(this, this.changeDirectorySequence_);
 
-  this.resolveDirectory(DirectoryModel.fakeDriveEntry_.fullPath,
+  // TODO(hirono): We don't need to obtain the drive root to search.
+  this.resolveDirectory(volumeInfo.fakeEntries[RootType.DRIVE].fullPath,
                         onDriveDirectoryResolved /* success */,
                         function() {} /* failed */);
 };

@@ -325,17 +325,18 @@ PathUtil.getRootLabel = function(path) {
     return path.substring(RootDirectory.REMOVABLE.length + 1);
 
   // TODO(haruki): Add support for "drive/root" and "drive/other".
-  if (path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT)
+  if (path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT ||
+      path === RootType.DRIVE)
     return str('DRIVE_MY_DRIVE_LABEL');
 
-  if (path === RootDirectory.DRIVE_OFFLINE)
+  if (path === RootDirectory.DRIVE_OFFLINE || path === RootType.DRIVE_OFFLINE)
     return str('DRIVE_OFFLINE_COLLECTION_LABEL');
 
   if (path === RootDirectory.DRIVE_SHARED_WITH_ME ||
       path === RootType.DRIVE_SHARED_WITH_ME)
     return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
 
-  if (path === RootDirectory.DRIVE_RECENT)
+  if (path === RootDirectory.DRIVE_RECENT || path === RootType.DRIVE_RECENT)
     return str('DRIVE_RECENT_COLLECTION_LABEL');
 
   return path;

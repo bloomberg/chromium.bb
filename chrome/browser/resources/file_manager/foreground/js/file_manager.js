@@ -1002,7 +1002,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initNavigationList_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
-    DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
+    DirectoryTree.decorate(this.directoryTree_,
+                           this.directoryModel_,
+                           this.volumeManager_);
 
     this.navigationList_ = this.dialogDom_.querySelector('#navigation-list');
     NavigationList.decorate(this.navigationList_,
@@ -1434,12 +1436,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       // If the path points a fake entry, use the entry directly.
-      var fakeEntries = DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES;
-      for (var i = 0; i < fakeEntries.length; i++) {
-        if (candidateFullPath === fakeEntries[i].fullPath) {
-          candidateEntry = fakeEntries[i];
-          callback();
-          return;
+      // TODO(hirono): Obtains proper volume.
+      var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+          util.VolumeType.DRIVE);
+      if (volumeInfo) {
+        for (var name in volumeInfo.fakeEntries) {
+          var fakeEntry = volumeInfo.fakeEntries[name];
+          // Skip the drive root fake entry, because we can need actual drive
+          // root to list its files.
+          if (fakeEntry.rootType === RootType.DRIVE)
+            continue;
+          if (candidateFullPath === fakeEntry.fullPath) {
+            candidateEntry = fakeEntry;
+            callback();
+            return;
+          }
         }
       }
 

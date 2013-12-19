@@ -58,7 +58,9 @@ DirectoryContentScanner.prototype.__proto__ = ContentScanner.prototype;
  */
 DirectoryContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
-  if (!this.entry_ || this.entry_ === DirectoryModel.fakeDriveEntry_) {
+  if (!this.entry_ ||
+      (util.isFakeEntry(this.entry_) &&
+       this.entry_.rootType === RootType.DRIVE)) {
     // If entry is not specified or a fake, we cannot read it.
     errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
     return;

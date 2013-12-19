@@ -35,6 +35,34 @@ function VolumeInfo(
   this.mountPath = mountPath;
   this.volumeId = volumeId;
   this.root = root;
+  this.fakeEntries = {};
+
+  if (volumeType === util.VolumeType.DRIVE) {
+    this.fakeEntries[RootType.DRIVE] = {
+      fullPath: RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT,
+      isDirectory: true,
+      rootType: RootType.DRIVE,
+      label: PathUtil.getRootLabel(RootType.DRIVE)
+    };
+    this.fakeEntries[RootType.DRIVE_OFFLINE] = {
+      fullPath: RootDirectory.DRIVE_OFFLINE,
+      isDirectory: true,
+      rootType: RootType.DRIVE_OFFLINE,
+      label: PathUtil.getRootLabel(RootType.DRIVE_OFFLINE)
+    };
+    this.fakeEntries[RootType.DRIVE_SHARED_WITH_ME] = {
+      fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
+      isDirectory: true,
+      rootType: RootType.DRIVE_SHARED_WITH_ME,
+      label: PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME)
+    };
+    this.fakeEntries[RootType.DRIVE_RECENT] = {
+      fullPath: RootDirectory.DRIVE_RECENT,
+      isDirectory: true,
+      rootType: RootType.DRIVE_RECENT,
+      label: PathUtil.getRootLabel(RootType.DRIVE_RECENT)
+    };
+  }
 
   // Note: This represents if the mounting of the volume is successfully done
   // or not. (If error is empty string, the mount is successfully done).

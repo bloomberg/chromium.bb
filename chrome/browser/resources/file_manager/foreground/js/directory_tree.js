@@ -13,25 +13,6 @@
 var DirectoryTreeUtil = {};
 
 /**
- * Generate a list of the directory entries for the top level on the tree.
- * @return {Array.<DirectoryEntry>} Entries for the top level on the tree.
- */
-DirectoryTreeUtil.generateTopLevelEntries = function() {
-  var entries = [
-    DirectoryModel.fakeDriveEntry_,
-    DirectoryModel.fakeDriveOfflineEntry_,
-    DirectoryModel.fakeDriveSharedWithMeEntry_,
-    DirectoryModel.fakeDriveRecentEntry_,
-  ];
-
-  for (var i = 0; i < entries.length; i++) {
-    entries[i]['label'] = PathUtil.getRootLabel(entries[i].fullPath);
-  }
-
-  return entries;
-};
-
-/**
  * Checks if the given directory can be on the tree or not.
  *
  * @param {string} path Path to be checked.
@@ -397,7 +378,7 @@ DirectoryItem.prototype.doDropTargetAction = function() {
  * Executes the assigned action. DirectoryItem performs changeDirectory.
  */
 DirectoryItem.prototype.doAction = function() {
-  if (this.fullPath != this.directoryModel_.getCurrentDirPath())
+  if (this.fullPath !== this.directoryModel_.getCurrentDirPath())
     this.directoryModel_.changeDirectory(this.fullPath);
 };
 
@@ -503,7 +484,8 @@ DirectoryTree.prototype.decorate = function(directoryModel, volumeManager) {
 
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
-  this.entries_ = DirectoryTreeUtil.generateTopLevelEntries();
+  this.entries_ = [];
+  this.currentVolumeInfo_ = null;
 
   this.fileFilter_ = this.directoryModel_.getFileFilter();
   this.fileFilter_.addEventListener('changed',
@@ -580,7 +562,7 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
 DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
     completionCallback) {
   var myDriveItem = this.items[0];
-  if (!util.isFakeEntry(myDriveItem.entry)) {
+  if (!myDriveItem || !util.isFakeEntry(myDriveItem.entry)) {
     // The entry is already resolved. Don't need to try again.
     completionCallback();
     return;
@@ -606,7 +588,15 @@ DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
  */
 DirectoryTree.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  this.entries_ = DirectoryTreeUtil.generateTopLevelEntries();
+  var hasFakeEntries = this.currentVolumeInfo_ &&
+      this.currentVolumeInfo_.volumeType === util.VolumeType.DRIVE;
+  this.entries_ = hasFakeEntries ? [
+    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE],
+    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE_OFFLINE],
+    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE_SHARED_WITH_ME],
+    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE_RECENT]
+  ] : [];
+
   this.redraw(recursive);
   if (opt_successCallback)
     opt_successCallback();
@@ -639,15 +629,17 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
-  if (event.eventType == 'changed') {
-    // TODO: Use Entry instead of urls. This will stop working once migrating
-    // to separate file systems. See: crbug.com/325052.
-    if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(event.entry.fullPath))
-      return;
+  if (event.eventType !== 'changed')
+    return;
 
-    var myDriveItem = this.items[0];
+  // TODO: Use Entry instead of urls. This will stop working once migrating
+  // to separate file systems. See: crbug.com/325052.
+  if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(event.entry.fullPath))
+    return;
+
+  var myDriveItem = this.items[0];
+  if (myDriveItem)
     myDriveItem.updateItemByPath(event.entry.fullPath);
-  }
 };
 
 /**
@@ -656,6 +648,8 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
  * @private
  */
 DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {
+  this.currentVolumeInfo_ =
+      this.volumeManager_.getVolumeInfo(event.newDirEntry);
   this.selectByEntry(event.newDirEntry);
 };
 
