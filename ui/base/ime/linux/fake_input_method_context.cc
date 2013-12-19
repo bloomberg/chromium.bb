@@ -18,11 +18,6 @@ bool FakeInputMethodContext::DispatchKeyEvent(
 void FakeInputMethodContext::Reset() {
 }
 
-base::i18n::TextDirection FakeInputMethodContext::GetInputTextDirection()
-    const {
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 void FakeInputMethodContext::OnTextInputTypeChanged(
     ui::TextInputType /* text_input_type */) {
 }

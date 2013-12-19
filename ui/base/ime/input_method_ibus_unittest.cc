@@ -387,12 +387,6 @@ TEST_F(InputMethodIBusTest, GetInputLocale) {
   EXPECT_EQ("", ime_->GetInputLocale());
 }
 
-TEST_F(InputMethodIBusTest, GetInputTextDirection) {
-  // ui::InputMethodIBus does not support the API.
-  ime_->Init(true);
-  EXPECT_EQ(base::i18n::UNKNOWN_DIRECTION, ime_->GetInputTextDirection());
-}
-
 TEST_F(InputMethodIBusTest, IsActive) {
   ime_->Init(true);
   // ui::InputMethodIBus always returns true.

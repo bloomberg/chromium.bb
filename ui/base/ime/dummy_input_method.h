@@ -33,7 +33,6 @@ class DummyInputMethod : public InputMethod {
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual TextInputMode GetTextInputMode() const OVERRIDE;

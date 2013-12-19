@@ -135,10 +135,6 @@ std::string InputMethodAuraLinux::GetInputLocale() {
   return "";
 }
 
-base::i18n::TextDirection InputMethodAuraLinux::GetInputTextDirection() {
-  return input_method_context_->GetInputTextDirection();
-}
-
 bool InputMethodAuraLinux::IsActive() {
   // InputMethodAuraLinux is always ready and up.
   return true;

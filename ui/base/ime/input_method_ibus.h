@@ -44,7 +44,6 @@ class UI_EXPORT InputMethodIBus
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
 

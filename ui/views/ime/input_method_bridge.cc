@@ -159,12 +159,6 @@ std::string InputMethodBridge::GetInputLocale() {
   return host_->GetInputLocale();
 }
 
-base::i18n::TextDirection InputMethodBridge::GetInputTextDirection() {
-  DCHECK(host_);
-
-  return host_->GetInputTextDirection();
-}
-
 bool InputMethodBridge::IsActive() {
   DCHECK(host_);
 

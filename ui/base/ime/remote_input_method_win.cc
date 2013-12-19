@@ -255,20 +255,6 @@ class RemoteInputMethodWin : public InputMethod,
     return language.append(1, '-').append(region);
   }
 
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE {
-    switch (PRIMARYLANGID(langid_)) {
-      case LANG_ARABIC:
-      case LANG_HEBREW:
-      case LANG_PERSIAN:
-      case LANG_SYRIAC:
-      case LANG_UIGHUR:
-      case LANG_URDU:
-        return base::i18n::RIGHT_TO_LEFT;
-      default:
-        return base::i18n::LEFT_TO_RIGHT;
-    }
-  }
-
   virtual bool IsActive() OVERRIDE {
     return true;  // always turned on
   }

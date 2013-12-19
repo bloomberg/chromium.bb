@@ -25,14 +25,13 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
                                HWND toplevel_window_handle)
     : active_(false),
       toplevel_window_handle_(toplevel_window_handle),
-      direction_(base::i18n::UNKNOWN_DIRECTION),
       pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
       accept_carriage_return_(false) {
   SetDelegate(delegate);
 }
 
 void InputMethodWin::Init(bool focused) {
-  // Gets the initial input locale and text direction information.
+  // Gets the initial input locale.
   OnInputLocaleChanged();
 
   InputMethodBase::Init(focused);
@@ -79,16 +78,11 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
 void InputMethodWin::OnInputLocaleChanged() {
   active_ = imm32_manager_.SetInputLanguage();
   locale_ = imm32_manager_.GetInputLanguageName();
-  direction_ = imm32_manager_.GetTextDirection();
   OnInputMethodChanged();
 }
 
 std::string InputMethodWin::GetInputLocale() {
   return locale_;
-}
-
-base::i18n::TextDirection InputMethodWin::GetInputTextDirection() {
-  return direction_;
 }
 
 bool InputMethodWin::IsActive() {

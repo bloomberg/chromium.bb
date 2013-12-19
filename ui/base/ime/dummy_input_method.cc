@@ -59,10 +59,6 @@ std::string DummyInputMethod::GetInputLocale() {
   return std::string();
 }
 
-base::i18n::TextDirection DummyInputMethod::GetInputTextDirection() {
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 bool DummyInputMethod::IsActive() {
   return true;
 }

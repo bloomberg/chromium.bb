@@ -72,9 +72,8 @@ class UI_EXPORT RemoteInputMethodPrivateWin {
   virtual void OnCandidatePopupChanged(bool visible) = 0;
 
   // Updates internal cache so that subsequent calls of
-  // RemoteInputMethodWin::GetInputLocale and
-  // RemoteInputMethodWin::GetInputTextDirection can return the correct
-  // values based on remote IME activities in the metro_driver process.
+  // RemoteInputMethodWin::GetInputLocale can return the correct values based on
+  // remote IME activities in the metro_driver process.
   virtual void OnInputSourceChanged(LANGID langid, bool is_ime) = 0;
 
   // Handles composition-update events occurred in the metro_driver process.

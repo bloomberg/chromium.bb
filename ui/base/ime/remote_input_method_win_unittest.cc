@@ -293,14 +293,10 @@ TEST(RemoteInputMethodWinTest, OnInputSourceChanged) {
   private_ptr->OnInputSourceChanged(
       MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN), true);
   EXPECT_EQ("ja-JP", input_method->GetInputLocale());
-  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT,
-           input_method->GetInputTextDirection());
 
   private_ptr->OnInputSourceChanged(
       MAKELANGID(LANG_ARABIC, SUBLANG_ARABIC_QATAR), true);
   EXPECT_EQ("ar-QA", input_method->GetInputLocale());
-  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT,
-            input_method->GetInputTextDirection());
 }
 
 TEST(RemoteInputMethodWinTest, OnCandidatePopupChanged) {

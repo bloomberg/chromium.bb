@@ -28,7 +28,6 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
   // Overriden from ui::LinuxInputMethodContext
   virtual bool DispatchKeyEvent(const ui::KeyEvent& key_event) OVERRIDE;
   virtual void Reset() OVERRIDE;
-  virtual base::i18n::TextDirection GetInputTextDirection() const OVERRIDE;
   virtual void OnTextInputTypeChanged(ui::TextInputType text_input_type)
       OVERRIDE;
   virtual void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) OVERRIDE;

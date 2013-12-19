@@ -52,10 +52,6 @@ std::string InputMethodMinimal::GetInputLocale() {
   return std::string();
 }
 
-base::i18n::TextDirection InputMethodMinimal::GetInputTextDirection() {
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 bool InputMethodMinimal::IsActive() {
   return true;
 }

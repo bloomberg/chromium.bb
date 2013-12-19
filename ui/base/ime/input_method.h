@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
-#include "base/i18n/rtl.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -125,10 +124,6 @@ class InputMethod {
   // Returns the locale of current keyboard layout or input method, as a BCP-47
   // tag, or an empty string if the input method cannot provide it.
   virtual std::string GetInputLocale() = 0;
-
-  // Returns the text direction of current keyboard layout or input method, or
-  // base::i18n::UNKNOWN_DIRECTION if the input method cannot provide it.
-  virtual base::i18n::TextDirection GetInputTextDirection() = 0;
 
   // Checks if the input method is active, i.e. if it's ready for processing
   // keyboard event and generate composition or text result.

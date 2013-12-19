@@ -27,7 +27,6 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
 
  protected:
@@ -83,9 +82,6 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
 
   // Name of the current input locale.
   std::string locale_;
-
-  // The current input text direction.
-  base::i18n::TextDirection direction_;
 
   // The new text direction and layout alignment requested by the user by
   // pressing ctrl-shift. It'll be sent to the text input client when the key

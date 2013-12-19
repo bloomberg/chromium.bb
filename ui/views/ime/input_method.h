@@ -94,10 +94,6 @@ class VIEWS_EXPORT InputMethod {
   // tag, or an empty string if the input method cannot provide it.
   virtual std::string GetInputLocale() = 0;
 
-  // Returns the text direction of current keyboard layout or input method, or
-  // base::i18n::UNKNOWN_DIRECTION if the input method cannot provide it.
-  virtual base::i18n::TextDirection GetInputTextDirection() = 0;
-
   // Returns true if the input method is ready to process keyboard events and
   // generate composition or text results. It is not necessary to notify
   // inactive input methods of caret bounds or text input type changes.

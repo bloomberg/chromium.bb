@@ -229,11 +229,6 @@ std::string InputMethodIBus::GetInputLocale() {
   return "";
 }
 
-base::i18n::TextDirection InputMethodIBus::GetInputTextDirection() {
-  // Not supported.
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 bool InputMethodIBus::IsActive() {
   return true;
 }

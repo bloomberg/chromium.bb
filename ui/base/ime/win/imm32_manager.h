@@ -237,9 +237,6 @@ class UI_EXPORT IMM32Manager {
   // Returns BCP-47 tag name of the current input language.
   std::string GetInputLanguageName() const;
 
-  // Returns the text direction of the current input language.
-  base::i18n::TextDirection GetTextDirection() const;
-
   // Sets conversion status corresponding to |input_mode|.
   virtual void SetTextInputMode(HWND window_handle, TextInputMode input_mode);
 

@@ -81,10 +81,6 @@ std::string MockInputMethod::GetInputLocale() {
   return "";
 }
 
-base::i18n::TextDirection MockInputMethod::GetInputTextDirection() {
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 bool MockInputMethod::IsActive() {
   return true;
 }

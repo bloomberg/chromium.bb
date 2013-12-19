@@ -502,11 +502,6 @@ std::string IMM32Manager::GetInputLanguageName() const {
   return language.append(1, '-').append(region);
 }
 
-base::i18n::TextDirection IMM32Manager::GetTextDirection() const {
-  return IsRTLPrimaryLangID(PRIMARYLANGID(input_language_id_)) ?
-      base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
-}
-
 void IMM32Manager::SetTextInputMode(HWND window_handle,
                                     TextInputMode input_mode) {
   if (input_mode == ui::TEXT_INPUT_MODE_DEFAULT)

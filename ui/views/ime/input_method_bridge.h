@@ -45,7 +45,6 @@ class InputMethodBridge : public InputMethodBase,
   virtual void CancelComposition(View* view) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
 

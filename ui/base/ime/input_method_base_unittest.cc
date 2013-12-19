@@ -161,9 +161,6 @@ class MockInputMethodBase : public InputMethodBase {
   virtual std::string GetInputLocale() OVERRIDE{
     return "";
   }
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE {
-    return base::i18n::UNKNOWN_DIRECTION;
-  }
   virtual bool IsActive() OVERRIDE {
     return false;
   }

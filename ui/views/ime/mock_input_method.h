@@ -34,7 +34,6 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   virtual void CancelComposition(View* view) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
-  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
   virtual bool IsMock() const OVERRIDE;
@@ -55,7 +54,6 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   void SetResultTextForNextKey(const base::string16& result);
 
   void SetInputLocale(const std::string& locale);
-  void SetInputTextDirection(base::i18n::TextDirection direction);
   void SetActive(bool active);
 
  private:
@@ -88,7 +86,6 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
   // To mock corresponding input method prooperties.
   std::string locale_;
-  base::i18n::TextDirection direction_;
   bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);

@@ -5,7 +5,6 @@
 #ifndef UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 
-#include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_export.h"
@@ -33,9 +32,6 @@ class UI_EXPORT LinuxInputMethodContext {
   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
   // before calling DispatchKeyEvent().
   virtual void Reset() = 0;
-
-  // Returns the text direction of the current keyboard layout or input method.
-  virtual base::i18n::TextDirection GetInputTextDirection() const = 0;
 
   // Notifies the context that the text input type has changed.
   virtual void OnTextInputTypeChanged(TextInputType text_input_type) = 0;
