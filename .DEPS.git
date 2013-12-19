@@ -70,7 +70,7 @@ deps = {
     'src/third_party/libjingle/source/talk':
         Var('git_url') + '/external/webrtc/stable/talk.git@fbb1efa61417540336cf52976d4ff4394bfa795b',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@e81fceb30c7cc407b0dcb3e44c4e518fc14bae61',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@7220379786c6b814b6b887478fa440bb392e8251',
     'src/third_party/libphonenumber/src/phonenumbers':
         Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@8d8b5b3b2035197795d27573d4cf566b5d9ad689',
     'src/third_party/libphonenumber/src/resources':
