@@ -97,27 +97,11 @@ class TestExpectations(object):
       return None, None
 
     test_expectation_info['Comments'] = parsed.comment or ''
-
-    # Split the modifiers dictionary into the format we want.
-    remaining_modifiers = list(parsed.modifiers)
-    test_expectation_info['Bugs'] = []
-    for m in parsed.modifiers:
-      if (m.startswith(WEBKIT_BUG_PREFIX) or
-          m.startswith(CHROMIUM_BUG_PREFIX) or
-          m.startswith(V8_BUG_PREFIX) or
-          m.startswith(NAMED_BUG_PREFIX)):
-        test_expectation_info['Bugs'].append(m)
-        remaining_modifiers.remove(m)
-      elif m in KNOWN_TE_KEYWORDS:
-        test_expectation_info[m] = True
-        remaining_modifiers.remove(m)
-
-    # The modifiers left over should all be platform names.
-    test_expectation_info['Platforms'] = list(remaining_modifiers)
-
+    test_expectation_info['Bugs'] = parsed.bugs or [];
+    test_expectation_info['Platforms'] =  parsed.specifiers or []
     # Shovel the expectations and modifiers in as "<key>: True" entries.  Ugly,
     # but required by the rest of the pipeline for parsing.
-    for m in parsed.expectations + remaining_modifiers:
+    for m in parsed.expectations:
       test_expectation_info[m] = True
 
     return parsed.name, test_expectation_info
