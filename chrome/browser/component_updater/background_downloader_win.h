@@ -64,9 +64,6 @@ class BackgroundDownloader : public CrxDownloader {
   // has not been making progress toward completion.
   bool IsStuck();
 
-  static HRESULT CleanupStaleJobs(
-    base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager);
-
   net::URLRequestContextGetter* context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
