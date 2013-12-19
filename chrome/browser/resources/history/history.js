@@ -1366,7 +1366,10 @@ HistoryView.prototype.setTimeColumnWidth_ = function() {
     el.style.minWidth = '-webkit-min-content';
     var width = el.clientWidth;
     el.style.minWidth = '';
-    return width;
+
+    // Add an extra pixel to prevent rounding errors from causing the text to
+    // be ellipsized at certain zoom levels (see crbug.com/329779).
+    return width + 1;
   });
   var maxWidth = widths.length ? Math.max.apply(null, widths) : 0;
 
