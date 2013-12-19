@@ -33,11 +33,35 @@
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
+
+static PassRefPtr<CSSPrimitiveValue> valueForCenterCoordinate(CSSValuePool& pool, const RenderStyle& style, const BasicShapeCenterCoordinate& center)
+{
+    CSSValueID keyword = CSSValueInvalid;
+    switch (center.keyword()) {
+    case BasicShapeCenterCoordinate::None:
+        return pool.createValue(center.length(), style);
+    case BasicShapeCenterCoordinate::Top:
+        keyword = CSSValueTop;
+        break;
+    case BasicShapeCenterCoordinate::Right:
+        keyword = CSSValueRight;
+        break;
+    case BasicShapeCenterCoordinate::Bottom:
+        keyword = CSSValueBottom;
+        break;
+    case BasicShapeCenterCoordinate::Left:
+        keyword = CSSValueLeft;
+        break;
+    }
+
+    return pool.createValue(Pair::create(pool.createIdentifierValue(keyword), pool.createValue(center.length(), style), Pair::DropIdenticalValues));
+}
 
 PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicShape* basicShape)
 {
@@ -59,14 +83,34 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
         basicShapeValue = rectangleValue.release();
         break;
     }
-    case BasicShape::BasicShapeCircleType: {
-        const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
-        RefPtr<CSSBasicShapeCircle> circleValue = CSSBasicShapeCircle::create();
+    case BasicShape::DeprecatedBasicShapeCircleType: {
+        const DeprecatedBasicShapeCircle* circle = static_cast<const DeprecatedBasicShapeCircle*>(basicShape);
+        RefPtr<CSSDeprecatedBasicShapeCircle> circleValue = CSSDeprecatedBasicShapeCircle::create();
 
         circleValue->setCenterX(pool.createValue(circle->centerX(), style));
         circleValue->setCenterY(pool.createValue(circle->centerY(), style));
         circleValue->setRadius(pool.createValue(circle->radius(), style));
 
+        basicShapeValue = circleValue.release();
+        break;
+    }
+    case BasicShape::BasicShapeCircleType: {
+        const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
+        RefPtr<CSSBasicShapeCircle> circleValue = CSSBasicShapeCircle::create();
+
+        circleValue->setCenterX(valueForCenterCoordinate(pool, style, circle->centerX()));
+        circleValue->setCenterY(valueForCenterCoordinate(pool, style, circle->centerY()));
+        switch (circle->radius().type()) {
+        case BasicShapeRadius::Value:
+            circleValue->setRadius(pool.createValue(circle->radius().value(), style));
+            break;
+        case BasicShapeRadius::ClosestSide:
+            circleValue->setRadius(pool.createIdentifierValue(CSSValueClosestSide));
+            break;
+        case BasicShapeRadius::FarthestSide:
+            circleValue->setRadius(pool.createIdentifierValue(CSSValueFarthestSide));
+            break;
+        }
         basicShapeValue = circleValue.release();
         break;
     }
@@ -123,6 +167,33 @@ static Length convertToLength(const StyleResolverState& state, CSSPrimitiveValue
     return value->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
 }
 
+static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverState& state, CSSPrimitiveValue* value)
+{
+    if (Pair* pair = value->getPairValue()) {
+        BasicShapeCenterCoordinate::Keyword keyword = BasicShapeCenterCoordinate::None;
+        switch (pair->first()->getValueID()) {
+        case CSSValueTop:
+            keyword = BasicShapeCenterCoordinate::Top;
+            break;
+        case CSSValueRight:
+            keyword = BasicShapeCenterCoordinate::Right;
+            break;
+        case CSSValueBottom:
+            keyword = BasicShapeCenterCoordinate::Bottom;
+            break;
+        case CSSValueLeft:
+            keyword = BasicShapeCenterCoordinate::Left;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+        return BasicShapeCenterCoordinate(keyword, convertToLength(state, pair->second()));
+    }
+
+    return BasicShapeCenterCoordinate(convertToLength(state, value));
+}
+
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const CSSBasicShape* basicShapeValue)
 {
     RefPtr<BasicShape> basicShape;
@@ -150,13 +221,47 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
         basicShape = rect.release();
         break;
     }
-    case CSSBasicShape::CSSBasicShapeCircleType: {
-        const CSSBasicShapeCircle* circleValue = static_cast<const CSSBasicShapeCircle *>(basicShapeValue);
-        RefPtr<BasicShapeCircle> circle = BasicShapeCircle::create();
+    case CSSBasicShape::CSSDeprecatedBasicShapeCircleType: {
+        const CSSDeprecatedBasicShapeCircle* circleValue = static_cast<const CSSDeprecatedBasicShapeCircle *>(basicShapeValue);
+        RefPtr<DeprecatedBasicShapeCircle> circle = DeprecatedBasicShapeCircle::create();
 
         circle->setCenterX(convertToLength(state, circleValue->centerX()));
         circle->setCenterY(convertToLength(state, circleValue->centerY()));
         circle->setRadius(convertToLength(state, circleValue->radius()));
+
+        basicShape = circle.release();
+        break;
+    }
+    case CSSBasicShape::CSSBasicShapeCircleType: {
+        const CSSBasicShapeCircle* circleValue = static_cast<const CSSBasicShapeCircle *>(basicShapeValue);
+        RefPtr<BasicShapeCircle> circle = BasicShapeCircle::create();
+
+        if (circleValue->centerX() && circleValue->centerY()) {
+            circle->setCenterX(convertToCenterCoordinate(state, circleValue->centerX()));
+            circle->setCenterY(convertToCenterCoordinate(state, circleValue->centerY()));
+        } else {
+            circle->setCenterX(BasicShapeCenterCoordinate(Length(50, Percent)));
+            circle->setCenterY(BasicShapeCenterCoordinate(Length(50, Percent)));
+        }
+        if (RefPtr<CSSPrimitiveValue> radius = circleValue->radius()) {
+            if (radius->isValueID()) {
+                switch (radius->getValueID()) {
+                case CSSValueClosestSide:
+                    circle->setRadius(BasicShapeRadius(BasicShapeRadius::ClosestSide));
+                    break;
+                case CSSValueFarthestSide:
+                    circle->setRadius(BasicShapeRadius(BasicShapeRadius::FarthestSide));
+                    break;
+                default:
+                    ASSERT_NOT_REACHED();
+                    break;
+                }
+            } else {
+                circle->setRadius(BasicShapeRadius(convertToLength(state, radius.get())));
+            }
+        } else {
+            circle->setRadius(BasicShapeRadius(BasicShapeRadius::ClosestSide));
+        }
 
         basicShape = circle.release();
         break;

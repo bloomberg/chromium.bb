@@ -90,7 +90,15 @@ bool BasicShapeRectangle::operator==(const BasicShape& o) const
     return m_y == other.m_y && m_x == other.m_x && m_width == other.m_width && m_height == other.m_height && m_cornerRadiusX == other.m_cornerRadiusX && m_cornerRadiusY == other.m_cornerRadiusY;
 }
 
-void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
+bool DeprecatedBasicShapeCircle::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const DeprecatedBasicShapeCircle& other = toDeprecatedBasicShapeCircle(o);
+    return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radius == other.m_radius;
+}
+
+void DeprecatedBasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
 {
     ASSERT(path.isEmpty());
     float diagonal = sqrtf((boundingBox.width() * boundingBox.width() + boundingBox.height() * boundingBox.height()) / 2);
@@ -105,12 +113,12 @@ void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
     ));
 }
 
-PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other, double progress) const
+PassRefPtr<BasicShape> DeprecatedBasicShapeCircle::blend(const BasicShape* other, double progress) const
 {
     ASSERT(other && isSameType(*other));
 
-    const BasicShapeCircle* o = static_cast<const BasicShapeCircle*>(other);
-    RefPtr<BasicShapeCircle> result =  BasicShapeCircle::create();
+    const DeprecatedBasicShapeCircle* o = static_cast<const DeprecatedBasicShapeCircle*>(other);
+    RefPtr<DeprecatedBasicShapeCircle> result =  DeprecatedBasicShapeCircle::create();
     result->setCenterX(m_centerX.blend(o->centerX(), progress, ValueRangeAll));
     result->setCenterY(m_centerY.blend(o->centerY(), progress, ValueRangeAll));
     result->setRadius(m_radius.blend(o->radius(), progress, ValueRangeNonNegative));
@@ -123,6 +131,48 @@ bool BasicShapeCircle::operator==(const BasicShape& o) const
         return false;
     const BasicShapeCircle& other = toBasicShapeCircle(o);
     return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radius == other.m_radius;
+}
+
+void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
+{
+    ASSERT(path.isEmpty());
+    // FIXME Complete implementation of path.
+    // Compute closest-side and farthest-side from boundingBox.
+    // Compute top, left, bottom, right from boundingBox.
+    if (m_radius.type() != BasicShapeRadius::Value)
+        return;
+    if (m_centerX.keyword() != BasicShapeCenterCoordinate::None || m_centerY.keyword() != BasicShapeCenterCoordinate::None)
+        return;
+
+    float diagonal = sqrtf((boundingBox.width() * boundingBox.width() + boundingBox.height() * boundingBox.height()) / 2);
+    float centerX = floatValueForLength(m_centerX.length(), boundingBox.width());
+    float centerY = floatValueForLength(m_centerY.length(), boundingBox.height());
+    float radius = floatValueForLength(m_radius.value(), diagonal);
+    path.addEllipse(FloatRect(
+        centerX - radius + boundingBox.x(),
+        centerY - radius + boundingBox.y(),
+        radius * 2,
+        radius * 2
+    ));
+}
+
+PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other, double progress) const
+{
+    ASSERT(type() == other->type());
+    const BasicShapeCircle* o = static_cast<const BasicShapeCircle*>(other);
+    RefPtr<BasicShapeCircle> result =  BasicShapeCircle::create();
+
+    if (m_radius.type() != BasicShapeRadius::Value || o->radius().type() != BasicShapeRadius::Value) {
+        result->setCenterX(o->centerX());
+        result->setCenterY(o->centerY());
+        result->setRadius(o->radius());
+        return result;
+    }
+
+    result->setCenterX(m_centerX.blend(o->centerX(), progress));
+    result->setCenterY(m_centerY.blend(o->centerY(), progress));
+    result->setRadius(m_radius.blend(o->radius(), progress));
+    return result.release();
 }
 
 void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox)
