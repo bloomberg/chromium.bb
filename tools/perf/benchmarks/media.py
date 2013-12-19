@@ -22,6 +22,7 @@ class MediaAndroid(test.Test):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
   tag = 'android'
+  enabled = not sys.platform.startswith('linux')
   page_set = 'page_sets/tough_video_cases.json'
   # Exclude crowd* media files (50fps 2160p).
   options = {
@@ -43,4 +44,3 @@ class MediaSourceExtensions(test.Test):
     # Needed to allow XHR requests to return stream objects.
     options.AppendExtraBrowserArgs(
         '--enable-experimental-web-platform-features')
-
