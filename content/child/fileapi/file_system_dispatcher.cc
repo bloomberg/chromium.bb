@@ -299,23 +299,6 @@ void FileSystemDispatcher::Truncate(
     *request_id_out = request_id;
 }
 
-void FileSystemDispatcher::WriteDeprecated(
-    const GURL& path,
-    const GURL& blob_url,
-    int64 offset,
-    int* request_id_out,
-    const WriteCallback& success_callback,
-    const StatusCallback& error_callback) {
-  int request_id = dispatchers_.Add(
-      CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(
-      new FileSystemHostMsg_WriteDeprecated(request_id, path,
-                                            blob_url, offset));
-
-  if (request_id_out)
-    *request_id_out = request_id;
-}
-
 void FileSystemDispatcher::Write(
     const GURL& path,
     const std::string& blob_id,

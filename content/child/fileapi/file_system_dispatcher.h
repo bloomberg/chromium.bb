@@ -106,13 +106,6 @@ class FileSystemDispatcher : public IPC::Listener {
                 int64 offset,
                 int* request_id_out,
                 const StatusCallback& callback);
-  void WriteDeprecated(
-      const GURL& path,
-      const GURL& blob_url,
-      int64 offset,
-      int* request_id_out,
-      const WriteCallback& success_callback,
-      const StatusCallback& error_callback);
   void Write(const GURL& path,
              const std::string& blob_id,
              int64 offset,
