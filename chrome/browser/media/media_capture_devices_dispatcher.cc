@@ -64,12 +64,16 @@ const content::MediaStreamDevice* FindDeviceWithId(
 // 1. Virtual keyboard extension.
 // 2. Google Voice Search Hotword extension.
 // 3. Flutter gesture recognition extension.
+// 4. TODO(smus): Airbender experiment 1.
+// 5. TODO(smus): Airbender experiment 2.
 // Once http://crbug.com/292856 is fixed, remove this whitelist.
 bool IsMediaRequestWhitelistedForExtension(
     const extensions::Extension* extension) {
   return extension->id() == "mppnpdlheglhdfmldimlhpnegondlapf" ||
       extension->id() == "bepbmhgboaologfdajaanbcjmnhjmhfn" ||
-      extension->id() == "jokbpnebhdcladagohdnfgjcpejggllo";
+      extension->id() == "jokbpnebhdcladagohdnfgjcpejggllo" ||
+      extension->id() == "clffjmdilanldobdnedchkdbofoimcgb" ||
+      extension->id() == "nnckehldicaciogcbchegobnafnjkcne";
 }
 
 // This is a short-term solution to allow testing of the the Screen Capture API
