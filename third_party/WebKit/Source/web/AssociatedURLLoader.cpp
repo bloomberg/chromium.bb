@@ -343,7 +343,6 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
 
     if (allowLoad) {
         ThreadableLoaderOptions options;
-        options.sendLoadCallbacks = SendCallbacks; // Always send callbacks.
         options.sniffContent = m_options.sniffContent ? SniffContent : DoNotSniffContent;
         options.allowCredentials = m_options.allowCredentials ? AllowStoredCredentials : DoNotAllowStoredCredentials;
         options.preflightPolicy = static_cast<WebCore::PreflightPolicy>(m_options.preflightPolicy);

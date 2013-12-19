@@ -44,7 +44,6 @@ class ResourceRequest;
 class ResourceResponse;
 
 struct FetchInitiatorInfo;
-struct ResourceLoaderOptions;
 
 class ResourceLoaderHost {
 public:
@@ -56,14 +55,14 @@ public:
     virtual void didLoadResource(Resource*) = 0;
     virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;
 
-    virtual void didFinishLoading(const Resource*, double finishTime, const ResourceLoaderOptions&) = 0;
+    virtual void didFinishLoading(const Resource*, double finishTime) = 0;
     virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) = 0;
-    virtual void didFailLoading(const Resource*, const ResourceError&, const ResourceLoaderOptions&) = 0;
+    virtual void didFailLoading(const Resource*, const ResourceError&) = 0;
 
-    virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
-    virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) = 0;
-    virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
-    virtual void didDownloadData(const Resource*, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
+    virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&) = 0;
+    virtual void didReceiveResponse(const Resource*, const ResourceResponse&) = 0;
+    virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength) = 0;
+    virtual void didDownloadData(const Resource*, int dataLength, int encodedDataLength) = 0;
 
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) = 0;
     virtual void didInitializeResourceLoader(ResourceLoader*) = 0;

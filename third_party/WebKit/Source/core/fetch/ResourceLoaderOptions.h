@@ -36,11 +36,6 @@
 
 namespace WebCore {
 
-enum SendCallbackPolicy {
-    SendCallbacks,
-    DoNotSendCallbacks
-};
-
 enum ContentSniffingPolicy {
     SniffContent,
     DoNotSniffContent
@@ -99,8 +94,7 @@ enum SynchronousPolicy {
 
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
-        : sendLoadCallbacks(DoNotSendCallbacks)
-        , sniffContent(DoNotSniffContent)
+        : sniffContent(DoNotSniffContent)
         , dataBufferingPolicy(BufferData)
         , allowCredentials(DoNotAllowStoredCredentials)
         , credentialsRequested(ClientDidNotRequestCredentials)
@@ -114,7 +108,6 @@ struct ResourceLoaderOptions {
     }
 
     ResourceLoaderOptions(
-        SendCallbackPolicy sendLoadCallbacks,
         ContentSniffingPolicy sniffContent,
         DataBufferingPolicy dataBufferingPolicy,
         StoredCredentials allowCredentials,
@@ -123,8 +116,7 @@ struct ResourceLoaderOptions {
         SecurityCheckPolicy securityCheck,
         ContentSecurityPolicyCheck contentSecurityPolicyOption,
         RequestInitiatorContext requestInitiatorContext)
-        : sendLoadCallbacks(sendLoadCallbacks)
-        , sniffContent(sniffContent)
+        : sniffContent(sniffContent)
         , dataBufferingPolicy(dataBufferingPolicy)
         , allowCredentials(allowCredentials)
         , credentialsRequested(credentialsRequested)
@@ -137,7 +129,6 @@ struct ResourceLoaderOptions {
     {
     }
 
-    SendCallbackPolicy sendLoadCallbacks;
     ContentSniffingPolicy sniffContent;
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.

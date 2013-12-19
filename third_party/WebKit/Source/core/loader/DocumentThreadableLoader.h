@@ -86,15 +86,14 @@ class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, pu
 
         void cancelWithError(const ResourceError&);
         void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
-        void didReceiveData(unsigned long identifier, const char* data, int dataLength);
+        void didReceiveData(const char* data, int dataLength);
         void didFinishLoading(unsigned long identifier, double finishTime);
-        void didFail(unsigned long identifier, const ResourceError&);
         void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
         void makeSimpleCrossOriginAccessRequest(const ResourceRequest&);
         void makeCrossOriginAccessRequestWithPreflight(const ResourceRequest&);
         void preflightSuccess();
-        void preflightFailure(unsigned long identifier, const String& url, const String& errorDescription);
+        void preflightFailure(const String& url, const String& errorDescription);
 
         void loadRequest(const ResourceRequest&, SecurityCheckPolicy);
         bool isAllowedRedirect(const KURL&) const;

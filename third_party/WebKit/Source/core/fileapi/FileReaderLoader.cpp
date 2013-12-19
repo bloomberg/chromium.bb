@@ -105,7 +105,6 @@ void FileReaderLoader::startInternal(ExecutionContext* executionContext, const S
         request.setHTTPHeaderField("Range", String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd));
 
     ThreadableLoaderOptions options;
-    options.sendLoadCallbacks = SendCallbacks;
     options.sniffContent = DoNotSniffContent;
     options.preflightPolicy = ConsiderPreflight;
     options.allowCredentials = AllowStoredCredentials;

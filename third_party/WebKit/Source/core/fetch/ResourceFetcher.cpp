@@ -334,7 +334,7 @@ ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(Fetch
         memoryCache()->remove(existing);
     }
 
-    request.setOptions(ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
+    request.setOptions(ResourceLoaderOptions(SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     return toCSSStyleSheetResource(requestResource(Resource::CSSStyleSheet, request));
 }
 
@@ -1030,14 +1030,12 @@ void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
 {
     if (!frame() || !frame()->page() || resource->status() != Resource::Cached || m_validatedURLs.contains(resource->url()))
         return;
-    if (!resource->shouldSendResourceLoadCallbacks())
-        return;
 
     ResourceRequest request(resource->url());
     unsigned long identifier = createUniqueIdentifier();
     context().dispatchDidLoadResourceFromMemoryCache(request, resource->response());
     // FIXME: If willSendRequest changes the request, we don't respect it.
-    willSendRequest(identifier, request, ResourceResponse(), resource->options());
+    willSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
     InspectorInstrumentation::markResourceAsCached(frame()->page(), identifier);
     context().sendRemainingDelegateMessages(m_documentLoader, identifier, resource->response(), resource->encodedSize());
 }
@@ -1148,11 +1146,9 @@ void ResourceFetcher::clearPendingPreloads()
     m_pendingPreloads.clear();
 }
 
-void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTime, const ResourceLoaderOptions& options)
+void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTime)
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
-    if (options.sendLoadCallbacks != SendCallbacks)
-        return;
     context().dispatchDidFinishLoading(m_documentLoader, resource->identifier(), finishTime);
 }
 
@@ -1162,44 +1158,33 @@ void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, Resourc
     context().dispatchDidChangeResourcePriority(resource->identifier(), loadPriority);
 }
 
-void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error, const ResourceLoaderOptions& options)
+void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
-    if (options.sendLoadCallbacks != SendCallbacks)
-        return;
     context().dispatchDidFail(m_documentLoader, resource->identifier(), error);
 }
 
-void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const ResourceLoaderOptions& options)
+void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    if (options.sendLoadCallbacks == SendCallbacks)
-        context().dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse, options.initiatorInfo);
-    else
-        InspectorInstrumentation::willSendRequest(frame(), identifier, m_documentLoader, request, redirectResponse, options.initiatorInfo);
+    context().dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse, initiatorInfo);
 }
 
-void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response, const ResourceLoaderOptions& options)
+void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
 {
-    if (options.sendLoadCallbacks != SendCallbacks)
-        return;
     context().dispatchDidReceiveResponse(m_documentLoader, resource->identifier(), response, resource->loader());
 }
 
-void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions& options)
+void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)
 {
     // FIXME: use frame of master document for imported documents.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(frame(), resource->identifier(), encodedDataLength);
-    if (options.sendLoadCallbacks != SendCallbacks)
-        return;
     context().dispatchDidReceiveData(m_documentLoader, resource->identifier(), data, dataLength, encodedDataLength);
     InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
-void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, int encodedDataLength, const ResourceLoaderOptions& options)
+void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, int encodedDataLength)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(frame(), resource->identifier(), encodedDataLength);
-    if (options.sendLoadCallbacks != SendCallbacks)
-        return;
     context().dispatchDidDownloadData(m_documentLoader, resource->identifier(), dataLength, encodedDataLength);
     InspectorInstrumentation::didReceiveResourceData(cookie);
 }
@@ -1340,7 +1325,7 @@ void ResourceFetcher::printPreloadStats()
 
 const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 {
-    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
+    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     return options;
 }
 

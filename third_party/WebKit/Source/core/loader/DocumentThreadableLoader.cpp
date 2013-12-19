@@ -157,7 +157,7 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
             errorForCallback = ResourceError(errorDomainBlinkInternal, 0, resource()->url().string(), "Load cancelled");
             errorForCallback.setIsCancellation(true);
         }
-        didFail(resource()->identifier(), errorForCallback);
+        m_client->didFail(errorForCallback);
     }
     clearResource();
     m_client = 0;
@@ -269,16 +269,20 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
 
     String accessControlErrorDescription;
     if (m_actualRequest) {
+        // Notifying the inspector here is necessary because a call to preflightFailure() might synchronously
+        // cause the underlying ResourceLoader to be cancelled before it tells the inspector about the response.
+        // In that case, if we don't tell the inspector about the response now, the resource type in the inspector
+        // will default to "other" instead of something more descriptive.
         DocumentLoader* loader = m_document->frame()->loader().documentLoader();
         InspectorInstrumentation::didReceiveResourceResponse(m_document->frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
-            preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
+            preflightFailure(response.url().string(), accessControlErrorDescription);
             return;
         }
 
         if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
-            preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
+            preflightFailure(response.url().string(), accessControlErrorDescription);
             return;
         }
 
@@ -286,7 +290,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
         if (!preflightResult->parse(response, accessControlErrorDescription)
             || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
             || !preflightResult->allowsCrossOriginHeaders(m_actualRequest->httpHeaderFields(), accessControlErrorDescription)) {
-            preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
+            preflightFailure(response.url().string(), accessControlErrorDescription);
             return;
         }
 
@@ -305,21 +309,16 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
 
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, int dataLength)
 {
-    ASSERT(resource == this->resource());
-    didReceiveData(resource->identifier(), data, dataLength);
+    ASSERT_UNUSED(resource, resource == this->resource());
+    didReceiveData(data, dataLength);
 }
 
-void DocumentThreadableLoader::didReceiveData(unsigned long identifier, const char* data, int dataLength)
+void DocumentThreadableLoader::didReceiveData(const char* data, int dataLength)
 {
     ASSERT(m_client);
-
     // Preflight data should be invisible to clients.
-    if (m_actualRequest) {
-        InspectorInstrumentation::didReceiveData(m_document->frame(), identifier, 0, 0, dataLength);
-        return;
-    }
-
-    m_client->didReceiveData(data, dataLength);
+    if (!m_actualRequest)
+        m_client->didReceiveData(data, dataLength);
 }
 
 void DocumentThreadableLoader::notifyFinished(Resource* resource)
@@ -330,7 +329,7 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
     m_timeoutTimer.stop();
 
     if (resource->errorOccurred())
-        didFail(resource->identifier(), resource->resourceError());
+        m_client->didFail(resource->resourceError());
     else
         didFinishLoading(resource->identifier(), resource->loadFinishTime());
 }
@@ -338,20 +337,11 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
 void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double finishTime)
 {
     if (m_actualRequest) {
-        InspectorInstrumentation::didFinishLoading(m_document->frame(), identifier, m_document->frame()->loader().documentLoader(), finishTime);
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         preflightSuccess();
     } else
         m_client->didFinishLoading(identifier, finishTime);
-}
-
-void DocumentThreadableLoader::didFail(unsigned long identifier, const ResourceError& error)
-{
-    if (m_actualRequest)
-        InspectorInstrumentation::didFailLoading(m_document->frame(), identifier, m_document->frame()->loader().documentLoader(), error);
-
-    m_client->didFail(error);
 }
 
 void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer)
@@ -379,11 +369,9 @@ void DocumentThreadableLoader::preflightSuccess()
     loadRequest(*actualRequest, SkipSecurityCheck);
 }
 
-void DocumentThreadableLoader::preflightFailure(unsigned long identifier, const String& url, const String& errorDescription)
+void DocumentThreadableLoader::preflightFailure(const String& url, const String& errorDescription)
 {
     ResourceError error(errorDomainBlinkInternal, 0, url, errorDescription);
-    if (m_actualRequest)
-        InspectorInstrumentation::didFailLoading(m_document->frame(), identifier, m_document->frame()->loader().documentLoader(), error);
     m_actualRequest = nullptr; // Prevent didFinishLoading() from bypassing access check.
     m_client->didFailAccessControlCheck(error);
 }
@@ -400,10 +388,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
     if (m_async) {
         options.crossOriginCredentialPolicy = DoNotAskClientForCrossOriginCredentials;
         if (m_actualRequest) {
-            // Don't sniff content or send load callbacks for the preflight request.
-            options.sendLoadCallbacks = DoNotSendCallbacks;
             options.sniffContent = DoNotSniffContent;
-            // Keep buffering the data for the preflight request.
             options.dataBufferingPolicy = BufferData;
         }
 
@@ -452,7 +437,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
 
     SharedBuffer* data = resource->resourceBuffer();
     if (data)
-        didReceiveData(identifier, data->data(), data->size());
+        didReceiveData(data->data(), data->size());
 
     didFinishLoading(identifier, 0.0);
 }

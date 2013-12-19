@@ -77,7 +77,6 @@ public:
     virtual void didDownloadData(blink::WebURLLoader*, int, int) OVERRIDE;
 
     const KURL& url() const { return m_request.url(); }
-    bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
     bool shouldSniffContent() const { return m_options.sniffContent == SniffContent; }
     bool isLoadedBy(ResourceLoaderHost*) const;
 
