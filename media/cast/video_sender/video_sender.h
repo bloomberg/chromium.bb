@@ -19,7 +19,8 @@
 #include "media/cast/rtcp/rtcp.h"
 
 namespace crypto {
-  class Encryptor;
+class Encryptor;
+class SymmetricKey;
 }
 
 namespace media {
@@ -126,6 +127,7 @@ class VideoSender : public base::NonThreadSafe,
   VideoEncoderController* video_encoder_controller_;
   uint8 max_unacked_frames_;
   scoped_ptr<crypto::Encryptor> encryptor_;
+  scoped_ptr<crypto::SymmetricKey> encryption_key_;
   std::string iv_mask_;
   int last_acked_frame_id_;
   int last_sent_frame_id_;
@@ -145,4 +147,3 @@ class VideoSender : public base::NonThreadSafe,
 }  // namespace media
 
 #endif  // MEDIA_CAST_VIDEO_SENDER_VIDEO_SENDER_H_
-

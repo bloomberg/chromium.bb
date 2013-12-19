@@ -19,6 +19,7 @@ RtcpParser::RtcpParser(const uint8* rtcpData, size_t rtcpDataLength)
       state_(kStateTopLevel),
       number_of_blocks_(0),
       field_type_(kRtcpNotValidCode) {
+  memset(&field_, 0, sizeof(field_));
   Validate();
 }
 

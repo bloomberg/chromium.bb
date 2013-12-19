@@ -62,7 +62,7 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
 }
 
 Vp8Encoder::~Vp8Encoder() {
-  vpx_codec_destroy(encoder_);
+  vpx_codec_destroy(encoder_.get());
   vpx_img_free(raw_image_);
 }
 
@@ -111,13 +111,18 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
   uint32 rc_max_intra_target = MaxIntraTarget(config_->rc_buf_optimal_sz);
   vpx_codec_flags_t flags = 0;
   // TODO(mikhal): Tune settings.
-  if (vpx_codec_enc_init(encoder_, vpx_codec_vp8_cx(), config_.get(), flags)) {
-    DCHECK(false) << "Invalid return value";
+  if (vpx_codec_enc_init(encoder_.get(),
+                         vpx_codec_vp8_cx(),
+                         config_.get(),
+                         flags)) {
+    DCHECK(false) << "vpx_codec_enc_init() failed.";
+    encoder_.reset();
+    return;
   }
-  vpx_codec_control(encoder_, VP8E_SET_STATIC_THRESHOLD, 1);
-  vpx_codec_control(encoder_, VP8E_SET_NOISE_SENSITIVITY, 0);
-  vpx_codec_control(encoder_, VP8E_SET_CPUUSED, -6);
-  vpx_codec_control(encoder_, VP8E_SET_MAX_INTRA_BITRATE_PCT,
+  vpx_codec_control(encoder_.get(), VP8E_SET_STATIC_THRESHOLD, 1);
+  vpx_codec_control(encoder_.get(), VP8E_SET_NOISE_SENSITIVITY, 0);
+  vpx_codec_control(encoder_.get(), VP8E_SET_CPUUSED, -6);
+  vpx_codec_control(encoder_.get(), VP8E_SET_MAX_INTRA_BITRATE_PCT,
                     rc_max_intra_target);
 }
 
@@ -158,7 +163,11 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   // Note: The duration does not reflect the real time between frames. This is
   // done to keep the encoder happy.
   uint32 duration = kVideoFrequency / cast_config_.max_frame_rate;
-  if (vpx_codec_encode(encoder_, raw_image_, timestamp_, duration, flags,
+  if (vpx_codec_encode(encoder_.get(),
+                       raw_image_,
+                       timestamp_,
+                       duration,
+                       flags,
                        VPX_DL_REALTIME)) {
     return false;
   }
@@ -168,7 +177,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   const vpx_codec_cx_pkt_t *pkt = NULL;
   vpx_codec_iter_t iter = NULL;
   size_t total_size = 0;
-  while ((pkt = vpx_codec_get_cx_data(encoder_, &iter)) != NULL) {
+  while ((pkt = vpx_codec_get_cx_data(encoder_.get(), &iter)) != NULL) {
     if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
       total_size += pkt->data.frame.sz;
       encoded_image->data.reserve(total_size);
@@ -331,7 +340,7 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
   config_->rc_target_bitrate = new_bitrate_kbit;
 
   // Update encoder context.
-  if (vpx_codec_enc_config_set(encoder_, config_.get())) {
+  if (vpx_codec_enc_config_set(encoder_.get(), config_.get())) {
     DCHECK(false) << "Invalid return value";
   }
 }

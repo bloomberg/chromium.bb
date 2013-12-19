@@ -20,7 +20,8 @@
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"  // RtpCastHeader
 
 namespace crypto {
-  class Encryptor;
+class Encryptor;
+class SymmetricKey;
 }
 
 namespace media {
@@ -131,6 +132,7 @@ class AudioReceiver : public base::NonThreadSafe,
   base::TimeTicks time_first_incoming_packet_;
   uint32 first_incoming_rtp_timestamp_;
   scoped_ptr<crypto::Encryptor> decryptor_;
+  scoped_ptr<crypto::SymmetricKey> decryption_key_;
   std::string iv_mask_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;

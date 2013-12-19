@@ -23,14 +23,18 @@ void LogFrameDecodedEvent(CastEnvironment* const cast_environment,
 }
 
 Vp8Decoder::Vp8Decoder(scoped_refptr<CastEnvironment> cast_environment)
-    : decoder_(new vpx_dec_ctx_t()),
-      cast_environment_(cast_environment) {
+    : cast_environment_(cast_environment) {
   // Make sure that we initialize the decoder from the correct thread.
   cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER, FROM_HERE,
         base::Bind(&Vp8Decoder::InitDecoder, base::Unretained(this)));
 }
 
-Vp8Decoder::~Vp8Decoder() {}
+Vp8Decoder::~Vp8Decoder() {
+  if (decoder_) {
+    vpx_codec_err_t ret = vpx_codec_destroy(decoder_.get());
+    CHECK_EQ(VPX_CODEC_OK, ret) << "vpx_codec_destroy() failed.";
+  }
+}
 
 void Vp8Decoder::InitDecoder() {
   vpx_codec_dec_cfg_t cfg;
@@ -38,8 +42,15 @@ void Vp8Decoder::InitDecoder() {
   cfg.threads = 1;
   vpx_codec_flags_t flags = VPX_CODEC_USE_POSTPROC;
 
-  if (vpx_codec_dec_init(decoder_.get(), vpx_codec_vp8_dx(), &cfg, flags)) {
-    DCHECK(false) << "VP8 decode error";
+  DCHECK(!decoder_);
+  decoder_.reset(new vpx_dec_ctx_t());
+  vpx_codec_err_t ret = vpx_codec_dec_init(decoder_.get(),
+                                           vpx_codec_vp8_dx(),
+                                           &cfg,
+                                           flags);
+  if (ret != VPX_CODEC_OK) {
+    DCHECK(false) << "vpx_codec_dec_init() failed.";
+    decoder_.reset();
   }
 }
 
@@ -103,4 +114,3 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
 
 }  // namespace cast
 }  // namespace media
-

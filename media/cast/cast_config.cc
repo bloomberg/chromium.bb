@@ -25,14 +25,24 @@ AudioSenderConfig::AudioSenderConfig()
       rtp_max_delay_ms(kDefaultRtpMaxDelayMs) {}
 
 AudioReceiverConfig::AudioReceiverConfig()
-    : rtcp_interval(kDefaultRtcpIntervalMs),
-      rtcp_mode(kRtcpReducedSize),
-      rtp_max_delay_ms(kDefaultRtpMaxDelayMs) {}
-
-VideoReceiverConfig::VideoReceiverConfig()
-    : rtcp_interval(kDefaultRtcpIntervalMs),
+    : feedback_ssrc(0),
+      incoming_ssrc(0),
+      rtcp_interval(kDefaultRtcpIntervalMs),
       rtcp_mode(kRtcpReducedSize),
       rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
+      rtp_payload_type(0),
+      use_external_decoder(false),
+      frequency(0),
+      channels(0) {}
+
+VideoReceiverConfig::VideoReceiverConfig()
+    : feedback_ssrc(0),
+      incoming_ssrc(0),
+      rtcp_interval(kDefaultRtcpIntervalMs),
+      rtcp_mode(kRtcpReducedSize),
+      rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
+      rtp_payload_type(0),
+      use_external_decoder(false),
       max_frame_rate(kDefaultMaxFrameRate),
       decoder_faster_than_max_frame_rate(true) {}
 

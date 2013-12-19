@@ -481,7 +481,7 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
   int i = 0;
 
   std::cout << "Progress ";
-  for (; i < 300; ++i) {
+  for (; i < 10; ++i) {
     int num_10ms_blocks = audio_diff / 10;
     audio_diff -= num_10ms_blocks * 10;
     base::TimeTicks send_time = testing_clock_.NowTicks();
@@ -550,7 +550,7 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16ExternalDecoder) {
   Create();
 
   int i = 0;
-  for (; i < 100; ++i) {
+  for (; i < 10; ++i) {
     base::TimeTicks send_time = testing_clock_.NowTicks();
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10)));
@@ -568,7 +568,7 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16ExternalDecoder) {
             test_receiver_audio_callback_));
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  EXPECT_EQ(100, test_receiver_audio_callback_->number_times_called());
+  EXPECT_EQ(10, test_receiver_audio_callback_->number_times_called());
 }
 
 // TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
@@ -583,7 +583,7 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossOpus) {
   Create();
 
   int i = 0;
-  for (; i < 100; ++i) {
+  for (; i < 10; ++i) {
     int num_10ms_blocks = 3;
     base::TimeTicks send_time = testing_clock_.NowTicks();
 
@@ -826,7 +826,7 @@ TEST_F(End2EndTest, CryptoVideo) {
   Create();
 
   int frames_counter = 0;
-  for (; frames_counter < 20; ++frames_counter) {
+  for (; frames_counter < 3; ++frames_counter) {
     const base::TimeTicks send_time = testing_clock_.NowTicks();
 
     SendVideoFrame(frames_counter, send_time);
@@ -866,7 +866,7 @@ TEST_F(End2EndTest, MAYBE_CryptoAudio) {
   Create();
 
   int frames_counter = 0;
-  for (; frames_counter < 20; ++frames_counter) {
+  for (; frames_counter < 3; ++frames_counter) {
     int num_10ms_blocks = 2;
 
     const base::TimeTicks send_time = testing_clock_.NowTicks();

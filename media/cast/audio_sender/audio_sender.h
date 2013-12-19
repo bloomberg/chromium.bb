@@ -18,7 +18,8 @@
 #include "media/cast/rtcp/rtcp.h"
 
 namespace crypto {
-  class Encryptor;
+class Encryptor;
+class SymmetricKey;
 }
 
 namespace media {
@@ -94,6 +95,7 @@ class AudioSender : public base::NonThreadSafe,
   Rtcp rtcp_;
   bool initialized_;
   scoped_ptr<crypto::Encryptor> encryptor_;
+  scoped_ptr<crypto::SymmetricKey> encryption_key_;
   std::string iv_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSender);

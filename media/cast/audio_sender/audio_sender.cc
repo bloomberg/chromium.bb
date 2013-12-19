@@ -77,10 +77,12 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   if (audio_config.aes_iv_mask.size() == kAesKeySize &&
       audio_config.aes_key.size() == kAesKeySize) {
     iv_mask_ = audio_config.aes_iv_mask;
-    crypto::SymmetricKey* key = crypto::SymmetricKey::Import(
-        crypto::SymmetricKey::AES, audio_config.aes_key);
+    encryption_key_.reset(crypto::SymmetricKey::Import(
+        crypto::SymmetricKey::AES, audio_config.aes_key));
     encryptor_.reset(new crypto::Encryptor());
-    encryptor_->Init(key, crypto::Encryptor::CTR, std::string());
+    encryptor_->Init(encryption_key_.get(),
+                     crypto::Encryptor::CTR,
+                     std::string());
   } else if (audio_config.aes_iv_mask.size() != 0 ||
              audio_config.aes_key.size() != 0) {
     DCHECK(false) << "Invalid crypto configuration";

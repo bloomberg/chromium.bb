@@ -22,8 +22,12 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 using testing::_;
 using testing::AtLeast;
+using testing::Exactly;
 
 class AudioSenderTest : public ::testing::Test {
+ public:
+  MOCK_METHOD0(InsertAudioCallback, void());
+
  protected:
   AudioSenderTest() {
     InitializeMediaLibraryForTesting();
@@ -59,6 +63,7 @@ class AudioSenderTest : public ::testing::Test {
 
 TEST_F(AudioSenderTest, Encode20ms) {
   EXPECT_CALL(mock_transport_, SendPackets(_)).Times(AtLeast(1));
+  EXPECT_CALL(*this, InsertAudioCallback()).Times(Exactly(1));
 
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
   scoped_ptr<AudioBus> bus(TestAudioBusFactory(
@@ -67,17 +72,18 @@ TEST_F(AudioSenderTest, Encode20ms) {
 
   base::TimeTicks recorded_time = base::TimeTicks::Now();
   audio_sender_->InsertAudio(
-      bus.get(), recorded_time,
-      base::Bind(base::IgnoreResult(&scoped_ptr<AudioBus>::release),
-                 base::Unretained(&bus)));
+      bus.get(),
+      recorded_time,
+      base::Bind(
+          &AudioSenderTest::InsertAudioCallback,
+          base::Unretained(this)));
   task_runner_->RunTasks();
-
-  EXPECT_TRUE(!bus) << "AudioBus wasn't released after use.";
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
   EXPECT_CALL(mock_transport_, SendPackets(_)).Times(AtLeast(1));
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
+  EXPECT_CALL(*this, InsertAudioCallback()).Times(Exactly(1));
 
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
   scoped_ptr<AudioBus> bus(TestAudioBusFactory(
@@ -87,8 +93,9 @@ TEST_F(AudioSenderTest, RtcpTimer) {
   base::TimeTicks recorded_time = base::TimeTicks::Now();
   audio_sender_->InsertAudio(
       bus.get(), recorded_time,
-      base::Bind(base::IgnoreResult(&scoped_ptr<AudioBus>::release),
-                 base::Unretained(&bus)));
+      base::Bind(
+          &AudioSenderTest::InsertAudioCallback,
+          base::Unretained(this)));
   task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.

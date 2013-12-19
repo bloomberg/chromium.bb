@@ -73,7 +73,7 @@ class Vp8Encoder {
 
   // VP8 internal objects.
   scoped_ptr<vpx_codec_enc_cfg_t> config_;
-  vpx_enc_ctx_t* encoder_;
+  scoped_ptr<vpx_enc_ctx_t> encoder_;
   vpx_image_t* raw_image_;
 
   bool key_frame_requested_;
