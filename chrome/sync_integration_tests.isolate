@@ -59,8 +59,8 @@
           '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/Chromium Framework.framework/',
-          '<(PRODUCT_DIR)/Chromium.app/',
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
+          '<(PRODUCT_DIR)/<(mac_product_name).app/',
         ],
       },
     }],

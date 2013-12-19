@@ -118,9 +118,9 @@
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/Chromium Framework.framework/',
-          '<(PRODUCT_DIR)/Chromium Helper.app/',
-          '<(PRODUCT_DIR)/Chromium.app/',
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
+          '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/',
+          '<(PRODUCT_DIR)/<(mac_product_name).app/',
           '<(PRODUCT_DIR)/lib32/',
           '<(PRODUCT_DIR)/plugins/TestNetscapePlugIn.plugin/',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
