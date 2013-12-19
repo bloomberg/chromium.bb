@@ -37,6 +37,11 @@ static const char kGetUserMediaAndWaitAndStop[] = "getUserMediaAndWaitAndStop";
 static const char kGetUserMediaAndAnalyseAndStop[] =
     "getUserMediaAndAnalyseAndStop";
 
+// Results returned by JS.
+static const char kOK[] = "OK";
+static const char kGetUserMediaFailed[] =
+    "GetUserMedia call failed with code undefined";
+
 std::string GenerateGetUserMediaCall(const char* function_name,
                                      int min_width,
                                      int max_width,
@@ -56,6 +61,31 @@ std::string GenerateGetUserMediaCall(const char* function_name,
       min_frame_rate,
       max_frame_rate);
 }
+
+std::string GenerateGetUserMediaWithMandatorySourceID(
+    const std::string& function_name,
+    const std::string& audio_source_id,
+    const std::string& video_source_id) {
+  const std::string audio_constraint =
+      "audio: {mandatory: { sourceId:\"" + audio_source_id + "\"}}, ";
+
+  const std::string video_constraint =
+      "video: {mandatory: { sourceId:\"" + video_source_id + "\"}}";
+  return function_name + "({" + audio_constraint + video_constraint + "});";
+}
+
+std::string GenerateGetUserMediaWithOptionalSourceID(
+    const std::string& function_name,
+    const std::string& audio_source_id,
+    const std::string& video_source_id) {
+  const std::string audio_constraint =
+      "audio: {optional: [{sourceId:\"" + audio_source_id + "\"}]}, ";
+
+  const std::string video_constraint =
+      "video: {optional: [{ sourceId:\"" + video_source_id + "\"}]}";
+  return function_name + "({" + audio_constraint + video_constraint + "});";
+}
+
 }
 
 namespace content {
@@ -133,9 +163,61 @@ class WebrtcBrowserTest: public ContentBrowserTest {
                                true);
   }
 
+  void GetSources(std::vector<std::string>* audio_ids,
+                  std::vector<std::string>* video_ids) {
+    GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+    NavigateToURL(shell(), url);
+
+    std::string sources_as_json = ExecuteJavascriptAndReturnResult(
+        "getSources()");
+    EXPECT_FALSE(sources_as_json.empty());
+
+    int error_code;
+    std::string error_message;
+    scoped_ptr<base::Value> value(
+        base::JSONReader::ReadAndReturnError(sources_as_json,
+                                             base::JSON_ALLOW_TRAILING_COMMAS,
+                                             &error_code,
+                                             &error_message));
+
+    ASSERT_TRUE(value.get() != NULL) << error_message;
+    EXPECT_EQ(value->GetType(), base::Value::TYPE_LIST);
+
+    base::ListValue* values;
+    ASSERT_TRUE(value->GetAsList(&values));
+
+    for (ListValue::iterator it = values->begin(); it != values->end(); ++it) {
+      const DictionaryValue* dict;
+      std::string kind;
+      std::string id;
+      ASSERT_TRUE((*it)->GetAsDictionary(&dict));
+      ASSERT_TRUE(dict->GetString("kind", &kind));
+      ASSERT_TRUE(dict->GetString("id", &id));
+      ASSERT_FALSE(id.empty());
+      EXPECT_TRUE(kind == "audio" || kind == "video");
+      if (kind == "audio") {
+        audio_ids->push_back(id);
+      } else if (kind == "video") {
+        video_ids->push_back(id);
+      }
+    }
+    ASSERT_FALSE(audio_ids->empty());
+    ASSERT_FALSE(video_ids->empty());
+  }
+
  protected:
   bool ExecuteJavascript(const std::string& javascript) {
     return ExecuteScript(shell()->web_contents(), javascript);
+  }
+
+  // Executes |javascript|. The script is required to use
+  // window.domAutomationController.send to send a string value back to here.
+  std::string ExecuteJavascriptAndReturnResult(const std::string& javascript) {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(shell()->web_contents(),
+                                              javascript,
+                                              &result));
+    return result;
   }
 
   void ExpectTitle(const std::string& expected_title) const {
@@ -183,6 +265,119 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
   ExpectTitle("OK");
 }
 
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithMandatorySourceID) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  std::vector<std::string> audio_ids;
+  std::vector<std::string> video_ids;
+  GetSources(&audio_ids, &video_ids);
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  // Test all combinations of mandatory sourceID;
+  for (std::vector<std::string>::const_iterator video_it = video_ids.begin();
+       video_it != video_ids.end(); ++video_it) {
+    for (std::vector<std::string>::const_iterator audio_it = audio_ids.begin();
+         audio_it != audio_ids.end(); ++audio_it) {
+      NavigateToURL(shell(), url);
+      EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
+          GenerateGetUserMediaWithMandatorySourceID(
+              kGetUserMediaAndStop,
+              *audio_it,
+              *video_it)));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       GetUserMediaWithInvalidMandatorySourceID) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  std::vector<std::string> audio_ids;
+  std::vector<std::string> video_ids;
+  GetSources(&audio_ids, &video_ids);
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  // Test with invalid mandatory audio sourceID.
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
+      GenerateGetUserMediaWithMandatorySourceID(
+          kGetUserMediaAndStop,
+          "something invalid",
+          video_ids[0])));
+
+  // Test with invalid mandatory video sourceID.
+  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
+      GenerateGetUserMediaWithMandatorySourceID(
+          kGetUserMediaAndStop,
+          audio_ids[0],
+          "something invalid")));
+
+  // Test with empty mandatory audio sourceID.
+  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
+      GenerateGetUserMediaWithMandatorySourceID(
+          kGetUserMediaAndStop,
+          "",
+          video_ids[0])));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithOptionalSourceID) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  std::vector<std::string> audio_ids;
+  std::vector<std::string> video_ids;
+  GetSources(&audio_ids, &video_ids);
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  // Test all combinations of mandatory sourceID;
+  for (std::vector<std::string>::const_iterator video_it = video_ids.begin();
+       video_it != video_ids.end(); ++video_it) {
+    for (std::vector<std::string>::const_iterator audio_it = audio_ids.begin();
+         audio_it != audio_ids.end(); ++audio_it) {
+      EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
+          GenerateGetUserMediaWithOptionalSourceID(
+              kGetUserMediaAndStop,
+              *audio_it,
+              *video_it)));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       GetUserMediaWithInvalidOptionalSourceID) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  std::vector<std::string> audio_ids;
+  std::vector<std::string> video_ids;
+  GetSources(&audio_ids, &video_ids);
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  // Test with invalid optional audio sourceID.
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
+      GenerateGetUserMediaWithOptionalSourceID(
+          kGetUserMediaAndStop,
+          "something invalid",
+          video_ids[0])));
+
+  // Test with invalid optional video sourceID.
+  EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
+      GenerateGetUserMediaWithOptionalSourceID(
+          kGetUserMediaAndStop,
+          audio_ids[0],
+          "something invalid")));
+
+  // Test with empty optional audio sourceID.
+  EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
+      GenerateGetUserMediaWithOptionalSourceID(
+          kGetUserMediaAndStop,
+          "",
+          video_ids[0])));
+}
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490

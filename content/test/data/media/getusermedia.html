@@ -11,11 +11,25 @@
   setAllEventsOccuredHandler(function() {
     gLocalStream.stop();
     document.title = 'OK';
+    sendValueToTest(document.title);
   });
+
+  function sendValueToTest(value) {
+    window.domAutomationController.setAutomationId(0);
+    window.domAutomationController.send(value);
+  }
+
+  function getSources() {
+    MediaStreamTrack.getSources(function(devices) {
+      document.title = 'Sources Available';
+      sendValueToTest(JSON.stringify(devices));
+    });
+  }
 
   // Creates a MediaStream and renders it locally. When the video is detected to
   // be rolling, the title is changed and the stream should be stopped.
   function getUserMediaAndStop(constraints) {
+    document.title = 'Calling GetUserMedia';
     navigator.webkitGetUserMedia(
         constraints,
         function(stream) { displayAndDetectVideo(stream, stopVideoTrack); },
@@ -52,6 +66,7 @@
 
   function failedCallback(error) {
     document.title = 'GetUserMedia call failed with code ' + error.code;
+    sendValueToTest(document.title);
   }
 
   function plugStreamIntoLocalView(stream) {

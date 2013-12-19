@@ -757,7 +757,7 @@ bool MediaStreamManager::GetRequestedDeviceCaptureId(
   StreamOptions::GetConstraintsByName(*mandatory,
                                       kMediaStreamSourceInfoId, &source_ids);
   if (source_ids.size() > 1) {
-    LOG(ERROR) << "Only one mandatory audio " << kMediaStreamSourceInfoId
+    LOG(ERROR) << "Only one mandatory " << kMediaStreamSourceInfoId
         << " is supported.";
     return false;
   }
@@ -768,7 +768,7 @@ bool MediaStreamManager::GetRequestedDeviceCaptureId(
                                    request->resource_context,
                                    request->security_origin,
                                    source_ids[0], device_id)) {
-    LOG(WARNING) << "Invalid mandatory audio " << kMediaStreamSourceInfoId
+    LOG(WARNING) << "Invalid mandatory " << kMediaStreamSourceInfoId
                  << " = " << source_ids[0] << ".";
     return false;
   }
