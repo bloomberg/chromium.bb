@@ -52,7 +52,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPIPPBInstance, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_instance.html"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPIPPPInstance, {
+// TODO(ncbray): Fails flakily. Fix and re-enable. http://crbug.com/329511
+NACL_BROWSER_TEST_F(NaClBrowserTest, DISABLED_PPAPIPPPInstance, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppp_instance.html"));
 })
 
