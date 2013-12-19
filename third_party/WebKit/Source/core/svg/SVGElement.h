@@ -175,6 +175,10 @@ protected:
     SVGElementRareData* svgRareData() const;
     SVGElementRareData* ensureSVGRareData();
 
+    bool hasSVGRareData() const { return m_hasSVGRareData; }
+    void setHasSVGRareData() { m_hasSVGRareData = true; }
+    void clearHasSVGRareData() { m_hasSVGRareData = false; }
+
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
 
@@ -230,8 +234,9 @@ private:
 #if !ASSERT_DISABLED
     bool m_inRelativeLengthClientsInvalidation;
 #endif
-    bool m_animatedPropertiesDestructed;
-    bool m_isContextElement;
+    unsigned m_animatedPropertiesDestructed : 1;
+    unsigned m_isContextElement : 1;
+    unsigned m_hasSVGRareData : 1;
 };
 
 struct SVGAttributeHashTranslator {

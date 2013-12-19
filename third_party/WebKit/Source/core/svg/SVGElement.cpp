@@ -77,6 +77,7 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
 #endif
     , m_animatedPropertiesDestructed(false)
     , m_isContextElement(false)
+    , m_hasSVGRareData(false)
 {
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGElement();
