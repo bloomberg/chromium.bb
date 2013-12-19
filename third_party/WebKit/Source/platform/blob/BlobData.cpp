@@ -33,10 +33,15 @@
 
 #include "platform/UUID.h"
 #include "platform/blob/BlobRegistry.h"
+#include "platform/text/LineEnding.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
 
@@ -95,9 +100,67 @@ void BlobData::appendFileSystemURL(const KURL& url, long long offset, long long 
     m_items.append(BlobDataItem(url, offset, length, expectedModificationTime));
 }
 
+void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNative)
+{
+    RefPtr<RawData> data = RawData::create();
+    Vector<char>* buffer = data->mutableData();
+
+    CString utf8Text = UTF8Encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
+    if (doNormalizeLineEndingsToNative) {
+        WebCore::normalizeLineEndingsToNative(utf8Text, *buffer);
+    } else {
+        buffer->append(utf8Text.data(), utf8Text.length());
+    }
+
+    m_items.append(BlobDataItem(data.release()));
+}
+
+void BlobData::appendBytes(const void* bytes, long long length)
+{
+    RefPtr<RawData> data = RawData::create();
+    Vector<char>* buffer = data->mutableData();
+    buffer->append(static_cast<const char *>(bytes), length);
+    m_items.append(BlobDataItem(data.release()));
+}
+
+void BlobData::appendArrayBuffer(const ArrayBuffer* arrayBuffer)
+{
+    appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
+}
+
+void BlobData::appendArrayBufferView(const ArrayBufferView* arrayBufferView)
+{
+    appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
+}
+
 void BlobData::swapItems(BlobDataItemList& items)
 {
     m_items.swap(items);
+}
+
+long long BlobData::length() const
+{
+    long long length = 0;
+
+    for (Vector<BlobDataItem>::const_iterator it = m_items.begin(); it != m_items.end(); ++it) {
+        const BlobDataItem& item = *it;
+        if (item.length != BlobDataItem::toEndOfFile) {
+            ASSERT(item.length >= 0);
+            length += item.length;
+            continue;
+        }
+
+        switch (item.type) {
+        case BlobDataItem::Data:
+            length += item.data->length();
+            break;
+        case BlobDataItem::File:
+        case BlobDataItem::Blob:
+        case BlobDataItem::FileSystemURL:
+            return BlobDataItem::toEndOfFile;
+        }
+    }
+    return length;
 }
 
 BlobDataHandle::BlobDataHandle()

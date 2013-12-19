@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/fileapi/Blob.h"
 
-#include "core/fileapi/File.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 
@@ -76,19 +75,9 @@ Blob::~Blob()
 {
 }
 
-PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
+void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
 {
-    // When we slice a file for the first time, we obtain a snapshot of the file by capturing its current size and modification time.
-    // The modification time will be used to verify if the file has been changed or not, when the underlying data are accessed.
-    long long size;
-    double modificationTime;
-    if (hasBackingFile()) {
-        // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
-        toFile(this)->captureSnapshot(size, modificationTime);
-    } else {
-        size = this->size();
-        ASSERT(size != -1);
-    }
+    ASSERT(size != -1);
 
     // Convert the negative value that is used to select from the end.
     if (start < 0)
@@ -108,19 +97,23 @@ PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& conte
         end = start;
     else if (end > size)
         end = size;
+}
+
+PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
+{
+    long long size = this->size();
+    clampSliceOffsets(size, start, end);
 
     long long length = end - start;
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
-    if (hasBackingFile()) {
-        if (!toFile(this)->fileSystemURL().isEmpty())
-            blobData->appendFileSystemURL(toFile(this)->fileSystemURL(), start, length, modificationTime);
-        else
-            blobData->appendFile(toFile(this)->path(), start, length, modificationTime);
-    } else {
-        blobData->appendBlob(m_blobDataHandle, start, length);
-    }
+    blobData->appendBlob(m_blobDataHandle, start, length);
     return Blob::create(BlobDataHandle::create(blobData.release(), length));
+}
+
+void Blob::appendTo(BlobData& blobData) const
+{
+    blobData.appendBlob(m_blobDataHandle, 0, m_blobDataHandle->size());
 }
 
 URLRegistry& Blob::registry() const

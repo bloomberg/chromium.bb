@@ -33,7 +33,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/custom/V8BlobCustomHelpers.h"
-#include "core/fileapi/BlobBuilder.h"
 
 namespace WebCore {
 
@@ -72,12 +71,14 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
     }
 
-    BlobBuilder blobBuilder;
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(properties.contentType());
     v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
-    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, properties.endings(), blobBuilder, info.GetIsolate()))
+    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, properties.normalizeLineEndingsToNative(), *blobData, info.GetIsolate()))
         return;
 
-    RefPtr<Blob> blob = blobBuilder.createBlob(properties.contentType());
+    long long blobSize = blobData->length();
+    RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), blobSize));
     v8SetReturnValue(info, blob.release());
 }
 

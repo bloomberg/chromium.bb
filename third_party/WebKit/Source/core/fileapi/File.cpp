@@ -181,6 +181,29 @@ unsigned long long File::size() const
     return static_cast<unsigned long long>(size);
 }
 
+PassRefPtr<Blob> File::slice(long long start, long long end, const String& contentType) const
+{
+    if (!m_hasBackingFile)
+        return Blob::slice(start, end, contentType);
+
+    // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
+    long long size;
+    double modificationTime;
+    captureSnapshot(size, modificationTime);
+    clampSliceOffsets(size, start, end);
+
+    long long length = end - start;
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(contentType);
+    if (!m_fileSystemURL.isEmpty()) {
+        blobData->appendFileSystemURL(m_fileSystemURL, start, length, modificationTime);
+    } else {
+        ASSERT(!m_path.isEmpty());
+        blobData->appendFile(m_path, start, length, modificationTime);
+    }
+    return Blob::create(BlobDataHandle::create(blobData.release(), length));
+}
+
 void File::captureSnapshot(long long& snapshotSize, double& snapshotModificationTime) const
 {
     if (hasValidSnapshotMetadata()) {
@@ -200,6 +223,25 @@ void File::captureSnapshot(long long& snapshotSize, double& snapshotModification
 
     snapshotSize = metadata.length;
     snapshotModificationTime = metadata.modificationTime;
+}
+
+void File::appendTo(BlobData& blobData) const
+{
+    if (!m_hasBackingFile) {
+        Blob::appendTo(blobData);
+        return;
+    }
+
+    // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
+    long long size;
+    double modificationTime;
+    captureSnapshot(size, modificationTime);
+    if (!m_fileSystemURL.isEmpty()) {
+        blobData.appendFileSystemURL(m_fileSystemURL, 0, size, modificationTime);
+        return;
+    }
+    ASSERT(!m_path.isEmpty());
+    blobData.appendFile(m_path, 0, size, modificationTime);
 }
 
 } // namespace WebCore

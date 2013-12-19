@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class BlobBuilder;
+class BlobData;
 class ExceptionState;
 
 // Shared code between the custom constructor bindings for Blob and File.
@@ -53,7 +53,7 @@ public:
     explicit ParsedProperties(bool hasFileProperties);
 
     const String& contentType() const { return m_contentType; }
-    const String& endings() const { return m_endings; }
+    bool normalizeLineEndingsToNative() const { return m_normalizeLineEndingsToNative; }
     void setLastModified(double);
     void setDefaultLastModified();
     double lastModified() const
@@ -70,7 +70,7 @@ public:
 
 private:
     String m_contentType;
-    String m_endings;
+    bool m_normalizeLineEndingsToNative;
 
     // False if this contains the properties of a BlobPropertyBag.
     bool m_hasFileProperties;
@@ -81,10 +81,10 @@ private:
 #endif // NDEBUG
 };
 
-// Appends the blobParts passed to a Blob or File constructor into a BlobBuilder.
+// Appends the blobParts passed to a Blob or File constructor into a BlobData.
 // http://www.w3.org/TR/FileAPI/#constructorParams
 // Returns true if everything went well, false if a JS exception was thrown.
-bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, const String& endings, BlobBuilder&, v8::Isolate*);
+bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, bool normalizeLineEndingsToNative, BlobData&, v8::Isolate*);
 
 } // namespace V8BlobCustomHelpers
 

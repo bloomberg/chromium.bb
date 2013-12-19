@@ -1012,8 +1012,6 @@
             'fetch/XSLStyleSheetResource.h',
             'fileapi/Blob.cpp',
             'fileapi/Blob.h',
-            'fileapi/BlobBuilder.cpp',
-            'fileapi/BlobBuilder.h',
             'fileapi/File.cpp',
             'fileapi/File.h',
             'fileapi/FileError.cpp',

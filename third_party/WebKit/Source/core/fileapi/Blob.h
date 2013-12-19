@@ -57,19 +57,24 @@ public:
 
     virtual ~Blob();
 
-    String uuid() const { return m_blobDataHandle->uuid(); }
-    String type() const {  return m_blobDataHandle->type(); }
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
+    virtual PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
+
+    String type() const {  return m_blobDataHandle->type(); }
+    String uuid() const { return m_blobDataHandle->uuid(); }
+    PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     // True for all File instances, including the user-built ones.
     virtual bool isFile() const { return false; }
     // Only true for File instances that are backed by platform files.
     virtual bool hasBackingFile() const { return false; }
-    PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
-    PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
+
+    // Used by the JavaScript Blob and File constructors.
+    virtual void appendTo(BlobData&) const;
 
     // URLRegistrable to support PublicURLs.
     virtual URLRegistry& registry() const OVERRIDE;
 
+    static void clampSliceOffsets(long long size, long long& start, long long& end);
 protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);
 

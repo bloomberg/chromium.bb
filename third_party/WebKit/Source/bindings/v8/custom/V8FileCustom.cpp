@@ -34,7 +34,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/custom/V8BlobCustomHelpers.h"
-#include "core/fileapi/BlobBuilder.h"
 
 namespace WebCore {
 
@@ -84,12 +83,14 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         properties.setDefaultLastModified();
     }
 
-    BlobBuilder blobBuilder;
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(properties.contentType());
     v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
-    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, properties.endings(), blobBuilder, info.GetIsolate()))
+    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, properties.normalizeLineEndingsToNative(), *blobData, info.GetIsolate()))
         return;
 
-    RefPtr<File> file = blobBuilder.createFile(properties.contentType(), fileName, properties.lastModified());
+    long long fileSize = blobData->length();
+    RefPtr<File> file = File::create(fileName, properties.lastModified(), BlobDataHandle::create(blobData.release(), fileSize));
     v8SetReturnValue(info, file.release());
 }
 

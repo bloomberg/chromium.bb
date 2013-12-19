@@ -126,7 +126,7 @@ struct PLATFORM_EXPORT BlobDataItem {
     // Detaches from current thread so that it can be passed to another thread.
     void detachFromCurrentThread();
 
-    enum {
+    const enum {
         Data,
         File,
         Blob,
@@ -180,15 +180,22 @@ public:
     void appendFile(const String& path, long long offset, long long length, double expectedModificationTime);
     void appendBlob(PassRefPtr<BlobDataHandle>, long long offset, long long length);
     void appendFileSystemURL(const KURL&, long long offset, long long length, double expectedModificationTime);
+    void appendText(const String&, bool normalizeLineEndingsToNative);
+    void appendArrayBuffer(const ArrayBuffer*);
+    void appendArrayBufferView(const ArrayBufferView*);
+
+    // The value of the size property for a Blob who has this data.
+    // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet determined.
+    long long length() const;
 
 private:
     friend class BlobRegistryImpl;
     friend class BlobStorageData;
 
-    BlobData() { }
+    // Used by appendArrayBuffer and appendArrayBufferView.
+    void appendBytes(const void*, long long length);
 
-    // This is only exposed to BlobStorageData.
-    void appendData(const RawData&, long long offset, long long length);
+    BlobData() { }
 
     String m_contentType;
     String m_contentDisposition;
