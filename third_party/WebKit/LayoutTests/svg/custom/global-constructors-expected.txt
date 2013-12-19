@@ -19,8 +19,6 @@ PASS SVGLengthList.toString() is 'function SVGLengthList() { [native code] }'
 PASS SVGAnimatedLengthList.toString() is 'function SVGAnimatedLengthList() { [native code] }'
 PASS SVGAngle.toString() is 'function SVGAngle() { [native code] }'
 PASS SVGAnimatedAngle.toString() is 'function SVGAnimatedAngle() { [native code] }'
-PASS SVGColor.toString() is 'function SVGColor() { [native code] }'
-FAIL SVGICCColor.toString() should be function SVGICCColor() { [native code] }. Threw exception ReferenceError: SVGICCColor is not defined
 PASS SVGRect.toString() is 'function SVGRect() { [native code] }'
 PASS SVGAnimatedRect.toString() is 'function SVGAnimatedRect() { [native code] }'
 FAIL SVGStylable.toString() should be function SVGStylable() { [native code] }. Threw exception ReferenceError: SVGStylable is not defined
@@ -90,7 +88,6 @@ PASS SVGAltGlyphElement.toString() is 'function SVGAltGlyphElement() { [native c
 PASS SVGAltGlyphDefElement.toString() is 'function SVGAltGlyphDefElement() { [native code] }'
 PASS SVGAltGlyphItemElement.toString() is 'function SVGAltGlyphItemElement() { [native code] }'
 PASS SVGGlyphRefElement.toString() is 'function SVGGlyphRefElement() { [native code] }'
-PASS SVGPaint.toString() is 'function SVGPaint() { [native code] }'
 PASS SVGMarkerElement.toString() is 'function SVGMarkerElement() { [native code] }'
 FAIL SVGColorProfileElement.toString() should be function SVGColorProfileElement() { [native code] }. Threw exception ReferenceError: SVGColorProfileElement is not defined
 FAIL SVGColorProfileRule.toString() should be function SVGColorProfileRule() { [native code] }. Threw exception ReferenceError: SVGColorProfileRule is not defined

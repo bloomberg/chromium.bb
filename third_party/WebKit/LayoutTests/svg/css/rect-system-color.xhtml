@@ -17,7 +17,10 @@ function checkSystemColor(id1, id2, systemColor)
     var divElement = document.getElementById(id2);
     var computedStyleDiv = divElement.ownerDocument.defaultView.getComputedStyle(divElement);
 
-    color1 = computedStyleText.getPropertyCSSValue('fill').rgbColor;
+    color1 = computedStyleText.getPropertyValue('fill');
+    var re = new RegExp("rgba?\\(([^, ]*), ([^, ]*), ([^, ]*)(?:, )?([^, ]*)\\)");
+    color1Components = re.exec(color1);
+
     color2 = computedStyleDiv.getPropertyCSSValue('color').getRGBColorValue();
 
     systemColorRed = color2.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
@@ -26,15 +29,16 @@ function checkSystemColor(id1, id2, systemColor)
 
     debug('Testing system color' + systemColor);
 
-    shouldBe("color1.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "systemColorRed");
-    shouldBe("color1.green.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "systemColorGreen");
-    shouldBe("color1.blue.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "systemColorBlue");
+    shouldBe("parseInt(color1Components[1])", "systemColorRed");
+    shouldBe("parseInt(color1Components[2])", "systemColorGreen");
+    shouldBe("parseInt(color1Components[3])", "systemColorBlue");
 
-    color1 = computedStyleText.getPropertyCSSValue('stroke').rgbColor;
+    color1 = computedStyleText.getPropertyValue('stroke');
+    color1Components = re.exec(color1);
 
-    shouldBe("color1.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "systemColorRed");
-    shouldBe("color1.green.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "systemColorGreen");
-    shouldBe("color1.blue.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "systemColorBlue");
+    shouldBe("parseInt(color1Components[1])", "systemColorRed");
+    shouldBe("parseInt(color1Components[2])", "systemColorGreen");
+    shouldBe("parseInt(color1Components[3])", "systemColorBlue");
 }
 
 description('Test that fill and stroke properties accept system colors');

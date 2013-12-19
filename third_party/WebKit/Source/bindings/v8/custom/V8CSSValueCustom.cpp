@@ -33,8 +33,6 @@
 
 #include "V8CSSPrimitiveValue.h"
 #include "V8CSSValueList.h"
-#include "V8SVGColor.h"
-#include "V8SVGPaint.h"
 #include "V8WebKitCSSFilterValue.h"
 #include "V8WebKitCSSMixFunctionValue.h"
 #include "V8WebKitCSSTransformValue.h"
@@ -55,10 +53,6 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
         return wrap(toCSSValueList(impl), creationContext, isolate);
     if (impl->isPrimitiveValue())
         return wrap(toCSSPrimitiveValue(impl), creationContext, isolate);
-    if (impl->isSVGPaint())
-        return wrap(toSVGPaint(impl), creationContext, isolate);
-    if (impl->isSVGColor())
-        return wrap(toSVGColor(impl), creationContext, isolate);
     return V8CSSValue::createWrapper(impl, creationContext, isolate);
 }
 

@@ -200,6 +200,35 @@ Color::Color(const char* name)
     }
 }
 
+String Color::serializedAsCSSComponentValue() const
+{
+    StringBuilder result;
+    result.reserveCapacity(32);
+    bool colorHasAlpha = hasAlpha();
+    if (colorHasAlpha)
+        result.append("rgba(", 5);
+    else
+        result.append("rgb(", 4);
+
+    result.appendNumber(static_cast<unsigned char>(red()));
+    result.append(", ", 2);
+
+    result.appendNumber(static_cast<unsigned char>(green()));
+    result.append(", ", 2);
+
+    result.appendNumber(static_cast<unsigned char>(blue()));
+    if (colorHasAlpha) {
+        result.append(", ", 2);
+
+        NumberToStringBuffer buffer;
+        const char* alphaString = numberToFixedPrecisionString(alpha() / 255.0f, 6, buffer, true);
+        result.append(alphaString, strlen(alphaString));
+    }
+
+    result.append(')');
+    return result.toString();
+}
+
 String Color::serialized() const
 {
     if (!hasAlpha()) {

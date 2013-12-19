@@ -243,7 +243,7 @@ String SVGAnimatedType::valueAsString()
     switch (m_type) {
     case AnimatedColor:
         ASSERT(m_data.color);
-        return m_data.color->serialized();
+        return m_data.color->serializedAsCSSComponentValue();
     case AnimatedLength:
         ASSERT(m_data.length);
         return m_data.length->valueAsString();

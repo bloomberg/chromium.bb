@@ -38,17 +38,12 @@
         try {
             stopElement.style.removeProperty("stop-color");
             stopElement.style.stopColor = string;
-            var stopColor = stopElement.style.getPropertyCSSValue("stop-color");
+            var stopColor = stopElement.style.getPropertyValue("stop-color");
             if (!stopColor) {
                 debug("Failed to parse: " + string);
                 return;
             }
-            var rgbColor = stopColor.rgbColor;
-            var red = rgbColor.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
-            var green = rgbColor.green.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
-            var blue = rgbColor.blue.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
-            var rgbColorString = "rgb(" + red + "," + green + "," + blue + ")";
-            debug("Parsed as " + rgbColorString + ": " + string);
+            debug("Parsed as " + stopColor + ": " + string);
         } catch(e) {
             debug("Threw exception " + e + ": " + string);
         }

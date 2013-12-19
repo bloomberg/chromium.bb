@@ -3,9 +3,9 @@ This test fuzzes the color parser with semi-random attribute values and dumps th
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Parsed as rgb(0,0,255): blue
-Parsed as rgb(0,255,0): rgb(0, 255, 0)
-Parsed as rgb(255,255,0): rgb(100%,100%,0%
+Parsed as rgb(0, 0, 255): blue
+Parsed as rgb(0, 255, 0): rgb(0, 255, 0)
+Parsed as rgb(255, 255, 0): rgb(100%,100%,0%
 Failed to parse: rgba(100%,100%,0%
 Failed to parse: rgb(100%,100%,r)
 Failed to parse: rgb (100%,100%,r)
@@ -21,14 +21,14 @@ Failed to parse: #ffff
 Failed to parse: #fffff
 Failed to parse: #fffffff
 Failed to parse: green,
-Parsed as rgb(0,10,20): rgb(0, 10, 20)
-Parsed as rgb(255,255,255): #fff
-Parsed as rgb(255,255,255): #ffffff
-Parsed as rgb(255,255,255): #FFF
-Parsed as rgb(255,255,255): #FFFFFF
-Parsed as rgb(0,128,0):  green
-Parsed as rgb(0,128,0): green 
-Parsed as rgb(0,128,0): green
+Parsed as rgb(0, 10, 20): rgb(0, 10, 20)
+Parsed as rgb(255, 255, 255): #fff
+Parsed as rgb(255, 255, 255): #ffffff
+Parsed as rgb(255, 255, 255): #FFF
+Parsed as rgb(255, 255, 255): #FFFFFF
+Parsed as rgb(0, 128, 0):  green
+Parsed as rgb(0, 128, 0): green 
+Parsed as rgb(0, 128, 0): green
 Failed to parse: rgb(.78-2e8e
 Failed to parse: rgb(% 
 Failed to parse: rgb(7
@@ -282,7 +282,7 @@ Failed to parse: rgb(
 Failed to parse: 
 Failed to parse: 
 Failed to parse: rgb()
-Parsed as rgb(0,255,0): #0f0
+Parsed as rgb(0, 255, 0): #0f0
 PASS successfullyParsed is true
 
 TEST COMPLETE

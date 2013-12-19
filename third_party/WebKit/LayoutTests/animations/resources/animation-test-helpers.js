@@ -317,15 +317,7 @@ function checkExpectedTransitionValue(expected, index)
                     break;
             }
         }
-    } else if (property == "fill" || property == "stroke") {
-        computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).rgbColor;
-        if (compareRGB([computedValue.red.cssText, computedValue.green.cssText, computedValue.blue.cssText], expectedValue, tolerance))
-            pass = true;
-        else {
-            // We failed. Make sure computed value is something we can read in the error message
-            computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).cssText;
-        }
-    } else if (property == "stop-color" || property == "flood-color" || property == "lighting-color") {
+    } else if (property == "fill" || property == "stroke" || property == "stop-color" || property == "flood-color" || property == "lighting-color") {
         computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property);
         // The computedValue cssText is rgb(num, num, num)
         var components = computedValue.cssText.split("(")[1].split(")")[0].split(",");

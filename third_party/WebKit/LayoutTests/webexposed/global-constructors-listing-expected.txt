@@ -279,7 +279,6 @@ SVGAnimatedTransformList
 SVGAnimationElement
 SVGCircleElement
 SVGClipPathElement
-SVGColor
 SVGComponentTransferFunctionElement
 SVGCursorElement
 SVGDefsElement
@@ -342,7 +341,6 @@ SVGMetadataElement
 SVGMissingGlyphElement
 SVGNumber
 SVGNumberList
-SVGPaint
 SVGPathElement
 SVGPathSeg
 SVGPathSegArcAbs
