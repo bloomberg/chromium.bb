@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_WINDOW_STACKING_DELEGATE_H_
-#define UI_AURA_CLIENT_WINDOW_STACKING_DELEGATE_H_
+#ifndef UI_AURA_CLIENT_WINDOW_STACKING_CLIENT_H_
+#define UI_AURA_CLIENT_WINDOW_STACKING_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,4 +31,4 @@ AURA_EXPORT WindowStackingClient* GetWindowStackingClient();
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_WINDOW_STACKING_DELEGATE_H_
+#endif  // UI_AURA_CLIENT_WINDOW_STACKING_CLIENT_H_

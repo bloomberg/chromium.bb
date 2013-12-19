@@ -18,7 +18,7 @@ void SetWindowStackingClient(WindowStackingClient* client) {
   instance = client;
 }
 
-AURA_EXPORT WindowStackingClient* GetWindowStackingClient() {
+WindowStackingClient* GetWindowStackingClient() {
   return instance;
 }
 
