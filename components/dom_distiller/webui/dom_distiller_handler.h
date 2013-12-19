@@ -41,17 +41,14 @@ class DomDistillerHandler : public content::WebUIMessageHandler {
   void HandleSelectArticle(const ListValue* args);
 
  private:
-  // Callback from DomDistillerService when an article is available.
-  void OnArticleAdded(bool article_available);
+  // Factory for the creating refs in callbacks.
+  base::WeakPtrFactory<DomDistillerHandler> weak_ptr_factory_;
 
   // The DomDistillerService.
   DomDistillerService* service_;
 
   // The scheme for DOM distiller articles.
   std::string article_scheme_;
-
-  // Factory for the creating refs in callbacks.
-  base::WeakPtrFactory<DomDistillerHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerHandler);
 };

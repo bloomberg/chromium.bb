@@ -48,13 +48,17 @@ void TaskTracker::StartBlobFetcher() {
   // |entry_| and asynchronously notify |this| when it is done.
 }
 
-void TaskTracker::AddSaveCallback(const SaveCallback& callback) {
-  DCHECK(!callback.is_null());
-  save_callbacks_.push_back(callback);
-  if (distilled_page_) {
+void TaskTracker::SetSaveCallback(SaveCallback callback) {
+  save_callback_ = callback;
+  if (save_callback_.is_null()) {
+    MaybeCancel();
+  } else if (distilled_page_) {
     // Distillation for this task has already completed, and so it can be
     // immediately saved.
-    ScheduleSaveCallbacks(true);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TaskTracker::DoSaveCallback,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -72,8 +76,6 @@ scoped_ptr<ViewerHandle> TaskTracker::AddViewer(ViewRequestDelegate* delegate) {
   return scoped_ptr<ViewerHandle>(new ViewerHandle(base::Bind(
       &TaskTracker::RemoveViewer, weak_ptr_factory_.GetWeakPtr(), delegate)));
 }
-
-const std::string& TaskTracker::GetEntryId() const { return entry_.entry_id(); }
 
 bool TaskTracker::HasEntryId(const std::string& entry_id) const {
   return entry_.entry_id() == entry_id;
@@ -96,7 +98,7 @@ void TaskTracker::RemoveViewer(ViewRequestDelegate* delegate) {
 }
 
 void TaskTracker::MaybeCancel() {
-  if (!save_callbacks_.empty() || !viewers_.empty()) {
+  if (!save_callback_.is_null() || !viewers_.empty()) {
     // There's still work to be done.
     return;
   }
@@ -108,27 +110,11 @@ void TaskTracker::MaybeCancel() {
   DCHECK(self);
 }
 
-void TaskTracker::CancelSaveCallbacks() { ScheduleSaveCallbacks(false); }
-
-void TaskTracker::ScheduleSaveCallbacks(bool distillation_succeeded) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TaskTracker::DoSaveCallbacks,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 distillation_succeeded));
-}
-
-void TaskTracker::DoSaveCallbacks(bool distillation_succeeded) {
-  if (!save_callbacks_.empty()) {
-    DistilledPageProto* distilled_proto =
-        distillation_succeeded ? distilled_page_.get() : NULL;
-
-    for (size_t i = 0; i < save_callbacks_.size(); ++i) {
-      DCHECK(!save_callbacks_[i].is_null());
-      save_callbacks_[i].Run(entry_, distilled_proto, distillation_succeeded);
-    }
-
-    save_callbacks_.clear();
+void TaskTracker::DoSaveCallback() {
+  DCHECK(distilled_page_);
+  if (!save_callback_.is_null()) {
+    save_callback_.Run(entry_, distilled_page_.get());
+    save_callback_.Reset();
     MaybeCancel();
   }
 }
@@ -140,15 +126,12 @@ void TaskTracker::NotifyViewer(ViewRequestDelegate* delegate) {
 
 void TaskTracker::OnDistilledDataReady(scoped_ptr<DistilledPageProto> proto) {
   distilled_page_ = proto.Pass();
-  DCHECK(distilled_page_);
 
   entry_.set_title(distilled_page_->title());
   for (size_t i = 0; i < viewers_.size(); ++i) {
     NotifyViewer(viewers_[i]);
   }
-
-  // Already inside a callback run SaveCallbacks directly.
-  DoSaveCallbacks(true);
+  DoSaveCallback();
 }
 
 }  // namespace dom_distiller

@@ -32,8 +32,6 @@ class ViewRequestDelegate;
 // Provide a view of the article list and ways of interacting with it.
 class DomDistillerService {
  public:
-  typedef base::Callback<void(bool)> ArticleAvailableCallback;
-
   DomDistillerService(scoped_ptr<DomDistillerStoreInterface> store,
                       scoped_ptr<DistillerFactory> distiller_factory);
   ~DomDistillerService();
@@ -41,10 +39,8 @@ class DomDistillerService {
   syncer::SyncableService* GetSyncableService() const;
 
   // Distill the article at |url| and add the resulting entry to the DOM
-  // distiller list. |article_cb| is invoked with true if article is
-  // available offline.
-  const std::string AddToList(const GURL& url,
-                              const ArticleAvailableCallback& article_cb);
+  // distiller list.
+  void AddToList(const GURL& url);
 
   // Gets the full list of entries.
   std::vector<ArticleEntry> GetEntries() const;
@@ -69,18 +65,15 @@ class DomDistillerService {
  private:
   void CancelTask(TaskTracker* task);
   void AddDistilledPageToList(const ArticleEntry& entry,
-                              DistilledPageProto* proto,
-                              bool distillation_succeeded);
+                              DistilledPageProto* proto);
 
   TaskTracker* CreateTaskTracker(const ArticleEntry& entry);
-
-  TaskTracker* GetTaskTrackerForEntry(const ArticleEntry& entry) const;
 
   // Gets the task tracker for the given |url| or |entry|. If no appropriate
   // tracker exists, this will create one, initialize it, and add it to
   // |tasks_|.
-  TaskTracker* GetOrCreateTaskTrackerForUrl(const GURL& url);
-  TaskTracker* GetOrCreateTaskTrackerForEntry(const ArticleEntry& entry);
+  TaskTracker* GetTaskTrackerForUrl(const GURL& url);
+  TaskTracker* GetTaskTrackerForEntry(const ArticleEntry& entry);
 
   scoped_ptr<DomDistillerStoreInterface> store_;
   scoped_ptr<DistillerFactory> distiller_factory_;

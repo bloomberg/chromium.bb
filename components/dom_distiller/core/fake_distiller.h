@@ -8,6 +8,7 @@
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -37,15 +38,17 @@ class FakeDistiller : public Distiller {
     callback_ = callback;
   }
 
-  void RunDistillerCallback(scoped_ptr<DistilledPageProto> proto);
+  void RunDistillerCallback(scoped_ptr<DistilledPageProto> proto) {
+    EXPECT_FALSE(callback_.is_null());
+    callback_.Run(proto.Pass());
+    callback_.Reset();
+  }
 
   GURL GetUrl() { return url_; }
 
   DistillerCallback GetCallback() { return callback_; }
 
  private:
-  void RunDistillerCallbackInternal(scoped_ptr<DistilledPageProto> proto);
-
   GURL url_;
   DistillerCallback callback_;
 };

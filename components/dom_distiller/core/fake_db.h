@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_FAKE_DB_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_FAKE_DB_H_
 
-#include <string>
-
 #include "components/dom_distiller/core/dom_distiller_database.h"
 
 namespace dom_distiller {

@@ -17,7 +17,10 @@ namespace dom_distiller {
 
 DomDistillerHandler::DomDistillerHandler(DomDistillerService* service,
                                          const std::string& scheme)
-    : service_(service), article_scheme_(scheme), weak_ptr_factory_(this) {}
+    : weak_ptr_factory_(this),
+      service_(service) {
+  article_scheme_ = scheme;
+}
 
 DomDistillerHandler::~DomDistillerHandler() {}
 
@@ -25,29 +28,25 @@ void DomDistillerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestEntries",
       base::Bind(&DomDistillerHandler::HandleRequestEntries,
-                 base::Unretained(this)));
+      base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "addArticle",
       base::Bind(&DomDistillerHandler::HandleAddArticle,
-                 base::Unretained(this)));
+      base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "selectArticle",
       base::Bind(&DomDistillerHandler::HandleSelectArticle,
-                 base::Unretained(this)));
+      base::Unretained(this)));
 }
 
 void DomDistillerHandler::HandleAddArticle(const ListValue* args) {
   std::string url;
   args->GetString(0, &url);
   GURL gurl(url);
-  if (gurl.is_valid()) {
-    service_->AddToList(
-        gurl,
-        base::Bind(base::Bind(&DomDistillerHandler::OnArticleAdded,
-                              base::Unretained(this))));
-  } else {
+  if (gurl.is_valid())
+    service_->AddToList(gurl);
+  else
     web_ui()->CallJavascriptFunction("domDistiller.onArticleAddFailed");
-  }
 }
 
 void DomDistillerHandler::HandleSelectArticle(const ListValue* args) {
@@ -67,22 +66,12 @@ void DomDistillerHandler::HandleRequestEntries(const ListValue* args) {
     DCHECK(IsEntryValid(article));
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("entry_id", article.entry_id());
-    std::string title = (!article.has_title() || article.title().empty())
-                            ? article.entry_id()
-                            : article.title();
+    std::string title = (!article.has_title() || article.title().empty()) ?
+        article.entry_id() : article.title();
     entry->SetString("title", title);
     entries.Append(entry.release());
   }
   web_ui()->CallJavascriptFunction("domDistiller.onReceivedEntries", entries);
-}
-
-void DomDistillerHandler::OnArticleAdded(bool article_available) {
-  // TODO(nyquist): Update this function.
-  if (article_available) {
-    HandleRequestEntries(NULL);
-  } else {
-    web_ui()->CallJavascriptFunction("domDistiller.onArticleAddFailed");
-  }
 }
 
 }  // namespace dom_distiller

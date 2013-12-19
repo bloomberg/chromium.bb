@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_TEST_UTIL_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_TEST_UTIL_H_
 
-#include <vector>
-
 #include "components/dom_distiller/core/dom_distiller_observer.h"
 #include "components/dom_distiller/core/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
