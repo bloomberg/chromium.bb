@@ -43,7 +43,6 @@ public:
     static PassRefPtr<Navigator> create(Frame* frame) { return adoptRef(new Navigator(frame)); }
     virtual ~Navigator();
 
-    String appVersion() const;
     String language() const;
     DOMPluginArray* plugins() const;
     DOMMimeTypeArray* mimeTypes() const;
