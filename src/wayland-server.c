@@ -117,7 +117,7 @@ struct wl_resource {
 	wl_dispatcher_func_t dispatcher;
 };
 
-static int wl_debug = 0;
+static int debug_server = 0;
 
 WL_EXPORT void
 wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
@@ -137,7 +137,7 @@ wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
 	if (wl_closure_send(closure, resource->client->connection))
 		resource->client->error = 1;
 
-	if (wl_debug)
+	if (debug_server)
 		wl_closure_print(closure, object, true);
 
 	wl_closure_destroy(closure);
@@ -177,7 +177,7 @@ wl_resource_queue_event_array(struct wl_resource *resource, uint32_t opcode,
 	if (wl_closure_queue(closure, resource->client->connection))
 		resource->client->error = 1;
 
-	if (wl_debug)
+	if (debug_server)
 		wl_closure_print(closure, object, true);
 
 	wl_closure_destroy(closure);
@@ -324,7 +324,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			break;
 		}
 
-		if (wl_debug)
+		if (debug_server)
 			wl_closure_print(closure, object, false);
 
 		if ((resource_flags & WL_MAP_ENTRY_LEGACY) ||
@@ -798,7 +798,7 @@ wl_display_create(void)
 
 	debug = getenv("WAYLAND_DEBUG");
 	if (debug && (strstr(debug, "server") || strstr(debug, "1")))
-		wl_debug = 1;
+		debug_server = 1;
 
 	display = malloc(sizeof *display);
 	if (display == NULL)

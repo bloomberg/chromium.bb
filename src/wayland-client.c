@@ -94,7 +94,7 @@ struct wl_display {
 
 /** \endcond */
 
-static int wl_debug = 0;
+static int debug_client = 0;
 
 static void
 display_fatal_error(struct wl_display *display, int error)
@@ -469,7 +469,7 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 		abort();
 	}
 
-	if (wl_debug)
+	if (debug_client)
 		wl_closure_print(closure, &proxy->object, true);
 
 	if (wl_closure_send(closure, proxy->display->connection)) {
@@ -700,7 +700,7 @@ wl_display_connect_to_fd(int fd)
 
 	debug = getenv("WAYLAND_DEBUG");
 	if (debug && (strstr(debug, "client") || strstr(debug, "1")))
-		wl_debug = 1;
+		debug_client = 1;
 
 	display = malloc(sizeof *display);
 	if (display == NULL) {
@@ -1038,13 +1038,13 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	pthread_mutex_unlock(&display->mutex);
 
 	if (proxy->dispatcher) {
-		if (wl_debug)
+		if (debug_client)
 			wl_closure_print(closure, &proxy->object, false);
 
 		wl_closure_dispatch(closure, proxy->dispatcher,
 				    &proxy->object, opcode);
 	} else if (proxy->object.implementation) {
-		if (wl_debug)
+		if (debug_client)
 			wl_closure_print(closure, &proxy->object, false);
 
 		wl_closure_invoke(closure, WL_CLOSURE_INVOKE_CLIENT,
