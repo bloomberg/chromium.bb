@@ -10,6 +10,11 @@ from telemetry.page import page_measurement
 TIMELINE_MARKER = 'Smoothness'
 
 
+class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
+  def __init__(self, name):
+    super(MissingDisplayFrameRateError, self).__init__(
+        'Missing display frame rate metrics: ' + name)
+
 class NotEnoughFramesError(page_measurement.MeasurementFailure):
   def __init__(self):
     super(NotEnoughFramesError, self).__init__(
@@ -34,8 +39,12 @@ class SmoothnessMetric(Metric):
   def Start(self, page, tab):
     tab.browser.StartTracing('webkit.console,benchmark', 60)
     tab.ExecuteJavaScript('console.time("' + TIMELINE_MARKER + '")')
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      tab.browser.platform.StartRawDisplayFrameRateMeasurement()
 
   def Stop(self, page, tab):
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      tab.browser.platform.StopRawDisplayFrameRateMeasurement()
     tab.ExecuteJavaScript('console.timeEnd("' + TIMELINE_MARKER + '")')
     timeline_model = tab.browser.StopTracing().AsTimelineModel()
     timeline_ranges = [ action.GetActiveRangeOnTimeline(timeline_model)
@@ -71,3 +80,9 @@ class SmoothnessMetric(Metric):
     # We use 19ms as a somewhat looser threshold, instead of 1000.0/60.0.
     percentile_95 = statistics.Percentile(self._stats.frame_times, 95.0)
     results.Add('mostly_smooth', '', 1.0 if percentile_95 < 19.0 else 0.0)
+
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
+        if r.value is None:
+          raise MissingDisplayFrameRateError(r.name)
+        results.Add(r.name, r.unit, r.value)

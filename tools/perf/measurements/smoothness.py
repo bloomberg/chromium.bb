@@ -6,13 +6,6 @@ from metrics import smoothness
 from metrics import timeline
 from telemetry.page import page_measurement
 
-
-class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
-  def __init__(self, name):
-    super(MissingDisplayFrameRateError, self).__init__(
-        'Missing display frame rate metrics: ' + name)
-
-
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
     super(Smoothness, self).__init__('smoothness')
@@ -40,23 +33,12 @@ class Smoothness(page_measurement.PageMeasurement):
 
     self._metric.Start(page, tab)
 
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      tab.browser.platform.StartRawDisplayFrameRateMeasurement()
-
   def DidRunAction(self, page, tab, action):
     if self.options.metric == 'smoothness':
       self._metric.AddActionToIncludeInMetric(action)
 
   def DidRunActions(self, page, tab):
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      tab.browser.platform.StopRawDisplayFrameRateMeasurement()
     self._metric.Stop(page, tab)
 
   def MeasurePage(self, page, tab, results):
     self._metric.AddResults(tab, results)
-
-    if tab.browser.platform.IsRawDisplayFrameRateSupported():
-      for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
-        if r.value is None:
-          raise MissingDisplayFrameRateError(r.name)
-        results.Add(r.name, r.unit, r.value)
