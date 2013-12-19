@@ -486,7 +486,7 @@ class AudioDetailedView : public TrayDetailsView,
     scroller()->Layout();
   }
 
-  void AddScrollListInfoItem(const string16& text) {
+  void AddScrollListInfoItem(const base::string16& text) {
     views::Label* label = new views::Label(text);
 
     //  Align info item with checkbox items
@@ -511,7 +511,7 @@ class AudioDetailedView : public TrayDetailsView,
     scroll_content()->AddChildView(label);
   }
 
-  HoverHighlightView* AddScrollListItem(const string16& text,
+  HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         gfx::Font::FontStyle style,
                                         bool checked) {
     HoverHighlightView* container = new HoverHighlightView(this);

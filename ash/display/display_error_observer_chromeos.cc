@@ -57,7 +57,8 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
-string16 DisplayErrorObserver::GetTitleOfDisplayErrorNotificationForTest() {
+base::string16 DisplayErrorObserver::
+    GetTitleOfDisplayErrorNotificationForTest() {
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
   for (message_center::NotificationList::Notifications::const_iterator iter =

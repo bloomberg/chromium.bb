@@ -200,7 +200,7 @@ TEST_F(TrayDisplayTest, InternalDisplay) {
 
   // Extended
   UpdateDisplay("400x400,200x200");
-  string16 expected = l10n_util::GetStringFUTF16(
+  base::string16 expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetSecondDisplayName());
   tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());

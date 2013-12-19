@@ -35,11 +35,11 @@ void TestMetroViewerProcessHost::OnSetTargetSurface(
   backing_surface_.reset(new AcceleratedSurface(hwnd));
 }
 
-void TestMetroViewerProcessHost::OnOpenURL(const string16& url) {
+void TestMetroViewerProcessHost::OnOpenURL(const base::string16& url) {
 }
 
 void TestMetroViewerProcessHost::OnHandleSearchRequest(
-    const string16& search_string) {
+    const base::string16& search_string) {
 }
 
 void TestMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,

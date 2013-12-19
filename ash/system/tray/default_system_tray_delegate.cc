@@ -71,7 +71,7 @@ const std::string DefaultSystemTrayDelegate::GetEnterpriseDomain() const {
 }
 
 const base::string16 DefaultSystemTrayDelegate::GetEnterpriseMessage() const {
-  return string16();
+  return base::string16();
 }
 
 const std::string
@@ -82,12 +82,12 @@ DefaultSystemTrayDelegate::GetLocallyManagedUserManager() const {
 const base::string16
 DefaultSystemTrayDelegate::GetLocallyManagedUserManagerName()
     const {
-  return string16();
+  return base::string16();
 }
 
 const base::string16 DefaultSystemTrayDelegate::GetLocallyManagedUserMessage()
     const {
-  return string16();
+  return base::string16();
 }
 
 bool DefaultSystemTrayDelegate::SystemShouldUpgrade() const {

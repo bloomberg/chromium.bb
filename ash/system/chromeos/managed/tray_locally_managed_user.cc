@@ -81,7 +81,7 @@ void TrayLocallyManagedUser::CreateOrUpdateNotification(
   scoped_ptr<Notification> notification(
       message_center::Notification::CreateSystemNotification(
           kNotificationId,
-          string16() /* no title */,
+          base::string16() /* no title */,
           new_message,
           bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
           system_notifier::kNotifierLocallyManagedUser,

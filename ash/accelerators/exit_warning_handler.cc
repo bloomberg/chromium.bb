@@ -45,7 +45,7 @@ class ExitWarningLabel : public views::Label {
 
  private:
   virtual void PaintText(gfx::Canvas* canvas,
-                         const string16& text,
+                         const base::string16& text,
                          const gfx::Rect& text_bounds,
                          int flags) OVERRIDE {
     // Turn off subpixel rendering.

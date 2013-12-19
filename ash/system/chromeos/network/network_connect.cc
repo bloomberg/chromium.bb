@@ -486,10 +486,10 @@ void CreateConfigurationAndConnect(base::DictionaryValue* properties,
       base::Bind(&OnConfigureFailed));
 }
 
-string16 ErrorString(const std::string& error,
+base::string16 ErrorString(const std::string& error,
                      const std::string& service_path) {
   if (error.empty())
-    return string16();
+    return base::string16();
   if (error == shill::kErrorOutOfRange)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
   if (error == shill::kErrorPinMissing)

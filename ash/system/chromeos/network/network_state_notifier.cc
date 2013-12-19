@@ -39,7 +39,7 @@ const char kNetworkOutOfCreditsNotificationId[] =
 const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 
 // Error messages based on |error_name|, not network_state->error().
-string16 GetConnectErrorString(const std::string& error_name) {
+base::string16 GetConnectErrorString(const std::string& error_name) {
   if (error_name == NetworkConnectionHandler::kErrorNotFound)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
   if (error_name == NetworkConnectionHandler::kErrorConfigureFailed)
@@ -48,7 +48,7 @@ string16 GetConnectErrorString(const std::string& error_name) {
   if (error_name == ash::network_connect::kErrorActivateFailed)
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
-  return string16();
+  return base::string16();
 }
 
 void ShowErrorNotification(const std::string& notification_id,
@@ -143,7 +143,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
   base::TimeDelta dtime = base::Time::Now() - out_of_credits_notify_time_;
   if (dtime.InSeconds() > kMinTimeBetweenOutOfCreditsNotifySeconds) {
     out_of_credits_notify_time_ = base::Time::Now();
-    string16 error_msg = l10n_util::GetStringFUTF16(
+    base::string16 error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_OUT_OF_CREDITS_BODY,
         UTF8ToUTF16(cellular->name()));
     ShowErrorNotification(
@@ -234,7 +234,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     const std::string& shill_error,
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
-  string16 error = GetConnectErrorString(error_name);
+  base::string16 error = GetConnectErrorString(error_name);
   if (error.empty()) {
     // Service.Error gets cleared shortly after State transitions to Failure,
     // so rely on |shill_error| unless empty.
@@ -257,7 +257,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   shill_properties.GetStringWithoutPathExpansion(
         shill::kErrorDetailsProperty, &network_error_details);
 
-  string16 error_msg;
+  base::string16 error_msg;
   if (!network_error_details.empty()) {
     // network_name should't be empty if network_error_details is set.
     error_msg = l10n_util::GetStringFUTF16(
