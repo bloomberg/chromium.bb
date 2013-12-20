@@ -15,13 +15,13 @@
             "type": "array",
             "items": {"type": "string"},
             "optional": true,
-            "description": "List of named permissions (does not include hosts or origins)."
+            "description": "List of named permissions (does not include hosts or origins).  Anything listed here must appear in the <code>optional_permissions</code> list in the manifest."
           },
           "origins": {
             "type": "array",
             "items": {"type": "string"},
             "optional": true,
-            "description": "List of origin permissions."
+            "description": "List of origin permissions. Anything listed here must be a subset of a host that appears in the <code>optional_permissions</code> list in the manifest. For example, if <code>http://*.example.com/</code> or <code>http://*/</code> appears in <code>optional_permissions</code>, you can request an origin of <code>http://help.example.com/</code>. Any path is ignored."
           }
         }
       }
