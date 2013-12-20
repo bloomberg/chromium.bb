@@ -705,10 +705,13 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (RuntimeEnabledFeatures::customElementsEnabled() && CustomElement::isValidName(localName) && registrationContext())
+    if (RuntimeEnabledFeatures::customElementsEnabled() && CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
-    else
+    } else {
         element = createElement(localName, exceptionState);
+        if (exceptionState.hadException())
+            return 0;
+    }
 
     if (RuntimeEnabledFeatures::customElementsEnabled() && !typeExtension.isNull() && !typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
@@ -729,10 +732,13 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     }
 
     RefPtr<Element> element;
-    if (CustomElement::isValidName(qName.localName()) && registrationContext())
+    if (CustomElement::isValidName(qName.localName()) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, qName);
-    else
+    } else {
         element = createElementNS(namespaceURI, qualifiedName, exceptionState);
+        if (exceptionState.hadException())
+            return 0;
+    }
 
     if (!typeExtension.isNull() && !typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
