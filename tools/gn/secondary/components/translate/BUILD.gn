@@ -1,0 +1,23 @@
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("translate_common") {
+  external = true
+
+  sources = [
+    "common/translate_constants.cc",
+    "common/translate_constants.h",
+    "common/translate_metrics.cc",
+    "common/translate_metrics.h",
+    "common/translate_switches.cc",
+    "common/translate_switches.h",
+    "common/translate_util.cc",
+    "common/translate_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//url",
+  ]
+}

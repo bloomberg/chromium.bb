@@ -12,6 +12,7 @@ group("root") {
     "//components/navigation_metrics",
     "//components/onc:onc_component",
     "//components/startup_metric_utils",
+    "//components/translate:translate_common",
     "//crypto",
     "//device/usb:device_usb",
     "//ipc",
