@@ -162,6 +162,7 @@ RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
       event_flags_(0),
       window_size_(aura::RootWindowHost::GetNativeScreenSize()) {
   prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
+  CreateCompositor(GetAcceleratedWidget());
 }
 
 RemoteRootWindowHostWin::~RemoteRootWindowHostWin() {
@@ -172,7 +173,6 @@ void RemoteRootWindowHostWin::Connected(IPC::Sender* host, HWND remote_window) {
   CHECK(host_ == NULL);
   host_ = host;
   remote_window_ = remote_window;
-  CreateCompositor(remote_window_);
 }
 
 void RemoteRootWindowHostWin::Disconnected() {
