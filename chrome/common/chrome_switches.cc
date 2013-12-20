@@ -1460,9 +1460,6 @@ const char kTestType[]                      = "test-type";
 // channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
 
-// Enables tracking the amount of non-idle time spent viewing pages.
-const char kTrackActiveVisitTime[]          = "track-active-visit-time";
-
 // Overrides the default server used for Google Translate.
 const char kTranslateScriptURL[]            = "translate-script-url";
 

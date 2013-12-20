@@ -6503,12 +6503,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MAP_IMAGE_DESCRIPTION" desc="Description of about:flags option for map-image rasterizer.">
         If enabled, raster threads write directly to GPU memory.
       </message>
-      <message name="IDS_FLAGS_TRACK_ACTIVE_VISIT_TIME_NAME" desc="Name of about:flags option for tracking active time on a page.">
-        Track time spent on each each page
-      </message>
-      <message name="IDS_FLAGS_TRACK_ACTIVE_VISIT_TIME_DESCRIPTION" desc="Description of about:flags option for tracking active time on a page.">
-        Tracks the amount of time spent on each page for improved most visited scoring.
-      </message>
       <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_NAME" desc="Name of about:flags option for maximum tiles for interest area.">
         Maximum tiles for interest area
       </message>

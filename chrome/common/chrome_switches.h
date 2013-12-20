@@ -392,7 +392,6 @@ extern const char kTabCapture[];
 extern const char kTestName[];
 extern const char kTestType[];
 extern const char kTestingChannelID[];
-extern const char kTrackActiveVisitTime[];
 extern const char kTranslateScriptURL[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];

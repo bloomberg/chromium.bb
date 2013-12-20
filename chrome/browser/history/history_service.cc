@@ -443,25 +443,6 @@ HistoryService::Handle HistoryService::QuerySegmentUsageSince(
                   from_time, max_result_count);
 }
 
-void HistoryService::IncreaseSegmentDuration(const GURL& url,
-                                             Time time,
-                                             base::TimeDelta delta) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IncreaseSegmentDuration,
-                    url, time, delta);
-}
-
-HistoryService::Handle HistoryService::QuerySegmentDurationSince(
-    CancelableRequestConsumerBase* consumer,
-    base::Time from_time,
-    int max_result_count,
-    const SegmentQueryCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_UI, &HistoryBackend::QuerySegmentDuration,
-                  consumer, new history::QuerySegmentUsageRequest(callback),
-                  from_time, max_result_count);
-}
-
 void HistoryService::FlushForTest(const base::Closure& flushed) {
   thread_->message_loop_proxy()->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), flushed);
