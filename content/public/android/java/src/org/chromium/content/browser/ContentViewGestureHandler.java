@@ -122,9 +122,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // fling ends.
     private boolean mFlingMayBeActive;
 
+    // Used to remove the touch slop from the initial scroll event in a scroll gesture.
     private boolean mSeenFirstScrollEvent;
 
     private boolean mPinchInProgress = false;
+
+    // Guard against nested |trySendPendingEventsToNative()| loops.
+    private boolean mSendingPendingEventsToNative = false;
 
     private static final int DOUBLE_TAP_TIMEOUT = ViewConfiguration.getDoubleTapTimeout();
 
@@ -779,14 +783,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 endDoubleTapDragIfNecessary(null);
             }
 
-            if (offerTouchEventToJavaScript(event)) {
-                // offerTouchEventToJavaScript returns true to indicate the event was sent
-                // to the render process. If it is not subsequently handled, it will
-                // be returned via confirmTouchEvent(false) and eventually passed to
-                // processTouchEvent asynchronously.
-                return true;
-            }
-            return processTouchEvent(event);
+            return queueEvent(event);
         } finally {
             TraceEvent.end("onTouchEvent");
         }
@@ -842,8 +839,18 @@ class ContentViewGestureHandler implements LongPressDelegate {
         }
     }
 
-    private boolean offerTouchEventToJavaScript(MotionEvent event) {
-        if (mTouchHandlingState == NO_TOUCH_HANDLER) return false;
+    /**
+     * Queues or coalesces |event| into the pending queue.
+     *   - If there are no touch handlers, |event| will skip the queue and be processed immediately.
+     *   - If there are no pending events, |event| will be sent to native or processed immediately,
+     *     depending on the disposition of the current gesture sequence.
+     * @return Whether the event was queued OR processed.
+     */
+    private boolean queueEvent(MotionEvent event) {
+        if (mTouchHandlingState == NO_TOUCH_HANDLER) {
+            assert mPendingMotionEvents.isEmpty();
+            return processTouchEvent(event);
+        }
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
             // Avoid flooding the renderer process with move events: if the previous pending
@@ -854,7 +861,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     && previousEvent != mPendingMotionEvents.peekFirst()
                     && previousEvent.getActionMasked() == MotionEvent.ACTION_MOVE
                     && previousEvent.getPointerCount() == event.getPointerCount()) {
-                TraceEvent.instant("offerTouchEventToJavaScript:EventCoalesced",
+                TraceEvent.instant("queueEvent:EventCoalesced",
                                    "QueueSize = " + mPendingMotionEvents.size());
                 MotionEvent.PointerCoords[] coords =
                         new MotionEvent.PointerCoords[event.getPointerCount()];
@@ -866,25 +873,17 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 return true;
             }
         }
-        if (mPendingMotionEvents.isEmpty()) {
-            // Add the event to the pending queue prior to calling sendPendingEventToNative.
-            // When sending an event to native, the callback to confirmTouchEvent can be
-            // synchronous or asynchronous and confirmTouchEvent expects the event to be
-            // in the queue when it is called.
-            MotionEvent clone = MotionEvent.obtain(event);
-            mPendingMotionEvents.add(clone);
 
-            int forward = sendPendingEventToNative();
-            if (forward != EVENT_FORWARDED_TO_NATIVE) mPendingMotionEvents.remove(clone);
-            return forward != EVENT_NOT_FORWARDED;
+        // Copy the event, as the original may get mutated after this method returns.
+        MotionEvent clone = MotionEvent.obtain(event);
+        mPendingMotionEvents.add(clone);
+        if (mPendingMotionEvents.size() == 1) {
+            trySendPendingEventsToNative();
         } else {
-            TraceEvent.instant("offerTouchEventToJavaScript:EventQueued",
+            TraceEvent.instant("queueEvent:EventQueued",
                                "QueueSize = " + mPendingMotionEvents.size());
-            // Copy the event, as the original may get mutated after this method returns.
-            MotionEvent clone = MotionEvent.obtain(event);
-            mPendingMotionEvents.add(clone);
-            return true;
         }
+        return true;
     }
 
     private int sendPendingEventToNative() {
@@ -1029,19 +1028,27 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     private void trySendPendingEventsToNative() {
-        while (!mPendingMotionEvents.isEmpty()) {
-            int forward = sendPendingEventToNative();
-            if (forward == EVENT_FORWARDED_TO_NATIVE) break;
+        // Avoid nested send loops (possible when acks are synchronous), instead
+        // relying on the top-most call to dispatch any queued events.
+        if (mSendingPendingEventsToNative) return;
+        try {
+            mSendingPendingEventsToNative = true;
+            while (!mPendingMotionEvents.isEmpty()) {
+                int forward = sendPendingEventToNative();
+                if (forward == EVENT_FORWARDED_TO_NATIVE) break;
 
-            // Even though we missed sending one event to native, as long as we haven't
-            // received INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, we should keep sending
-            // events on the queue to native.
-            MotionEvent event = mPendingMotionEvents.removeFirst();
-            if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
-                    && forward != EVENT_DROPPED) {
-                processTouchEvent(event);
+                // Even though we missed sending one event to native, as long as we haven't
+                // received INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, we should keep sending
+                // events on the queue to native.
+                MotionEvent event = mPendingMotionEvents.removeFirst();
+                if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
+                        && forward != EVENT_DROPPED) {
+                    processTouchEvent(event);
+                }
+                recycleEvent(event);
             }
-            recycleEvent(event);
+        } finally {
+            mSendingPendingEventsToNative = false;
         }
     }
 
