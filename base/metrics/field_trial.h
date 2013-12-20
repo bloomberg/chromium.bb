@@ -441,7 +441,7 @@ class BASE_EXPORT FieldTrialList {
 
  private:
   // A map from FieldTrial names to the actual instances.
-  typedef std::map<std::string, FieldTrial*> RegistrationList;
+  typedef std::map<std::string, FieldTrial*> RegistrationMap;
 
   // If one-time randomization is enabled, returns a weak pointer to the
   // corresponding EntropyProvider. Otherwise, returns NULL.
@@ -466,7 +466,7 @@ class BASE_EXPORT FieldTrialList {
 
   // Lock for access to registered_.
   base::Lock lock_;
-  RegistrationList registered_;
+  RegistrationMap registered_;
 
   // Entropy provider to be used for one-time randomized field trials. If NULL,
   // one-time randomization is not supported.
