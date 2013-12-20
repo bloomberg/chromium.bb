@@ -1813,6 +1813,10 @@ _arm_release.add_config('nyan-release',
   boards=['nyan'],
 )
 
+_arm_release.add_config('peach_pi-release',
+  boards=['peach_pi'],
+)
+
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
 
