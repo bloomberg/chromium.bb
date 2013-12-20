@@ -92,6 +92,7 @@ struct desktop_shell {
 		struct weston_process process;
 		struct wl_client *client;
 		struct wl_resource *desktop_shell;
+		struct wl_listener client_destroy_listener;
 
 		unsigned deathcount;
 		uint32_t deathstamp;

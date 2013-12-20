@@ -5008,6 +5008,17 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 }
 
 static void
+desktop_shell_client_destroy(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell;
+
+	shell = container_of(listener, struct desktop_shell,
+			     child.client_destroy_listener);
+
+	shell->child.client = NULL;
+}
+
+static void
 launch_desktop_shell_process(void *data)
 {
 	struct desktop_shell *shell = data;
@@ -5019,6 +5030,11 @@ launch_desktop_shell_process(void *data)
 
 	if (!shell->child.client)
 		weston_log("not able to start %s\n", shell->client);
+
+	shell->child.client_destroy_listener.notify =
+		desktop_shell_client_destroy;
+	wl_client_add_destroy_listener(shell->child.client,
+				       &shell->child.client_destroy_listener);
 }
 
 static void
