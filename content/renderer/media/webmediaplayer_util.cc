@@ -31,7 +31,7 @@ base::TimeDelta ConvertSecondsToTimestamp(double seconds) {
 blink::WebTimeRanges ConvertToWebTimeRanges(
     const media::Ranges<base::TimeDelta>& ranges) {
   blink::WebTimeRanges result(ranges.size());
-  for (size_t i = 0; i < ranges.size(); i++) {
+  for (size_t i = 0; i < ranges.size(); ++i) {
     result[i].start = ranges.start(i).InSecondsF();
     result[i].end = ranges.end(i).InSecondsF();
   }
