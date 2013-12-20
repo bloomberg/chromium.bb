@@ -1950,7 +1950,16 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(autofill::switches::kEnableIgnoreAutocompleteOff)
+  },
+#if defined(USE_AURA) || defined(OS_WIN)
+  {
+    "enable-save-password-bubble",
+    IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_NAME,
+    IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
   }
+#endif
 };
 
 const Experiment* experiments = kExperiments;
