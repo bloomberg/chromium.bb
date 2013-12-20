@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_loop.h"
@@ -38,15 +38,15 @@ void HistogramRendererEvent(AudioRendererEvent event) {
 }  // namespace
 
 AudioRendererImpl::AudioRendererImpl(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       weak_factory_(this),
       sink_(sink),
       decoder_selector_(new AudioDecoderSelector(
-          message_loop, decoders.Pass(), set_decryptor_ready_cb)),
+          task_runner, decoders.Pass(), set_decryptor_ready_cb)),
       now_cb_(base::Bind(&base::TimeTicks::Now)),
       state_(kUninitialized),
       sink_playing_(false),
@@ -66,7 +66,7 @@ AudioRendererImpl::~AudioRendererImpl() {
 }
 
 void AudioRendererImpl::Play(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPaused);
@@ -81,7 +81,7 @@ void AudioRendererImpl::Play(const base::Closure& callback) {
 }
 
 void AudioRendererImpl::DoPlay_Locked() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
   earliest_end_time_ = now_cb_.Run();
 
@@ -97,7 +97,7 @@ void AudioRendererImpl::DoPlay_Locked() {
 }
 
 void AudioRendererImpl::Pause(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == kPlaying || state_ == kUnderflow ||
@@ -110,7 +110,7 @@ void AudioRendererImpl::Pause(const base::Closure& callback) {
 }
 
 void AudioRendererImpl::DoPause_Locked() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
   if (sink_playing_) {
@@ -123,7 +123,7 @@ void AudioRendererImpl::DoPause_Locked() {
 }
 
 void AudioRendererImpl::Flush(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPaused);
@@ -140,7 +140,7 @@ void AudioRendererImpl::Flush(const base::Closure& callback) {
 }
 
 void AudioRendererImpl::DoFlush_Locked() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
   DCHECK(!pending_read_);
@@ -156,7 +156,7 @@ void AudioRendererImpl::DoFlush_Locked() {
 }
 
 void AudioRendererImpl::ResetDecoder() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   decoder_->Reset(BindToCurrentLoop(
       base::Bind(&AudioRendererImpl::ResetDecoderDone, weak_this_)));
 }
@@ -183,7 +183,7 @@ void AudioRendererImpl::ResetDecoderDone() {
 }
 
 void AudioRendererImpl::Stop(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!callback.is_null());
 
   // TODO(scherkus): Consider invalidating |weak_factory_| and replacing
@@ -209,7 +209,7 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
 
 void AudioRendererImpl::Preroll(base::TimeDelta time,
                                 const PipelineStatusCB& cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   DCHECK(!sink_playing_);
@@ -232,7 +232,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    const base::Closure& ended_cb,
                                    const base::Closure& disabled_cb,
                                    const PipelineStatusCB& error_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
   DCHECK(!init_cb.is_null());
@@ -263,7 +263,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 void AudioRendererImpl::OnDecoderSelected(
     scoped_ptr<AudioDecoder> decoder,
     scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   scoped_ptr<AudioDecoderSelector> deleter(decoder_selector_.Pass());
@@ -320,7 +320,7 @@ void AudioRendererImpl::OnDecoderSelected(
 }
 
 void AudioRendererImpl::ResumeAfterUnderflow() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   if (state_ == kUnderflow) {
     // The "!preroll_aborted_" is a hack. If preroll is aborted, then we
@@ -337,7 +337,7 @@ void AudioRendererImpl::ResumeAfterUnderflow() {
 }
 
 void AudioRendererImpl::SetVolume(float volume) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(sink_);
   sink_->SetVolume(volume);
 }
@@ -346,7 +346,7 @@ void AudioRendererImpl::DecodedAudioReady(
     AudioDecoder::Status status,
     const scoped_refptr<AudioBuffer>& buffer) {
   DVLOG(1) << __FUNCTION__ << "(" << status << ")";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ != kUninitialized);
@@ -463,7 +463,7 @@ void AudioRendererImpl::AttemptRead() {
 }
 
 void AudioRendererImpl::AttemptRead_Locked() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
   if (!CanRead_Locked())
@@ -496,7 +496,7 @@ bool AudioRendererImpl::CanRead_Locked() {
 
 void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
   DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_GE(playback_rate, 0);
   DCHECK(sink_);
 
@@ -581,7 +581,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     }
 
     if (CanRead_Locked()) {
-      message_loop_->PostTask(FROM_HERE, base::Bind(
+      task_runner_->PostTask(FROM_HERE, base::Bind(
           &AudioRendererImpl::AttemptRead, weak_this_));
     }
 

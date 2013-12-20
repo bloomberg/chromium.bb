@@ -14,7 +14,7 @@
 #include "media/base/video_decoder.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -46,7 +46,7 @@ class MEDIA_EXPORT VideoDecoderSelector {
   // |set_decryptor_ready_cb| is optional. If |set_decryptor_ready_cb| is null,
   // no decryptor will be available to perform decryption.
   VideoDecoderSelector(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       ScopedVector<VideoDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
   ~VideoDecoderSelector();
@@ -68,7 +68,7 @@ class MEDIA_EXPORT VideoDecoderSelector {
   void DecoderInitDone(PipelineStatus status);
   void ReturnNullDecoder();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ScopedVector<VideoDecoder> decoders_;
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 

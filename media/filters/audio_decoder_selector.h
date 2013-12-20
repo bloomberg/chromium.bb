@@ -14,7 +14,7 @@
 #include "media/base/pipeline_status.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -47,7 +47,7 @@ class MEDIA_EXPORT AudioDecoderSelector {
   // |set_decryptor_ready_cb| is optional. If |set_decryptor_ready_cb| is null,
   // no decryptor will be available to perform decryption.
   AudioDecoderSelector(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       ScopedVector<AudioDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
   ~AudioDecoderSelector();
@@ -70,7 +70,7 @@ class MEDIA_EXPORT AudioDecoderSelector {
   void DecoderInitDone(PipelineStatus status);
   void ReturnNullDecoder();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ScopedVector<AudioDecoder> decoders_;
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 

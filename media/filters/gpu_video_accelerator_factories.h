@@ -11,7 +11,7 @@
 #include "media/video/video_encode_accelerator.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class SharedMemory;
 }
 
@@ -52,8 +52,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
   // Close()ing the returned pointer.
   virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
 
-  // Returns the message loop the video accelerator runs on.
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() = 0;
+  // Returns the task runner the video accelerator runs on.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
 
   // Abort any outstanding factory operations and error any future
   // attempts at factory operations

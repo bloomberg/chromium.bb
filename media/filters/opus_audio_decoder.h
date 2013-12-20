@@ -15,7 +15,7 @@
 struct OpusMSDecoder;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -28,7 +28,7 @@ struct QueuedAudioBuffer;
 class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
  public:
   explicit OpusAudioDecoder(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual ~OpusAudioDecoder();
 
   // AudioDecoder implementation.
@@ -54,7 +54,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   bool Decode(const scoped_refptr<DecoderBuffer>& input,
               scoped_refptr<AudioBuffer>* output_buffer);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<OpusAudioDecoder> weak_factory_;
   base::WeakPtr<OpusAudioDecoder> weak_this_;
 

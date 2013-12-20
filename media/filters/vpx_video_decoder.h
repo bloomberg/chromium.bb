@@ -17,7 +17,7 @@ struct vpx_codec_ctx;
 struct vpx_image;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -29,7 +29,7 @@ namespace media {
 class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
  public:
   explicit VpxVideoDecoder(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual ~VpxVideoDecoder();
 
   // VideoDecoder implementation.
@@ -67,7 +67,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
                       const struct vpx_image* vpx_image_alpha,
                       scoped_refptr<VideoFrame>* video_frame);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<VpxVideoDecoder> weak_factory_;
   base::WeakPtr<VpxVideoDecoder> weak_this_;
 

@@ -8,7 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_helpers.h"
@@ -33,7 +33,7 @@ const uint8 kIv[] = {
 FakeDemuxerStream::FakeDemuxerStream(int num_configs,
                                      int num_buffers_in_one_config,
                                      bool is_encrypted)
-    : message_loop_(base::MessageLoopProxy::current()),
+    : task_runner_(base::MessageLoopProxy::current()),
       num_configs_left_(num_configs),
       num_buffers_in_one_config_(num_buffers_in_one_config),
       is_encrypted_(is_encrypted),
@@ -52,7 +52,7 @@ FakeDemuxerStream::FakeDemuxerStream(int num_configs,
 FakeDemuxerStream::~FakeDemuxerStream() {}
 
 void FakeDemuxerStream::Read(const ReadCB& read_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(read_cb_.is_null());
 
   read_cb_ = BindToCurrentLoop(read_cb);
@@ -65,40 +65,40 @@ void FakeDemuxerStream::Read(const ReadCB& read_cb) {
 }
 
 AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   NOTREACHED();
   return AudioDecoderConfig();
 }
 
 VideoDecoderConfig FakeDemuxerStream::video_decoder_config() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return video_decoder_config_;
 }
 
 // TODO(xhwang): Support audio if needed.
 DemuxerStream::Type FakeDemuxerStream::type() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return VIDEO;
 }
 
 void FakeDemuxerStream::EnableBitstreamConverter() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 void FakeDemuxerStream::HoldNextRead() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   read_to_hold_ = next_read_num_;
 }
 
 void FakeDemuxerStream::HoldNextConfigChangeRead() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   // Set |read_to_hold_| to be the next config change read.
   read_to_hold_ = next_read_num_ + num_buffers_in_one_config_ -
                   next_read_num_ % (num_buffers_in_one_config_ + 1);
 }
 
 void FakeDemuxerStream::SatisfyRead() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(read_to_hold_, next_read_num_);
   DCHECK(!read_cb_.is_null());
 
@@ -123,7 +123,7 @@ void FakeDemuxerStream::UpdateVideoDecoderConfig() {
 }
 
 void FakeDemuxerStream::DoRead() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
 
   next_read_num_++;

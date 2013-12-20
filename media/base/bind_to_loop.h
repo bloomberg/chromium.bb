@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 
 // This is a helper utility for base::Bind()ing callbacks on to particular
 // MessageLoops.  A typical use is when |a| (of class |A|) wants to hand a
@@ -53,9 +54,9 @@ template <typename T> struct TrampolineHelper;
 template <>
 struct TrampolineHelper<void()> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void()>& cb) {
-    loop->PostTask(FROM_HERE, base::Bind(cb));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb));
   }
 };
 
@@ -63,9 +64,10 @@ struct TrampolineHelper<void()> {
 template <typename A1>
 struct TrampolineHelper<void(A1)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1)>& cb, A1 a1) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1)));
   }
 };
 
@@ -73,10 +75,10 @@ struct TrampolineHelper<void(A1)> {
 template <typename A1, typename A2>
 struct TrampolineHelper<void(A1, A2)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1, A2)>& cb, A1 a1, A2 a2) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1),
-        internal::TrampolineForward(a2)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1), internal::TrampolineForward(a2)));
   }
 };
 
@@ -84,10 +86,11 @@ struct TrampolineHelper<void(A1, A2)> {
 template <typename A1, typename A2, typename A3>
 struct TrampolineHelper<void(A1, A2, A3)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1, A2, A3)>& cb, A1 a1, A2 a2, A3 a3) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1),
-        internal::TrampolineForward(a2), internal::TrampolineForward(a3)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1), internal::TrampolineForward(a2),
+        internal::TrampolineForward(a3)));
   }
 };
 
@@ -95,12 +98,12 @@ struct TrampolineHelper<void(A1, A2, A3)> {
 template <typename A1, typename A2, typename A3, typename A4>
 struct TrampolineHelper<void(A1, A2, A3, A4)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1, A2, A3, A4)>& cb, A1 a1, A2 a2, A3 a3,
           A4 a4) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1),
-        internal::TrampolineForward(a2), internal::TrampolineForward(a3),
-        internal::TrampolineForward(a4)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1), internal::TrampolineForward(a2),
+        internal::TrampolineForward(a3), internal::TrampolineForward(a4)));
   }
 };
 
@@ -108,12 +111,13 @@ struct TrampolineHelper<void(A1, A2, A3, A4)> {
 template <typename A1, typename A2, typename A3, typename A4, typename A5>
 struct TrampolineHelper<void(A1, A2, A3, A4, A5)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1, A2, A3, A4, A5)>& cb, A1 a1, A2 a2, A3 a3,
           A4 a4, A5 a5) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1),
-        internal::TrampolineForward(a2), internal::TrampolineForward(a3),
-        internal::TrampolineForward(a4), internal::TrampolineForward(a5)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1), internal::TrampolineForward(a2),
+        internal::TrampolineForward(a3), internal::TrampolineForward(a4),
+        internal::TrampolineForward(a5)));
   }
 };
 
@@ -122,13 +126,13 @@ template <typename A1, typename A2, typename A3, typename A4, typename A5,
     typename A6>
 struct TrampolineHelper<void(A1, A2, A3, A4, A5, A6)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1, A2, A3, A4, A5, A6)>& cb, A1 a1, A2 a2,
           A3 a3, A4 a4, A5 a5, A6 a6) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1),
-        internal::TrampolineForward(a2), internal::TrampolineForward(a3),
-        internal::TrampolineForward(a4), internal::TrampolineForward(a5),
-        internal::TrampolineForward(a6)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1), internal::TrampolineForward(a2),
+        internal::TrampolineForward(a3), internal::TrampolineForward(a4),
+        internal::TrampolineForward(a5), internal::TrampolineForward(a6)));
   }
 };
 
@@ -137,13 +141,14 @@ template <typename A1, typename A2, typename A3, typename A4, typename A5,
     typename A6, typename A7>
 struct TrampolineHelper<void(A1, A2, A3, A4, A5, A6, A7)> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void(A1, A2, A3, A4, A5, A6, A7)>& cb, A1 a1, A2 a2,
           A3 a3, A4 a4, A5 a5, A6 a6, A7 a7) {
-    loop->PostTask(FROM_HERE, base::Bind(cb, internal::TrampolineForward(a1),
-        internal::TrampolineForward(a2), internal::TrampolineForward(a3),
-        internal::TrampolineForward(a4), internal::TrampolineForward(a5),
-        internal::TrampolineForward(a6), internal::TrampolineForward(a7)));
+    task_runner->PostTask(FROM_HERE, base::Bind(cb,
+        internal::TrampolineForward(a1), internal::TrampolineForward(a2),
+        internal::TrampolineForward(a3), internal::TrampolineForward(a4),
+        internal::TrampolineForward(a5), internal::TrampolineForward(a6),
+        internal::TrampolineForward(a7)));
   }
 };
 
@@ -152,9 +157,9 @@ struct TrampolineHelper<void(A1, A2, A3, A4, A5, A6, A7)> {
 
 template<typename T>
 static base::Callback<T> BindToLoop(
-    const scoped_refptr<base::MessageLoopProxy>& loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Callback<T>& cb) {
-  return base::Bind(&internal::TrampolineHelper<T>::Run, loop, cb);
+  return base::Bind(&internal::TrampolineHelper<T>::Run, task_runner, cb);
 }
 
 template<typename T>

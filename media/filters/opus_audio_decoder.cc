@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -253,8 +253,8 @@ static bool ParseOpusExtraData(const uint8* data, int data_size,
 }
 
 OpusAudioDecoder::OpusAudioDecoder(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop)
-    : message_loop_(message_loop),
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner),
       weak_factory_(this),
       demuxer_stream_(NULL),
       opus_decoder_(NULL),
@@ -272,7 +272,7 @@ void OpusAudioDecoder::Initialize(
     DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
   if (demuxer_stream_) {
@@ -295,7 +295,7 @@ void OpusAudioDecoder::Initialize(
 }
 
 void OpusAudioDecoder::Read(const ReadCB& read_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
   read_cb_ = BindToCurrentLoop(read_cb);
@@ -304,22 +304,22 @@ void OpusAudioDecoder::Read(const ReadCB& read_cb) {
 }
 
 int OpusAudioDecoder::bits_per_channel() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return bits_per_channel_;
 }
 
 ChannelLayout OpusAudioDecoder::channel_layout() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return channel_layout_;
 }
 
 int OpusAudioDecoder::samples_per_second() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return samples_per_second_;
 }
 
 void OpusAudioDecoder::Reset(const base::Closure& closure) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::Closure reset_cb = BindToCurrentLoop(closure);
 
   opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
@@ -341,7 +341,7 @@ void OpusAudioDecoder::ReadFromDemuxerStream() {
 void OpusAudioDecoder::BufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& input) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
   DCHECK_EQ(status != DemuxerStream::kOk, !input.get()) << status;
 

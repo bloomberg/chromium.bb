@@ -8,7 +8,8 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
@@ -22,16 +23,16 @@ base::TimeDelta VideoRendererImpl::kMaxLastFrameDuration() {
 }
 
 VideoRendererImpl::VideoRendererImpl(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const PaintCB& paint_cb,
     const SetOpaqueCB& set_opaque_cb,
     bool drop_frames)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       weak_factory_(this),
       video_frame_stream_(
-          message_loop, decoders.Pass(), set_decryptor_ready_cb),
+          task_runner, decoders.Pass(), set_decryptor_ready_cb),
       received_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
@@ -54,7 +55,7 @@ VideoRendererImpl::~VideoRendererImpl() {
 }
 
 void VideoRendererImpl::Play(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPrerolled, state_);
   state_ = kPlaying;
@@ -62,7 +63,7 @@ void VideoRendererImpl::Play(const base::Closure& callback) {
 }
 
 void VideoRendererImpl::Pause(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ != kUninitialized || state_ == kError);
   state_ = kPaused;
@@ -70,7 +71,7 @@ void VideoRendererImpl::Pause(const base::Closure& callback) {
 }
 
 void VideoRendererImpl::Flush(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPaused);
   flush_cb_ = callback;
@@ -85,7 +86,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
 }
 
 void VideoRendererImpl::Stop(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   if (state_ == kUninitialized || state_ == kStopped) {
     callback.Run();
@@ -119,14 +120,14 @@ void VideoRendererImpl::Stop(const base::Closure& callback) {
 }
 
 void VideoRendererImpl::SetPlaybackRate(float playback_rate) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   playback_rate_ = playback_rate;
 }
 
 void VideoRendererImpl::Preroll(base::TimeDelta time,
                                 const PipelineStatusCB& cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(!cb.is_null());
   DCHECK(preroll_cb_.is_null());
@@ -161,7 +162,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& error_cb,
                                    const TimeDeltaCB& get_time_cb,
                                    const TimeDeltaCB& get_duration_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::VIDEO);
@@ -194,7 +195,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
 
 void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success,
                                                       bool has_alpha) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
   if (state_ == kStopped)
@@ -331,7 +332,7 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
 
   paint_cb_.Run(next_frame);
 
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &VideoRendererImpl::AttemptRead, weak_this_));
 }
 
@@ -345,7 +346,7 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
   frames_decoded_++;
   frames_dropped_++;
 
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &VideoRendererImpl::AttemptRead, weak_this_));
 }
 
@@ -457,7 +458,7 @@ void VideoRendererImpl::AttemptRead() {
 }
 
 void VideoRendererImpl::AttemptRead_Locked() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
   if (pending_read_ || received_end_of_stream_ ||

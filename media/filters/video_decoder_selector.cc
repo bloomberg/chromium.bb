@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline.h"
@@ -18,10 +18,10 @@
 namespace media {
 
 VideoDecoderSelector::VideoDecoderSelector(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       decoders_(decoders.Pass()),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       input_stream_(NULL),
@@ -37,7 +37,7 @@ void VideoDecoderSelector::SelectVideoDecoder(
     DemuxerStream* stream,
     const SelectDecoderCB& select_decoder_cb) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
 
   // Make sure |select_decoder_cb| runs on a different execution stack.
@@ -64,7 +64,7 @@ void VideoDecoderSelector::SelectVideoDecoder(
   }
 
   video_decoder_.reset(new DecryptingVideoDecoder(
-      message_loop_, set_decryptor_ready_cb_));
+      task_runner_, set_decryptor_ready_cb_));
 
   video_decoder_->Initialize(
       input_stream_->video_decoder_config(),
@@ -74,7 +74,7 @@ void VideoDecoderSelector::SelectVideoDecoder(
 
 void VideoDecoderSelector::Abort() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // This could happen when SelectVideoDecoder() was not called or when
   // |select_decoder_cb_| was already posted but not fired (e.g. in the
@@ -108,7 +108,7 @@ void VideoDecoderSelector::Abort() {
 void VideoDecoderSelector::DecryptingVideoDecoderInitDone(
     PipelineStatus status) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (status == PIPELINE_OK) {
     base::ResetAndReturn(&select_decoder_cb_).Run(
@@ -119,7 +119,7 @@ void VideoDecoderSelector::DecryptingVideoDecoderInitDone(
   video_decoder_.reset();
 
   decrypted_stream_.reset(new DecryptingDemuxerStream(
-      message_loop_, set_decryptor_ready_cb_));
+      task_runner_, set_decryptor_ready_cb_));
 
   decrypted_stream_->Initialize(
       input_stream_,
@@ -130,7 +130,7 @@ void VideoDecoderSelector::DecryptingVideoDecoderInitDone(
 void VideoDecoderSelector::DecryptingDemuxerStreamInitDone(
     PipelineStatus status) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
     ReturnNullDecoder();
@@ -144,7 +144,7 @@ void VideoDecoderSelector::DecryptingDemuxerStreamInitDone(
 
 void VideoDecoderSelector::InitializeDecoder() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!video_decoder_);
 
   if (decoders_.empty()) {
@@ -162,7 +162,7 @@ void VideoDecoderSelector::InitializeDecoder() {
 
 void VideoDecoderSelector::DecoderInitDone(PipelineStatus status) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
     video_decoder_.reset();
@@ -176,7 +176,7 @@ void VideoDecoderSelector::DecoderInitDone(PipelineStatus status) {
 
 void VideoDecoderSelector::ReturnNullDecoder() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&select_decoder_cb_).Run(
         scoped_ptr<VideoDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
 }

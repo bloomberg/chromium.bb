@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -35,9 +35,9 @@ static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
 }
 
 DecryptingAudioDecoder::DecryptingAudioDecoder(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       weak_factory_(this),
       state_(kUninitialized),
       demuxer_stream_(NULL),
@@ -54,7 +54,7 @@ void DecryptingAudioDecoder::Initialize(
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
   DVLOG(2) << "Initialize()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(stream);
 
@@ -85,7 +85,7 @@ void DecryptingAudioDecoder::Initialize(
 
 void DecryptingAudioDecoder::Read(const ReadCB& read_cb) {
   DVLOG(3) << "Read()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kIdle || state_ == kDecodeFinished) << state_;
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
@@ -110,7 +110,7 @@ void DecryptingAudioDecoder::Read(const ReadCB& read_cb) {
 
 void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   DVLOG(2) << "Reset() - state: " << state_;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kIdle ||
          state_ == kPendingConfigChange ||
          state_ == kPendingDemuxerRead ||
@@ -146,17 +146,17 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
 }
 
 int DecryptingAudioDecoder::bits_per_channel() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return bits_per_channel_;
 }
 
 ChannelLayout DecryptingAudioDecoder::channel_layout() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return channel_layout_;
 }
 
 int DecryptingAudioDecoder::samples_per_second() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return samples_per_second_;
 }
 
@@ -165,7 +165,7 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
 
 void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
   DVLOG(2) << "SetDecryptor()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(!set_decryptor_ready_cb_.is_null());
@@ -204,7 +204,7 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 
 void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DVLOG(2) << "FinishInitialization()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecoderInit) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(reset_cb_.is_null());  // No Reset() before initialization finished.
@@ -229,7 +229,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
 
 void DecryptingAudioDecoder::FinishConfigChange(bool success) {
   DVLOG(2) << "FinishConfigChange()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingConfigChange) << state_;
   DCHECK(!read_cb_.is_null());
 
@@ -266,7 +266,7 @@ void DecryptingAudioDecoder::DecryptAndDecodeBuffer(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
   DVLOG(3) << "DecryptAndDecodeBuffer()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDemuxerRead) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
@@ -324,7 +324,7 @@ void DecryptingAudioDecoder::DecryptAndDecodeBuffer(
 }
 
 void DecryptingAudioDecoder::DecodePendingBuffer() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecode) << state_;
 
   int buffer_size = 0;
@@ -343,7 +343,7 @@ void DecryptingAudioDecoder::DeliverFrame(
     Decryptor::Status status,
     const Decryptor::AudioBuffers& frames) {
   DVLOG(3) << "DeliverFrame() - status: " << status;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecode) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(pending_buffer_to_decode_.get());
@@ -417,7 +417,7 @@ void DecryptingAudioDecoder::DeliverFrame(
 }
 
 void DecryptingAudioDecoder::OnKeyAdded() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ == kPendingDecode) {
     key_added_while_decode_pending_ = true;

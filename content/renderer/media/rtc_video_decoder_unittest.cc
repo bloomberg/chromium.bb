@@ -33,10 +33,10 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(vda_thread_.Start());
-    vda_loop_proxy_ = vda_thread_.message_loop_proxy();
+    vda_task_runner_ = vda_thread_.message_loop_proxy();
     mock_vda_ = new media::MockVideoDecodeAccelerator;
-    EXPECT_CALL(*mock_gpu_factories_, GetMessageLoop())
-        .WillRepeatedly(Return(vda_loop_proxy_));
+    EXPECT_CALL(*mock_gpu_factories_, GetTaskRunner())
+        .WillRepeatedly(Return(vda_task_runner_));
     EXPECT_CALL(*mock_gpu_factories_, DoCreateVideoDecodeAccelerator(_, _))
         .WillRepeatedly(
              Return(static_cast<media::VideoDecodeAccelerator*>(NULL)));
@@ -55,7 +55,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     VLOG(2) << "TearDown";
     if (vda_thread_.IsRunning()) {
       RunUntilIdle();  // Wait until all callbascks complete.
-      vda_loop_proxy_->DeleteSoon(FROM_HERE, rtc_decoder_.release());
+      vda_task_runner_->DeleteSoon(FROM_HERE, rtc_decoder_.release());
       // Make sure the decoder is released before stopping the thread.
       RunUntilIdle();
       vda_thread_.Stop();
@@ -66,7 +66,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
   virtual int32_t Decoded(webrtc::I420VideoFrame& decoded_image) OVERRIDE {
     VLOG(2) << "Decoded";
-    EXPECT_EQ(vda_loop_proxy_, base::MessageLoopProxy::current());
+    EXPECT_EQ(vda_task_runner_, base::MessageLoopProxy::current());
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
@@ -80,16 +80,17 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
   void NotifyResetDone() {
     VLOG(2) << "NotifyResetDone";
-    vda_loop_proxy_->PostTask(FROM_HERE,
-                              base::Bind(&RTCVideoDecoder::NotifyResetDone,
-                                         base::Unretained(rtc_decoder_.get())));
+    vda_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::NotifyResetDone,
+                   base::Unretained(rtc_decoder_.get())));
   }
 
   void RunUntilIdle() {
     VLOG(2) << "RunUntilIdle";
-    vda_loop_proxy_->PostTask(FROM_HERE,
-                              base::Bind(&base::WaitableEvent::Signal,
-                                         base::Unretained(&idle_waiter_)));
+    vda_task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&base::WaitableEvent::Signal,
+                                          base::Unretained(&idle_waiter_)));
     idle_waiter_.Wait();
   }
 
@@ -101,7 +102,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
   base::Thread vda_thread_;
 
  private:
-  scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> vda_task_runner_;
 
   base::Lock lock_;
   base::WaitableEvent idle_waiter_;

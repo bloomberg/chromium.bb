@@ -31,7 +31,7 @@
 #include "media/filters/audio_renderer_algorithm.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -45,7 +45,7 @@ class MEDIA_EXPORT AudioRendererImpl
     : public AudioRenderer,
       NON_EXPORTED_BASE(public AudioRendererSink::RenderCallback) {
  public:
-  // |message_loop| is the thread on which AudioRendererImpl will execute.
+  // |task_runner| is the thread on which AudioRendererImpl will execute.
   //
   // |sink| is used as the destination for the rendered audio.
   //
@@ -53,10 +53,11 @@ class MEDIA_EXPORT AudioRendererImpl
   //
   // |set_decryptor_ready_cb| is fired when the audio decryptor is available
   // (only applicable if the stream is encrypted and we have a decryptor).
-  AudioRendererImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                    AudioRendererSink* sink,
-                    ScopedVector<AudioDecoder> decoders,
-                    const SetDecryptorReadyCB& set_decryptor_ready_cb);
+  AudioRendererImpl(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      AudioRendererSink* sink,
+      ScopedVector<AudioDecoder> decoders,
+      const SetDecryptorReadyCB& set_decryptor_ready_cb);
   virtual ~AudioRendererImpl();
 
   // AudioRenderer implementation.
@@ -151,7 +152,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // Helper methods that schedule an asynchronous read from the decoder as long
   // as there isn't a pending read.
   //
-  // Must be called on |message_loop_|.
+  // Must be called on |task_runner_|.
   void AttemptRead();
   void AttemptRead_Locked();
   bool CanRead_Locked();
@@ -182,15 +183,15 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
   base::WeakPtr<AudioRendererImpl> weak_this_;
 
   scoped_ptr<AudioSplicer> splicer_;
 
   // The sink (destination) for rendered audio. |sink_| must only be accessed
-  // on |message_loop_|. |sink_| must never be called under |lock_| or else we
-  // may deadlock between |message_loop_| and the audio callback thread.
+  // on |task_runner_|. |sink_| must never be called under |lock_| or else we
+  // may deadlock between |task_runner_| and the audio callback thread.
   scoped_refptr<media::AudioRendererSink> sink_;
 
   scoped_ptr<AudioDecoderSelector> decoder_selector_;

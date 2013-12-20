@@ -18,6 +18,7 @@ $var MAX_ARITY = 7
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 
 // This is a helper utility for base::Bind()ing callbacks on to particular
 // MessageLoops.  A typical use is when |a| (of class |A|) wants to hand a
@@ -62,12 +63,12 @@ $range ARG 1..ARITY
 template <$for ARG , [[typename A$(ARG)]]>
 struct TrampolineHelper<void($for ARG , [[A$(ARG)]])> {
   static void Run(
-      const scoped_refptr<base::MessageLoopProxy>& loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::Callback<void($for ARG , [[A$(ARG)]])>& cb
 $if ARITY != 0 [[, ]]
 $for ARG , [[A$(ARG) a$(ARG)]]
 ) {
-    loop->PostTask(FROM_HERE, base::Bind(cb
+    task_runner->PostTask(FROM_HERE, base::Bind(cb
 $if ARITY != 0 [[, ]]
 $for ARG , [[internal::TrampolineForward(a$(ARG))]]));
   }
@@ -80,9 +81,9 @@ $for ARG , [[internal::TrampolineForward(a$(ARG))]]));
 
 template<typename T>
 static base::Callback<T> BindToLoop(
-    const scoped_refptr<base::MessageLoopProxy>& loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Callback<T>& cb) {
-  return base::Bind(&internal::TrampolineHelper<T>::Run, loop, cb);
+  return base::Bind(&internal::TrampolineHelper<T>::Run, task_runner, cb);
 }
 
 template<typename T>

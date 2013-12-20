@@ -36,7 +36,7 @@ webrtc::VideoDecoder* RTCVideoDecoderFactory::CreateVideoDecoder(
 void RTCVideoDecoderFactory::DestroyVideoDecoder(
     webrtc::VideoDecoder* decoder) {
   DVLOG(2) << "DestroyVideoDecoder";
-  gpu_factories_->GetMessageLoop()->DeleteSoon(FROM_HERE, decoder);
+  gpu_factories_->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder);
 }
 
 }  // namespace content

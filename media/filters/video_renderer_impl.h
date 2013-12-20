@@ -22,7 +22,7 @@
 #include "media/filters/video_frame_stream.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -54,12 +54,13 @@ class MEDIA_EXPORT VideoRendererImpl
   // down the video thread may result in losing synchronization with audio.
   //
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
-  VideoRendererImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                    ScopedVector<VideoDecoder> decoders,
-                    const SetDecryptorReadyCB& set_decryptor_ready_cb,
-                    const PaintCB& paint_cb,
-                    const SetOpaqueCB& set_opaque_cb,
-                    bool drop_frames);
+  VideoRendererImpl(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      ScopedVector<VideoDecoder> decoders,
+      const SetDecryptorReadyCB& set_decryptor_ready_cb,
+      const PaintCB& paint_cb,
+      const SetOpaqueCB& set_opaque_cb,
+      bool drop_frames);
   virtual ~VideoRendererImpl();
 
   // VideoRenderer implementation.
@@ -138,7 +139,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // |wait_duration|.
   void UpdateStatsAndWait_Locked(base::TimeDelta wait_duration);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
   base::WeakPtr<VideoRendererImpl> weak_this_;
 

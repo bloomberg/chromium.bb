@@ -12,7 +12,7 @@
 #include "media/base/video_decoder_config.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -22,12 +22,12 @@ class Decryptor;
 
 // Decryptor-based VideoDecoder implementation that can decrypt and decode
 // encrypted video buffers and return decrypted and decompressed video frames.
-// All public APIs and callbacks are trampolined to the |message_loop_| so
+// All public APIs and callbacks are trampolined to the |task_runner_| so
 // that no locks are required for thread safety.
 class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
  public:
   DecryptingVideoDecoder(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
   virtual ~DecryptingVideoDecoder();
 
@@ -78,7 +78,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   // Free decoder resources and call |stop_cb_|.
   void DoStop();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
   base::WeakPtr<DecryptingVideoDecoder> weak_this_;
 

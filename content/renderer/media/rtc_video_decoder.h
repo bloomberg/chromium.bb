@@ -112,7 +112,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsFirstBufferAfterReset);
 
-  // The meessage loop of |factories| will be saved to |vda_loop_proxy_|.
+  // The meessage loop of |factories| will be saved to |vda_task_runner_|.
   RTCVideoDecoder(
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories);
 
@@ -201,13 +201,13 @@ class CONTENT_EXPORT RTCVideoDecoder
   // The size of the incoming video frames.
   gfx::Size frame_size_;
 
-  // Weak pointer to this, which can be dereferenced only on |vda_loop_proxy_|.
+  // Weak pointer to this, which can be dereferenced only on |vda_task_runner_|.
   base::WeakPtr<RTCVideoDecoder> weak_this_;
 
   scoped_refptr<media::GpuVideoAcceleratorFactories> factories_;
 
-  // The message loop to run callbacks on. This is from |factories_|.
-  scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
+  // The task runner to run callbacks on. This is from |factories_|.
+  scoped_refptr<base::SingleThreadTaskRunner> vda_task_runner_;
 
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;

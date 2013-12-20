@@ -22,7 +22,7 @@
 using base::ResetAndReturn;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -71,7 +71,7 @@ class FakeVideoDecoder : public VideoDecoder {
   void DoReset();
   void DoStop();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<FakeVideoDecoder> weak_factory_;
   base::WeakPtr<FakeVideoDecoder> weak_this_;
 

@@ -19,7 +19,7 @@ struct AVCodecContext;
 struct AVFrame;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -33,7 +33,7 @@ class ScopedPtrAVFreeFrame;
 class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
  public:
   explicit FFmpegAudioDecoder(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual ~FFmpegAudioDecoder();
 
   // AudioDecoder implementation.
@@ -63,7 +63,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   void RunDecodeLoop(const scoped_refptr<DecoderBuffer>& input,
                      bool skip_eos_append);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<FFmpegAudioDecoder> weak_factory_;
   base::WeakPtr<FFmpegAudioDecoder> weak_this_;
 

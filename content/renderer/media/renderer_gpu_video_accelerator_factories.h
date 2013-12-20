@@ -18,7 +18,6 @@
 #include "ui/gfx/size.h"
 
 namespace base {
-class MessageLoopProxy;
 class WaitableEvent;
 }
 
@@ -70,7 +69,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
                           const gfx::Size& size,
                           const SkBitmap& pixels) OVERRIDE;
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE;
   virtual void Abort() OVERRIDE;
   virtual bool IsAborted() OVERRIDE;
   scoped_refptr<RendererGpuVideoAcceleratorFactories> Clone();
@@ -87,10 +86,10 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   WebGraphicsContext3DCommandBufferImpl* GetContext3d();
 
   // Helper for the constructor to acquire the ContentGLContext on
-  // |message_loop_|.
+  // |task_runner_|.
   void AsyncBindContext();
 
-  // Async versions of the public methods, run on |message_loop_|.
+  // Async versions of the public methods, run on |task_runner_|.
   // They use output parameters instead of return values and each takes
   // a WaitableEvent* param to signal completion (except for DeleteTexture,
   // which is fire-and-forget).
@@ -101,7 +100,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   void AsyncReadPixels(uint32 texture_id, const gfx::Size& size);
   void AsyncDestroyVideoDecodeAccelerator();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   scoped_refptr<ContextProviderCommandBuffer> context_provider_;
 
@@ -111,10 +110,10 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // This event is signaled if we have been asked to Abort().
   base::WaitableEvent aborted_waiter_;
 
-  // This event is signaled by asynchronous tasks posted to |message_loop_| to
+  // This event is signaled by asynchronous tasks posted to |task_runner_| to
   // indicate their completion.
   // e.g. AsyncCreateVideoDecodeAccelerator()/AsyncCreateTextures() etc.
-  base::WaitableEvent message_loop_async_waiter_;
+  base::WaitableEvent task_runner_async_waiter_;
 
   // The vda returned by the CreateVideoDecodeAccelerator function.
   scoped_ptr<media::VideoDecodeAccelerator> vda_;

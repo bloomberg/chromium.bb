@@ -19,8 +19,8 @@
 template <class T> class scoped_refptr;
 
 namespace base {
-class MessageLoopProxy;
 class SharedMemory;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -35,7 +35,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
-  // The message loop of |factories| will be saved to |gvd_loop_proxy_|.
+  // The message loop of |factories| will be saved to |gvd_task_runner_|.
   explicit GpuVideoDecoder(
       const scoped_refptr<GpuVideoAcceleratorFactories>& factories,
       const scoped_refptr<MediaLog>& media_log);
@@ -126,7 +126,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   bool needs_bitstream_conversion_;
 
   // Message loop which this class and |factories_| run on.
-  scoped_refptr<base::MessageLoopProxy> gvd_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> gvd_task_runner_;
   base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;
   base::WeakPtr<GpuVideoDecoder> weak_this_;
 

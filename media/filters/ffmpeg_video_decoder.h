@@ -18,7 +18,7 @@ struct AVCodecContext;
 struct AVFrame;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -30,7 +30,7 @@ class ScopedPtrAVFreeFrame;
 class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
  public:
   explicit FFmpegVideoDecoder(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual ~FFmpegVideoDecoder();
 
   // VideoDecoder implementation.
@@ -71,7 +71,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   // Reset decoder and call |reset_cb_|.
   void DoReset();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<FFmpegVideoDecoder> weak_factory_;
   base::WeakPtr<FFmpegVideoDecoder> weak_this_;
 

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/demuxer_stream.h"
@@ -18,10 +18,10 @@
 namespace media {
 
 AudioDecoderSelector::AudioDecoderSelector(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<AudioDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       decoders_(decoders.Pass()),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       input_stream_(NULL),
@@ -37,7 +37,7 @@ void AudioDecoderSelector::SelectAudioDecoder(
     const StatisticsCB& statistics_cb,
     const SelectDecoderCB& select_decoder_cb) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
 
   // Make sure |select_decoder_cb| runs on a different execution stack.
@@ -65,7 +65,7 @@ void AudioDecoderSelector::SelectAudioDecoder(
   }
 
   audio_decoder_.reset(new DecryptingAudioDecoder(
-      message_loop_, set_decryptor_ready_cb_));
+      task_runner_, set_decryptor_ready_cb_));
 
   audio_decoder_->Initialize(
       input_stream_,
@@ -76,7 +76,7 @@ void AudioDecoderSelector::SelectAudioDecoder(
 
 void AudioDecoderSelector::Abort() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // This could happen when SelectAudioDecoder() was not called or when
   // |select_decoder_cb_| was already posted but not fired (e.g. in the
@@ -110,7 +110,7 @@ void AudioDecoderSelector::Abort() {
 void AudioDecoderSelector::DecryptingAudioDecoderInitDone(
     PipelineStatus status) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (status == PIPELINE_OK) {
     base::ResetAndReturn(&select_decoder_cb_).Run(
@@ -121,7 +121,7 @@ void AudioDecoderSelector::DecryptingAudioDecoderInitDone(
   audio_decoder_.reset();
 
   decrypted_stream_.reset(new DecryptingDemuxerStream(
-      message_loop_, set_decryptor_ready_cb_));
+      task_runner_, set_decryptor_ready_cb_));
 
   decrypted_stream_->Initialize(
       input_stream_,
@@ -132,7 +132,7 @@ void AudioDecoderSelector::DecryptingAudioDecoderInitDone(
 void AudioDecoderSelector::DecryptingDemuxerStreamInitDone(
     PipelineStatus status) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
     ReturnNullDecoder();
@@ -146,7 +146,7 @@ void AudioDecoderSelector::DecryptingDemuxerStreamInitDone(
 
 void AudioDecoderSelector::InitializeDecoder() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!audio_decoder_);
 
   if (decoders_.empty()) {
@@ -165,7 +165,7 @@ void AudioDecoderSelector::InitializeDecoder() {
 
 void AudioDecoderSelector::DecoderInitDone(PipelineStatus status) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
     audio_decoder_.reset();
@@ -179,7 +179,7 @@ void AudioDecoderSelector::DecoderInitDone(PipelineStatus status) {
 
 void AudioDecoderSelector::ReturnNullDecoder() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&select_decoder_cb_).Run(
       scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
 }

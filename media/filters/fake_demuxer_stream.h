@@ -12,7 +12,7 @@
 #include "media/base/video_decoder_config.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
@@ -56,7 +56,7 @@ class FakeDemuxerStream : public DemuxerStream {
   void UpdateVideoDecoderConfig();
   void DoRead();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   int num_configs_left_;
   int num_buffers_in_one_config_;

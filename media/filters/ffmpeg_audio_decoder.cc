@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"
@@ -70,8 +70,8 @@ static void ReleaseAudioBufferImpl(void* opaque, uint8* data) {
 }
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop)
-    : message_loop_(message_loop),
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner),
       weak_factory_(this),
       demuxer_stream_(NULL),
       bytes_per_channel_(0),
@@ -87,7 +87,7 @@ void FFmpegAudioDecoder::Initialize(
     DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
   FFmpegGlue::InitializeFFmpeg();
@@ -112,7 +112,7 @@ void FFmpegAudioDecoder::Initialize(
 }
 
 void FFmpegAudioDecoder::Read(const ReadCB& read_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
 
@@ -131,22 +131,22 @@ void FFmpegAudioDecoder::Read(const ReadCB& read_cb) {
 }
 
 int FFmpegAudioDecoder::bits_per_channel() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return bytes_per_channel_ * 8;
 }
 
 ChannelLayout FFmpegAudioDecoder::channel_layout() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return channel_layout_;
 }
 
 int FFmpegAudioDecoder::samples_per_second() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return samples_per_second_;
 }
 
 void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::Closure reset_cb = BindToCurrentLoop(closure);
 
   avcodec_flush_buffers(codec_context_.get());
@@ -235,7 +235,7 @@ void FFmpegAudioDecoder::ReadFromDemuxerStream() {
 void FFmpegAudioDecoder::BufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& input) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
   DCHECK(queued_audio_.empty());
   DCHECK_EQ(status != DemuxerStream::kOk, !input.get()) << status;
