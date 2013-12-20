@@ -648,32 +648,27 @@ Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   // |escape_behavior| is only needed on windows when running the native message
   // loop.
-  if (!window_ || !window_->GetRootWindow())
-    return Widget::MOVE_LOOP_CANCELED;
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(window_->GetRootWindow());
-  if (!move_client)
-    return Widget::MOVE_LOOP_CANCELED;
-
-  SetCapture();
-  aura::client::WindowMoveSource window_move_source =
-      source == Widget::MOVE_LOOP_SOURCE_MOUSE ?
-      aura::client::WINDOW_MOVE_SOURCE_MOUSE :
-      aura::client::WINDOW_MOVE_SOURCE_TOUCH;
-  if (move_client->RunMoveLoop(window_, drag_offset, window_move_source) ==
-          aura::client::MOVE_SUCCESSFUL) {
-    return Widget::MOVE_LOOP_SUCCESSFUL;
+  if (window_ && window_->parent() &&
+      aura::client::GetWindowMoveClient(window_->parent())) {
+    SetCapture();
+    aura::client::WindowMoveSource window_move_source =
+        source == Widget::MOVE_LOOP_SOURCE_MOUSE ?
+        aura::client::WINDOW_MOVE_SOURCE_MOUSE :
+        aura::client::WINDOW_MOVE_SOURCE_TOUCH;
+    if (aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(
+            window_, drag_offset, window_move_source) ==
+        aura::client::MOVE_SUCCESSFUL) {
+      return Widget::MOVE_LOOP_SUCCESSFUL;
+    }
   }
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void NativeWidgetAura::EndMoveLoop() {
-  if (!window_ || !window_->GetRootWindow())
-    return;
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(window_->GetRootWindow());
-  if (move_client)
-    move_client->EndMoveLoop();
+  if (window_ && window_->parent() &&
+      aura::client::GetWindowMoveClient(window_->parent())) {
+    aura::client::GetWindowMoveClient(window_->parent())->EndMoveLoop();
+  }
 }
 
 void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {

@@ -5,19 +5,23 @@
 #ifndef ASH_WM_PANELS_PANEL_WINDOW_EVENT_HANDLER_H_
 #define ASH_WM_PANELS_PANEL_WINDOW_EVENT_HANDLER_H_
 
-#include "ui/events/event_handler.h"
+#include "ash/wm/toplevel_window_event_handler.h"
+
+namespace aura {
+class Window;
+}
 
 namespace ash {
 namespace internal {
 
 // PanelWindowEventHandler minimizes panels when the user double clicks or
 // double taps on the panel header.
-class PanelWindowEventHandler : public ui::EventHandler {
+class PanelWindowEventHandler : public ToplevelWindowEventHandler {
  public:
-  PanelWindowEventHandler();
+  explicit PanelWindowEventHandler(aura::Window* owner);
   virtual ~PanelWindowEventHandler();
 
-  // ui::EventHandler:
+  // TopLevelWindowEventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 

@@ -42,10 +42,6 @@ namespace keyboard {
 class KeyboardController;
 }
 
-namespace ui {
-class EventHandler;
-}
-
 namespace ash {
 class ShelfWidget;
 class SoloWindowTracker;
@@ -306,8 +302,13 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   TouchHudDebug* touch_hud_debug_;
   TouchHudProjection* touch_hud_projection_;
 
-  // Handles double clicks on the panel window header.
-  scoped_ptr<ui::EventHandler> panel_container_handler_;
+  // We need to own event handlers for various containers.
+  scoped_ptr<ToplevelWindowEventHandler> default_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> always_on_top_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> modal_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> lock_modal_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> panel_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> docked_container_handler_;
 
   scoped_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
   scoped_ptr<AnimatingDesktopController> animating_wallpaper_controller_;

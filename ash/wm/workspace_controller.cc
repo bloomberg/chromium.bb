@@ -42,18 +42,21 @@ bool IsDockedAreaVisible(const ShelfLayoutManager* shelf) {
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
       shelf_(NULL),
-      event_handler_(new WorkspaceEventHandler),
-      layout_manager_(new WorkspaceLayoutManager(viewport)) {
+      event_handler_(new WorkspaceEventHandler(viewport_)) {
   SetWindowVisibilityAnimationTransition(
       viewport_, views::corewm::ANIMATE_NONE);
 
+  // The layout-manager cannot be created in the initializer list since it
+  // depends on the window to have been initialized.
+  layout_manager_ = new WorkspaceLayoutManager(viewport_);
   viewport_->SetLayoutManager(layout_manager_);
-  viewport_->AddPreTargetHandler(event_handler_.get());
-  viewport_->AddPostTargetHandler(event_handler_.get());
+
+  viewport_->Show();
 }
 
 WorkspaceController::~WorkspaceController() {
   viewport_->SetLayoutManager(NULL);
+  viewport_->SetEventFilter(NULL);
   viewport_->RemovePreTargetHandler(event_handler_.get());
   viewport_->RemovePostTargetHandler(event_handler_.get());
 }

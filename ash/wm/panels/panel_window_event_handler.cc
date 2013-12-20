@@ -4,8 +4,6 @@
 
 #include "ash/wm/panels/panel_window_event_handler.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -15,7 +13,8 @@
 namespace ash {
 namespace internal {
 
-PanelWindowEventHandler::PanelWindowEventHandler() {
+PanelWindowEventHandler::PanelWindowEventHandler(aura::Window* owner)
+    : ToplevelWindowEventHandler(owner) {
 }
 
 PanelWindowEventHandler::~PanelWindowEventHandler() {
@@ -28,12 +27,10 @@ void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       event->IsOnlyLeftMouseButton() &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        ash::UMA_PANEL_MINIMIZE_CAPTION_CLICK);
     wm::GetWindowState(target)->Minimize();
-    event->StopPropagation();
     return;
   }
+  ToplevelWindowEventHandler::OnMouseEvent(event);
 }
 
 void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
@@ -42,12 +39,11 @@ void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       event->details().tap_count() == 2 &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        ash::UMA_PANEL_MINIMIZE_CAPTION_GESTURE);
     wm::GetWindowState(target)->Minimize();
     event->StopPropagation();
     return;
   }
+  ToplevelWindowEventHandler::OnGestureEvent(event);
 }
 
 }  // namespace internal
