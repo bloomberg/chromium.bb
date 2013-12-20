@@ -14,7 +14,7 @@
 #include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -48,8 +48,7 @@ namespace content {
 
 struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
-  base::WeakPtr<RenderViewImpl> render_view;
-  RenderFrame* render_frame;
+  RenderFrameImpl* render_frame;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
   GURL url;
@@ -58,15 +57,13 @@ struct PepperWebPluginImpl::InitData {
 PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
-    const base::WeakPtr<RenderViewImpl>& render_view,
-    RenderFrame* render_frame)
+    RenderFrameImpl* render_frame)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
       instance_object_(PP_MakeUndefined()),
       container_(NULL) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
-  init_data_->render_view = render_view;
   init_data_->render_frame = render_frame;
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     init_data_->arg_names.push_back(params.attributeNames[i].utf8());
@@ -88,7 +85,7 @@ blink::WebPluginContainer* PepperWebPluginImpl::container() const {
 bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   // The plugin delegate may have gone away.
   instance_ = init_data_->module->CreateInstance(
-      init_data_->render_view->main_render_frame(), container, init_data_->url);
+      init_data_->render_frame, container, init_data_->url);
   if (!instance_.get())
     return false;
 

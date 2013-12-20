@@ -8,9 +8,11 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class RenderProcessHost;
+class SiteInstance;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -22,11 +24,16 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   virtual ~RenderFrameHost() {}
 
+  virtual SiteInstance* GetSiteInstance() = 0;
+
   // Returns the process for this frame.
   virtual RenderProcessHost* GetProcess() = 0;
 
   // Returns the route id for this frame.
   virtual int GetRoutingID() = 0;
+
+  // Returns the associated widget's native view.
+  virtual gfx::NativeView GetNativeView() = 0;
 
  private:
   // This interface should only be implemented inside content.

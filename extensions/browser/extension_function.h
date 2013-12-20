@@ -35,6 +35,7 @@ class Value;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 }
@@ -290,7 +291,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   // Called when a message was received.
   // Should return true if it processed the message.
-  virtual bool OnMessageReceivedFromRenderView(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Set the browser context which contains the extension that has originated
   // this function call.
@@ -300,6 +301,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   void SetRenderViewHost(content::RenderViewHost* render_view_host);
   content::RenderViewHost* render_view_host() const {
     return render_view_host_;
+  }
+  void SetRenderFrameHost(content::RenderFrameHost* render_frame_host);
+  content::RenderFrameHost* render_frame_host() const {
+    return render_frame_host_;
   }
 
   void set_dispatcher(
@@ -330,18 +335,23 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // The dispatcher that will service this extension function call.
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
 
-  // The RenderViewHost we will send responses too.
+  // The RenderViewHost we will send responses to.
   content::RenderViewHost* render_view_host_;
+
+  // The RenderFrameHost we will send responses to.
+  // NOTE: either render_view_host_ or render_frame_host_ will be set, as we
+  // port code to use RenderFrames for OOPIF. See http://crbug.com/304341.
+  content::RenderFrameHost* render_frame_host_;
 
   // The content::BrowserContext of this function's extension.
   content::BrowserContext* context_;
 
  private:
-  class RenderViewHostTracker;
+  class RenderHostTracker;
 
   virtual void Destruct() const OVERRIDE;
 
-  scoped_ptr<RenderViewHostTracker> tracker_;
+  scoped_ptr<RenderHostTracker> tracker_;
 
   DelegateForTests* delegate_;
 };

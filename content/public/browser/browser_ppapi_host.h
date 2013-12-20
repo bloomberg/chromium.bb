@@ -36,7 +36,7 @@ class CONTENT_EXPORT BrowserPpapiHost {
  public:
   struct OnKeepaliveInstanceStruct {
     int render_process_id;
-    int render_view_id;
+    int render_frame_id;
     GURL document_url;
   };
   typedef std::vector<OnKeepaliveInstanceStruct> OnKeepaliveInstanceData;
@@ -67,7 +67,7 @@ class CONTENT_EXPORT BrowserPpapiHost {
   // Returns true if the given PP_Instance is valid.
   virtual bool IsValidInstance(PP_Instance instance) const = 0;
 
-  // Retrieves the process/view Ids associated with the RenderView containing
+  // Retrieves the process/frame Ids associated with the RenderFrame containing
   // the given instance and returns true on success. If the instance is
   // invalid, the ids will be 0 and false will be returned.
   //
@@ -75,10 +75,10 @@ class CONTENT_EXPORT BrowserPpapiHost {
   // validated, and the resource hosts will be deleted when the resource is
   // destroyed. So it should not generally be necessary to check for errors
   // from this function except as a last-minute sanity check if you convert the
-  // IDs to a RenderView/ProcessHost on the UI thread.
-  virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
-                                           int* render_process_id,
-                                           int* render_view_id) const = 0;
+  // IDs to a RenderFrame/ProcessHost on the UI thread.
+  virtual bool GetRenderFrameIDsForInstance(PP_Instance instance,
+                                            int* render_process_id,
+                                            int* render_frame_id) const = 0;
 
   // Returns the name of the plugin.
   virtual const std::string& GetPluginName() = 0;

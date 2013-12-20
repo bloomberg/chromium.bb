@@ -11,7 +11,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/renderer_restrict_dispatch_group.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 
 namespace content {
 
@@ -76,14 +76,14 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
   // always give us an instance we can find in the map otherwise, but that
   // isn't true for browser tag support.
   if (host) {
-    RenderView* render_view = host->GetRenderViewForInstance(instance);
+    RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
     PepperPluginInstance* plugin_instance = host->GetPluginInstance(instance);
-    render_view->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
+    render_frame->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
         plugin_child_id_,
         instance,
         PepperRendererInstanceData(
             0,  // The render process id will be supplied in the browser.
-            render_view->GetRoutingID(),
+            render_frame->GetRoutingID(),
             host->GetDocumentURL(instance),
             plugin_instance->GetPluginURL()),
         is_external_));
@@ -97,8 +97,8 @@ void HostDispatcherWrapper::RemoveInstance(PP_Instance instance) {
       RendererPpapiHostImpl::GetForPPInstance(instance);
   // TODO(brettw) remove null check as described in AddInstance.
   if (host) {
-    RenderView* render_view = host->GetRenderViewForInstance(instance);
-    render_view->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
+    RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
+    render_frame->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
         plugin_child_id_,
         instance,
         is_external_));

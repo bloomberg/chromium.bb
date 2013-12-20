@@ -30,15 +30,15 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
       is_allowed_(false),
       waiting_for_ui_thread_data_(true),
       weak_factory_(this) {
-  int render_process_id(0), render_view_id(0);
-  host->GetRenderViewIDsForInstance(instance,
+  int render_process_id(0), render_frame_id(0);
+  host->GetRenderFrameIDsForInstance(instance,
                                     &render_process_id,
-                                    &render_view_id);
+                                    &render_frame_id);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&GetUIThreadDataOnUIThread,
                  render_process_id,
-                 render_view_id,
+                 render_frame_id,
                  host->external_plugin()),
       base::Bind(&PepperNetworkProxyHost::DidGetUIThreadData,
                  weak_factory_.GetWeakPtr()));
@@ -65,7 +65,7 @@ PepperNetworkProxyHost::UIThreadData::~UIThreadData() {
 // static
 PepperNetworkProxyHost::UIThreadData
 PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
-                                                  int render_view_id,
+                                                  int render_frame_id,
                                                   bool is_external_plugin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PepperNetworkProxyHost::UIThreadData result;
@@ -76,17 +76,14 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
         GetRequestContextForRenderProcess(render_process_id);
   }
 
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id, render_view_id);
-  if (render_view_host) {
-    SocketPermissionRequest request(
-        content::SocketPermissionRequest::RESOLVE_PROXY, std::string(), 0);
-    result.is_allowed = pepper_socket_utils::CanUseSocketAPIs(
-        is_external_plugin,
-        false /* is_private_api */,
-        &request,
-        render_view_host);
-  }
+  SocketPermissionRequest request(
+      content::SocketPermissionRequest::RESOLVE_PROXY, std::string(), 0);
+  result.is_allowed = pepper_socket_utils::CanUseSocketAPIs(
+      is_external_plugin,
+      false /* is_private_api */,
+      &request,
+      render_process_id,
+      render_frame_id);
   return result;
 }
 

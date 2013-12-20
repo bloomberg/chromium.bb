@@ -49,7 +49,7 @@ class PepperBrowserConnection
 
   // Called when the renderer creates an in-process instance.
   void DidCreateInProcessInstance(PP_Instance instance,
-                                  int render_view_id,
+                                  int render_frame_id,
                                   const GURL& document_url,
                                   const GURL& plugin_url);
 

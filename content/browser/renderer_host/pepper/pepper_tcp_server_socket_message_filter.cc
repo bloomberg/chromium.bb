@@ -49,13 +49,13 @@ PepperTCPServerSocketMessageFilter::PepperTCPServerSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_view_id_(0) {
+      render_frame_id_(0) {
   ++g_num_instances;
   DCHECK(factory_);
   DCHECK(ppapi_host_);
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id_,
-                                         &render_view_id_)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id_,
+                                          &render_frame_id_)) {
     NOTREACHED();
   }
 }
@@ -110,7 +110,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
                                              private_api_,
                                              &request,
                                              render_process_id_,
-                                             render_view_id_)) {
+                                             render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 

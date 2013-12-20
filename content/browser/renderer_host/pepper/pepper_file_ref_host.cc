@@ -39,9 +39,9 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
 
   int render_process_id;
   int unused;
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id,
-                                         &unused)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id,
+                                          &unused)) {
     return;
   }
 
@@ -88,9 +88,9 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
 
   int render_process_id;
   int unused;
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id,
-                                         &unused)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id,
+                                          &unused)) {
     return;
   }
 

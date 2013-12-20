@@ -86,13 +86,13 @@ PepperHostResolverMessageFilter::PepperHostResolverMessageFilter(
     : external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_view_id_(0) {
+      render_frame_id_(0) {
   DCHECK(host);
 
-  if (!host->GetRenderViewIDsForInstance(
+  if (!host->GetRenderFrameIDsForInstance(
           instance,
           &render_process_id_,
-          &render_view_id_)) {
+          &render_frame_id_)) {
     NOTREACHED();
   }
 }
@@ -127,13 +127,11 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
   // Check plugin permissions.
   SocketPermissionRequest request(
       SocketPermissionRequest::RESOLVE_HOST, host_port.host, host_port.port);
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id_, render_view_id_);
-  if (!render_view_host ||
-      !pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
+  if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
                                              private_api_,
                                              &request,
-                                             render_view_host)) {
+                                             render_process_id_,
+                                             render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 

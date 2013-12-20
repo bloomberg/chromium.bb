@@ -8,8 +8,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
@@ -72,12 +71,9 @@ COMPILE_ASSERT(
     static_cast<int>(chromeos::OUTPUT_PROTECTION_METHOD_HDCP),
     PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP);
 
-bool GetCurrentDisplayId(content::RenderViewHost* rvh, int64* display_id) {
+bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64* display_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  content::RenderWidgetHostView* view = rvh->GetView();
-  if (!view)
-    return false;
-  gfx::NativeView native_view = view->GetNativeView();
+  gfx::NativeView native_view = rfh->GetNativeView();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
   if (!screen)
     return false;
@@ -95,7 +91,7 @@ bool GetCurrentDisplayId(content::RenderViewHost* rvh, int64* display_id) {
 class PepperOutputProtectionMessageFilter::Delegate
     : public aura::WindowObserver {
  public:
-  Delegate(int render_process_id, int render_view_id);
+  Delegate(int render_process_id, int render_frame_id);
   virtual ~Delegate();
 
   // aura::WindowObserver overrides.
@@ -110,7 +106,7 @@ class PepperOutputProtectionMessageFilter::Delegate
 
   // Used to lookup the WebContents associated with this PP_Instance.
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 
   chromeos::OutputConfigurator::OutputProtectionClientId client_id_;
   // The display id which the renderer currently uses.
@@ -121,9 +117,9 @@ class PepperOutputProtectionMessageFilter::Delegate
 };
 
 PepperOutputProtectionMessageFilter::Delegate::Delegate(int render_process_id,
-                                                        int render_view_id)
+                                                        int render_frame_id)
     : render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       client_id_(chromeos::OutputConfigurator::kInvalidClientId),
       display_id_(0) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -137,14 +133,11 @@ PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
       ash::Shell::GetInstance()->output_configurator();
   configurator->UnregisterOutputProtectionClient(client_id_);
 
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-  if (rvh) {
-    content::RenderWidgetHostView* view = rvh->GetView();
-    if (view) {
-      gfx::NativeView native_view = view->GetNativeView();
-      native_view->RemoveObserver(this);
-    }
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (rfh) {
+    gfx::NativeView native_view = rfh->GetNativeView();
+    native_view->RemoveObserver(this);
   }
 }
 
@@ -152,15 +145,12 @@ chromeos::OutputConfigurator::OutputProtectionClientId
 PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (client_id_ == chromeos::OutputConfigurator::kInvalidClientId) {
-    content::RenderViewHost* rvh =
-        content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-    if (!GetCurrentDisplayId(rvh, &display_id_))
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!GetCurrentDisplayId(rfh, &display_id_))
       return chromeos::OutputConfigurator::kInvalidClientId;
-    content::RenderWidgetHostView* view = rvh->GetView();
-    if (!view)
-      return chromeos::OutputConfigurator::kInvalidClientId;
-    gfx::NativeView native_view = view->GetNativeView();
-    if (!view)
+    gfx::NativeView native_view = rfh->GetNativeView();
+    if (!native_view)
       return chromeos::OutputConfigurator::kInvalidClientId;
     native_view->AddObserver(this);
 
@@ -175,10 +165,10 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
     uint32_t* link_mask, uint32_t* protection_mask) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-  if (!rvh) {
-    LOG(WARNING) << "RenderViewHost is not alive.";
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!rfh) {
+    LOG(WARNING) << "RenderFrameHost is not alive.";
     return PP_ERROR_FAILED;
   }
 
@@ -191,7 +181,8 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
   if (result) {
     const bool capture_detected =
         // Check for tab capture on the current tab.
-        content::WebContents::FromRenderViewHost(rvh)->GetCapturerCount() > 0 ||
+        content::WebContents::FromRenderFrameHost(rfh)->
+            GetCapturerCount() > 0 ||
         // Check for desktop capture.
         MediaCaptureDevicesDispatcher::GetInstance()
             ->IsDesktopCaptureInProgress();
@@ -216,15 +207,15 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnEnableProtection(
 
 void PepperOutputProtectionMessageFilter::Delegate::OnWindowHierarchyChanged(
     const aura::WindowObserver::HierarchyChangeParams& params) {
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-  if (!rvh) {
-    LOG(WARNING) << "RenderViewHost is not alive.";
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!rfh) {
+    LOG(WARNING) << "RenderFrameHost is not alive.";
     return;
   }
 
   int64 new_display_id = 0;
-  if (!GetCurrentDisplayId(rvh, &new_display_id))
+  if (!GetCurrentDisplayId(rfh, &new_display_id))
     return;
   if (display_id_ == new_display_id)
     return;
@@ -250,10 +241,10 @@ PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
 #if defined(OS_CHROMEOS)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   int render_process_id = 0;
-  int render_view_id = 0;
-  host->GetRenderViewIDsForInstance(
-      instance, &render_process_id, &render_view_id);
-  delegate_ = new Delegate(render_process_id, render_view_id);
+  int render_frame_id = 0;
+  host->GetRenderFrameIDsForInstance(
+      instance, &render_process_id, &render_frame_id);
+  delegate_ = new Delegate(render_process_id, render_frame_id);
 #else
   NOTIMPLEMENTED();
 #endif

@@ -29,7 +29,7 @@ PepperBrokerMessageFilter::PepperBrokerMessageFilter(
     BrowserPpapiHost* host)
     : document_url_(host->GetDocumentURLForInstance(instance)) {
   int unused;
-  host->GetRenderViewIDsForInstance(instance, &render_process_id_, &unused);
+  host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
 }
 
 PepperBrokerMessageFilter::~PepperBrokerMessageFilter() {

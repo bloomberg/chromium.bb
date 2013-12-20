@@ -44,7 +44,7 @@ class PepperExtensionsCommonMessageFilter
 
  protected:
   PepperExtensionsCommonMessageFilter(int render_process_id,
-                                      int render_view_id,
+                                      int render_frame_id,
                                       const base::FilePath& profile_directory,
                                       const GURL& document_url);
   virtual ~PepperExtensionsCommonMessageFilter();
@@ -97,7 +97,7 @@ class PepperExtensionsCommonMessageFilter
   // All the members are initialized on the IO thread when the object is
   // constructed, and accessed only on the UI thread afterwards.
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
   base::FilePath profile_directory_;
   GURL document_url_;
 

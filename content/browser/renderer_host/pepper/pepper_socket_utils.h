@@ -20,8 +20,6 @@ class PPB_X509Certificate_Fields;
 
 namespace content {
 
-class RenderViewHost;
-
 namespace pepper_socket_utils {
 
 SocketPermissionRequest CreateSocketPermissionRequest(
@@ -35,13 +33,7 @@ bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
                       const SocketPermissionRequest* params,
                       int render_process_id,
-                      int render_view_id);
-
-// TODO (ygorshenin@): remove this method.
-bool CanUseSocketAPIs(bool external_plugin,
-                      bool private_api,
-                      const SocketPermissionRequest* params,
-                      RenderViewHost* render_view_host);
+                      int render_frame_id);
 
 // Extracts the certificate field data from a net::X509Certificate into
 // PPB_X509Certificate_Fields.

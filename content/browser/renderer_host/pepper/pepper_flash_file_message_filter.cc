@@ -43,7 +43,7 @@ PepperFlashFileMessageFilter::PepperFlashFileMessageFilter(
     BrowserPpapiHost* host)
     : plugin_process_handle_(host->GetPluginProcessHandle()) {
   int unused;
-  host->GetRenderViewIDsForInstance(instance, &render_process_id_, &unused);
+  host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
   base::FilePath profile_data_directory = host->GetProfileDataDirectory();
   std::string plugin_name = host->GetPluginName();
 

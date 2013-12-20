@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/constants.h"
@@ -33,10 +33,10 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
  public:
   DispatcherOwner(PepperExtensionsCommonMessageFilter* message_filter,
                   Profile* profile,
-                  content::RenderViewHost* view_host,
+                  content::RenderFrameHost* frame_host,
                   content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
-        render_view_host_(view_host),
+        render_frame_host_(frame_host),
         message_filter_(message_filter),
         dispatcher_(profile, this) {
   }
@@ -46,9 +46,9 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
   }
 
   // content::WebContentsObserver implementation.
-  virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) OVERRIDE {
-    if (render_view_host == render_view_host_)
+  virtual void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) OVERRIDE {
+    if (render_frame_host == render_frame_host_)
       delete this;
   }
 
@@ -65,10 +65,10 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
   }
 
   ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
-  content::RenderViewHost* render_view_host() { return render_view_host_; }
+  content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
  private:
-  content::RenderViewHost* render_view_host_;
+  content::RenderFrameHost* render_frame_host_;
   scoped_refptr<PepperExtensionsCommonMessageFilter> message_filter_;
   ExtensionFunctionDispatcher dispatcher_;
 
@@ -82,9 +82,9 @@ PepperExtensionsCommonMessageFilter::Create(content::BrowserPpapiHost* host,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   int render_process_id = 0;
-  int render_view_id = 0;
-  if (!host->GetRenderViewIDsForInstance(instance, &render_process_id,
-                                         &render_view_id)) {
+  int render_frame_id = 0;
+  if (!host->GetRenderFrameIDsForInstance(instance, &render_process_id,
+                                         &render_frame_id)) {
     return NULL;
   }
 
@@ -92,18 +92,18 @@ PepperExtensionsCommonMessageFilter::Create(content::BrowserPpapiHost* host,
   GURL document_url = host->GetDocumentURLForInstance(instance);
 
   return new PepperExtensionsCommonMessageFilter(render_process_id,
-                                                 render_view_id,
+                                                 render_frame_id,
                                                  profile_directory,
                                                  document_url);
 }
 
 PepperExtensionsCommonMessageFilter::PepperExtensionsCommonMessageFilter(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const base::FilePath& profile_directory,
     const GURL& document_url)
     : render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       profile_directory_(profile_directory),
       document_url_(document_url),
       dispatcher_owner_(NULL),
@@ -159,12 +159,12 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
   dispatcher_owner_initialized_ = true;
 
   DCHECK(!dispatcher_owner_);
-  content::RenderViewHost* view_host = content::RenderViewHost::FromID(
-      render_process_id_, render_view_id_);
-  if (!view_host)
+  content::RenderFrameHost* frame_host = content::RenderFrameHost::FromID(
+      render_process_id_, render_frame_id_);
+  if (!frame_host)
     return;
   content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(view_host);
+      content::WebContents::FromRenderFrameHost(frame_host);
 
   if (!document_url_.SchemeIs(extensions::kExtensionScheme))
     return;
@@ -176,7 +176,7 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
 
   // It will be automatically destroyed when |view_host| goes away.
   dispatcher_owner_ = new DispatcherOwner(
-      this, profile, view_host, web_contents);
+      this, profile, frame_host, web_contents);
 }
 
 void PepperExtensionsCommonMessageFilter::DetachDispatcherOwner() {
@@ -249,7 +249,7 @@ bool PepperExtensionsCommonMessageFilter::HandleRequest(
   }
 
   dispatcher_owner_->dispatcher()->DispatchWithCallback(
-      params, dispatcher_owner_->render_view_host(),
+      params, dispatcher_owner_->render_frame_host(),
       base::Bind(
           &PepperExtensionsCommonMessageFilter::OnExtensionFunctionCompleted,
           this,

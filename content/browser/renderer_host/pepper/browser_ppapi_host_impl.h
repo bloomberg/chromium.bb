@@ -45,9 +45,10 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual base::ProcessHandle GetPluginProcessHandle() const OVERRIDE;
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
-  virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
-                                           int* render_process_id,
-                                           int* render_view_id) const OVERRIDE;
+  virtual bool GetRenderFrameIDsForInstance(
+      PP_Instance instance,
+      int* render_process_id,
+      int* render_frame_id) const OVERRIDE;
   virtual const std::string& GetPluginName() OVERRIDE;
   virtual const base::FilePath& GetPluginPath() OVERRIDE;
   virtual const base::FilePath& GetProfileDataDirectory() OVERRIDE;

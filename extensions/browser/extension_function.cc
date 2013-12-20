@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -28,15 +29,18 @@ void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
   x->Destruct();
 }
 
-// Helper class to track the lifetime of ExtensionFunction's RenderViewHost
-// pointer and NULL it out when it dies. It also allows us to filter IPC
-// messages coming from the RenderViewHost.
-class UIThreadExtensionFunction::RenderViewHostTracker
+// Helper class to track the lifetime of ExtensionFunction's RenderViewHost or
+// RenderFrameHost  pointer and NULL it out when it dies. It also allows us to
+// filter IPC messages coming from the RenderViewHost/RenderFrameHost.
+class UIThreadExtensionFunction::RenderHostTracker
     : public content::WebContentsObserver {
  public:
-  explicit RenderViewHostTracker(UIThreadExtensionFunction* function)
+  explicit RenderHostTracker(UIThreadExtensionFunction* function)
       : content::WebContentsObserver(
-            WebContents::FromRenderViewHost(function->render_view_host())),
+            function->render_view_host() ? 
+                WebContents::FromRenderViewHost(function->render_view_host()) :
+                WebContents::FromRenderFrameHost(
+                    function->render_frame_host())),
         function_(function) {
   }
 
@@ -49,14 +53,21 @@ class UIThreadExtensionFunction::RenderViewHostTracker
 
     function_->SetRenderViewHost(NULL);
   }
+  virtual void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) OVERRIDE {
+    if (render_frame_host != function_->render_frame_host())
+      return;
+
+    function_->SetRenderFrameHost(NULL);
+  }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    return function_->OnMessageReceivedFromRenderView(message);
+    return function_->OnMessageReceived(message);
   }
 
   UIThreadExtensionFunction* function_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTracker);
+  DISALLOW_COPY_AND_ASSIGN(RenderHostTracker);
 };
 
 ExtensionFunction::ExtensionFunction()
@@ -146,7 +157,8 @@ void ExtensionFunction::SendResponseImpl(bool success) {
 }
 
 UIThreadExtensionFunction::UIThreadExtensionFunction()
-    : render_view_host_(NULL), context_(NULL), delegate_(NULL) {}
+    : render_view_host_(NULL), render_frame_host_(NULL), context_(NULL),
+      delegate_(NULL) {}
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   if (dispatcher() && render_view_host())
@@ -158,8 +170,7 @@ UIThreadExtensionFunction::AsUIThreadExtensionFunction() {
   return this;
 }
 
-bool UIThreadExtensionFunction::OnMessageReceivedFromRenderView(
-    const IPC::Message& message) {
+bool UIThreadExtensionFunction::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
@@ -169,8 +180,16 @@ void UIThreadExtensionFunction::Destruct() const {
 
 void UIThreadExtensionFunction::SetRenderViewHost(
     RenderViewHost* render_view_host) {
+  DCHECK(!render_frame_host_);
   render_view_host_ = render_view_host;
-  tracker_.reset(render_view_host ? new RenderViewHostTracker(this) : NULL);
+  tracker_.reset(render_view_host ? new RenderHostTracker(this) : NULL);
+}
+
+void UIThreadExtensionFunction::SetRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK(!render_view_host_);
+  render_frame_host_ = render_frame_host;
+  tracker_.reset(render_frame_host ? new RenderHostTracker(this) : NULL);
 }
 
 content::WebContents* UIThreadExtensionFunction::GetAssociatedWebContents() {
@@ -191,8 +210,13 @@ void UIThreadExtensionFunction::SendResponse(bool success) {
 void UIThreadExtensionFunction::WriteToConsole(
     content::ConsoleMessageLevel level,
     const std::string& message) {
-  render_view_host_->Send(new ExtensionMsg_AddMessageToConsole(
-      render_view_host_->GetRoutingID(), level, message));
+  if (render_view_host_) {
+    render_view_host_->Send(new ExtensionMsg_AddMessageToConsole(
+        render_view_host_->GetRoutingID(), level, message));
+  } else {
+    render_frame_host_->Send(new ExtensionMsg_AddMessageToConsole(
+        render_frame_host_->GetRoutingID(), level, message));
+  }
 }
 
 IOThreadExtensionFunction::IOThreadExtensionFunction()

@@ -42,10 +42,10 @@ PepperIsolatedFileSystemMessageFilter*
 PepperIsolatedFileSystemMessageFilter::Create(
     PP_Instance instance, content::BrowserPpapiHost* host) {
   int render_process_id;
-  int unused_render_view_id;
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id,
-                                         &unused_render_view_id)) {
+  int unused_render_frame_id;
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id,
+                                          &unused_render_frame_id)) {
     return NULL;
   }
   return new PepperIsolatedFileSystemMessageFilter(

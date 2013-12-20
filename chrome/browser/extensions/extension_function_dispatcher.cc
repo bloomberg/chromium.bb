@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -311,14 +312,24 @@ void ExtensionFunctionDispatcher::Dispatch(
     callback_wrapper = iter->second;
   }
 
-  DispatchWithCallback(params, render_view_host,
-                       callback_wrapper->CreateCallback(params.request_id));
+  DispatchWithCallbackInternal(
+      params, render_view_host, NULL,
+      callback_wrapper->CreateCallback(params.request_id));
 }
 
 void ExtensionFunctionDispatcher::DispatchWithCallback(
     const ExtensionHostMsg_Request_Params& params,
-    RenderViewHost* render_view_host,
+    content::RenderFrameHost* render_frame_host,
     const ExtensionFunction::ResponseCallback& callback) {
+  DispatchWithCallbackInternal(params, NULL, render_frame_host, callback);
+}
+
+void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
+    const ExtensionHostMsg_Request_Params& params,
+    RenderViewHost* render_view_host,
+    content::RenderFrameHost* render_frame_host,
+    const ExtensionFunction::ResponseCallback& callback) {
+  DCHECK(render_view_host || render_frame_host);
   // TODO(yzshen): There is some shared logic between this method and
   // DispatchOnIOThread(). It is nice to deduplicate.
   ExtensionSystem* extension_system =
@@ -333,10 +344,12 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   if (!extension)
     extension = service->extensions()->GetHostedAppByURL(params.source_url);
 
+  int process_id = render_view_host ? render_view_host->GetProcess()->GetID() :
+                                      render_frame_host->GetProcess()->GetID();
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params,
                               extension,
-                              render_view_host->GetProcess()->GetID(),
+                              process_id,
                               *process_map,
                               extensions::ExtensionAPI::GetSharedInstance(),
                               browser_context_,
@@ -352,7 +365,11 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     NOTREACHED();
     return;
   }
-  function_ui->SetRenderViewHost(render_view_host);
+  if (render_view_host) {
+    function_ui->SetRenderViewHost(render_view_host);
+  } else {
+    function_ui->SetRenderFrameHost(render_frame_host);
+  }
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_context(browser_context_);
   function->set_include_incognito(extension_util::CanCrossIncognito(extension,

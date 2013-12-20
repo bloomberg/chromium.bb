@@ -56,7 +56,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
     : version_(version),
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
-      render_view_id_(0),
+      render_frame_id_(0),
       ppapi_host_(host->GetPpapiHost()),
       factory_(factory),
       instance_(instance),
@@ -69,9 +69,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       pending_accept_(false) {
   DCHECK(host);
   ++g_num_instances;
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id_,
-                                         &render_view_id_)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id_,
+                                          &render_frame_id_)) {
     NOTREACHED();
   }
 }
@@ -84,7 +84,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
     : version_(version),
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
-      render_view_id_(0),
+      render_frame_id_(0),
       ppapi_host_(host->GetPpapiHost()),
       factory_(NULL),
       instance_(instance),
@@ -99,9 +99,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
   DCHECK_NE(version, ppapi::TCP_SOCKET_VERSION_1_0);
 
   ++g_num_instances;
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id_,
-                                         &render_view_id_)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id_,
+                                          &render_frame_id_)) {
     NOTREACHED();
   }
 }
@@ -181,7 +181,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
 
   if (!pepper_socket_utils::CanUseSocketAPIs(
           external_plugin_, false /* private_api */, NULL, render_process_id_,
-          render_view_id_)) {
+          render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -211,7 +211,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
                                   port);
   if (!pepper_socket_utils::CanUseSocketAPIs(
           external_plugin_, true /* private_api */, &request,
-          render_process_id_, render_view_id_)) {
+          render_process_id_, render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -241,7 +241,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnectWithNetAddress(
           content::SocketPermissionRequest::TCP_CONNECT, net_addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, IsPrivateAPI(),
                                              &request, render_process_id_,
-                                             render_view_id_)) {
+                                             render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -381,7 +381,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgListen(
           content::SocketPermissionRequest::TCP_LISTEN, bind_input_addr_);
   if (!pepper_socket_utils::CanUseSocketAPIs(
           external_plugin_, false /* private_api */, &request,
-          render_process_id_, render_view_id_)) {
+          render_process_id_, render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 

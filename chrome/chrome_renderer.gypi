@@ -88,6 +88,8 @@
         'renderer/extensions/dom_activity_logger.h',
         'renderer/extensions/event_bindings.cc',
         'renderer/extensions/event_bindings.h',
+        'renderer/extensions/extension_frame_helper.cc',
+        'renderer/extensions/extension_frame_helper.h',
         'renderer/extensions/extension_groups.h',
         'renderer/extensions/extension_helper.cc',
         'renderer/extensions/extension_helper.h',

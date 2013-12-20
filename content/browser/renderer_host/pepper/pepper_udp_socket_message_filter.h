@@ -121,7 +121,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   bool private_api_;
 
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperUDPSocketMessageFilter);
 };

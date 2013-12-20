@@ -66,7 +66,7 @@ bool PageCaptureSaveAsMHTMLFunction::RunImpl() {
   return true;
 }
 
-bool PageCaptureSaveAsMHTMLFunction::OnMessageReceivedFromRenderView(
+bool PageCaptureSaveAsMHTMLFunction::OnMessageReceived(
     const IPC::Message& message) {
   if (message.type() != ExtensionHostMsg_ResponseAck::ID)
     return false;
@@ -181,8 +181,8 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
   SendResponse(true);
 
   // Note that we'll wait for a response ack message received in
-  // OnMessageReceivedFromRenderView before we call Release() (to prevent the
-  // blob file from being deleted).
+  // OnMessageReceived before we call Release() (to prevent the blob file from
+  // being deleted).
 }
 
 WebContents* PageCaptureSaveAsMHTMLFunction::GetWebContents() {

@@ -497,9 +497,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
       this, info, &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
-      // TODO(jam): change to take RenderFrame.
-      return new PepperWebPluginImpl(
-          pepper_module.get(), params, render_view_->AsWeakPtr(), this);
+      return new PepperWebPluginImpl(pepper_module.get(), params, this);
     }
   }
 #if defined(OS_CHROMEOS)

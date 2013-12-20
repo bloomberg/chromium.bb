@@ -169,7 +169,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   const bool external_plugin_;
 
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 
   // The following fields are used only on the IO thread.
   // Non-owning ptr.

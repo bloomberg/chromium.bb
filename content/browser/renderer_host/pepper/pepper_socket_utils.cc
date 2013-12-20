@@ -9,9 +9,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
 #include "net/cert/x509_certificate.h"
@@ -39,22 +40,8 @@ bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
                       const SocketPermissionRequest* params,
                       int render_process_id,
-                      int render_view_id) {
+                      int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderViewHost* render_view_host = RenderViewHost::FromID(render_process_id,
-                                                            render_view_id);
-  return render_view_host && CanUseSocketAPIs(external_plugin,
-                                              private_api,
-                                              params,
-                                              render_view_host);
-}
-
-bool CanUseSocketAPIs(bool external_plugin,
-                      bool private_api,
-                      const SocketPermissionRequest* params,
-                      RenderViewHost* render_view_host) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (!external_plugin) {
     // Always allow socket APIs for out-process plugins (other than external
     // plugins instantiated by the embeeder through
@@ -62,9 +49,11 @@ bool CanUseSocketAPIs(bool external_plugin,
     return true;
   }
 
-  if (!render_view_host)
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
     return false;
-  SiteInstance* site_instance = render_view_host->GetSiteInstance();
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance)
     return false;
   if (!GetContentClient()->browser()->AllowPepperSocketAPI(

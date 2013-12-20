@@ -19,6 +19,7 @@ struct ExtensionHostMsg_Request_Params;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 }
@@ -106,12 +107,14 @@ class ExtensionFunctionDispatcher
   // Message handlers.
   // The response is sent to the corresponding render view in an
   // ExtensionMsg_Response message.
+  // TODO (jam): convert all callers to use RenderFrameHost.
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
                 content::RenderViewHost* render_view_host);
-  // |callback| is called when the function execution completes.
+  // Dispatch an extension function and calls |callback| when the execution
+  // completes.
   void DispatchWithCallback(
       const ExtensionHostMsg_Request_Params& params,
-      content::RenderViewHost* render_view_host,
+      content::RenderFrameHost* render_frame_host,
       const ExtensionFunction::ResponseCallback& callback);
 
   // Called when an ExtensionFunction is done executing, after it has sent
@@ -154,6 +157,12 @@ class ExtensionFunctionDispatcher
   // Helper to run the response callback with an access denied error. Can be
   // called on any thread.
   static void SendAccessDenied(
+      const ExtensionFunction::ResponseCallback& callback);
+
+  void DispatchWithCallbackInternal(
+      const ExtensionHostMsg_Request_Params& params,
+      content::RenderViewHost* render_view_host,
+      content::RenderFrameHost* render_frame_host,
       const ExtensionFunction::ResponseCallback& callback);
 
   content::BrowserContext* browser_context_;

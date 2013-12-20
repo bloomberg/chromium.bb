@@ -7,7 +7,7 @@
 #include "base/bind_helpers.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -22,9 +22,9 @@ namespace chrome {
 PepperPlatformVerificationMessageFilter::
     PepperPlatformVerificationMessageFilter(content::BrowserPpapiHost* host,
                                             PP_Instance instance)
-    : render_process_id_(0), render_view_id_(0) {
-  host->GetRenderViewIDsForInstance(
-      instance, &render_process_id_, &render_view_id_);
+    : render_process_id_(0), render_frame_id_(0) {
+  host->GetRenderFrameIDsForInstance(
+      instance, &render_process_id_, &render_frame_id_);
 }
 
 PepperPlatformVerificationMessageFilter::
@@ -57,10 +57,10 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
     const std::vector<uint8_t>& challenge) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // Ensure the RenderViewHost is still alive.
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-  if (!rvh) {
+  // Ensure the RenderFrameHost is still alive.
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!rfh) {
     ppapi::host::ReplyMessageContext reply_context =
         context->MakeReplyMessageContext();
     reply_context.params.set_result(PP_ERROR_FAILED);
@@ -75,7 +75,7 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
     pv_ = new PlatformVerificationFlow();
 
   pv_->ChallengePlatformKey(
-      content::WebContents::FromRenderViewHost(rvh),
+      content::WebContents::FromRenderFrameHost(rfh),
       service_id,
       std::string(challenge.begin(), challenge.end()),
       base::Bind(

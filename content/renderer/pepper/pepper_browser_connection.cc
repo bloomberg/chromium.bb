@@ -41,14 +41,14 @@ bool PepperBrowserConnection::OnMessageReceived(const IPC::Message& msg) {
 
 void PepperBrowserConnection::DidCreateInProcessInstance(
     PP_Instance instance,
-    int render_view_id,
+    int render_frame_id,
     const GURL& document_url,
     const GURL& plugin_url) {
   Send(new ViewHostMsg_DidCreateInProcessInstance(
       instance,
       // Browser provides the render process id.
       PepperRendererInstanceData(0,
-                                 render_view_id,
+                                 render_frame_id,
                                  document_url,
                                  plugin_url)));
 }

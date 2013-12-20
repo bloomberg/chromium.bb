@@ -85,7 +85,7 @@ void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
   root_url_ = root_url;
   int render_process_id = 0;
   int unused;
-  if (!browser_ppapi_host_->GetRenderViewIDsForInstance(
+  if (!browser_ppapi_host_->GetRenderFrameIDsForInstance(
            pp_instance(), &render_process_id, &unused)) {
     NOTREACHED();
   }
@@ -197,9 +197,9 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
 
   int render_process_id = 0;
   int unused;
-  if (!browser_ppapi_host_->GetRenderViewIDsForInstance(pp_instance(),
-                                                        &render_process_id,
-                                                        &unused)) {
+  if (!browser_ppapi_host_->GetRenderFrameIDsForInstance(pp_instance(),
+                                                         &render_process_id,
+                                                         &unused)) {
       return PP_ERROR_FAILED;
   }
 
@@ -360,9 +360,9 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
 
   int render_process_id = 0;
   int unused;
-  if (!browser_ppapi_host_->GetRenderViewIDsForInstance(pp_instance(),
-                                                        &render_process_id,
-                                                        &unused)) {
+  if (!browser_ppapi_host_->GetRenderFrameIDsForInstance(pp_instance(),
+                                                         &render_process_id,
+                                                         &unused)) {
     fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
     return PP_ERROR_FAILED;
   }

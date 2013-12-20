@@ -50,7 +50,7 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
     scoped_refptr<net::URLRequestContextGetter> context_getter;
   };
   static UIThreadData GetUIThreadDataOnUIThread(int render_process_id,
-                                                int render_view_id,
+                                                int render_frame_id,
                                                 bool is_external_plugin);
   void DidGetUIThreadData(const UIThreadData&);
 

@@ -79,7 +79,7 @@ class CONTENT_EXPORT PepperHostResolverMessageFilter
   bool external_plugin_;
   bool private_api_;
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperHostResolverMessageFilter);
 };

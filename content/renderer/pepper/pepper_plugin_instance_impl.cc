@@ -548,7 +548,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
           PepperBrowserConnection::Get(render_frame_);
       browser_connection->DidCreateInProcessInstance(
           pp_instance(),
-          render_frame_->render_view()->GetRoutingID(),
+          render_frame_->GetRoutingID(),
           container_->element().document().url(),
           GetPluginURL());
     }

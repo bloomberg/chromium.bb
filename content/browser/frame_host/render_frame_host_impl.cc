@@ -14,6 +14,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
@@ -73,6 +74,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   frame_tree_->UnregisterRenderFrameHost(this);
 }
 
+SiteInstance* RenderFrameHostImpl::GetSiteInstance() {
+  return render_view_host_->GetSiteInstance();
+}
+
 RenderProcessHost* RenderFrameHostImpl::GetProcess() {
   // TODO(nasko): This should return its own process, once we have working
   // cross-process navigation for subframes.
@@ -81,6 +86,13 @@ RenderProcessHost* RenderFrameHostImpl::GetProcess() {
 
 int RenderFrameHostImpl::GetRoutingID() {
   return routing_id_;
+}
+
+gfx::NativeView RenderFrameHostImpl::GetNativeView() {
+  RenderWidgetHostView* view = render_view_host_->GetView();
+  if (!view)
+    return NULL;
+  return view->GetNativeView();
 }
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {

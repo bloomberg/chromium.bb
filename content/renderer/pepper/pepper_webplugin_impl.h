@@ -27,15 +27,13 @@ namespace content {
 class PepperPluginInstanceImpl;
 class PluginModule;
 class PPB_URLLoader_Impl;
-class RenderFrame;
-class RenderViewImpl;
+class RenderFrameImpl;
 
 class PepperWebPluginImpl : public blink::WebPlugin {
  public:
   PepperWebPluginImpl(PluginModule* module,
                       const blink::WebPluginParams& params,
-                      const base::WeakPtr<RenderViewImpl>& render_view,
-                      RenderFrame* render_frame);
+                      RenderFrameImpl* render_frame);
 
   PepperPluginInstanceImpl* instance() { return instance_.get(); }
 

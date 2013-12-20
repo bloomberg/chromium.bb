@@ -52,7 +52,7 @@ class PepperPlatformVerificationMessageFilter
 
   // Used to lookup the WebContents associated with this PP_Instance.
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 
   // Must only be accessed on the UI thread.
   scoped_refptr<chromeos::attestation::PlatformVerificationFlow> pv_;

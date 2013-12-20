@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
@@ -58,12 +58,13 @@ void OnKeepaliveOnUIThread(
   if (instance_data.size() < 1)
     return;
 
-  content::RenderViewHost* render_view_host = content::RenderViewHost::FromID(
-      instance_data[0].render_process_id, instance_data[0].render_view_id);
-  if (!render_view_host)
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(
+          instance_data[0].render_process_id, instance_data[0].render_frame_id);
+  if (!render_frame_host)
     return;
 
-  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
+  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance)
     return;
 

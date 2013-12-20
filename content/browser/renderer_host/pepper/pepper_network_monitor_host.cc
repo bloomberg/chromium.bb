@@ -20,14 +20,14 @@ namespace {
 
 bool CanUseNetworkMonitor(bool external_plugin,
                           int render_process_id,
-                          int render_view_id) {
+                          int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SocketPermissionRequest request = SocketPermissionRequest(
       SocketPermissionRequest::NETWORK_STATE, std::string(), 0);
   return pepper_socket_utils::CanUseSocketAPIs(
       external_plugin, false /* private_api */, &request, render_process_id,
-      render_view_id);
+      render_frame_id);
 }
 
 scoped_ptr<net::NetworkInterfaceList> GetNetworkList() {
@@ -45,15 +45,15 @@ PepperNetworkMonitorHost::PepperNetworkMonitorHost(
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       weak_factory_(this) {
   int render_process_id;
-  int render_view_id;
-  host->GetRenderViewIDsForInstance(instance,
-                                    &render_process_id,
-                                    &render_view_id);
+  int render_frame_id;
+  host->GetRenderFrameIDsForInstance(instance,
+                                     &render_process_id,
+                                     &render_frame_id);
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CanUseNetworkMonitor, host->external_plugin(),
-                 render_process_id, render_view_id),
+                 render_process_id, render_frame_id),
       base::Bind(&PepperNetworkMonitorHost::OnPermissionCheckResult,
                  weak_factory_.GetWeakPtr()));
 }

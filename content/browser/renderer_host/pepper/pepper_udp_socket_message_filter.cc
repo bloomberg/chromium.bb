@@ -49,13 +49,13 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_view_id_(0) {
+      render_frame_id_(0) {
   ++g_num_instances;
   DCHECK(host);
 
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id_,
-                                         &render_view_id_)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id_,
+                                          &render_frame_id_)) {
     NOTREACHED();
   }
 }
@@ -174,7 +174,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
           SocketPermissionRequest::UDP_BIND, addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, private_api_,
                                              &request, render_process_id_,
-                                             render_view_id_)) {
+                                             render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -237,7 +237,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
           SocketPermissionRequest::UDP_SEND_TO, addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, private_api_,
                                              &request, render_process_id_,
-                                             render_view_id_)) {
+                                             render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 

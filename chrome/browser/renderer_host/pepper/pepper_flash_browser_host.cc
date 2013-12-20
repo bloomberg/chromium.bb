@@ -57,7 +57,7 @@ PepperFlashBrowserHost::PepperFlashBrowserHost(
       host_(host),
       weak_factory_(this) {
   int unused;
-  host->GetRenderViewIDsForInstance(instance, &render_process_id_, &unused);
+  host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
 }
 
 PepperFlashBrowserHost::~PepperFlashBrowserHost() {

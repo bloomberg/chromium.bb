@@ -84,19 +84,19 @@ bool BrowserPpapiHostImpl::IsValidInstance(PP_Instance instance) const {
   return instance_map_.find(instance) != instance_map_.end();
 }
 
-bool BrowserPpapiHostImpl::GetRenderViewIDsForInstance(
+bool BrowserPpapiHostImpl::GetRenderFrameIDsForInstance(
     PP_Instance instance,
     int* render_process_id,
-    int* render_view_id) const {
+    int* render_frame_id) const {
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end()) {
     *render_process_id = 0;
-    *render_view_id = 0;
+    *render_frame_id = 0;
     return false;
   }
 
   *render_process_id = found->second.render_process_id;
-  *render_view_id = found->second.render_view_id;
+  *render_frame_id = found->second.render_frame_id;
   return true;
 }
 
@@ -202,7 +202,7 @@ void BrowserPpapiHostImpl::OnKeepalive() {
   int i = 0;
   while (instance != instance_map_.end()) {
     instance_data[i].render_process_id = instance->second.render_process_id;
-    instance_data[i].render_view_id = instance->second.render_view_id;
+    instance_data[i].render_frame_id = instance->second.render_frame_id;
     instance_data[i].document_url = instance->second.document_url;
     ++instance;
     ++i;

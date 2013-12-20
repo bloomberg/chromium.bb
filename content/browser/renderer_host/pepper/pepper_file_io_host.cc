@@ -94,9 +94,9 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
       check_quota_(false),
       weak_factory_(this) {
   int unused;
-  if (!host->GetRenderViewIDsForInstance(instance,
-                                         &render_process_id_,
-                                         &unused)) {
+  if (!host->GetRenderFrameIDsForInstance(instance,
+                                          &render_process_id_,
+                                          &unused)) {
     render_process_id_ = -1;
   }
   file_message_loop_ = BrowserThread::GetMessageLoopProxyForThread(

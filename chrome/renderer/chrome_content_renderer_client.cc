@@ -34,6 +34,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
+#include "chrome/renderer/extensions/extension_frame_helper.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
@@ -357,6 +358,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
   }
+
+  new extensions::ExtensionFrameHelper(render_frame);
 
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_frame);
