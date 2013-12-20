@@ -98,7 +98,7 @@ deps = {
     "/external/w3c/csswg-test.git@8c415e3215a203fa3a22dbdd1799279fdf44c81e",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@241739",
+    "/trunk/deps/third_party/icu46@242173",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
@@ -124,7 +124,7 @@ deps = {
 
   "src/third_party/libc++abi/trunk":
     Var("llvm_git") + "/libcxxabi.git@" + Var("libcxxabi_revision"),
-  
+
   "src/third_party/snappy/src":
     (Var("googlecode_url") % "snappy") + "/trunk@80",
 
