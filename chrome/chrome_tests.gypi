@@ -1153,7 +1153,6 @@
         'browser/extensions/api/page_capture/page_capture_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',
         'browser/extensions/api/preference/preference_apitest.cc',
-        'browser/extensions/api/preferences_private/preferences_private_apitest.cc',
         'browser/extensions/api/processes/processes_apitest.cc',
         'browser/extensions/api/proxy/proxy_apitest.cc',
         'browser/extensions/api/push_messaging/push_messaging_apitest.cc',
