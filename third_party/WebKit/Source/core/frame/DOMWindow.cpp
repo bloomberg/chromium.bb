@@ -1320,7 +1320,7 @@ PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const 
     return CSSComputedStyleDeclaration::create(elt, false, pseudoElt);
 }
 
-PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const String& pseudoElement, bool authorOnly) const
+PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const String& pseudoElement) const
 {
     UseCounter::count(this, UseCounter::GetMatchedCSSRules);
     if (!element)
@@ -1335,11 +1335,7 @@ PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const St
         return 0;
 
     unsigned rulesToInclude = StyleResolver::AuthorCSSRules;
-    if (!authorOnly)
-        rulesToInclude |= StyleResolver::UAAndUserCSSRules;
-
     PseudoId pseudoId = CSSSelector::pseudoId(pseudoType);
-
     return m_frame->document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
 }
 

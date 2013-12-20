@@ -210,7 +210,7 @@ enum PageshowEventPersistence {
 
         // WebKit extensions
 
-        PassRefPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt, bool authorOnly = true) const;
+        PassRefPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const;
         double devicePixelRatio() const;
 
         PassRefPtr<DOMPoint> webkitConvertPointFromPageToNode(Node*, const DOMPoint*) const;
