@@ -37,6 +37,8 @@ void LoginManagerTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   command_line->AppendSwitch(::switches::kMultiProfiles);
+  command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
+                                  "ChromeOSUseMultiProfiles/Enable/");
 }
 
 void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
