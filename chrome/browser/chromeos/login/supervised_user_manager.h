@@ -9,12 +9,21 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 
 class PrefRegistrySimple;
 
 namespace chromeos {
 
 class User;
+class SupervisedUserAuthentication;
+
+// Keys in dictionary with supervised password information.
+extern const char kSchemaVersion[];
+extern const char kPasswordRevision[];
+extern const char kSalt[];
+extern const char kEncryptedPassword[];
+extern const int kMinPasswordRevision;
 
 // Base class for SupervisedUserManagerImpl - provides a mechanism for getting
 // and setting specific values for supervised users, as well as additional
@@ -80,6 +89,20 @@ class SupervisedUserManager {
 
   // Remove locally managed user creation transaction record.
   virtual void CommitCreationTransaction() = 0;
+
+  // Return object that handles specifics of supervised user authentication.
+  virtual SupervisedUserAuthentication* GetAuthentication() = 0;
+
+  // Fill |result| with public password-specific data for |user_id| from Local
+  // State.
+  virtual void GetPasswordInformation(const std::string& user_id,
+                                      base::DictionaryValue* result) = 0;
+
+  // Stores public password-specific data from |password_info| for |user_id| in
+  // Local State.
+  virtual void SetPasswordInformation(
+      const std::string& user_id,
+      const base::DictionaryValue* password_info) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserManager);

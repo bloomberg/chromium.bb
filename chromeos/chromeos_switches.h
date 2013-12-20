@@ -76,6 +76,7 @@ CHROMEOS_EXPORT extern const char kForceFirstRunUI[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
 CHROMEOS_EXPORT extern const char kEnableSamlSignin[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
+CHROMEOS_EXPORT extern const char kEnableSupervisedPasswordSync[];
 
 }  // namespace switches
 }  // namespace chromeos

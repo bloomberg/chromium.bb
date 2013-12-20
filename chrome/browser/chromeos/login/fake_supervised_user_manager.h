@@ -38,6 +38,13 @@ class FakeSupervisedUserManager : public SupervisedUserManager {
   virtual void SetCreationTransactionUserId(const std::string& user_id)
       OVERRIDE {}
   virtual void CommitCreationTransaction() OVERRIDE {}
+  virtual SupervisedUserAuthentication* GetAuthentication() OVERRIDE;
+  virtual void GetPasswordInformation(
+      const std::string& user_id,
+      base::DictionaryValue* result) OVERRIDE {}
+  virtual void SetPasswordInformation(
+      const std::string& user_id,
+      const base::DictionaryValue* password_info) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSupervisedUserManager);

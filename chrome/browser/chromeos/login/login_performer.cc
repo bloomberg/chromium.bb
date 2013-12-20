@@ -17,7 +17,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_login_flow.h"
+#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/managed/supervised_user_login_flow.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -209,17 +211,38 @@ void LoginPerformer::LoginAsLocallyManagedUser(
     return;
   }
 
-  UserFlow* new_flow = new LocallyManagedUserLoginFlow(user_context.username);
+  SupervisedUserLoginFlow* new_flow =
+      new SupervisedUserLoginFlow(user_context.username);
   new_flow->set_host(
       UserManager::Get()->GetUserFlow(user_context.username)->host());
   UserManager::Get()->SetUserFlow(user_context.username, new_flow);
+
+  SupervisedUserAuthentication* authentication = UserManager::Get()->
+      GetSupervisedUserManager()->GetAuthentication();
+
+  if (authentication->PasswordNeedsMigration(user_context.username)) {
+    authentication->SchedulePasswordMigration(user_context.username,
+                                              user_context.password,
+                                              new_flow);
+  }
+
+  UserContext user_context_copy(
+     user_context.username,
+     user_context.password,
+     user_context.auth_code,
+     user_context.username_hash,
+     user_context.using_oauth);
+
+  user_context_copy.password = authentication->TransformPassword(
+      user_context_copy.username,
+      user_context_copy.password);
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::LoginAsLocallyManagedUser,
                  authenticator_.get(),
-                 user_context));
+                 user_context_copy));
 }
 
 void LoginPerformer::LoginRetailMode() {

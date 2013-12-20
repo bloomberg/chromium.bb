@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_LOGIN_FLOW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_LOGIN_FLOW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_LOGIN_FLOW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_LOGIN_FLOW_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,10 +14,10 @@
 namespace chromeos {
 
 // UserFlow implementation for signing in locally managed user.
-class LocallyManagedUserLoginFlow : public ExtendedUserFlow {
+class SupervisedUserLoginFlow : public ExtendedUserFlow {
  public:
-  explicit LocallyManagedUserLoginFlow(const std::string& user_id);
-  virtual ~LocallyManagedUserLoginFlow();
+  explicit SupervisedUserLoginFlow(const std::string& user_id);
+  virtual ~SupervisedUserLoginFlow();
 
   // Registers flow preferences.
   //  static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -38,11 +38,11 @@ class LocallyManagedUserLoginFlow : public ExtendedUserFlow {
 
   bool data_loaded_;
   Profile* profile_;
-  base::WeakPtrFactory<LocallyManagedUserLoginFlow> weak_factory_;
+  base::WeakPtrFactory<SupervisedUserLoginFlow> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserLoginFlow);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserLoginFlow);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_LOGIN_FLOW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_LOGIN_FLOW_H_

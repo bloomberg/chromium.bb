@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_login_flow.h"
+#include "chrome/browser/chromeos/login/managed/supervised_user_login_flow.h"
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -31,7 +32,7 @@ std::string LoadSyncToken(base::FilePath profile_dir) {
   std::string token;
   base::FilePath token_file =
       profile_dir.Append(kManagedUserTokenFilename);
-  LOG(INFO) << "Loading" << token_file.value();
+  VLOG(1) << "Loading" << token_file.value();
   if (!base::ReadFileToString(token_file, &token)) {
     return std::string();
   }
@@ -40,43 +41,43 @@ std::string LoadSyncToken(base::FilePath profile_dir) {
 
 } // namespace
 
-LocallyManagedUserLoginFlow::LocallyManagedUserLoginFlow(
+SupervisedUserLoginFlow::SupervisedUserLoginFlow(
     const std::string& user_id)
     : ExtendedUserFlow(user_id),
       data_loaded_(false),
       weak_factory_(this) {
 }
 
-LocallyManagedUserLoginFlow::~LocallyManagedUserLoginFlow() {}
+SupervisedUserLoginFlow::~SupervisedUserLoginFlow() {}
 
-bool LocallyManagedUserLoginFlow::ShouldLaunchBrowser() {
+bool SupervisedUserLoginFlow::ShouldLaunchBrowser() {
   return data_loaded_;
 }
 
-bool LocallyManagedUserLoginFlow::ShouldSkipPostLoginScreens() {
+bool SupervisedUserLoginFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
-bool LocallyManagedUserLoginFlow::HandleLoginFailure(
+bool SupervisedUserLoginFlow::HandleLoginFailure(
     const LoginFailure& failure) {
   return false;
 }
 
-bool LocallyManagedUserLoginFlow::HandlePasswordChangeDetected() {
+bool SupervisedUserLoginFlow::HandlePasswordChangeDetected() {
   return false;
 }
 
-void LocallyManagedUserLoginFlow::HandleOAuthTokenStatusChange(
+void SupervisedUserLoginFlow::HandleOAuthTokenStatusChange(
     User::OAuthTokenStatus status) {
 }
 
-void LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded(
+void SupervisedUserLoginFlow::OnSyncSetupDataLoaded(
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ConfigureSync(token);
 }
 
-void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
+void SupervisedUserLoginFlow::ConfigureSync(const std::string& token) {
   data_loaded_ = true;
   // TODO(antrim): add error handling (no token loaded).
   // See also: http://crbug.com/312751
@@ -88,7 +89,7 @@ void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
   UnregisterFlowSoon();
 }
 
-void LocallyManagedUserLoginFlow::LaunchExtraSteps(
+void SupervisedUserLoginFlow::LaunchExtraSteps(
     Profile* profile) {
   profile_ = profile;
   base::FilePath profile_dir = ProfileHelper::GetProfilePathByUserIdHash(
@@ -98,7 +99,7 @@ void LocallyManagedUserLoginFlow::LaunchExtraSteps(
       FROM_HERE,
       base::Bind(&LoadSyncToken, profile_dir),
       base::Bind(
-           &LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded,
+           &SupervisedUserLoginFlow::OnSyncSetupDataLoaded,
            weak_factory_.GetWeakPtr()));
 }
 

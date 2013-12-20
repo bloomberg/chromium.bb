@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 
@@ -115,6 +116,7 @@ class LocallyManagedUserCreationController
     std::string token;
     bool token_succesfully_written;
     CreationType creation_type;
+    base::DictionaryValue password_data;
     Profile* manager_profile;
     scoped_ptr<ManagedUserRegistrationUtility> registration_utility;
   };

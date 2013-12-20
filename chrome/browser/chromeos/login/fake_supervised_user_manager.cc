@@ -55,4 +55,8 @@ std::string FakeSupervisedUserManager::GetManagerDisplayEmail(
   return std::string();
 }
 
+SupervisedUserAuthentication* FakeSupervisedUserManager::GetAuthentication() {
+  return NULL;
+}
+
 }  // namespace chromeos
