@@ -109,10 +109,13 @@ camera.Processor.prototype.processFrame = function() {
   // If the fx canvas does not act as an output, then copy the result from it
   // to the output canvas.
   if (this.output_ != this.fxCanvas_) {
-    this.output_.width = this.fxCanvas_.width;
-    this.output_.height = this.fxCanvas_.height;
     var context = this.output_.getContext('2d');
-    context.drawImage(this.fxCanvas_, 0, 0);
+    context.drawImage(
+        this.fxCanvas_,
+        0,
+        0,
+        this.fxCanvas_.width,
+        this.fxCanvas_.height);
   }
 };
 

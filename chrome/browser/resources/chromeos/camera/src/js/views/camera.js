@@ -656,6 +656,8 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   var wrapper = document.createElement('div');
   wrapper.className = 'preview-canvas-wrapper';
   var canvas = document.createElement('canvas');
+  canvas.width = 257;  // Forces acceleration on the canvas.
+  canvas.height = 257;
   var padder = document.createElement('div');
   padder.className = 'preview-canvas-padder';
   padder.appendChild(canvas);
