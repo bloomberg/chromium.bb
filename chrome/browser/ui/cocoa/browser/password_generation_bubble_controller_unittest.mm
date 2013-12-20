@@ -5,18 +5,13 @@
 #import "chrome/browser/ui/cocoa/browser/password_generation_bubble_controller.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/histogram_recorder.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest_mac.h"
-
-using base::HistogramBase;
-using base::HistogramSamples;
-using base::StatisticsRecorder;
 
 const char kHistogramName[] = "PasswordGeneration.UserActions";
 
@@ -26,7 +21,7 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
       : controller_(nil) {}
 
   static void SetUpTestCase() {
-    StatisticsRecorder::Initialize();
+    base::HistogramRecorder::Initialize();
   }
 
   virtual void SetUp() {
@@ -34,10 +29,7 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
 
     generator_.reset(new autofill::PasswordGenerator(20));
 
-    HistogramBase* histogram =
-        StatisticsRecorder::FindHistogram(kHistogramName);
-    if (histogram)
-      original_ = histogram->SnapshotSamples();
+    histogram_recorder_.reset(new base::HistogramRecorder());
 
     SetUpController();
   }
@@ -65,26 +57,16 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
     controller_ = nil;
   }
 
-  HistogramSamples* GetHistogramSamples() {
-    HistogramBase* histogram =
-        StatisticsRecorder::FindHistogram(kHistogramName);
-    if (histogram) {
-      current_ = histogram->SnapshotSamples();
-      if (original_.get())
-        current_->Subtract(*original_.get());
-    }
-    return current_.get();
+  scoped_ptr<base::HistogramSamples> GetHistogramSamples() {
+    return histogram_recorder_->GetHistogramSamplesSinceCreation(
+        kHistogramName).Pass();
   }
 
  protected:
   // Weak.
   PasswordGenerationBubbleController* controller_;
 
-  // Used to determine the histogram changes made just for this specific
-  // test run.
-  scoped_ptr<HistogramSamples> original_;
-
-  scoped_ptr<HistogramSamples> current_;
+  scoped_ptr<base::HistogramRecorder> histogram_recorder_;
 
   scoped_ptr<autofill::PasswordGenerator> generator_;
 };
@@ -112,7 +94,7 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   // Do nothing.
   CloseController();
 
-  HistogramSamples* samples = GetHistogramSamples();
+  scoped_ptr<base::HistogramSamples> samples(GetHistogramSamples());
   EXPECT_EQ(
       1,
       samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
@@ -160,5 +142,4 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
       1,
       samples->GetCount(
           autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
-
 }
