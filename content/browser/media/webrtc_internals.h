@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 #define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
@@ -86,6 +87,9 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
 
  private:
   friend struct DefaultSingletonTraits<WebRTCInternals>;
+  FRIEND_TEST_ALL_PREFIXES(WebrtcBrowserTest, CallWithAecDump);
+  FRIEND_TEST_ALL_PREFIXES(WebrtcBrowserTest,
+                           CallWithAecDumpEnabledThenDisabled);
 
   WebRTCInternals();
   virtual ~WebRTCInternals();

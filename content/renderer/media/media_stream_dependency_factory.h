@@ -240,6 +240,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void OnAecDumpFile(IPC::PlatformFileForTransit file_handle);
   void OnDisableAecDump();
 
+  void StartAecDump(const base::PlatformFile& aec_dump_file);
+
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
   IpcNetworkManager* network_manager_;

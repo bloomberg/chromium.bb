@@ -672,14 +672,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
 
   // |aec_dump_file| will be invalid when dump is not enabled.
   if (aec_dump_file_ != base::kInvalidPlatformFileValue) {
-    FILE* aec_dump_file_stream = base::FdopenPlatformFile(aec_dump_file_, "w");
-    if (!aec_dump_file_stream) {
-      VLOG(1) << "Could not open AEC dump file.";
-      base::ClosePlatformFile(aec_dump_file_);
-    } else {
-      // |pc_factory_| takes ownership of |aec_dump_file_stream|.
-      pc_factory_->StartAecDump(aec_dump_file_stream);
-    }
+    StartAecDump(aec_dump_file_);
     aec_dump_file_ = base::kInvalidPlatformFileValue;
   }
 
@@ -1027,14 +1020,33 @@ bool MediaStreamDependencyFactory::OnControlMessageReceived(
 void MediaStreamDependencyFactory::OnAecDumpFile(
     IPC::PlatformFileForTransit file_handle) {
   DCHECK_EQ(aec_dump_file_, base::kInvalidPlatformFileValue);
-  aec_dump_file_ = IPC::PlatformFileForTransitToPlatformFile(file_handle);
-  DCHECK_NE(aec_dump_file_, base::kInvalidPlatformFileValue);
+  if (PeerConnectionFactoryCreated()) {
+    base::PlatformFile file =
+        IPC::PlatformFileForTransitToPlatformFile(file_handle);
+    DCHECK_NE(file, base::kInvalidPlatformFileValue);
+    StartAecDump(file);
+  } else {
+    aec_dump_file_ = IPC::PlatformFileForTransitToPlatformFile(file_handle);
+    DCHECK_NE(aec_dump_file_, base::kInvalidPlatformFileValue);
+  }
 }
 
 void MediaStreamDependencyFactory::OnDisableAecDump() {
   if (aec_dump_file_ != base::kInvalidPlatformFileValue)
     base::ClosePlatformFile(aec_dump_file_);
   aec_dump_file_ = base::kInvalidPlatformFileValue;
+}
+
+void MediaStreamDependencyFactory::StartAecDump(
+    const base::PlatformFile& aec_dump_file) {
+  FILE* aec_dump_file_stream = base::FdopenPlatformFile(aec_dump_file, "w");
+  if (!aec_dump_file_stream) {
+    VLOG(1) << "Could not open AEC dump file.";
+    base::ClosePlatformFile(aec_dump_file);
+  } else {
+    // |pc_factory_| takes ownership of |aec_dump_file_stream|.
+    pc_factory_->StartAecDump(aec_dump_file_stream);
+  }
 }
 
 }  // namespace content

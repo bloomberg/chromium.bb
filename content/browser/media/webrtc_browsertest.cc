@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/media/webrtc_internals.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -812,5 +813,85 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                            kForceIsac16K)));
   ExpectTitle("OK");
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
+#else
+#define MAYBE_CallWithAecDump CallWithAecDump
+#endif
+
+// This tests will make a complete PeerConnection-based call, verify that
+// video is playing for the call, and verify that a non-empty AEC dump file
+// exists. The AEC dump is enabled through webrtc-internals, in contrast to
+// using a command line flag (tested in webrtc_aecdump_browsertest.cc). The HTML
+// and Javascript is bypassed since it would trigger a file picker dialog.
+// Instead, the dialog callback FileSelected() is invoked directly. In fact,
+// there's never a webrtc-internals page opened at all since that's not needed.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithAecDump) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // We must navigate somewhere first so that the render process is created.
+  NavigateToURL(shell(), GURL(""));
+
+  base::FilePath dump_file;
+  ASSERT_TRUE(CreateTemporaryFile(&dump_file));
+
+  // This fakes the behavior of another open tab with webrtc-internals, and
+  // enabling AEC dump in that tab.
+  WebRTCInternals::GetInstance()->FileSelected(dump_file, -1, NULL);
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("call({video: true, audio: true});"));
+  ExpectTitle("OK");
+
+  EXPECT_TRUE(base::PathExists(dump_file));
+  int64 file_size = 0;
+  EXPECT_TRUE(base::GetFileSize(dump_file, &file_size));
+  EXPECT_GT(file_size, 0);
+
+  base::DeleteFile(dump_file, false);
+}
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithAecDumpEnabledThenDisabled DISABLED_CallWithAecDumpEnabledThenDisabled
+#else
+#define MAYBE_CallWithAecDumpEnabledThenDisabled CallWithAecDumpEnabledThenDisabled
+#endif
+
+// As above, but enable and disable dump before starting a call. The file should
+// be created, but should be empty.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       MAYBE_CallWithAecDumpEnabledThenDisabled) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // We must navigate somewhere first so that the render process is created.
+  NavigateToURL(shell(), GURL(""));
+
+  base::FilePath dump_file;
+  ASSERT_TRUE(CreateTemporaryFile(&dump_file));
+
+  // This fakes the behavior of another open tab with webrtc-internals, and
+  // enabling AEC dump in that tab, then disabling it.
+  WebRTCInternals::GetInstance()->FileSelected(dump_file, -1, NULL);
+  WebRTCInternals::GetInstance()->DisableAecDump();
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("call({video: true, audio: true});"));
+  ExpectTitle("OK");
+
+  EXPECT_TRUE(base::PathExists(dump_file));
+  int64 file_size = 0;
+  EXPECT_TRUE(base::GetFileSize(dump_file, &file_size));
+  EXPECT_EQ(0, file_size);
+
+  base::DeleteFile(dump_file, false);
+}
+
 
 }  // namespace content

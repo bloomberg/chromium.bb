@@ -214,6 +214,12 @@ IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
   }
   return IPC::GetFileHandleForProcess(aec_dump_file, process, true);
 }
+
+// Does nothing. Just to avoid races between enable and disable.
+void DisableAecDumpOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+}
+
 #endif
 
 // the global list of all renderer processes
@@ -1516,7 +1522,14 @@ void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
 }
 
 void RenderProcessHostImpl::DisableAecDump() {
-  Send(new MediaStreamMsg_DisableAecDump());
+  // Posting on the FILE thread and then replying back on the UI thread is only
+  // for avoiding races between enable and disable. Nothing is done on the FILE
+  // thread.
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DisableAecDumpOnFileThread),
+      base::Bind(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
+                 weak_factory_.GetWeakPtr()));
 }
 #endif
 
@@ -1963,6 +1976,10 @@ void RenderProcessHostImpl::SendAecDumpFileToRenderer(
   if (file_for_transit == IPC::InvalidPlatformFileForTransit())
     return;
   Send(new MediaStreamMsg_EnableAecDump(file_for_transit));
+}
+
+void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
+  Send(new MediaStreamMsg_DisableAecDump());
 }
 #endif
 

@@ -274,6 +274,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(ENABLE_WEBRTC)
   // Sends |file_for_transit| to the render process.
   void SendAecDumpFileToRenderer(IPC::PlatformFileForTransit file_for_transit);
+  void SendDisableAecDumpToRenderer();
 #endif
 
   // The registered IPC listener objects. When this list is empty, we should
