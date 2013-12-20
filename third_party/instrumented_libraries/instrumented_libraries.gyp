@@ -6,6 +6,42 @@
   # Default value for all libraries.
   'custom_configure_flags': '',
   'custom_linker_flags': '',
+
+  # Some librraies should not be built before others, so these lists define
+  # the order to build them all.
+  # The problem is that if you configure libraries to be installed to
+  # the directory where some other libraries are installed, it could break
+  # the build. For example, zlib1g should not be installed before other
+  # libraries.
+  'first_order_libraries': [
+    '<(_sanitizer_type)-libcairo2',
+    '<(_sanitizer_type)-libexpat1',
+    '<(_sanitizer_type)-libffi6',
+    '<(_sanitizer_type)-libgcrypt11',
+    '<(_sanitizer_type)-libgpg-error0',
+    '<(_sanitizer_type)-libp11-kit0',
+    '<(_sanitizer_type)-libpcre3',
+    '<(_sanitizer_type)-libpixman-1-0',
+    '<(_sanitizer_type)-libpng12-0',
+    '<(_sanitizer_type)-libx11-6',
+    '<(_sanitizer_type)-libxau6',
+    '<(_sanitizer_type)-libxcb1',
+    '<(_sanitizer_type)-libxcomposite1',
+    '<(_sanitizer_type)-libxcursor1',
+    '<(_sanitizer_type)-libxdamage1',
+    '<(_sanitizer_type)-libxdmcp6',
+    '<(_sanitizer_type)-libxext6',
+    '<(_sanitizer_type)-libxfixes3',
+    '<(_sanitizer_type)-libxi6',
+    '<(_sanitizer_type)-libxinerama1',
+    '<(_sanitizer_type)-libxrandr2',
+    '<(_sanitizer_type)-libxrender1',
+    '<(_sanitizer_type)-libxss1',
+    '<(_sanitizer_type)-libxtst6',
+  ],
+  'second_order_libraries': [
+    '<(_sanitizer_type)-zlib1g',
+  ],
   
   'variables': {
     'verbose_libraries_build%': 0,
@@ -13,6 +49,10 @@
   'conditions': [
     ['asan==1', {
       'sanitizer_type': 'asan',
+      'first_order_libraries': [
+        '<(_sanitizer_type)-libfontconfig1',
+        '<(_sanitizer_type)-libglib2.0-0',
+      ],
     }],
     ['msan==1', {
       'sanitizer_type': 'msan',
@@ -30,32 +70,9 @@
       'variables': {
          'prune_self_dependency': 1,
       },
-      'dependencies': [
-        '<(_sanitizer_type)-libpng12-0',
-        '<(_sanitizer_type)-libxau6',
-        '<(_sanitizer_type)-libxdmcp6',
-        '<(_sanitizer_type)-libx11-6',
-        '<(_sanitizer_type)-libxcb1',
-        '<(_sanitizer_type)-libxext6',
-        '<(_sanitizer_type)-libxi6',
-        '<(_sanitizer_type)-libxrandr2',
-        '<(_sanitizer_type)-libxrender1',
-        '<(_sanitizer_type)-libxtst6',
-        '<(_sanitizer_type)-libpixman-1-0',
-        '<(_sanitizer_type)-libp11-kit0',
-        '<(_sanitizer_type)-libgpg-error0',
-        '<(_sanitizer_type)-libexpat1',
-        '<(_sanitizer_type)-libffi6',
-        '<(_sanitizer_type)-libcairo2',
-        '<(_sanitizer_type)-libpcre3',
-      ],
-      'conditions': [
-        ['asan==1', {
-          'dependencies': [
-            '<(_sanitizer_type)-libfontconfig1',
-            '<(_sanitizer_type)-libglib2.0-0',
-          ],
-        }],
+      'dependencies=': [
+        '<@(_first_order_libraries)',
+        '<@(_second_order_libraries)',
       ],
       'actions': [
         {
@@ -74,23 +91,9 @@
       ],
     },
     {
-      'library_name': 'libpng12-0',
+      'library_name': 'libcairo2',
       'dependencies=': [],
-      'includes': ['standard_instrumented_library_target.gypi'],
-    },
-    {
-      'library_name': 'libpixman-1-0',
-      'dependencies=': [],
-      'includes': ['standard_instrumented_library_target.gypi'],
-    },
-    {
-      'library_name': 'libp11-kit0',
-      'dependencies=': [],
-      'includes': ['standard_instrumented_library_target.gypi'],
-    },
-    {
-      'library_name': 'libgpg-error0',
-      'dependencies=': [],
+      'custom_configure_flags': '--disable-gtk-doc',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -110,23 +113,9 @@
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
-      'library_name': 'libcairo2',
+      'library_name': 'libgcrypt11',
       'dependencies=': [],
-      'custom_configure_flags': '--disable-gtk-doc',
-      'includes': ['standard_instrumented_library_target.gypi'],
-    },
-    {
-      'library_name': 'libpcre3',
-      'dependencies=': [],
-      'custom_configure_flags': [
-        '--enable-utf8',
-        '--enable-unicode-properties',
-      ],
-      'includes': ['standard_instrumented_library_target.gypi'],
-    },
-    {
-      'library_name': 'libxau6',
-      'dependencies=': [],
+      'custom_linker_flags': '-Wl,-z,muldefs',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -140,9 +129,32 @@
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
-      'library_name': 'libxdmcp6',
+      'library_name': 'libgpg-error0',
       'dependencies=': [],
-      'custom_configure_flags': '--disable-docs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libp11-kit0',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libpcre3',
+      'dependencies=': [],
+      'custom_configure_flags': [
+        '--enable-utf8',
+        '--enable-unicode-properties',
+      ],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libpixman-1-0',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libpng12-0',
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -152,9 +164,35 @@
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
+      'library_name': 'libxau6',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
       'library_name': 'libxcb1',
       'dependencies=': [],
       'custom_configure_flags': '--disable-build-docs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxcomposite1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxcursor1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxdamage1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxdmcp6',
+      'dependencies=': [],
+      'custom_configure_flags': '--disable-docs',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -164,12 +202,22 @@
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
+      'library_name': 'libxfixes3',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
       'library_name': 'libxi6',
       'dependencies=': [],
       'custom_configure_flags': [
         '--disable-specs',
         '--disable-docs',
       ],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxinerama1',
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -183,9 +231,21 @@
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
+      'library_name': 'libxss1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
       'library_name': 'libxtst6',
       'dependencies=': [],
       'custom_configure_flags': '--disable-specs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'zlib1g',
+      'dependencies=': [
+        '<@(_first_order_libraries)', 
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
