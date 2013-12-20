@@ -19,7 +19,8 @@ class CrOSAutoTest(unittest.TestCase):
     self._cri = cros_interface.CrOSInterface(options.cros_remote,
                                              options.cros_ssh_identity)
     self._is_guest = options.browser_type == 'cros-chrome-guest'
-    self._email = '' if self._is_guest else 'test@test.test'
+    self._username = '' if self._is_guest else options.browser_options.username
+    self._password = options.browser_options.password
 
   def _IsCryptohomeMounted(self):
     """Returns True if cryptohome is mounted"""
@@ -83,7 +84,7 @@ class CrOSAutoTest(unittest.TestCase):
         self.assertEquals(chronos_fs, 'guestfs')
       else:
         home, _ = self._cri.RunCmdOnDevice(['/usr/sbin/cryptohome-path',
-                                            'user', self._email])
+                                            'user', self._username])
         self.assertEquals(self._cri.FilesystemMountedAt(home.rstrip()),
                           chronos_fs)
 
@@ -99,7 +100,7 @@ class CrOSAutoTest(unittest.TestCase):
 
       self.assertEquals(not self._is_guest, login_status['isRegularUser'])
       self.assertEquals(self._is_guest, login_status['isGuest'])
-      self.assertEquals(login_status['email'], self._email)
+      self.assertEquals(login_status['email'], self._username)
       self.assertFalse(login_status['isScreenLocked'])
 
   def _IsScreenLocked(self, browser):
@@ -131,16 +132,16 @@ class CrOSAutoTest(unittest.TestCase):
         ''')
       self.assertFalse(ErrorBubbleVisible())
       browser.oobe.ExecuteJavaScript('''
-          Oobe.authenticateForTesting('test@test.test', 'bad');
-      ''')
+          Oobe.authenticateForTesting('%s', 'bad');
+      ''' % self._username)
       util.WaitFor(ErrorBubbleVisible, 10)
       self.assertTrue(self._IsScreenLocked(browser))
 
   def _UnlockScreen(self, browser):
       logging.info('Unlocking')
       browser.oobe.ExecuteJavaScript('''
-          Oobe.authenticateForTesting('test@test.test', '');
-      ''')
+          Oobe.authenticateForTesting('%s', '%s');
+      ''' % (self._username, self._password))
       util.WaitFor(lambda: not browser.oobe, 10)
       self.assertFalse(self._IsScreenLocked(browser))
 
