@@ -39,7 +39,9 @@ class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
   TestMergeSessionLoadPage(WebContents* web_contents,
                            const GURL& url,
                            MergeSessionLoadPageTest* test_page)
-    : MergeSessionLoadPage(web_contents, url, CompletionCallback()),
+    : MergeSessionLoadPage(web_contents,
+                           url,
+                           MergeSessionThrottle::CompletionCallback()),
       test_page_(test_page) {
     interstitial_page_->DontCreateViewForTesting();
   }

@@ -51,9 +51,10 @@ const int kTotalWaitTimeMS = 10000;
 
 namespace chromeos {
 
-MergeSessionLoadPage::MergeSessionLoadPage(WebContents* web_contents,
-                                           const GURL& url,
-                                           const CompletionCallback& callback)
+MergeSessionLoadPage::MergeSessionLoadPage(
+    WebContents* web_contents,
+    const GURL& url,
+    const MergeSessionThrottle::CompletionCallback& callback)
     : callback_(callback),
       proceeded_(false),
       web_contents_(web_contents),

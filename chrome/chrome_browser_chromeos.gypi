@@ -525,6 +525,8 @@
         'browser/chromeos/login/merge_session_load_page.h',
         'browser/chromeos/login/merge_session_throttle.cc',
         'browser/chromeos/login/merge_session_throttle.h',
+        'browser/chromeos/login/merge_session_xhr_request_waiter.cc',
+        'browser/chromeos/login/merge_session_xhr_request_waiter.h',
         'browser/chromeos/login/mount_manager.cc',
         'browser/chromeos/login/mount_manager.h',
         'browser/chromeos/login/multi_profile_first_run_notification.cc',

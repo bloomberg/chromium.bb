@@ -269,7 +269,8 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   }
 
 #if defined(OS_CHROMEOS)
-  if (resource_type == ResourceType::MAIN_FRAME) {
+  if (resource_type == ResourceType::MAIN_FRAME ||
+      resource_type == ResourceType::XHR) {
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
     throttles->push_back(new OfflineResourceThrottle(request,
@@ -279,7 +280,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     // progress while we are attempting to load a google property.
     if (!MergeSessionThrottle::AreAllSessionMergedAlready() &&
         request->url().SchemeIsHTTPOrHTTPS()) {
-      throttles->push_back(new MergeSessionThrottle(request));
+      throttles->push_back(new MergeSessionThrottle(request, resource_type));
     }
   }
 #endif

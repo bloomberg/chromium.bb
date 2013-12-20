@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/merge_session_throttle.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -36,15 +37,12 @@ class MergeSessionLoadPage
     : public content::InterstitialPageDelegate,
       public OAuth2LoginManager::Observer {
  public:
-  // Passed a boolean indicating whether or not it is OK to proceed with the
-  // page load.
-  typedef base::Closure CompletionCallback;
-
   // Create a merge session load delay page for the |web_contents|.
   // The |callback| will be run on the IO thread.
-  MergeSessionLoadPage(content::WebContents* web_contents,
-                       const GURL& url,
-                       const CompletionCallback& callback);
+  MergeSessionLoadPage(
+      content::WebContents* web_contents,
+      const GURL& url,
+      const MergeSessionThrottle::CompletionCallback& callback);
 
   void Show();
 
@@ -72,7 +70,7 @@ class MergeSessionLoadPage
   // Helper function to get OAuth2LoginManager out of |web_contents_|.
   OAuth2LoginManager* GetOAuth2LoginManager();
 
-  CompletionCallback callback_;
+  MergeSessionThrottle::CompletionCallback callback_;
 
   // True if the proceed is chosen.
   bool proceeded_;

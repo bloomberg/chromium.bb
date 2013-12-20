@@ -34,7 +34,9 @@ const char kStubEthernetServicePath[] = "eth1";
 
 }  // namespace
 
-OobeBaseTest::OobeBaseTest() : network_portal_detector_(NULL) {
+OobeBaseTest::OobeBaseTest()
+    : fake_gaia_(new FakeGaia()),
+      network_portal_detector_(NULL) {
   set_exit_when_last_browser_closes(false);
 }
 
@@ -46,7 +48,7 @@ void OobeBaseTest::SetUp() {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
+      base::Bind(&FakeGaia::HandleRequest, base::Unretained(fake_gaia_.get())));
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   // Stop IO thread here because no threads are allowed while
   // spawning sandbox host process. See crbug.com/322732.
@@ -96,7 +98,7 @@ void OobeBaseTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
                                   gaia_url.spec());
-  fake_gaia_.Initialize();
+  fake_gaia_->Initialize();
 }
 
 void OobeBaseTest::SimulateNetworkOffline() {

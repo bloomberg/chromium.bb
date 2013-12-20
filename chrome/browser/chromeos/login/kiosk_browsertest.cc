@@ -737,14 +737,14 @@ class KioskEnterpriseTest : public KioskTest {
         "https://www.googleapis.com/auth/userinfo.email");
     userinfo_token_info.audience = gaia_urls->oauth2_chrome_client_id();
     userinfo_token_info.email = kTestEnterpriseServiceAccountId;
-    fake_gaia_.IssueOAuthToken(kTestRefreshToken, userinfo_token_info);
+    fake_gaia_->IssueOAuthToken(kTestRefreshToken, userinfo_token_info);
 
     // The any-api access token for accessing the token minting endpoint.
     FakeGaia::AccessTokenInfo login_token_info;
     login_token_info.token = kTestLoginToken;
     login_token_info.scopes.insert(GaiaConstants::kAnyApiOAuth2Scope);
     login_token_info.audience = gaia_urls->oauth2_chrome_client_id();
-    fake_gaia_.IssueOAuthToken(kTestRefreshToken, login_token_info);
+    fake_gaia_->IssueOAuthToken(kTestRefreshToken, login_token_info);
 
     // This is the access token requested by the app via the identity API.
     FakeGaia::AccessTokenInfo access_token_info;
@@ -752,7 +752,7 @@ class KioskEnterpriseTest : public KioskTest {
     access_token_info.scopes.insert(kTestAppScope);
     access_token_info.audience = kTestClientId;
     access_token_info.email = kTestEnterpriseServiceAccountId;
-    fake_gaia_.IssueOAuthToken(kTestLoginToken, access_token_info);
+    fake_gaia_->IssueOAuthToken(kTestLoginToken, access_token_info);
 
     DeviceOAuth2TokenService* token_service = NULL;
     DeviceOAuth2TokenServiceFactory::Get(
