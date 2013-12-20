@@ -1251,10 +1251,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Profile creation ----------------------------------------------------------
 
-  // Called before CreateProfile because creating the profile can trigger
-  // calls to GetDefaultProfile().
-  ProfileManager::AllowGetDefaultProfile();
-
   MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE);
   profile_ = CreateProfile(parameters(), user_data_dir_, parsed_command_line());
   if (!profile_)

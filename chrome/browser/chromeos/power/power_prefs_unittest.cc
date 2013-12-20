@@ -214,7 +214,6 @@ TEST_F(PowerPrefsTest, UserSession) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kLoginProfile,
                                                       "user");
   profile_manager_.SetLoggedIn(true);
-  ProfileManager::AllowGetDefaultProfile();
 
   // Inform power_prefs_ that a session has started.
   power_prefs_->Observe(chrome::NOTIFICATION_SESSION_STARTED,

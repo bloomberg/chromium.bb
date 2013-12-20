@@ -76,13 +76,6 @@ class ProfileManager : public base::NonThreadSafe,
   // The profile used can be overridden by using --login-profile on cros.
   Profile* GetDefaultProfile(const base::FilePath& user_data_dir);
 
-  // DEPRECATED: Temporary measure to ensure that GetDefaultProfile() is not
-  // called before CreateProfile() is called in chrome_browser_main.cc.
-  // If GetDefaultProfile() or GetDefaultProfileOrOffTheRecord() is called
-  // before this, a CHECK will be triggered.
-  static void AllowGetDefaultProfile();
-  static bool IsGetDefaultProfileAllowed();
-
   // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Same as instance method but provides the default user_data_dir as well.
   // Note that in case of a guest account this will return a 'suitable' profile.

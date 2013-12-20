@@ -113,7 +113,6 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
 
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     ash::ShelfModel* model) {
-  DCHECK(ProfileManager::IsGetDefaultProfileAllowed());
   // TODO(oshima): This is currently broken with multiple launchers.
   // Refactor so that there is just one launcher delegate in the
   // shell.

@@ -213,27 +213,9 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
   ProfilesToDelete().clear();
 }
 
-namespace {
-
-bool s_allow_get_default_profile = false;
-
-}  // namespace
-
-// static
-void ProfileManager::AllowGetDefaultProfile() {
-  s_allow_get_default_profile = true;
-}
-
-// static
-bool ProfileManager::IsGetDefaultProfileAllowed() {
-  return s_allow_get_default_profile;
-}
-
 // static
 // TODO(skuhne): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfile() {
-  CHECK(s_allow_get_default_profile)
-      << "GetDefaultProfile() called before allowed.";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetDefaultProfile(profile_manager->user_data_dir_);
 }
@@ -422,9 +404,6 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
 
 Profile* ProfileManager::GetPrimaryUserProfile() {
 #if defined(OS_CHROMEOS)
-  // TODO(skuhne): Remove once GetDefaultProfile is removed.
-  CHECK(s_allow_get_default_profile)
-      << "GetPrimaryUserProfile() called before allowed.";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();
@@ -438,9 +417,6 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
 
 Profile* ProfileManager::GetActiveUserProfile() {
 #if defined(OS_CHROMEOS)
-  // TODO(skuhne): Remove once GetDefaultProfile is removed.
-  CHECK(s_allow_get_default_profile)
-      << "GetActiveUserProfile() called before allowed.";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();

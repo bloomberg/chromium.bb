@@ -41,7 +41,6 @@ class InputMethodPersistenceTest : public testing::Test {
     CommandLine *cl = CommandLine::ForCurrentProcess();
     cl->AppendSwitchASCII(switches::kLoginProfile, chrome::kTestUserProfileDir);
     mock_profile_manager_.SetLoggedIn(true);
-    ProfileManager::AllowGetDefaultProfile();
     EXPECT_TRUE(ProfileManager::GetActiveUserProfile() != NULL);
     mock_user_prefs_ = mock_profile->GetTestingPrefService();
   }
