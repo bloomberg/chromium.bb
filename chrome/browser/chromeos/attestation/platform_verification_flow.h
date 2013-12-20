@@ -94,6 +94,24 @@ class PlatformVerificationFlow
     //               origin.
     virtual void ShowConsentPrompt(content::WebContents* web_contents,
                                    const ConsentCallback& callback) = 0;
+
+    // Gets prefs associated with the given |web_contents|.  If no prefs are
+    // associated with |web_contents| then NULL is returned.
+    virtual PrefService* GetPrefs(content::WebContents* web_contents) = 0;
+
+    // Gets the URL associated with the given |web_contents|.
+    virtual const GURL& GetURL(content::WebContents* web_contents) = 0;
+
+    // Gets the user associated with the given |web_contents|.  NULL may be
+    // returned.
+    virtual User* GetUser(content::WebContents* web_contents) = 0;
+
+    // Gets the content settings map associated with the given |web_contents|.
+    virtual HostContentSettingsMap* GetContentSettings(
+        content::WebContents* web_contents) = 0;
+
+    // Returns true iff |web_contents| belongs to a guest or incognito session.
+    virtual bool IsGuestOrIncognito(content::WebContents* web_contents) = 0;
   };
 
   // This callback will be called when a challenge operation completes.  If
@@ -119,7 +137,6 @@ class PlatformVerificationFlow
   PlatformVerificationFlow(AttestationFlow* attestation_flow,
                            cryptohome::AsyncMethodCaller* async_caller,
                            CryptohomeClient* cryptohome_client,
-                           UserManager* user_manager,
                            Delegate* delegate);
 
   // Invokes an asynchronous operation to challenge a platform key.  Any user
@@ -220,25 +237,6 @@ class PlatformVerificationFlow
                         bool operation_success,
                         const std::string& response_data);
 
-  // Gets prefs associated with the given |web_contents|.  If prefs have been
-  // set explicitly using set_testing_prefs(), then these are always returned.
-  // If no prefs are associated with |web_contents| then NULL is returned.
-  PrefService* GetPrefs(content::WebContents* web_contents);
-
-  // Gets the URL associated with the given |web_contents|.  If a URL as been
-  // set explicitly using set_testing_url(), then this value is always returned.
-  const GURL& GetURL(content::WebContents* web_contents);
-
-  // Gets the user associated with the given |web_contents|.  NULL may be
-  // returned.  If |web_contents| is NULL (e.g. during testing), then the
-  // current active user will be returned.
-  User* GetUser(content::WebContents* web_contents);
-
-  // Gets the content settings map associated with the given |web_contents|.  If
-  // |testing_content_settings_| is set, then this is always returned.
-  HostContentSettingsMap* GetContentSettings(
-      content::WebContents* web_contents);
-
   // Checks whether policy or profile settings associated with |web_contents|
   // have attestation for content protection explicitly disabled.
   bool IsAttestationEnabled(content::WebContents* web_contents);
@@ -264,31 +262,12 @@ class PlatformVerificationFlow
   // Returns true iff |certificate| is an expired X.509 certificate.
   bool IsExpired(const std::string& certificate);
 
-  // Returns true iff |web_contents| belongs to a guest or incognito session.
-  bool IsGuestOrIncognito(content::WebContents* web_contents);
-
-  void set_testing_prefs(PrefService* testing_prefs) {
-    testing_prefs_ = testing_prefs;
-  }
-
-  void set_testing_url(const GURL& testing_url) {
-    testing_url_ = testing_url;
-  }
-
-  void set_testing_content_settings(HostContentSettingsMap* settings) {
-    testing_content_settings_ = settings;
-  }
-
   AttestationFlow* attestation_flow_;
   scoped_ptr<AttestationFlow> default_attestation_flow_;
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
-  UserManager* user_manager_;
   Delegate* delegate_;
   scoped_ptr<Delegate> default_delegate_;
-  PrefService* testing_prefs_;
-  GURL testing_url_;
-  HostContentSettingsMap* testing_content_settings_;
   base::TimeDelta timeout_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVerificationFlow);

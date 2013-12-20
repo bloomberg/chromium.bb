@@ -75,7 +75,7 @@ class AttestationDevicePolicyTest
   // to verify a Chrome OS platform.
   PlatformVerificationFlow::Result SyncContentProtectionAttestation() {
     scoped_refptr<PlatformVerificationFlow> verifier(
-        new PlatformVerificationFlow(NULL, NULL, &fake_cryptohome_client_, NULL,
+        new PlatformVerificationFlow(NULL, NULL, &fake_cryptohome_client_,
                                      NULL));
     verifier->ChallengePlatformKey(
       browser()->tab_strip_model()->GetActiveWebContents(),

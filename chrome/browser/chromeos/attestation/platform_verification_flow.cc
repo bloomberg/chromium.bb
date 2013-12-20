@@ -76,6 +76,34 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
     PlatformVerificationDialog::ShowDialog(web_contents, callback);
   }
 
+  virtual PrefService* GetPrefs(content::WebContents* web_contents) OVERRIDE {
+    return user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
+  }
+
+  virtual const GURL& GetURL(content::WebContents* web_contents) OVERRIDE {
+    const GURL& url = web_contents->GetLastCommittedURL();
+    if (!url.is_valid())
+      return web_contents->GetVisibleURL();
+    return url;
+  }
+
+  virtual User* GetUser(content::WebContents* web_contents) OVERRIDE {
+    return UserManager::Get()->GetUserByProfile(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  }
+
+  virtual HostContentSettingsMap* GetContentSettings(
+      content::WebContents* web_contents) OVERRIDE {
+    return Profile::FromBrowserContext(web_contents->GetBrowserContext())->
+        GetHostContentSettingsMap();
+  }
+
+  virtual bool IsGuestOrIncognito(content::WebContents* web_contents) OVERRIDE {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    return (profile->IsOffTheRecord() || profile->IsGuestSession());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
 };
@@ -96,10 +124,7 @@ PlatformVerificationFlow::PlatformVerificationFlow()
     : attestation_flow_(NULL),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
       cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
-      user_manager_(UserManager::Get()),
       delegate_(NULL),
-      testing_prefs_(NULL),
-      testing_content_settings_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
@@ -116,17 +141,17 @@ PlatformVerificationFlow::PlatformVerificationFlow(
     AttestationFlow* attestation_flow,
     cryptohome::AsyncMethodCaller* async_caller,
     CryptohomeClient* cryptohome_client,
-    UserManager* user_manager,
     Delegate* delegate)
     : attestation_flow_(attestation_flow),
       async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
-      user_manager_(user_manager),
       delegate_(delegate),
-      testing_prefs_(NULL),
-      testing_content_settings_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!delegate_) {
+    default_delegate_.reset(new DefaultDelegate());
+    delegate_ = default_delegate_.get();
+  }
 }
 
 PlatformVerificationFlow::~PlatformVerificationFlow() {
@@ -138,7 +163,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     const std::string& challenge,
     const ChallengeCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!GetURL(web_contents).is_valid()) {
+  if (!delegate_->GetURL(web_contents).is_valid()) {
     LOG(WARNING) << "PlatformVerificationFlow: Invalid URL.";
     ReportError(callback, INTERNAL_ERROR);
     return;
@@ -149,7 +174,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
   }
   // A platform key must be bound to a user.  They are not allowed in incognito
   // or guest mode.
-  if (IsGuestOrIncognito(web_contents)) {
+  if (delegate_->IsGuestOrIncognito(web_contents)) {
     ReportError(callback, PLATFORM_NOT_VERIFIED);
     return;
   }
@@ -163,7 +188,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
 
 void PlatformVerificationFlow::CheckConsent(const ChallengeContext& context,
                                             bool attestation_enrolled) {
-  PrefService* pref_service = GetPrefs(context.web_contents);
+  PrefService* pref_service = delegate_->GetPrefs(context.web_contents);
   if (!pref_service) {
     LOG(ERROR) << "Failed to get user prefs.";
     ReportError(context.callback, INTERNAL_ERROR);
@@ -176,10 +201,9 @@ void PlatformVerificationFlow::CheckConsent(const ChallengeContext& context,
       // protection on this device.
       !pref_service->GetBoolean(prefs::kRAConsentFirstTime) ||
       // Consent required if consent has never been given for this domain.
-      !GetDomainPref(GetContentSettings(context.web_contents),
-                     GetURL(context.web_contents),
+      !GetDomainPref(delegate_->GetContentSettings(context.web_contents),
+                     delegate_->GetURL(context.web_contents),
                      NULL));
-
   Delegate::ConsentCallback consent_callback = base::Bind(
       &PlatformVerificationFlow::OnConsentResponse,
       this,
@@ -226,7 +250,7 @@ void PlatformVerificationFlow::OnConsentResponse(
 
   // At this point all user interaction is complete and we can proceed with the
   // certificate request.
-  chromeos::User* user = GetUser(context.web_contents);
+  chromeos::User* user = delegate_->GetUser(context.web_contents);
   if (!user) {
     ReportError(context.callback, INTERNAL_ERROR);
     LOG(ERROR) << "Profile does not map to a valid user.";
@@ -328,38 +352,6 @@ void PlatformVerificationFlow::OnChallengeReady(
                        certificate);
 }
 
-PrefService* PlatformVerificationFlow::GetPrefs(
-    content::WebContents* web_contents) {
-  if (testing_prefs_)
-    return testing_prefs_;
-  return user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
-}
-
-const GURL& PlatformVerificationFlow::GetURL(
-    content::WebContents* web_contents) {
-  if (!testing_url_.is_empty())
-    return testing_url_;
-  const GURL& url = web_contents->GetLastCommittedURL();
-  if (!url.is_valid())
-    return web_contents->GetVisibleURL();
-  return url;
-}
-
-User* PlatformVerificationFlow::GetUser(content::WebContents* web_contents) {
-  if (!web_contents)
-    return user_manager_->GetActiveUser();
-  return user_manager_->GetUserByProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-}
-
-HostContentSettingsMap* PlatformVerificationFlow::GetContentSettings(
-    content::WebContents* web_contents) {
-  if (testing_content_settings_)
-    return testing_content_settings_;
-  return Profile::FromBrowserContext(web_contents->GetBrowserContext())->
-      GetHostContentSettingsMap();
-}
-
 bool PlatformVerificationFlow::IsAttestationEnabled(
     content::WebContents* web_contents) {
   // Check the device policy for the feature.
@@ -373,7 +365,7 @@ bool PlatformVerificationFlow::IsAttestationEnabled(
     return false;
 
   // Check the user preference for the feature.
-  PrefService* pref_service = GetPrefs(web_contents);
+  PrefService* pref_service = delegate_->GetPrefs(web_contents);
   if (!pref_service) {
     LOG(ERROR) << "Failed to get user prefs.";
     return false;
@@ -383,8 +375,8 @@ bool PlatformVerificationFlow::IsAttestationEnabled(
 
   // Check the user preference for this domain.
   bool enabled_for_domain = false;
-  bool found = GetDomainPref(GetContentSettings(web_contents),
-                             GetURL(web_contents),
+  bool found = GetDomainPref(delegate_->GetContentSettings(web_contents),
+                             delegate_->GetURL(web_contents),
                              &enabled_for_domain);
   return (!found || enabled_for_domain);
 }
@@ -392,14 +384,14 @@ bool PlatformVerificationFlow::IsAttestationEnabled(
 bool PlatformVerificationFlow::UpdateSettings(
     content::WebContents* web_contents,
     ConsentResponse consent_response) {
-  PrefService* pref_service = GetPrefs(web_contents);
+  PrefService* pref_service = delegate_->GetPrefs(web_contents);
   if (!pref_service) {
     LOG(ERROR) << "Failed to get user prefs.";
     return false;
   }
   pref_service->SetBoolean(prefs::kRAConsentFirstTime, true);
-  RecordDomainConsent(GetContentSettings(web_contents),
-                      GetURL(web_contents),
+  RecordDomainConsent(delegate_->GetContentSettings(web_contents),
+                      delegate_->GetURL(web_contents),
                       (consent_response == CONSENT_RESPONSE_ALLOW));
   return true;
 }
@@ -465,15 +457,6 @@ bool PlatformVerificationFlow::IsExpired(const std::string& certificate) {
     return false;
   }
   return (base::Time::Now() > x509->valid_expiry());
-}
-
-bool PlatformVerificationFlow::IsGuestOrIncognito(
-    content::WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return profile->IsOffTheRecord() || profile->IsGuestSession();
 }
 
 }  // namespace attestation

@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
@@ -17,8 +15,11 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -51,8 +52,25 @@ const char kTestURLSecure[] = "https://mytestdomain/test";
 class FakeDelegate : public PlatformVerificationFlow::Delegate {
  public:
   FakeDelegate() : response_(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW),
-                   num_consent_calls_(0) {}
+                   num_consent_calls_(0),
+                   url_(kTestURL),
+                   is_incognito_(false) {
+    // Configure a user for the mock user manager.
+    mock_user_manager_.SetActiveUser(kTestEmail);
+  }
   virtual ~FakeDelegate() {}
+
+  void SetUp() {
+    ProfileImpl::RegisterProfilePrefs(pref_service_.registry());
+    chrome::DeviceIDFetcher::RegisterProfilePrefs(pref_service_.registry());
+    PlatformVerificationFlow::RegisterProfilePrefs(pref_service_.registry());
+    HostContentSettingsMap::RegisterProfilePrefs(pref_service_.registry());
+    content_settings_ = new HostContentSettingsMap(&pref_service_, false);
+  }
+
+  void TearDown() {
+    content_settings_->ShutdownOnUIThread();
+  }
 
   virtual void ShowConsentPrompt(
       content::WebContents* web_contents,
@@ -60,6 +78,27 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
       OVERRIDE {
     num_consent_calls_++;
     callback.Run(response_);
+  }
+
+  virtual PrefService* GetPrefs(content::WebContents* web_contents) OVERRIDE {
+    return &pref_service_;
+  }
+
+  virtual const GURL& GetURL(content::WebContents* web_contents) OVERRIDE {
+    return url_;
+  }
+
+  virtual User* GetUser(content::WebContents* web_contents) OVERRIDE {
+    return mock_user_manager_.GetActiveUser();
+  }
+
+  virtual HostContentSettingsMap* GetContentSettings(
+      content::WebContents* web_contents) OVERRIDE {
+    return content_settings_;
+  }
+
+  virtual bool IsGuestOrIncognito(content::WebContents* web_contents) OVERRIDE {
+    return is_incognito_;
   }
 
   void set_response(PlatformVerificationFlow::ConsentResponse response) {
@@ -70,9 +109,26 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     return num_consent_calls_;
   }
 
+  TestingPrefServiceSyncable& pref_service() {
+    return pref_service_;
+  }
+
+  void set_url(const GURL& url) {
+    url_ = url;
+  }
+
+  void set_is_incognito(bool is_incognito) {
+    is_incognito_ = is_incognito;
+  }
+
  private:
   PlatformVerificationFlow::ConsentResponse response_;
   int num_consent_calls_;
+  TestingPrefServiceSyncable pref_service_;
+  MockUserManager mock_user_manager_;
+  GURL url_;
+  scoped_refptr<HostContentSettingsMap> content_settings_;
+  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
 };
@@ -128,28 +184,17 @@ class PlatformVerificationFlowTest : public ::testing::Test {
         result_(PlatformVerificationFlow::INTERNAL_ERROR) {}
 
   void SetUp() {
-    // Configure a user for the mock user manager.
-    mock_user_manager_.SetActiveUser(kTestEmail);
+    fake_delegate_.SetUp();
 
     // Create a verifier for tests to call.
     verifier_ = new PlatformVerificationFlow(&mock_attestation_flow_,
                                              &mock_async_caller_,
                                              &fake_cryptohome_client_,
-                                             &mock_user_manager_,
                                              &fake_delegate_);
 
     // Create callbacks for tests to use with verifier_.
     callback_ = base::Bind(&PlatformVerificationFlowTest::FakeChallengeCallback,
                            base::Unretained(this));
-
-    // Configure the test pref service.
-    pref_service_.registry()->RegisterBooleanPref(prefs::kEnableDRM, true);
-    pref_service_.registry()->RegisterBooleanPref(prefs::kRAConsentFirstTime,
-                                                  true);
-    RegisterHostContentSettingsPrefs(pref_service_.registry());
-    verifier_->set_testing_prefs(&pref_service_);
-    test_content_settings_ = new HostContentSettingsMap(&pref_service_, false);
-    verifier_->set_testing_content_settings(test_content_settings_);
 
     // Configure the global cros_settings.
     CrosSettings* cros_settings = CrosSettings::Get();
@@ -159,70 +204,10 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     cros_settings->AddSettingsProvider(&stub_settings_provider_);
     cros_settings->SetBoolean(kAttestationForContentProtectionEnabled, true);
 
-    // Configure a test URL to shortcut the dependency on WebContents.
-    verifier_->set_testing_url(GURL(kTestURL));
-  }
+    // Start with the first-time setting set since most tests want this.
+    fake_delegate_.pref_service().SetUserPref(prefs::kRAConsentFirstTime,
+                                              new base::FundamentalValue(true));
 
-  void RegisterHostContentSettingsPrefs(PrefRegistrySimple* registry) {
-    registry->RegisterIntegerPref(
-        prefs::kContentSettingsWindowLastTabIndex,
-        0);
-    registry->RegisterIntegerPref(
-        prefs::kContentSettingsDefaultWhitelistVersion,
-        0);
-    registry->RegisterBooleanPref(
-        prefs::kContentSettingsClearOnExitMigrated,
-        false);
-    DictionaryValue* default_content_settings = new DictionaryValue();
-    registry->RegisterDictionaryPref(
-        prefs::kDefaultContentSettings,
-        default_content_settings);
-    registry->RegisterIntegerPref(
-        prefs::kContentSettingsVersion,
-        ContentSettingsPattern::kContentSettingsPatternVersion);
-    registry->RegisterDictionaryPref(
-        prefs::kContentSettingsPatternPairs);
-    registry->RegisterListPref(prefs::kManagedAutoSelectCertificateForUrls);
-    registry->RegisterListPref(prefs::kManagedCookiesAllowedForUrls);
-    registry->RegisterListPref(prefs::kManagedCookiesBlockedForUrls);
-    registry->RegisterListPref(prefs::kManagedCookiesSessionOnlyForUrls);
-    registry->RegisterListPref(prefs::kManagedImagesAllowedForUrls);
-    registry->RegisterListPref(prefs::kManagedImagesBlockedForUrls);
-    registry->RegisterListPref(prefs::kManagedJavaScriptAllowedForUrls);
-    registry->RegisterListPref(prefs::kManagedJavaScriptBlockedForUrls);
-    registry->RegisterListPref(prefs::kManagedPluginsAllowedForUrls);
-    registry->RegisterListPref(prefs::kManagedPluginsBlockedForUrls);
-    registry->RegisterListPref(prefs::kManagedPopupsAllowedForUrls);
-    registry->RegisterListPref(prefs::kManagedPopupsBlockedForUrls);
-    registry->RegisterListPref(prefs::kManagedNotificationsAllowedForUrls);
-    registry->RegisterListPref(prefs::kManagedNotificationsBlockedForUrls);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultCookiesSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultImagesSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultJavaScriptSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultPluginsSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultPopupsSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultGeolocationSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultNotificationsSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterIntegerPref(
-        prefs::kManagedDefaultMediaStreamSetting,
-        CONTENT_SETTING_DEFAULT);
-    registry->RegisterBooleanPref(
-        prefs::kClearSiteDataOnExit,
-        false);
   }
 
   void TearDown() {
@@ -230,7 +215,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     CrosSettings* cros_settings = CrosSettings::Get();
     cros_settings->RemoveSettingsProvider(&stub_settings_provider_);
     cros_settings->AddSettingsProvider(device_settings_provider_);
-    test_content_settings_->ShutdownOnUIThread();
+    fake_delegate_.TearDown();
   }
 
   void ExpectAttestationFlow() {
@@ -257,11 +242,9 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
 
   void SetUserConsent(const GURL& url, bool allow) {
-    verifier_->RecordDomainConsent(test_content_settings_, url, allow);
-  }
-
-  void SetURL(const GURL& url) {
-    verifier_->set_testing_url(url);
+    verifier_->RecordDomainConsent(fake_delegate_.GetContentSettings(NULL),
+                                   url,
+                                   allow);
   }
 
   void FakeGetCertificate(
@@ -310,14 +293,11 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   StrictMock<MockAttestationFlow> mock_attestation_flow_;
   cryptohome::MockAsyncMethodCaller mock_async_caller_;
   CustomFakeCryptohomeClient fake_cryptohome_client_;
-  MockUserManager mock_user_manager_;
   FakeDelegate fake_delegate_;
-  TestingPrefServiceSimple pref_service_;
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
-  scoped_refptr<HostContentSettingsMap> test_content_settings_;
   scoped_refptr<PlatformVerificationFlow> verifier_;
 
   // Controls result of FakeGetCertificate.
@@ -365,8 +345,8 @@ TEST_F(PlatformVerificationFlowTest, SuccessWithAttestationConsent) {
 
 TEST_F(PlatformVerificationFlowTest, SuccessWithFirstTimeConsent) {
   SetUserConsent(GURL(kTestURL), true);
-  pref_service_.SetUserPref(prefs::kRAConsentFirstTime,
-                            new base::FundamentalValue(false));
+  fake_delegate_.pref_service().SetUserPref(prefs::kRAConsentFirstTime,
+                                            new base::FundamentalValue(false));
   ExpectAttestationFlow();
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
@@ -395,8 +375,8 @@ TEST_F(PlatformVerificationFlowTest, FeatureDisabled) {
 }
 
 TEST_F(PlatformVerificationFlowTest, FeatureDisabledByUser) {
-  pref_service_.SetUserPref(prefs::kEnableDRM,
-                            new base::FundamentalValue(false));
+  fake_delegate_.pref_service().SetUserPref(prefs::kEnableDRM,
+                                            new base::FundamentalValue(false));
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::POLICY_REJECTED, result_);
@@ -451,7 +431,7 @@ TEST_F(PlatformVerificationFlowTest, ConsentPerScheme) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::POLICY_REJECTED, result_);
   // Call with a different scheme and expect another consent prompt.
-  SetURL(GURL(kTestURLSecure));
+  fake_delegate_.set_url(GURL(kTestURLSecure));
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::USER_REJECTED, result_);
@@ -477,6 +457,13 @@ TEST_F(PlatformVerificationFlowTest, ExpiredCert) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
   EXPECT_EQ(certificate_, fake_certificate_list_[1]);
+}
+
+TEST_F(PlatformVerificationFlowTest, IncognitoMode) {
+  fake_delegate_.set_is_incognito(true);
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::PLATFORM_NOT_VERIFIED, result_);
 }
 
 }  // namespace attestation
