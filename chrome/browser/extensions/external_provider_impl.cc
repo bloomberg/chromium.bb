@@ -495,7 +495,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                 new ExternalRegistryLoader,
                 profile,
                 Manifest::EXTERNAL_REGISTRY,
-                Manifest::INVALID_LOCATION,
+                Manifest::EXTERNAL_PREF_DOWNLOAD,
                 Extension::NO_FLAGS)));
 #endif
 
