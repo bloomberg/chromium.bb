@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_STICKY_KEYS_H_
-#define ASH_WM_STICKY_KEYS_H_
+#ifndef ASH_WM_STICKY_KEYS_CONTROLLER_H_
+#define ASH_WM_STICKY_KEYS_CONTROLLER_H_
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,10 +24,10 @@ namespace ash {
 
 class StickyKeysHandler;
 
-// StickyKeys is an accessibility feature for users to be able to compose key
-// and mouse event with modifier keys without simultaneous key press event.
-// Instead they can compose events separately pressing each of the modifier
-// keys involved.
+// StickyKeysController is an accessibility feature for users to be able to
+// compose key and mouse event with modifier keys without simultaneous key
+// press event. Instead they can compose events separately pressing each of the
+// modifier keys involved.
 // e.g. Composing Ctrl + T
 //       User Action   : The KeyEvent widget will receives
 // ----------------------------------------------------------
@@ -53,14 +53,14 @@ class StickyKeysHandler;
 // 9. Press Ctrl key   : No event
 // 10. Release Ctrl key: Ctrl Keyup
 //
-// In the case of Chrome OS, StickyKeys supports Shift,Alt,Ctrl modifiers. Each
-// handling or state is performed independently.
+// In the case of Chrome OS, StickyKeysController supports Shift,Alt,Ctrl
+// modifiers. Each handling or state is performed independently.
 //
-// StickyKeys is disabled by default.
-class ASH_EXPORT StickyKeys : public ui::EventHandler {
+// StickyKeysController is disabled by default.
+class ASH_EXPORT StickyKeysController : public ui::EventHandler {
  public:
-  StickyKeys();
-  virtual ~StickyKeys();
+  StickyKeysController();
+  virtual ~StickyKeysController();
 
   // Activate sticky keys to intercept and modify incoming events.
   void Enable(bool enabled);
@@ -88,10 +88,10 @@ class ASH_EXPORT StickyKeys : public ui::EventHandler {
   scoped_ptr<StickyKeysHandler> alt_sticky_key_;
   scoped_ptr<StickyKeysHandler> ctrl_sticky_key_;
 
-  DISALLOW_COPY_AND_ASSIGN(StickyKeys);
+  DISALLOW_COPY_AND_ASSIGN(StickyKeysController);
 };
 
-// StickyKeysHandler handles key event and performs StickyKeys for specific
+// StickyKeysHandler handles key event and controls sticky keysfor specific
 // modifier keys. If monitored keyboard events are recieved, StickyKeysHandler
 // changes internal state. If non modifier keyboard events or mouse events are
 // received, StickyKeysHandler will append modifier based on internal state.
@@ -237,4 +237,4 @@ class ASH_EXPORT StickyKeysHandler {
 
 }  // namespace ash
 
-#endif  // ASH_WM_STICKY_KEYS_H_
+#endif  // ASH_WM_STICKY_KEYS_CONTROLLER_H_

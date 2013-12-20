@@ -101,7 +101,7 @@ class ShelfItemDelegateManager;
 class ShelfModel;
 class ShellDelegate;
 class ShellObserver;
-class StickyKeys;
+class StickyKeysController;
 class SystemTray;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
@@ -529,8 +529,8 @@ class ASH_EXPORT Shell
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
 
-  StickyKeys* sticky_keys() {
-    return sticky_keys_.get();
+  StickyKeysController* sticky_keys_controller() {
+    return sticky_keys_controller_.get();
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -675,7 +675,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::PowerEventObserver> power_event_observer_;
   scoped_ptr<internal::UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<internal::VideoActivityNotifier> video_activity_notifier_;
-  scoped_ptr<StickyKeys> sticky_keys_;
+  scoped_ptr<StickyKeysController> sticky_keys_controller_;
 #if defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;

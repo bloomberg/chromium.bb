@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/sticky_keys.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
 
 #include <X11/Xlib.h>
 #undef None
@@ -759,7 +759,7 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
   aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
       ->GetDispatcher()->AsRootWindowHostDelegate();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
-  Shell::GetInstance()->sticky_keys()->Enable(true);
+  Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
   SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
   scoped_ptr<ui::KeyEvent> ev;
@@ -798,7 +798,7 @@ TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
   aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
       ->GetDispatcher()->AsRootWindowHostDelegate();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
-  Shell::GetInstance()->sticky_keys()->Enable(true);
+  Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
   scoped_ptr<ui::MouseEvent> ev;
   SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
@@ -834,7 +834,7 @@ TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
   aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
       ->GetDispatcher()->AsRootWindowHostDelegate();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
-  Shell::GetInstance()->sticky_keys()->Enable(true);
+  Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
   scoped_ptr<ui::MouseWheelEvent> ev;
   SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);

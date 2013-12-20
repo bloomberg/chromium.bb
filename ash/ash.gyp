@@ -242,6 +242,8 @@
         'shell_delegate.h',
         'shell_factory.h',
         'shell_window_ids.h',
+        'sticky_keys/sticky_keys_controller.cc',
+        'sticky_keys/sticky_keys_controller.h',
         'system/bluetooth/bluetooth_observer.h',
         'system/bluetooth/tray_bluetooth.cc',
         'system/bluetooth/tray_bluetooth.h',
@@ -541,8 +543,6 @@
         'wm/stacking_controller.h',
         'wm/status_area_layout_manager.cc',
         'wm/status_area_layout_manager.h',
-        'wm/sticky_keys.cc',
-        'wm/sticky_keys.h',
         'wm/system_background_controller.cc',
         'wm/system_background_controller.h',
         'wm/system_gesture_event_filter.cc',
@@ -603,8 +603,8 @@
         ['OS=="win"', {
           'sources/': [
             ['exclude', 'host/root_window_host_factory.cc'],
-            ['exclude', 'wm/sticky_keys.cc'],
-            ['exclude', 'wm/sticky_keys.h'],
+            ['exclude', 'sticky_keys/sticky_keys_controller.cc'],
+            ['exclude', 'sticky_keys/sticky_keys_controller.h'],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
@@ -818,6 +818,7 @@
         'shell/window_watcher_shelf_item_delegate.h',
         'shell/window_watcher_unittest.cc',
         'shell_unittest.cc',
+        'sticky_keys/sticky_keys_unittest.cc',
         'system/chromeos/managed/tray_locally_managed_user_unittest.cc',
         'system/chromeos/network/network_state_notifier_unittest.cc',
         'system/chromeos/power/power_event_observer_unittest.cc',
@@ -857,7 +858,6 @@
         'wm/screen_dimmer_unittest.cc',
         'wm/solo_window_tracker_unittest.cc',
         'wm/stacking_controller_unittest.cc',
-        'wm/sticky_keys_unittest.cc',
         'wm/system_gesture_event_filter_unittest.cc',
         'wm/system_modal_container_layout_manager_unittest.cc',
         'wm/toplevel_window_event_handler_unittest.cc',
@@ -893,7 +893,7 @@
             ['exclude', 'ash_root_window_transformer_unittest.cc'],
             ['exclude', 'magnifier/magnification_controller_unittest.cc'],
             ['exclude', 'wm/workspace/workspace_window_resizer_unittest.cc'],
-            ['exclude', 'wm/sticky_keys_unittest.cc'],
+            ['exclude', 'sticky_keys/sticky_keys_unittest.cc'],
             ['exclude', 'autoclick/autoclick_unittest.cc'],
           ],
           'sources': [

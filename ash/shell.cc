@@ -128,12 +128,12 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_feature_type.h"
 #endif  // defined(USE_X11)
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/user_activity_notifier.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
-#include "ash/wm/sticky_keys.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -801,10 +801,10 @@ void Shell::Init() {
   AddPreTargetHandler(event_rewriter_filter_.get());
 
 #if defined(OS_CHROMEOS)
-  // The StickyKeys event filter also rewrites events and must be added
+  // The StickyKeysController also rewrites events and must be added
   // before observers, but after the EventRewriterEventFilter.
-  sticky_keys_.reset(new StickyKeys);
-  AddPreTargetHandler(sticky_keys_.get());
+  sticky_keys_controller_.reset(new StickyKeysController);
+  AddPreTargetHandler(sticky_keys_controller_.get());
 #endif
 
   // UserActivityDetector passes events to observers, so let them get
