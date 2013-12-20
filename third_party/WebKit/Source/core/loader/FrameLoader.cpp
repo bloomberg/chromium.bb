@@ -776,18 +776,17 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
 
 void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const AtomicString& overrideEncoding)
 {
-    DocumentLoader* documentLoader = activeDocumentLoader();
-    if (!documentLoader)
+    if (!m_documentLoader)
         return;
 
-    ResourceRequest request = documentLoader->request();
+    ResourceRequest request = m_documentLoader->request();
     // FIXME: We need to reset cache policy to prevent it from being incorrectly propagted to the reload.
     // Do we need to propagate anything other than the url?
     request.setCachePolicy(UseProtocolCachePolicy);
     if (!overrideURL.isEmpty())
         request.setURL(overrideURL);
-    else if (!documentLoader->unreachableURL().isEmpty())
-        request.setURL(documentLoader->unreachableURL());
+    else if (!m_documentLoader->unreachableURL().isEmpty())
+        request.setURL(m_documentLoader->unreachableURL());
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     NavigationAction action(request, type, request.httpMethod() == "POST");

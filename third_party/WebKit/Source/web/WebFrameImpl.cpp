@@ -1038,8 +1038,6 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
         || !frame()->loader().activeDocumentLoader()->isLoadingInAPISense()))
         frame()->loader().saveDocumentAndScrollState();
 
-    if (RefPtr<HistoryItem> item = frame()->page()->historyController().provisionalItemForExport(frame()))
-        return WebHistoryItem(item);
     return WebHistoryItem(frame()->page()->historyController().currentItemForExport(frame()));
 }
 

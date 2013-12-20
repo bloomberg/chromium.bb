@@ -2581,24 +2581,23 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
     ASSERT_EQ(previousScale, webViewHelper.webViewImpl()->pageScaleFactor());
 }
 
-class TestReloadWhileProvisionalFrameClient : public WebFrameClient {
-};
-
 TEST_F(WebFrameTest, ReloadWhileProvisional)
 {
     // Test that reloading while the previous load is still pending does not cause the initial
     // request to get lost.
     registerMockedHttpURLLoad("fixed_layout.html");
 
-    TestReloadWhileProvisionalFrameClient webFrameClient;
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initialize(false, &webFrameClient);
+    webViewHelper.initialize();
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "fixed_layout.html");
     // start reload before first request is delivered.
     webViewHelper.webView()->mainFrame()->reload(true);
+
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    ASSERT_EQ(WebURL(toKURL(m_baseURL + "fixed_layout.html")),
-        webViewHelper.webView()->mainFrame()->dataSource()->request().url());
+
+    WebDataSource* dataSource = webViewHelper.webView()->mainFrame()->dataSource();
+    ASSERT_TRUE(dataSource);
+    EXPECT_EQ(toKURL("about:blank"), toKURL(dataSource->request().url().spec()));
 }
 
 TEST_F(WebFrameTest, AppendRedirects)
@@ -4887,6 +4886,28 @@ TEST_F(WebFrameTest, overflowHiddenRewrite)
     webViewHelper.webView()->layout();
     ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());
+}
+
+// Test that currentHistoryItem reflects the current page, not the provisional load.
+TEST_F(WebFrameTest, CurrentHistoryItem)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+    std::string url = m_baseURL + "fixed_layout.html";
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initialize();
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    FrameTestHelpers::loadFrame(frame, url);
+
+    // Before commit, there is no history item.
+    EXPECT_TRUE(frame->currentHistoryItem().isNull());
+
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    // After commit, there is.
+    WebHistoryItem item = frame->currentHistoryItem();
+    ASSERT_FALSE(item.isNull());
+    EXPECT_EQ(url, item.urlString().utf8());
 }
 
 } // namespace
