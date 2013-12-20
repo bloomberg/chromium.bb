@@ -18,7 +18,6 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 
-class Browser;
 class PrefService;
 class TranslateBubbleModel;
 
@@ -42,8 +41,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   static void ShowBubble(views::View* anchor_view,
                          content::WebContents* web_contents,
                          TranslateBubbleModel::ViewState type,
-                         TranslateErrors::Type error_type,
-                         Browser* browser);
+                         TranslateErrors::Type error_type);
 
   // If true, the Translate bubble is being shown.
   static bool IsShowing();
@@ -121,7 +119,6 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   TranslateBubbleView(views::View* anchor_view,
                       scoped_ptr<TranslateBubbleModel> model,
                       TranslateErrors::Type error_type,
-                      Browser* browser,
                       content::WebContents* web_contents);
 
   // Returns the current child view.
@@ -192,9 +189,6 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;
-
-  // The browser to open the help URL into a new tab.
-  Browser* browser_;
 
   // Whether the translation is acutually executed.
   bool translate_executed_;

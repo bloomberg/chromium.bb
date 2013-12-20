@@ -1214,8 +1214,7 @@ void BrowserView::ShowTranslateBubble(
   language_state.SetTranslateEnabled(true);
 
   TranslateBubbleView::ShowBubble(GetToolbarView()->GetTranslateBubbleAnchor(),
-                                  web_contents, view_state, error_type,
-                                  browser_.get());
+                                  web_contents, view_state, error_type);
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

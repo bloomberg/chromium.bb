@@ -18,7 +18,6 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_ui_delegate.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -139,8 +138,7 @@ TranslateBubbleView::~TranslateBubbleView() {
 void TranslateBubbleView::ShowBubble(views::View* anchor_view,
                                      content::WebContents* web_contents,
                                      TranslateBubbleModel::ViewState type,
-                                     TranslateErrors::Type error_type,
-                                     Browser* browser) {
+                                     TranslateErrors::Type error_type) {
   // During auto-translating, the bubble should not be shown.
   if (type == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
       type == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
@@ -178,7 +176,6 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
   TranslateBubbleView* view = new TranslateBubbleView(anchor_view,
                                                       model.Pass(),
                                                       error_type,
-                                                      browser,
                                                       web_contents);
   views::BubbleDelegateView::CreateBubble(view)->Show();
 }
@@ -325,7 +322,6 @@ TranslateBubbleView::TranslateBubbleView(
     views::View* anchor_view,
     scoped_ptr<TranslateBubbleModel> model,
     TranslateErrors::Type error_type,
-    Browser* browser,
     content::WebContents* web_contents)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       WebContentsObserver(web_contents),
@@ -345,7 +341,6 @@ TranslateBubbleView::TranslateBubbleView(
       is_in_incognito_window_(
           web_contents ?
           web_contents->GetBrowserContext()->IsOffTheRecord() : false),
-      browser_(browser),
       translate_executed_(false),
       denial_button_clicked_(false) {
   if (model_->GetViewState() !=
@@ -432,7 +427,7 @@ void TranslateBubbleView::HandleLinkClicked(
     case LINK_ID_LANGUAGE_SETTINGS: {
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
-      browser_->OpenURL(content::OpenURLParams(
+      web_contents()->OpenURL(content::OpenURLParams(
           GURL(url),
           content::Referrer(),
           NEW_FOREGROUND_TAB,
