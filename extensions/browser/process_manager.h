@@ -120,14 +120,6 @@ class ProcessManager : public content::NotificationObserver {
   // related SiteInstances.
   content::BrowserContext* GetBrowserContext() const;
 
-  // Sets callbacks for testing keepalive impulse behavior.
-  typedef base::Callback<void(const std::string& extension_id)>
-      ImpulseCallbackForTesting;
-  void SetKeepaliveImpulseCallbackForTesting(
-      const ImpulseCallbackForTesting& callback);
-  void SetKeepaliveImpulseDecrementCallbackForTesting(
-      const ImpulseCallbackForTesting& callback);
-
  protected:
   // If |context| is incognito pass the master context as |original_context|.
   // Otherwise pass the same context for both.
@@ -222,9 +214,6 @@ class ProcessManager : public content::NotificationObserver {
   bool startup_background_hosts_created_;
 
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
-
-  ImpulseCallbackForTesting keepalive_impulse_callback_for_testing_;
-  ImpulseCallbackForTesting keepalive_impulse_decrement_callback_for_testing_;
 
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
 

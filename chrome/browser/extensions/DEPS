@@ -12,7 +12,4 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "!chrome/browser/ui/views/extensions/extension_view_views.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
-
-  # For access to testing command line switches.
-  "+ppapi/shared_impl",
 ]
