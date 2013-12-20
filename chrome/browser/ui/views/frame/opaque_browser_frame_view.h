@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
@@ -31,6 +32,7 @@ class Label;
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public content::NotificationObserver,
                                public views::ButtonListener,
+                               public views::MenuButtonListener,
                                public chrome::TabIconViewModel,
                                public OpaqueBrowserFrameViewLayoutDelegate {
  public:
@@ -62,6 +64,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
+      OVERRIDE;
+
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source, const gfx::Point& point)
       OVERRIDE;
 
   // Overridden from chrome::TabIconViewModel:

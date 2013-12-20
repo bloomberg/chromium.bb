@@ -50,6 +50,10 @@
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
+#if defined(OS_LINUX)
+#include "ui/views/controls/menu/menu_runner.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -122,7 +126,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view->ShouldShowWindowIcon()) {
-    window_icon_ = new TabIconView(this);
+    window_icon_ = new TabIconView(this, this);
     window_icon_->set_is_light(true);
     window_icon_->set_id(VIEW_ID_WINDOW_ICON);
     AddChildView(window_icon_);
@@ -363,6 +367,19 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Close();
   else if (sender == new_avatar_button())
     browser_view()->ShowAvatarBubbleFromAvatarButton();
+}
+
+void OpaqueBrowserFrameView::OnMenuButtonClicked(views::View* source,
+                                                 const gfx::Point& point) {
+#if defined(OS_LINUX)
+  views::MenuRunner menu_runner(frame()->GetSystemMenuModel());
+  ignore_result(menu_runner.RunMenuAt(browser_view()->GetWidget(),
+                                      window_icon_,
+                                      window_icon_->GetBoundsInScreen(),
+                                      views::MenuItemView::TOPLEFT,
+                                      ui::MENU_SOURCE_MOUSE,
+                                      views::MenuRunner::HAS_MNEMONICS));
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -309,7 +309,7 @@ void PanelFrameView::Init() {
   restore_button_->SetVisible(false);  // only visible when panel is minimized
   AddChildView(restore_button_);
 
-  title_icon_ = new TabIconView(this);
+  title_icon_ = new TabIconView(this, NULL);
   title_icon_->set_is_light(true);
   AddChildView(title_icon_);
   title_icon_->Update();

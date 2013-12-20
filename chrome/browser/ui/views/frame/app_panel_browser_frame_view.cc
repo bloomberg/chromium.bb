@@ -81,7 +81,7 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
-  window_icon_ = new TabIconView(this);
+  window_icon_ = new TabIconView(this, NULL);
   window_icon_->set_is_light(true);
   AddChildView(window_icon_);
   window_icon_->Update();

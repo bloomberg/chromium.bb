@@ -48,8 +48,10 @@ void TabIconView::InitializeIfNeeded() {
   }
 }
 
-TabIconView::TabIconView(chrome::TabIconViewModel* model)
-    : model_(model),
+TabIconView::TabIconView(chrome::TabIconViewModel* model,
+                         views::MenuButtonListener* listener)
+    : views::MenuButton(NULL, base::string16(), listener, false),
+      model_(model),
       throbber_running_(false),
       is_light_(false),
       throbber_frame_(0) {
