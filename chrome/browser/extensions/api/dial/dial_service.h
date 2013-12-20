@@ -126,8 +126,8 @@ class DialServiceImpl : public DialService,
     // Creates a socket using |net_log| and |net_log_source| and binds it to
     // |bind_ip_address|.
     bool CreateAndBindSocket(const net::IPAddressNumber& bind_ip_address,
-                    net::NetLog* net_log,
-                    net::NetLog::Source net_log_source);
+                             net::NetLog* net_log,
+                             net::NetLog::Source net_log_source);
 
     // Sends a single discovery request |send_buffer| to |send_address|
     // over the socket.
@@ -195,6 +195,7 @@ class DialServiceImpl : public DialService,
     // Marks whether there is an active read callback.
     bool is_reading_;
 
+    FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestNotifyOnError);
     FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDeviceDiscovered);
     FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryRequest);
     FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestResponseParsing);
@@ -204,11 +205,14 @@ class DialServiceImpl : public DialService,
   // Starts the control flow for one discovery cycle.
   void StartDiscovery();
 
-  // Send the network list to IO thread.
+  // For each network interface in |list|, finds all unqiue IPv4 network
+  // interfaces and call |DiscoverOnAddresses()| with their IP addresses.
   void SendNetworkList(const net::NetworkInterfaceList& list);
 
   // Calls |BindAndAddSocket()| for each address in |ip_addresses|, calls
   // |SendOneRequest()|, and start the timer to finish discovery if needed.
+  // The (Address family, interface index) of each address in |ip_addresses|
+  // must be unique. If |ip_address| is empty, calls |FinishDiscovery()|.
   void DiscoverOnAddresses(
       const std::vector<net::IPAddressNumber>& ip_addresses);
 
@@ -285,6 +289,8 @@ class DialServiceImpl : public DialService,
 
   friend class DialServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestSendMultipleRequests);
+  FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestMultipleNetworkInterfaces);
+  FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestNotifyOnError);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDeviceDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryFinished);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryRequest);

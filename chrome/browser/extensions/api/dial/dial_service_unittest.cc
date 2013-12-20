@@ -67,7 +67,36 @@ TEST_F(DialServiceTest, TestSendMultipleRequests) {
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(4);
   EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
   dial_service_.BindAndAddSocket(mock_ip_);
+  EXPECT_EQ(1u, dial_service_.dial_sockets_.size());
   dial_service_.SendOneRequest();
+  loop.RunUntilIdle();
+  dial_service_.FinishDiscovery();
+}
+
+TEST_F(DialServiceTest, TestMultipleNetworkInterfaces) {
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  // Setting the finish delay to zero disables the timer that invokes
+  // FinishDiscovery().
+  dial_service_.finish_delay_ = TimeDelta::FromSeconds(0);
+  dial_service_.request_interval_ = TimeDelta::FromSeconds(0);
+  dial_service_.max_requests_ = 4;
+  dial_service_.discovery_active_ = true;
+  net::NetworkInterfaceList interface_list;
+  interface_list.push_back(net::NetworkInterface("network1", 0, mock_ip_, 0));
+  interface_list.push_back(net::NetworkInterface("network2", 1, mock_ip_, 0));
+  interface_list.push_back(net::NetworkInterface("network3", 2, mock_ip_, 0));
+
+  // "network4" is equivalent to "network2" because both the address family
+  // and interface index are the same.
+  interface_list.push_back(net::NetworkInterface("network4", 1, mock_ip_, 0));
+
+  // 3 sockets * 4 requests per socket = 12 requests
+  EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(12);
+  EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
+
+  dial_service_.SendNetworkList(interface_list);
+  EXPECT_EQ(3u, dial_service_.dial_sockets_.size());
+
   loop.RunUntilIdle();
   dial_service_.FinishDiscovery();
 }

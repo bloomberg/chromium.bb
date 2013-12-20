@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/dial/dial_service.h"
 
 #include <algorithm>
+#include <set>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -469,18 +471,40 @@ void DialServiceImpl::StartDiscovery() {
 
 void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  typedef std::pair<uint32, net::AddressFamily> InterfaceIndexAddressFamily;
+  std::set<InterfaceIndexAddressFamily> interface_index_addr_family_seen;
   std::vector<IPAddressNumber> ip_addresses;
 
-  // Returns the first IPv4 address found.  If there is a need for discovery
-  // across multiple networks, we could manage multiple sockets.
+  // Binds a socket to each IPv4 network interface found. Note that
+  // there may be duplicates in |networks|, so address family + interface index
+  // is used to identify unique interfaces.
   // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
   for (NetworkInterfaceList::const_iterator iter = networks.begin();
        iter != networks.end(); ++iter) {
+    net::AddressFamily addr_family = net::GetAddressFamily(iter->address);
     DVLOG(1) << "Found " << iter->name << ", "
-             << net::IPAddressToString(iter->address);
-    if (iter->address.size() == net::kIPv4AddressSize) {
-      ip_addresses.push_back(iter->address);
-      break;
+             << net::IPAddressToString(iter->address)
+             << ", address family: " << addr_family;
+    if (addr_family == net::ADDRESS_FAMILY_IPV4) {
+      InterfaceIndexAddressFamily interface_index_addr_family =
+          std::make_pair(iter->interface_index, addr_family);
+      bool inserted = interface_index_addr_family_seen
+          .insert(interface_index_addr_family)
+          .second;
+      // We have not seen this interface before, so add its IP address to the
+      // discovery list.
+      if (inserted) {
+        VLOG(2) << "Encountered "
+                << "interface index: " << iter->interface_index << ", "
+                << "address family: " << addr_family << " for the first time, "
+                << "adding IP address " << net::IPAddressToString(iter->address)
+                << " to list.";
+        ip_addresses.push_back(iter->address);
+      } else {
+        VLOG(2) << "Already encountered "
+                << "interface index: " << iter->interface_index << ", "
+                << "address family: " << addr_family << " before, not adding.";
+      }
     }
   }
 
@@ -489,7 +513,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
 
 void DialServiceImpl::DiscoverOnAddresses(
     const std::vector<IPAddressNumber>& ip_addresses) {
-  if (ip_addresses.size() == 0) {
+  if (ip_addresses.empty()) {
     DVLOG(1) << "Could not find a valid interface to bind. Finishing discovery";
     FinishDiscovery();
     return;
@@ -506,9 +530,8 @@ void DialServiceImpl::DiscoverOnAddresses(
 
   for (std::vector<IPAddressNumber>::const_iterator iter = ip_addresses.begin();
        iter != ip_addresses.end();
-       ++iter) {
+       ++iter)
     BindAndAddSocket(*iter);
-  }
 
   SendOneRequest();
 }
@@ -561,6 +584,8 @@ void DialServiceImpl::NotifyOnDiscoveryRequest() {
   // If we need to send additional requests, schedule a timer to do so.
   if (num_requests_sent_ < max_requests_ && num_requests_sent_ == 1) {
     VLOG(2) << "Scheduling timer to send additional requests";
+    // TODO(imcheng): Move this to SendOneRequest() once the implications are
+    // understood.
     request_timer_.Start(FROM_HERE,
                          request_interval_,
                          this,
@@ -581,8 +606,12 @@ void DialServiceImpl::NotifyOnDeviceDiscovered(
 
 void DialServiceImpl::NotifyOnError() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(imcheng): Modify upstream so that the device list is not cleared
+  // when it could still potentially discover devices on other sockets.
   FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnError(this, DIAL_SERVICE_SOCKET_ERROR));
+                    OnError(this,
+                            HasOpenSockets() ? DIAL_SERVICE_SOCKET_ERROR
+                                             : DIAL_SERVICE_NO_INTERFACES));
 }
 
 void DialServiceImpl::FinishDiscovery() {
