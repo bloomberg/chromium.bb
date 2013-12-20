@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -480,6 +481,82 @@ TEST_F(DriveFileStreamReaderTest, OutOfRangeError) {
   }
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, error);
   EXPECT_FALSE(entry);
+}
+
+TEST_F(DriveFileStreamReaderTest, ZeroByteFileRead) {
+  // Prepare an empty file
+  {
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    scoped_ptr<google_apis::ResourceEntry> entry;
+    fake_drive_service_->AddNewFile(
+        "text/plain",
+        "",  // empty
+        fake_drive_service_->GetRootResourceId(),
+        "EmptyFile.txt",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    drive::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+    ASSERT_TRUE(entry);
+    ASSERT_EQ(0, entry->file_size());
+  }
+
+  const base::FilePath kDriveFile =
+      util::GetDriveMyDriveRootPath().AppendASCII("EmptyFile.txt");
+  // Create the reader, and initialize it.
+  // In this case, the file is not yet locally cached.
+  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+      GetFileSystemGetter(), worker_thread_->message_loop_proxy().get()));
+  EXPECT_FALSE(reader->IsInitialized());
+
+  int error = net::ERR_FAILED;
+  scoped_ptr<ResourceEntry> entry;
+  {
+    base::RunLoop run_loop;
+    reader->Initialize(
+        kDriveFile,
+        net::HttpByteRange(),
+        google_apis::test_util::CreateQuitCallback(
+            &run_loop,
+            google_apis::test_util::CreateCopyResultCallback(&error, &entry)));
+    run_loop.Run();
+  }
+  EXPECT_EQ(net::OK, error);
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(0u, entry->file_info().size());  // It's a zero-byte file.
+  EXPECT_TRUE(reader->IsInitialized());
+
+  // Read data from the reader. Check that it successfuly reads empty data.
+  std::string first_content;
+  ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &first_content));
+  EXPECT_EQ(0u, first_content.size());
+
+  // Create second instance and initialize it.
+  // In this case, the file should be cached one.
+  reader.reset(new DriveFileStreamReader(
+      GetFileSystemGetter(), worker_thread_->message_loop_proxy().get()));
+  EXPECT_FALSE(reader->IsInitialized());
+
+  error = net::ERR_FAILED;
+  entry.reset();
+  {
+    base::RunLoop run_loop;
+    reader->Initialize(
+        kDriveFile,
+        net::HttpByteRange(),
+        google_apis::test_util::CreateQuitCallback(
+            &run_loop,
+            google_apis::test_util::CreateCopyResultCallback(&error, &entry)));
+    run_loop.Run();
+  }
+  EXPECT_EQ(net::OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(reader->IsInitialized());
+
+  // Read data from the reader, again.
+  std::string second_content;
+  ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &second_content));
+  EXPECT_EQ(0u, second_content.size());
 }
 
 }  // namespace drive

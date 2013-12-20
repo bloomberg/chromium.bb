@@ -35,6 +35,31 @@ void RunTaskOnUIThread(const base::Closure& task) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), task);
 }
 
+// Computes the concrete |start| offset and the |length| of |range| in a file
+// of |total| size.
+//
+// This is a thin wrapper of HttpByteRange::ComputeBounds, extended to allow
+// an empty range at the end of the file, like "Range: bytes 0-" on a zero byte
+// file. This is for convenience in unifying implementation with the seek
+// operation of stream reader. HTTP doesn't allow such ranges but we want to
+// treat such seeking as valid.
+bool ComputeConcretePosition(net::HttpByteRange range, int64 total,
+                             int64* start, int64* length) {
+  // The special case when empty range in the end of the file is selected.
+  if (range.HasFirstBytePosition() && range.first_byte_position() == total) {
+    *start = range.first_byte_position();
+    *length = 0;
+    return true;
+  }
+
+  // Otherwise forward to HttpByteRange::ComputeBounds.
+  if (!range.ComputeBounds(total))
+    return false;
+  *start = range.first_byte_position();
+  *length = range.last_byte_position() - range.first_byte_position() + 1;
+  return true;
+}
+
 }  // namespace
 
 namespace internal {
@@ -339,7 +364,7 @@ int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
 }
 
 void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
-    const net::HttpByteRange& in_byte_range,
+    const net::HttpByteRange& byte_range,
     const InitializeCompletionCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry,
@@ -353,8 +378,9 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
   }
   DCHECK(entry);
 
-  net::HttpByteRange byte_range = in_byte_range;
-  if (!byte_range.ComputeBounds(entry->file_info().size())) {
+  int64 range_start = 0, range_length = 0;
+  if (!ComputeConcretePosition(byte_range, entry->file_info().size(),
+                               &range_start, &range_length)) {
     // If |byte_range| is invalid (e.g. out of bounds), return with an error.
     // At the same time, we cancel the in-flight downloading operation if
     // needed and and invalidate weak pointers so that we won't
@@ -367,17 +393,12 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     return;
   }
 
-  // Note: both boundary of |byte_range| are inclusive.
-  int64 range_length =
-      byte_range.last_byte_position() - byte_range.first_byte_position() + 1;
-  DCHECK_GE(range_length, 0);
-
   if (local_cache_file_path.empty()) {
     // The file is not cached, and being downloaded.
     DCHECK(!ui_cancel_download_closure.is_null());
     reader_proxy_.reset(
         new internal::NetworkReaderProxy(
-            byte_range.first_byte_position(), range_length,
+            range_start, range_length,
             base::Bind(&RunTaskOnUIThread, ui_cancel_download_closure)));
     callback.Run(net::OK, entry.Pass());
     return;
@@ -389,7 +410,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
   util::LocalFileReader* file_reader_ptr = file_reader.get();
   file_reader_ptr->Open(
       local_cache_file_path,
-      byte_range.first_byte_position(),
+      range_start,
       base::Bind(
           &DriveFileStreamReader::InitializeAfterLocalFileOpen,
           weak_ptr_factory_.GetWeakPtr(),

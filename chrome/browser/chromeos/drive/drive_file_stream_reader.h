@@ -175,7 +175,7 @@ class DriveFileStreamReader {
   // Part of Initialize. Called after GetFileContent's initialization
   // is done.
   void InitializeAfterGetFileContentInitialized(
-      const net::HttpByteRange& in_byte_range,
+      const net::HttpByteRange& byte_range,
       const InitializeCompletionCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry,
