@@ -97,8 +97,8 @@ class LoadTimesTimelineMetric(TimelineMetric):
 # Since we can't isolate renderer threads in single-process mode, we
 # always sum renderer-process threads' times. We also sum all io-threads
 # for simplicity.
+MatchBySubString = ["IOThread", "CompositorRasterWorker"]
 TimelineThreadCategories =  {
-  # These are matched exactly
   "Chrome_InProcGpuThread": "GPU",
   "CrGPUMain"             : "GPU",
   "AsyncTransferThread"   : "GPU_transfer",
@@ -106,7 +106,6 @@ TimelineThreadCategories =  {
   "Browser Compositor"    : "browser_compositor",
   "CrRendererMain"        : "renderer_main",
   "Compositor"            : "renderer_compositor",
-  # These are matched by substring
   "IOThread"              : "IO",
   "CompositorRasterWorker": "raster"
 }
@@ -136,7 +135,7 @@ class ThreadTimesTimelineMetric(TimelineMetric):
       # Check substrings first, followed by exact matches
       thread_category = None
       for substring, category in TimelineThreadCategories.iteritems():
-        if substring in thread.name:
+        if substring in thread.name and substring in MatchBySubString:
           thread_category = category
       if thread.name in TimelineThreadCategories:
         thread_category = TimelineThreadCategories[thread.name]
