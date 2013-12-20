@@ -400,9 +400,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
   virtual void OnUpgradeNeeded(
       int64 old_version,
       scoped_ptr<IndexedDBConnection> connection,
-      const content::IndexedDBDatabaseMetadata& metadata,
-      blink::WebIDBDataLoss data_loss,
-      std::string data_loss_message) OVERRIDE {
+      const content::IndexedDBDatabaseMetadata& metadata) OVERRIDE {
     connection_ = connection.Pass();
   }
 

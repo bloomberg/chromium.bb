@@ -57,12 +57,12 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnBlocked(int64 existing_version);
 
   // IndexedDBFactory::Open
+  virtual void OnDataLoss(blink::WebIDBDataLoss data_loss,
+                          std::string data_loss_message);
   virtual void OnUpgradeNeeded(
       int64 old_version,
       scoped_ptr<IndexedDBConnection> connection,
-      const content::IndexedDBDatabaseMetadata& metadata,
-      blink::WebIDBDataLoss data_loss,
-      std::string data_loss_message);
+      const content::IndexedDBDatabaseMetadata& metadata);
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const content::IndexedDBDatabaseMetadata& metadata);
 
@@ -101,6 +101,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Continue / Advance (when complete)
   virtual void OnSuccess();
 
+  blink::WebIDBDataLoss data_loss() const { return data_loss_; }
+
  protected:
   virtual ~IndexedDBCallbacks();
 
@@ -120,6 +122,10 @@ class CONTENT_EXPORT IndexedDBCallbacks
   GURL origin_url_;
   int32 ipc_database_id_;
   int32 ipc_database_callbacks_id_;
+
+  // Stored in OnDataLoss, merged with OnUpgradeNeeded response.
+  blink::WebIDBDataLoss data_loss_;
+  std::string data_loss_message_;
 };
 
 }  // namespace content

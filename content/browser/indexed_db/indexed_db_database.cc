@@ -1230,8 +1230,6 @@ void IndexedDBDatabase::VersionChangeOperation(
     int64 version,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_ptr<IndexedDBConnection> connection,
-    blink::WebIDBDataLoss data_loss,
-    std::string data_loss_message,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::VersionChangeOperation");
   int64 old_version = metadata_.int_version;
@@ -1253,8 +1251,7 @@ void IndexedDBDatabase::VersionChangeOperation(
   DCHECK(!pending_second_half_open_);
   pending_second_half_open_.reset(
       new PendingSuccessCall(callbacks, connection.get(), version));
-  callbacks->OnUpgradeNeeded(
-      old_version, connection.Pass(), metadata(), data_loss, data_loss_message);
+  callbacks->OnUpgradeNeeded(old_version, connection.Pass(), metadata());
 }
 
 void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
@@ -1401,19 +1398,6 @@ void IndexedDBDatabase::OpenConnection(
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 version) {
-  const blink::WebIDBDataLoss kDataLoss =
-      blink::WebIDBDataLossNone;
-  OpenConnection(
-      callbacks, database_callbacks, transaction_id, version, kDataLoss, "");
-}
-
-void IndexedDBDatabase::OpenConnection(
-    scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    int64 transaction_id,
-    int64 version,
-    blink::WebIDBDataLoss data_loss,
-    std::string data_loss_message) {
   DCHECK(backing_store_);
 
   // TODO(jsbell): Should have a priority queue so that higher version
@@ -1422,7 +1406,7 @@ void IndexedDBDatabase::OpenConnection(
     // The backing store only detects data loss when it is first opened. The
     // presence of existing connections means we didn't even check for data loss
     // so there'd better not be any.
-    DCHECK_NE(blink::WebIDBDataLossTotal, data_loss);
+    DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss());
     pending_open_calls_.push_back(new PendingOpenCall(
         callbacks, database_callbacks, transaction_id, version));
     return;
@@ -1482,12 +1466,8 @@ void IndexedDBDatabase::OpenConnection(
 
   if (version > metadata_.int_version) {
     connections_.insert(connection.get());
-    RunVersionChangeTransaction(callbacks,
-                                connection.Pass(),
-                                transaction_id,
-                                version,
-                                data_loss,
-                                data_loss_message);
+    RunVersionChangeTransaction(
+        callbacks, connection.Pass(), transaction_id, version);
     return;
   }
   if (version < metadata_.int_version) {
@@ -1507,14 +1487,12 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
-    int64 requested_version,
-    blink::WebIDBDataLoss data_loss,
-    std::string data_loss_message) {
+    int64 requested_version) {
 
   DCHECK(callbacks);
   DCHECK(connections_.count(connection.get()));
   if (ConnectionCount() > 1) {
-    DCHECK_NE(blink::WebIDBDataLossTotal, data_loss);
+    DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss());
     // Front end ensures the event is not fired at connections that have
     // close_pending set.
     for (ConnectionSet::const_iterator it = connections_.begin();
@@ -1535,12 +1513,8 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
         callbacks, connection.Pass(), transaction_id, requested_version));
     return;
   }
-  RunVersionChangeTransactionFinal(callbacks,
-                                   connection.Pass(),
-                                   transaction_id,
-                                   requested_version,
-                                   data_loss,
-                                   data_loss_message);
+  RunVersionChangeTransactionFinal(
+      callbacks, connection.Pass(), transaction_id, requested_version);
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
@@ -1548,23 +1522,6 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version) {
-  const blink::WebIDBDataLoss kDataLoss =
-      blink::WebIDBDataLossNone;
-  RunVersionChangeTransactionFinal(callbacks,
-                                   connection.Pass(),
-                                   transaction_id,
-                                   requested_version,
-                                   kDataLoss,
-                                   "");
-}
-
-void IndexedDBDatabase::RunVersionChangeTransactionFinal(
-    scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_ptr<IndexedDBConnection> connection,
-    int64 transaction_id,
-    int64 requested_version,
-    blink::WebIDBDataLoss data_loss,
-    std::string data_loss_message) {
 
   std::vector<int64> object_store_ids;
   CreateTransaction(transaction_id,
@@ -1577,9 +1534,7 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                                 this,
                                 requested_version,
                                 callbacks,
-                                base::Passed(&connection),
-                                data_loss,
-                                data_loss_message),
+                                base::Passed(&connection)),
                      base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
                                 this,
                                 metadata_.version,

@@ -76,13 +76,6 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version);
-  void OpenConnection(
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-      int64 transaction_id,
-      int64 version,
-      blink::WebIDBDataLoss data_loss,
-      std::string data_loss_message);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
@@ -193,8 +186,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   void VersionChangeOperation(int64 version,
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               scoped_ptr<IndexedDBConnection> connection,
-                              blink::WebIDBDataLoss data_loss,
-                              std::string data_loss_message,
                               IndexedDBTransaction* transaction);
   void VersionChangeAbortOperation(const base::string16& previous_version,
                                    int64 previous_int_version,
@@ -252,21 +243,12 @@ class CONTENT_EXPORT IndexedDBDatabase
   void RunVersionChangeTransaction(scoped_refptr<IndexedDBCallbacks> callbacks,
                                    scoped_ptr<IndexedDBConnection> connection,
                                    int64 transaction_id,
-                                   int64 requested_version,
-                                   blink::WebIDBDataLoss data_loss,
-                                   std::string data_loss_message);
+                                   int64 requested_version);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_ptr<IndexedDBConnection> connection,
       int64 transaction_id,
       int64 requested_version);
-  void RunVersionChangeTransactionFinal(
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_ptr<IndexedDBConnection> connection,
-      int64 transaction_id,
-      int64 requested_version,
-      blink::WebIDBDataLoss data_loss,
-      std::string data_loss_message);
   void ProcessPendingCalls();
 
   bool IsDeleteDatabaseBlocked() const;

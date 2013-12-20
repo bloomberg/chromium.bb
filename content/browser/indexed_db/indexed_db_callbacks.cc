@@ -32,7 +32,8 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_cursor_id_(kNoCursor),
       host_transaction_id_(kNoTransaction),
       ipc_database_id_(kNoDatabase),
-      ipc_database_callbacks_id_(kNoDatabaseCallbacks) {}
+      ipc_database_callbacks_id_(kNoDatabaseCallbacks),
+      data_loss_(blink::WebIDBDataLossNone) {}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_thread_id,
@@ -44,7 +45,8 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_cursor_id_(ipc_cursor_id),
       host_transaction_id_(kNoTransaction),
       ipc_database_id_(kNoDatabase),
-      ipc_database_callbacks_id_(kNoDatabaseCallbacks) {}
+      ipc_database_callbacks_id_(kNoDatabaseCallbacks),
+      data_loss_(blink::WebIDBDataLossNone) {}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_thread_id,
@@ -59,7 +61,8 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       host_transaction_id_(host_transaction_id),
       origin_url_(origin_url),
       ipc_database_id_(kNoDatabase),
-      ipc_database_callbacks_id_(ipc_database_callbacks_id) {}
+      ipc_database_callbacks_id_(ipc_database_callbacks_id),
+      data_loss_(blink::WebIDBDataLossNone) {}
 
 IndexedDBCallbacks::~IndexedDBCallbacks() {}
 
@@ -78,6 +81,7 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::vector<base::string16> list;
   for (unsigned i = 0; i < value.size(); ++i)
@@ -101,12 +105,17 @@ void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
       ipc_thread_id_, ipc_callbacks_id_, existing_version));
 }
 
+void IndexedDBCallbacks::OnDataLoss(blink::WebIDBDataLoss data_loss,
+                                    std::string data_loss_message) {
+  DCHECK_NE(blink::WebIDBDataLossNone, data_loss);
+  data_loss_ = data_loss;
+  data_loss_message_ = data_loss_message;
+}
+
 void IndexedDBCallbacks::OnUpgradeNeeded(
     int64 old_version,
     scoped_ptr<IndexedDBConnection> connection,
-    const IndexedDBDatabaseMetadata& metadata,
-    blink::WebIDBDataLoss data_loss,
-    std::string data_loss_message) {
+    const IndexedDBDatabaseMetadata& metadata) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -127,8 +136,8 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   params.ipc_database_callbacks_id = ipc_database_callbacks_id_;
   params.old_version = old_version;
   params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
-  params.data_loss = data_loss;
-  params.data_loss_message = data_loss_message;
+  params.data_loss = data_loss_;
+  params.data_loss_message = data_loss_message_;
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
 }
 
@@ -169,6 +178,7 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   int32 ipc_object_id = dispatcher_host_->Add(cursor.get());
   IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
@@ -195,6 +205,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   IndexedDBCursor* idb_cursor =
       dispatcher_host_->GetCursorFromId(ipc_cursor_id_);
@@ -230,6 +241,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::vector<IndexedDBKey> msgKeys;
   std::vector<IndexedDBKey> msgPrimaryKeys;
@@ -260,6 +272,7 @@ void IndexedDBCallbacks::OnSuccess(std::string* value,
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::string value_copy;
   if (value && !value->empty())
@@ -282,6 +295,7 @@ void IndexedDBCallbacks::OnSuccess(std::string* value) {
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::string value_copy;
   if (value && !value->empty())
@@ -302,6 +316,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
       ipc_thread_id_, ipc_callbacks_id_, value));
@@ -315,6 +330,7 @@ void IndexedDBCallbacks::OnSuccess(int64 value) {
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessInteger(
       ipc_thread_id_, ipc_callbacks_id_, value));
@@ -328,6 +344,7 @@ void IndexedDBCallbacks::OnSuccess() {
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessUndefined(
       ipc_thread_id_, ipc_callbacks_id_));

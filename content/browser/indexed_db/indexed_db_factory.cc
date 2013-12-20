@@ -316,12 +316,11 @@ void IndexedDBFactory::Open(
     database = it->second;
   }
 
-  database->OpenConnection(callbacks,
-                           database_callbacks,
-                           transaction_id,
-                           version,
-                           data_loss,
-                           data_loss_message);
+  if (data_loss != blink::WebIDBDataLossNone)
+    callbacks->OnDataLoss(data_loss, data_loss_message);
+
+  database->OpenConnection(
+      callbacks, database_callbacks, transaction_id, version);
 
   if (!was_open && database->ConnectionCount() > 0)
     database_map_[unique_identifier] = database;
