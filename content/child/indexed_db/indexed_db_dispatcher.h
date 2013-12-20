@@ -82,15 +82,18 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                        blink::WebIDBCallbacks* callbacks,
                                        const std::string& database_identifier);
 
-  void RequestIDBCursorAdvance(unsigned long count,
-                               blink::WebIDBCallbacks* callbacks_ptr,
-                               int32 ipc_cursor_id);
+  // This method is virtual so it can be overridden in unit tests.
+  virtual void RequestIDBCursorAdvance(unsigned long count,
+                                       blink::WebIDBCallbacks* callbacks_ptr,
+                                       int32 ipc_cursor_id);
 
+  // This method is virtual so it can be overridden in unit tests.
   virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
                                         const IndexedDBKey& primary_key,
                                         blink::WebIDBCallbacks* callbacks_ptr,
                                         int32 ipc_cursor_id);
 
+  // This method is virtual so it can be overridden in unit tests.
   virtual void RequestIDBCursorPrefetch(int n,
                                         blink::WebIDBCallbacks* callbacks_ptr,
                                         int32 ipc_cursor_id);

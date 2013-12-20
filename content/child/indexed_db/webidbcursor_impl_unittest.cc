@@ -30,6 +30,7 @@ class MockDispatcher : public IndexedDBDispatcher {
       : IndexedDBDispatcher(thread_safe_sender),
         prefetch_calls_(0),
         last_prefetch_count_(0),
+        advance_calls_(0),
         continue_calls_(0),
         destroyed_cursor_id_(0) {}
 
@@ -38,6 +39,13 @@ class MockDispatcher : public IndexedDBDispatcher {
                                         int32 ipc_cursor_id) OVERRIDE {
     ++prefetch_calls_;
     last_prefetch_count_ = n;
+    callbacks_.reset(callbacks);
+  }
+
+  virtual void RequestIDBCursorAdvance(unsigned long count,
+                                       WebIDBCallbacks* callbacks,
+                                       int32 ipc_cursor_id) OVERRIDE {
+    ++advance_calls_;
     callbacks_.reset(callbacks);
   }
 
@@ -54,6 +62,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   }
 
   int prefetch_calls() { return prefetch_calls_; }
+  int advance_calls() { return advance_calls_; }
   int continue_calls() { return continue_calls_; }
   int last_prefetch_count() { return last_prefetch_count_; }
   int32 destroyed_cursor_id() { return destroyed_cursor_id_; }
@@ -61,6 +70,7 @@ class MockDispatcher : public IndexedDBDispatcher {
  private:
   int prefetch_calls_;
   int last_prefetch_count_;
+  int advance_calls_;
   int continue_calls_;
   int32 destroyed_cursor_id_;
   scoped_ptr<WebIDBCallbacks> callbacks_;
@@ -84,31 +94,41 @@ class MockContinueCallbacks : public WebIDBCallbacks {
 
 }  // namespace
 
-TEST(WebIDBCursorImplTest, PrefetchTest) {
+class WebIDBCursorImplTest : public testing::Test {
+ public:
+  WebIDBCursorImplTest() {
+    null_key_.assignNull();
+    sync_message_filter_ = new IPC::SyncMessageFilter(NULL);
+    thread_safe_sender_ = new ThreadSafeSender(
+        base::MessageLoopProxy::current(), sync_message_filter_.get());
+    dispatcher_ =
+        make_scoped_ptr(new MockDispatcher(thread_safe_sender_.get()));
+  }
 
-  WebIDBKey null_key;
-  null_key.assignNull();
+ protected:
+  WebIDBKey null_key_;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_ptr<MockDispatcher> dispatcher_;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy(
-      base::MessageLoopProxy::current());
-  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter(
-      new IPC::SyncMessageFilter(NULL));
-  scoped_refptr<ThreadSafeSender> thread_safe_sender(new ThreadSafeSender(
-      message_loop_proxy.get(), sync_message_filter.get()));
+ private:
+  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
 
-  MockDispatcher dispatcher(thread_safe_sender.get());
+  DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImplTest);
+};
+
+TEST_F(WebIDBCursorImplTest, PrefetchTest) {
 
   {
     WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
-                            thread_safe_sender.get());
+                            thread_safe_sender_.get());
 
     // Call continue() until prefetching should kick in.
     int continue_calls = 0;
-    EXPECT_EQ(dispatcher.continue_calls(), 0);
+    EXPECT_EQ(dispatcher_->continue_calls(), 0);
     for (int i = 0; i < WebIDBCursorImpl::kPrefetchContinueThreshold; ++i) {
-      cursor.continueFunction(null_key, new MockContinueCallbacks());
-      EXPECT_EQ(++continue_calls, dispatcher.continue_calls());
-      EXPECT_EQ(0, dispatcher.prefetch_calls());
+      cursor.continueFunction(null_key_, new MockContinueCallbacks());
+      EXPECT_EQ(++continue_calls, dispatcher_->continue_calls());
+      EXPECT_EQ(0, dispatcher_->prefetch_calls());
     }
 
     // Do enough repetitions to verify that the count grows each time,
@@ -121,12 +141,12 @@ TEST(WebIDBCursorImplTest, PrefetchTest) {
          ++repetitions) {
 
       // Initiate the prefetch
-      cursor.continueFunction(null_key, new MockContinueCallbacks());
-      EXPECT_EQ(continue_calls, dispatcher.continue_calls());
-      EXPECT_EQ(repetitions + 1, dispatcher.prefetch_calls());
+      cursor.continueFunction(null_key_, new MockContinueCallbacks());
+      EXPECT_EQ(continue_calls, dispatcher_->continue_calls());
+      EXPECT_EQ(repetitions + 1, dispatcher_->prefetch_calls());
 
       // Verify that the requested count has increased since last time.
-      int prefetch_count = dispatcher.last_prefetch_count();
+      int prefetch_count = dispatcher_->last_prefetch_count();
       EXPECT_GT(prefetch_count, last_prefetch_count);
       last_prefetch_count = prefetch_count;
 
@@ -146,9 +166,9 @@ TEST(WebIDBCursorImplTest, PrefetchTest) {
       // Verify that the cache is used for subsequent continue() calls.
       for (int i = 0; i < prefetch_count; ++i) {
         IndexedDBKey key;
-        cursor.continueFunction(null_key, new MockContinueCallbacks(&key));
-        EXPECT_EQ(continue_calls, dispatcher.continue_calls());
-        EXPECT_EQ(repetitions + 1, dispatcher.prefetch_calls());
+        cursor.continueFunction(null_key_, new MockContinueCallbacks(&key));
+        EXPECT_EQ(continue_calls, dispatcher_->continue_calls());
+        EXPECT_EQ(repetitions + 1, dispatcher_->prefetch_calls());
 
         EXPECT_EQ(WebIDBKeyTypeNumber, key.type());
         EXPECT_EQ(expected_key++, key.number());
@@ -156,8 +176,75 @@ TEST(WebIDBCursorImplTest, PrefetchTest) {
     }
   }
 
-  EXPECT_EQ(dispatcher.destroyed_cursor_id(),
+  EXPECT_EQ(dispatcher_->destroyed_cursor_id(),
             WebIDBCursorImpl::kInvalidCursorId);
+}
+
+TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
+
+  WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
+                          thread_safe_sender_.get());
+
+  // Call continue() until prefetching should kick in.
+  EXPECT_EQ(0, dispatcher_->continue_calls());
+  for (int i = 0; i < WebIDBCursorImpl::kPrefetchContinueThreshold; ++i) {
+    cursor.continueFunction(null_key_, new MockContinueCallbacks());
+  }
+  EXPECT_EQ(0, dispatcher_->prefetch_calls());
+
+  // Initiate the prefetch
+  cursor.continueFunction(null_key_, new MockContinueCallbacks());
+
+  EXPECT_EQ(1, dispatcher_->prefetch_calls());
+  EXPECT_EQ(static_cast<int>(WebIDBCursorImpl::kPrefetchContinueThreshold),
+            dispatcher_->continue_calls());
+  EXPECT_EQ(0, dispatcher_->advance_calls());
+
+  const int prefetch_count = dispatcher_->last_prefetch_count();
+
+  // Fill the prefetch cache as requested.
+  int expected_key = 0;
+  std::vector<IndexedDBKey> keys;
+  std::vector<IndexedDBKey> primary_keys(prefetch_count);
+  std::vector<WebData> values(prefetch_count);
+  for (int i = 0; i < prefetch_count; ++i) {
+    keys.push_back(IndexedDBKey(expected_key + i, WebIDBKeyTypeNumber));
+  }
+  cursor.SetPrefetchData(keys, primary_keys, values);
+
+  // Note that the real dispatcher would call cursor->CachedContinue()
+  // immediately after cursor->SetPrefetchData() to service the request
+  // that initiated the prefetch.
+
+  // Need at least this many in the cache for the test steps.
+  ASSERT_GE(prefetch_count, 5);
+
+  // IDBCursor.continue()
+  IndexedDBKey key;
+  cursor.continueFunction(null_key_, new MockContinueCallbacks(&key));
+  EXPECT_EQ(0, key.number());
+
+  // IDBCursor.advance(1)
+  cursor.advance(1, new MockContinueCallbacks(&key));
+  EXPECT_EQ(1, key.number());
+
+  // IDBCursor.continue()
+  cursor.continueFunction(null_key_, new MockContinueCallbacks(&key));
+  EXPECT_EQ(2, key.number());
+
+  // IDBCursor.advance(2)
+  cursor.advance(2, new MockContinueCallbacks(&key));
+  EXPECT_EQ(4, key.number());
+
+  EXPECT_EQ(0, dispatcher_->advance_calls());
+
+  // IDBCursor.advance(lots) - beyond the fetched amount
+  cursor.advance(WebIDBCursorImpl::kMaxPrefetchAmount,
+                 new MockContinueCallbacks(&key));
+  EXPECT_EQ(1, dispatcher_->advance_calls());
+  EXPECT_EQ(1, dispatcher_->prefetch_calls());
+  EXPECT_EQ(static_cast<int>(WebIDBCursorImpl::kPrefetchContinueThreshold),
+            dispatcher_->continue_calls());
 }
 
 }  // namespace content

@@ -40,11 +40,13 @@ class CONTENT_EXPORT WebIDBCursorImpl
                        const std::vector<IndexedDBKey>& primary_keys,
                        const std::vector<blink::WebData>& values);
 
+  void CachedAdvance(unsigned long count, blink::WebIDBCallbacks* callbacks);
   void CachedContinue(blink::WebIDBCallbacks* callbacks);
   void ResetPrefetchCache();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, AdvancePrefetchTest);
 
   int32 ipc_cursor_id_;
 

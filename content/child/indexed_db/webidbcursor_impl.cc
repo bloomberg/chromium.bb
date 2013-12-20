@@ -47,6 +47,10 @@ void WebIDBCursorImpl::advance(unsigned long count,
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  if (count <= prefetch_keys_.size()) {
+    CachedAdvance(count, callbacks.get());
+    return;
+  }
   ResetPrefetchCache();
   dispatcher->RequestIDBCursorAdvance(
       count, callbacks.release(), ipc_cursor_id_);
@@ -102,11 +106,11 @@ void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
 void WebIDBCursorImpl::postSuccessHandlerCallback() {
   pending_onsuccess_callbacks_--;
 
-  // If the onsuccess callback called continue() on the cursor again,
-  // and that continue was served by the prefetch cache, then
-  // pending_onsuccess_callbacks_ would be incremented.
-  // If not, it means the callback did something else, or nothing at all,
-  // in which case we need to reset the cache.
+  // If the onsuccess callback called continue()/advance() on the cursor
+  // again, and that request was served by the prefetch cache, then
+  // pending_onsuccess_callbacks_ would be incremented. If not, it means the
+  // callback did something else, or nothing at all, in which case we need to
+  // reset the cache.
 
   if (pending_onsuccess_callbacks_ == 0)
     ResetPrefetchCache();
@@ -124,22 +128,38 @@ void WebIDBCursorImpl::SetPrefetchData(
   pending_onsuccess_callbacks_ = 0;
 }
 
+void WebIDBCursorImpl::CachedAdvance(unsigned long count,
+                                     WebIDBCallbacks* callbacks) {
+  DCHECK_GE(prefetch_keys_.size(), count);
+  DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
+  DCHECK_EQ(prefetch_values_.size(), prefetch_keys_.size());
+
+  while (count > 1) {
+    prefetch_keys_.pop_front();
+    prefetch_primary_keys_.pop_front();
+    prefetch_values_.pop_front();
+    ++used_prefetches_;
+    --count;
+  }
+
+  CachedContinue(callbacks);
+}
+
 void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   DCHECK_GT(prefetch_keys_.size(), 0ul);
-  DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
-  DCHECK(prefetch_values_.size() == prefetch_keys_.size());
+  DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
+  DCHECK_EQ(prefetch_values_.size(), prefetch_keys_.size());
 
   IndexedDBKey key = prefetch_keys_.front();
   IndexedDBKey primary_key = prefetch_primary_keys_.front();
-  // this could be a real problem.. we need 2 CachedContinues
   WebData value = prefetch_values_.front();
 
   prefetch_keys_.pop_front();
   prefetch_primary_keys_.pop_front();
   prefetch_values_.pop_front();
-  used_prefetches_++;
+  ++used_prefetches_;
 
-  pending_onsuccess_callbacks_++;
+  ++pending_onsuccess_callbacks_;
 
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
                        WebIDBKeyBuilder::Build(primary_key),
