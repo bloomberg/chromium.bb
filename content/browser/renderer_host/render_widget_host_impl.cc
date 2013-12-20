@@ -1521,8 +1521,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     } else if (frame->software_frame_data) {
       ack.last_software_frame_id = frame->software_frame_data->id;
     }
-    SendSwapCompositorFrameAck(routing_id_, process_->GetID(),
-                               output_surface_id,  ack);
+    SendSwapCompositorFrameAck(routing_id_, output_surface_id,
+                               process_->GetID(), ack);
   }
   return true;
 }
