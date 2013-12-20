@@ -22,6 +22,11 @@
     "unlimitedStorage",
     {"fileSystem": ["write"]}
   ],
+  "requirements": {
+    "3D": {
+      "features": ["webgl"]
+    }
+  },
   "app": {
     "background": {
       "scripts": ["js/background.js", "js/test.js", "js/test_cases.js"]
