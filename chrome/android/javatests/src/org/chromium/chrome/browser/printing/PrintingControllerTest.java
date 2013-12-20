@@ -13,6 +13,7 @@ import android.print.PrintDocumentInfo;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -74,9 +75,11 @@ public class PrintingControllerTest extends ChromiumTestShellTestBase {
      * Test a basic printing flow by emulating the corresponding system calls to the printing
      * controller: onStart, onLayout, onWrite, onFinish.  Each one is called once, and in this
      * order, in the UI thread.
+     @LargeTest
+     @Feature({"Printing"})
+     crbug.com/330291
      */
-    @LargeTest
-    @Feature({"Printing"})
+    @DisabledTest
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
