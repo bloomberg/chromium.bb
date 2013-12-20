@@ -68,6 +68,26 @@ struct TextAutosizingClusterInfo {
     Vector<TextAutosizingClusterInfo> narrowDescendants;
 };
 
+// Represents a POD of a selection of fields for hashing. The fields are selected to detect similar
+// nodes in the Render Tree from the viewpoint of text autosizing.
+struct RenderObjectPodForHash {
+    RenderObjectPodForHash()
+        : qualifiedNameHash(0)
+        , packedStyleProperties(0)
+        , width(0)
+    {
+    }
+    ~RenderObjectPodForHash() { }
+
+    unsigned qualifiedNameHash;
+
+    // Style specific selection of signals
+    unsigned packedStyleProperties;
+    float width;
+};
+// To allow for efficient hashing using StringHasher.
+COMPILE_ASSERT(!(sizeof(RenderObjectPodForHash) % sizeof(UChar)), RenderObjectPodForHashMultipleOfUchar);
+
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 static void writeDebugInfo(RenderObject* renderObject, const AtomicString& output)
 {
@@ -110,9 +130,60 @@ static RenderObject* getAncestorList(const RenderObject* renderer)
     return 0;
 }
 
+static Node* getGeneratingElementNode(const RenderObject* renderer)
+{
+    Node* node = renderer->generatingNode();
+    return (node && node->isElementNode()) ? node : 0;
+}
+
+static unsigned hashMemory(const void* data, size_t length)
+{
+    return StringHasher::computeHash<UChar>(static_cast<const UChar*>(data), length / sizeof(UChar));
+}
+
+static unsigned computeLocalHash(const RenderObject* renderer)
+{
+    Node* generatingElementNode = getGeneratingElementNode(renderer);
+    ASSERT(generatingElementNode);
+
+    RenderObjectPodForHash podForHash;
+    podForHash.qualifiedNameHash = QualifiedNameHash::hash(toElement(generatingElementNode)->tagQName());
+
+    if (RenderStyle* style = renderer->style()) {
+        podForHash.packedStyleProperties = style->direction();
+        podForHash.packedStyleProperties |= (style->position() << 1);
+        podForHash.packedStyleProperties |= (style->floating() << 4);
+        podForHash.packedStyleProperties |= (style->display() << 6);
+        podForHash.packedStyleProperties |= (style->width().type() << 11);
+        // packedStyleProperties effectively using 15 bits now.
+
+        podForHash.width = style->width().getFloatValue();
+    }
+
+    return hashMemory(&podForHash, sizeof(podForHash));
+}
+
 TextAutosizer::TextAutosizer(Document* document)
     : m_document(document)
 {
+}
+
+unsigned TextAutosizer::getCachedHash(const RenderObject* renderer, bool putInCacheIfAbsent)
+{
+    HashMap<const RenderObject*, unsigned>::const_iterator it = m_hashCache.find(renderer);
+    if (it != m_hashCache.end())
+        return it->value;
+
+    RenderObject* rendererParent = renderer->parent();
+    while (rendererParent && !getGeneratingElementNode(rendererParent))
+        rendererParent = rendererParent->parent();
+
+    const unsigned parentHashValue = rendererParent ? getCachedHash(rendererParent, true) : 0;
+    const unsigned hashes[2] = { parentHashValue, computeLocalHash(renderer) };
+    const unsigned combinedHashValue = hashMemory(hashes, sizeof(hashes));
+    if (putInCacheIfAbsent)
+        m_hashCache.add(renderer, combinedHashValue);
+    return combinedHashValue;
 }
 
 void TextAutosizer::recalculateMultipliers()
@@ -165,6 +236,17 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 
     TextAutosizingClusterInfo clusterInfo(cluster);
     processCluster(clusterInfo, container, layoutRoot, windowInfo);
+
+#ifdef AUTOSIZING_CLUSTER_HASH
+    // Second pass to fix the non-autosized clusters which should be autosized for consistency.
+    // FIXME: think of something to make this efficient, e.g.
+    //  - introduce a HashMap: hash -> multiplier
+    //  - post-autosize non-autosized blocks of text using the above hashmap
+    TextAutosizingClusterInfo clusterInfo2(cluster);
+    processCluster(clusterInfo2, container, layoutRoot, windowInfo);
+    m_hashCache.clear();
+    m_autosizedClusterHashes.clear();
+#endif
     InspectorInstrumentation::didAutosizeText(layoutRoot);
     return true;
 }
@@ -200,6 +282,38 @@ void TextAutosizer::processClusterInternal(TextAutosizingClusterInfo& clusterInf
         processCompositeCluster(narrowDescendantsGroups[i], windowInfo);
 }
 
+unsigned TextAutosizer::computeCompositeClusterHash(Vector<TextAutosizingClusterInfo>& clusterInfos)
+{
+    if (clusterInfos.size() == 1 && getGeneratingElementNode(clusterInfos[0].root))
+        return getCachedHash(clusterInfos[0].root, false);
+
+    // FIXME: consider hashing clusters for which clusterInfos.size() > 1
+    return 0;
+}
+
+float TextAutosizer::computeMultiplier(Vector<TextAutosizingClusterInfo>& clusterInfos, const TextAutosizingWindowInfo& windowInfo, float textWidth)
+{
+#ifdef AUTOSIZING_CLUSTER_HASH
+    // When hashing is enabled this function returns a multiplier based on previously seen clusters.
+    // It will return a non-unit multiplier if a cluster with the same hash value has been previously
+    // autosized.
+    unsigned clusterHash = computeCompositeClusterHash(clusterInfos);
+#else
+    unsigned clusterHash = 0;
+#endif
+
+    if (clusterHash && m_autosizedClusterHashes.contains(clusterHash))
+        return clusterMultiplier(clusterInfos[0].root->style()->writingMode(), windowInfo, textWidth);
+
+    if (compositeClusterShouldBeAutosized(clusterInfos, textWidth)) {
+        if (clusterHash)
+            m_autosizedClusterHashes.add(clusterHash);
+        return clusterMultiplier(clusterInfos[0].root->style()->writingMode(), windowInfo, textWidth);
+    }
+
+    return 1.0f;
+}
+
 void TextAutosizer::processCluster(TextAutosizingClusterInfo& clusterInfo, RenderBlock* container, RenderObject* subtreeRoot, const TextAutosizingWindowInfo& windowInfo)
 {
     // Many pages set a max-width on their content. So especially for the RenderView, instead of
@@ -208,9 +322,10 @@ void TextAutosizer::processCluster(TextAutosizingClusterInfo& clusterInfo, Rende
     // text), and use its width instead.
     clusterInfo.blockContainingAllText = findDeepestBlockContainingAllText(clusterInfo.root);
     float textWidth = clusterInfo.blockContainingAllText->contentLogicalWidth();
-    float multiplier =  1.0;
-    if (clusterShouldBeAutosized(clusterInfo, textWidth))
-        multiplier = clusterMultiplier(clusterInfo.root->style()->writingMode(), windowInfo, textWidth);
+
+    Vector<TextAutosizingClusterInfo> clusterInfos(1, clusterInfo);
+    float multiplier =  computeMultiplier(clusterInfos, windowInfo, textWidth);
+
     processClusterInternal(clusterInfo, container, subtreeRoot, windowInfo, multiplier);
 }
 
@@ -226,9 +341,7 @@ void TextAutosizer::processCompositeCluster(Vector<TextAutosizingClusterInfo>& c
         maxTextWidth = max<float>(maxTextWidth, clusterInfo.blockContainingAllText->contentLogicalWidth());
     }
 
-    float multiplier = 1.0;
-    if (compositeClusterShouldBeAutosized(clusterInfos, maxTextWidth))
-        multiplier = clusterMultiplier(clusterInfos[0].root->style()->writingMode(), windowInfo, maxTextWidth);
+    float multiplier =  computeMultiplier(clusterInfos, windowInfo, maxTextWidth);
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
         ASSERT(clusterInfos[i].root->style()->writingMode() == clusterInfos[0].root->style()->writingMode());
         processClusterInternal(clusterInfos[i], clusterInfos[i].root, clusterInfos[i].root, windowInfo, multiplier);

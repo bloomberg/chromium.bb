@@ -28,6 +28,8 @@
 
 #include "HTMLNames.h"
 #include "platform/text/WritingMode.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -71,6 +73,8 @@ private:
     void setMultiplier(RenderObject*, float);
     void setMultiplierForList(RenderObject* renderer, float multiplier);
 
+    unsigned getCachedHash(const RenderObject* renderer, bool putInCacheIfAbsent);
+
     static bool isAutosizingContainer(const RenderObject*);
     static bool isNarrowDescendant(const RenderBlock*, TextAutosizingClusterInfo& parentClusterInfo);
     static bool isWiderDescendant(const RenderBlock*, const TextAutosizingClusterInfo& parentClusterInfo);
@@ -84,6 +88,8 @@ private:
     static bool clusterShouldBeAutosized(TextAutosizingClusterInfo&, float blockWidth);
     static bool compositeClusterShouldBeAutosized(Vector<TextAutosizingClusterInfo>&, float blockWidth);
     static void measureDescendantTextWidth(const RenderBlock* container, TextAutosizingClusterInfo&, float minTextWidth, float& textWidth);
+    unsigned computeCompositeClusterHash(Vector<TextAutosizingClusterInfo>&);
+    float computeMultiplier(Vector<TextAutosizingClusterInfo>&, const TextAutosizingWindowInfo&, float textWidth);
 
     // Use to traverse the tree of descendants, excluding descendants of containers (but returning the containers themselves).
     static RenderObject* nextInPreOrderSkippingDescendantsOfContainers(const RenderObject*, const RenderObject* stayWithin);
@@ -100,6 +106,9 @@ private:
     static void getNarrowDescendantsGroupedByWidth(const TextAutosizingClusterInfo& parentClusterInfo, Vector<Vector<TextAutosizingClusterInfo> >&);
 
     Document* m_document;
+
+    WTF::HashSet<unsigned> m_autosizedClusterHashes;
+    WTF::HashMap<const RenderObject*, unsigned> m_hashCache;
 };
 
 } // namespace WebCore
