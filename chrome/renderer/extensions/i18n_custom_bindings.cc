@@ -61,6 +61,7 @@ void I18NCustomBindings::GetL10nMessage(
   std::string message =
       MessageBundle::GetL10nMessage(message_name, *l10n_messages);
 
+  v8::Isolate* isolate = args.GetIsolate();
   std::vector<std::string> substitutions;
   if (args[1]->IsArray()) {
     // chrome.i18n.getMessage("message_name", ["more", "params"]);
@@ -71,7 +72,7 @@ void I18NCustomBindings::GetL10nMessage(
     for (uint32_t i = 0; i < count; ++i) {
       substitutions.push_back(
           *v8::String::Utf8Value(
-              placeholders->Get(v8::Integer::New(i))->ToString()));
+              placeholders->Get(v8::Integer::New(isolate, i))->ToString()));
     }
   } else if (args[1]->IsString()) {
     // chrome.i18n.getMessage("message_name", "one param");
@@ -79,7 +80,7 @@ void I18NCustomBindings::GetL10nMessage(
   }
 
   args.GetReturnValue().Set(
-      v8::String::NewFromUtf8(args.GetIsolate(), ReplaceStringPlaceholders(
+      v8::String::NewFromUtf8(isolate, ReplaceStringPlaceholders(
         message, substitutions, NULL).c_str()));
 }
 

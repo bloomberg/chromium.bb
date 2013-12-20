@@ -112,10 +112,10 @@ bool GetOrCreateV8Value(v8::Isolate* isolate,
           : v8::False(isolate);
       break;
     case PP_VARTYPE_INT32:
-      *result = v8::Integer::New(var.value.as_int);
+      *result = v8::Integer::New(isolate, var.value.as_int);
       break;
     case PP_VARTYPE_DOUBLE:
-      *result = v8::Number::New(var.value.as_double);
+      *result = v8::Number::New(isolate, var.value.as_double);
       break;
     case PP_VARTYPE_STRING: {
       StringVar* string = StringVar::FromPPVar(var);

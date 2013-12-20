@@ -222,9 +222,9 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8::String::NewFromUtf8(isolate, "width"),
-                v8::Number::New(snapped_clip.width()));
+                v8::Number::New(isolate, snapped_clip.width()));
     result->Set(v8::String::NewFromUtf8(isolate, "height"),
-                v8::Number::New(snapped_clip.height()));
+                v8::Number::New(isolate, snapped_clip.height()));
     result->Set(v8::String::NewFromUtf8(isolate, "data"), buffer.toV8Value());
 
     args.GetReturnValue().Set(result);
@@ -300,11 +300,12 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     v8::Local<v8::Array> op_times =
         v8::Array::New(isolate, benchmarking_canvas.CommandCount());
     for (size_t i = 0; i < benchmarking_canvas.CommandCount(); ++i)
-        op_times->Set(i, v8::Number::New(benchmarking_canvas.GetTime(i)));
+        op_times->Set(i, v8::Number::New(isolate,
+                                         benchmarking_canvas.GetTime(i)));
 
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8::String::NewFromUtf8(isolate, "total_time"),
-                v8::Number::New(total_time.InMillisecondsF()));
+                v8::Number::New(isolate, total_time.InMillisecondsF()));
     result->Set(v8::String::NewFromUtf8(isolate, "cmd_times"), op_times);
 
     args.GetReturnValue().Set(result);
@@ -321,9 +322,9 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8::String::NewFromUtf8(isolate, "width"),
-                v8::Number::New(picture->LayerRect().width()));
+                v8::Number::New(isolate, picture->LayerRect().width()));
     result->Set(v8::String::NewFromUtf8(isolate, "height"),
-                v8::Number::New(picture->LayerRect().height()));
+                v8::Number::New(isolate, picture->LayerRect().height()));
 
     args.GetReturnValue().Set(result);
   }

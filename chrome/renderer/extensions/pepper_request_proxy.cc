@@ -32,7 +32,7 @@ bool PepperRequestProxy::StartRequest(const ResponseCallback& callback,
       content::V8ValueConverter::create());
   std::vector<v8::Handle<v8::Value> > v8_args;
   v8_args.push_back(v8::String::NewFromUtf8(isolate_, request_name.c_str()));
-  v8_args.push_back(v8::Integer::New(request_id));
+  v8_args.push_back(v8::Integer::New(isolate_, request_id));
   for (base::ListValue::const_iterator it = args.begin(); it != args.end();
        ++it) {
     v8_args.push_back(converter->ToV8Value(*it, context_->v8_context()));

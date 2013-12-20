@@ -196,7 +196,8 @@ void CastStreamingNativeHandler::CallCreateCallback(
     scoped_ptr<CastRtpStream> stream1,
     scoped_ptr<CastRtpStream> stream2,
     scoped_ptr<CastUdpTransport> udp_transport) {
-  v8::HandleScope handle_scope(context()->isolate());
+  v8::Isolate* isolate = context()->isolate();
+  v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
 
   const int stream1_id = last_transport_id_++;
@@ -210,10 +211,10 @@ void CastStreamingNativeHandler::CallCreateCallback(
       linked_ptr<CastUdpTransport>(udp_transport.release());
 
   v8::Handle<v8::Value> callback_args[3];
-  callback_args[0] = v8::Integer::New(stream1_id);
-  callback_args[1] = v8::Integer::New(stream2_id);
-  callback_args[2] = v8::Integer::New(udp_id);
-  context()->CallFunction(create_callback_.NewHandle(context()->isolate()),
+  callback_args[0] = v8::Integer::New(isolate, stream1_id);
+  callback_args[1] = v8::Integer::New(isolate, stream2_id);
+  callback_args[2] = v8::Integer::New(isolate, udp_id);
+  context()->CallFunction(create_callback_.NewHandle(isolate),
                           3, callback_args);
   create_callback_.reset();
 }

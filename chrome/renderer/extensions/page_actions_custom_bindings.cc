@@ -31,11 +31,12 @@ void PageActionsCustomBindings::GetCurrentPageActions(
       dispatcher_->extensions()->GetByID(extension_id);
   CHECK(extension);
 
-  v8::Local<v8::Array> page_action_vector = v8::Array::New(args.GetIsolate());
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::Local<v8::Array> page_action_vector = v8::Array::New(isolate);
   if (ActionInfo::GetPageActionInfo(extension)) {
     std::string id = ActionInfo::GetPageActionInfo(extension)->id;
-    page_action_vector->Set(v8::Integer::New(0),
-                            v8::String::NewFromUtf8(args.GetIsolate(),
+    page_action_vector->Set(v8::Integer::New(isolate, 0),
+                            v8::String::NewFromUtf8(isolate,
                                                     id.c_str(),
                                                     v8::String::kNormalString,
                                                     id.size()));

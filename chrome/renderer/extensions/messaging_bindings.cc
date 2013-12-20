@@ -289,7 +289,7 @@ void MessagingBindings::DispatchOnConnect(
     }
 
     v8::Handle<v8::Value> arguments[] = {
-      v8::Integer::New(target_port_id),
+      v8::Integer::New(isolate, target_port_id),
       v8::String::NewFromUtf8(isolate,
                               channel_name.c_str(),
                               v8::String::kNormalString,
@@ -359,7 +359,8 @@ void MessagingBindings::DeliverMessage(
 
     // Check to see whether the context has this port before bothering to create
     // the message.
-    v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
+    v8::Handle<v8::Value> port_id_handle =
+        v8::Integer::New(isolate, target_port_id);
     v8::Handle<v8::Value> has_port = (*it)->module_system()->CallModuleMethod(
         "messaging",
         "hasPort",
@@ -403,7 +404,7 @@ void MessagingBindings::DispatchOnDisconnect(
       continue;
 
     std::vector<v8::Handle<v8::Value> > arguments;
-    arguments.push_back(v8::Integer::New(port_id));
+    arguments.push_back(v8::Integer::New(isolate, port_id));
     if (!error_message.empty()) {
       arguments.push_back(
           v8::String::NewFromUtf8(isolate, error_message.c_str()));

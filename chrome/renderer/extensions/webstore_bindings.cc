@@ -220,7 +220,7 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Handle<v8::Value> argv[] = {
-    v8::Integer::New(install_id),
+    v8::Integer::New(isolate, install_id),
     v8::Boolean::New(isolate, success),
     v8::String::NewFromUtf8(isolate, error.c_str())
   };

@@ -265,21 +265,23 @@ class ExtensionImpl : public ChromeV8Extension {
 
   void MatchAgainstEventFilter(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
     typedef std::set<EventFilter::MatcherID> MatcherIDs;
     EventFilter& event_filter = g_event_filter.Get();
     std::string event_name = *v8::String::Utf8Value(args[0]->ToString());
     EventFilteringInfo info =
-        ParseFromObject(args[1]->ToObject(), args.GetIsolate());
+        ParseFromObject(args[1]->ToObject(), isolate);
     // Only match events routed to this context's RenderView or ones that don't
     // have a routingId in their filter.
     MatcherIDs matched_event_filters = event_filter.MatchEvent(
         event_name, info, context()->GetRenderView()->GetRoutingID());
     v8::Handle<v8::Array> array(
-        v8::Array::New(args.GetIsolate(), matched_event_filters.size()));
+        v8::Array::New(isolate, matched_event_filters.size()));
     int i = 0;
     for (MatcherIDs::iterator it = matched_event_filters.begin();
          it != matched_event_filters.end(); ++it) {
-      array->Set(v8::Integer::New(i++), v8::Integer::New(*it));
+      array->Set(v8::Integer::New(isolate, i++),
+                 v8::Integer::New(isolate, *it));
     }
     args.GetReturnValue().Set(array);
   }

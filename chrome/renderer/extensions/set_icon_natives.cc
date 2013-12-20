@@ -80,10 +80,14 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   for (int t = 0; t < width*height; t++) {
     // |data| is RGBA, pixels is ARGB.
     pixels[t] = SkPreMultiplyColor(
-        ((data->Get(v8::Integer::New(4*t + 3))->Int32Value() & 0xFF) << 24) |
-        ((data->Get(v8::Integer::New(4*t + 0))->Int32Value() & 0xFF) << 16) |
-        ((data->Get(v8::Integer::New(4*t + 1))->Int32Value() & 0xFF) << 8) |
-        ((data->Get(v8::Integer::New(4*t + 2))->Int32Value() & 0xFF) << 0));
+        ((data->Get(v8::Integer::New(isolate, 4*t + 3))->Int32Value() & 0xFF)
+         << 24) |
+        ((data->Get(v8::Integer::New(isolate, 4*t + 0))->Int32Value() & 0xFF)
+         << 16) |
+        ((data->Get(v8::Integer::New(isolate, 4*t + 1))->Int32Value() & 0xFF)
+         << 8) |
+        ((data->Get(v8::Integer::New(isolate, 4*t + 2))->Int32Value() & 0xFF)
+         << 0));
   }
 
   // Construct the Value object.

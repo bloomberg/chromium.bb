@@ -122,7 +122,7 @@ class RenderingStatsEnumerator : public cc::RenderingStats::Enumerator {
 
   virtual void AddInt(const char* name, int value) OVERRIDE {
     stats_object->Set(v8::String::NewFromUtf8(isolate, name),
-                      v8::Integer::New(value));
+                      v8::Integer::New(isolate, value));
   }
 
   virtual void AddTimeDeltaInSecondsF(const char* name,

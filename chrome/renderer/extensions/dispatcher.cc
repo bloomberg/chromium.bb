@@ -239,7 +239,7 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
     ret->Set(v8::String::NewFromUtf8(isolate, "message"),
              v8::String::NewFromUtf8(isolate, availability.message().c_str()));
     ret->Set(v8::String::NewFromUtf8(isolate, "result"),
-             v8::Integer::New(availability.result()));
+             v8::Integer::New(isolate, availability.result()));
     args.GetReturnValue().Set(ret);
   }
 

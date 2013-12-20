@@ -140,7 +140,7 @@ void ChromeV8Context::OnResponseReceived(const std::string& name,
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   v8::Handle<v8::Value> argv[] = {
-    v8::Integer::New(request_id),
+    v8::Integer::New(isolate(), request_id),
     v8::String::NewFromUtf8(isolate(), name.c_str()),
     v8::Boolean::New(isolate(), success),
     converter->ToV8Value(&response, v8_context_.NewHandle(isolate())),

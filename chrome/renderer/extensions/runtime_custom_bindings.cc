@@ -167,7 +167,7 @@ void RuntimeCustomBindings::GetExtensionViews(
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
       DCHECK(!window.IsEmpty());
-      v8_views->Set(v8::Integer::New(v8_index++), window);
+      v8_views->Set(v8::Integer::New(args.GetIsolate(), v8_index++), window);
     }
   }
 

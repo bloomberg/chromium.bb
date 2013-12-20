@@ -114,7 +114,7 @@ void AppWindowCustomBindings::GetWindowControlsHtmlTemplate(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(args.Length(), 0);
 
-  v8::Handle<v8::Value> result = v8::String::Empty();
+  v8::Handle<v8::Value> result = v8::String::Empty(args.GetIsolate());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAppWindowControls)) {
     base::Value* value = base::Value::CreateStringValue(
