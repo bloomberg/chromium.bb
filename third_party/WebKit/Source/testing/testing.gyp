@@ -42,91 +42,9 @@
     },
     'includes': [
         '../../Source/build/features.gypi',
-        '../../Source/testing/runner/runner.gypi',
         '../../Source/testing/plugin/plugin.gypi',
     ],
     'targets': [
-        {
-            'target_name': 'TestRunner',
-            'type': '<(component)',
-            'defines': [
-                'WEBTESTRUNNER_IMPLEMENTATION=1',
-            ],
-            'dependencies': [
-                'TestRunner_resources',
-                '../config.gyp:unittest_config',
-                '../../public/blink.gyp:blink',
-                '<(source_dir)/web/web.gyp:webkit_test_support',
-            ],
-            'export_dependent_settings': [
-                '../../public/blink.gyp:blink',
-            ],
-            'direct_dependent_settings': {
-                'include_dirs': [
-                    '../..',
-                ],
-            },
-            'sources': [
-                '<@(test_runner_files)',
-            ],
-            'conditions': [
-                ['component=="shared_library"', {
-                    'defines': [
-                        'WEBTESTRUNNER_DLL',
-                        'WEBTESTRUNNER_IMPLEMENTATION=1',
-                    ],
-                    'dependencies': [
-                        '<(DEPTH)/base/base.gyp:base',
-                        '<(DEPTH)/skia/skia.gyp:skia',
-                        '<(DEPTH)/url/url.gyp:url_lib',
-                        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-                    ],
-                    'direct_dependent_settings': {
-                        'defines': [
-                            'WEBTESTRUNNER_DLL',
-                        ],
-                    },
-                    'export_dependent_settings': [
-                        '<(DEPTH)/url/url.gyp:url_lib',
-                        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-                    ],
-                    'msvs_settings': {
-                        'VCLinkerTool': {
-                            'conditions': [
-                                ['incremental_chrome_dll==1', {
-                                    'UseLibraryDependencyInputs': 'true',
-                                }],
-                            ],
-                        },
-                    },
-                }],
-                ['toolkit_uses_gtk == 1', {
-                    'dependencies': [
-                        '<(DEPTH)/build/linux/system.gyp:gtk',
-                    ],
-                    'include_dirs': [
-                        '../../../public/web/gtk',
-                    ],
-                }],
-                ['OS!="win"', {
-                    'sources/': [
-                        ['exclude', 'Win\\.cpp$'],
-                    ],
-                }],
-                ['OS=="mac"', {
-                  'link_settings': {
-                    'libraries': [
-                      '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
-                      '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework',
-                      '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-                      '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-                    ],
-                  },
-                }],
-            ],
-            # Disable c4267 warnings until we fix size_t to int truncations.
-            'msvs_disabled_warnings': [ 4267, ],
-        },
         {
             'target_name': 'TestRunner_resources',
             'type': 'none',
