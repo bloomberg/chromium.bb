@@ -22,9 +22,9 @@ range.setEnd(text, text.length);
 try {
     range.surroundContents(select);
 } catch (e) {
-    var error = "HierarchyRequestError: A Node was inserted somewhere it doesn't belong.";
+    var error = "HierarchyRequestError: Failed to execute 'surroundContents' on 'Range': The node provided contains the insertion point; it may not be inserted into itself.";
     if (e != error)
-        log ("Failure, expected: " + error);
+        log ("Failure, expected: " + error + "Was " + e);
 }
 
 try {

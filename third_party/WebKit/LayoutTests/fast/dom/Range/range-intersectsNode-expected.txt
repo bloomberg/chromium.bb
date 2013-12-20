@@ -50,7 +50,7 @@ PASS detachedRange.intersectsNode(document.getElementById('a1')) threw exception
 PASS intersects is false
 
 2.3 Node has no parent
-PASS range.intersectsNode(document) threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
+PASS range.intersectsNode(document) threw exception NotFoundError: Failed to execute 'intersectsNode' on 'Range': The node provided has no parent..
 
 2.4 Range has no parent
 PASS range.selectNode(document) threw exception InvalidNodeTypeError: Failed to execute 'selectNode' on 'Range': the given Node has no parent..
@@ -59,7 +59,7 @@ PASS range.selectNode(document) threw exception InvalidNodeTypeError: Failed to 
 PASS intersects is false
 
 2.6 Node deleted
-PASS range.intersectsNode(node) threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
+PASS range.intersectsNode(node) threw exception NotFoundError: Failed to execute 'intersectsNode' on 'Range': The node provided is null..
 
 PASS successfullyParsed is true
 

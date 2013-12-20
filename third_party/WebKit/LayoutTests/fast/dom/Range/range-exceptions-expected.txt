@@ -4,8 +4,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS node.innerHTML is '<bar>AB<moo>C</moo>DE</bar>'
-PASS r.surroundContents(document.createElement('a')) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS r.surroundContents(document.createElement('a')) threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS r.surroundContents(document.createElement('a')) threw exception InvalidStateError: Failed to execute 'surroundContents' on 'Range': The Range has partially selected a non-Text node..
+PASS r.surroundContents(document.createElement('a')) threw exception HierarchyRequestError: Failed to execute 'surroundContents' on 'Range': The node to be inserted is a 'A' node, which may not be inserted here..
 PASS successfullyParsed is true
 
 TEST COMPLETE

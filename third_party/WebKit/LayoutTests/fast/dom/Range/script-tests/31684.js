@@ -7,4 +7,4 @@ var text = document.createTextNode('hello');
 var element = document.createElement("div");
 range.selectNodeContents(text);
 
-shouldThrow("range.surroundContents(element)", '"HierarchyRequestError: A Node was inserted somewhere it doesn\'t belong."');
+shouldThrow("range.surroundContents(element)", '"HierarchyRequestError: Failed to execute \'surroundContents\' on \'Range\': The container node is a detached character data node; no parent node is available for insertion."');

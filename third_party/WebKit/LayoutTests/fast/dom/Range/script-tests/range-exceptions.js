@@ -16,9 +16,9 @@ node.appendChild(c2);
 var r = document.createRange();
 r.setStart(c1, 2);
 r.setEnd(c2, 3);
-shouldThrow("r.surroundContents(document.createElement('a'))", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
+shouldThrow("r.surroundContents(document.createElement('a'))", '"InvalidStateError: Failed to execute \'surroundContents\' on \'Range\': The Range has partially selected a non-Text node."');
 
 // But not when we don't try to split the comment.
 r.setStart(c1, 0);
 r.setEnd(c1, 5);
-shouldThrow("r.surroundContents(document.createElement('a'))", '"HierarchyRequestError: A Node was inserted somewhere it doesn\'t belong."');
+shouldThrow("r.surroundContents(document.createElement('a'))", '"HierarchyRequestError: Failed to execute \'surroundContents\' on \'Range\': The node to be inserted is a \'A\' node, which may not be inserted here."');
