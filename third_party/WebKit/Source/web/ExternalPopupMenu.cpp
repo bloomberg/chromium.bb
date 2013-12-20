@@ -35,6 +35,7 @@
 #include "WebMenuItemInfo.h"
 #include "WebPopupMenuInfo.h"
 #include "WebViewClient.h"
+#include "WebViewImpl.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "platform/PopupMenuClient.h"
@@ -47,10 +48,11 @@ using namespace WebCore;
 
 namespace blink {
 
-ExternalPopupMenu::ExternalPopupMenu(Frame& frame, PopupMenuClient* popupMenuClient, WebViewClient* webViewClient)
+ExternalPopupMenu::ExternalPopupMenu(Frame& frame, PopupMenuClient* popupMenuClient, WebViewImpl& webView)
     : m_popupMenuClient(popupMenuClient)
     , m_frameView(frame.view())
-    , m_webViewClient(webViewClient)
+    , m_webView(webView)
+    , m_dispatchEventTimer(this, &ExternalPopupMenu::dispatchEvent)
     , m_webExternalPopupMenu(0)
 {
 }
@@ -70,14 +72,32 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, i
     getPopupMenuInfo(&info);
     if (info.items.isEmpty())
         return;
-    m_webExternalPopupMenu =
-        m_webViewClient->createExternalPopupMenu(info, this);
-    if (m_webExternalPopupMenu)
+    m_webExternalPopupMenu = m_webView.client()->createExternalPopupMenu(info, this);
+    if (m_webExternalPopupMenu) {
         m_webExternalPopupMenu->show(m_frameView->contentsToWindow(rect));
-    else {
+#if OS(MACOSX)
+        const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
+        if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
+            m_syntheticEvent = adoptPtr(new WebMouseEvent);
+            *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
+            m_syntheticEvent->type = WebInputEvent::MouseUp;
+            m_dispatchEventTimer.startOneShot(0);
+            // FIXME: show() is asynchronous. If preparing a popup is slow and
+            // a user released the mouse button before showing the popup,
+            // mouseup and click events are correctly dispatched. Dispatching
+            // the synthetic mouseup event is redundant in this case.
+        }
+#endif
+    } else {
         // The client might refuse to create a popup (when there is already one pending to be shown for example).
         didCancel();
     }
+}
+
+void ExternalPopupMenu::dispatchEvent(Timer<ExternalPopupMenu>*)
+{
+    m_webView.handleInputEvent(*m_syntheticEvent);
+    m_syntheticEvent.clear();
 }
 
 void ExternalPopupMenu::hide()

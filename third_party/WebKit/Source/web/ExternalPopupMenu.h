@@ -33,6 +33,7 @@
 
 #include "WebExternalPopupMenuClient.h"
 #include "platform/PopupMenu.h"
+#include "platform/Timer.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebScrollbar.h"
 
@@ -48,16 +49,16 @@ class PopupMenuClient;
 namespace blink {
 
 class WebExternalPopupMenu;
-class WebViewClient;
+class WebViewImpl;
 struct WebPopupMenuInfo;
-class WebInputEvent;
+class WebMouseEvent;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
 class ExternalPopupMenu : public WebCore::PopupMenu,
                           public WebExternalPopupMenuClient {
 public:
-    ExternalPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*, WebViewClient*);
+    ExternalPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*, WebViewImpl&);
     virtual ~ExternalPopupMenu();
 
 private:
@@ -73,14 +74,16 @@ private:
     virtual void didAcceptIndices(const WebVector<int>& indices);
     virtual void didCancel();
 
+    void dispatchEvent(WebCore::Timer<ExternalPopupMenu>*);
     // Fills |info| with the popup menu information contained in the
     // WebCore::PopupMenuClient associated with this ExternalPopupMenu.
     void getPopupMenuInfo(WebPopupMenuInfo* info);
 
     WebCore::PopupMenuClient* m_popupMenuClient;
     RefPtr<WebCore::FrameView> m_frameView;
-    WebViewClient* m_webViewClient;
-
+    WebViewImpl& m_webView;
+    OwnPtr<WebMouseEvent> m_syntheticEvent;
+    WebCore::Timer<ExternalPopupMenu> m_dispatchEventTimer;
     // The actual implementor of the show menu.
     WebExternalPopupMenu* m_webExternalPopupMenu;
 };
