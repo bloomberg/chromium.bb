@@ -1212,6 +1212,7 @@ _PEPPER_INTERFACES = [
 # valid_args:   A dictionary of argument indices to args to use in unit tests
 #               when they can not be automatically determined.
 # pepper_interface: The pepper interface that is used for this extension
+# pepper_name:  The name of the function as exposed to pepper.
 # pepper_args:  A string representing the argument list (what would appear in
 #               C/C++ between the parentheses for the function declaration)
 #               that the Pepper API expects for this function. Use this only if
@@ -1265,6 +1266,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'pepper_interface': 'FramebufferBlit',
+    'pepper_name': 'BlitFramebufferEXT',
     'defer_reads': True,
     'defer_draws': True,
   },
@@ -1910,6 +1912,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'pepper_interface': 'FramebufferMultisample',
+    'pepper_name': 'RenderbufferStorageMultisampleEXT',
   },
   'RenderbufferStorageMultisampleEXT': {
     'cmd_comment':
@@ -6430,6 +6433,11 @@ class Function(object):
     else:
       return self.MakeTypedOriginalArgString(prefix, False)
 
+  def GetPepperName(self):
+    if self.GetInfo("pepper_name"):
+      return self.GetInfo("pepper_name")
+    return self.name
+
   def MakeTypedCmdArgString(self, prefix, add_comma = False):
     """Gets a typed list of arguments as they need to be for command buffers."""
     args = self.GetCmdArgs()
@@ -7583,8 +7591,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     """Writes the Pepper OpenGLES interface definition."""
     file = CHeaderWriter(
         filename,
-        "// OpenGL ES interface.\n",
-        2)
+        "// OpenGL ES interface.\n")
 
     file.Write("#include \"ppapi/c/pp_resource.h\"\n")
     if dev:
@@ -7614,7 +7621,8 @@ const size_t GLES2Util::enum_to_string_table_len_ =
           arg = context_arg + ", " + original_arg
         else:
           arg = context_arg
-        file.Write("  %s (*%s)(%s);\n" % (func.return_type, func.name, arg))
+        file.Write("  %s (*%s)(%s);\n" %
+                   (func.return_type, func.GetPepperName(), arg))
       file.Write("};\n\n")
 
 
@@ -7657,7 +7665,8 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         arg = context_arg + ", " + original_arg
       else:
         arg = context_arg
-      file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
+      file.Write("%s %s(%s) {\n" %
+                 (func.return_type, func.GetPepperName(), arg))
       file.Write("  Enter3D enter(context_id, true);\n")
       file.Write("  if (enter.succeeded()) {\n")
 
@@ -7690,7 +7699,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
                  "ppb_opengles2 = {\n" % interface.GetStructName())
       file.Write("    &")
       file.Write(",\n    &".join(
-        f.name for f in self.original_functions
+        f.GetPepperName() for f in self.original_functions
           if f.InPepperInterface(interface)))
       file.Write("\n")
 
@@ -7722,8 +7731,8 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       interface = self.interface_info[func.GetInfo('pepper_interface') or '']
 
       file.Write("%s GL_APIENTRY gl%s(%s) {\n" %
-                 (func.return_type, func.name,
-                  func.MakeTypedOriginalArgString("")))
+                 (func.return_type, func.GetPepperName(),
+                  func.MakeTypedPepperArgString("")))
       return_str = "" if func.return_type == "void" else "return "
       interface_str = "glGet%sInterfacePPAPI()" % interface.GetName()
       original_arg = func.MakeOriginalArgString("")
@@ -7737,12 +7746,12 @@ const size_t GLES2Util::enum_to_string_table_len_ =
                    (interface.GetStructName(), interface_str))
         file.Write("  if (ext)\n")
         file.Write("    %sext->%s(%s);\n" %
-                   (return_str, func.name, arg))
+                   (return_str, func.GetPepperName(), arg))
         if return_str:
           file.Write("  %s0;\n" % return_str)
       else:
         file.Write("  %s%s->%s(%s);\n" %
-                   (return_str, interface_str, func.name, arg))
+                   (return_str, interface_str, func.GetPepperName(), arg))
       file.Write("}\n\n")
     file.Close()
 
@@ -7752,13 +7761,6 @@ def main(argv):
   parser.add_option(
       "-g", "--generate-implementation-templates", action="store_true",
       help="generates files that are generally hand edited..")
-  parser.add_option(
-      "--alternate-mode", type="choice",
-      choices=("ppapi", "chrome_ppapi", "chrome_ppapi_proxy", "nacl_ppapi"),
-      help="generate files for other projects. \"ppapi\" will generate ppapi "
-      "bindings. \"chrome_ppapi\" generate chrome implementation for ppapi. "
-      "\"chrome_ppapi_proxy\" will generate the glue for the chrome IPC ppapi"
-      "proxy. \"nacl_ppapi\" will generate NaCl implementation for ppapi")
   parser.add_option(
       "--output-dir",
       help="base directory for resulting files, under chrome/src. default is "
@@ -7792,50 +7794,42 @@ def main(argv):
   if options.output_dir != None:
     os.chdir(options.output_dir)
 
-  if options.alternate_mode == "ppapi":
-    # To trigger this action, do "make ppapi_gles_bindings"
-    os.chdir("ppapi");
-    gen.WritePepperGLES2Interface("c/ppb_opengles2.h", False)
-    gen.WritePepperGLES2Interface("c/dev/ppb_opengles2ext_dev.h", True)
-    gen.WriteGLES2ToPPAPIBridge("lib/gl/gles2/gles2.c")
-
-  elif options.alternate_mode == "chrome_ppapi":
-    # To trigger this action, do "make ppapi_gles_implementation"
-    gen.WritePepperGLES2Implementation(
-        "ppapi/shared_impl/ppb_opengles2_shared.cc")
-
-  else:
-    os.chdir("gpu/command_buffer")
-    gen.WriteCommandIds("common/gles2_cmd_ids_autogen.h")
-    gen.WriteFormat("common/gles2_cmd_format_autogen.h")
-    gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
-    gen.WriteGLES2InterfaceHeader("client/gles2_interface_autogen.h")
-    gen.WriteGLES2InterfaceStub("client/gles2_interface_stub_autogen.h")
-    gen.WriteGLES2InterfaceStubImpl(
-        "client/gles2_interface_stub_impl_autogen.h")
-    gen.WriteGLES2ImplementationHeader("client/gles2_implementation_autogen.h")
-    gen.WriteGLES2Implementation("client/gles2_implementation_impl_autogen.h")
-    gen.WriteGLES2ImplementationUnitTests(
-        "client/gles2_implementation_unittest_autogen.h")
-    gen.WriteGLES2TraceImplementationHeader(
-        "client/gles2_trace_implementation_autogen.h")
-    gen.WriteGLES2TraceImplementation(
-        "client/gles2_trace_implementation_impl_autogen.h")
-    gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
-    gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
-    gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
-    gen.WriteServiceContextStateHeader("service/context_state_autogen.h")
-    gen.WriteServiceContextStateImpl("service/context_state_impl_autogen.h")
-    gen.WriteClientContextStateHeader("client/client_context_state_autogen.h")
-    gen.WriteClientContextStateImpl(
-        "client/client_context_state_impl_autogen.h")
-    gen.WriteServiceUnitTests("service/gles2_cmd_decoder_unittest_%d_autogen.h")
-    gen.WriteServiceUtilsHeader("service/gles2_cmd_validation_autogen.h")
-    gen.WriteServiceUtilsImplementation(
-        "service/gles2_cmd_validation_implementation_autogen.h")
-    gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
-    gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
-    gen.WriteGLES2Header("../GLES2/gl2chromium_autogen.h")
+  gen.WritePepperGLES2Interface("ppapi/c/ppb_opengles2.h", False)
+  gen.WritePepperGLES2Interface("ppapi/c/dev/ppb_opengles2ext_dev.h", True)
+  gen.WriteGLES2ToPPAPIBridge("ppapi/lib/gl/gles2/gles2.c")
+  gen.WritePepperGLES2Implementation(
+      "ppapi/shared_impl/ppb_opengles2_shared.cc")
+  os.chdir("gpu/command_buffer")
+  gen.WriteCommandIds("common/gles2_cmd_ids_autogen.h")
+  gen.WriteFormat("common/gles2_cmd_format_autogen.h")
+  gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
+  gen.WriteGLES2InterfaceHeader("client/gles2_interface_autogen.h")
+  gen.WriteGLES2InterfaceStub("client/gles2_interface_stub_autogen.h")
+  gen.WriteGLES2InterfaceStubImpl(
+      "client/gles2_interface_stub_impl_autogen.h")
+  gen.WriteGLES2ImplementationHeader("client/gles2_implementation_autogen.h")
+  gen.WriteGLES2Implementation("client/gles2_implementation_impl_autogen.h")
+  gen.WriteGLES2ImplementationUnitTests(
+      "client/gles2_implementation_unittest_autogen.h")
+  gen.WriteGLES2TraceImplementationHeader(
+      "client/gles2_trace_implementation_autogen.h")
+  gen.WriteGLES2TraceImplementation(
+      "client/gles2_trace_implementation_impl_autogen.h")
+  gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
+  gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
+  gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
+  gen.WriteServiceContextStateHeader("service/context_state_autogen.h")
+  gen.WriteServiceContextStateImpl("service/context_state_impl_autogen.h")
+  gen.WriteClientContextStateHeader("client/client_context_state_autogen.h")
+  gen.WriteClientContextStateImpl(
+      "client/client_context_state_impl_autogen.h")
+  gen.WriteServiceUnitTests("service/gles2_cmd_decoder_unittest_%d_autogen.h")
+  gen.WriteServiceUtilsHeader("service/gles2_cmd_validation_autogen.h")
+  gen.WriteServiceUtilsImplementation(
+      "service/gles2_cmd_validation_implementation_autogen.h")
+  gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
+  gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
+  gen.WriteGLES2Header("../GLES2/gl2chromium_autogen.h")
 
   if gen.errors > 0:
     print "%d errors" % gen.errors
