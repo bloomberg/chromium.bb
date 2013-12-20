@@ -12,7 +12,7 @@ namespace media {
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
 // TODO(crogers): implement MIDIManager for other platforms.
 MIDIManager* MIDIManager::Create() {
-  return NULL;
+  return new MIDIManager;
 }
 #endif
 
@@ -41,6 +41,17 @@ void MIDIManager::EndSession(MIDIManagerClient* client) {
   ClientList::iterator i = clients_.find(client);
   if (i != clients_.end())
     clients_.erase(i);
+}
+
+void MIDIManager::DispatchSendMIDIData(MIDIManagerClient* client,
+                                       uint32 port_index,
+                                       const std::vector<uint8>& data,
+                                       double timestamp) {
+  NOTREACHED();
+}
+
+bool MIDIManager::Initialize() {
+  return false;
 }
 
 void MIDIManager::AddInputPort(const MIDIPortInfo& info) {

@@ -65,10 +65,11 @@ class MEDIA_EXPORT MIDIManager {
   // |length| is the number of bytes in |data|.
   // |timestamp| is the time to send the data, in seconds. A value of 0
   // means send "now" or as soon as possible.
+  // The default implementation is for unsupported platforms.
   virtual void DispatchSendMIDIData(MIDIManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,
-                                    double timestamp) = 0;
+                                    double timestamp);
 
   // input_ports() is a list of MIDI ports for receiving MIDI data.
   // Each individual port in this list can be identified by its
@@ -82,7 +83,8 @@ class MEDIA_EXPORT MIDIManager {
 
  protected:
   // Initializes the MIDI system, returning |true| on success.
-  virtual bool Initialize() = 0;
+  // The default implementation is for unsupported platforms.
+  virtual bool Initialize();
 
   void AddInputPort(const MIDIPortInfo& info);
   void AddOutputPort(const MIDIPortInfo& info);
