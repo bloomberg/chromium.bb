@@ -55,15 +55,15 @@ const CGFloat kAccountChooserHeight = 20.0;
   [title_ sizeToFit];
 }
 
-- (CGFloat)heightForWidth:(int)width {
-  return chrome_style::kTitleTopPadding +
-         kAccountChooserHeight +
-         autofill::kDetailVerticalPadding;
-}
-
 - (NSSize)preferredSize {
-  NOTREACHED();  // Only implemented as part of AutofillLayout protocol.
-  return NSZeroSize;
+  CGFloat height =
+      chrome_style::kTitleTopPadding +
+      kAccountChooserHeight +
+      autofill::kDetailVerticalPadding;
+
+  // The returned width is unused, and there's no simple way to compute the
+  // account chooser's width, so just return 0 for the width.
+  return NSMakeSize(0, height);
 }
 
 - (void)performLayout {

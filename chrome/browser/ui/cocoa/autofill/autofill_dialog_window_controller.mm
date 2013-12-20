@@ -282,7 +282,7 @@ const CGFloat kMinimumContentsHeight = 101;
       size = [signInContainer_ preferredSize];
 
     // Always make room for the header.
-    CGFloat headerHeight = [header_ heightForWidth:size.width];
+    CGFloat headerHeight = [header_ preferredSize].height;
     size.height += headerHeight;
 
     // For the minimum height, account for both the header and the footer. Even
@@ -306,7 +306,7 @@ const CGFloat kMinimumContentsHeight = 101;
   NSRect contentRect = NSZeroRect;
   contentRect.size = [self preferredSize];
 
-  CGFloat headerHeight = [header_ heightForWidth:NSWidth(contentRect)];
+  CGFloat headerHeight = [header_ preferredSize].height;
   NSRect headerRect, mainRect;
   NSDivideRect(contentRect, &headerRect, &mainRect, headerHeight, NSMinYEdge);
 

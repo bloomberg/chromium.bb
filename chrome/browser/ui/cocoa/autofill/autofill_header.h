@@ -20,7 +20,6 @@ class AutofillDialogViewDelegate;
  @private
   base::scoped_nsobject<AutofillAccountChooser> accountChooser_;
   base::scoped_nsobject<NSTextField> title_;
-  // TODO(isherman): Include notifications in the header.
 
   autofill::AutofillDialogViewDelegate* delegate_;  // not owned, owns dialog.
 }
@@ -34,9 +33,6 @@ class AutofillDialogViewDelegate;
 
 // Updates the header's state from the dialog controller.
 - (void)update;
-
-// Get the preferred view height for a given width.
-- (CGFloat)heightForWidth:(int)width;
 
 @end
 
