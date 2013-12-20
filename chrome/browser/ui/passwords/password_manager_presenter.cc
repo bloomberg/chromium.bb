@@ -65,6 +65,9 @@ PasswordStore* PasswordManagerPresenter::GetPasswordStore() {
 }
 
 void PasswordManagerPresenter::UpdatePasswordLists() {
+  // Reset so that showing a password will require re-authentication.
+  last_authentication_time_ = base::TimeTicks();
+
   // Reset the current lists.
   password_list_.clear();
   password_exception_list_.clear();
