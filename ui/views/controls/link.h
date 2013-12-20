@@ -51,7 +51,7 @@ class VIEWS_EXPORT Link : public Label {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void SetFont(const gfx::Font& font) OVERRIDE;
-  virtual void SetText(const string16& text) OVERRIDE;
+  virtual void SetText(const base::string16& text) OVERRIDE;
   virtual void SetEnabledColor(SkColor color) OVERRIDE;
 
   void SetPressedColor(SkColor color);

@@ -172,7 +172,7 @@ void Link::SetFont(const gfx::Font& font) {
   RecalculateFont();
 }
 
-void Link::SetText(const string16& text) {
+void Link::SetText(const base::string16& text) {
   Label::SetText(text);
   // Disable focusability for empty links.  Otherwise Label::GetInsets() will
   // give them an unconditional 1-px. inset on every side to allow for a focus
