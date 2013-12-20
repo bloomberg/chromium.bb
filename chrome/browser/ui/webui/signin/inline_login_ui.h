@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_INLINE_LOGIN_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_INLINE_LOGIN_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_UI_H_
 
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -23,4 +23,4 @@ class InlineLoginUI : public ui::WebDialogUI {
   DISALLOW_COPY_AND_ASSIGN(InlineLoginUI);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_INLINE_LOGIN_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_UI_H_
