@@ -40,7 +40,7 @@ class Element;
 
 class ElementAnimation {
 public:
-    static CSSPropertyID camelCaseCSSPropertyNameToID(StringImpl* propertyName);
+    static CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyName);
     static void animate(Element*, Vector<Dictionary> keyframesDictionaryVector, double duration = 0);
 
 private:

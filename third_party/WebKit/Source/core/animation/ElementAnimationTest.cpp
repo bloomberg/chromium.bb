@@ -138,14 +138,14 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
 
 TEST_F(AnimationElementAnimationTest, ParseCamelCasePropertyNames)
 {
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("line-height").impl()));
-    EXPECT_EQ(CSSPropertyLineHeight, ElementAnimation::camelCaseCSSPropertyNameToID(String("lineHeight").impl()));
-    EXPECT_EQ(CSSPropertyBorderTopWidth, ElementAnimation::camelCaseCSSPropertyNameToID(String("borderTopWidth").impl()));
-    EXPECT_EQ(CSSPropertyWidth, ElementAnimation::camelCaseCSSPropertyNameToID(String("width").impl()));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("Width").impl()));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("-webkit-transform").impl()));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("webkitTransform").impl()));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("cssFloat").impl()));
+    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("line-height")));
+    EXPECT_EQ(CSSPropertyLineHeight, ElementAnimation::camelCaseCSSPropertyNameToID(String("lineHeight")));
+    EXPECT_EQ(CSSPropertyBorderTopWidth, ElementAnimation::camelCaseCSSPropertyNameToID(String("borderTopWidth")));
+    EXPECT_EQ(CSSPropertyWidth, ElementAnimation::camelCaseCSSPropertyNameToID(String("width")));
+    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("Width")));
+    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("-webkit-transform")));
+    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("webkitTransform")));
+    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("cssFloat")));
 }
 
 TEST_F(AnimationElementAnimationTest, CanSetDuration)

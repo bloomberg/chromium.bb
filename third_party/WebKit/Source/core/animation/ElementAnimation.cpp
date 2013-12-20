@@ -39,30 +39,21 @@
 
 namespace WebCore {
 
-CSSPropertyID ElementAnimation::camelCaseCSSPropertyNameToID(StringImpl* propertyName)
+CSSPropertyID ElementAnimation::camelCaseCSSPropertyNameToID(const String& propertyName)
 {
-    typedef HashMap<StringImpl*, CSSPropertyID> CSSPropertyIDMap;
-    DEFINE_STATIC_LOCAL(CSSPropertyIDMap, map, ());
-
-    if (propertyName->find('-') != kNotFound)
+    if (propertyName.find('-') != kNotFound)
         return CSSPropertyInvalid;
 
-    CSSPropertyID id = map.get(propertyName);
-
-    if (!id) {
-        StringBuilder builder;
-        size_t position = 0;
-        size_t end;
-        while ((end = propertyName->find(isASCIIUpper, position)) != kNotFound) {
-            builder.append(propertyName->substring(position, end - position) + "-" + toASCIILower((*propertyName)[end]));
-            position = end + 1;
-        }
-        builder.append(propertyName->substring(position));
-        // Doesn't handle prefixed properties.
-        id = cssPropertyID(builder.toString());
-        if (id != CSSPropertyInvalid && RuntimeCSSEnabled::isCSSPropertyEnabled(id))
-            map.add(propertyName, id);
+    StringBuilder builder;
+    size_t position = 0;
+    size_t end;
+    while ((end = propertyName.find(isASCIIUpper, position)) != kNotFound) {
+        builder.append(propertyName.substring(position, end - position) + "-" + toASCIILower((propertyName)[end]));
+        position = end + 1;
     }
+    builder.append(propertyName.substring(position));
+    // Doesn't handle prefixed properties.
+    CSSPropertyID id = cssPropertyID(builder.toString());
     return id;
 }
 
@@ -114,7 +105,7 @@ void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyfr
 
         for (size_t j = 0; j < keyframeProperties.size(); ++j) {
             String property = keyframeProperties[j];
-            CSSPropertyID id = camelCaseCSSPropertyNameToID(property.impl());
+            CSSPropertyID id = camelCaseCSSPropertyNameToID(property);
 
             // FIXME: There is no way to store invalid properties or invalid values
             // in a Keyframe object, so for now I just skip over them. Eventually we
