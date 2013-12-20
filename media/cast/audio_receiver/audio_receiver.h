@@ -134,6 +134,7 @@ class AudioReceiver : public base::NonThreadSafe,
   scoped_ptr<crypto::Encryptor> decryptor_;
   scoped_ptr<crypto::SymmetricKey> decryption_key_;
   std::string iv_mask_;
+  base::TimeTicks last_playout_time_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
   std::list<DecodedAudioCallbackData> queued_decoded_callbacks_;

@@ -389,6 +389,7 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
   // Senders time in ms when this frame was recorded.
   // Note: the senders clock and our local clock might not be synced.
   base::TimeTicks rtp_timestamp_in_ticks;
+  base::TimeTicks playout_time;
   if (time_offset_ == base::TimeDelta()) {
     if (rtcp_->RtpTimestampInSenderTime(frequency_,
                                         first_incoming_rtp_timestamp_,
@@ -404,15 +405,21 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
           base::TimeDelta::FromMilliseconds(rtp_timestamp_diff / frequency_khz);
       base::TimeDelta time_diff_delta = now - time_first_incoming_packet_;
 
-      return now + std::max(rtp_time_diff_delta - time_diff_delta,
-                            base::TimeDelta());
+      playout_time =  now + std::max(rtp_time_diff_delta - time_diff_delta,
+                                     base::TimeDelta());
     }
   }
-  // This can fail if we have not received any RTCP packets in a long time.
-  return rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
-                                         &rtp_timestamp_in_ticks) ?
-    rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_ :
-    now;
+  if (playout_time.is_null()) {
+    // This can fail if we have not received any RTCP packets in a long time.
+    playout_time =  rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
+                                                    &rtp_timestamp_in_ticks) ?
+        rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_ : now;
+  }
+  // Don't allow the playout time to go backwards.
+  if (last_playout_time_ > playout_time)
+     playout_time = last_playout_time_;
+  last_playout_time_ = playout_time;
+  return playout_time;
 }
 
 bool AudioReceiver::DecryptAudioFrame(
