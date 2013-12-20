@@ -51,27 +51,6 @@ const EVP_CIPHER* GetAESCipherByKeyLength(unsigned key_length_bytes) {
   }
 }
 
-// TODO(eroman): This is wrong. These constants are bytes not bits. Moreover
-//               this doesn't match the NSS version.
-unsigned WebCryptoHmacParamsToBlockSizeBytes(
-    const blink::WebCryptoHmacKeyParams* params) {
-  DCHECK(params);
-  switch (params->hash().id()) {
-    case blink::WebCryptoAlgorithmIdSha1:
-      return SHA_DIGEST_LENGTH / 8;
-    case blink::WebCryptoAlgorithmIdSha224:
-      return SHA224_DIGEST_LENGTH / 8;
-    case blink::WebCryptoAlgorithmIdSha256:
-      return SHA256_DIGEST_LENGTH / 8;
-    case blink::WebCryptoAlgorithmIdSha384:
-      return SHA384_DIGEST_LENGTH / 8;
-    case blink::WebCryptoAlgorithmIdSha512:
-      return SHA512_DIGEST_LENGTH / 8;
-    default:
-      return 0;
-  }
-}
-
 // OpenSSL constants for EVP_CipherInit_ex(), do not change
 enum CipherOperation {
   kDoDecrypt = 0,
@@ -295,7 +274,7 @@ bool WebCryptoImpl::GenerateKeyInternal(
       if (params->hasLengthBytes()) {
         keylen_bytes = params->optionalLengthBytes();
       } else {
-        keylen_bytes = WebCryptoHmacParamsToBlockSizeBytes(params);
+        keylen_bytes = webcrypto::ShaBlockSizeBytes(params->hash().id());
       }
       key_type = blink::WebCryptoKeyTypeSecret;
       break;

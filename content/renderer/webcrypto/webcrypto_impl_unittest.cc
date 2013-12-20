@@ -430,6 +430,51 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
       // mac
       "4f1ee7cb36c58803a8721d4ac8c4cf8cae5d8832392eed2a96dc59694252801b",
     },
+    // L=28, Count=71
+    {
+      blink::WebCryptoAlgorithmIdSha224,
+      // key
+      "6c2539f4d0453efbbacc137794930413aeb392e029e0724715f9d943d6dcf7cdcc7fc19"
+      "7333df4fc476d5737ac3940d40eae",
+      // message
+      "1f207b3fa6c905529c9f9f7894b8941b616974df2c0cc482c400f50734f293139b5bbf9"
+      "7384adfafc56494ca0629ed0ca179daf03056e33295eb19ec8dcd4dff898281b4b9409c"
+      "a369f662d49091a225a678b1ebb75818dcb6278a2d136319f78f9ba9df5031a4f6305ee"
+      "fde5b761d2f196ee318e89bcc4acebc2e11ed3b5dc4",
+      // mac
+      "4a7d9d13705b0faba0db75356c8ee0635afff1544911c69c2fbb1ab2"
+    },
+    // L=48, Count=50
+    {
+      blink::WebCryptoAlgorithmIdSha384,
+      // key
+      "d137f3e6cc4af28554beb03ba7a97e60c9d3959cd3bb08068edbf68d402d0498c6ee0ae"
+      "9e3a20dc7d8586e5c352f605cee19",
+      // message
+      "64a884670d1c1dff555483dcd3da305dfba54bdc4d817c33ccb8fe7eb2ebf6236241031"
+      "09ec41644fa078491900c59a0f666f0356d9bc0b45bcc79e5fc9850f4543d96bc680090"
+      "44add0838ac1260e80592fbc557b2ddaf5ed1b86d3ed8f09e622e567f1d39a340857f6a"
+      "850cceef6060c48dac3dd0071fe68eb4ed2ed9aca01",
+      // mac
+      "c550fa53514da34f15e7f98ea87226ab6896cdfae25d3ec2335839f755cdc9a4992092e"
+      "70b7e5bd422784380b6396cf5"
+    },
+    // L=64, Count=65
+    {
+      blink::WebCryptoAlgorithmIdSha512,
+      // key
+      "c367aeb5c02b727883ffe2a4ceebf911b01454beb328fb5d57fc7f11bf744576aba421e2"
+      "a63426ea8109bd28ff21f53cd2bf1a11c6c989623d6ec27cdb0bbf458250857d819ff844"
+      "08b4f3dce08b98b1587ee59683af8852a0a5f55bda3ab5e132b4010e",
+      // message
+      "1a7331c8ff1b748e3cee96952190fdbbe4ee2f79e5753bbb368255ee5b19c05a4ed9f1b2"
+      "c72ff1e9b9cb0348205087befa501e7793770faf0606e9c901836a9bc8afa00d7db94ee2"
+      "9eb191d5cf3fc3e8da95a0f9f4a2a7964289c3129b512bd890de8700a9205420f28a8965"
+      "b6c67be28ba7fe278e5fcd16f0f22cf2b2eacbb9",
+      // mac
+      "4459066109cb11e6870fa9c6bfd251adfa304c0a2928ca915049704972edc560cc7c0bc3"
+      "8249e9101aae2f7d4da62eaff83fb07134efc277de72b9e4ab360425"
+    },
   };
 
   for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
@@ -732,17 +777,24 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmac)) {
     blink::WebArrayBuffer key_bytes;
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
     blink::WebCryptoAlgorithm algorithm = webcrypto::CreateHmacKeyGenAlgorithm(
-        blink::WebCryptoAlgorithmIdSha1, 128);
+        blink::WebCryptoAlgorithmIdSha1, 64);
     ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
     EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+    EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
+
+    blink::WebArrayBuffer raw_key;
+    ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    EXPECT_EQ(64U, raw_key.byteLength());
+    keys.push_back(raw_key);
   }
   // Ensure all entries in the key sample set are unique. This is a simplistic
   // estimate of whether the generated keys appear random.
   EXPECT_FALSE(CopiesExist(keys));
 }
 
+// If the key length is not provided, then the block size is used.
 TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmacNoLength)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   blink::WebCryptoAlgorithm algorithm =
@@ -750,6 +802,16 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmacNoLength)) {
   ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  blink::WebArrayBuffer raw_key;
+  ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  EXPECT_EQ(64U, raw_key.byteLength());
+
+  // The block size for HMAC SHA-512 is larger.
+  algorithm = webcrypto::CreateHmacKeyGenAlgorithm(
+      blink::WebCryptoAlgorithmIdSha512, 0);
+  ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+  ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  EXPECT_EQ(128U, raw_key.byteLength());
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(ImportSecretKeyNoAlgorithm)) {

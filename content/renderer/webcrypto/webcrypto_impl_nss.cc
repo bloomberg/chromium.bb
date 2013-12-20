@@ -80,13 +80,19 @@ HASH_HashType WebCryptoAlgorithmToNSSHashType(
   }
 }
 
-CK_MECHANISM_TYPE WebCryptoAlgorithmToHMACMechanism(
+CK_MECHANISM_TYPE WebCryptoHashToHMACMechanism(
     const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdSha1:
       return CKM_SHA_1_HMAC;
+    case blink::WebCryptoAlgorithmIdSha224:
+      return CKM_SHA224_HMAC;
     case blink::WebCryptoAlgorithmIdSha256:
       return CKM_SHA256_HMAC;
+    case blink::WebCryptoAlgorithmIdSha384:
+      return CKM_SHA384_HMAC;
+    case blink::WebCryptoAlgorithmIdSha512:
+      return CKM_SHA512_HMAC;
     default:
       // Not a supported algorithm.
       return CKM_INVALID_MECHANISM;
@@ -175,46 +181,15 @@ bool AesCbcEncryptDecrypt(
   return true;
 }
 
-CK_MECHANISM_TYPE HmacAlgorithmToGenMechanism(
-    const blink::WebCryptoAlgorithm& algorithm) {
-  DCHECK_EQ(algorithm.id(), blink::WebCryptoAlgorithmIdHmac);
-  const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
-  DCHECK(params);
-  switch (params->hash().id()) {
-    case blink::WebCryptoAlgorithmIdSha1:
-      return CKM_SHA_1_HMAC;
-    case blink::WebCryptoAlgorithmIdSha256:
-      return CKM_SHA256_HMAC;
-    default:
-      return CKM_INVALID_MECHANISM;
-  }
-}
-
 CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
     const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdAesCbc:
       return CKM_AES_KEY_GEN;
     case blink::WebCryptoAlgorithmIdHmac:
-      return HmacAlgorithmToGenMechanism(algorithm);
+      return WebCryptoHashToHMACMechanism(algorithm.hmacKeyParams()->hash());
     default:
       return CKM_INVALID_MECHANISM;
-  }
-}
-
-// TODO(eroman): This is duplicated in OpenSSL version.
-unsigned int WebCryptoHmacAlgorithmToBlockSizeBits(
-    const blink::WebCryptoAlgorithm& algorithm) {
-  DCHECK_EQ(algorithm.id(), blink::WebCryptoAlgorithmIdHmac);
-  const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
-  DCHECK(params);
-  switch (params->hash().id()) {
-    case blink::WebCryptoAlgorithmIdSha1:
-      return 512;
-    case blink::WebCryptoAlgorithmIdSha256:
-      return 512;
-    default:
-      return 0;
   }
 }
 
@@ -280,7 +255,7 @@ bool ImportKeyInternalRaw(
         return false;
       }
 
-      mechanism = WebCryptoAlgorithmToHMACMechanism(params->hash());
+      mechanism = WebCryptoHashToHMACMechanism(params->hash());
       if (mechanism == CKM_INVALID_MECHANISM) {
         return false;
       }
@@ -685,7 +660,7 @@ bool WebCryptoImpl::GenerateKeyInternal(
       if (params->hasLengthBytes()) {
         keylen_bytes = params->optionalLengthBytes();
       } else {
-        keylen_bytes = WebCryptoHmacAlgorithmToBlockSizeBits(algorithm) / 8;
+        keylen_bytes = webcrypto::ShaBlockSizeBytes(params->hash().id());
       }
 
       key_type = blink::WebCryptoKeyTypeSecret;
@@ -880,7 +855,7 @@ bool WebCryptoImpl::SignInternal(
       SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
 
       DCHECK_EQ(PK11_GetMechanism(sym_key->key()),
-                WebCryptoAlgorithmToHMACMechanism(params->hash()));
+                WebCryptoHashToHMACMechanism(params->hash()));
       DCHECK_NE(0, key.usages() & blink::WebCryptoKeyUsageSign);
 
       SECItem param_item = { siBuffer, NULL, 0 };

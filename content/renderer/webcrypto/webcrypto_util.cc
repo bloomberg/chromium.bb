@@ -172,6 +172,21 @@ blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
                                   key_length_bits);
 }
 
+unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
+  switch (hash_id) {
+    case blink::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha224:
+    case blink::WebCryptoAlgorithmIdSha256:
+      return 64;
+    case blink::WebCryptoAlgorithmIdSha384:
+    case blink::WebCryptoAlgorithmIdSha512:
+      return 128;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

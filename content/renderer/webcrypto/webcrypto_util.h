@@ -94,6 +94,9 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
 blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
     unsigned short key_length_bits);
 
+// Returns the internal block size for SHA-*
+unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id);
+
 }  // namespace webcrypto
 
 }  // namespace content
