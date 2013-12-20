@@ -130,6 +130,27 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   return source;
 }
 
+// Formats the association state indicated by |data|. If |data| is NULL, the
+// state is considered to be UNMANAGED.
+base::string16 FormatAssociationState(const em::PolicyData* data) {
+  if (data) {
+    switch (data->state()) {
+      case em::PolicyData::ACTIVE:
+        return l10n_util::GetStringUTF16(IDS_POLICY_ASSOCIATION_STATE_ACTIVE);
+      case em::PolicyData::UNMANAGED:
+        return l10n_util::GetStringUTF16(
+            IDS_POLICY_ASSOCIATION_STATE_UNMANAGED);
+      case em::PolicyData::DEPROVISIONED:
+        return l10n_util::GetStringUTF16(
+            IDS_POLICY_ASSOCIATION_STATE_DEPROVISIONED);
+    }
+    NOTREACHED() << "Unknown state " << data->state();
+  }
+
+  // Default to UNMANAGED for the case of missing policy or bad state enum.
+  return l10n_util::GetStringUTF16(IDS_POLICY_ASSOCIATION_STATE_UNMANAGED);
+}
+
 void GetStatusFromCore(const policy::CloudPolicyCore* core,
                        base::DictionaryValue* dict) {
   const policy::CloudPolicyStore* store = core->store();
@@ -137,14 +158,18 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   const policy::CloudPolicyRefreshScheduler* refresh_scheduler =
         core->refresh_scheduler();
 
-  bool no_error = store->status() == policy::CloudPolicyStore::STATUS_OK &&
-                  client && client->status() == policy::DM_STATUS_SUCCESS;
+  // CloudPolicyStore errors take precedence to show in the status message.
+  // Other errors (such as transient policy fetching problems) get displayed
+  // only if CloudPolicyStore is in STATUS_OK.
   base::string16 status =
-      store->status() == policy::CloudPolicyStore::STATUS_OK &&
-      client && client->status() != policy::DM_STATUS_SUCCESS ?
-                policy::FormatDeviceManagementStatus(client->status()) :
-                policy::FormatStoreStatus(store->status(),
-                                          store->validation_status());
+      policy::FormatStoreStatus(store->status(), store->validation_status());
+  if (store->status() == policy::CloudPolicyStore::STATUS_OK) {
+    if (client && client->status() != policy::DM_STATUS_SUCCESS)
+      status = policy::FormatDeviceManagementStatus(client->status());
+    else if (!store->is_managed())
+      status = FormatAssociationState(store->policy());
+  }
+
   const em::PolicyData* policy = store->policy();
   std::string client_id = policy ? policy->device_id() : std::string();
   std::string username = policy ? policy->username() : std::string();
@@ -155,6 +180,8 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   base::Time last_refresh_time = refresh_scheduler ?
       refresh_scheduler->last_refresh() : base::Time();
 
+  bool no_error = store->status() == policy::CloudPolicyStore::STATUS_OK &&
+                  client && client->status() == policy::DM_STATUS_SUCCESS;
   dict->SetBoolean("error", !no_error);
   dict->SetString("status", status);
   dict->SetString("clientId", client_id);

@@ -112,6 +112,16 @@
     Unknown error
   </message>
 
+  <message name="IDS_POLICY_ASSOCIATION_STATE_ACTIVE" desc="Message indicating that the server actively manages the client.">
+    Active
+  </message>
+  <message name="IDS_POLICY_ASSOCIATION_STATE_UNMANAGED" desc="Message indicating that the server is currently not willing to manage this client.">
+    Unmanaged
+  </message>
+  <message name="IDS_POLICY_ASSOCIATION_STATE_DEPROVISIONED" desc="Message indicating that the server has deprovisioned the client.">
+    Deprovisioned
+  </message>
+
   <message name="IDS_POLICY_TYPE_ERROR" desc="The text displayed in the status column when a policy value has the wrong type.">
     Expected <ph name="VALUE_TYPE">$1<ex>boolean</ex></ph> value.
   </message>

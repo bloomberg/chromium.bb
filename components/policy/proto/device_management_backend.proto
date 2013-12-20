@@ -229,6 +229,8 @@ message PolicyData {
     ACTIVE = 0;
     // Association is alive, but the corresponding domain is not managed.
     UNMANAGED = 1;
+    // Client got dropped on the server side.
+    DEPROVISIONED = 2;
   }
   optional AssociationState state = 9 [default = ACTIVE];
 
