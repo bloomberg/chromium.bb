@@ -96,8 +96,7 @@ void runPendingTasks()
 }
 
 WebViewHelper::WebViewHelper()
-    : m_mainFrame(0)
-    , m_webView(0)
+    : m_webView(0)
 {
 }
 
@@ -123,8 +122,7 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, WebFrameClient* we
         m_webView->settings()->setForceCompositingMode(true);
     }
 
-    m_mainFrame = WebFrameImpl::create(webFrameClient);
-    m_webView->setMainFrame(m_mainFrame);
+    m_webView->setMainFrame(WebFrameImpl::create(webFrameClient));
 
     return m_webView;
 }
@@ -145,16 +143,18 @@ void WebViewHelper::reset()
         m_webView->close();
         m_webView = 0;
     }
-    if (m_mainFrame) {
-        m_mainFrame->close();
-        m_mainFrame = 0;
-    }
 }
 
 WebFrame* TestWebFrameClient::createChildFrame(WebFrame* parent, const WebString& frameName)
 {
     return WebFrame::create(this);
 }
+
+void TestWebFrameClient::frameDetached(WebFrame* frame)
+{
+    frame->close();
+}
+
 
 } // namespace FrameTestHelpers
 } // namespace blink

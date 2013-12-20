@@ -90,9 +90,6 @@ public:
     // This WebFrame will receive events for the main frame and must not
     // be null.
     virtual void setMainFrame(WebFrame*) = 0;
-    // FIXME: Remove initializeMainFrame() after clients have migrated to
-    // setMainFrame().
-    virtual void initializeMainFrame(WebFrameClient*) = 0;
 
     // Initializes the various client interfaces.
     virtual void setAutofillClient(WebAutofillClient*) = 0;

@@ -177,7 +177,6 @@ public:
 
     // WebView methods:
     virtual void setMainFrame(WebFrame*);
-    virtual void initializeMainFrame(WebFrameClient*);
     virtual void setAutofillClient(WebAutofillClient*);
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*);
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;

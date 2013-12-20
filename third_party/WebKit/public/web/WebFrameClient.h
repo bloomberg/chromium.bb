@@ -115,6 +115,8 @@ public:
     // is created and initialized. Takes the name of the new frame, the parent
     // frame and returns a new WebFrame. The WebFrame is considered in-use
     // until frameDetached() is called on it.
+    // Note: If you override this, you should almost certainly be overriding
+    // frameDetached().
     virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) { return 0; }
 
     // This frame set its opener to null, disowning it.

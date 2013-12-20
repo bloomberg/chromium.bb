@@ -305,21 +305,6 @@ void WebViewImpl::setMainFrame(WebFrame* frame)
     toWebFrameImpl(frame)->initializeAsMainFrame(page());
 }
 
-void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient)
-{
-    // NOTE: Previously, WebViewImpl was responsible for allocating its own
-    // mainframe. This code is for supporting clients that have yet to move
-    // to setMainFrame(). Though the setMainFrame() accepts a raw pointer, it
-    // implicitly takes a refcount on the frame. Dropping our RefPtr here
-    // will effectively pass ownership to m_page. New users of WebViewImpl
-    // should call WebFrameImpl::create() to construct their own mainframe,
-    // pass it into WebViewImpl::setMainFrame(), keep a pointer to the
-    // mainframe, and call WebFrameImpl::close() on it when closing the
-    // WebViewImpl.
-    RefPtr<WebFrameImpl> frame = adoptRef(WebFrameImpl::create(frameClient));
-    setMainFrame(frame.get());
-}
-
 void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)
 {
     m_autofillClient = autofillClient;

@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "FrameTestHelpers.h"
 #include "PopupContainer.h"
 #include "PopupMenuChromium.h"
 #include "RuntimeEnabledFeatures.h"
@@ -170,11 +171,6 @@ private:
     RefPtr<TestWebPopupMenuImpl> m_webPopupMenu;
 };
 
-class TestWebFrameClient : public WebFrameClient {
-public:
-    ~TestWebFrameClient() { }
-};
-
 class SelectPopupMenuTest : public testing::Test {
 public:
     SelectPopupMenuTest()
@@ -185,20 +181,18 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_webView = toWebViewImpl(WebView::create(&m_webviewClient));
-        m_webView->initializeMainFrame(&m_webFrameClient);
-        m_popupMenu = adoptRef(new PopupMenuChromium(*toWebFrameImpl(m_webView->mainFrame())->frame(), &m_popupMenuClient));
+        m_helper.initialize(false, 0, &m_webviewClient);
+        m_popupMenu = adoptRef(new PopupMenuChromium(*mainFrame()->frame(), &m_popupMenuClient));
     }
 
     virtual void TearDown()
     {
         m_popupMenu = 0;
-        m_webView->close();
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 
     // Returns true if there currently is a select popup in the WebView.
-    bool popupOpen() const { return m_webView->selectPopup(); }
+    bool popupOpen() const { return webView()->selectPopup(); }
 
     int selectedIndex() const { return m_popupMenuClient.selectedIndex(); }
 
@@ -206,7 +200,7 @@ protected:
     {
         m_popupMenu->show(FloatQuad(FloatRect(0, 0, 100, 100)), IntSize(100, 100), 0);
         ASSERT_TRUE(popupOpen());
-        EXPECT_TRUE(m_webView->selectPopup()->popupType() == PopupContainer::Select);
+        EXPECT_TRUE(webView()->selectPopup()->popupType() == PopupContainer::Select);
     }
 
     void hidePopup()
@@ -232,7 +226,7 @@ protected:
         WebKeyboardEvent keyEvent;
         keyEvent.windowsKeyCode = keyCode;
         keyEvent.type = eventType;
-        m_webView->handleInputEvent(keyEvent);
+        webView()->handleInputEvent(keyEvent);
     }
 
     // Simulates a mouse event on the select popup.
@@ -240,13 +234,13 @@ protected:
     {
         PlatformMouseEvent mouseEvent(point, point, LeftButton, PlatformEvent::MousePressed,
                                       1, false, false, false, false, 0);
-        m_webView->selectPopup()->handleMouseDownEvent(mouseEvent);
+        webView()->selectPopup()->handleMouseDownEvent(mouseEvent);
     }
     void simulateLeftMouseUpEvent(const IntPoint& point)
     {
         PlatformMouseEvent mouseEvent(point, point, LeftButton, PlatformEvent::MouseReleased,
                                       1, false, false, false, false, 0);
-        m_webView->selectPopup()->handleMouseReleaseEvent(mouseEvent);
+        webView()->selectPopup()->handleMouseReleaseEvent(mouseEvent);
     }
 
     void registerMockedURLLoad(const std::string& fileName)
@@ -267,13 +261,17 @@ protected:
         frame->loadRequest(urlRequest);
     }
 
+    WebViewImpl* webView() const { return m_helper.webViewImpl(); }
+    WebFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
+
 protected:
     TestWebViewClient m_webviewClient;
-    WebViewImpl* m_webView;
-    TestWebFrameClient m_webFrameClient;
     TestPopupMenuClient m_popupMenuClient;
     RefPtr<PopupMenu> m_popupMenu;
     std::string baseURL;
+
+private:
+    FrameTestHelpers::WebViewHelper m_helper;
 };
 
 // Tests that show/hide and repeats.  Select popups are reused in web pages when
@@ -299,7 +297,7 @@ TEST_F(SelectPopupMenuTest, ShowThenLoseFocus)
 {
     showPopup();
     // Simulate losing focus.
-    m_webView->setFocus(false);
+    webView()->setFocus(false);
 
     // Popup should have closed.
     EXPECT_FALSE(popupOpen());
@@ -348,7 +346,7 @@ TEST_F(SelectPopupMenuTest, ClickItem)
 {
     showPopup();
 
-    int menuItemHeight = m_webView->selectPopup()->menuItemHeight();
+    int menuItemHeight = webView()->selectPopup()->menuItemHeight();
     // menuItemHeight * 1.5 means the Y position on the item at index 1.
     IntPoint row1Point(2, menuItemHeight * 1.5);
     // Simulate a click down/up on the first item.
@@ -366,13 +364,13 @@ TEST_F(SelectPopupMenuTest, MouseOverItemClickOutside)
 {
     showPopup();
 
-    int menuItemHeight = m_webView->selectPopup()->menuItemHeight();
+    int menuItemHeight = webView()->selectPopup()->menuItemHeight();
     // menuItemHeight * 1.5 means the Y position on the item at index 1.
     IntPoint row1Point(2, menuItemHeight * 1.5);
     // Simulate the mouse moving over the first item.
     PlatformMouseEvent mouseEvent(row1Point, row1Point, NoButton, PlatformEvent::MouseMoved,
                                   1, false, false, false, false, 0);
-    m_webView->selectPopup()->handleMouseMoveEvent(mouseEvent);
+    webView()->selectPopup()->handleMouseMoveEvent(mouseEvent);
 
     // Click outside the popup.
     simulateLeftMouseDownEvent(IntPoint(1000, 1000));
@@ -403,21 +401,21 @@ TEST_F(SelectPopupMenuTest, SelectItemWithKeyboardItemClickOutside)
 TEST_F(SelectPopupMenuTest, DISABLED_SelectItemEventFire)
 {
     registerMockedURLLoad("select_event.html");
-    m_webView->settings()->setJavaScriptEnabled(true);
-    loadFrame(m_webView->mainFrame(), "select_event.html");
+    webView()->settings()->setJavaScriptEnabled(true);
+    loadFrame(mainFrame(), "select_event.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame().document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
     showPopup();
 
-    int menuItemHeight = m_webView->selectPopup()->menuItemHeight();
+    int menuItemHeight = webView()->selectPopup()->menuItemHeight();
     // menuItemHeight * 0.5 means the Y position on the item at index 0.
     IntPoint row1Point(2, menuItemHeight * 0.5);
     simulateLeftMouseDownEvent(row1Point);
     simulateLeftMouseUpEvent(row1Point);
 
-    WebElement element = m_webView->mainFrame()->document().getElementById("message");
+    WebElement element = webView()->mainFrame()->document().getElementById("message");
 
     // mousedown event is held by select node, and we don't simulate the event for the node.
     // So we can only see mouseup and click event.
@@ -448,11 +446,11 @@ TEST_F(SelectPopupMenuTest, DISABLED_SelectItemEventFire)
 TEST_F(SelectPopupMenuTest, FLAKY_SelectItemKeyEvent)
 {
     registerMockedURLLoad("select_event.html");
-    m_webView->settings()->setJavaScriptEnabled(true);
-    loadFrame(m_webView->mainFrame(), "select_event.html");
+    webView()->settings()->setJavaScriptEnabled(true);
+    loadFrame(mainFrame(), "select_event.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame().document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
     showPopup();
 
@@ -461,7 +459,7 @@ TEST_F(SelectPopupMenuTest, FLAKY_SelectItemKeyEvent)
     simulateKeyDownEvent(VKEY_DOWN);
     simulateKeyDownEvent(VKEY_RETURN);
 
-    WebElement element = m_webView->mainFrame()->document().getElementById("message");
+    WebElement element = webView()->mainFrame()->document().getElementById("message");
     // We only can see change event but no other mouse related events.
     EXPECT_STREQ("change", element.innerText().utf8().data());
 }
@@ -470,21 +468,21 @@ TEST_F(SelectPopupMenuTest, SelectItemRemoveSelectOnChange)
 {
     // Make sure no crash, even if select node is removed on 'change' event handler.
     registerMockedURLLoad("select_event_remove_on_change.html");
-    m_webView->settings()->setJavaScriptEnabled(true);
-    loadFrame(m_webView->mainFrame(), "select_event_remove_on_change.html");
+    webView()->settings()->setJavaScriptEnabled(true);
+    loadFrame(mainFrame(), "select_event_remove_on_change.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame().document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
     showPopup();
 
-    int menuItemHeight = m_webView->selectPopup()->menuItemHeight();
+    int menuItemHeight = webView()->selectPopup()->menuItemHeight();
     // menuItemHeight * 1.5 means the Y position on the item at index 1.
     IntPoint row1Point(2, menuItemHeight * 1.5);
     simulateLeftMouseDownEvent(row1Point);
     simulateLeftMouseUpEvent(row1Point);
 
-    WebElement element = m_webView->mainFrame()->document().getElementById("message");
+    WebElement element = webView()->mainFrame()->document().getElementById("message");
     EXPECT_STREQ("change", element.innerText().utf8().data());
 }
 
@@ -492,21 +490,21 @@ TEST_F(SelectPopupMenuTest, SelectItemRemoveSelectOnClick)
 {
     // Make sure no crash, even if select node is removed on 'click' event handler.
     registerMockedURLLoad("select_event_remove_on_click.html");
-    m_webView->settings()->setJavaScriptEnabled(true);
-    loadFrame(m_webView->mainFrame(), "select_event_remove_on_click.html");
+    webView()->settings()->setJavaScriptEnabled(true);
+    loadFrame(mainFrame(), "select_event_remove_on_click.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame().document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
     showPopup();
 
-    int menuItemHeight = m_webView->selectPopup()->menuItemHeight();
+    int menuItemHeight = webView()->selectPopup()->menuItemHeight();
     // menuItemHeight * 1.5 means the Y position on the item at index 1.
     IntPoint row1Point(2, menuItemHeight * 1.5);
     simulateLeftMouseDownEvent(row1Point);
     simulateLeftMouseUpEvent(row1Point);
 
-    WebElement element = m_webView->mainFrame()->document().getElementById("message");
+    WebElement element = webView()->mainFrame()->document().getElementById("message");
     EXPECT_STREQ("click", element.innerText().utf8().data());
 }
 

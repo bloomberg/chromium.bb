@@ -68,7 +68,6 @@ public:
     WebViewImpl* webViewImpl() const { return m_webView; }
 
 private:
-    WebFrameImpl* m_mainFrame;
     WebViewImpl* m_webView;
 };
 
@@ -77,6 +76,7 @@ private:
 class TestWebFrameClient : public WebFrameClient {
 public:
     virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) OVERRIDE;
+    virtual void frameDetached(WebFrame*) OVERRIDE;
 };
 
 } // namespace FrameTestHelpers
