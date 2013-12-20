@@ -21,6 +21,7 @@
 #include "media/base/android/demuxer_android.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_decoder_job.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/clock.h"
 #include "media/base/media_export.h"
@@ -44,7 +45,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual ~MediaSourcePlayer();
 
   static bool IsTypeSupported(const std::vector<uint8>& scheme_uuid,
-                              const std::string& security_level,
+                              MediaDrmBridge::SecurityLevel security_level,
                               const std::string& container,
                               const std::vector<std::string>& codecs);
 

@@ -38,27 +38,35 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   virtual ~MediaDrmBridge();
 
+  // Checks whether MediaDRM is available.
+  static bool IsAvailable();
+
+  static bool IsSecurityLevelSupported(const std::vector<uint8>& scheme_uuid,
+                                       SecurityLevel security_level);
+
+  static bool IsCryptoSchemeSupported(const std::vector<uint8>& scheme_uuid,
+                                      const std::string& container_mime_type);
+
+  static bool IsSecureDecoderRequired(SecurityLevel security_level);
+
+  static bool RegisterMediaDrmBridge(JNIEnv* env);
+
   // Returns a MediaDrmBridge instance if |scheme_uuid| is supported, or a NULL
   // pointer otherwise.
   static scoped_ptr<MediaDrmBridge> Create(
       int media_keys_id,
       const std::vector<uint8>& scheme_uuid,
       const GURL& frame_url,
-      const std::string& security_level,
       MediaPlayerManager* manager);
 
-  // Checks whether MediaDRM is available.
-  static bool IsAvailable();
-
-  static bool IsSecurityLevelSupported(const std::vector<uint8>& scheme_uuid,
-                                       const std::string& security_level);
-
-  static bool IsCryptoSchemeSupported(const std::vector<uint8>& scheme_uuid,
-                                      const std::string& container_mime_type);
-
-  static bool IsSecureDecoderRequired(const std::string& security_level_str);
-
-  static bool RegisterMediaDrmBridge(JNIEnv* env);
+  // Returns true if |security_level| is successfully set, or false otherwise.
+  // Call this function right after Create() and before any other calls.
+  // Note:
+  // - If this function is not called, the default security level of the device
+  //   will be used.
+  // - It's recommended to call this function only once on a MediaDrmBridge
+  //   object. Calling this function multiples times may cause errors.
+  bool SetSecurityLevel(SecurityLevel security_level);
 
   // MediaKeys implementations.
   virtual bool CreateSession(uint32 session_id,
@@ -110,12 +118,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   GURL frame_url() const { return frame_url_; }
 
  private:
-  static bool IsSecureDecoderRequired(SecurityLevel security_level);
-
   MediaDrmBridge(int media_keys_id,
                  const std::vector<uint8>& scheme_uuid,
                  const GURL& frame_url,
-                 const std::string& security_level,
                  MediaPlayerManager* manager);
 
   // Get the security level of the media.

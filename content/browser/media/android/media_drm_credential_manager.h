@@ -24,27 +24,29 @@ class MediaDrmCredentialManager {
   // Called to reset the DRM credentials. (for Java)
   static void ResetCredentials(JNIEnv* env, jclass clazz, jobject callback);
 
-  // Called to reset the DRM credentials.
-  void ResetCredentials(const ResetCredentialsCB& callback);
+  // Called to reset the DRM credentials. The result is returned in the
+  // |reset_credentials_cb|.
+  void ResetCredentials(const ResetCredentialsCB& reset_credentials_cb);
 
   static bool RegisterMediaDrmCredentialManager(JNIEnv* env);
 
  private:
   friend struct DefaultSingletonTraits<MediaDrmCredentialManager>;
   friend class Singleton<MediaDrmCredentialManager>;
+  typedef media::MediaDrmBridge::SecurityLevel SecurityLevel;
 
   MediaDrmCredentialManager();
   ~MediaDrmCredentialManager();
 
+  // Callback function passed to MediaDrmBridge. It is called when credentials
+  // reset is completed.
+  void OnResetCredentialsCompleted(SecurityLevel security_level, bool success);
 
-  // Callback function passed to MediaDrmBridge. It is called when reset
-  // completed.
-  void OnResetCredentialsCompleted(const std::string& security_level,
-                                   bool success);
-
-  // Reset DRM credentials for a particular security level. Returns false if
-  // we fail to create the MediaDrmBridge, or true otherwise.
-  bool ResetCredentialsInternal(const std::string& security_level);
+  // Resets DRM credentials for a particular |security_level|. Returns false if
+  // we fail to create the MediaDrmBridge at all, in which case we cannot reset
+  // the credentials. Otherwise, the result is returned asynchronously in
+  // OnResetCredentialsCompleted() function.
+  bool ResetCredentialsInternal(SecurityLevel security_level);
 
   // The MediaDrmBridge object used to perform the credential reset.
   scoped_ptr<media::MediaDrmBridge> media_drm_bridge_;

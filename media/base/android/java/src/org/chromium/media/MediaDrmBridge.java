@@ -152,8 +152,8 @@ class MediaDrmBridge {
         return null;
     }
 
-    private MediaDrmBridge(UUID schemeUUID, String securityLevel, long nativeMediaDrmBridge,
-            boolean singleSessionMode) throws android.media.UnsupportedSchemeException {
+    private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge, boolean singleSessionMode)
+            throws android.media.UnsupportedSchemeException {
         mSchemeUUID = schemeUUID;
         mMediaDrm = new MediaDrm(schemeUUID);
         mNativeMediaDrmBridge = nativeMediaDrmBridge;
@@ -169,11 +169,6 @@ class MediaDrmBridge {
         mMediaDrm.setPropertyString(PRIVACY_MODE, ENABLE);
         if (!mSingleSessionMode) {
             mMediaDrm.setPropertyString(SESSION_SHARING, ENABLE);
-        }
-        String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
-        Log.e(TAG, "Security level: current " + currentSecurityLevel + ", new " + securityLevel);
-        if (!securityLevel.equals(currentSecurityLevel)) {
-            mMediaDrm.setPropertyString(SECURITY_LEVEL, securityLevel);
         }
 
         // We could open a MediaCrypto session here to support faster start of
@@ -278,8 +273,7 @@ class MediaDrmBridge {
      * @param nativeMediaDrmBridge Native object of this class.
      */
     @CalledByNative
-    private static MediaDrmBridge create(
-            byte[] schemeUUID, String securityLevel, int nativeMediaDrmBridge) {
+    private static MediaDrmBridge create(byte[] schemeUUID, int nativeMediaDrmBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
             return null;
@@ -295,7 +289,8 @@ class MediaDrmBridge {
         MediaDrmBridge mediaDrmBridge = null;
         try {
             mediaDrmBridge = new MediaDrmBridge(
-                    cryptoScheme, securityLevel, nativeMediaDrmBridge, singleSessionMode);
+                cryptoScheme, nativeMediaDrmBridge, singleSessionMode);
+            Log.d(TAG, "MediaDrmBridge successfully created.");
         } catch (android.media.UnsupportedSchemeException e) {
             Log.e(TAG, "Unsupported DRM scheme", e);
         } catch (java.lang.IllegalArgumentException e) {
@@ -305,6 +300,39 @@ class MediaDrmBridge {
         }
 
         return mediaDrmBridge;
+    }
+
+    /**
+     * Set the security level that the MediaDrm object uses.
+     * This function should be called right after we construct MediaDrmBridge
+     * and before we make any other calls.
+     */
+    @CalledByNative
+    private boolean setSecurityLevel(String securityLevel) {
+        if (mMediaDrm == null || mMediaCrypto != null) {
+            return false;
+        }
+
+        String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        Log.e(TAG, "Security level: current " + currentSecurityLevel + ", new " + securityLevel);
+        if (securityLevel.equals(currentSecurityLevel)) {
+            // No need to set the same security level again. This is not just
+            // a shortcut! Setting the same security level actually causes an
+            // exception in MediaDrm!
+            return true;
+        }
+
+        try {
+            mMediaDrm.setPropertyString(SECURITY_LEVEL, securityLevel);
+            return true;
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.e(TAG, "Failed to set security level " + securityLevel, e);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to set security level " + securityLevel, e);
+        }
+
+        Log.e(TAG, "Security level " + securityLevel + " not supported!");
+        return false;
     }
 
     /**

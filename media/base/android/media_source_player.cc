@@ -34,7 +34,7 @@ namespace media {
 // static
 bool MediaSourcePlayer::IsTypeSupported(
     const std::vector<uint8>& scheme_uuid,
-    const std::string& security_level,
+    MediaDrmBridge::SecurityLevel security_level,
     const std::string& container,
     const std::vector<std::string>& codecs) {
   if (!MediaDrmBridge::IsCryptoSchemeSupported(scheme_uuid, container)) {

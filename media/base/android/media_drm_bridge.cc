@@ -152,24 +152,17 @@ static MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
   return MediaDrmBridge::SECURITY_LEVEL_NONE;
 }
 
-// static
-scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
-    int media_keys_id,
-    const std::vector<uint8>& scheme_uuid,
-    const GURL& frame_url,
-    const std::string& security_level,
-    MediaPlayerManager* manager) {
-  scoped_ptr<MediaDrmBridge> media_drm_bridge;
-
-  if (IsAvailable() && !scheme_uuid.empty()) {
-    // TODO(qinmin): check whether the uuid is valid.
-    media_drm_bridge.reset(new MediaDrmBridge(
-        media_keys_id, scheme_uuid, frame_url, security_level, manager));
-    if (media_drm_bridge->j_media_drm_.is_null())
-      media_drm_bridge.reset();
+static std::string GetSecurityLevelString(
+    MediaDrmBridge::SecurityLevel security_level) {
+  switch (security_level) {
+    case MediaDrmBridge::SECURITY_LEVEL_NONE:
+      return "";
+    case MediaDrmBridge::SECURITY_LEVEL_1:
+      return "L1";
+    case MediaDrmBridge::SECURITY_LEVEL_3:
+      return "L3";
   }
-
-  return media_drm_bridge.Pass();
+  return "";
 }
 
 // static
@@ -178,19 +171,21 @@ bool MediaDrmBridge::IsAvailable() {
 }
 
 // static
-bool MediaDrmBridge::IsSecureDecoderRequired(
-    const std::string& security_level_str) {
-  return IsSecureDecoderRequired(
-      GetSecurityLevelFromString(security_level_str));
+bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
+  return SECURITY_LEVEL_1 == security_level;
 }
 
 bool MediaDrmBridge::IsSecurityLevelSupported(
     const std::vector<uint8>& scheme_uuid,
-    const std::string& security_level) {
+    SecurityLevel security_level) {
   // Pass 0 as |media_keys_id| and NULL as |manager| as they are not used in
   // creation time of MediaDrmBridge.
-  return MediaDrmBridge::Create(0, scheme_uuid, GURL(), security_level, NULL) !=
-      NULL;
+  scoped_ptr<MediaDrmBridge> media_drm_bridge =
+      MediaDrmBridge::Create(0, scheme_uuid, GURL(), NULL);
+  if (!media_drm_bridge)
+    return false;
+
+  return media_drm_bridge->SetSecurityLevel(security_level);
 }
 
 bool MediaDrmBridge::IsCryptoSchemeSupported(
@@ -212,7 +207,6 @@ bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
 MediaDrmBridge::MediaDrmBridge(int media_keys_id,
                                const std::vector<uint8>& scheme_uuid,
                                const GURL& frame_url,
-                               const std::string& security_level,
                                MediaPlayerManager* manager)
     : media_keys_id_(media_keys_id),
       scheme_uuid_(scheme_uuid),
@@ -223,17 +217,46 @@ MediaDrmBridge::MediaDrmBridge(int media_keys_id,
 
   ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
       base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
-  ScopedJavaLocalRef<jstring> j_security_level =
-      ConvertUTF8ToJavaString(env, security_level);
   j_media_drm_.Reset(Java_MediaDrmBridge_create(
-      env, j_scheme_uuid.obj(), j_security_level.obj(),
-      reinterpret_cast<intptr_t>(this)));
+      env, j_scheme_uuid.obj(), reinterpret_cast<intptr_t>(this)));
 }
 
 MediaDrmBridge::~MediaDrmBridge() {
   JNIEnv* env = AttachCurrentThread();
   if (!j_media_drm_.is_null())
     Java_MediaDrmBridge_release(env, j_media_drm_.obj());
+}
+
+// static
+scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
+    int media_keys_id,
+    const std::vector<uint8>& scheme_uuid,
+    const GURL& frame_url,
+    MediaPlayerManager* manager) {
+  scoped_ptr<MediaDrmBridge> media_drm_bridge;
+
+  if (IsAvailable() && !scheme_uuid.empty()) {
+    // TODO(qinmin): check whether the uuid is valid.
+    media_drm_bridge.reset(new MediaDrmBridge(
+        media_keys_id, scheme_uuid, frame_url, manager));
+    if (media_drm_bridge->j_media_drm_.is_null())
+      media_drm_bridge.reset();
+  }
+
+  return media_drm_bridge.Pass();
+}
+
+bool MediaDrmBridge::SetSecurityLevel(SecurityLevel security_level) {
+  JNIEnv* env = AttachCurrentThread();
+
+  std::string security_level_str = GetSecurityLevelString(security_level);
+  if (security_level_str.empty())
+    return false;
+
+  ScopedJavaLocalRef<jstring> j_security_level =
+      ConvertUTF8ToJavaString(env, security_level_str);
+  return Java_MediaDrmBridge_setSecurityLevel(
+      env, j_media_drm_.obj(), j_security_level.obj());
 }
 
 bool MediaDrmBridge::CreateSession(uint32 session_id,
@@ -339,11 +362,6 @@ void MediaDrmBridge::OnSessionError(JNIEnv* env,
 ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaDrmBridge_getMediaCrypto(env, j_media_drm_.obj());
-}
-
-// static
-bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
-  return MediaDrmBridge::SECURITY_LEVEL_1 == security_level;
 }
 
 MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {

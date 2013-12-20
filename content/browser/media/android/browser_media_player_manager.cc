@@ -704,19 +704,25 @@ void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
                                              const std::vector<uint8>& uuid,
                                              const GURL& frame_url) {
   DCHECK(!GetDrmBridge(media_keys_id));
-  // TODO(xhwang/ddorwin): Pass the security level from key system.
-  std::string security_level = "L3";
-  if (CommandLine::ForCurrentProcess()
-          ->HasSwitch(switches::kMediaDrmEnableNonCompositing)) {
-    security_level = "L1";
-  }
 
   scoped_ptr<MediaDrmBridge> drm_bridge(MediaDrmBridge::Create(
-      media_keys_id, uuid, frame_url, security_level, this));
+      media_keys_id, uuid, frame_url, this));
   if (!drm_bridge) {
     // This failure will be discovered and reported by OnCreateSession()
     // as GetDrmBridge() will return null.
     DVLOG(1) << "failed to create drm bridge.";
+    return;
+  }
+
+  // TODO(xhwang/ddorwin): Pass the security level from key system.
+  MediaDrmBridge::SecurityLevel security_level =
+      MediaDrmBridge::SECURITY_LEVEL_3;
+  if (CommandLine::ForCurrentProcess()
+          ->HasSwitch(switches::kMediaDrmEnableNonCompositing)) {
+    security_level = MediaDrmBridge::SECURITY_LEVEL_1;
+  }
+  if (!drm_bridge->SetSecurityLevel(security_level)) {
+    DVLOG(1) << "failed to set security level " << security_level;
     return;
   }
 
