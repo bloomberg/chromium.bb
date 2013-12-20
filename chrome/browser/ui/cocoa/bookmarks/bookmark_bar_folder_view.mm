@@ -99,11 +99,13 @@ using content::UserMetricsAction;
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates {
-  // TODO(jrg): This should probably return |YES| and the controller should
-  // slide the existing bookmark buttons interactively to the side to make
-  // room for the about-to-be-dropped bookmark.
+  // TODO(jrg): The controller should slide the existing bookmark buttons
+  // interactively to the side to make room for the about-to-be-dropped
+  // bookmark.
   // http://crbug.com/35968
-  return NO;
+
+  // The bookmark_bar_folder_hover_state expects continuous callbacks.
+  return YES;
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info {

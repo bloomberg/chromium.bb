@@ -33,6 +33,9 @@
       // Note that we only schedule the open or close if we have no other tasks
       // currently pending.
 
+      // Since the new bookmark folder is not opened until the previous is
+      // closed, the NSDraggingDestination must provide continuous callbacks,
+      // even if the cursor isn't moving.
       if (hoverState_ == kHoverStateOpen) {
         // Close the old.
         [self scheduleCloseBookmarkFolderOnHoverButton];
