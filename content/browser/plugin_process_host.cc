@@ -226,7 +226,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
 #if defined(OS_POSIX)
   base::EnvironmentMap env;
 #if defined(OS_MACOSX) && !defined(__LP64__)
-  if (!browser_command_line.HasSwitch(switches::kDisableCarbonInterposing)) {
+  if (browser_command_line.HasSwitch(switches::kEnableCarbonInterposing)) {
     std::string interpose_list = GetContentClient()->GetCarbonInterposePath();
     if (!interpose_list.empty()) {
       // Add our interposing library for Carbon. This is stripped back out in

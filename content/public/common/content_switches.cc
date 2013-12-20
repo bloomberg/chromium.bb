@@ -1036,7 +1036,7 @@ const char kDisablePanelFitting[]           = "disable-panel-fitting";
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-const char kDisableCarbonInterposing[]      = "disable-carbon-interposing";
+const char kEnableCarbonInterposing[]       = "enable-carbon-interposing";
 
 // Disables support for Core Animation plugins. This is triggered when
 // accelerated compositing is disabled. See http://crbug.com/122430 .

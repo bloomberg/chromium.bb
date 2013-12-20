@@ -306,7 +306,7 @@ CONTENT_EXPORT extern const char kDisablePanelFitting[];
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-extern const char kDisableCarbonInterposing[];
+extern const char kEnableCarbonInterposing[];
 extern const char kDisableCoreAnimationPlugins[];
 CONTENT_EXPORT extern const char kUseCoreAnimation[];
 #endif
