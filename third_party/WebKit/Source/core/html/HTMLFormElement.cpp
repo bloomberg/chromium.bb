@@ -32,7 +32,6 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NamedNodesCollection.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
 #include "core/events/ScopedEventQueue.h"
@@ -43,6 +42,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/RadioNodeList.h"
 #include "core/html/forms/FormController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -791,7 +791,7 @@ void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& sourc
     HTMLElement::copyNonAttributePropertiesFromElement(source);
 }
 
-void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
+void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
 {
     // Call getNamedElements twice, first time check if it has a value
     // and let HTMLFormElement update its cache.
@@ -815,8 +815,9 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
         return;
     }
 
+    bool onlyMatchImg = elements.size() && elements.at(0)->hasTagName(imgTag);
     returnValue0Enabled = true;
-    returnValue0 = NamedNodesCollection::create(elements);
+    returnValue0 = radioNodeList(name, onlyMatchImg);
 }
 
 void HTMLFormElement::setDemoted(bool demoted)

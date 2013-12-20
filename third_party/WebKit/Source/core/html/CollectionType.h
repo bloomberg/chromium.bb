@@ -59,6 +59,7 @@ enum CollectionType {
     TagNodeListType,
     HTMLTagNodeListType,
     RadioNodeListType,
+    RadioImgNodeListType,
     LabelsNodeListType,
 };
 

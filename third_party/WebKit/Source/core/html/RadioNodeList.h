@@ -36,8 +36,8 @@ class RadioNodeList FINAL : public LiveNodeList {
 public:
     static PassRefPtr<RadioNodeList> create(Node* ownerNode, CollectionType type, const AtomicString& name)
     {
-        ASSERT_UNUSED(type, type == RadioNodeListType);
-        return adoptRef(new RadioNodeList(ownerNode, name));
+        ASSERT_UNUSED(type, type == RadioNodeListType || type == RadioImgNodeListType);
+        return adoptRef(new RadioNodeList(ownerNode, name, type));
     }
 
     virtual ~RadioNodeList();
@@ -46,15 +46,17 @@ public:
     void setValue(const String&);
 
 private:
-    RadioNodeList(Node*, const AtomicString& name);
+    RadioNodeList(Node*, const AtomicString& name, CollectionType);
+
     bool checkElementMatchesRadioNodeListFilter(Element*) const;
 
     virtual bool nodeMatches(Element*) const OVERRIDE;
 
     AtomicString m_name;
+    const bool m_onlyMatchImgElements;
 };
 
-} // namepsace
+} // namespace
 
 #endif
 

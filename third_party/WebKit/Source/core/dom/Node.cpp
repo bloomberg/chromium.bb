@@ -1352,16 +1352,17 @@ PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
     return ensureRareData().ensureNodeLists().addCacheWithName<ClassNodeList>(this, ClassNodeListType, classNames);
 }
 
-PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
+PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
 {
     ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<RadioNodeList>(this, RadioNodeListType, name);
+    CollectionType type = onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType;
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<RadioNodeList>(this, type, name);
 }
 
 PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError,  "The provided selector is empty.");
+        exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
         return 0;
     }
 

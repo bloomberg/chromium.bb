@@ -37,16 +37,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RadioNodeList::RadioNodeList(Node* rootNode, const AtomicString& name)
-    : LiveNodeList(rootNode, RadioNodeListType, InvalidateForFormControls, rootNode->hasTagName(formTag) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
+RadioNodeList::RadioNodeList(Node* rootNode, const AtomicString& name, CollectionType type)
+    : LiveNodeList(rootNode, type, InvalidateForFormControls, rootNode->hasTagName(formTag) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
     , m_name(name)
+    , m_onlyMatchImgElements(type == RadioImgNodeListType)
 {
     ScriptWrappable::init(this);
 }
 
 RadioNodeList::~RadioNodeList()
 {
-    ownerNode()->nodeLists()->removeCacheWithAtomicName(this, RadioNodeListType, m_name);
+    ownerNode()->nodeLists()->removeCacheWithAtomicName(this, m_onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType, m_name);
 }
 
 static inline HTMLInputElement* toRadioButtonInputElement(Node* node)
@@ -62,6 +63,8 @@ static inline HTMLInputElement* toRadioButtonInputElement(Node* node)
 
 String RadioNodeList::value() const
 {
+    if (m_onlyMatchImgElements)
+        return String();
     for (unsigned i = 0; i < length(); ++i) {
         Node* node = item(i);
         const HTMLInputElement* inputElement = toRadioButtonInputElement(node);
@@ -74,6 +77,8 @@ String RadioNodeList::value() const
 
 void RadioNodeList::setValue(const String& value)
 {
+    if (m_onlyMatchImgElements)
+        return;
     for (unsigned i = 0; i < length(); ++i) {
         Node* node = item(i);
         HTMLInputElement* inputElement = toRadioButtonInputElement(node);
@@ -86,6 +91,7 @@ void RadioNodeList::setValue(const String& value)
 
 bool RadioNodeList::checkElementMatchesRadioNodeListFilter(Element* testElement) const
 {
+    ASSERT(!m_onlyMatchImgElements);
     ASSERT(testElement->hasTagName(objectTag) || testElement->isFormControlElement());
     if (ownerNode()->hasTagName(formTag)) {
         HTMLFormElement* formElement = toHTMLElement(testElement)->formOwner();
@@ -98,6 +104,9 @@ bool RadioNodeList::checkElementMatchesRadioNodeListFilter(Element* testElement)
 
 bool RadioNodeList::nodeMatches(Element* testElement) const
 {
+    if (m_onlyMatchImgElements)
+        return testElement->hasTagName(imgTag);
+
     if (!testElement->hasTagName(objectTag) && !testElement->isFormControlElement())
         return false;
 
@@ -107,5 +116,5 @@ bool RadioNodeList::nodeMatches(Element* testElement) const
     return checkElementMatchesRadioNodeListFilter(testElement);
 }
 
-} // namspace
+} // namespace
 

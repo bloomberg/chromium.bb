@@ -68,6 +68,7 @@ static bool shouldOnlyIncludeDirectChildren(CollectionType type)
     case TagNodeListType:
     case HTMLTagNodeListType:
     case RadioNodeListType:
+    case RadioImgNodeListType:
     case LabelsNodeListType:
         break;
     }
@@ -106,6 +107,7 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case TagNodeListType:
     case HTMLTagNodeListType:
     case RadioNodeListType:
+    case RadioImgNodeListType:
     case LabelsNodeListType:
         break;
     }
@@ -150,6 +152,7 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
     case TagNodeListType:
     case HTMLTagNodeListType:
     case RadioNodeListType:
+    case RadioImgNodeListType:
     case LabelsNodeListType:
         break;
     }
@@ -232,6 +235,7 @@ template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, 
     case TagNodeListType:
     case HTMLTagNodeListType:
     case RadioNodeListType:
+    case RadioImgNodeListType:
     case LabelsNodeListType:
         ASSERT_NOT_REACHED();
     }

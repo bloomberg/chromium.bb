@@ -607,7 +607,7 @@ public:
     PassRefPtr<NodeList> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
     PassRefPtr<NodeList> getElementsByName(const String& elementName);
     PassRefPtr<NodeList> getElementsByClassName(const String& classNames);
-    PassRefPtr<RadioNodeList> radioNodeList(const AtomicString&);
+    PassRefPtr<RadioNodeList> radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
 
     virtual bool willRespondToMouseMoveEvents();
     virtual bool willRespondToMouseClickEvents();
