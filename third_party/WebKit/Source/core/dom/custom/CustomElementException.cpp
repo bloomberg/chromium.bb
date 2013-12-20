@@ -57,11 +57,11 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         return;
 
     case ContextDestroyedCreatingCallbacks:
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "The context is no longer valid.");
         return;
 
     case ContextDestroyedRegisteringDefinition:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The context is no longer valid.");
         return;
 
     case ExtendsIsInvalidName:
