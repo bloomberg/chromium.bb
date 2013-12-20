@@ -979,7 +979,7 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
           ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
         }
 
-        if (util.isSameEntry(oldEntry, item.getEntry())) {
+        if (!util.isSameEntry(oldEntry, item.getEntry())) {
           this.dataModel_.splice(
               this.getSelectedIndex(), 0, new Gallery.Item(oldEntry));
           // The ribbon will ignore the splice above and redraw after the
