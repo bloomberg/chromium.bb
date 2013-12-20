@@ -24,24 +24,9 @@ namespace {
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap);
 
-class TestPixelRef : public SkPixelRef {
- public:
-  TestPixelRef(int width, int height);
-  virtual ~TestPixelRef();
-
-  virtual SkFlattenable::Factory getFactory() const OVERRIDE;
-  virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
-  virtual void onUnlockPixels() OVERRIDE {}
-  virtual SkPixelRef* deepCopy(SkBitmap::Config config, const SkIRect* subset)
-      OVERRIDE;
-
- private:
-  scoped_ptr<char[]> pixels_;
-};
-
 class TestLazyPixelRef : public skia::LazyPixelRef {
  public:
-  TestLazyPixelRef(int width, int height);
+  TestLazyPixelRef(const SkImageInfo& info);
   virtual ~TestLazyPixelRef();
 
   virtual SkFlattenable::Factory getFactory() const OVERRIDE;
@@ -89,25 +74,9 @@ class TestLazyShader : public SkShader {
   SkBitmap bitmap_;
 };
 
-TestPixelRef::TestPixelRef(int width, int height)
-    : pixels_(new char[4 * width * height]) {}
-
-TestPixelRef::~TestPixelRef() {}
-
-SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
-
-void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
-  return pixels_.get();
-}
-
-SkPixelRef* TestPixelRef::deepCopy(SkBitmap::Config config,
-                                   const SkIRect* subset) {
-  this->ref();
-  return this;
-}
-
-TestLazyPixelRef::TestLazyPixelRef(int width, int height)
-    : pixels_(new char[4 * width * height]) {}
+TestLazyPixelRef::TestLazyPixelRef(const SkImageInfo& info)
+    : skia::LazyPixelRef(info),
+      pixels_(new char[4 * info.fWidth * info.fHeight]) {}
 
 TestLazyPixelRef::~TestLazyPixelRef() {}
 
@@ -132,11 +101,15 @@ SkPixelRef* TestLazyPixelRef::deepCopy(SkBitmap::Config config,
 }
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
+  const SkImageInfo info = {
+    size.width(), size.height(), kPMColor_SkColorType, kPremul_SkAlphaType
+  };
+
   skia::RefPtr<TestLazyPixelRef> lazy_pixel_ref =
-      skia::AdoptRef(new TestLazyPixelRef(size.width(), size.height()));
+      skia::AdoptRef(new TestLazyPixelRef(info));
   lazy_pixel_ref->setURI(uri);
 
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
+  bitmap->setConfig(info);
   bitmap->setPixelRef(lazy_pixel_ref.get());
 }
 

@@ -20,7 +20,8 @@ namespace {
 // HBITMAP.
 class SK_API PlatformBitmapPixelRef : public SkPixelRef {
  public:
-  PlatformBitmapPixelRef(HBITMAP bitmap_handle, void* pixels);
+  PlatformBitmapPixelRef(const SkImageInfo& info, HBITMAP bitmap_handle,
+                         void* pixels);
   virtual ~PlatformBitmapPixelRef();
 
   SK_DECLARE_UNFLATTENABLE_OBJECT();
@@ -117,9 +118,11 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
   return hbitmap;
 }
 
-PlatformBitmapPixelRef::PlatformBitmapPixelRef(HBITMAP bitmap_handle,
+PlatformBitmapPixelRef::PlatformBitmapPixelRef(const SkImageInfo& info,
+                                               HBITMAP bitmap_handle,
                                                void* pixels)
-    : bitmap_handle_(bitmap_handle),
+    : SkPixelRef(info),
+      bitmap_handle_(bitmap_handle),
       pixels_(pixels) {
   setPreLocked(pixels, NULL);
 }
@@ -202,10 +205,16 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   if (!hbitmap)
     return NULL;
 
+  const SkImageInfo info = {
+    width,
+    height,
+    kPMColor_SkColorType,
+    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
+  };
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0,
-                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new PlatformBitmapPixelRef(hbitmap,
+  bitmap.setConfig(info);
+  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new PlatformBitmapPixelRef(info,
+                                                                     hbitmap,
                                                                      data));
   bitmap.setPixelRef(pixel_ref.get());
 
@@ -389,10 +398,16 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   HGDIOBJ stock_bitmap = SelectObject(surface_, hbitmap);
   platform_extra_ = reinterpret_cast<intptr_t>(stock_bitmap);
 
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0,
-                    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+  const SkImageInfo info = {
+    width,
+    height,
+    kPMColor_SkColorType,
+    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
+  };
+  bitmap_.setConfig(info);
   // PlatformBitmapPixelRef takes ownership of |hbitmap|.
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new PlatformBitmapPixelRef(hbitmap,
+  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new PlatformBitmapPixelRef(info,
+                                                                     hbitmap,
                                                                      data));
   bitmap_.setPixelRef(pixel_ref.get());
   bitmap_.lockPixels();
