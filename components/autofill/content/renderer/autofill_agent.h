@@ -77,7 +77,6 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void InputElementLostFocus() OVERRIDE;
 
   // blink::WebAutofillClient:
-  virtual void didClearAutofillSelection(const blink::WebNode& node) OVERRIDE;
   virtual void textFieldDidEndEditing(
       const blink::WebInputElement& element) OVERRIDE;
   virtual void textFieldDidChange(

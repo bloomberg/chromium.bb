@@ -158,22 +158,18 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFieldTypePredictionsAvailable)
     IPC_MESSAGE_HANDLER(AutofillMsg_SetAutofillActionFill,
                         OnSetAutofillActionFill)
-    IPC_MESSAGE_HANDLER(AutofillMsg_ClearForm,
-                        OnClearForm)
+    IPC_MESSAGE_HANDLER(AutofillMsg_ClearForm, OnClearForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_SetAutofillActionPreview,
                         OnSetAutofillActionPreview)
-    IPC_MESSAGE_HANDLER(AutofillMsg_ClearPreviewedForm,
-                        OnClearPreviewedForm)
-    IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText,
-                        OnSetNodeText)
+    IPC_MESSAGE_HANDLER(AutofillMsg_ClearPreviewedForm, OnClearPreviewedForm)
+    IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText, OnSetNodeText)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptDataListSuggestion,
                         OnAcceptDataListSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
                         OnAcceptPasswordAutofillSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
                         OnRequestAutocompleteResult)
-    IPC_MESSAGE_HANDLER(AutofillMsg_PageShown,
-                        OnPageShown)
+    IPC_MESSAGE_HANDLER(AutofillMsg_PageShown, OnPageShown)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -314,22 +310,6 @@ void AutofillAgent::InputElementLostFocus() {
   HideAutofillUI();
 }
 
-void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
-  if (password_autofill_agent_->DidClearAutofillSelection(node))
-    return;
-
-  if (!element_.isNull() && node == element_) {
-    ClearPreviewedFormWithElement(element_, was_query_node_autofilled_);
-  } else {
-    // TODO(isherman): There seem to be rare cases where this code *is*
-    // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
-    // understand those cases and fix the code to avoid them.  However, so far I
-    // have been unable to reproduce such a case locally.  If you hit this
-    // NOTREACHED(), please file a bug against me.
-    NOTREACHED();
-  }
-}
-
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
   password_autofill_agent_->TextFieldDidEndEditing(element);
   has_shown_autofill_popup_for_current_edit_ = false;
@@ -465,7 +445,19 @@ void AutofillAgent::OnSetAutofillActionPreview() {
 }
 
 void AutofillAgent::OnClearPreviewedForm() {
-  didClearAutofillSelection(element_);
+  if (password_autofill_agent_->DidClearAutofillSelection(element_))
+    return;
+
+  if (!element_.isNull()) {
+    ClearPreviewedFormWithElement(element_, was_query_node_autofilled_);
+  } else {
+    // TODO(isherman): There seem to be rare cases where this code *is*
+    // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
+    // understand those cases and fix the code to avoid them.  However, so far I
+    // have been unable to reproduce such a case locally.  If you hit this
+    // NOTREACHED(), please file a bug against me.
+    NOTREACHED();
+  }
 }
 
 void AutofillAgent::OnSetNodeText(const base::string16& value) {
