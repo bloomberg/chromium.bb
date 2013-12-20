@@ -10,8 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
-#include "chrome/browser/chromeos/input_method/infolist_window_view.h"
+#include "chrome/browser/chromeos/input_method/infolist_window.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class Widget;
@@ -29,6 +30,7 @@ class ModeIndicatorController;
 class CandidateWindowControllerImpl
     : public CandidateWindowController,
       public CandidateWindowView::Observer,
+      public views::WidgetObserver,
       public IBusPanelCandidateWindowHandlerInterface {
  public:
   CandidateWindowControllerImpl();
@@ -54,20 +56,13 @@ class CandidateWindowControllerImpl
       const gfx::Rect& screen_rect,
       const gfx::Size& infolist_winodw_size);
 
-  // Converts |candidate_window| to infolist entries. |focused_index| become
-  // InfolistWindowView::InvalidFocusIndex if there is no selected entries.
+  // Converts |candidate_window| to infolist entry models. Sets
+  // |has_highlighted| to true if infolist_entries contains highlighted entry.
+  // TODO(mukai): move this method (and tests) to the new InfolistEntry model.
   static void ConvertLookupTableToInfolistEntry(
       const CandidateWindow& candidate_window,
-      std::vector<InfolistWindowView::Entry>* infolist_entries,
-      size_t* focused_index);
-
-  // Returns true if given |new_entries| is different from |old_entries| and
-  // should update current window.
-  static bool ShouldUpdateInfolist(
-      const std::vector<InfolistWindowView::Entry>& old_entries,
-      size_t old_focused_index,
-      const std::vector<InfolistWindowView::Entry>& new_entries,
-      size_t new_focused_index);
+      std::vector<InfolistEntry>* infolist_entries,
+      bool* has_highlighted);
 
  private:
   // CandidateWindowView::Observer implementation.
@@ -75,10 +70,10 @@ class CandidateWindowControllerImpl
   virtual void OnCandidateWindowOpened() OVERRIDE;
   virtual void OnCandidateWindowClosed() OVERRIDE;
 
-  // Creates the candidate window view.
-  void CreateView();
+  // views::WidgetObserver implementation.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
-  // IBusPanelCandidateWindowHandlerInterface overrides.
+  // IBusPanelCandidateWindowHandlerInterface implementation.
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) OVERRIDE;
   virtual void UpdateAuxiliaryText(const std::string& utf8_text,
@@ -89,9 +84,12 @@ class CandidateWindowControllerImpl
                                  unsigned int cursor, bool visible) OVERRIDE;
   virtual void FocusStateChanged(bool is_focused) OVERRIDE;
 
+  // Creates the candidate window view.
+  void CreateView();
+
   // Updates infolist bounds, if current bounds is up-to-date, this function
   // does nothing.
-  void UpdateInfolistBounds();
+  gfx::Rect GetInfolistBounds();
 
   // The candidate window view.
   CandidateWindowView* candidate_window_view_;
@@ -100,17 +98,15 @@ class CandidateWindowControllerImpl
   // own |candidate_window_|.
   scoped_ptr<views::Widget> frame_;
 
-  // This is the outer frame of the infolist window view. The frame will
-  // own |infolist_window_|.
-  scoped_ptr<DelayableWidget> infolist_window_;
+  // This is the outer frame of the infolist window view. Owned by the widget.
+  InfolistWindow* infolist_window_;
 
   // This is the controller of the IME mode indicator.
   scoped_ptr<ModeIndicatorController> mode_indicator_controller_;
 
   // The infolist entries and its focused index which currently shown in
   // Infolist window.
-  std::vector<InfolistWindowView::Entry> latest_infolist_entries_;
-  size_t latest_infolist_focused_index_;
+  std::vector<InfolistEntry> latest_infolist_entries_;
 
   ObserverList<CandidateWindowController::Observer> observers_;
 

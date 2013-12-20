@@ -12,11 +12,11 @@
 #include "ash/wm/window_animations.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
-#include "chrome/browser/chromeos/input_method/delayable_widget.h"
-#include "chrome/browser/chromeos/input_method/infolist_window_view.h"
+#include "chrome/browser/chromeos/input_method/infolist_window.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 
@@ -24,16 +24,12 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-// The milliseconds of the delay to show the infolist window.
-const int kInfolistShowDelayMilliSeconds = 500;
-// The milliseconds of the delay to hide the infolist window.
-const int kInfolistHideDelayMilliSeconds = 500;
 
 }  // namespace
 
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : candidate_window_view_(NULL),
-      latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
+      infolist_window_(NULL) {
   IBusBridge::Get()->SetCandidateWindowHandler(this);
   CreateView();
 }
@@ -48,7 +44,7 @@ void CandidateWindowControllerImpl::CreateView() {
   frame_.reset(new views::Widget);
   // The size is initially zero.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  // |frame_| and |infolist_window_| are owned by controller impl so
+  // |frame_| is owned by controller impl so
   // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Show the candidate window always on top
@@ -68,18 +64,6 @@ void CandidateWindowControllerImpl::CreateView() {
 
   frame_->SetContentsView(candidate_window_view_);
 
-  // Create the infolist window.
-  infolist_window_.reset(new DelayableWidget);
-  infolist_window_->Init(params);
-
-  views::corewm::SetWindowVisibilityAnimationType(
-      infolist_window_->GetNativeView(),
-      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-
-  InfolistWindowView* infolist_view = new InfolistWindowView;
-  infolist_view->Init();
-  infolist_window_->SetContentsView(infolist_view);
-
   // Create the mode indicator controller.
   mode_indicator_controller_.reset(
       new ModeIndicatorController(InputMethodManager::Get()));
@@ -91,7 +75,8 @@ void CandidateWindowControllerImpl::Hide() {
   // auxiliary text area will remain.
   candidate_window_view_->HideLookupTable();
   candidate_window_view_->HideAuxiliaryText();
-  infolist_window_->Hide();
+  if (infolist_window_)
+    infolist_window_->HideImmediately();
 }
 
 void CandidateWindowControllerImpl::SetCursorBounds(
@@ -114,7 +99,8 @@ void CandidateWindowControllerImpl::SetCursorBounds(
   candidate_window_view_->set_composition_head_bounds(composition_head);
   // Move the window per the cursor bounds.
   candidate_window_view_->ResizeAndMoveParentFrame();
-  UpdateInfolistBounds();
+  if (infolist_window_)
+    infolist_window_->GetWidget()->SetBounds(GetInfolistBounds());
 
   // Mode indicator controller also needs the cursor bounds.
   mode_indicator_controller_->SetCursorBounds(cursor_bounds);
@@ -139,12 +125,12 @@ void CandidateWindowControllerImpl::FocusStateChanged(bool is_focused) {
 // static
 void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
     const CandidateWindow& candidate_window,
-    std::vector<InfolistWindowView::Entry>* infolist_entries,
-    size_t* focused_index) {
-  DCHECK(focused_index);
+    std::vector<InfolistEntry>* infolist_entries,
+    bool* has_highlighted) {
   DCHECK(infolist_entries);
-  *focused_index = InfolistWindowView::InvalidFocusIndex();
+  DCHECK(has_highlighted);
   infolist_entries->clear();
+  *has_highlighted = false;
 
   const size_t cursor_index_in_page =
       candidate_window.cursor_position() % candidate_window.page_size();
@@ -155,35 +141,14 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
     if (ibus_entry.description_title.empty() &&
         ibus_entry.description_body.empty())
       continue;
-    InfolistWindowView::Entry entry;
-    entry.title = ibus_entry.description_title;
-    entry.body = ibus_entry.description_body;
-    infolist_entries->push_back(entry);
-    if (i == cursor_index_in_page)
-      *focused_index = infolist_entries->size() - 1;
-  }
-}
-
-// static
-bool CandidateWindowControllerImpl::ShouldUpdateInfolist(
-    const std::vector<InfolistWindowView::Entry>& old_entries,
-    size_t old_focused_index,
-    const std::vector<InfolistWindowView::Entry>& new_entries,
-    size_t new_focused_index) {
-  if (old_entries.empty() && new_entries.empty())
-    return false;
-  if (old_entries.size() != new_entries.size())
-    return true;
-  if (old_focused_index != new_focused_index)
-    return true;
-
-  for (size_t i = 0; i < old_entries.size(); ++i) {
-    if (old_entries[i].title != new_entries[i].title ||
-        old_entries[i].body != new_entries[i].body ) {
-      return true;
+    InfolistEntry entry(UTF8ToUTF16(ibus_entry.description_title),
+                        UTF8ToUTF16(ibus_entry.description_body));
+    if (i == cursor_index_in_page) {
+      entry.highlighted = true;
+      *has_highlighted = true;
     }
+    infolist_entries->push_back(entry);
   }
-  return false;
 }
 
 void CandidateWindowControllerImpl::UpdateLookupTable(
@@ -192,7 +157,8 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
   // If it's not visible, hide the lookup table and return.
   if (!visible) {
     candidate_window_view_->HideLookupTable();
-    infolist_window_->Hide();
+    if (infolist_window_)
+      infolist_window_->HideImmediately();
     // TODO(nona): Introduce unittests for crbug.com/170036.
     latest_infolist_entries_.clear();
     return;
@@ -201,62 +167,55 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
   candidate_window_view_->UpdateCandidates(candidate_window);
   candidate_window_view_->ShowLookupTable();
 
-  size_t focused_index = 0;
-  std::vector<InfolistWindowView::Entry> infolist_entries;
+  bool has_highlighted = false;
+  std::vector<InfolistEntry> infolist_entries;
   ConvertLookupTableToInfolistEntry(candidate_window, &infolist_entries,
-                                    &focused_index);
-
-  // If there is no infolist entry, just hide.
-  if (infolist_entries.empty()) {
-    infolist_window_->Hide();
-    return;
-  }
+                                    &has_highlighted);
 
   // If there is no change, just return.
-  if (!ShouldUpdateInfolist(latest_infolist_entries_,
-                            latest_infolist_focused_index_,
-                            infolist_entries,
-                            focused_index)) {
+  if (latest_infolist_entries_ == infolist_entries)
     return;
-  }
 
   latest_infolist_entries_ = infolist_entries;
-  latest_infolist_focused_index_ = focused_index;
 
-  InfolistWindowView* view = static_cast<InfolistWindowView*>(
-      infolist_window_->GetContentsView());
-  if (!view) {
-    DLOG(ERROR) << "Contents View is not InfolistWindowView.";
+  if (infolist_entries.empty()) {
+    if (infolist_window_)
+      infolist_window_->HideImmediately();
     return;
   }
 
-  view->Relayout(infolist_entries, focused_index);
-  UpdateInfolistBounds();
+  // Highlight moves out of the infolist entries.
+  if (!has_highlighted) {
+    if (infolist_window_)
+      infolist_window_->HideWithDelay();
+    return;
+  }
 
-  if (focused_index < infolist_entries.size())
-    infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
-  else
-    infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
+  if (infolist_window_) {
+    infolist_window_->Relayout(infolist_entries);
+    infolist_window_->GetWidget()->SetBounds(GetInfolistBounds());
+  } else {
+    infolist_window_ = new InfolistWindow(infolist_entries);
+    infolist_window_->InitWidget(
+        ash::Shell::GetContainer(
+            ash::Shell::GetTargetRootWindow(),
+            ash::internal::kShellWindowId_InputMethodContainer),
+        GetInfolistBounds());
+    infolist_window_->GetWidget()->AddObserver(this);
+  }
+  infolist_window_->ShowWithDelay();
 }
 
-void CandidateWindowControllerImpl::UpdateInfolistBounds() {
-  InfolistWindowView* view = static_cast<InfolistWindowView*>(
-      infolist_window_->GetContentsView());
-  if (!view)
-    return;
-  const gfx::Rect current_bounds =
-      infolist_window_->GetClientAreaBoundsInScreen();
-
-  gfx::Rect new_bounds;
-  new_bounds.set_size(view->GetPreferredSize());
+gfx::Rect CandidateWindowControllerImpl::GetInfolistBounds() {
+  gfx::Rect new_bounds(infolist_window_->GetPreferredSize());
+  // Infolist has to be in the same display of the candidate window.
+  gfx::NativeWindow native_frame = frame_->GetNativeWindow();
   new_bounds.set_origin(GetInfolistWindowPosition(
         frame_->GetClientAreaBoundsInScreen(),
-        ash::Shell::GetScreen()->GetDisplayNearestWindow(
-            infolist_window_->GetNativeView()).work_area(),
+        gfx::Screen::GetScreenFor(native_frame)->GetDisplayNearestWindow(
+            native_frame).work_area(),
         new_bounds.size()));
-
-  if (current_bounds != new_bounds)
-    infolist_window_->SetBounds(new_bounds);
+  return new_bounds;
 }
 
 void CandidateWindowControllerImpl::UpdatePreeditText(
@@ -283,6 +242,13 @@ void CandidateWindowControllerImpl::OnCandidateWindowOpened() {
 void CandidateWindowControllerImpl::OnCandidateWindowClosed() {
   FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
                     CandidateWindowClosed());
+}
+
+void CandidateWindowControllerImpl::OnWidgetClosing(views::Widget* widget) {
+  if (infolist_window_ && widget == infolist_window_->GetWidget()) {
+    widget->RemoveObserver(this);
+    infolist_window_ = NULL;
+  }
 }
 
 void CandidateWindowControllerImpl::AddObserver(
