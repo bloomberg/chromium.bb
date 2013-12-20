@@ -291,7 +291,8 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     }
   }
 
-  if (!component_extension_ime_manager_->IsInitialized()) {
+  if (!component_extension_ime_manager_->IsInitialized() &&
+      !InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     // We can't change input method before the initialization of
     // component extension ime manager.  ChangeInputMethod will be
     // called with |pending_input_method_| when the initialization is
@@ -299,26 +300,22 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     pending_input_method_ = input_method_id_to_switch;
     return false;
   }
-
   pending_input_method_.clear();
-  IBusEngineHandlerInterface* engine =
-      IBusBridge::Get()->GetCurrentEngineHandler();
 
   // Hide candidate window and info list.
   if (candidate_window_controller_.get())
     candidate_window_controller_->Hide();
 
-  const std::string current_input_method_id = current_input_method_.id();
-  if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
-    if (engine) {
-      engine->Disable();
-      IBusBridge::Get()->SetCurrentEngineHandler(NULL);
-    }
-  } else {
-    // Disable the current engine and enable the next engine.
-    if (engine)
-      engine->Disable();
+  // Disable the current engine handler.
+  IBusEngineHandlerInterface* engine =
+      IBusBridge::Get()->GetCurrentEngineHandler();
+  if (engine)
+    engine->Disable();
 
+  // Configure the next engine handler.
+  if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
+    IBusBridge::Get()->SetCurrentEngineHandler(NULL);
+  } else {
     IBusEngineHandlerInterface* next_engine =
         IBusBridge::Get()->SetCurrentEngineHandlerById(
             input_method_id_to_switch);
@@ -327,23 +324,24 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
       next_engine->Enable();
   }
 
-  if (current_input_method_id != input_method_id_to_switch) {
+  // TODO(komatsu): Check if it is necessary to perform the above routine
+  // when the current input method is equal to |input_method_id_to_swich|.
+  if (current_input_method_.id() != input_method_id_to_switch) {
     // Clear property list.  Property list would be updated by
-    // extension IMEs via InputMethodEngineIBus::(Set|Update)MenuItems.
+    // extension IMEs via InputMethodEngine::(Set|Update)MenuItems.
     // If the current input method is a keyboard layout, empty
     // properties are sufficient.
     const InputMethodPropertyList empty_property_list;
     SetCurrentInputMethodProperties(empty_property_list);
 
     const InputMethodDescriptor* descriptor = NULL;
-    if (!extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
+    if (extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
+      DCHECK(extra_input_methods_.find(input_method_id_to_switch) !=
+             extra_input_methods_.end());
+      descriptor = &(extra_input_methods_[input_method_id_to_switch]);
+    } else {
       descriptor =
           util_.GetInputMethodDescriptorFromId(input_method_id_to_switch);
-    } else {
-      std::map<std::string, InputMethodDescriptor>::const_iterator i =
-          extra_input_methods_.find(input_method_id_to_switch);
-      DCHECK(i != extra_input_methods_.end());
-      descriptor = &(i->second);
     }
     DCHECK(descriptor);
 
@@ -672,6 +670,7 @@ void InputMethodManagerImpl::SwitchToNextInputMethodInternal(
 InputMethodDescriptor InputMethodManagerImpl::GetCurrentInputMethod() const {
   if (current_input_method_.id().empty())
     return InputMethodUtil::GetFallbackInputMethodDescriptor();
+
   return current_input_method_;
 }
 

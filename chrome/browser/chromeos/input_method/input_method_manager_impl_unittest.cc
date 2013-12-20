@@ -294,6 +294,13 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 }
 
+TEST_F(InputMethodManagerImplTest, TestEnableLayoutsAndCurrentInputMethod) {
+  // For http://crbug.com/329061
+  manager_->EnableLayouts("en-US", "xkb:se::swe");
+  const std::string im_id = manager_->GetCurrentInputMethod().id();
+  EXPECT_EQ("xkb:se::swe", im_id);
+}
+
 TEST_F(InputMethodManagerImplTest, TestEnableLayoutsNonUsHardwareKeyboard) {
   // The physical layout is French.
   delegate_->set_hardware_keyboard_layout("xkb:fr::fra");
