@@ -245,6 +245,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   AppCacheService* service_;
   const GURL manifest_url_;  // here for easier access
 
+  // Defined prior to refs to AppCaches and Groups because destruction
+  // order matters, the disabled_storage_reference_ must outlive those
+  // objects.
+  scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
+
   scoped_refptr<AppCache> inprogress_cache_;
 
   AppCacheGroup* group_;
@@ -307,7 +312,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   StoredState stored_state_;
 
   AppCacheStorage* storage_;
-  scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
 
   FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
 
