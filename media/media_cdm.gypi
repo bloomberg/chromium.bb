@@ -81,6 +81,8 @@
             '<(DEPTH)/base/base.gyp:base',
           ],
           'sources': [
+            'cdm/ppapi/cdm_file_io_test.cc',
+            'cdm/ppapi/cdm_file_io_test.h',
             'cdm/ppapi/cdm_video_decoder.cc',
             'cdm/ppapi/cdm_video_decoder.h',
             'cdm/ppapi/clear_key_cdm.cc',

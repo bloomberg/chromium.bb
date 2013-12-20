@@ -23,6 +23,7 @@
 #endif
 
 namespace media {
+class FileIOTestRunner;
 class CdmVideoDecoder;
 class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
@@ -30,7 +31,9 @@ class FFmpegCdmAudioDecoder;
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public ClearKeyCdmInterface {
  public:
-  explicit ClearKeyCdm(Host* host, bool is_decrypt_only);
+  explicit ClearKeyCdm(Host* host,
+                       bool is_decrypt_only,
+                       bool should_test_file_io);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
@@ -104,13 +107,19 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                                       cdm::AudioFrames* audio_frames);
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
+  void StartFileIOTest();
+
+  // Callback for CDM File IO test.
+  void OnFileIOTestComplete(bool success);
+
   AesDecryptor decryptor_;
 
   ClearKeyCdmHost* host_;
 
   const bool is_decrypt_only_;
+  const bool should_test_file_io_;
 
-  uint32 heartbeat_session_id_;
+  uint32 last_session_id_;
   std::string next_heartbeat_message_;
 
   // Timer delay in milliseconds for the next host_->SetTimer() call.
@@ -133,6 +142,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
   scoped_ptr<CdmVideoDecoder> video_decoder_;
+
+  scoped_ptr<FileIOTestRunner> file_io_test_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearKeyCdm);
 };

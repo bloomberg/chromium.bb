@@ -36,6 +36,8 @@ const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
+const char kExternalClearKeyFileIOTestKeySystem[] =
+    "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
     "org.chromium.externalclearkey.initializefail";
 
@@ -51,6 +53,7 @@ const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 // EME-specific test results and errors.
 const char kEmeKeyError[] = "KEYERROR";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
+const char kFileIOTestSuccess[] = "FILEIOTESTSUCCESS";
 
 // The type of video src used to load media.
 enum SrcType {
@@ -388,13 +391,21 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 #if defined(ENABLE_PEPPER_CDMS)
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest,
-                       ExternalClearKeyInitializeCDMFail) {
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
   RunEncryptedMediaTest("encrypted_media_player.html",
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,
                         kExternalClearKeyInitializeFailKeySystem,
                         SRC,
                         kEmeKeyError);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
+  RunEncryptedMediaTest("encrypted_media_player.html",
+                        "bear-a-enc_a.webm",
+                        kWebMAudioOnly,
+                        kExternalClearKeyFileIOTestKeySystem,
+                        SRC,
+                        kFileIOTestSuccess);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)

@@ -14,19 +14,30 @@ var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
 var KEY_ID = getInitDataFromKeyId("0123456789012345");
 // Heart beat message header.
 var HEART_BEAT_HEADER = 'HEARTBEAT';
+var FILE_IO_TEST_RESULT_HEADER = 'FILEIOTESTRESULT';
 var EXTERNAL_CLEAR_KEY_KEY_SYSTEM = "org.chromium.externalclearkey";
+var EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM =
+    "org.chromium.externalclearkey.fileiotest";
 // Note that his URL has been normalized from the one in clear_key_cdm.cc.
 var EXTERNAL_CLEAR_KEY_HEARTBEAT_URL =
     'http://test.externalclearkey.chromium.org/';
 
-function isHeartbeatMessage(msg) {
-  if (msg.length < HEART_BEAT_HEADER.length)
+function hasPrefix(msg, prefix) {
+  if (msg.length < prefix.length)
     return false;
-  for (var i = 0; i < HEART_BEAT_HEADER.length; ++i) {
-    if (String.fromCharCode(msg[i]) != HEART_BEAT_HEADER[i])
+  for (var i = 0; i < prefix.length; ++i) {
+    if (String.fromCharCode(msg[i]) != prefix[i])
       return false;
   }
   return true;
+}
+
+function isHeartbeatMessage(msg) {
+  return hasPrefix(msg, HEART_BEAT_HEADER);
+}
+
+function isFileIOTestMessage(msg) {
+  return hasPrefix(msg, FILE_IO_TEST_RESULT_HEADER);
 }
 
 function loadEncryptedMediaFromURL(video) {
@@ -89,6 +100,21 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       return;
     }
 
+    if (isFileIOTestMessage(e.message)) {
+      var success = getFileIOTestResult(e);
+      console.log('onKeyMessage - CDM file IO test: ' +
+                  (success ? 'Success' : 'Fail'));
+      if (success)
+        setResultInTitle("FILEIOTESTSUCCESS");
+      else
+        setResultInTitle("FAILED");
+      return;
+    }
+
+    // For FileIOTest key system, no need to start playback.
+    if (e.keySystem == EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM)
+      return;
+
     // No tested key system returns defaultURL in for key request messages.
     if (e.defaultURL) {
       failTest('keymessage unexpectedly has defaultURL: ' + e.defaultURL);
@@ -123,6 +149,21 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       failTest('Heartbeat message with unexpected defaultURL: ' + e.defaultURL);
       return;
     }
+  }
+
+  function getFileIOTestResult(e) {
+    // Only External Clear Key sends a FILEIOTESTRESULT message.
+    if (e.keySystem != EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM) {
+      failTest('Unexpected CDM file IO test result from ' + e.keySystem);
+      return false;
+    }
+
+    // The test result is either '0' or '1' appended to the header.
+    if (e.message.length != FILE_IO_TEST_RESULT_HEADER.length + 1)
+      return false;
+
+    var result_index = FILE_IO_TEST_RESULT_HEADER.length;
+    return String.fromCharCode(e.message[result_index]) == 1;
   }
 
   video.addEventListener('webkitneedkey', onNeedKey);

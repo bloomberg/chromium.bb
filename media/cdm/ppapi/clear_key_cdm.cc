@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -63,6 +64,8 @@ const char kClearKeyCdmVersion[] = "0.1.0.1";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
+const char kExternalClearKeyFileIOTestKeySystem[] =
+    "org.chromium.externalclearkey.fileiotest";
 const int64 kSecondsPerMinute = 60;
 const int64 kMsPerSecond = 1000;
 const int64 kInitialTimerDelayMs = 200;
@@ -70,6 +73,8 @@ const int64 kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
 // Heart beat message header. If a key message starts with |kHeartBeatHeader|,
 // it's a heart beat message. Otherwise, it's a key request.
 const char kHeartBeatHeader[] = "HEARTBEAT";
+// CDM file IO test result header.
+const char kFileIOTestResultHeader[] = "FILEIOTESTRESULT";
 
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.
@@ -107,6 +112,12 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
   return output_buffer;
 }
 
+static std::string GetFileIOTestResultMessage(bool success) {
+  std::string message(kFileIOTestResultHeader);
+  message += success ? '1' : '0';
+  return message;
+}
+
 template<typename Type>
 class ScopedResetter {
  public:
@@ -135,7 +146,8 @@ void* CreateCdmInstance(int cdm_interface_version,
 
   std::string key_system_string(key_system, key_system_size);
   if (key_system_string != kExternalClearKeyKeySystem &&
-      key_system_string != kExternalClearKeyDecryptOnlyKeySystem) {
+      key_system_string != kExternalClearKeyDecryptOnlyKeySystem &&
+      key_system_string != kExternalClearKeyFileIOTestKeySystem) {
     DVLOG(1) << "Unsupported key system:" << key_system_string;
     return NULL;
   }
@@ -149,7 +161,9 @@ void* CreateCdmInstance(int cdm_interface_version,
     return NULL;
 
   return new media::ClearKeyCdm(
-      host, key_system_string == kExternalClearKeyDecryptOnlyKeySystem);
+      host,
+      key_system_string == kExternalClearKeyDecryptOnlyKeySystem,
+      key_system_string == kExternalClearKeyFileIOTestKeySystem);
 }
 
 const char* GetCdmVersion() {
@@ -158,7 +172,9 @@ const char* GetCdmVersion() {
 
 namespace media {
 
-ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, bool is_decrypt_only)
+ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
+                         bool is_decrypt_only,
+                         bool should_test_file_io)
     : decryptor_(
           base::Bind(&ClearKeyCdm::OnSessionCreated, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
@@ -167,7 +183,8 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, bool is_decrypt_only)
           base::Bind(&ClearKeyCdm::OnSessionError, base::Unretained(this))),
       host_(host),
       is_decrypt_only_(is_decrypt_only),
-      heartbeat_session_id_(0),
+      should_test_file_io_(should_test_file_io),
+      last_session_id_(MediaKeys::kInvalidSessionId),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -190,8 +207,11 @@ void ClearKeyCdm::CreateSession(uint32 session_id,
   decryptor_.CreateSession(
       session_id, std::string(type, type_size), init_data, init_data_size);
 
-  // Only save the latest session ID for heartbeat messages.
-  heartbeat_session_id_ = session_id;
+  // Save the latest session ID for heartbeat and file IO test messages.
+  last_session_id_ = session_id;
+
+  if (should_test_file_io_)
+    StartFileIOTest();
 }
 
 void ClearKeyCdm::UpdateSession(uint32 session_id,
@@ -224,7 +244,7 @@ void ClearKeyCdm::TimerExpired(void* context) {
   // There is no service at this URL, so applications should ignore it.
   const char url[] = "http://test.externalclearkey.chromium.org";
 
-  host_->OnSessionMessage(heartbeat_session_id_,
+  host_->OnSessionMessage(last_session_id_,
                           heartbeat_message.data(),
                           heartbeat_message.size(),
                           url,
@@ -555,5 +575,20 @@ cdm::Status ClearKeyCdm::GenerateFakeAudioFrames(
   return samples_generated == 0 ? cdm::kNeedMoreData : cdm::kSuccess;
 }
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+
+void ClearKeyCdm::StartFileIOTest() {
+  file_io_test_runner_.reset(new FileIOTestRunner(
+      base::Bind(&ClearKeyCdmHost::CreateFileIO, base::Unretained(host_))));
+  file_io_test_runner_->RunAllTests(
+      base::Bind(&ClearKeyCdm::OnFileIOTestComplete, base::Unretained(this)));
+}
+
+void ClearKeyCdm::OnFileIOTestComplete(bool success) {
+  DVLOG(1) << __FUNCTION__ << ": " << success;
+  std::string message = GetFileIOTestResultMessage(success);
+  host_->OnSessionMessage(
+      last_session_id_, message.data(), message.size(), NULL, 0);
+  file_io_test_runner_.reset();
+}
 
 }  // namespace media
