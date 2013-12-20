@@ -13,11 +13,11 @@
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -32,31 +32,23 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
   return static_cast<NativeWidgetAura*>(widget->native_widget());
 }
 
-class NativeWidgetAuraTest : public testing::Test {
+class NativeWidgetAuraTest : public ViewsTestBase {
  public:
   NativeWidgetAuraTest() {}
   virtual ~NativeWidgetAuraTest() {}
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
+    ViewsTestBase::SetUp();
     root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
     dispatcher()->SetHostSize(gfx::Size(640, 480));
   }
-  virtual void TearDown() OVERRIDE {
-    message_loop_.RunUntilIdle();
-    aura_test_helper_->TearDown();
-  }
 
  protected:
-  aura::Window* root_window() { return aura_test_helper_->root_window(); }
-  aura::RootWindow* dispatcher() { return aura_test_helper_->dispatcher(); }
+  aura::Window* root_window() { return GetContext(); }
+  aura::RootWindow* dispatcher() { return root_window()->GetDispatcher(); }
 
  private:
-  base::MessageLoopForUI message_loop_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
 };
 

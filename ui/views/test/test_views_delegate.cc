@@ -13,12 +13,19 @@
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/views/corewm/wm_state.h"
+#endif
+
 namespace views {
 
 TestViewsDelegate::TestViewsDelegate()
     : use_transparent_windows_(false) {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
+#if defined(USE_AURA)
+  wm_state_.reset(new views::corewm::WMState);
+#endif
 }
 
 TestViewsDelegate::~TestViewsDelegate() {

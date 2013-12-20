@@ -272,6 +272,8 @@
         'corewm/window_modality_controller.h',
         'corewm/window_util.cc',
         'corewm/window_util.h',
+        'corewm/wm_state.cc',
+        'corewm/wm_state.h',
         'debug_utils.cc',
         'debug_utils.h',
         'drag_controller.h',

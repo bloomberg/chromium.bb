@@ -942,6 +942,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     created_profiles_.erase(it);
   }
 
+  virtual views::ViewsDelegate* CreateViewsDelegate() OVERRIDE {
+    return new TestViewsDelegateForAppTest;
+  }
+
  private:
   typedef std::map<Profile*, std::string> ProfileToNameMap;
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
@@ -2356,9 +2360,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHandlingTwoUsers) {
   InitLauncherController();
-  // We need to create a dummy views delegate to be able to create a V2 app.
-  scoped_ptr<TestViewsDelegateForAppTest> views_delegate(
-      new TestViewsDelegateForAppTest());
   // Create a profile for our second user (will be destroyed by the framework).
   TestingProfile* profile2 = CreateMultiUserProfile("user2");
   // Check that there is a browser and a app launcher.
@@ -2383,9 +2384,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHandlingTwoUsersEdgeCases) {
   InitLauncherController();
-  // We need to create a dummy views delegate to be able to create a V2 app.
-  scoped_ptr<TestViewsDelegateForAppTest> views_delegate(
-      new TestViewsDelegateForAppTest());
   // Create a profile for our second user (will be destroyed by the framework).
   TestingProfile* profile2 = CreateMultiUserProfile("user2");
   // Check that there is a browser and a app launcher.

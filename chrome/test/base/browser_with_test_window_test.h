@@ -43,6 +43,12 @@ class AuraTestHelper;
 }
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+namespace views {
+class ViewsDelegate;
+}
+#endif
+
 namespace content {
 class NavigationController;
 class WebContents;
@@ -146,6 +152,12 @@ class BrowserWithTestWindowTest : public testing::Test {
                                  chrome::HostDesktopType host_desktop_type,
                                  BrowserWindow* browser_window);
 
+#if defined(TOOLKIT_VIEWS)
+  // Creates the ViewsDelegate to use, may be overriden to create a different
+  // ViewsDelegate.
+  virtual views::ViewsDelegate* CreateViewsDelegate();
+#endif
+
  private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   content::TestBrowserThreadBundle thread_bundle_;
@@ -173,6 +185,10 @@ class BrowserWithTestWindowTest : public testing::Test {
 #endif
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  scoped_ptr<views::ViewsDelegate> views_delegate_;
 #endif
 
 #if defined(OS_WIN)

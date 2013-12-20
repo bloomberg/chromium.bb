@@ -25,6 +25,10 @@
 #include "ash/test/ash_test_helper.h"
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/test/test_views_delegate.h"
+#endif
+
 using content::NavigationController;
 using content::RenderViewHost;
 using content::RenderViewHostTester;
@@ -57,6 +61,10 @@ void BrowserWithTestWindowTest::SetUp() {
       base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
 #endif  // USE_AURA
+#if defined(TOOLKIT_VIEWS)
+  views_delegate_.reset(CreateViewsDelegate());
+  views::ViewsDelegate::views_delegate = views_delegate_.get();
+#endif
 
   // Subclasses can provide their own Profile.
   profile_ = CreateProfile();
@@ -89,6 +97,11 @@ void BrowserWithTestWindowTest::TearDown() {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
   base::MessageLoop::current()->Run();
+
+#if defined(TOOLKIT_VIEWS)
+  views::ViewsDelegate::views_delegate = NULL;
+  views_delegate_.reset(NULL);
+#endif
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
@@ -202,3 +215,9 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
   params.window = browser_window;
   return new Browser(params);
 }
+
+#if defined(TOOLKIT_VIEWS)
+views::ViewsDelegate* BrowserWithTestWindowTest::CreateViewsDelegate() {
+  return new views::TestViewsDelegate;
+}
+#endif

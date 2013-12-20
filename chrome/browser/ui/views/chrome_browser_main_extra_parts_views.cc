@@ -10,10 +10,13 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(USE_AURA)
-#include "ui/views/corewm/transient_window_stacking_client.h"
+#include "ui/views/corewm/wm_state.h"
 #endif
 
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
+}
+
+ChromeBrowserMainExtraPartsViews::~ChromeBrowserMainExtraPartsViews() {
 }
 
 void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
@@ -23,8 +26,6 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 
 #if defined(USE_AURA)
-  // SetWindowStackingClient() takes ownership of TransientWindowStackingClient.
-  aura::client::SetWindowStackingClient(
-      new views::corewm::TransientWindowStackingClient);
+  wm_state_.reset(new views::corewm::WMState);
 #endif
 }

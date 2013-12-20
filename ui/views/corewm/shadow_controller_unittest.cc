@@ -16,6 +16,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/corewm/shadow.h"
 #include "ui/views/corewm/shadow_types.h"
+#include "ui/views/corewm/wm_state.h"
 
 namespace views {
 namespace corewm {
@@ -26,6 +27,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   virtual ~ShadowControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    wm_state_.reset(new views::corewm::WMState);
     AuraTestBase::SetUp();
     aura::client::ActivationClient* activation_client =
         aura::client::GetActivationClient(root_window());
@@ -34,6 +36,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   virtual void TearDown() OVERRIDE {
     shadow_controller_.reset();
     AuraTestBase::TearDown();
+    wm_state_.reset();
   }
 
  protected:
@@ -48,6 +51,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 
  private:
   scoped_ptr<ShadowController> shadow_controller_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowControllerTest);
 };

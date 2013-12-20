@@ -21,6 +21,10 @@ class WMTestHelper;
 namespace views {
 class ViewsDelegate;
 
+namespace corewm {
+class WMState;
+}
+
 namespace examples {
 
 class ExamplesBrowserMainParts : public content::BrowserMainParts {
@@ -30,6 +34,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   virtual ~ExamplesBrowserMainParts();
 
   // Overridden from content::BrowserMainParts:
+  virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
@@ -46,6 +51,10 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
 #if defined(OS_CHROMEOS)
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
+#endif
+
+#if defined(USE_AURA)
+  scoped_ptr<views::corewm::WMState> wm_state_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);

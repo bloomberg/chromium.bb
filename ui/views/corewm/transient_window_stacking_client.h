@@ -18,7 +18,7 @@ class VIEWS_EXPORT TransientWindowStackingClient
   virtual ~TransientWindowStackingClient();
 
   // WindowStackingClient:
-  virtual void AdjustStacking(aura::Window** child,
+  virtual bool AdjustStacking(aura::Window** child,
                               aura::Window** target,
                               aura::Window::StackDirection* direction) OVERRIDE;
 

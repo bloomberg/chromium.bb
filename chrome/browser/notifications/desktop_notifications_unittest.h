@@ -21,6 +21,14 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_AURA)
+namespace views {
+namespace corewm {
+class WMState;
+}
+}
+#endif
+
 class ActiveDesktopMonitor;
 class DesktopNotificationsTest;
 typedef LoggingNotificationDelegate<DesktopNotificationsTest>
@@ -121,6 +129,13 @@ class DesktopNotificationsTest : public testing::Test {
 
   // Contains the cumulative output of the unit test.
   static std::string log_output_;
+
+ private:
+#if defined(USE_AURA)
+  scoped_ptr<views::corewm::WMState> wm_state_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopNotificationsTest);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATIONS_UNITTEST_H_

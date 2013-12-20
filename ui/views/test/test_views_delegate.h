@@ -20,6 +20,10 @@ namespace views {
 class View;
 class Widget;
 
+namespace corewm {
+class WMState;
+}
+
 class TestViewsDelegate : public ViewsDelegate {
  public:
   TestViewsDelegate();
@@ -71,6 +75,10 @@ class TestViewsDelegate : public ViewsDelegate {
 
  private:
   bool use_transparent_windows_;
+
+#if defined(USE_AURA)
+  scoped_ptr<views::corewm::WMState> wm_state_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

@@ -31,6 +31,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/views/corewm/wm_state.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -100,6 +101,10 @@ void ViewEventTestBase::Done() {
 }
 
 void ViewEventTestBase::SetUp() {
+#if defined(USE_AURA)
+  wm_state_.reset(new views::corewm::WMState);
+#endif
+
   views::ViewsDelegate::views_delegate = &views_delegate_;
   ui::InitializeInputMethodForTesting();
   gfx::NativeView context = NULL;
@@ -174,6 +179,10 @@ void ViewEventTestBase::TearDown() {
 
   ui::ShutdownInputMethodForTesting();
   views::ViewsDelegate::views_delegate = NULL;
+
+#if defined(USE_AURA)
+  wm_state_.reset();
+#endif
 }
 
 bool ViewEventTestBase::CanResize() const {

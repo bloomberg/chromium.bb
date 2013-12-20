@@ -22,6 +22,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/wm_state.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
@@ -41,6 +42,12 @@ ExamplesBrowserMainParts::ExamplesBrowserMainParts(
 }
 
 ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
+}
+
+void ExamplesBrowserMainParts::ToolkitInitialized() {
+#if defined(USE_AURA)
+  wm_state_.reset(new views::corewm::WMState);
+#endif
 }
 
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {

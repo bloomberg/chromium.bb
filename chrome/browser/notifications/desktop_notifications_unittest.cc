@@ -27,6 +27,10 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/views/corewm/wm_state.h"
+#endif
+
 
 using content::BrowserThread;
 
@@ -103,6 +107,9 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 
 void DesktopNotificationsTest::SetUp() {
   ui::InitializeInputMethodForTesting();
+#if defined(USE_AURA)
+  wm_state_.reset(new views::corewm::WMState);
+#endif
 #if defined(USE_ASH)
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -116,7 +123,6 @@ void DesktopNotificationsTest::SetUp() {
   // So it is necessary to make sure the desktop gets created first.
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate);
 #endif
-
   chrome::RegisterLocalState(local_state_.registry());
   profile_.reset(new TestingProfile());
   ui_manager_.reset(new BalloonNotificationUIManager(&local_state_));
@@ -137,6 +143,9 @@ void DesktopNotificationsTest::TearDown() {
   message_center::MessageCenter::Shutdown();
   aura::Env::DeleteInstance();
   ui::TerminateContextFactoryForTests();
+#endif
+#if defined(USE_AURA)
+  wm_state_.reset();
 #endif
   ui::ShutdownInputMethodForTesting();
 }

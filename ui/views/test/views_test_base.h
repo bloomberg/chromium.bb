@@ -57,6 +57,7 @@ class ViewsTestBase : public testing::Test {
   scoped_ptr<TestViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 #endif
   bool setup_called_;
   bool teardown_called_;

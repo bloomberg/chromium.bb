@@ -22,6 +22,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
+#include "ui/views/corewm/wm_state.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -72,6 +73,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   virtual ~TooltipControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    wm_state_.reset(new views::corewm::WMState);
     aura::test::AuraTestBase::SetUp();
 #if defined(OS_CHROMEOS)
     controller_.reset(new TooltipController(
@@ -100,6 +102,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
     helper_.reset();
     widget_.reset();
     aura::test::AuraTestBase::TearDown();
+    wm_state_.reset();
   }
 
  protected:
@@ -126,9 +129,12 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
 
  private:
   scoped_ptr<TooltipController> controller_;
+
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
+
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest);
 };

@@ -14,7 +14,6 @@ WindowStackingClient* instance = NULL;
 }  // namespace
 
 void SetWindowStackingClient(WindowStackingClient* client) {
-  delete instance;
   instance = client;
 }
 

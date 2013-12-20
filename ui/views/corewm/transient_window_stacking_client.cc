@@ -68,7 +68,7 @@ TransientWindowStackingClient::TransientWindowStackingClient() {
 TransientWindowStackingClient::~TransientWindowStackingClient() {
 }
 
-void TransientWindowStackingClient::AdjustStacking(
+bool TransientWindowStackingClient::AdjustStacking(
     Window** child,
     Window** target,
     Window::StackDirection* direction) {
@@ -89,6 +89,7 @@ void TransientWindowStackingClient::AdjustStacking(
     }
     *target = siblings[target_i];
   }
+  return true;
 }
 
 }  // namespace corewm

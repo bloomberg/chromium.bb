@@ -29,6 +29,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/corewm/wm_state.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
 
@@ -95,6 +96,10 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
 #endif
+}
+
+void ShellBrowserMainParts::ToolkitInitialized() {
+  wm_state_.reset(new views::corewm::WMState);
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {

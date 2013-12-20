@@ -20,6 +20,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/corewm/base_focus_rules.h"
+#include "ui/views/corewm/wm_state.h"
 
 namespace views {
 namespace corewm {
@@ -347,6 +348,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
 
   // Overridden from aura::test::AuraTestBase:
   virtual void SetUp() OVERRIDE {
+    wm_state_.reset(new views::corewm::WMState);
     // FocusController registers itself as an Env observer so it can catch all
     // window initializations, including the root_window()'s, so we create it
     // before allowing the base setup.
@@ -393,6 +395,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     aura::test::AuraTestBase::TearDown();
     test_focus_rules_ = NULL;  // Owned by FocusController.
     focus_controller_.reset();
+    wm_state_.reset();
   }
 
   void FocusWindow(aura::Window* window) {
@@ -444,6 +447,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
  private:
   scoped_ptr<FocusController> focus_controller_;
   TestFocusRules* test_focus_rules_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerTestBase);
 };

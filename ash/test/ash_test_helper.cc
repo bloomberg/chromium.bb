@@ -22,7 +22,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/capture_controller.h"
-#include "ui/views/corewm/transient_window_stacking_client.h"
+#include "ui/views/corewm/wm_state.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -51,6 +51,8 @@ AshTestHelper::~AshTestHelper() {
 }
 
 void AshTestHelper::SetUp(bool start_session) {
+  wm_state_.reset(new views::corewm::WMState);
+
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
@@ -95,10 +97,6 @@ void AshTestHelper::SetUp(bool start_session) {
   test_screenshot_delegate_ = new TestScreenshotDelegate();
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
-
-  // SetWindowStackingClient() takes ownership of TransientWindowStackingClient.
-  aura::client::SetWindowStackingClient(
-      new views::corewm::TransientWindowStackingClient);
 }
 
 void AshTestHelper::TearDown() {
@@ -128,7 +126,7 @@ void AshTestHelper::TearDown() {
 
   CHECK(!views::corewm::ScopedCaptureClient::IsActive());
 
-  aura::client::SetWindowStackingClient(NULL);
+  wm_state_.reset();
 }
 
 void AshTestHelper::RunAllPendingInMessageLoop() {
