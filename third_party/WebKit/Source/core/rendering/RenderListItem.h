@@ -49,6 +49,7 @@ public:
     String markerTextWithSuffix() const;
 
     void updateListMarkerNumbers();
+    void updateMarkerLocation();
 
     static void updateItemValuesForOrderedList(const HTMLOListElement*);
     static unsigned itemCountForOrderedList(const HTMLOListElement*);
@@ -76,7 +77,6 @@ private:
 
     virtual void addOverflowFromChildren();
 
-    void updateMarkerLocation();
     inline int calcValue() const;
     void updateValueNow() const;
     void explicitValueChanged();
