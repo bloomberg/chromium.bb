@@ -8,6 +8,12 @@
 
 cr.define('cr.ui', function() {
   /**
+   * Whether keyboard flow is in use. When setting to true, up/down arrow key
+   * will be used to move focus instead of opening the drop down.
+   */
+  var useKeyboardFlow = false;
+
+  /**
    * Creates a new container for the drop down menu items.
    * @constructor
    * @extends {HTMLDivElement}
@@ -125,6 +131,9 @@ cr.define('cr.ui', function() {
       } else {
         this.title_.removeAttribute('aria-activedescendant');
       }
+
+      // Flag for keyboard flow util to forward the up/down keys.
+      this.title_.classList.toggle('needs-up-down-keys', show);
     },
 
     /**
@@ -290,8 +299,8 @@ cr.define('cr.ui', function() {
         if (this.inFocus && !this.controller.isShown &&
             (e.keyCode == DropDown.KEYCODE_ENTER ||
              e.keyCode == DropDown.KEYCODE_SPACE ||
-             e.keyCode == DropDown.KEYCODE_UP ||
-             e.keyCode == DropDown.KEYCODE_DOWN)) {
+             (!useKeyboardFlow && (e.keyCode == DropDown.KEYCODE_UP ||
+                                   e.keyCode == DropDown.KEYCODE_DOWN)))) {
           this.opening = true;
           this.controller.isShown = true;
           e.stopPropagation();
@@ -414,6 +423,13 @@ cr.define('cr.ui', function() {
    */
   DropDown.refresh = function() {
     chrome.send('networkDropdownRefresh');
+  };
+
+  /**
+   * Sets the keyboard flow flag.
+   */
+  DropDown.enableKeyboardFlow = function() {
+    useKeyboardFlow = true;
   };
 
   return {

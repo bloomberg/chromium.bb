@@ -8,7 +8,7 @@
 var keyboard = {};
 
 /**
- * Swallows left and right keypress and keyup events.
+ * Swallows keypress and keyup events of arrow keys.
  * @param {KeyboardEvent} event Raised event.
  * @private
  */
@@ -16,14 +16,17 @@ keyboard.onKeyIgnore_ = function(event) {
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
 
-  if (event.keyIdentifier == 'Left' || event.keyIdentifier == 'Right') {
+  if (event.keyIdentifier == 'Left' ||
+      event.keyIdentifier == 'Right' ||
+      event.keyIdentifier == 'Up' ||
+      event.keyIdentifier == 'Down') {
     event.stopPropagation();
     event.preventDefault();
   }
 };
 
 /**
- * Converts right/left into tab/shift-tab key events.
+ * Converts arrow keys into tab/shift-tab key events.
  * @param {KeyboardEvent} event Raised event.
  * @private
  */
@@ -31,11 +34,15 @@ keyboard.onKeyDown_ = function(event) {
    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
      return;
 
-   if (event.keyIdentifier == 'Left') {
+   var needsUpDownKeys = event.target.classList.contains('needs-up-down-keys');
+
+   if (event.keyIdentifier == 'Left' ||
+       (!needsUpDownKeys && event.keyIdentifier == 'Up')) {
      keyboard.raiseKeyFocusPrevious(document.activeElement);
      event.stopPropagation();
      event.preventDefault();
-   } else if (event.keyIdentifier == 'Right') {
+   } else if (event.keyIdentifier == 'Right' ||
+              (!needsUpDownKeys && event.keyIdentifier == 'Down')) {
      keyboard.raiseKeyFocusNext(document.activeElement);
      event.stopPropagation();
      event.preventDefault();

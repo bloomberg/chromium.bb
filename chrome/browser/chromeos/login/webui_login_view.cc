@@ -55,8 +55,8 @@ const char kAccelNameEnrollment[] = "enrollment";
 const char kAccelNameKioskEnable[] = "kiosk_enable";
 const char kAccelNameVersion[] = "version";
 const char kAccelNameReset[] = "reset";
-const char kAccelNameLeft[] = "left";
-const char kAccelNameRight[] = "right";
+const char kAccelFocusPrev[] = "focus_prev";
+const char kAccelFocusNext[] = "focus_next";
 const char kAccelNameDeviceRequisition[] = "device_requisition";
 const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
@@ -118,10 +118,17 @@ WebUILoginView::WebUILoginView()
       kAccelNameReset;
 
   accel_map_[ui::Accelerator(ui::VKEY_LEFT, ui::EF_NONE)] =
-      kAccelNameLeft;
-
+      kAccelFocusPrev;
   accel_map_[ui::Accelerator(ui::VKEY_RIGHT, ui::EF_NONE)] =
-      kAccelNameRight;
+      kAccelFocusNext;
+
+  // Use KEY_RELEASED because Gaia consumes KEY_PRESSED for up/down key.
+  ui::Accelerator key_up(ui::VKEY_UP, ui::EF_NONE);
+  key_up.set_type(ui::ET_KEY_RELEASED);
+  ui::Accelerator key_down(ui::VKEY_DOWN, ui::EF_NONE);
+  key_down.set_type(ui::ET_KEY_RELEASED);
+  accel_map_[key_up] = kAccelFocusPrev;
+  accel_map_[key_down] = kAccelFocusNext;
 
   accel_map_[ui::Accelerator(
       ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
