@@ -3043,13 +3043,10 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
   }
 
   WebMediaPlayerParams params(
-      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(render_frame)),
-      sink,
-      RenderThreadImpl::current()->GetGpuFactories(),
-      new RenderMediaLog());
+      sink);
   return new WebMediaPlayerImpl(this, frame, client, AsWeakPtr(), params);
 #endif  // defined(OS_ANDROID)
 }

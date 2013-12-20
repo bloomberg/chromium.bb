@@ -22,6 +22,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/texttrack_impl.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
@@ -30,6 +31,7 @@
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasource_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_loop.h"
@@ -140,7 +142,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(base::MessageLoopProxy::current()),
-      media_loop_(params.message_loop_proxy()),
+      media_loop_(
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
@@ -149,10 +152,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
-      media_log_(params.media_log()),
+      media_log_(new RenderMediaLog()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
-      gpu_factories_(params.gpu_factories()),
+      gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
       is_local_source_(false),
       supports_save_(true),
       starting_(false),
