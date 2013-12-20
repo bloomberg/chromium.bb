@@ -421,6 +421,9 @@ void ProcessManager::KeepaliveImpulse(const Extension* extension) {
       IncrementLazyKeepaliveCount(extension);
     }
   }
+
+  if (!keepalive_impulse_callback_for_testing_.is_null())
+    keepalive_impulse_callback_for_testing_.Run(extension->id());
 }
 
 // DecrementLazyKeepaliveCount is called when no calls to KeepaliveImpulse
@@ -433,8 +436,11 @@ void ProcessManager::OnKeepaliveImpulseCheck() {
   for (BackgroundPageDataMap::iterator i = background_page_data_.begin();
        i != background_page_data_.end();
        ++i) {
-    if (i->second.previous_keepalive_impulse && !i->second.keepalive_impulse)
+    if (i->second.previous_keepalive_impulse && !i->second.keepalive_impulse) {
       DecrementLazyKeepaliveCount(i->first);
+      if (!keepalive_impulse_decrement_callback_for_testing_.is_null())
+        keepalive_impulse_decrement_callback_for_testing_.Run(i->first);
+    }
 
     i->second.previous_keepalive_impulse = i->second.keepalive_impulse;
     i->second.keepalive_impulse = false;
@@ -551,6 +557,16 @@ void ProcessManager::OnBrowserWindowReady() {
 
 content::BrowserContext* ProcessManager::GetBrowserContext() const {
   return site_instance_->GetBrowserContext();
+}
+
+void ProcessManager::SetKeepaliveImpulseCallbackForTesting(
+    const ImpulseCallbackForTesting& callback) {
+  keepalive_impulse_callback_for_testing_ = callback;
+}
+
+void ProcessManager::SetKeepaliveImpulseDecrementCallbackForTesting(
+    const ImpulseCallbackForTesting& callback) {
+  keepalive_impulse_decrement_callback_for_testing_ = callback;
 }
 
 void ProcessManager::Observe(int type,

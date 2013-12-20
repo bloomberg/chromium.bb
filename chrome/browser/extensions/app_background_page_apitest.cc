@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
@@ -11,10 +12,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_notification_tracker.h"
@@ -23,6 +27,7 @@
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -107,6 +112,88 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
  private:
   base::ScopedTempDir app_dir_;
 };
+
+namespace {
+
+// Fixture to assist in testing v2 app background pages containing
+// Native Client embeds.
+class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
+ public:
+  AppBackgroundPageNaClTest()
+      : extension_(NULL) {
+    PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_);
+    app_dir_ = app_dir_.AppendASCII(
+        "ppapi/tests/extensions/background_keepalive/newlib");
+  }
+  virtual ~AppBackgroundPageNaClTest() {
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    AppBackgroundPageApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kPpapiKeepAliveThrottle, "50");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageIdleTime, "1000");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageSuspendingTime, "1000");
+  }
+
+  const Extension* extension() { return extension_; }
+
+ protected:
+  void LaunchTestingApp() {
+    extension_ = LoadExtension(app_dir_);
+    ASSERT_TRUE(extension_);
+  }
+
+ private:
+  base::FilePath app_dir_;
+  const Extension* extension_;
+};
+
+// Produces an extensions::ProcessManager::ImpulseCallbackForTesting callback
+// that will match a specified goal and can be waited on.
+class ImpulseCallbackCounter {
+ public:
+  explicit ImpulseCallbackCounter(const std::string& extension_id)
+      : observed_(0),
+        goal_(0),
+        extension_id_(extension_id) {
+  }
+
+  extensions::ProcessManager::ImpulseCallbackForTesting
+      SetGoalAndGetCallback(int goal) {
+    observed_ = 0;
+    goal_ = goal;
+    message_loop_runner_ = new content::MessageLoopRunner();
+    return base::Bind(&ImpulseCallbackCounter::ImpulseCallback,
+                      base::Unretained(this),
+                      message_loop_runner_->QuitClosure(),
+                      extension_id_);
+  }
+
+  void Wait() {
+    message_loop_runner_->Run();
+  }
+ private:
+  void ImpulseCallback(
+      const base::Closure& quit_callback,
+      const std::string& extension_id_from_test,
+      const std::string& extension_id_from_manager) {
+    if (extension_id_from_test == extension_id_from_manager) {
+      if (++observed_ >= goal_) {
+        quit_callback.Run();
+      }
+    }
+  }
+
+  int observed_;
+  int goal_;
+  const std::string extension_id_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+};
+
+}  // namespace
 
 // Disable on Mac only.  http://crbug.com/95139
 #if defined(OS_MACOSX)
@@ -502,3 +589,34 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(WaitForBackgroundMode(false));
 }
+
+// Verify active NaCl embeds cause many keepalive impulses to be sent.
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
+  ExtensionTestMessageListener nacl_modules_loaded("nacl_modules_loaded", true);
+  LaunchTestingApp();
+  extensions::ProcessManager* manager =
+    extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+  ImpulseCallbackCounter active_impulse_counter(extension()->id());
+  EXPECT_TRUE(nacl_modules_loaded.WaitUntilSatisfied());
+
+  // Target .5 seconds: .5 seconds / 50ms throttle * 2 embeds == 20 impulses.
+  manager->SetKeepaliveImpulseCallbackForTesting(
+      active_impulse_counter.SetGoalAndGetCallback(20));
+  active_impulse_counter.Wait();
+}
+
+// Verify that nacl modules that go idle will not send keepalive impulses.
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveIdle) {
+  ExtensionTestMessageListener nacl_modules_loaded("nacl_modules_loaded", true);
+  LaunchTestingApp();
+  extensions::ProcessManager* manager =
+    extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+  ImpulseCallbackCounter idle_impulse_counter(extension()->id());
+  EXPECT_TRUE(nacl_modules_loaded.WaitUntilSatisfied());
+
+  manager->SetKeepaliveImpulseDecrementCallbackForTesting(
+      idle_impulse_counter.SetGoalAndGetCallback(1));
+  nacl_modules_loaded.Reply("be idle");
+  idle_impulse_counter.Wait();
+}
+

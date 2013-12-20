@@ -1684,7 +1684,8 @@
                 'test/data/nacl/nacl_test_data.gyp:*',
                 '../ppapi/native_client/native_client.gyp:nacl_irt',
                 '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
-                '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_socket',
+                '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive',
+                '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_socket'
               ],
               'conditions': [
                 ['OS=="linux"', {

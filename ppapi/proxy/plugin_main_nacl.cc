@@ -13,6 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/tracing/child_trace_message_filter.h"
@@ -29,6 +30,7 @@
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -94,6 +96,8 @@ class PpapiDispatcher : public ProxyChannel,
                               const ppapi::PpapiNaClChannelArgs& args,
                               SerializedHandle handle);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
+
+  void SetPpapiKeepAliveThrottleFromCommandLine();
 
   std::set<PP_Instance> instances_;
   std::map<uint32, PluginDispatcher*> plugin_dispatchers_;
@@ -208,6 +212,7 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
     logging::LoggingSettings settings;
     settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
     logging::InitLogging(settings);
+    SetPpapiKeepAliveThrottleFromCommandLine();
     command_line_and_logging_initialized = true;
   }
   // Tell the process-global GetInterface which interfaces it can return to the
@@ -248,6 +253,18 @@ void PpapiDispatcher::OnPluginDispatcherMessageReceived(
       plugin_dispatchers_.find(id);
   if (dispatcher != plugin_dispatchers_.end())
     dispatcher->second->OnMessageReceived(msg);
+}
+
+void PpapiDispatcher::SetPpapiKeepAliveThrottleFromCommandLine() {
+  unsigned keepalive_throttle_interval_milliseconds = 0;
+  if (base::StringToUint(
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kPpapiKeepAliveThrottle),
+          &keepalive_throttle_interval_milliseconds)) {
+    ppapi::proxy::PluginGlobals::Get()->
+        set_keepalive_throttle_interval_milliseconds(
+            keepalive_throttle_interval_milliseconds);
+  }
 }
 
 }  // namespace

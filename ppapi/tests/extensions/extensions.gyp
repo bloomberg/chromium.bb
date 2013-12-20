@@ -29,5 +29,24 @@
         ],
       },
     },
+    {
+      'target_name': 'ppapi_tests_extensions_background_keepalive',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_tests_extensions_background_keepalive',
+        # Only newlib build is used in tests, no need to build others.
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        'nexe_destination_dir': 'test_data/ppapi/tests/extensions/background_keepalive',
+        'sources': [
+          'background_keepalive/background.cc',
+        ],
+        'test_files': [
+          'background_keepalive/background.js',
+          'background_keepalive/manifest.json',
+        ],
+      },
+    },
   ],
 }
