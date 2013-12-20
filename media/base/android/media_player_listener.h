@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -25,9 +25,9 @@ class MediaPlayerListener {
  public:
   // Construct a native MediaPlayerListener object. Callbacks from the java
   // side object will be forwarded to |media_player| by posting a task on the
-  // |message_loop|.
+  // |task_runner|.
   MediaPlayerListener(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::WeakPtr<MediaPlayerBridge> media_player);
  virtual ~MediaPlayerListener();
 
@@ -51,7 +51,7 @@ class MediaPlayerListener {
 
  private:
   // The message loop where |media_player_| lives.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The MediaPlayerBridge object all the callbacks should be send to.
   base::WeakPtr<MediaPlayerBridge> media_player_;

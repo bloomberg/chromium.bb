@@ -37,7 +37,7 @@ class FakeTextTrackStream : public DemuxerStream {
   MOCK_METHOD0(OnRead, void());
 
  private:
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ReadCB read_cb_;
   bool stopping_;
 

@@ -12,7 +12,7 @@
 namespace media {
 
 FakeTextTrackStream::FakeTextTrackStream()
-    : message_loop_(base::MessageLoopProxy::current()),
+    : task_runner_(base::MessageLoopProxy::current()),
       stopping_(false) {
 }
 
@@ -27,7 +27,7 @@ void FakeTextTrackStream::Read(const ReadCB& read_cb) {
   read_cb_ = read_cb;
 
   if (stopping_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+    task_runner_->PostTask(FROM_HERE, base::Bind(
         &FakeTextTrackStream::AbortPendingRead, base::Unretained(this)));
   }
 }

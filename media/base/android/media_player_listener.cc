@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/android/media_player_bridge.h"
 
 // Auto generated jni class from MediaPlayerListener.java.
@@ -21,11 +21,11 @@ using base::android::ScopedJavaLocalRef;
 namespace media {
 
 MediaPlayerListener::MediaPlayerListener(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::WeakPtr<MediaPlayerBridge> media_player)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       media_player_(media_player) {
-  DCHECK(message_loop_.get());
+  DCHECK(task_runner_.get());
   DCHECK(media_player_);
 }
 
@@ -53,44 +53,44 @@ void MediaPlayerListener::ReleaseMediaPlayerListenerResources() {
 
 void MediaPlayerListener::OnMediaError(
     JNIEnv* /* env */, jobject /* obj */, jint error_type) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnMediaError, media_player_, error_type));
 }
 
 void MediaPlayerListener::OnVideoSizeChanged(
     JNIEnv* /* env */, jobject /* obj */, jint width, jint height) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnVideoSizeChanged, media_player_,
       width, height));
 }
 
 void MediaPlayerListener::OnBufferingUpdate(
     JNIEnv* /* env */, jobject /* obj */, jint percent) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnBufferingUpdate, media_player_, percent));
 }
 
 void MediaPlayerListener::OnPlaybackComplete(
     JNIEnv* /* env */, jobject /* obj */) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnPlaybackComplete, media_player_));
 }
 
 void MediaPlayerListener::OnSeekComplete(
     JNIEnv* /* env */, jobject /* obj */) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnSeekComplete, media_player_));
 }
 
 void MediaPlayerListener::OnMediaPrepared(
     JNIEnv* /* env */, jobject /* obj */) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnMediaPrepared, media_player_));
 }
 
 void MediaPlayerListener::OnMediaInterrupted(
     JNIEnv* /* env */, jobject /* obj */) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnMediaInterrupted, media_player_));
 }
 

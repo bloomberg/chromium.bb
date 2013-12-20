@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 
 namespace media {
 
@@ -20,14 +21,14 @@ static void RunBoundClosure(
   bound_closure.Run(base::Bind(status_cb, PIPELINE_OK));
 }
 
-// Runs |status_cb| with |last_status| on |message_loop|.
-static void RunOnMessageLoop(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+// Runs |status_cb| with |last_status| on |task_runner|.
+static void RunOnTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const PipelineStatusCB& status_cb,
     PipelineStatus last_status) {
   // Force post to permit cancellation of a series in the scenario where all
   // bound functions run on the same thread.
-  message_loop->PostTask(FROM_HERE, base::Bind(status_cb, last_status));
+  task_runner->PostTask(FROM_HERE, base::Bind(status_cb, last_status));
 }
 
 SerialRunner::Queue::Queue() {}
@@ -56,13 +57,13 @@ bool SerialRunner::Queue::empty() {
 SerialRunner::SerialRunner(
     const Queue& bound_fns, const PipelineStatusCB& done_cb)
     : weak_this_(this),
-      message_loop_(base::MessageLoopProxy::current()),
+      task_runner_(base::MessageLoopProxy::current()),
       bound_fns_(bound_fns),
       done_cb_(done_cb) {
   // Respect both cancellation and calling stack guarantees for |done_cb|
   // when empty.
   if (bound_fns_.empty()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+    task_runner_->PostTask(FROM_HERE, base::Bind(
         &SerialRunner::RunNextInSeries, weak_this_.GetWeakPtr(), PIPELINE_OK));
     return;
   }
@@ -80,7 +81,7 @@ scoped_ptr<SerialRunner> SerialRunner::Run(
 }
 
 void SerialRunner::RunNextInSeries(PipelineStatus last_status) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!done_cb_.is_null());
 
   if (bound_fns_.empty() || last_status != PIPELINE_OK) {
@@ -89,7 +90,7 @@ void SerialRunner::RunNextInSeries(PipelineStatus last_status) {
   }
 
   BoundPipelineStatusCB bound_fn = bound_fns_.Pop();
-  bound_fn.Run(base::Bind(&RunOnMessageLoop, message_loop_, base::Bind(
+  bound_fn.Run(base::Bind(&RunOnTaskRunner, task_runner_, base::Bind(
       &SerialRunner::RunNextInSeries, weak_this_.GetWeakPtr())));
 }
 

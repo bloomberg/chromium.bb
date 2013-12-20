@@ -15,7 +15,7 @@
 #include "media/base/pipeline_status.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -72,7 +72,7 @@ class MEDIA_EXPORT SerialRunner {
   void RunNextInSeries(PipelineStatus last_status);
 
   base::WeakPtrFactory<SerialRunner> weak_this_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Queue bound_fns_;
   PipelineStatusCB done_cb_;
 

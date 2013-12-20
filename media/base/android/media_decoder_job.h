@@ -12,7 +12,7 @@
 #include "media/base/android/media_codec_bridge.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -77,9 +77,10 @@ class MediaDecoderJob {
   bool is_decoding() const { return !decode_cb_.is_null(); }
 
  protected:
-  MediaDecoderJob(const scoped_refptr<base::MessageLoopProxy>& decoder_loop,
-                  MediaCodecBridge* media_codec_bridge,
-                  const base::Closure& request_data_cb);
+  MediaDecoderJob(
+      const scoped_refptr<base::SingleThreadTaskRunner>& decoder_task_runner,
+      MediaCodecBridge* media_codec_bridge,
+      const base::Closure& request_data_cb);
 
   // Release the output buffer at index |output_buffer_index| and render it if
   // |render_output| is true. Upon completion, |callback| will be called.
@@ -131,10 +132,10 @@ class MediaDecoderJob {
                          size_t audio_output_bytes);
 
   // The UI message loop where callbacks should be dispatched.
-  scoped_refptr<base::MessageLoopProxy> ui_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // The message loop that decoder job runs on.
-  scoped_refptr<base::MessageLoopProxy> decoder_loop_;
+  // The task runner that decoder job runs on.
+  scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
 
   // The media codec bridge used for decoding. Owned by derived class.
   // NOTE: This MUST NOT be accessed in the destructor.

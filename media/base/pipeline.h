@@ -21,7 +21,7 @@
 #include "ui/gfx/size.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TimeDelta;
 }
 
@@ -35,7 +35,7 @@ class TextTrackConfig;
 class VideoRenderer;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
-// message loop injected into this object. Pipeline works like a state
+// task runner injected into this object. Pipeline works like a state
 // machine to perform asynchronous initialization, pausing, seeking and playing.
 //
 // Here's a state diagram that describes the lifetime of this object.
@@ -82,8 +82,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   typedef base::Callback<void(BufferingState)> BufferingStateCB;
 
-  // Constructs a media pipeline that will execute on |message_loop|.
-  Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+  // Constructs a media pipeline that will execute on |task_runner|.
+  Pipeline(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
            MediaLog* media_log);
   virtual ~Pipeline();
 
@@ -264,8 +264,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void OnVideoTimeUpdate(base::TimeDelta max_time);
 
   // The following "task" methods correspond to the public methods, but these
-  // methods are run as the result of posting a task to the PipelineInternal's
-  // message loop.
+  // methods are run as the result of posting a task to the Pipeline's
+  // task runner.
   void StartTask(scoped_ptr<FilterCollection> filter_collection,
                  const base::Closure& ended_cb,
                  const PipelineStatusCB& error_cb,
@@ -351,8 +351,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   void StartClockIfWaitingForTimeUpdate_Locked();
 
-  // Message loop used to execute pipeline tasks.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  // Task runner used to execute pipeline tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // MediaLog to which to log events.
   scoped_refptr<MediaLog> media_log_;
@@ -378,12 +378,12 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   gfx::Size natural_size_;
 
   // Current volume level (from 0.0f to 1.0f).  This value is set immediately
-  // via SetVolume() and a task is dispatched on the message loop to notify the
+  // via SetVolume() and a task is dispatched on the task runner to notify the
   // filters.
   float volume_;
 
   // Current playback rate (>= 0.0f).  This value is set immediately via
-  // SetPlaybackRate() and a task is dispatched on the message loop to notify
+  // SetPlaybackRate() and a task is dispatched on the task runner to notify
   // the filters.
   float playback_rate_;
 
@@ -414,7 +414,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   bool has_video_;
 
   // The following data members are only accessed by tasks posted to
-  // |message_loop_|.
+  // |task_runner_|.
 
   // Member that tracks the current state.
   State state_;

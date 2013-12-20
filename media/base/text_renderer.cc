@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -18,9 +18,9 @@
 namespace media {
 
 TextRenderer::TextRenderer(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const AddTextTrackCB& add_text_track_cb)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       weak_factory_(this),
       add_text_track_cb_(add_text_track_cb),
       state_(kUninitialized),
@@ -35,7 +35,7 @@ TextRenderer::~TextRenderer() {
 }
 
 void TextRenderer::Initialize(const base::Closure& ended_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!ended_cb.is_null());
   DCHECK_EQ(kUninitialized, state_)  << "state_ " << state_;
   DCHECK(text_track_state_map_.empty());
@@ -49,7 +49,7 @@ void TextRenderer::Initialize(const base::Closure& ended_cb) {
 }
 
 void TextRenderer::Play(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPaused) << "state_ " << state_;
 
   for (TextTrackStateMap::iterator itr = text_track_state_map_.begin();
@@ -68,7 +68,7 @@ void TextRenderer::Play(const base::Closure& callback) {
 }
 
 void TextRenderer::Pause(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kPlaying || state_ == kEnded) << "state_ " << state_;
   DCHECK_GE(pending_read_count_, 0);
   pause_cb_ = callback;
@@ -83,7 +83,7 @@ void TextRenderer::Pause(const base::Closure& callback) {
 }
 
 void TextRenderer::Flush(const base::Closure& callback) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(pending_read_count_, 0);
   DCHECK(state_ == kPaused) << "state_ " << state_;
 
@@ -96,7 +96,7 @@ void TextRenderer::Flush(const base::Closure& callback) {
 }
 
 void TextRenderer::Stop(const base::Closure& cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!cb.is_null());
   DCHECK(state_ == kPlaying ||
          state_ == kPausePending ||
@@ -117,7 +117,7 @@ void TextRenderer::Stop(const base::Closure& cb) {
 
 void TextRenderer::AddTextStream(DemuxerStream* text_stream,
                                  const TextTrackConfig& config) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << "state_ " << state_;
   DCHECK_NE(state_, kStopPending);
   DCHECK_NE(state_, kStopped);
@@ -127,7 +127,7 @@ void TextRenderer::AddTextStream(DemuxerStream* text_stream,
          pending_eos_set_.end());
 
   media::AddTextTrackDoneCB done_cb =
-      media::BindToLoop(message_loop_,
+      media::BindToLoop(task_runner_,
                         base::Bind(&TextRenderer::OnAddTextTrackDone,
                                    weak_this_,
                                    text_stream));
@@ -136,7 +136,7 @@ void TextRenderer::AddTextStream(DemuxerStream* text_stream,
 }
 
 void TextRenderer::RemoveTextStream(DemuxerStream* text_stream) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   TextTrackStateMap::iterator itr = text_track_state_map_.find(text_stream);
   DCHECK(itr != text_track_state_map_.end());
@@ -150,7 +150,7 @@ void TextRenderer::RemoveTextStream(DemuxerStream* text_stream) {
 }
 
 bool TextRenderer::HasTracks() const {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return !text_track_state_map_.empty();
 }
 
@@ -158,7 +158,7 @@ void TextRenderer::BufferReady(
     DemuxerStream* stream,
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& input) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(status, DemuxerStream::kConfigChanged);
 
   if (status == DemuxerStream::kAborted) {
@@ -241,7 +241,7 @@ void TextRenderer::BufferReady(
 void TextRenderer::CueReady(
     DemuxerStream* text_stream,
     const scoped_refptr<TextCue>& text_cue) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized &&
          state_ != kStopped) << "state_ " << state_;
   DCHECK_GT(pending_read_count_, 0);
@@ -330,7 +330,7 @@ void TextRenderer::CueReady(
 
 void TextRenderer::OnAddTextTrackDone(DemuxerStream* text_stream,
                                       scoped_ptr<TextTrack> text_track) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized &&
          state_ != kStopped &&
          state_ != kStopPending) << "state_ " << state_;
