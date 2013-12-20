@@ -444,12 +444,15 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
-  input_event_start_time_ = TimeTicks::Now();
   if (Send(new InputMsg_HandleInputEvent(
           routing_id(), &input_event, latency_info, is_keyboard_shortcut))) {
-    // Only increment the event count if we require an ACK for |input_event|.
-    if (!WebInputEventTraits::IgnoresAckDisposition(input_event.type))
+    // Ack messages for ignored ack event types are not required, and might
+    // never be sent by the renderer. Consequently, such event types should not
+    // affect event timing or in-flight event count metrics.
+    if (!WebInputEventTraits::IgnoresAckDisposition(input_event.type)) {
+      input_event_start_time_ = TimeTicks::Now();
       client_->IncrementInFlightEventCount();
+    }
     return true;
   }
   return false;
@@ -458,16 +461,16 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
 void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
                                       InputEventAckState ack_result,
                                       const ui::LatencyInfo& latency_info) {
-  // Log the time delta for processing an input event.
-  TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
-  UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
-
-  // A synthetic ack will already have been sent for this event, and it will
-  // not have affected the in-flight event count.
+  // A synthetic ack will already have been sent for this event, and it should
+  // not affect event timing or in-flight count metrics.
   if (WebInputEventTraits::IgnoresAckDisposition(event_type))
     return;
 
   client_->DecrementInFlightEventCount();
+
+  // Log the time delta for processing an input event.
+  TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
+  UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
 
   ProcessInputEventAck(event_type, ack_result, latency_info, RENDERER);
   // WARNING: |this| may be deleted at this point.
