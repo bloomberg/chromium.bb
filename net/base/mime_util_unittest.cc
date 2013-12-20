@@ -73,6 +73,10 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsSupportedNonImageMimeType("text/vcard"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("application/virus"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-x509-user-cert"));
+  EXPECT_TRUE(IsSupportedNonImageMimeType("application/json"));
+  EXPECT_TRUE(IsSupportedNonImageMimeType("application/+json"));
+  EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-suggestions+json"));
+  EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-s+json;x=2"));
 #if defined(OS_ANDROID)
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-x509-ca-cert"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-pkcs12"));
@@ -84,6 +88,8 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_TRUE(IsSupportedMimeType("text/banana"));
   EXPECT_FALSE(IsSupportedMimeType("text/vcard"));
   EXPECT_FALSE(IsSupportedMimeType("application/virus"));
+  EXPECT_FALSE(IsSupportedMimeType("application/x-json"));
+  EXPECT_FALSE(IsSupportedNonImageMimeType("application/vnd.doc;x=y+json"));
 }
 
 TEST(MimeUtilTest, MatchesMimeType) {
@@ -94,6 +100,8 @@ TEST(MimeUtilTest, MatchesMimeType) {
   EXPECT_TRUE(MatchesMimeType("application/*+xml",
                                    "application/html+xml"));
   EXPECT_TRUE(MatchesMimeType("application/*+xml", "application/+xml"));
+  EXPECT_TRUE(MatchesMimeType("application/*+json",
+                                   "application/x-myformat+json"));
   EXPECT_TRUE(MatchesMimeType("aaa*aaa", "aaaaaa"));
   EXPECT_TRUE(MatchesMimeType("*", std::string()));
   EXPECT_FALSE(MatchesMimeType("video/", "video/x-mpeg"));
@@ -195,6 +203,9 @@ TEST(MimeUtilTest, TestIsMimeType) {
   EXPECT_FALSE(IsMimeType(nonAscii));
 
   EXPECT_TRUE(IsMimeType("application/mime"));
+  EXPECT_TRUE(IsMimeType("application/json"));
+  EXPECT_TRUE(IsMimeType("application/x-suggestions+json"));
+  EXPECT_TRUE(IsMimeType("application/+json"));
   EXPECT_TRUE(IsMimeType("audio/mime"));
   EXPECT_TRUE(IsMimeType("example/mime"));
   EXPECT_TRUE(IsMimeType("image/mime"));

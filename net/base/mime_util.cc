@@ -518,7 +518,9 @@ bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
 bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {
   return non_image_map_.find(mime_type) != non_image_map_.end() ||
       (mime_type.compare(0, 5, "text/") == 0 &&
-       !IsUnsupportedTextMimeType(mime_type));
+       !IsUnsupportedTextMimeType(mime_type)) ||
+      (mime_type.compare(0, 12, "application/") == 0 &&
+       MatchesMimeType("application/*+json", mime_type));
 }
 
 bool MimeUtil::IsUnsupportedTextMimeType(const std::string& mime_type) const {
