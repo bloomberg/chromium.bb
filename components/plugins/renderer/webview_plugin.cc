@@ -42,9 +42,12 @@ using blink::WebVector;
 using blink::WebView;
 
 WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
-    : delegate_(delegate), container_(NULL), finished_loading_(false) {
-  web_view_ = WebView::create(this);
-  web_view_->initializeMainFrame(this);
+    : delegate_(delegate),
+      container_(NULL),
+      web_view_(WebView::create(this)),
+      web_frame_(WebFrame::create(this)),
+      finished_loading_(false) {
+  web_view_->setMainFrame(web_frame_);
 }
 
 // static
@@ -59,7 +62,10 @@ WebViewPlugin* WebViewPlugin::Create(WebViewPlugin::Delegate* delegate,
   return plugin;
 }
 
-WebViewPlugin::~WebViewPlugin() { web_view_->close(); }
+WebViewPlugin::~WebViewPlugin() {
+  web_view_->close();
+  web_frame_->close();
+}
 
 void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
   if (!response_.isNull()) {

@@ -30,6 +30,7 @@ using ::testing::Return;
 using ::testing::Truly;
 using ::testing::NiceMock;
 
+using blink::WebFrame;
 using blink::WebString;
 using blink::WebURLError;
 using blink::WebURLResponse;
@@ -63,8 +64,8 @@ static bool CorrectAcceptEncoding(const blink::WebURLRequest &request) {
 class BufferedResourceLoaderTest : public testing::Test {
  public:
   BufferedResourceLoaderTest()
-      : view_(WebView::create(NULL)) {
-    view_->initializeMainFrame(&client_);
+      : view_(WebView::create(NULL)), frame_(WebFrame::create(&client_)) {
+    view_->setMainFrame(frame_);
 
     for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
@@ -73,6 +74,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   virtual ~BufferedResourceLoaderTest() {
     view_->close();
+    frame_->close();
   }
 
   void Initialize(const char* url, int first_position, int last_position) {
@@ -295,6 +297,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   MockWebFrameClient client_;
   WebView* view_;
+  WebFrame* frame_;
 
   base::MessageLoop message_loop_;
 

@@ -433,9 +433,8 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   blink::WebView* web_view = blink::WebView::create(NULL);
   web_view->settings()->setJavaScriptEnabled(true);
-  web_view->initializeMainFrame(NULL);
-
-  blink::WebFrame* frame = web_view->mainFrame();
+  blink::WebFrame* frame = blink::WebFrame::create(NULL)
+  web_view->setMainFrame(web_frame);
 
   base::StringValue html(
       ResourceBundle::GetSharedInstance().GetLocalizedString(
@@ -461,6 +460,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   frame->printEnd();
 
   web_view->close();
+  frame->close();
 
   device->setDrawingArea(SkPDFDevice::kContent_DrawingArea);
 #endif
@@ -650,7 +650,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebView* web_view = blink::WebView::create(this);
   owns_web_view_ = true;
   content::ApplyWebPreferences(prefs, web_view);
-  web_view->initializeMainFrame(this);
+  web_view->setMainFrame(blink::WebFrame::create(this));
   frame_.Reset(web_view->mainFrame());
   node_to_print_.reset();
 
@@ -704,6 +704,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
       DCHECK(!frame->isLoading());
       owns_web_view_ = false;
       web_view->close();
+      frame->close();
     }
   }
   frame_.Reset(NULL);

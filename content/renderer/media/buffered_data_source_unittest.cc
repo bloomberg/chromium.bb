@@ -13,6 +13,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using ::testing::_;
@@ -91,8 +92,8 @@ static const char kFileUrl[] = "file:///tmp/bar.webm";
 class BufferedDataSourceTest : public testing::Test {
  public:
   BufferedDataSourceTest()
-      : view_(WebView::create(NULL)) {
-    view_->initializeMainFrame(&client_);
+      : view_(WebView::create(NULL)), frame_(WebFrame::create(&client_)) {
+    view_->setMainFrame(frame_);
 
     data_source_.reset(new MockBufferedDataSource(
         message_loop_.message_loop_proxy(), view_->mainFrame()));
@@ -101,6 +102,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   virtual ~BufferedDataSourceTest() {
     view_->close();
+    frame_->close();
   }
 
   MOCK_METHOD1(OnInitialize, void(bool));
@@ -208,6 +210,7 @@ class BufferedDataSourceTest : public testing::Test {
   scoped_ptr<TestResponseGenerator> response_generator_;
   MockWebFrameClient client_;
   WebView* view_;
+  WebFrame* frame_;
 
   StrictMock<media::MockDataSourceHost> host_;
   base::MessageLoop message_loop_;
