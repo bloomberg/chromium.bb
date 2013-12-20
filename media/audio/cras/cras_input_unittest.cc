@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/cras/cras_input.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +32,8 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 
 class MockAudioManagerCrasInput : public AudioManagerCras {
  public:
+  MockAudioManagerCrasInput() : AudioManagerCras(&fake_audio_log_factory_) {}
+
   // We need to override this function in order to skip checking the number
   // of active output streams. It is because the number of active streams
   // is managed inside MakeAudioInputStream, and we don't use
@@ -39,6 +42,9 @@ class MockAudioManagerCrasInput : public AudioManagerCras {
     DCHECK(stream);
     delete stream;
   }
+
+ private:
+  FakeAudioLogFactory fake_audio_log_factory_;
 };
 
 class CrasInputStreamTest : public testing::Test {

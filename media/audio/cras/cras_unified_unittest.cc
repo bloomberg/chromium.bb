@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/cras/cras_unified.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +34,8 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
 
 class MockAudioManagerCras : public AudioManagerCras {
  public:
+  MockAudioManagerCras() : AudioManagerCras(&fake_audio_log_factory_) {}
+
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
@@ -53,6 +56,9 @@ class MockAudioManagerCras : public AudioManagerCras {
     DCHECK(stream);
     delete stream;
   }
+
+ private:
+  FakeAudioLogFactory fake_audio_log_factory_;
 };
 
 class CrasUnifiedStreamTest : public testing::Test {
