@@ -25,7 +25,6 @@ ALGO = hashlib.sha1
 FILE_NAME = u'test.isolated'
 FILE_HASH = u'1' * 40
 TEST_NAME = u'unit_tests'
-STDOUT_FOR_TRIGGER_LEN = 148
 
 
 TEST_CASE_SUCCESS = (
@@ -528,7 +527,7 @@ class ManifestTest(TestCase):
 
     expected = generate_expected_json(
         shards=2,
-        dimensions={'os': 'Windows'},
+        dimensions={u'os': u'Windows'},
         env={},
         working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
@@ -558,7 +557,7 @@ class ManifestTest(TestCase):
 
     expected = generate_expected_json(
         shards=1,
-        dimensions={'os': 'Linux'},
+        dimensions={u'os': u'Linux'},
         env={},
         working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
@@ -585,7 +584,7 @@ class ManifestTest(TestCase):
 
     expected = generate_expected_json(
         shards=1,
-        dimensions={'os': 'Linux'},
+        dimensions={u'os': u'Linux'},
         env={},
         working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
@@ -612,14 +611,6 @@ class ManifestTest(TestCase):
         algo=ALGO)
     self.assertEqual(0, result)
 
-    # Just assert it printed enough, since it contains variable output.
-    out = sys.stdout.getvalue()
-    self.assertTrue(
-        len(out) > STDOUT_FOR_TRIGGER_LEN,
-        (out, sys.stderr.getvalue()))
-    self.assertTrue('Upload complete' in out)
-    self.mock(sys, 'stdout', StringIO.StringIO())
-
   def test_process_manifest_success_zip_already_uploaded(self):
     self.mock(swarming.net, 'url_read', lambda url, data=None: '{}')
     self.mock(swarming.isolateserver, 'get_storage',
@@ -640,12 +631,6 @@ class ManifestTest(TestCase):
         priority=101,
         algo=ALGO)
     self.assertEqual(0, result)
-
-    # Just assert it printed enough, since it contains variable output.
-    out = sys.stdout.getvalue()
-    self.assertTrue(len(out) > STDOUT_FOR_TRIGGER_LEN)
-    self.assertTrue('Zip file already on server' in out)
-    self.mock(sys, 'stdout', StringIO.StringIO())
 
 
 class MainTest(TestCase):
@@ -697,10 +682,6 @@ class MainTest(TestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
 
-    expected = 'Zipping up files...\nZipping completed, time elapsed: '
-    self.assertTrue(actual.startswith(expected))
-    self.mock(sys, 'stdout', StringIO.StringIO())
-
   def test_trigger_dimension_filter(self):
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
@@ -736,10 +717,6 @@ class MainTest(TestCase):
       ])
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
-
-    expected = 'Zipping up files...\nZipping completed, time elapsed: '
-    self.assertTrue(actual.startswith(expected))
-    self.mock(sys, 'stdout', StringIO.StringIO())
 
 
 if __name__ == '__main__':

@@ -107,7 +107,11 @@ class Manifest(object):
     self._tasks = []
 
   def add_task(self, task_name, actions, time_out=600):
-    """Appends a new task to the swarming manifest file."""
+    """Appends a new task to the swarming manifest file.
+
+    Tasks cannot be added once the manifest was uploaded.
+    """
+    assert not self._isolate_item
     # See swarming/src/common/test_request_message.py TestObject constructor for
     # the valid flags.
     self._tasks.append(
@@ -117,33 +121,6 @@ class Manifest(object):
           'test_name': task_name,
           'time_out': time_out,
         })
-
-  def zip_and_upload(self):
-    """Zips up all the files necessary to run a shard and uploads to Swarming
-    master.
-    """
-    assert not self._isolate_item
-
-    start_time = time.time()
-    self._isolate_item = isolateserver.BufferItem(
-        self.bundle.zip_into_buffer(), self._algo, is_isolated=True)
-    print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
-
-    try:
-      start_time = time.time()
-      with self.storage:
-        uploaded = self.storage.upload_items([self._isolate_item])
-      elapsed = time.time() - start_time
-    except (IOError, OSError) as exc:
-      tools.report_error('Failed to upload the zip file: %s' % exc)
-      return False
-
-    if self._isolate_item in uploaded:
-      print 'Upload complete, time elapsed: %f' % elapsed
-    else:
-      print 'Zip file already on server, time elapsed: %f' % elapsed
-
-    return True
 
   def to_json(self):
     """Exports the current configuration into a swarm-readable manifest file.
@@ -176,6 +153,36 @@ class Manifest(object):
             'swarm_data.zip',
           ])
     return json.dumps(request, sort_keys=True, separators=(',',':'))
+
+  @property
+  def isolate_item(self):
+    """Calling this property 'closes' the manifest and it can't be modified
+    afterward.
+    """
+    if self._isolate_item is None:
+      self._isolate_item = isolateserver.BufferItem(
+          self.bundle.zip_into_buffer(), self._algo, is_isolated=True)
+    return self._isolate_item
+
+
+def zip_and_upload(manifest):
+  """Zips up all the files necessary to run a manifest and uploads to Swarming
+  master.
+  """
+  try:
+    start_time = time.time()
+    with manifest.storage:
+      uploaded = manifest.storage.upload_items([manifest.isolate_item])
+    elapsed = time.time() - start_time
+  except (IOError, OSError) as exc:
+    tools.report_error('Failed to upload the zip file: %s' % exc)
+    return False
+
+  if manifest.isolate_item in uploaded:
+    logging.info('Upload complete, time elapsed: %f', elapsed)
+  else:
+    logging.info('Zip file already on server, time elapsed: %f', elapsed)
+  return True
 
 
 def now():
@@ -308,6 +315,15 @@ def chromium_setup(manifest):
   manifest.add_task('Clean Up', ['python', cleanup_script_name])
 
 
+def googletest_setup(env, shards):
+  """Sets googletest specific environment variables."""
+  if shards > 1:
+    env = env.copy()
+    env['GTEST_SHARD_INDEX'] = '%(instance_index)s'
+    env['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
+  return env
+
+
 def archive(isolate_server, isolated, algo, verbose):
   """Archives a .isolated and all the dependencies on the CAC."""
   tempdir = None
@@ -353,12 +369,12 @@ def process_manifest(
 
   chromium_setup(manifest)
 
-  print('Zipping up files...')
-  if not manifest.zip_and_upload():
+  logging.info('Zipping up files...')
+  if not zip_and_upload(manifest):
     return 1
 
-  print('Server: %s' % swarming)
-  print('Task name: %s' % task_name)
+  logging.info('Server: %s', swarming)
+  logging.info('Task name: %s', task_name)
   trigger_url = swarming + '/test'
   manifest_text = manifest.to_json()
   result = net.url_read(trigger_url, data={'request': manifest_text})
@@ -414,10 +430,7 @@ def trigger(
       isolate_server, file_hash_or_isolated, hashlib.sha1, verbose)
   if not file_hash:
     return 1
-  env = env.copy()
-  if shards > 1:
-    env['GTEST_SHARD_INDEX'] = '%(instance_index)s'
-    env['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
+  env = googletest_setup(env, shards)
   # TODO(maruel): It should first create a request manifest object, then pass
   # it to a function to zip, archive and trigger.
   return process_manifest(
@@ -486,6 +499,7 @@ def add_trigger_options(parser):
       help='Isolate server to use')
 
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
+  # TODO(maruel): Remove, 'os' is like any other dimension.
   parser.filter_group.add_option(
       '-o', '--os', default=sys.platform,
       help='Slave OS to request. Should be one of the valid sys.platform '
@@ -513,7 +527,7 @@ def add_trigger_options(parser):
   parser.task_group.add_option(
       '-T', '--task-name', help='display name of the task')
   parser.add_option_group(parser.task_group)
-
+  # TODO(maruel): This is currently written in a chromium-specific way.
   parser.group_logging.add_option(
       '--profile', action='store_true',
       default=bool(os.environ.get('ISOLATE_DEBUG')),
