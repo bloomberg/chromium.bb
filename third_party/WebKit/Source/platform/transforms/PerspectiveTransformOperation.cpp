@@ -39,28 +39,25 @@ PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(const Transf
         return this;
 
     if (blendToIdentity) {
-        double p = floatValueForLength(m_p, 1);
-        p = WebCore::blend(p, 1.0, progress); // FIXME: this seems wrong. https://bugs.webkit.org/show_bug.cgi?id=52700
-        return PerspectiveTransformOperation::create(Length(clampToPositiveInteger(p), Fixed));
+        double p = WebCore::blend(m_p, 1., progress); // FIXME: this seems wrong. https://bugs.webkit.org/show_bug.cgi?id=52700
+        return PerspectiveTransformOperation::create(clampToPositiveInteger(p));
     }
 
     const PerspectiveTransformOperation* fromOp = static_cast<const PerspectiveTransformOperation*>(from);
-    Length fromP = fromOp ? fromOp->m_p : Length(m_p.type());
-    Length toP = m_p;
 
     TransformationMatrix fromT;
     TransformationMatrix toT;
-    fromT.applyPerspective(floatValueForLength(fromP, 1));
-    toT.applyPerspective(floatValueForLength(toP, 1));
+    fromT.applyPerspective(fromOp ? fromOp->m_p : 0);
+    toT.applyPerspective(m_p);
     toT.blend(fromT, progress);
     TransformationMatrix::DecomposedType decomp;
     toT.decompose(decomp);
 
     if (decomp.perspectiveZ) {
         double val = -1.0 / decomp.perspectiveZ;
-        return PerspectiveTransformOperation::create(Length(clampToPositiveInteger(val), Fixed));
+        return PerspectiveTransformOperation::create(clampToPositiveInteger(val));
     }
-    return PerspectiveTransformOperation::create(Length(0, Fixed));
+    return PerspectiveTransformOperation::create(0);
 }
 
 } // namespace WebCore

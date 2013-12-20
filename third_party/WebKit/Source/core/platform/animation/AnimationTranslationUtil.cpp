@@ -77,7 +77,7 @@ void toWebTransformOperations(const TransformOperations& transformOperations, co
         case TransformOperation::Translate3D:
         case TransformOperation::Translate: {
             TranslateTransformOperation* transform = static_cast<TranslateTransformOperation*>(transformOperations.operations()[j].get());
-            webTransformOperations->appendTranslate(floatValueForLength(transform->x(), boxSize.width()), floatValueForLength(transform->y(), boxSize.height()), floatValueForLength(transform->z(), 1));
+            webTransformOperations->appendTranslate(floatValueForLength(transform->x(), boxSize.width()), floatValueForLength(transform->y(), boxSize.height()), transform->z());
             break;
         }
         case TransformOperation::RotateX:
@@ -109,7 +109,7 @@ void toWebTransformOperations(const TransformOperations& transformOperations, co
         }
         case TransformOperation::Perspective: {
             PerspectiveTransformOperation* transform = static_cast<PerspectiveTransformOperation*>(transformOperations.operations()[j].get());
-            webTransformOperations->appendPerspective(floatValueForLength(transform->perspective(), 0));
+            webTransformOperations->appendPerspective(transform->perspective());
             break;
         }
         case TransformOperation::Interpolated: {

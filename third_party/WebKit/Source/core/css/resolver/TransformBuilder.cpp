@@ -181,16 +181,16 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                 }
             }
 
-            operations.operations().append(TranslateTransformOperation::create(tx, ty, Length(0, Fixed), getTransformOperationType(transformValue->operationType())));
+            operations.operations().append(TranslateTransformOperation::create(tx, ty, 0, getTransformOperationType(transformValue->operationType())));
             break;
         }
         case CSSTransformValue::TranslateZTransformOperation:
         case CSSTransformValue::Translate3DTransformOperation: {
             Length tx = Length(0, Fixed);
             Length ty = Length(0, Fixed);
-            Length tz = Length(0, Fixed);
+            double tz = 0;
             if (transformValue->operationType() == CSSTransformValue::TranslateZTransformOperation)
-                tz = convertToFloatLength(firstValue, conversionData);
+                tz = firstValue->computeLength<double>(conversionData);
             else if (transformValue->operationType() == CSSTransformValue::TranslateYTransformOperation)
                 ty = convertToFloatLength(firstValue, conversionData);
             else {
@@ -198,7 +198,7 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                 if (transformValue->operationType() != CSSTransformValue::TranslateXTransformOperation) {
                     if (transformValue->length() > 2) {
                         CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->itemWithoutBoundsCheck(2));
-                        tz = convertToFloatLength(thirdValue, conversionData);
+                        tz = thirdValue->computeLength<double>(conversionData);
                     }
                     if (transformValue->length() > 1) {
                         CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->itemWithoutBoundsCheck(1));
@@ -300,15 +300,15 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
             break;
         }
         case CSSTransformValue::PerspectiveTransformOperation: {
-            Length p = Length(0, Fixed);
+            double p;
             if (firstValue->isLength())
-                p = convertToFloatLength(firstValue, conversionData);
+                p = firstValue->computeLength<double>(conversionData);
             else {
                 // This is a quirk that should go away when 3d transforms are finalized.
                 double val = firstValue->getDoubleValue();
                 if (val < 0)
                     return false;
-                p = Length(clampToPositiveInteger(val), Fixed);
+                p = clampToPositiveInteger(val);
             }
 
             operations.operations().append(PerspectiveTransformOperation::create(p));

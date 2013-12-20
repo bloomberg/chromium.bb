@@ -31,13 +31,13 @@ PassRefPtr<TransformOperation> TranslateTransformOperation::blend(const Transfor
 
     const Length zeroLength(0, Fixed);
     if (blendToIdentity)
-        return TranslateTransformOperation::create(zeroLength.blend(m_x, progress, ValueRangeAll), zeroLength.blend(m_y, progress, ValueRangeAll), zeroLength.blend(m_z, progress, ValueRangeAll), m_type);
+        return TranslateTransformOperation::create(zeroLength.blend(m_x, progress, ValueRangeAll), zeroLength.blend(m_y, progress, ValueRangeAll), WebCore::blend(0., m_z, progress), m_type);
 
     const TranslateTransformOperation* fromOp = static_cast<const TranslateTransformOperation*>(from);
     Length fromX = fromOp ? fromOp->m_x : zeroLength;
     Length fromY = fromOp ? fromOp->m_y : zeroLength;
-    Length fromZ = fromOp ? fromOp->m_z : zeroLength;
-    return TranslateTransformOperation::create(m_x.blend(fromX, progress, ValueRangeAll), m_y.blend(fromY, progress, ValueRangeAll), m_z.blend(fromZ, progress, ValueRangeAll), m_type);
+    double fromZ = fromOp ? fromOp->m_z : 0;
+    return TranslateTransformOperation::create(m_x.blend(fromX, progress, ValueRangeAll), m_y.blend(fromY, progress, ValueRangeAll), WebCore::blend(fromZ, m_z, progress), m_type);
 }
 
 } // namespace WebCore

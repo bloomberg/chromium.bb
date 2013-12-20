@@ -26,23 +26,21 @@
 #ifndef PerspectiveTransformOperation_h
 #define PerspectiveTransformOperation_h
 
-#include "platform/Length.h"
-#include "platform/LengthFunctions.h"
 #include "platform/transforms/TransformOperation.h"
 
 namespace WebCore {
 
 class PLATFORM_EXPORT PerspectiveTransformOperation : public TransformOperation {
 public:
-    static PassRefPtr<PerspectiveTransformOperation> create(const Length& p)
+    static PassRefPtr<PerspectiveTransformOperation> create(double p)
     {
         return adoptRef(new PerspectiveTransformOperation(p));
     }
 
-    Length perspective() const { return m_p; }
+    double perspective() const { return m_p; }
 
 private:
-    virtual bool isIdentity() const { return !floatValueForLength(m_p, 1); }
+    virtual bool isIdentity() const { return !m_p; }
     virtual OperationType type() const OVERRIDE { return Perspective; }
 
     virtual bool operator==(const TransformOperation& o) const
@@ -55,18 +53,17 @@ private:
 
     virtual void apply(TransformationMatrix& transform, const FloatSize&) const
     {
-        transform.applyPerspective(floatValueForLength(m_p, 1));
+        transform.applyPerspective(m_p);
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
 
-    PerspectiveTransformOperation(const Length& p)
+    PerspectiveTransformOperation(double p)
         : m_p(p)
     {
-        ASSERT(p.isFixed());
     }
 
-    Length m_p;
+    double m_p;
 };
 
 } // namespace WebCore
