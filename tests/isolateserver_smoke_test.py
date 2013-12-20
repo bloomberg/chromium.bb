@@ -3,16 +3,15 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-import binascii
 import hashlib
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
 import unittest
-import urllib
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -28,71 +27,61 @@ ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
 TEST_DATA_DIR = os.path.join(ROOT_DIR, 'tests', 'isolateserver')
 
 
-# TODO(vadimsh): This test is a bit frankensteinish now. It uses new /content-gs
-# protocol for uploads via 'isolateserver.py archive', but uses old /content
-# protocol for validity check and fetches.
-
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def setUp(self):
+    super(IsolateServerArchiveSmokeTest, self).setUp()
     # The namespace must end in '-gzip' since all files are now compressed
     # before being uploaded.
+    # TODO(maruel): This should not be leaked to the client. It's a
+    # transport/storage detail.
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
-    url = ISOLATE_SERVER + '/content/get_token?from_smoke_test=1'
-    self.token = urllib.quote(isolateserver.net.url_read(url))
+    self.rootdir = tempfile.mkdtemp(prefix='isolateserver')
+
+  def tearDown(self):
+    try:
+      shutil.rmtree(self.rootdir)
+    finally:
+      super(IsolateServerArchiveSmokeTest, self).tearDown()
+
+  def _run(self, args):
+    """Runs isolateserver.py."""
+    cmd = [
+        sys.executable,
+        os.path.join(ROOT_DIR, 'isolateserver.py'),
+    ]
+    cmd.extend(args)
+    cmd.extend(
+        [
+          '--isolate-server', ISOLATE_SERVER,
+          '--namespace', self.namespace
+        ])
+    if '-v' in sys.argv:
+      cmd.append('--verbose')
+      subprocess.check_call(cmd)
+    else:
+      subprocess.check_output(cmd)
 
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver.py with them. Then
     verify they are all on the server."""
-    args = [
-        sys.executable,
-        os.path.join(ROOT_DIR, 'isolateserver.py'),
-        'archive',
-        '--isolate-server', ISOLATE_SERVER,
-        '--namespace', self.namespace
+    files = [os.path.join(TEST_DATA_DIR, filename) for filename in files]
+    self._run(['archive'] + files)
+    self._download_given_files(files)
+
+  def _download_given_files(self, files):
+    """Tries to download the files from the server."""
+    args = ['download', '--target', self.rootdir]
+    file_hashes = [isolateserver.hash_file(f, hashlib.sha1) for f in files]
+    for f in file_hashes:
+      args.extend(['--file', f, f])
+    self._run(args)
+    # Assert the files are present.
+    actual = [
+        isolateserver.hash_file(os.path.join(self.rootdir, f), hashlib.sha1)
+        for f in os.listdir(self.rootdir)
     ]
-    if '-v' in sys.argv:
-      args.append('--verbose')
-    args.extend(os.path.join(TEST_DATA_DIR, filename) for filename in files)
-
-    self.assertEqual(0, subprocess.call(args))
-
-    # Try to download the files from the server.
-    file_hashes = [
-        isolateserver.hash_file(os.path.join(TEST_DATA_DIR, f), hashlib.sha1)
-        for f in files
-    ]
-    for i in range(len(files)):
-      download_url = '%scontent/retrieve/%s/%s' % (
-          ISOLATE_SERVER, self.namespace, file_hashes[i])
-
-      downloaded_file = isolateserver.net.url_read(download_url, retry_404=True)
-      self.assertTrue(downloaded_file is not None,
-                      'File %s was missing from the server' % files[i])
-
-    # Ensure the files are listed as present on the server.
-    contains_hash_url = '%scontent/contains/%s?token=%s&from_smoke_test=1' % (
-        ISOLATE_SERVER, self.namespace, self.token)
-
-    body = ''.join(binascii.unhexlify(h) for h in file_hashes)
-    expected = chr(1) * len(files)
-    MAX_ATTEMPTS = 10
-    for i in xrange(MAX_ATTEMPTS):
-      # AppEngine's database is eventually consistent and isolateserver do not
-      # use transaction for performance reasons, so even if one request was able
-      # to retrieve the file, an subsequent may not see it! So retry a few time
-      # until the database becomes consistent with regard to these entities.
-      response = isolateserver.net.url_read(
-          contains_hash_url,
-          data=body,
-          content_type='application/octet-stream')
-      if response == expected:
-        break
-      # GAE is exposing its internal data inconsistency.
-      if i != (MAX_ATTEMPTS - 1):
-        print('Visible datastore inconsistency, retrying.')
-        time.sleep(0.1)
-    self.assertEqual(expected, response)
+    self.assertEqual(sorted(file_hashes), sorted(actual))
 
   def test_archive_empty_file(self):
     self._archive_given_files(['empty_file.txt'])
@@ -100,9 +89,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def test_archive_small_file(self):
     self._archive_given_files(['small_file.txt'])
 
-  def disabled_test_archive_huge_file(self):
+  def test_archive_huge_file(self):
     # Create a file over 2gbs.
-    # TODO(maruel): Temporarily disabled until the server is fixed.
     filepath = None
     try:
       try:
