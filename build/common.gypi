@@ -370,6 +370,11 @@
       # instead of the standard system libraries.
       'use_instrumented_libraries%': 0,
 
+      # Use libc++ (third_party/libc++ and third_party/libc++abi) instead of
+      # stdlibc++ as standard library. This is intended to use for instrumented
+      # builds.
+      'use_custom_libcxx%': 0,
+
       # Use a modified version of Clang to intercept allocated types and sizes
       # for allocated objects. clang_type_profiler=1 implies clang=1.
       # See http://dev.chromium.org/developers/deep-memory-profiler/cpp-object-type-identifier
@@ -933,6 +938,7 @@
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
+    'use_custom_libcxx%': '<(use_custom_libcxx)',
     'clang_type_profiler%': '<(clang_type_profiler)',
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
@@ -3524,6 +3530,12 @@
                   }],
                 ],
               }],
+            ],
+          }],
+          ['use_custom_libcxx==1', {
+            'dependencies': [
+              '<(DEPTH)/third_party/libc++/libc++.gyp:libc++',
+              '<(DEPTH)/third_party/libc++abi/libc++abi.gyp:libc++abi',
             ],
           }],
           ['order_profiling!=0 and (chromeos==1 or OS=="linux" or OS=="android")', {
