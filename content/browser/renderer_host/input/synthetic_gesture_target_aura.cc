@@ -26,11 +26,9 @@ SyntheticGestureTargetAura::SyntheticGestureTargetAura(
 void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
     const WebTouchEvent& web_touch,
     const ui::LatencyInfo& latency_info) {
-  aura::Window* window = render_widget_host()->GetView()->GetNativeView();
-  aura::Window* root_window = window->GetRootWindow();
+  aura::Window* window = GetWindow();
   aura::client::ScreenPositionClient* position_client =
-      aura::client::GetScreenPositionClient(root_window);
-  DCHECK(position_client);
+      GetScreenPositionClient();
 
   TouchEventWithLatencyInfo touch_with_latency(web_touch, latency_info);
 
@@ -61,7 +59,12 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
+  aura::Window* window = GetWindow();
+  aura::client::ScreenPositionClient* position_client =
+      GetScreenPositionClient();
   gfx::Point location(web_wheel.x, web_wheel.y);
+  position_client->ConvertPointToScreen(window, &location);
+
   ui::MouseEvent mouse_event(
       ui::ET_MOUSEWHEEL, location, location, ui::EF_NONE, ui::EF_NONE);
   ui::MouseWheelEvent wheel_event(
@@ -124,11 +127,15 @@ int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) {
+  aura::Window* window = GetWindow();
+  aura::client::ScreenPositionClient* position_client =
+      GetScreenPositionClient();
   gfx::Point location(web_mouse.x, web_mouse.y);
+  position_client->ConvertPointToScreen(window, &location);
+
   ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
-  // TODO: last argument (changed_button_flags) likely isn't right.
-  ui::MouseEvent mouse_event(event_type, location, location, flags, 0);
+  ui::MouseEvent mouse_event(event_type, location, location, flags, flags);
 
   GetRootWindowHostDelegate()->OnHostMouseEvent(&mouse_event);
 }
@@ -150,15 +157,28 @@ int SyntheticGestureTargetAura::GetTouchSlopInDips() const {
   return ui::GestureConfiguration::max_touch_move_in_pixels_for_click() - 1;
 }
 
+aura::Window* SyntheticGestureTargetAura::GetWindow() const {
+  aura::Window* window = render_widget_host()->GetView()->GetNativeView();
+  DCHECK(window);
+  return window;
+}
+
 aura::RootWindowHostDelegate*
 SyntheticGestureTargetAura::GetRootWindowHostDelegate() const {
-  aura::Window* window = render_widget_host()->GetView()->GetNativeView();
-  aura::Window* root_window = window->GetRootWindow();
+  aura::Window* root_window = GetWindow()->GetRootWindow();
   aura::RootWindowHostDelegate* root_window_host_delegate =
       root_window->GetDispatcher()->AsRootWindowHostDelegate();
   DCHECK(root_window_host_delegate);
   return root_window_host_delegate;
 }
 
+aura::client::ScreenPositionClient*
+SyntheticGestureTargetAura::GetScreenPositionClient() const {
+  aura::Window* root_window = GetWindow()->GetRootWindow();
+  aura::client::ScreenPositionClient* position_client =
+      aura::client::GetScreenPositionClient(root_window);
+  DCHECK(position_client);
+  return position_client;
+}
 
 }  // namespace content

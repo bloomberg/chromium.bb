@@ -11,7 +11,12 @@
 
 namespace aura {
 class RootWindowHostDelegate;
+class Window;
+
+namespace client {
+class ScreenPositionClient;
 }
+}  // namespace aura
 
 namespace content {
 
@@ -43,7 +48,9 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   virtual int GetTouchSlopInDips() const OVERRIDE;
 
  private:
+  aura::Window* GetWindow() const;
   aura::RootWindowHostDelegate* GetRootWindowHostDelegate() const;
+  aura::client::ScreenPositionClient* GetScreenPositionClient() const;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);
 };
