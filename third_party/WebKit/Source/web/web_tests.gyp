@@ -85,6 +85,7 @@
             'dependencies': [
                 '../../public/blink.gyp:blink',
                 '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
+                'web.gyp:webkit_test_support',
                 '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/base/base.gyp:base_i18n',
                 '<(DEPTH)/base/base.gyp:test_support_base',
