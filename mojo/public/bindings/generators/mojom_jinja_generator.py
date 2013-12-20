@@ -23,6 +23,8 @@ _kind_to_javascript_default_value = {
   mojom.UINT32:  "0",
   mojom.FLOAT:   "0",
   mojom.HANDLE:  "core.kInvalidHandle",
+  mojom.DCPIPE:  "core.kInvalidHandle",
+  mojom.DPPIPE:  "core.kInvalidHandle",
   mojom.MSGPIPE: "core.kInvalidHandle",
   mojom.INT64:   "0",
   mojom.UINT64:  "0",
@@ -62,6 +64,8 @@ _kind_to_javascript_type = {
   mojom.UINT32:  "codec.Uint32",
   mojom.FLOAT:   "codec.Float",
   mojom.HANDLE:  "codec.Handle",
+  mojom.DCPIPE:  "codec.Handle",
+  mojom.DPPIPE:  "codec.Handle",
   mojom.MSGPIPE: "codec.Handle",
   mojom.INT64:   "codec.Int64",
   mojom.UINT64:  "codec.Uint64",
@@ -90,6 +94,8 @@ _kind_to_javascript_decode_snippet = {
   mojom.UINT32:  "read32()",
   mojom.FLOAT:   "decodeFloat()",
   mojom.HANDLE:  "decodeHandle()",
+  mojom.DCPIPE:  "decodeHandle()",
+  mojom.DPPIPE:  "decodeHandle()",
   mojom.MSGPIPE: "decodeHandle()",
   mojom.INT64:   "read64()",
   mojom.UINT64:  "read64()",
@@ -117,6 +123,8 @@ _kind_to_javascript_encode_snippet = {
   mojom.UINT32:  "write32(",
   mojom.FLOAT:   "encodeFloat(",
   mojom.HANDLE:  "encodeHandle(",
+  mojom.DCPIPE:  "encodeHandle(",
+  mojom.DPPIPE:  "encodeHandle(",
   mojom.MSGPIPE: "encodeHandle(",
   mojom.INT64:   "write64(",
   mojom.UINT64:  "write64(",
@@ -143,6 +151,8 @@ _kind_to_cpp_type = {
   mojom.UINT32:  "uint32_t",
   mojom.FLOAT:   "float",
   mojom.HANDLE:  "mojo::Handle",
+  mojom.DCPIPE:  "mojo::DataPipeConsumerHandle",
+  mojom.DPPIPE:  "mojo::DataPipeProducerHandle",
   mojom.MSGPIPE: "mojo::MessagePipeHandle",
   mojom.INT64:   "int64_t",
   mojom.UINT64:  "uint64_t",
@@ -159,28 +169,39 @@ def GetCppType(kind):
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
 
-def GetCppWrapperType(kind):
+def GetCppArrayArgWrapperType(kind):
   if isinstance(kind, mojom.Struct):
-    return "%s" % kind.name
+    return kind.name
   if isinstance(kind, mojom.Array):
-    return "mojo::Array<%s >" % GetCppWrapperType(kind.kind)
+    return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if kind.spec == 's':
     return "mojo::String"
-  if kind.spec == 'h':
-    return "mojo::Passable<mojo::Handle>"
-  if kind.spec == 'h:m':
-    return "mojo::Passable<mojo::MessagePipeHandle>"
+  return _kind_to_cpp_type[kind]
+
+def GetCppWrapperType(kind):
+  if isinstance(kind, mojom.Struct):
+    return kind.name
+  if isinstance(kind, mojom.Array):
+    return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
+  if kind.spec == 's':
+    return "mojo::String"
+  if mojom_generator.IsHandleKind(kind):
+    return "mojo::Passable<%s>" % _kind_to_cpp_type[kind]
   return _kind_to_cpp_type[kind]
 
 def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Struct):
     return "const %s&" % kind.name
   if isinstance(kind, mojom.Array):
-    return "const mojo::Array<%s >&" % GetCppWrapperType(kind.kind)
+    return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
   if kind.spec == 's':
     return "const mojo::String&"
   if kind.spec == 'h':
     return "mojo::ScopedHandle"
+  if kind.spec == 'h:d:c':
+    return "mojo::ScopedDataPipeConsumerHandle"
+  if kind.spec == 'h:d:p':
+    return "mojo::ScopedDataPipeProducerHandle"
   if kind.spec == 'h:m':
     return "mojo::ScopedMessagePipeHandle"
   return _kind_to_cpp_type[kind]

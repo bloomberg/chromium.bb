@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
-#include <string.h>
-
 #include <algorithm>
+#include <ostream>
 #include <string>
 
 #include "mojo/public/tests/simple_bindings_support.h"
@@ -57,6 +55,21 @@ Foo MakeFoo() {
   for (size_t i = 0; i < data.size(); ++i)
     data[i] = static_cast<uint8_t>(data.size() - i);
 
+  mojo::Array<mojo::DataPipeConsumerHandle>::Builder input_streams(2);
+  mojo::Array<mojo::DataPipeProducerHandle>::Builder output_streams(2);
+  for (size_t i = 0; i < input_streams.size(); ++i) {
+    MojoCreateDataPipeOptions options;
+    options.struct_size = sizeof(MojoCreateDataPipeOptions);
+    options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+    options.element_num_bytes = 1;
+    options.capacity_num_bytes = 1024;
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    mojo::CreateDataPipe(&options, &producer, &consumer);
+    input_streams[i] = consumer.Pass();
+    output_streams[i] = producer.Pass();
+  }
+
   mojo::ScopedMessagePipeHandle pipe0, pipe1;
   mojo::CreateMessagePipe(&pipe0, &pipe1);
 
@@ -71,6 +84,8 @@ Foo MakeFoo() {
   foo.set_extra_bars(extra_bars.Finish());
   foo.set_data(data.Finish());
   foo.set_source(pipe1.Pass());
+  foo.set_input_streams(input_streams.Finish());
+  foo.set_output_streams(output_streams.Finish());
 
   return foo.Finish();
 }
@@ -112,42 +127,48 @@ void CheckFoo(const Foo& foo) {
   for (size_t i = 0; i < foo.data().size(); ++i) {
     EXPECT_EQ(static_cast<uint8_t>(foo.data().size() - i), foo.data()[i]) << i;
   }
+
+  EXPECT_FALSE(foo.input_streams().is_null());
+  EXPECT_EQ(2u, foo.input_streams().size());
+
+  EXPECT_FALSE(foo.output_streams().is_null());
+  EXPECT_EQ(2u, foo.output_streams().size());
 }
 
 static void PrintSpacer(int depth) {
   for (int i = 0; i < depth; ++i)
-    printf("   ");
+    std::cout << "   ";
 }
 
 static void Print(int depth, const char* name, bool value) {
   PrintSpacer(depth);
-  printf("%s: %s\n", name, value ? "true" : "false");
+  std::cout << name << ": " << (value ? "true" : "false") << std::endl;
 }
 
 static void Print(int depth, const char* name, int32_t value) {
   PrintSpacer(depth);
-  printf("%s: %d\n", name, value);
+  std::cout << name << ": " << value << std::endl;
 }
 
 static void Print(int depth, const char* name, uint8_t value) {
   PrintSpacer(depth);
-  printf("%s: %u\n", name, value);
+  std::cout << name << ": " << uint32_t(value) << std::endl;
 }
 
 static void Print(int depth, const char* name, mojo::Handle value) {
   PrintSpacer(depth);
-  printf("%s: 0x%x\n", name, value.value());
+  std::cout << name << ": 0x" << std::hex << value.value() << std::endl;
 }
 
 static void Print(int depth, const char* name, const mojo::String& str) {
   std::string s = str.To<std::string>();
   PrintSpacer(depth);
-  printf("%s: \"%*s\"\n", name, static_cast<int>(s.size()), s.data());
+  std::cout << name << ": \"" << str.To<std::string>() << "\"" << std::endl;
 }
 
 static void Print(int depth, const char* name, const Bar& bar) {
   PrintSpacer(depth);
-  printf("%s:\n", name);
+  std::cout << name << ":" << std::endl;
   if (!bar.is_null()) {
     ++depth;
     Print(depth, "alpha", bar.alpha());
@@ -159,15 +180,21 @@ static void Print(int depth, const char* name, const Bar& bar) {
 }
 
 template <typename T>
+static void Print(int depth, const char* name,
+                  const mojo::Passable<T>& passable) {
+  Print(depth, name, passable.get());
+}
+
+template <typename T>
 static void Print(int depth, const char* name, const mojo::Array<T>& array) {
   PrintSpacer(depth);
-  printf("%s:\n", name);
+  std::cout << name << ":" << std::endl;
   if (!array.is_null()) {
     ++depth;
     for (size_t i = 0; i < array.size(); ++i) {
-      char buf[32];
-      sprintf(buf, "%lu", static_cast<unsigned long>(i));
-      Print(depth, buf, array.at(i));
+      std::stringstream buf;
+      buf << i;
+      Print(depth, buf.str().data(), array.at(i));
     }
     --depth;
   }
@@ -175,7 +202,7 @@ static void Print(int depth, const char* name, const mojo::Array<T>& array) {
 
 static void Print(int depth, const char* name, const Foo& foo) {
   PrintSpacer(depth);
-  printf("%s:\n", name);
+  std::cout << name << ":" << std::endl;
   if (!foo.is_null()) {
     ++depth;
     Print(depth, "name", foo.name());
@@ -187,23 +214,27 @@ static void Print(int depth, const char* name, const Foo& foo) {
     Print(depth, "bar", foo.bar());
     Print(depth, "extra_bars", foo.extra_bars());
     Print(depth, "data", foo.data());
+    Print(depth, "source", foo.source().get());
+    Print(depth, "input_streams", foo.input_streams());
+    Print(depth, "output_streams", foo.output_streams());
     --depth;
   }
 }
 
 static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
   for (uint32_t i = 0; i < num_bytes; ++i) {
-    printf("%02x", bytes[i]);
+    std::cout << std::setw(2) << std::setfill('0') << std::hex <<
+        uint32_t(bytes[i]);
 
     if (i % 16 == 15) {
-      printf("\n");
+      std::cout << std::endl;
       continue;
     }
 
     if (i % 2 == 1)
-      printf(" ");
+      std::cout << " ";
     if (i % 8 == 7)
-      printf(" ");
+      std::cout << " ";
   }
 }
 
@@ -220,7 +251,7 @@ class ServiceImpl : public ServiceStub {
 
     // Also dump the Foo structure and all of its members.
     // TODO(vtl): Make it optional, so that the test spews less?
-    printf("Frobinate:\n");
+    std::cout << "Frobinate:" << std::endl;
     int depth = 1;
     Print(depth, "foo", foo);
     Print(depth, "baz", baz);

@@ -201,6 +201,34 @@ template <> struct ArrayTraits<Handle, false> {
   }
 };
 
+template <> struct ArrayTraits<DataPipeConsumerHandle, false> {
+  typedef Array_Data<DataPipeConsumerHandle> DataType;
+  typedef Passable<DataPipeConsumerHandle> ConstRef;
+  typedef AssignableAndPassable<DataPipeConsumerHandle> Ref;
+  static DataPipeConsumerHandle ToArrayElement(
+      const DataPipeConsumerHandle& value) {
+    return value;
+  }
+  static Ref ToRef(DataPipeConsumerHandle& data) { return Ref(&data); }
+  static ConstRef ToConstRef(const DataPipeConsumerHandle& data) {
+    return ConstRef(const_cast<DataPipeConsumerHandle*>(&data));
+  }
+};
+
+template <> struct ArrayTraits<DataPipeProducerHandle, false> {
+  typedef Array_Data<DataPipeProducerHandle> DataType;
+  typedef Passable<DataPipeProducerHandle> ConstRef;
+  typedef AssignableAndPassable<DataPipeProducerHandle> Ref;
+  static DataPipeProducerHandle ToArrayElement(
+      const DataPipeProducerHandle& value) {
+    return value;
+  }
+  static Ref ToRef(DataPipeProducerHandle& data) { return Ref(&data); }
+  static ConstRef ToConstRef(const DataPipeProducerHandle& data) {
+    return ConstRef(const_cast<DataPipeProducerHandle*>(&data));
+  }
+};
+
 template <> struct ArrayTraits<MessagePipeHandle, false> {
   typedef Array_Data<MessagePipeHandle> DataType;
   typedef Passable<MessagePipeHandle> ConstRef;

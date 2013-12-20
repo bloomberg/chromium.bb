@@ -16,11 +16,11 @@ class Passable {
   explicit Passable(HandleType* ptr) : ptr_(ptr) {
   }
 
-  bool is_valid() {
+  bool is_valid() const {
     return ptr_ && ptr_->is_valid();
   }
 
-  HandleType get() {
+  HandleType get() const {
     return ptr_ ? *ptr_ : HandleType();
   }
 

@@ -48,11 +48,12 @@ class Lexer(object):
     'NAME',
     'NUMBER',
 
-    'ARRAY',
     'ORDINAL',
 
-    'MSGPIPE',
-    'MSGPIPEARRAY',
+    'HANDLE',
+    'DATAPIPECONSUMER',
+    'DATAPIPEPRODUCER',
+    'MESSAGEPIPE',
 
     'MODULE',
     'STRUCT',
@@ -64,6 +65,8 @@ class Lexer(object):
     'RCURLY',
     'LPAREN',
     'RPAREN',
+    'LANGLE',
+    'RANGLE',
     'LBRACKET',
     'RBRACKET',
     'COMMA',
@@ -75,22 +78,31 @@ class Lexer(object):
   t_RCURLY     = r'}'
   t_LPAREN     = r'\('
   t_RPAREN     = r'\)'
+  t_LANGLE     = r'<'
+  t_RANGLE     = r'>'
   t_LBRACKET   = r'\['
   t_RBRACKET   = r'\]'
   t_COMMA      = r','
   t_SEMICOLON  = r';'
   t_EQUALS     = r'='
   t_NAME       = r'[a-zA-Z_][a-zA-Z0-9_]*'
-  t_ARRAY      = r'[a-zA-Z_][a-zA-Z0-9_]*\[\]'
   t_NUMBER     = r'\d+'
   t_ORDINAL    = r'@[0-9]*'
 
-  def t_MSGPIPE(self, t):
-    r'handle<message_pipe>'
+  def t_HANDLE(self, t):
+    r'handle'
     return t
 
-  def t_MSGPIPEARRAY(self, t):
-    r'handle<message_pipe>\[\]'
+  def t_DATAPIPECONSUMER(self, t):
+    r'data_pipe_consumer'
+    return t
+
+  def t_DATAPIPEPRODUCER(self, t):
+    r'data_pipe_producer'
+    return t
+
+  def t_MESSAGEPIPE(self, t):
+    r'message_pipe'
     return t
 
   def t_MODULE(self, t):
@@ -215,11 +227,29 @@ class Parser(object):
     p[0] = ('PARAM', p[1], p[2], p[3])
 
   def p_typename(self, p):
-    """typename : NAME
-                | ARRAY
-                | MSGPIPE
-                | MSGPIPEARRAY"""
+    """typename : basictypename
+                | array"""
     p[0] = p[1]
+
+  def p_basictypename(self, p):
+    """basictypename : NAME
+                     | HANDLE
+                     | specializedhandle"""
+    p[0] = p[1]
+
+  def p_specializedhandle(self, p):
+    """specializedhandle : HANDLE LANGLE specializedhandlename RANGLE"""
+    p[0] = "handle<" + p[3] + ">"
+
+  def p_specializedhandlename(self, p):
+    """specializedhandlename : DATAPIPECONSUMER
+                             | DATAPIPEPRODUCER
+                             | MESSAGEPIPE"""
+    p[0] = p[1]
+
+  def p_array(self, p):
+    """array : basictypename LBRACKET RBRACKET"""
+    p[0] = p[1] + "[]"
 
   def p_ordinal(self, p):
     """ordinal : ORDINAL

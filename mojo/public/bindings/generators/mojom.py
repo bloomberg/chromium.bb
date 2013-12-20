@@ -30,6 +30,8 @@ FLOAT   = Kind('f')
 DOUBLE  = Kind('d')
 STRING  = Kind('s')
 HANDLE  = Kind('h')
+DCPIPE  = Kind('h:d:c')
+DPPIPE  = Kind('h:d:p')
 MSGPIPE = Kind('h:m')
 
 
@@ -48,6 +50,8 @@ PRIMITIVES = (
   DOUBLE,
   STRING,
   HANDLE,
+  DCPIPE,
+  DPPIPE,
   MSGPIPE
 )
 

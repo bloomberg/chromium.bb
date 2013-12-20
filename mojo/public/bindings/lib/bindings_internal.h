@@ -125,6 +125,12 @@ template <> struct TypeTraits<double> {
 template <> struct TypeTraits<Handle> {
   static const bool kIsObject = false;
 };
+template <> struct TypeTraits<DataPipeConsumerHandle> {
+  static const bool kIsObject = false;
+};
+template <> struct TypeTraits<DataPipeProducerHandle> {
+  static const bool kIsObject = false;
+};
 template <> struct TypeTraits<MessagePipeHandle> {
   static const bool kIsObject = false;
 };
