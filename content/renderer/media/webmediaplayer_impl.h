@@ -223,9 +223,6 @@ class WebMediaPlayerImpl
   // Destroy resources held.
   void Destroy();
 
-  // Getter method to |client_|.
-  blink::WebMediaPlayerClient* GetClient();
-
   // Lets V8 know that player uses extra resources not managed by V8.
   void IncrementExternallyAllocatedMemory();
 

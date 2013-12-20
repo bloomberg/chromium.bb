@@ -207,7 +207,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   SetVideoFrameProviderClient(NULL);
-  GetClient()->setWebLayer(NULL);
+  client_->setWebLayer(NULL);
 
   DCHECK(main_loop_->BelongsToCurrentThread());
   media_log_->AddEvent(
@@ -277,8 +277,8 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   load_type_ = load_type;
 
   // Handle any volume/preload changes that occurred before load().
-  setVolume(GetClient()->volume());
-  setPreload(GetClient()->preload());
+  setVolume(client_->volume());
+  setPreload(client_->preload());
 
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -877,11 +877,11 @@ void WebMediaPlayerImpl::Repaint() {
 
   if (size_changed) {
     TRACE_EVENT0("media", "WebMediaPlayerImpl:clientSizeChanged");
-    GetClient()->sizeChanged();
+    client_->sizeChanged();
   }
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:clientRepaint");
-  GetClient()->repaint();
+  client_->repaint();
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
@@ -903,12 +903,12 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
   if (paused_)
     paused_time_ = pipeline_->GetMediaTime();
 
-  GetClient()->timeChanged();
+  client_->timeChanged();
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  GetClient()->timeChanged();
+  client_->timeChanged();
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
@@ -940,11 +940,11 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
     case media::Pipeline::kHaveMetadata:
       SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
-      if (hasVideo() && GetClient()->needsWebLayerForVideo()) {
+      if (hasVideo() && client_->needsWebLayerForVideo()) {
         DCHECK(!video_weblayer_);
         video_weblayer_.reset(
             new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
-        GetClient()->setWebLayer(video_weblayer_.get());
+        client_->setWebLayer(video_weblayer_.get());
       }
       break;
     case media::Pipeline::kPrerollCompleted:
@@ -962,15 +962,14 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  GetClient()->mediaSourceOpened(new WebMediaSourceImpl(
+  client_->mediaSourceOpened(new WebMediaSourceImpl(
       chunk_demuxer_, base::Bind(&LogMediaSourceError, media_log_)));
 }
 
 void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
-  GetClient()->keyAdded(current_key_system_,
-                        WebString::fromUTF8(session_id));
+  client_->keyAdded(current_key_system_, WebString::fromUTF8(session_id));
 }
 
 void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
@@ -988,10 +987,7 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
     init_data_type_ = type;
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  GetClient()->keyNeeded(WebString(),
-                         WebString(),
-                         init_data_ptr,
-                         init_data.size());
+  client_->keyNeeded(WebString(), WebString(), init_data_ptr, init_data.size());
 }
 
 void WebMediaPlayerImpl::OnAddTextTrack(
@@ -1013,7 +1009,7 @@ void WebMediaPlayerImpl::OnAddTextTrack(
                                  text_track_index_++));
 
   scoped_ptr<media::TextTrack> text_track(
-      new TextTrackImpl(main_loop_, GetClient(), web_inband_text_track.Pass()));
+      new TextTrackImpl(main_loop_, client_, web_inband_text_track.Pass()));
 
   done_cb.Run(text_track.Pass());
 }
@@ -1026,7 +1022,7 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
   EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
                              error_code, media::MediaKeys::kMaxKeyError);
 
-  GetClient()->keyError(
+  client_->keyError(
       current_key_system_,
       WebString::fromUTF8(session_id),
       static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
@@ -1042,17 +1038,17 @@ void WebMediaPlayerImpl::OnKeyMessage(const std::string& session_id,
   DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
       << "Invalid URL in default_url: " << default_url;
 
-  GetClient()->keyMessage(current_key_system_,
-                          WebString::fromUTF8(session_id),
-                          message.empty() ? NULL : &message[0],
-                          message.size(),
-                          default_url_gurl);
+  client_->keyMessage(current_key_system_,
+                      WebString::fromUTF8(session_id),
+                      message.empty() ? NULL : &message[0],
+                      message.size(),
+                      default_url_gurl);
 }
 
 void WebMediaPlayerImpl::SetOpaque(bool opaque) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  GetClient()->setOpaque(opaque);
+  client_->setOpaque(opaque);
 }
 
 void WebMediaPlayerImpl::DataSourceInitialized(const GURL& gurl, bool success) {
@@ -1179,7 +1175,7 @@ void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
   DVLOG(1) << "SetNetworkState: " << state;
   network_state_ = state;
   // Always notify to ensure client has the latest value.
-  GetClient()->networkStateChanged();
+  client_->networkStateChanged();
 }
 
 void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
@@ -1193,7 +1189,7 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
 
   ready_state_ = state;
   // Always notify to ensure client has the latest value.
-  GetClient()->readyStateChanged();
+  client_->readyStateChanged();
 }
 
 void WebMediaPlayerImpl::Destroy() {
@@ -1232,12 +1228,6 @@ void WebMediaPlayerImpl::Destroy() {
   data_source_.reset();
 }
 
-blink::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  DCHECK(client_);
-  return client_;
-}
-
 blink::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
   return audio_source_provider_.get();
 }
@@ -1264,7 +1254,7 @@ void WebMediaPlayerImpl::OnDurationChange() {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return;
 
-  GetClient()->durationChanged();
+  client_->durationChanged();
 }
 
 void WebMediaPlayerImpl::FrameReady(
