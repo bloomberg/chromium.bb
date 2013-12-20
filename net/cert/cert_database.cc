@@ -11,7 +11,9 @@ namespace net {
 
 // static
 CertDatabase* CertDatabase::GetInstance() {
-  return Singleton<CertDatabase>::get();
+  // Leaky so it can be initialized on worker threads, and because there is no
+  // useful cleanup to do.
+  return Singleton<CertDatabase, LeakySingletonTraits<CertDatabase> >::get();
 }
 
 void CertDatabase::AddObserver(Observer* observer) {

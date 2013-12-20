@@ -340,7 +340,9 @@ class PKCS12InitSingleton {
   }
 };
 
-static base::LazyInstance<PKCS12InitSingleton> g_pkcs12_init_singleton =
+// Leaky so it can be initialized on worker threads and because there is no
+// cleanup necessary.
+static base::LazyInstance<PKCS12InitSingleton>::Leaky g_pkcs12_init_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
