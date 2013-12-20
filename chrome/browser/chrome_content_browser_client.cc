@@ -883,7 +883,7 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
   guest->Attach(embedder_web_contents, extra_params);
 }
 
-void ChromeContentBrowserClient::RenderProcessHostCreated(
+void ChromeContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());

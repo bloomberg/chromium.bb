@@ -137,7 +137,7 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
   return shell_browser_main_parts_;
 }
 
-void ShellContentBrowserClient::RenderProcessHostCreated(
+void ShellContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;

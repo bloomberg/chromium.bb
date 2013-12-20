@@ -69,7 +69,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* guest_web_contents,
       content::WebContents* embedder_web_contents,
       const base::DictionaryValue& extra_params) OVERRIDE;
-  virtual void RenderProcessHostCreated(
+  virtual void RenderProcessWillLaunch(
       content::RenderProcessHost* host) OVERRIDE;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE;

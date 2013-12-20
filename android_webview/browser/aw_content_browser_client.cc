@@ -180,7 +180,7 @@ AwContentBrowserClient::GetWebContentsViewDelegate(
   return native_factory_->CreateViewDelegate(web_contents);
 }
 
-void AwContentBrowserClient::RenderProcessHostCreated(
+void AwContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   // If WebView becomes multi-process capable, this may be insecure.
   // More benefit can be derived from the ChildProcessSecurotyPolicy by

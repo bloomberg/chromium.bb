@@ -520,7 +520,7 @@ bool RenderProcessHostImpl::Init() {
                                     BrowserThread::IO).get()));
 
   // Call the embedder first so that their IPC filters have priority.
-  GetContentClient()->browser()->RenderProcessHostCreated(this);
+  GetContentClient()->browser()->RenderProcessWillLaunch(this);
 
   CreateMessageFilters();
 

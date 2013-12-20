@@ -164,10 +164,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       WebContents* embedder_web_contents,
       const base::DictionaryValue& extra_params) {}
 
-  // Notifies that a RenderProcessHost has been created. This is called before
+  // Notifies that a render process will be created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.
-  virtual void RenderProcessHostCreated(RenderProcessHost* host) {}
+  virtual void RenderProcessWillLaunch(RenderProcessHost* host) {}
 
   // Notifies that a BrowserChildProcessHost has been created.
   virtual void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) {}
