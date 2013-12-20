@@ -697,7 +697,9 @@ VP8SimpleFilterFunc VP8SimpleVFilter16i;
 VP8SimpleFilterFunc VP8SimpleHFilter16i;
 
 extern void VP8DspInitSSE2(void);
+#if defined(WEBP_USE_NEON)
 extern void VP8DspInitNEON(void);
+#endif
 
 void VP8DspInit(void) {
   DspInitTables();

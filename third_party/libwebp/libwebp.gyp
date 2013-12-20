@@ -66,7 +66,7 @@
     {
       'target_name': 'libwebp_dsp_neon',
       'conditions': [
-        ['target_arch == "arm" and arm_version >= 7', {
+        ['target_arch == "arm" and arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
           'type': 'static_library',
           'include_dirs': ['.'],
           'sources': [

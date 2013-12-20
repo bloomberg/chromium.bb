@@ -689,7 +689,9 @@ VP8QuantizeBlock VP8EncQuantizeBlock;
 VP8BlockCopy VP8Copy4x4;
 
 extern void VP8EncDspInitSSE2(void);
+#if defined(WEBP_USE_NEON)
 extern void VP8EncDspInitNEON(void);
+#endif
 
 void VP8EncDspInit(void) {
   InitTables();
