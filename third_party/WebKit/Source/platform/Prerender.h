@@ -50,6 +50,13 @@ namespace WebCore {
 
 class PrerenderClient;
 
+// PrerenderRelType is a bitfield since multiple rel attributes can be set
+// on the same link.
+enum PrerenderRelType {
+    PrerenderRelTypePrerender = 0x1,
+    PrerenderRelTypeNext = 0x2,
+};
+
 class PLATFORM_EXPORT Prerender : public RefCounted<Prerender> {
     WTF_MAKE_NONCOPYABLE(Prerender);
 public:
@@ -58,7 +65,7 @@ public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<Prerender> create(PrerenderClient*, const KURL&, const String& referrer, ReferrerPolicy);
+    static PassRefPtr<Prerender> create(PrerenderClient*, const KURL&, unsigned relTypes, const String& referrer, ReferrerPolicy);
     ~Prerender();
 
     void removeClient();
@@ -68,6 +75,7 @@ public:
     void abandon();
 
     const KURL& url() const { return m_url; }
+    unsigned relTypes() const { return m_relTypes; }
     const String& referrer() const { return m_referrer; }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
 
@@ -80,11 +88,12 @@ public:
     void didSendDOMContentLoadedForPrerender();
 
 private:
-    Prerender(PrerenderClient*, const KURL&, const String& referrer, ReferrerPolicy);
+    Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const String& referrer, ReferrerPolicy);
 
     PrerenderClient* m_client;
 
     const KURL m_url;
+    const unsigned m_relTypes;
     const String m_referrer;
     const ReferrerPolicy m_referrerPolicy;
 

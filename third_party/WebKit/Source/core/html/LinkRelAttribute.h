@@ -52,6 +52,7 @@ public:
     bool isLinkPrefetch() const { return m_isLinkPrefetch; }
     bool isLinkSubresource() const { return m_isLinkSubresource; }
     bool isLinkPrerender() const { return m_isLinkPrerender; }
+    bool isLinkNext() const { return m_isLinkNext; }
     bool isImport() const { return m_isImport; }
 
 private:
@@ -62,6 +63,7 @@ private:
     bool m_isLinkPrefetch : 1;
     bool m_isLinkSubresource : 1;
     bool m_isLinkPrerender : 1;
+    bool m_isLinkNext : 1;
     bool m_isImport : 1;
 };
 

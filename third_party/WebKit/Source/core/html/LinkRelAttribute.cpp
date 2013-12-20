@@ -44,6 +44,7 @@ LinkRelAttribute::LinkRelAttribute()
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
+    , m_isLinkNext(false)
     , m_isImport(false)
 {
 }
@@ -56,6 +57,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
+    , m_isLinkNext(false)
     , m_isImport(false)
 {
     if (equalIgnoringCase(rel, "stylesheet"))
@@ -96,11 +98,13 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
                 m_iconType = TouchPrecomposedIcon;
 #endif
             else if (equalIgnoringCase(*it, "prefetch"))
-              m_isLinkPrefetch = true;
+                m_isLinkPrefetch = true;
             else if (equalIgnoringCase(*it, "subresource"))
-              m_isLinkSubresource = true;
+                m_isLinkSubresource = true;
             else if (equalIgnoringCase(*it, "prerender"))
-              m_isLinkPrerender = true;
+                m_isLinkPrerender = true;
+            else if (equalIgnoringCase(*it, "next"))
+                m_isLinkNext = true;
         }
     }
 }

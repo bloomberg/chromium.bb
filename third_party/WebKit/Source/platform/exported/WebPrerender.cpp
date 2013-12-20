@@ -87,6 +87,11 @@ WebURL WebPrerender::url() const
     return WebURL(m_private->url());
 }
 
+unsigned WebPrerender::relTypes() const
+{
+    return m_private->relTypes();
+}
+
 WebString WebPrerender::referrer() const
 {
     return m_private->referrer();
