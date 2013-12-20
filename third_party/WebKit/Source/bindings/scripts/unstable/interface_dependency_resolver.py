@@ -95,13 +95,13 @@ class InterfaceDependencyResolver:
         # <interface_name>.idl MUST contain the interface "interface_name" or
         # exception "interface_name", unless it is a dependency (e.g.,
         # 'partial interface Foo' can be in FooBar.idl).
-        if interface_name in definitions.exceptions:
-            # Exceptions do not have dependencies, so no merging necessary
-            return definitions
         try:
             target_interface = definitions.interfaces[interface_name]
         except KeyError:
             raise InterfaceNotFoundError('Could not find interface or exception "{0}" in {0}.idl'.format(interface_name))
+        if target_interface.is_exception:
+            # Exceptions do not have dependencies, so no merging necessary
+            return definitions
         merge_interface_dependencies(target_interface, dependency_idl_filenames, self.reader)
 
         return definitions

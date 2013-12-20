@@ -92,10 +92,9 @@ class TypedObject:
 
 
 class IdlDefinitions(BaseIdl):
-    def __init__(self, callback_functions=None, enumerations=None, exceptions=None, file_name=None, interfaces=None, typedefs=None):
+    def __init__(self, callback_functions=None, enumerations=None, file_name=None, interfaces=None, typedefs=None):
         self.callback_functions = callback_functions or {}
         self.enumerations = enumerations or {}
-        self.exceptions = exceptions or {}
         self.file_name = file_name or None
         self.interfaces = interfaces or {}
         # Typedefs are not exposed by bindings; resolve typedefs with the
@@ -107,8 +106,6 @@ class IdlDefinitions(BaseIdl):
     def resolve_typedefs(self, typedefs):
         for callback_function in self.callback_functions.itervalues():
             callback_function.resolve_typedefs(typedefs)
-        for exception in self.exceptions.itervalues():
-            exception.resolve_typedefs(typedefs)
         for interface in self.interfaces.itervalues():
             interface.resolve_typedefs(typedefs)
 
@@ -117,8 +114,7 @@ class IdlDefinitions(BaseIdl):
                 'idlDocument::callbackFunctions': self.callback_functions.values(),
                 'idlDocument::enumerations': self.enumerations.values(),
                 'idlDocument::fileName': self.file_name,
-                # Perl treats exceptions as a kind of interface
-                'idlDocument::interfaces': sorted(self.exceptions.values() + self.interfaces.values()),
+                'idlDocument::interfaces': sorted(self.interfaces.values()),
                 }
 
     def to_json(self, debug=False):
@@ -209,45 +205,16 @@ class IdlInterface(BaseIdl):
             }
 
 
-class IdlException(BaseIdl):
+class IdlException(IdlInterface):
+    # Properly exceptions and interfaces are distinct, and thus should inherit a
+    # common base class (say, "IdlExceptionOrInterface").
+    # However, there is only one exception (DOMException), and new exceptions
+    # are not expected. Thus it is easier to implement exceptions as a
+    # restricted subclass of interfaces.
+    # http://www.w3.org/TR/WebIDL/#idl-exceptions
     def __init__(self, name=None, constants=None, operations=None, attributes=None, extended_attributes=None):
-        self.attributes = attributes or []
-        self.constants = constants or []
-        self.extended_attributes = extended_attributes or {}
-        self.operations = operations or []
-        self.name = name
-        # These values don't vary for exceptions, but are needed because
-        # exceptions are treated as interfaces by the code generator
-        self.constructors = []
-        self.custom_constructors = []
-        self.is_callback = False
+        IdlInterface.__init__(self, name=name, constants=constants, operations=operations, attributes=attributes, extended_attributes=extended_attributes)
         self.is_exception = True
-        self.parent = None
-
-    def resolve_typedefs(self, typedefs):
-        for constant in self.constants:
-            constant.resolve_typedefs(typedefs)
-        for attribute in self.attributes:
-            attribute.resolve_typedefs(typedefs)
-        for operations in self.operations:
-            operations.resolve_typedefs(typedefs)
-
-    def json_serializable(self):
-        return {
-            # Perl code treats Exceptions as a kind of Interface
-            'domInterface::name': self.name,
-            'domInterface::attributes': self.attributes,
-            'domInterface::constants': self.constants,
-            'domInterface::extendedAttributes': none_to_value_is_missing(self.extended_attributes),
-            'domInterface::functions': self.operations,
-            # These values don't vary for exceptions
-            'domInterface::constructors': self.constructors,
-            'domInterface::customConstructors': self.custom_constructors,
-            'domInterface::isException': boolean_to_perl(self.is_exception),
-            'domInterface::isCallback': false_to_none(self.is_callback),
-            'domInterface::isPartial': None,
-            'domInterface::parent': self.parent,
-            }
 
 
 class IdlAttribute(BaseIdl, TypedObject):

@@ -50,7 +50,6 @@ def build_idl_definitions_from_ast(node):
 def file_node_to_idl_definitions(node):
     callback_functions = {}
     enumerations = {}
-    exceptions = {}
     interfaces = {}
     typedefs = STANDARD_TYPEDEFS
 
@@ -65,7 +64,8 @@ def file_node_to_idl_definitions(node):
             interfaces[interface.name] = interface
         elif child_class == 'Exception':
             exception = exception_node_to_idl_exception(child)
-            exceptions[exception.name] = exception
+            # For simplicity, treat exceptions as interfaces
+            interfaces[exception.name] = exception
         elif child_class == 'Typedef':
             type_name = child.GetName()
             typedefs[type_name] = typedef_node_to_type(child)
@@ -81,7 +81,7 @@ def file_node_to_idl_definitions(node):
         else:
             raise ValueError('Unrecognized node class: %s' % child_class)
 
-    return IdlDefinitions(callback_functions=callback_functions, enumerations=enumerations, exceptions=exceptions, file_name=file_name, interfaces=interfaces, typedefs=typedefs)
+    return IdlDefinitions(callback_functions=callback_functions, enumerations=enumerations, file_name=file_name, interfaces=interfaces, typedefs=typedefs)
 
 # Constructors for Interface definitions and interface members
 

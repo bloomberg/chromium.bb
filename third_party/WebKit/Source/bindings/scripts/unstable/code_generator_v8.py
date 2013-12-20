@@ -69,11 +69,9 @@ class CodeGeneratorV8:
         # FIXME: remove definitions check when remove write_dummy_header_and_cpp
         if not definitions:
             return
-        if interface_name in definitions.interfaces:
+        try:
             self.interface = definitions.interfaces[interface_name]
-        elif interface_name in definitions.exceptions:
-            self.interface = definitions.exceptions[interface_name]
-        else:
+        except KeyError:
             raise Exception('%s not in IDL definitions' % interface_name)
         if self.interface.is_callback:
             header_template_filename = 'callback_interface.h'
