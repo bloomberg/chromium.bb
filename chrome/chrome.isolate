@@ -16,6 +16,13 @@
         ],
       },
     }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/resources.pak',
+        ],
+      },
+    }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
         'command': [
@@ -27,7 +34,6 @@
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-          '<(PRODUCT_DIR)/resources.pak',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/lib64/',
@@ -41,9 +47,16 @@
         'command': [
           '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/<(mac_product_name)',
         ],
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/libclearkeycdm.dylib',
+        ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
+          '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
+          '<(PRODUCT_DIR)/lib32/',
         ],
       },
     }],

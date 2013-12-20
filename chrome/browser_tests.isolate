@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'includes': [
+    'chrome.isolate',
+  ],
   'conditions': [
     ['OS=="linux"', {
       'variables': {
@@ -13,14 +16,7 @@
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/libclearkeycdm.so',
-          '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
-          '<(PRODUCT_DIR)/libosmesa.so',
-          '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
-          '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
@@ -50,7 +46,6 @@
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
-          '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/test_case.html',
           '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
           '<(PRODUCT_DIR)/test_page.css',
@@ -88,40 +83,25 @@
     ['OS=="linux" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
         ],
         'isolate_dependency_untracked': [
           '../third_party/bidichecker/',
-          '<(PRODUCT_DIR)/lib64/',
-          '<(PRODUCT_DIR)/plugins/',
-          '<(PRODUCT_DIR)/resources/extension/',
         ],
       },
     }],
     ['OS=="mac"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
-          '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
-          '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/',
-          '<(PRODUCT_DIR)/<(mac_product_name).app/',
-          '<(PRODUCT_DIR)/lib32/',
           '<(PRODUCT_DIR)/plugins/TestNetscapePlugIn.plugin/',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
         ],
@@ -142,18 +122,6 @@
           '../native_client/build/build_nexe.py',
           '../third_party/cygwin/bin/bash.exe',
           '../third_party/cygwin/setup_mount.bat',
-          '<(PRODUCT_DIR)/D3DCompiler_43.dll',
-          '<(PRODUCT_DIR)/clearkeycdm.dll',
-          '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
-          '<(PRODUCT_DIR)/chrome.dll',
-          '<(PRODUCT_DIR)/d3dcompiler_46.dll',
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/icudt.dll',
-          '<(PRODUCT_DIR)/libEGL.dll',
-          '<(PRODUCT_DIR)/libGLESv2.dll',
-          '<(PRODUCT_DIR)/nacl64<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/osmesa.dll',
-          '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
           '<(PRODUCT_DIR)/security_tests.dll',
           'tools/build/repack_locales.py',
