@@ -327,18 +327,23 @@ function addToPagesList(data) {
 function addToExtensionsList(data) {
   var row = addTargetToList(data, $('extensions-list'), ['name', 'url']);
   addFavicon(row, data);
+  if (data.guests)
+    addGuestViews(row, data.guests);
 }
 
 function addToAppsList(data) {
   var row = addTargetToList(data, $('apps-list'), ['name', 'url']);
   addFavicon(row, data);
-  if (data.guests) {
-    Array.prototype.forEach.call(data.guests, function(guest) {
-      var guestRow = addTargetToList(guest, row, ['name', 'url']);
-      guestRow.classList.add('guest');
-      addFavicon(guestRow, guest);
-    });
-  }
+  if (data.guests)
+    addGuestViews(row, data.guests);
+}
+
+function addGuestViews(row, guests) {
+  Array.prototype.forEach.call(guests, function(guest) {
+    var guestRow = addTargetToList(guest, row, ['name', 'url']);
+    guestRow.classList.add('guest');
+    addFavicon(guestRow, guest);
+  });
 }
 
 function addToWorkersList(data) {

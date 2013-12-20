@@ -84,19 +84,17 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
           extensions()->GetByID(url_.host());
       if (extension) {
         title_ = extension->name();
-        if (extension->is_hosted_app()
+        extensions::ExtensionHost* extension_host =
+            extensions::ExtensionSystem::Get(profile)->process_manager()->
+                GetBackgroundHostForExtension(extension->id());
+        if (extension_host &&
+            extension_host->host_contents() == web_contents) {
+          type_ = kTargetTypeBackgroundPage;
+          extension_id_ = extension->id();
+        } else if (extension->is_hosted_app()
             || extension->is_legacy_packaged_app()
             || extension->is_platform_app()) {
           type_ = kTargetTypeApp;
-        } else {
-          extensions::ExtensionHost* extension_host =
-              extensions::ExtensionSystem::Get(profile)->process_manager()->
-                  GetBackgroundHostForExtension(extension->id());
-          if (extension_host &&
-              extension_host->host_contents() == web_contents) {
-            type_ = kTargetTypeBackgroundPage;
-            extension_id_ = extension->id();
-          }
         }
         favicon_url_ = extensions::ExtensionIconSource::GetIconURL(
             extension, extension_misc::EXTENSION_ICON_SMALLISH,
