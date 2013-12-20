@@ -35,7 +35,7 @@ LRESULT CFFindDialog::OnDestroy(UINT msg, WPARAM wparam, LPARAM lparam,
 
 LRESULT CFFindDialog::OnFind(WORD wNotifyCode, WORD wID, HWND hWndCtl,
                              BOOL& bHandled) {
-  string16 find_text(kMaxFindChars, L'\0');
+  base::string16 find_text(kMaxFindChars, L'\0');
   find_text.resize(GetDlgItemText(IDC_FIND_TEXT, &find_text[0], kMaxFindChars));
 
   // Repeated searches for the same string should move to the next instance.

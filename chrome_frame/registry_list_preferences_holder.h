@@ -30,10 +30,10 @@ class RegistryListPreferencesHolder {
 
   // Returns true iff |string| matches any of the strings in values_, using the
   // matching logic in base's MatchPattern().
-  bool ListMatches(const string16& string) const;
+  bool ListMatches(const base::string16& string) const;
 
   // Manually add a string to values_ for testing purposes.
-  void AddStringForTesting(const string16& string);
+  void AddStringForTesting(const base::string16& string);
 
   // Reset the holder causing it to be re-initialized, for testing purposes
   // only.
@@ -41,7 +41,7 @@ class RegistryListPreferencesHolder {
   void ResetForTesting();
 
  private:
-  std::vector<string16> values_;
+  std::vector<base::string16> values_;
   bool valid_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryListPreferencesHolder);

@@ -311,7 +311,7 @@ const std::string& MetricsService::GetClientID() {
     HRESULT guid_result = CoCreateGuid(&guid);
     DCHECK(SUCCEEDED(guid_result));
 
-    string16 guid_string;
+    base::string16 guid_string;
     int result = StringFromGUID2(guid,
                                  WriteInto(&guid_string, kGUIDSize), kGUIDSize);
     DCHECK(result == kGUIDSize);

@@ -184,7 +184,7 @@ class ModernIEConfigurator : public IEConfigurator {
 
   static const RunOnceValueNames* RunOnceNamesForVersion(IEVersion ie_version);
   bool IsPerUserSetupComplete();
-  static string16 GetChromeFrameBHOCLSID();
+  static base::string16 GetChromeFrameBHOCLSID();
   static bool IsAddonPromptDisabledForChromeFrame();
 
   const IEVersion ie_version_;
@@ -462,8 +462,8 @@ bool ModernIEConfigurator::IsPerUserSetupComplete() {
 
 // Returns the path to the IE9 Approved Extensions key for Chrome Frame.
 // static
-string16 ModernIEConfigurator::GetChromeFrameBHOCLSID() {
-  string16 bho_guid(39, L'\0');
+base::string16 ModernIEConfigurator::GetChromeFrameBHOCLSID() {
+  base::string16 bho_guid(39, L'\0');
   int guid_len = StringFromGUID2(CLSID_ChromeFrameBHO, &bho_guid[0],
                                  bho_guid.size());
   DCHECK_EQ(guid_len, static_cast<int>(bho_guid.size()));

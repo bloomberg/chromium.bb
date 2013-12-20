@@ -91,7 +91,7 @@ class TurndownPromptWindow
                       BOOL& bHandled);
 
   // Returns the prompt text for the current version of IE.
-  static string16 GetPromptText();
+  static base::string16 GetPromptText();
 
   InfobarContent::Frame* frame_;  // Not owned by this instance
   scoped_ptr<WTL::CHyperLink> link_;

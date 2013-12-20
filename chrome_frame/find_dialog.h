@@ -50,7 +50,7 @@ class CFFindDialog : public CDialogImpl<CFFindDialog> {
 
   // Store the text we searched for last to determine whether we are doing a
   // "Find" or a "Find Next".
-  string16 last_find_text_;
+  base::string16 last_find_text_;
 
   // We don't own these, and they must exist at least as long as we do.
   scoped_refptr<ChromeFrameAutomationClient> automation_client_;

@@ -484,7 +484,7 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     InSequence expect_in_sequence_for_scope;
 
     // Open 'Save As' dialog.
-    string16 initial_url(GetTestUrl(L"save_as_context_menu.html"));
+    base::string16 initial_url(GetTestUrl(L"save_as_context_menu.html"));
     const char* kSaveDlgCaption = "Save As";
     EXPECT_CALL(acc_observer_,
                 OnAccDocLoad(TabContentsTitleEq(initial_url,
@@ -532,7 +532,7 @@ TEST_F(ContextMenuTest, CFReload) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   InSequence expect_in_sequence_for_scope;
 
-  string16 initial_url(GetSimplePageUrl());
+  base::string16 initial_url(GetSimplePageUrl());
   EXPECT_CALL(acc_observer_,
               OnAccDocLoad(TabContentsTitleEq(initial_url,
                                               GetSimplePageTitle())))
@@ -559,7 +559,7 @@ TEST_F(ContextMenuTest, CFViewSource) {
   MockIEEventSink view_source_mock;
   view_source_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
-  string16 initial_url(GetSimplePageUrl());
+  base::string16 initial_url(GetSimplePageUrl());
 
   // View the page source.
   EXPECT_CALL(acc_observer_,
@@ -597,7 +597,7 @@ TEST_F(ContextMenuTest, DISABLED_CFPageInfo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
-  string16 initial_url(GetSimplePageUrl());
+  base::string16 initial_url(GetSimplePageUrl());
 
   // View page information.
   EXPECT_CALL(acc_observer_,
@@ -630,7 +630,7 @@ TEST_F(ContextMenuTest, CFInspector) {
   // Devtools begins life with "Untitled" caption and it changes
   // later to the 'Developer Tools - <url> form.
   const char* kPageInfoCaptionPattern = "Untitled*";
-  string16 initial_url(GetSimplePageUrl());
+  base::string16 initial_url(GetSimplePageUrl());
   EXPECT_CALL(acc_observer_,
               OnAccDocLoad(TabContentsTitleEq(initial_url,
                                               GetSimplePageTitle())))
@@ -688,7 +688,7 @@ TEST_F(ContextMenuTest, CFAboutVersionLoads) {
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
-  string16 initial_url(GetSimplePageUrl());
+  base::string16 initial_url(GetSimplePageUrl());
 
   EXPECT_CALL(acc_observer_,
               OnAccDocLoad(TabContentsTitleEq(initial_url,
@@ -717,7 +717,7 @@ TEST_F(ContextMenuTest, CFAboutVersionLoads) {
 TEST_F(ContextMenuTest, IEOpen) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::None());
   InSequence expect_in_sequence_for_scope;
-  string16 initial_url(GetLinkPageUrl());
+  base::string16 initial_url(GetLinkPageUrl());
 
   // Open the link through the context menu.
   EXPECT_CALL(acc_observer_,
@@ -744,7 +744,7 @@ TEST_F(ContextMenuTest, IEOpenInNewWindow) {
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
-  string16 initial_url(GetLinkPageUrl());
+  base::string16 initial_url(GetLinkPageUrl());
 
   // Open the link in a new window.
   EXPECT_CALL(acc_observer_,
@@ -807,7 +807,7 @@ TEST_F(ContextMenuTest, DISABLED_CFOpenLinkInNewWindow) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
-  string16 initial_url(GetLinkPageUrl());
+  base::string16 initial_url(GetLinkPageUrl());
 
   // Invoke 'Open link in new window' context menu item.
   EXPECT_CALL(acc_observer_,
@@ -830,7 +830,7 @@ TEST_F(ContextMenuTest, DISABLED_CFOpenLinkInNewWindow) {
 // Test CF link context menu - Copy link address.
 TEST_F(ContextMenuTest, CFCopyLinkAddress) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
-  string16 initial_url(GetLinkPageUrl());
+  base::string16 initial_url(GetLinkPageUrl());
 
   // Invoke 'Copy link address' context menu item.
   EXPECT_CALL(acc_observer_,

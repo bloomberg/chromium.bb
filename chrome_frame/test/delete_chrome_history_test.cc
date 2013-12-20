@@ -109,7 +109,7 @@ ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
   EXPECT_EQ(sql::INIT_OK, init_status);
 
   if (init_status == sql::INIT_OK) {
-    std::vector<string16> values;
+    std::vector<base::string16> values;
     autofill_table.GetFormValuesForElementName(
         element_name, L"", &values, 9999);
     EXPECT_THAT(values, matcher);

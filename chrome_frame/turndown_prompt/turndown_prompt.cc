@@ -43,9 +43,9 @@ class BrowserObserver : public ReadyModeWebBrowserAdapter::Observer {
                   ReadyModeWebBrowserAdapter* adapter);
 
   // ReadyModeWebBrowserAdapter::Observer implementation
-  virtual void OnNavigateTo(const string16& url);
-  virtual void OnRenderInChromeFrame(const string16& url);
-  virtual void OnRenderInHost(const string16& url);
+  virtual void OnNavigateTo(const base::string16& url);
+  virtual void OnRenderInChromeFrame(const base::string16& url);
+  virtual void OnRenderInHost(const base::string16& url);
 
  private:
   // Shows the turndown prompt.
@@ -69,7 +69,7 @@ class UrlLauncherImpl : public UrlLauncher {
   explicit UrlLauncherImpl(IWebBrowser2* web_browser);
 
   // UrlLauncher implementation
-  void LaunchUrl(const string16& url);
+  void LaunchUrl(const base::string16& url);
 
  private:
   base::win::ScopedComPtr<IWebBrowser2> web_browser_;
@@ -80,7 +80,7 @@ UrlLauncherImpl::UrlLauncherImpl(IWebBrowser2* web_browser) {
   web_browser_ = web_browser;
 }
 
-void UrlLauncherImpl::LaunchUrl(const string16& url) {
+void UrlLauncherImpl::LaunchUrl(const base::string16& url) {
   VARIANT flags = { VT_I4 };
   V_I4(&flags) = navOpenInNewWindow;
   base::win::ScopedBstr location(url.c_str());
@@ -96,7 +96,7 @@ BrowserObserver::BrowserObserver(IWebBrowser2* web_browser,
       adapter_(adapter) {
 }
 
-void BrowserObserver::OnNavigateTo(const string16& url) {
+void BrowserObserver::OnNavigateTo(const base::string16& url) {
   if (!net::registry_controlled_domains::SameDomainOrHost(
           GURL(url),
           rendered_url_,
@@ -106,12 +106,12 @@ void BrowserObserver::OnNavigateTo(const string16& url) {
   }
 }
 
-void BrowserObserver::OnRenderInChromeFrame(const string16& url) {
+void BrowserObserver::OnRenderInChromeFrame(const base::string16& url) {
   ShowPrompt();
   rendered_url_ = GURL(url);
 }
 
-void BrowserObserver::OnRenderInHost(const string16& url) {
+void BrowserObserver::OnRenderInHost(const base::string16& url) {
   Hide();
   rendered_url_ = GURL(url);
 }

@@ -43,15 +43,15 @@ MATCHER_P(AccSatisfies, matcher, "satisfies the given AccObjectMatcher") {
 // |arg|. Both url and title are matched to account for a race between the test
 // and Chrome when the window title is transitioned from the url to the title.
 MATCHER_P2(TabContentsTitleEq, the_url, the_title, "") {
-  const string16 url(the_url);
+  const base::string16 url(the_url);
   DCHECK(!url.empty());
-  const string16 title(the_title);
+  const base::string16 title(the_title);
   DCHECK(!title.empty());
   HWND parent = GetParent(arg);
   if (parent != NULL) {
-    string16 parent_title(255, L'\0');
+    base::string16 parent_title(255, L'\0');
     std::ostringstream titles_found(std::string("titles found: "));
-    string16 first_title;
+    base::string16 first_title;
     do {
       parent_title.resize(255, L'\0');
       parent_title.resize(GetWindowText(parent, &parent_title[0],

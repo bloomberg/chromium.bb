@@ -67,17 +67,16 @@ TEST_F(HttpNegotiateTest, BeginningTransaction) {
               static_cast<IHttpNegotiate*>(
                   &test_http)))[kBeginningTransactionIndex]);
 
-  string16 cf_ua(
+  base::string16 cf_ua(
       ASCIIToWide(http_utils::GetDefaultUserAgentHeaderWithCFTag()));
-  string16 cf_tag(
-      ASCIIToWide(http_utils::GetChromeFrameUserAgent()));
+  base::string16 cf_tag(ASCIIToWide(http_utils::GetChromeFrameUserAgent()));
 
-  EXPECT_NE(string16::npos, cf_ua.find(L"chromeframe/"));
+  EXPECT_NE(base::string16::npos, cf_ua.find(L"chromeframe/"));
 
   struct TestCase {
-    const string16 original_headers_;
-    const string16 delegate_additional_;
-    const string16 expected_additional_;
+    const base::string16 original_headers_;
+    const base::string16 delegate_additional_;
+    const base::string16 expected_additional_;
     HRESULT delegate_return_value_;
   } test_cases[] = {
     { L"Accept: */*\r\n",
@@ -118,7 +117,7 @@ TEST_F(HttpNegotiateTest, BeginningTransaction) {
 
     if (additional) {
       // Check against the expected additional headers.
-      EXPECT_EQ(test.expected_additional_, string16(additional));
+      EXPECT_EQ(test.expected_additional_, base::string16(additional));
       ::CoTaskMemFree(additional);
     }
   }
@@ -133,28 +132,27 @@ TEST_F(HttpNegotiateTest, BeginningTransactionUARemoval) {
               static_cast<IHttpNegotiate*>(
                   &test_http)))[kBeginningTransactionIndex]);
 
-  string16 nocf_ua(
+  base::string16 nocf_ua(
       ASCIIToWide(http_utils::RemoveChromeFrameFromUserAgentValue(
           http_utils::GetDefaultUserAgentHeaderWithCFTag())));
-  string16 cf_ua(
-      ASCIIToWide(http_utils::AddChromeFrameToUserAgentValue(
-          WideToASCII(nocf_ua))));
+  base::string16 cf_ua(ASCIIToWide(
+      http_utils::AddChromeFrameToUserAgentValue(WideToASCII(nocf_ua))));
 
-  EXPECT_EQ(string16::npos, nocf_ua.find(L"chromeframe/"));
-  EXPECT_NE(string16::npos, cf_ua.find(L"chromeframe/"));
+  EXPECT_EQ(base::string16::npos, nocf_ua.find(L"chromeframe/"));
+  EXPECT_NE(base::string16::npos, cf_ua.find(L"chromeframe/"));
 
-  string16 ua_url(L"www.withua.com");
-  string16 no_ua_url(L"www.noua.com");
+  base::string16 ua_url(L"www.withua.com");
+  base::string16 no_ua_url(L"www.noua.com");
 
   RegistryListPreferencesHolder& ua_holder =
       GetUserAgentPreferencesHolderForTesting();
   ua_holder.AddStringForTesting(no_ua_url);
 
   struct TestCase {
-    const string16 url_;
-    const string16 original_headers_;
-    const string16 delegate_additional_;
-    const string16 expected_additional_;
+    const base::string16 url_;
+    const base::string16 original_headers_;
+    const base::string16 delegate_additional_;
+    const base::string16 expected_additional_;
   } test_cases[] = {
     { ua_url,
       L"",
@@ -186,7 +184,7 @@ TEST_F(HttpNegotiateTest, BeginningTransactionUARemoval) {
 
     if (additional) {
       // Check against the expected additional headers.
-      EXPECT_EQ(test.expected_additional_, string16(additional))
+      EXPECT_EQ(test.expected_additional_, base::string16(additional))
           << "Iteration: " << i;
       ::CoTaskMemFree(additional);
     }
@@ -247,13 +245,13 @@ END_COM_MAP()
     return status_;
   }
 
-  const string16& last_status_text() const {
+  const base::string16& last_status_text() const {
     return status_text_;
   }
 
  protected:
   ULONG status_;
-  string16 status_text_;
+  base::string16 status_text_;
   base::win::ScopedComPtr<IWebBrowser2> browser_;
 };
 

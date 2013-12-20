@@ -512,7 +512,7 @@ base::FilePath GetSeleniumTestFolder() {
 }
 
 std::wstring GetPathFromUrl(const std::wstring& url) {
-  string16 url16 = WideToUTF16(url);
+  base::string16 url16 = WideToUTF16(url);
   GURL gurl = GURL(url16);
   if (gurl.has_query()) {
     GURL::Replacements replacements;
@@ -523,13 +523,13 @@ std::wstring GetPathFromUrl(const std::wstring& url) {
 }
 
 std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
-  string16 url16 = WideToUTF16(url);
+  base::string16 url16 = WideToUTF16(url);
   GURL gurl = GURL(url16);
   return UTF8ToWide(gurl.PathForRequest());
 }
 
 std::wstring GetClipboardText() {
-  string16 text16;
+  base::string16 text16;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::CLIPBOARD_TYPE_COPY_PASTE, &text16);
   return UTF16ToWide(text16);

@@ -74,8 +74,8 @@ class TestScrubber {
 
   bool is_initialized() const { return !default_data_directory_.empty(); }
 
-  string16 default_data_directory_;
-  string16 data_directory_override_;
+  base::string16 default_data_directory_;
+  base::string16 data_directory_override_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScrubber);
 };

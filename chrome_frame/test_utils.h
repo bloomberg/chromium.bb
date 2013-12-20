@@ -71,7 +71,7 @@ class ScopedChromeFrameRegistrar {
   // The string "--call-registration-entrypoint".
   static const wchar_t kCallRegistrationEntrypointSwitch[];
 
-  static void DoRegistration(const string16& path,
+  static void DoRegistration(const base::string16& path,
                              RegistrationType registration_type,
                              RegistrationOperation registration_operation);
 

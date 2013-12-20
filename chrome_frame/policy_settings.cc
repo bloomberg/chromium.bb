@@ -113,8 +113,7 @@ void PolicySettings::ReadMetadataCheckSettings(
 
   base::win::RegKey config_key;
   DWORD value = SKIP_METADATA_CHECK_NOT_SPECIFIED;
-  string16 settings_value(
-      ASCIIToWide(policy::key::kSkipMetadataCheck));
+  base::string16 settings_value(ASCIIToWide(policy::key::kSkipMetadataCheck));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
                          KEY_READ) == ERROR_SUCCESS) &&
@@ -175,7 +174,7 @@ void PolicySettings::ReadStringSetting(const char* value_name,
 void PolicySettings::ReadBoolSetting(const char* value_name, bool* value) {
   DCHECK(value);
   base::win::RegKey config_key;
-  string16 value_name_str(ASCIIToWide(value_name));
+  base::string16 value_name_str(ASCIIToWide(value_name));
   DWORD dword_value = 0;
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,

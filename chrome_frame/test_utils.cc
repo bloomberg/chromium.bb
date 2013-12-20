@@ -71,7 +71,7 @@ void ScopedChromeFrameRegistrar::RegisterDefaults() {
 // information.
 // static
 void ScopedChromeFrameRegistrar::DoRegistration(
-    const string16& path,
+    const base::string16& path,
     RegistrationType registration_type,
     RegistrationOperation registration_operation) {
   static const char* const kEntrypoints[] = {
@@ -95,7 +95,7 @@ void ScopedChromeFrameRegistrar::DoRegistration(
     entrypoint_index += 2;
   if (registration_operation == UNREGISTER)
     entrypoint_index += 1;
-  string16 registration_command(ASCIIToUTF16("\""));
+  base::string16 registration_command(ASCIIToUTF16("\""));
   registration_command +=
       CommandLine::ForCurrentProcess()->GetProgram().value();
   registration_command += ASCIIToUTF16("\" ");

@@ -299,7 +299,7 @@ void DisplayVersionMismatchWarning(HWND parent,
   // Obtain the current module version.
   scoped_ptr<FileVersionInfo> module_version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-  string16 version_string(module_version_info->file_version());
+  base::string16 version_string(module_version_info->file_version());
   std::wstring wide_server_version;
   if (server_version.empty()) {
     wide_server_version = SimpleResourceLoader::Get(IDS_VERSIONUNKNOWN);
@@ -742,7 +742,7 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
   return renderer_type;
 }
 
-bool ShouldRemoveUAForUrl(const string16& url) {
+bool ShouldRemoveUAForUrl(const base::string16& url) {
   // TODO(robertshield): Wire up the stuff in PolicySettings here so the value
   // can be specified via group policy.
   // TODO(robertshield): Add a default list of exclusions here for site with
@@ -1632,7 +1632,7 @@ bool IncreaseWinInetConnections(DWORD connections) {
   return true;
 }
 
-void GetChromeFrameProfilePath(const string16& profile_name,
+void GetChromeFrameProfilePath(const base::string16& profile_name,
                                base::FilePath* profile_path) {
   chrome::GetChromeFrameUserDataDirectory(profile_path);
   *profile_path = profile_path->Append(profile_name);

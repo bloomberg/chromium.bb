@@ -313,13 +313,13 @@ HRESULT RefreshElevationPolicy() {
 HRESULT SetupRunOnce() {
   HRESULT result = E_FAIL;
 
-  string16 channel_name;
+  base::string16 channel_name;
   if (base::win::GetVersion() < base::win::VERSION_VISTA &&
       GoogleUpdateSettings::GetChromeChannelAndModifiers(true, &channel_name)) {
     std::transform(channel_name.begin(), channel_name.end(),
                    channel_name.begin(), tolower);
     // Use this only for the dev channel.
-    if (channel_name.find(L"dev") != string16::npos) {
+    if (channel_name.find(L"dev") != base::string16::npos) {
       HKEY hive = HKEY_CURRENT_USER;
       if (IsSystemProcess()) {
         // For system installs, our updates will be running as SYSTEM which
@@ -591,7 +591,7 @@ const wchar_t* const kMimeHandlerKeyValues[] = {
 // Handlers key based on |for_installed|. Returns false if the values are not as
 // expected or if an error occurred.
 bool MimeHandlerKeyIsConfigured(bool for_install, HKEY root_key) {
-  string16 key_name(kInternetSettings);
+  base::string16 key_name(kInternetSettings);
   key_name.append(L"\\Secure Mime Handlers");
   RegKey key(root_key, key_name.c_str(), KEY_QUERY_VALUE);
   if (!key.Valid())
@@ -612,7 +612,7 @@ bool MimeHandlerKeyIsConfigured(bool for_install, HKEY root_key) {
 }
 
 HRESULT SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
-  string16 key_name(kInternetSettings);
+  base::string16 key_name(kInternetSettings);
   key_name.append(L"\\Secure Mime Handlers");
   RegKey key(root_key, key_name.c_str(), KEY_SET_VALUE);
   if (!key.Valid())

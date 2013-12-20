@@ -13,7 +13,7 @@ RegistryListPreferencesHolder::RegistryListPreferencesHolder() : valid_(false) {
 void RegistryListPreferencesHolder::Init(HKEY hive,
                                          const wchar_t* registry_path,
                                          const wchar_t* list_name) {
-  string16 list_path(registry_path);
+  base::string16 list_path(registry_path);
   list_path += L"\\";
   list_path += list_name;
   base::win::RegistryValueIterator string_list(hive, list_path.c_str());
@@ -23,9 +23,10 @@ void RegistryListPreferencesHolder::Init(HKEY hive,
   valid_ = true;
 }
 
-bool RegistryListPreferencesHolder::ListMatches(const string16& string) const {
+bool RegistryListPreferencesHolder::ListMatches(const base::string16& string)
+    const {
   DCHECK(Valid());
-  std::vector<string16>::const_iterator iter(values_.begin());
+  std::vector<base::string16>::const_iterator iter(values_.begin());
   for (; iter != values_.end(); ++iter) {
     if (MatchPattern(string, *iter))
       return true;
@@ -35,7 +36,7 @@ bool RegistryListPreferencesHolder::ListMatches(const string16& string) const {
 }
 
 void RegistryListPreferencesHolder::AddStringForTesting(
-    const string16& string) {
+    const base::string16& string) {
   values_.push_back(string);
 }
 

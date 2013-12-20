@@ -288,7 +288,7 @@ RendererType RendererTypeForUrl(const std::wstring& url);
 
 // Check if we should try to remove the CF user agent based on registry
 // settings.
-bool ShouldRemoveUAForUrl(const string16& url);
+bool ShouldRemoveUAForUrl(const base::string16& url);
 
 // Testing methods that return the backing stores behind RendererTypeForUrl and
 // ShouldRemoveUAForUrl. Intended to allow unit testing code that calls the
@@ -601,7 +601,7 @@ bool IncreaseWinInetConnections(DWORD connections);
 
 // Sets |profile_path| to the path for the Chrome Frame |profile_name|
 // profile.
-void GetChromeFrameProfilePath(const string16& profile_name,
+void GetChromeFrameProfilePath(const base::string16& profile_name,
                                base::FilePath* profile_path);
 
 #endif  // CHROME_FRAME_UTILS_H_

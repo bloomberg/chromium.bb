@@ -51,7 +51,7 @@ base::WeakPtr<TurndownPromptWindow> TurndownPromptWindow::CreateInstance(
 
   // Substitute the proper text given the current IE version.
   CWindow text = instance->GetDlgItem(IDC_TD_PROMPT_MESSAGE);
-  string16 prompt_text(GetPromptText());
+  base::string16 prompt_text(GetPromptText());
   if (!prompt_text.empty())
     text.SetWindowText(prompt_text.c_str());
 
@@ -102,7 +102,7 @@ LRESULT TurndownPromptWindow::OnUninstall(WORD /*wNotifyCode*/,
 }
 
 // static
-string16 TurndownPromptWindow::GetPromptText() {
+base::string16 TurndownPromptWindow::GetPromptText() {
   IEVersion ie_version = GetIEVersion();
   int message_id = IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_NEWER;
   if (ie_version == IE_6 || ie_version == IE_7 || ie_version == IE_8)
