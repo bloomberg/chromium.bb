@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -40,12 +41,12 @@ class IndexedDBDatabase::PendingOpenCall {
         database_callbacks_(database_callbacks),
         version_(version),
         transaction_id_(transaction_id) {}
-  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
-  scoped_refptr<IndexedDBDatabaseCallbacks> DatabaseCallbacks() {
+  scoped_refptr<IndexedDBCallbacks> callbacks() const { return callbacks_; }
+  scoped_refptr<IndexedDBDatabaseCallbacks> const database_callbacks() {
     return database_callbacks_;
   }
-  int64 Version() { return version_; }
-  int64 TransactionId() const { return transaction_id_; }
+  int64 version() const { return version_; }
+  int64 transaction_id() const { return transaction_id_; }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
@@ -66,10 +67,13 @@ class IndexedDBDatabase::PendingUpgradeCall {
         connection_(connection.Pass()),
         version_(version),
         transaction_id_(transaction_id) {}
-  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
-  scoped_ptr<IndexedDBConnection> Connection() { return connection_.Pass(); }
-  int64 Version() { return version_; }
-  int64 TransactionId() const { return transaction_id_; }
+  scoped_refptr<IndexedDBCallbacks> callbacks() const { return callbacks_; }
+  // Takes ownership of the connection object.
+  scoped_ptr<IndexedDBConnection> ReleaseConnection() WARN_UNUSED_RESULT {
+    return connection_.Pass();
+  }
+  int64 version() const { return version_; }
+  int64 transaction_id() const { return transaction_id_; }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
@@ -87,9 +91,9 @@ class IndexedDBDatabase::PendingSuccessCall {
                      IndexedDBConnection* connection,
                      int64 version)
       : callbacks_(callbacks), connection_(connection), version_(version) {}
-  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
-  IndexedDBConnection* Connection() { return connection_; }
-  int64 Version() { return version_; }
+  scoped_refptr<IndexedDBCallbacks> callbacks() const { return callbacks_; }
+  IndexedDBConnection* connection() const { return connection_; }
+  int64 version() const { return version_; }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
@@ -101,7 +105,7 @@ class IndexedDBDatabase::PendingDeleteCall {
  public:
   explicit PendingDeleteCall(scoped_refptr<IndexedDBCallbacks> callbacks)
       : callbacks_(callbacks) {}
-  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
+  scoped_refptr<IndexedDBCallbacks> callbacks() const { return callbacks_; }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
@@ -121,11 +125,6 @@ scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
 
 namespace {
 const base::string16::value_type kNoStringVersion[] = {0};
-
-template <typename T, typename U>
-bool Contains(const T& container, const U& item) {
-  return container.find(item) != container.end();
-}
 }
 
 IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
@@ -222,7 +221,7 @@ IndexedDBTransaction* IndexedDBDatabase::GetTransaction(
 }
 
 bool IndexedDBDatabase::ValidateObjectStoreId(int64 object_store_id) const {
-  if (!Contains(metadata_.object_stores, object_store_id)) {
+  if (!ContainsKey(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
     return false;
   }
@@ -235,7 +234,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndIndexId(int64 object_store_id,
     return false;
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
-  if (!Contains(object_store_metadata.indexes, index_id)) {
+  if (!ContainsKey(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -250,7 +249,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndOptionalIndexId(
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
   if (index_id != IndexedDBIndexMetadata::kInvalidId &&
-      !Contains(object_store_metadata.indexes, index_id)) {
+      !ContainsKey(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -264,7 +263,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndNewIndexId(
     return false;
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
-  if (Contains(object_store_metadata.indexes, index_id)) {
+  if (ContainsKey(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -282,7 +281,7 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
     return;
   DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
 
-  if (Contains(metadata_.object_stores, object_store_id)) {
+  if (ContainsKey(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
     return;
   }
@@ -1279,15 +1278,15 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
 
     if (pending_second_half_open_) {
       if (committed) {
-        DCHECK_EQ(pending_second_half_open_->Version(), metadata_.int_version);
+        DCHECK_EQ(pending_second_half_open_->version(), metadata_.int_version);
         DCHECK(metadata_.id != kInvalidId);
 
         // Connection was already minted for OnUpgradeNeeded callback.
         scoped_ptr<IndexedDBConnection> connection;
-        pending_second_half_open_->Callbacks()->OnSuccess(connection.Pass(),
+        pending_second_half_open_->callbacks()->OnSuccess(connection.Pass(),
                                                           this->metadata());
       } else {
-        pending_second_half_open_->Callbacks()->OnError(
+        pending_second_half_open_->callbacks()->OnError(
             IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionAbortError,
                                    "Version change transaction was aborted in "
                                    "upgradeneeded event handler."));
@@ -1331,14 +1330,14 @@ size_t IndexedDBDatabase::PendingDeleteCount() const {
 
 void IndexedDBDatabase::ProcessPendingCalls() {
   if (pending_run_version_change_transaction_call_ && ConnectionCount() == 1) {
-    DCHECK(pending_run_version_change_transaction_call_->Version() >
+    DCHECK(pending_run_version_change_transaction_call_->version() >
            metadata_.int_version);
     scoped_ptr<PendingUpgradeCall> pending_call =
         pending_run_version_change_transaction_call_.Pass();
-    RunVersionChangeTransactionFinal(pending_call->Callbacks(),
-                                     pending_call->Connection(),
-                                     pending_call->TransactionId(),
-                                     pending_call->Version());
+    RunVersionChangeTransactionFinal(pending_call->callbacks(),
+                                     pending_call->ReleaseConnection(),
+                                     pending_call->transaction_id(),
+                                     pending_call->version());
     DCHECK_EQ(static_cast<size_t>(1), ConnectionCount());
     // Fall through would be a no-op, since transaction must complete
     // asynchronously.
@@ -1356,7 +1355,7 @@ void IndexedDBDatabase::ProcessPendingCalls() {
       scoped_ptr<PendingDeleteCall> pending_delete_call(
           pending_delete_calls.front());
       pending_delete_calls.pop_front();
-      DeleteDatabaseFinal(pending_delete_call->Callbacks());
+      DeleteDatabaseFinal(pending_delete_call->callbacks());
     }
     // delete_database_final should never re-queue calls.
     DCHECK(pending_delete_calls_.empty());
@@ -1369,10 +1368,10 @@ void IndexedDBDatabase::ProcessPendingCalls() {
     while (!pending_open_calls.empty()) {
       scoped_ptr<PendingOpenCall> pending_open_call(pending_open_calls.front());
       pending_open_calls.pop_front();
-      OpenConnection(pending_open_call->Callbacks(),
-                     pending_open_call->DatabaseCallbacks(),
-                     pending_open_call->TransactionId(),
-                     pending_open_call->Version());
+      OpenConnection(pending_open_call->callbacks(),
+                     pending_open_call->database_callbacks(),
+                     pending_open_call->transaction_id(),
+                     pending_open_call->version());
     }
   }
 }
@@ -1670,8 +1669,8 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
 
   connections_.erase(connection);
   if (pending_second_half_open_ &&
-      pending_second_half_open_->Connection() == connection) {
-    pending_second_half_open_->Callbacks()->OnError(
+      pending_second_half_open_->connection() == connection) {
+    pending_second_half_open_->callbacks()->OnError(
         IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionAbortError,
                                "The connection was closed."));
     pending_second_half_open_.reset();
