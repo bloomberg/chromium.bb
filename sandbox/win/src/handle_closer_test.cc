@@ -19,7 +19,7 @@ const wchar_t *kFileExtensions[] = { L".1", L".2", L".3", L".4" };
 HANDLE GetMarkerFile(const wchar_t *extension) {
   wchar_t path_buffer[MAX_PATH + 1];
   CHECK(::GetTempPath(MAX_PATH, path_buffer));
-  string16 marker_path = path_buffer;
+  base::string16 marker_path = path_buffer;
   marker_path += L"\\sbox_marker_";
 
   // Generate a unique value from the exe's size and timestamp.
@@ -76,7 +76,7 @@ SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t **argv) {
       const size_t kHandleOffset = sizeof(HANDLE);
       HANDLE handle = NULL;
       int invalid_count = 0;
-      string16 handle_name;
+      base::string16 handle_name;
 
       if (!::GetProcessHandleCount(::GetCurrentProcess(), &handle_count))
         return SBOX_TEST_FAILED_TO_RUN_TEST;
@@ -110,9 +110,9 @@ TEST(HandleCloserTest, CheckForMarkerFiles) {
   runner.SetTestState(EVERY_STATE);
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-  string16 command = string16(L"CheckForFileHandles Y");
+  base::string16 command = base::string16(L"CheckForFileHandles Y");
   for (int i = 0; i < arraysize(kFileExtensions); ++i) {
-    string16 handle_name;
+    base::string16 handle_name;
     base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
     CHECK(marker.IsValid());
     CHECK(sandbox::GetHandleName(marker, &handle_name));
@@ -130,9 +130,9 @@ TEST(HandleCloserTest, CloseMarkerFiles) {
   runner.SetTestState(EVERY_STATE);
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-  string16 command = string16(L"CheckForFileHandles N");
+  base::string16 command = base::string16(L"CheckForFileHandles N");
   for (int i = 0; i < arraysize(kFileExtensions); ++i) {
-    string16 handle_name;
+    base::string16 handle_name;
     base::win::ScopedHandle marker(GetMarkerFile(kFileExtensions[i]));
     CHECK(marker.IsValid());
     CHECK(sandbox::GetHandleName(marker, &handle_name));

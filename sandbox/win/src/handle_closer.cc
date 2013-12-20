@@ -174,7 +174,7 @@ bool HandleCloser::SetupHandleInterceptions(InterceptionManager* manager) {
   return true;
 }
 
-bool GetHandleName(HANDLE handle, string16* handle_name) {
+bool GetHandleName(HANDLE handle, base::string16* handle_name) {
   static NtQueryObject QueryObject = NULL;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);

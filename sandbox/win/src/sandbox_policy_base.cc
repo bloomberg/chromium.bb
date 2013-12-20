@@ -173,21 +173,21 @@ ResultCode PolicyBase::SetAlternateDesktop(bool alternate_winstation) {
   return CreateAlternateDesktop(alternate_winstation);
 }
 
-string16 PolicyBase::GetAlternateDesktop() const {
+base::string16 PolicyBase::GetAlternateDesktop() const {
   // No alternate desktop or winstation. Return an empty string.
   if (!use_alternate_desktop_ && !use_alternate_winstation_) {
-    return string16();
+    return base::string16();
   }
 
   // The desktop and winstation should have been created by now.
   // If we hit this scenario, it means that the user ignored the failure
   // during SetAlternateDesktop, so we ignore it here too.
   if (use_alternate_desktop_ && !alternate_desktop_handle_) {
-    return string16();
+    return base::string16();
   }
   if (use_alternate_winstation_ && (!alternate_desktop_handle_ ||
                                     !alternate_winstation_handle_)) {
-    return string16();
+    return base::string16();
   }
 
   return GetFullDesktopName(alternate_winstation_handle_,
@@ -649,7 +649,7 @@ bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   }
 
   if (!blacklisted_dlls_.empty()) {
-    std::vector<string16>::iterator it = blacklisted_dlls_.begin();
+    std::vector<base::string16>::iterator it = blacklisted_dlls_.begin();
     for (; it != blacklisted_dlls_.end(); ++it) {
       manager.AddToUnloadModules(it->c_str());
     }

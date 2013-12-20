@@ -54,11 +54,11 @@ class HandleTable {
 
     const OBJECT_TYPE_INFORMATION* TypeInfo();
 
-    const string16& Name();
+    const base::string16& Name();
 
-    const string16& Type();
+    const base::string16& Type();
 
-    bool IsType(const string16& type_string);
+    bool IsType(const base::string16& type_string);
 
    private:
     friend class Iterator;
@@ -84,8 +84,8 @@ class HandleTable {
     const SYSTEM_HANDLE_INFORMATION* handle_entry_;
     const SYSTEM_HANDLE_INFORMATION* last_entry_;
     std::vector<BYTE> type_info_buffer_;
-    string16 handle_name_;
-    string16 type_name_;
+    base::string16 handle_name_;
+    base::string16 type_name_;
 
     DISALLOW_COPY_AND_ASSIGN(HandleEntry);
   };

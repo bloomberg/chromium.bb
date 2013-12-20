@@ -151,17 +151,17 @@ const OBJECT_TYPE_INFORMATION* HandleTable::HandleEntry::TypeInfo() {
   return type_info_buffer_.empty() ? NULL : type_info_internal();
 }
 
-const string16& HandleTable::HandleEntry::Name() {
+const base::string16& HandleTable::HandleEntry::Name() {
   UpdateInfo(UPDATE_INFO_AND_NAME);
   return handle_name_;
 }
 
-const string16& HandleTable::HandleEntry::Type() {
+const base::string16& HandleTable::HandleEntry::Type() {
   UpdateInfo(UPDATE_INFO_AND_TYPE_NAME);
   return type_name_;
 }
 
-bool HandleTable::HandleEntry::IsType(const string16& type_string) {
+bool HandleTable::HandleEntry::IsType(const base::string16& type_string) {
   UpdateInfo(UPDATE_INFO_ONLY);
   if (type_info_buffer_.empty())
     return false;

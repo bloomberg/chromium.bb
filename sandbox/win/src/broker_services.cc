@@ -316,7 +316,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // Initialize the startup information from the policy.
   base::win::StartupInformation startup_info;
-  string16 desktop = policy_base->GetAlternateDesktop();
+  base::string16 desktop = policy_base->GetAlternateDesktop();
   if (!desktop.empty()) {
     startup_info.startup_info()->lpDesktop =
         const_cast<wchar_t*>(desktop.c_str());
@@ -486,7 +486,7 @@ ResultCode BrokerServicesBase::InstallAppContainer(const wchar_t* sid,
   if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
-  string16 old_name = LookupAppContainer(sid);
+  base::string16 old_name = LookupAppContainer(sid);
   if (old_name.empty())
     return CreateAppContainer(sid, name);
 
@@ -500,7 +500,7 @@ ResultCode BrokerServicesBase::UninstallAppContainer(const wchar_t* sid) {
   if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
-  string16 name =  LookupAppContainer(sid);
+  base::string16 name = LookupAppContainer(sid);
   if (name.empty())
     return SBOX_ERROR_INVALID_APP_CONTAINER;
 
