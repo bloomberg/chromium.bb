@@ -429,6 +429,7 @@ void IndexedDBDispatcher::RequestIDBDatabaseClear(
     int64 transaction_id,
     int64 object_store_id,
     WebIDBCallbacks* callbacks_ptr) {
+  ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_DatabaseClear(CurrentWorkerId(),
