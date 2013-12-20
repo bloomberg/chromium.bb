@@ -133,7 +133,7 @@ template<typename T>
 T DataView::getData(unsigned byteOffset, bool littleEndian, ExceptionState& exceptionState) const
 {
     if (beyondRange<T>(byteOffset)) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, "The provided offset (" + String::number(byteOffset) + ") is outside the allowed range.");
         return 0;
     }
 
@@ -148,7 +148,7 @@ template<typename T>
 void DataView::setData(unsigned byteOffset, T value, bool littleEndian, ExceptionState& exceptionState)
 {
     if (beyondRange<T>(byteOffset)) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, "The provided offset (" + String::number(byteOffset) + ") is outside the allowed range.");
         return;
     }
 

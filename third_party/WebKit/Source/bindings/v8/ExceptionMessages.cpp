@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ExceptionMessages.h"
 
+#include "platform/Decimal.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -90,10 +91,16 @@ String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provide
     return String::number(expected) + " argument" + (expected > 1 ? "s" : "") + " required, but only " + String::number(provided) + " present.";
 }
 
-String ExceptionMessages::notAFiniteNumber(double value)
+String ExceptionMessages::notAFiniteNumber(double value, const char* name)
 {
     ASSERT(!std::isfinite(value));
-    return std::isinf(value) ? "The value provided is infinite." : "The value provided is not a number.";
+    return String::format("The %s is %s.", name, std::isinf(value) ? "infinite" : "not a number");
+}
+
+String ExceptionMessages::notAFiniteNumber(const Decimal& value, const char* name)
+{
+    ASSERT(!value.isFinite());
+    return String::format("The %s is %s.", name, value.isInfinity() ? "infinite" : "not a number");
 }
 
 String ExceptionMessages::ordinalNumber(int number)

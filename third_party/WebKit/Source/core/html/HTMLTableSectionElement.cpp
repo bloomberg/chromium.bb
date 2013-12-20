@@ -61,9 +61,9 @@ PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionS
     RefPtr<HTMLTableRowElement> row;
     RefPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
-    if (index < -1 || index > numRows)
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError); // per the DOM
-    else {
+    if (index < -1 || index > numRows) {
+        exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
+    } else {
         row = HTMLTableRowElement::create(document());
         if (numRows == index || index == -1)
             appendChild(row, exceptionState);
@@ -89,7 +89,7 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionStat
         RefPtr<Node> row = children->item(index);
         HTMLElement::removeChild(row.get(), exceptionState);
     } else {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
     }
 }
 

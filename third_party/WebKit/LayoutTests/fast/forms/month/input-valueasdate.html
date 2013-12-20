@@ -10,12 +10,11 @@
 description('Test HTMLInputElement::valueAsDate binding.');
 
 var input = document.createElement('input');
-var invalidStateError = 'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.';
 
 debug('Unsuppported type:');
 input.type = 'text';
 shouldBe('input.valueAsDate', 'null');
-shouldThrow('input.valueAsDate = date', 'invalidStateError');
+shouldThrow('input.valueAsDate = date');
 
 debug('');
 debug('Supported type:');

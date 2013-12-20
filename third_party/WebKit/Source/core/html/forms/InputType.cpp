@@ -30,6 +30,8 @@
 
 #include "InputTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/events/KeyboardEvent.h"
@@ -210,7 +212,7 @@ double InputType::valueAsDate() const
 
 void InputType::setValueAsDate(double, ExceptionState& exceptionState) const
 {
-    exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    exceptionState.throwDOMException(InvalidStateError, "This input element does not support Date values.");
 }
 
 double InputType::valueAsDouble() const
@@ -225,7 +227,7 @@ void InputType::setValueAsDouble(double doubleValue, TextFieldEventBehavior even
 
 void InputType::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& exceptionState) const
 {
-    exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    exceptionState.throwDOMException(InvalidStateError, "This input element does not support Decimal values.");
 }
 
 bool InputType::supportsValidation() const
@@ -796,24 +798,24 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
 {
     StepRange stepRange(createStepRange(anyStepHandling));
     if (!stepRange.hasStep()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "This form element does not have an allowed value step.");
         return;
     }
 
     const Decimal current = parseToNumberOrNaN(element().value());
     if (!current.isFinite()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::notAFiniteNumber(current, "form element's current value"));
         return;
     }
     Decimal newValue = current + stepRange.step() * count;
     if (!newValue.isFinite()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::notAFiniteNumber(newValue, "form element's new value"));
         return;
     }
 
     const Decimal acceptableErrorValue = stepRange.acceptableError();
     if (newValue - stepRange.minimum() < -acceptableErrorValue) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The form element's new value (" + newValue.toString() + ") would be lower than the minimum (" + stepRange.minimum().toString() + "), and snapping to the minimum would exceed the amount of acceptible error.");
         return;
     }
     if (newValue < stepRange.minimum())
@@ -824,7 +826,7 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
         newValue = stepRange.alignValueForStep(current, newValue);
 
     if (newValue - stepRange.maximum() > acceptableErrorValue) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The form element's new value (" + newValue.toString() + ") would be higher than the maximum (" + stepRange.maximum().toString() + "), and snapping to the maximum would exceed the amount of acceptible error.");
         return;
     }
     if (newValue > stepRange.maximum())
@@ -852,7 +854,7 @@ StepRange InputType::createStepRange(AnyStepHandling) const
 void InputType::stepUp(int n, ExceptionState& exceptionState)
 {
     if (!isSteppable()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "This form element is not steppable.");
         return;
     }
     applyStep(n, RejectAny, DispatchNoEvent, exceptionState);

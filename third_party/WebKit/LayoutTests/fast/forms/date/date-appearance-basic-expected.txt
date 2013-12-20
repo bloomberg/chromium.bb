@@ -1,4 +1,5 @@
 Basic  
+:hover 
 Disabled  
 Read-only  
 RTL 
