@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -94,11 +95,15 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                  content::Source<BrowserContext>(host->browser_context()));
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
+
+  host_->view()->browser()->tab_strip_model()->AddObserver(this);
 }
 
 ExtensionPopup::~ExtensionPopup() {
   content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
       devtools_callback_);
+
+  host_->view()->browser()->tab_strip_model()->RemoveObserver(this);
 }
 
 void ExtensionPopup::Observe(int type,
@@ -196,6 +201,13 @@ void ExtensionPopup::OnWindowActivated(aura::Window* gained_active,
     GetWidget()->Close();
 }
 #endif
+
+void ExtensionPopup::ActiveTabChanged(content::WebContents* old_contents,
+                                      content::WebContents* new_contents,
+                                      int index,
+                                      int reason) {
+  GetWidget()->Close();
+}
 
 // static
 ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,

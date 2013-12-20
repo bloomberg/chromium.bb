@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -235,6 +236,30 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserClickClosesPopup2) {
 
   // Click on the omnibox to close the extension popup.
   ui_test_utils::ClickOnView(browser(), VIEW_ID_OMNIBOX);
+  EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
+}
+
+// Test that the extension popup is closed on browser tab switches.
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TabSwitchClosesPopup) {
+  if (!ShouldRunPopupTest())
+    return;
+
+  // Add a second tab to the browser.
+  chrome::NewTab(browser());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Open an extension popup via the chrome.browserAction.openPopup API.
+  content::WindowedNotificationObserver frame_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
+                                  "open_popup_succeeds.html")) << message_;
+  frame_observer.Wait();
+  EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
+
+  // Press CTRL+TAB to change active tabs, the extension popup should close.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_TAB, true, false, false, false));
   EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
 }
 

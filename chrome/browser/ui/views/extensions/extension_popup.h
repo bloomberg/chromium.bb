@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -36,7 +37,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
                        public aura::client::ActivationChangeObserver,
 #endif
                        public ExtensionViewViews::Container,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public TabStripModelObserver {
  public:
   enum ShowAction {
     SHOW,
@@ -83,6 +85,12 @@ class ExtensionPopup : public views::BubbleDelegateView,
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
 #endif
+
+  // TabStripModelObserver overrides.
+  virtual void ActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
+                                int index,
+                                int reason) OVERRIDE;
 
   // The min/max height of popups.
   static const int kMinWidth;
