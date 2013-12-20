@@ -609,6 +609,10 @@ void AutofillManager::OnShowPasswordSuggestions(
     const gfx::RectF& bounds,
     const std::vector<base::string16>& suggestions,
     const std::vector<base::string16>& realms) {
+  // Bail if the IPC message is corrupt.
+  if (suggestions.size() != realms.size())
+    return;
+
   external_delegate_->OnShowPasswordSuggestions(suggestions,
                                                 realms,
                                                 field,
@@ -617,6 +621,7 @@ void AutofillManager::OnShowPasswordSuggestions(
 
 void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
                                     const std::vector<base::string16>& labels) {
+  // Bail if the IPC message is corrupt.
   if (values.size() != labels.size())
     return;
 
