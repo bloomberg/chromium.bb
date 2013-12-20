@@ -650,13 +650,13 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
       request.url(), request.first_party_for_cookies());
 
   int render_process_id = -1;
-  int render_view_id = -1;
-  if (content::ResourceRequestInfo::GetRenderViewForRequest(
-          &request, &render_process_id, &render_view_id)) {
+  int render_frame_id = -1;
+  if (content::ResourceRequestInfo::GetRenderFrameForRequest(
+          &request, &render_process_id, &render_frame_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::CookiesRead,
-                   render_process_id, render_view_id,
+                   render_process_id, render_frame_id,
                    request.url(), request.first_party_for_cookies(),
                    cookie_list, !allow));
   }
@@ -675,13 +675,13 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
       request.url(), request.first_party_for_cookies());
 
   int render_process_id = -1;
-  int render_view_id = -1;
-  if (content::ResourceRequestInfo::GetRenderViewForRequest(
-          &request, &render_process_id, &render_view_id)) {
+  int render_frame_id = -1;
+  if (content::ResourceRequestInfo::GetRenderFrameForRequest(
+          &request, &render_process_id, &render_frame_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::CookieChanged,
-                   render_process_id, render_view_id,
+                   render_process_id, render_frame_id,
                    request.url(), request.first_party_for_cookies(),
                    cookie_line, *options, !allow));
   }

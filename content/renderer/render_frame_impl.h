@@ -14,6 +14,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -58,6 +59,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
   RenderViewImpl* render_view() { return render_view_; }
+
+  RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
@@ -338,6 +341,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // progress.
   base::string16 pepper_composition_text_;
 #endif
+
+  RendererWebCookieJarImpl cookie_jar_;
 
   // All the registered observers.
   ObserverList<RenderFrameObserver> observers_;

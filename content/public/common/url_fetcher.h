@@ -16,12 +16,12 @@ class URLFetcher;
 namespace content {
 
 // Mark URLRequests started by the URLFetcher to stem from the given render
-// view.
-CONTENT_EXPORT void AssociateURLFetcherWithRenderView(
+// frame.
+CONTENT_EXPORT void AssociateURLFetcherWithRenderFrame(
     net::URLFetcher* url_fetcher,
     const GURL& first_party_for_cookies,
     int render_process_id,
-    int render_view_id);
+    int render_frame_id);
 
 }  // namespace content
 

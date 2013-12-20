@@ -257,7 +257,6 @@ using blink::WebColor;
 using blink::WebColorName;
 using blink::WebConsoleMessage;
 using blink::WebContextMenuData;
-using blink::WebCookieJar;
 using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
@@ -841,7 +840,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
-      cookie_jar_(this),
       notification_provider_(NULL),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
@@ -3049,10 +3047,6 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
       sink);
   return new WebMediaPlayerImpl(this, frame, client, AsWeakPtr(), params);
 #endif  // defined(OS_ANDROID)
-}
-
-WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
-  return &cookie_jar_;
 }
 
 void RenderViewImpl::didAccessInitialDocument(WebFrame* frame) {

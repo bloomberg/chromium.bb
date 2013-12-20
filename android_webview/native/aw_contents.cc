@@ -45,6 +45,7 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -159,6 +160,13 @@ GetRendererPreferencesSubpixelRenderingEnum(
   }
 }
 
+void OnIoThreadClientReady(content::RenderFrameHost* rfh) {
+  int render_process_id = rfh->GetProcess()->GetID();
+  int render_frame_id = rfh->GetRoutingID();
+  AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
+      render_process_id, render_frame_id);
+}
+
 }  // namespace
 
 // static
@@ -229,9 +237,7 @@ void AwContents::SetJavaPeers(JNIEnv* env,
           env, intercept_navigation_delegate)));
 
   // Finally, having setup the associations, release any deferred requests
-  int child_id = web_contents_->GetRenderProcessHost()->GetID();
-  int route_id = web_contents_->GetRoutingID();
-  AwResourceDispatcherHostDelegate::OnIoThreadClientReady(child_id, route_id);
+  web_contents_->ForEachFrame(base::Bind(&OnIoThreadClientReady));
 }
 
 void AwContents::SetSaveFormData(bool enabled) {

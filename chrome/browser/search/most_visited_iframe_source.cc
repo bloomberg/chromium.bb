@@ -45,7 +45,7 @@ std::string MostVisitedIframeSource::GetSource() const {
 void MostVisitedIframeSource::StartDataRequest(
     const std::string& path_and_query,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());

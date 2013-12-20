@@ -53,13 +53,13 @@ namespace android_webview {
 
 // Calls through the IoThreadClient to check the embedders settings to determine
 // if the request should be cancelled. There may not always be an IoThreadClient
-// available for the |child_id|, |route_id| pair (in the case of newly created
-// pop up windows, for example) and in that case the request and the client
-// callbacks will be deferred the request until a client is ready.
+// available for the |render_process_id|, |render_frame_id| pair (in the case of
+// newly created pop up windows, for example) and in that case the request and
+// the client callbacks will be deferred the request until a client is ready.
 class IoThreadClientThrottle : public content::ResourceThrottle {
  public:
-  IoThreadClientThrottle(int child_id,
-                         int route_id,
+  IoThreadClientThrottle(int render_process_id,
+                         int render_frame_id,
                          net::URLRequest* request);
   virtual ~IoThreadClientThrottle();
 
@@ -68,23 +68,24 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
   virtual const char* GetNameForLogging() const OVERRIDE;
 
-  void OnIoThreadClientReady(int new_child_id, int new_route_id);
+  void OnIoThreadClientReady(int new_render_process_id,
+                             int new_render_frame_id);
   bool MaybeBlockRequest();
   bool ShouldBlockRequest();
-  int get_child_id() const { return child_id_; }
-  int get_route_id() const { return route_id_; }
+  int render_process_id() const { return render_process_id_; }
+  int render_frame_id() const { return render_frame_id_; }
 
-private:
-  int child_id_;
-  int route_id_;
+ private:
+  int render_process_id_;
+  int render_frame_id_;
   net::URLRequest* request_;
 };
 
-IoThreadClientThrottle::IoThreadClientThrottle(int child_id,
-                                               int route_id,
+IoThreadClientThrottle::IoThreadClientThrottle(int render_process_id,
+                                               int render_frame_id,
                                                net::URLRequest* request)
-    : child_id_(child_id),
-      route_id_(route_id),
+    : render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       request_(request) { }
 
 IoThreadClientThrottle::~IoThreadClientThrottle() {
@@ -100,22 +101,22 @@ const char* IoThreadClientThrottle::GetNameForLogging() const {
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(sgurun): This block can be removed when crbug.com/277937 is fixed.
-  if (route_id_ < 1) {
+  if (render_frame_id_ < 1) {
     // OPTIONS is used for preflighted requests which are generated internally.
     DCHECK_EQ("OPTIONS", request_->method());
     return;
   }
-  DCHECK(child_id_);
+  DCHECK(render_process_id_);
   *defer = false;
 
   // Defer all requests of a pop up that is still not associated with Java
   // client so that the client will get a chance to override requests.
   scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(child_id_, route_id_);
+      AwContentsIoThreadClient::FromID(render_process_id_, render_frame_id_);
   if (io_client && io_client->PendingAssociation()) {
     *defer = true;
     AwResourceDispatcherHostDelegate::AddPendingThrottle(
-        child_id_, route_id_, this);
+        render_process_id_, render_frame_id_, this);
   } else {
     MaybeBlockRequest();
   }
@@ -126,8 +127,8 @@ void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
   WillStartRequest(defer);
 }
 
-void IoThreadClientThrottle::OnIoThreadClientReady(int new_child_id,
-                                                   int new_route_id) {
+void IoThreadClientThrottle::OnIoThreadClientReady(int new_render_process_id,
+                                                   int new_render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!MaybeBlockRequest()) {
@@ -145,7 +146,7 @@ bool IoThreadClientThrottle::MaybeBlockRequest() {
 
 bool IoThreadClientThrottle::ShouldBlockRequest() {
   scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(child_id_, route_id_);
+      AwContentsIoThreadClient::FromID(render_process_id_, render_frame_id_);
   if (!io_client)
     return false;
 
@@ -215,13 +216,16 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
 
   AddExtraHeadersIfNeeded(request, resource_context);
 
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+
   // We always push the throttles here. Checking the existence of io_client
   // is racy when a popup window is created. That is because RequestBeginning
   // is called whether or not requests are blocked via BlockRequestForRoute()
   // however io_client may or may not be ready at the time depending on whether
   // webcontents is created.
   throttles->push_back(new IoThreadClientThrottle(
-      child_id, route_id, request));
+      child_id, request_info->GetRenderFrameID(), request));
 
   // We allow intercepting only navigations within main frames. This
   // is used to post onPageStarted. We handle shouldOverrideUrlLoading
@@ -268,8 +272,12 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
 
   request->Cancel();
 
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+
   scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(child_id, route_id);
+      AwContentsIoThreadClient::FromID(
+          child_id, request_info->GetRenderFrameID());
 
   // POST request cannot be repeated in general, so prevent client from
   // retrying the same request, even if it is with a GET.
@@ -337,7 +345,7 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
             request, auto_login_parser::ALLOW_ANY_REALM, &header_data)) {
       scoped_ptr<AwContentsIoThreadClient> io_client =
           AwContentsIoThreadClient::FromID(request_info->GetChildID(),
-                                           request_info->GetRouteID());
+                                           request_info->GetRenderFrameID());
       if (io_client) {
         io_client->NewLoginRequest(
             header_data.realm, header_data.account, header_data.args);
@@ -350,7 +358,8 @@ void AwResourceDispatcherHostDelegate::RemovePendingThrottleOnIoThread(
     IoThreadClientThrottle* throttle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   PendingThrottleMap::iterator it = pending_throttles_.find(
-      ChildRouteIDPair(throttle->get_child_id(), throttle->get_route_id()));
+      FrameRouteIDPair(throttle->render_process_id(),
+                       throttle->render_frame_id()));
   if (it != pending_throttles_.end()) {
     pending_throttles_.erase(it);
   }
@@ -358,49 +367,50 @@ void AwResourceDispatcherHostDelegate::RemovePendingThrottleOnIoThread(
 
 // static
 void AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
-    int new_child_id,
-    int new_route_id) {
+    int new_render_process_id,
+    int new_render_frame_id) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(
           &AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal,
           base::Unretained(
               g_webview_resource_dispatcher_host_delegate.Pointer()),
-          new_child_id, new_route_id));
+          new_render_process_id, new_render_frame_id));
 }
 
 // static
 void AwResourceDispatcherHostDelegate::AddPendingThrottle(
-    int child_id,
-    int route_id,
+    int render_process_id,
+    int render_frame_id,
     IoThreadClientThrottle* pending_throttle) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(
           &AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread,
           base::Unretained(
               g_webview_resource_dispatcher_host_delegate.Pointer()),
-          child_id, route_id, pending_throttle));
+          render_process_id, render_frame_id, pending_throttle));
 }
 
 void AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread(
-    int child_id,
-    int route_id,
+    int render_process_id,
+    int render_frame_id_id,
     IoThreadClientThrottle* pending_throttle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   pending_throttles_.insert(
-      std::pair<ChildRouteIDPair, IoThreadClientThrottle*>(
-          ChildRouteIDPair(child_id, route_id), pending_throttle));
+      std::pair<FrameRouteIDPair, IoThreadClientThrottle*>(
+          FrameRouteIDPair(render_process_id, render_frame_id_id),
+          pending_throttle));
 }
 
 void AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal(
-    int new_child_id,
-    int new_route_id) {
+    int new_render_process_id,
+    int new_render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   PendingThrottleMap::iterator it = pending_throttles_.find(
-      ChildRouteIDPair(new_child_id, new_route_id));
+      FrameRouteIDPair(new_render_process_id, new_render_frame_id));
 
   if (it != pending_throttles_.end()) {
     IoThreadClientThrottle* throttle = it->second;
-    throttle->OnIoThreadClientReady(new_child_id, new_route_id);
+    throttle->OnIoThreadClientReady(new_render_process_id, new_render_frame_id);
     pending_throttles_.erase(it);
   }
 }

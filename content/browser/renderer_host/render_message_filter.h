@@ -134,11 +134,12 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCreateFullscreenWidget(int opener_id,
                                 int* route_id,
                                 int* surface_id);
-  void OnSetCookie(const IPC::Message& message,
+  void OnSetCookie(int render_frame_id,
                    const GURL& url,
                    const GURL& first_party_for_cookies,
                    const std::string& cookie);
-  void OnGetCookies(const GURL& url,
+  void OnGetCookies(int render_frame_id,
+                    const GURL& url,
                     const GURL& first_party_for_cookies,
                     IPC::Message* reply_msg);
   void OnGetRawCookies(const GURL& url,
@@ -230,7 +231,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   // Check the policy for getting cookies. Gets the cookies if allowed.
-  void CheckPolicyForCookies(const GURL& url,
+  void CheckPolicyForCookies(int render_frame_id,
+                             const GURL& url,
                              const GURL& first_party_for_cookies,
                              IPC::Message* reply_msg,
                              const net::CookieList& cookie_list);

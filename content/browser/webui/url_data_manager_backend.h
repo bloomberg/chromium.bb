@@ -77,7 +77,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   static void CallStartRequest(scoped_refptr<URLDataSourceImpl> source,
                                const std::string& path,
                                int render_process_id,
-                               int render_view_id,
+                               int render_frame_id,
                                int request_id);
 
   // Remove a request from the list of pending requests.

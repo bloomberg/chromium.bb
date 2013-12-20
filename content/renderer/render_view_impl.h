@@ -40,7 +40,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_date_time_picker.h"
-#include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -240,8 +239,6 @@ class CONTENT_EXPORT RenderViewImpl
   MouseLockDispatcher* mouse_lock_dispatcher() {
     return mouse_lock_dispatcher_;
   }
-
-  RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
   // Lazily initialize this view's BrowserPluginManager and return it.
   BrowserPluginManager* GetBrowserPluginManager();
@@ -515,7 +512,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
-  virtual blink::WebCookieJar* cookieJar(blink::WebFrame* frame);
   virtual void didAccessInitialDocument(blink::WebFrame* frame);
   virtual void didDisownOpener(blink::WebFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame);
@@ -1355,8 +1351,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Helper objects ------------------------------------------------------------
 
   scoped_ptr<RenderFrameImpl> main_render_frame_;
-
-  RendererWebCookieJarImpl cookie_jar_;
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.  This is why we just store

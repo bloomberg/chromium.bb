@@ -43,7 +43,7 @@ class AwLoginDelegate :
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
   net::URLRequest* request_;
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 };
 
 }  // namespace android_webview

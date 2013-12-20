@@ -7,14 +7,13 @@
 
 // TODO(darin): WebCookieJar.h is missing a WebString.h include!
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
-class RenderViewImpl;
+class RenderFrameImpl;
 
 class RendererWebCookieJarImpl : public blink::WebCookieJar {
  public:
-  explicit RendererWebCookieJarImpl(RenderViewImpl* sender)
+  explicit RendererWebCookieJarImpl(RenderFrameImpl* sender)
       : sender_(sender) {
   }
   virtual ~RendererWebCookieJarImpl() {}
@@ -36,7 +35,7 @@ class RendererWebCookieJarImpl : public blink::WebCookieJar {
   virtual bool cookiesEnabled(
       const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
 
-  RenderViewImpl* sender_;
+  RenderFrameImpl* sender_;
 };
 
 }  // namespace content

@@ -26,7 +26,7 @@ class MostVisitedIframeSource : public IframeSource {
   virtual void StartDataRequest(
       const std::string& path_and_query,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
 
  protected:

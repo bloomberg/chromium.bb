@@ -996,7 +996,7 @@ std::string AboutUIHTMLSource::GetSource() const {
 void AboutUIHTMLSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string response;
   // Add your data source here, in alphabetical order.

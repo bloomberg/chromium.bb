@@ -579,7 +579,8 @@ void WorkerServiceImpl::TryStartingQueuedWorker() {
 
 bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
                                              int* render_process_id,
-                                             int* render_view_id) const {
+                                             int* render_view_id,
+                                             int* render_frame_id) const {
   for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter.GetData().id != worker_process_id)
       continue;
@@ -594,6 +595,7 @@ bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
         first_instance->worker_document_set()->documents().begin();
     *render_process_id = info->render_process_id();
     *render_view_id = info->render_view_id();
+    *render_frame_id = info->render_frame_id();
     return true;
   }
   return false;

@@ -59,7 +59,7 @@ std::string ThemeSource::GetSource() const {
 void ThemeSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   // Default scale factor if not specified.
   ui::ScaleFactor scale_factor;

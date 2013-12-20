@@ -7,9 +7,9 @@
 namespace content {
 
 URLRequestUserData::URLRequestUserData(int render_process_id,
-                                       int render_view_id)
+                                       int render_frame_id)
     : render_process_id_(render_process_id),
-      render_view_id_(render_view_id) {}
+      render_frame_id_(render_frame_id) {}
 
 URLRequestUserData::~URLRequestUserData() {}
 

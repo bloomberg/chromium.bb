@@ -32,7 +32,7 @@ class ThumbnailSource : public content::URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
   virtual base::MessageLoop* MessageLoopForRequestPath(

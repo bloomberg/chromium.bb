@@ -532,10 +532,10 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
 
   // Look up additional request info to pass down.
   int render_process_id = -1;
-  int render_view_id = -1;
-  ResourceRequestInfo::GetRenderViewForRequest(request,
-                                               &render_process_id,
-                                               &render_view_id);
+  int render_frame_id = -1;
+  ResourceRequestInfo::GetRenderFrameForRequest(request,
+                                                &render_process_id,
+                                                &render_frame_id);
 
   // Forward along the request to the data source.
   base::MessageLoop* target_message_loop =
@@ -549,7 +549,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
     source->source()->StartDataRequest(
-        path, render_process_id, render_view_id,
+        path, render_process_id, render_frame_id,
         base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
     // URLRequestChromeJob should receive mime type before data. This
@@ -568,7 +568,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
         FROM_HERE,
         base::Bind(&URLDataManagerBackend::CallStartRequest,
                    make_scoped_refptr(source), path, render_process_id,
-                   render_view_id, request_id));
+                   render_frame_id, request_id));
   }
   return true;
 }
@@ -577,7 +577,7 @@ void URLDataManagerBackend::CallStartRequest(
     scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     int request_id) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
       render_process_id != -1 &&
@@ -591,7 +591,7 @@ void URLDataManagerBackend::CallStartRequest(
   source->source()->StartDataRequest(
       path,
       render_process_id,
-      render_view_id,
+      render_frame_id,
       base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
 }
 

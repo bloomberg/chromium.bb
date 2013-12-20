@@ -44,9 +44,9 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const URLDataSource::GotDataCallback& callback) OVERRIDE {
-    return parent_->StartDataRequest(path, render_process_id, render_view_id,
+    return parent_->StartDataRequest(path, render_process_id, render_frame_id,
                                      callback);
   }
   virtual bool ShouldReplaceExistingSource() const OVERRIDE {
@@ -188,7 +188,7 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 void WebUIDataSourceImpl::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const URLDataSource::GotDataCallback& callback) {
   if (!filter_callback_.is_null() &&
       filter_callback_.Run(path, callback)) {

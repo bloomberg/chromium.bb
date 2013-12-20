@@ -126,7 +126,8 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : render_view_(render_view),
       routing_id_(routing_id),
       is_swapped_out_(false),
-      is_detaching_(false) {
+      is_detaching_(false),
+      cookie_jar_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
@@ -583,7 +584,7 @@ RenderFrameImpl::createWorkerPermissionClientProxy(WebFrame* frame) {
 }
 
 blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebFrame* frame) {
-  return render_view_->cookieJar(frame);
+  return &cookie_jar_;
 }
 
 blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(

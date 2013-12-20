@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -18,7 +18,7 @@
 using namespace base::android;
 
 using content::BrowserThread;
-using content::RenderViewHost;
+using content::RenderFrameHost;
 using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
@@ -41,9 +41,9 @@ AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
     : auth_info_(auth_info),
       request_(request),
       render_process_id_(0),
-      render_view_id_(0) {
-    ResourceRequestInfo::GetRenderViewForRequest(
-        request, &render_process_id_, &render_view_id_);
+      render_frame_id_(0) {
+    ResourceRequestInfo::GetRenderFrameForRequest(
+        request, &render_process_id_, &render_frame_id_);
 
     UrlRequestAuthAttemptsData* count =
         static_cast<UrlRequestAuthAttemptsData*>(
@@ -87,15 +87,15 @@ void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
   aw_http_auth_handler_.reset(AwHttpAuthHandlerBase::Create(
       this, auth_info_.get(), first_auth_attempt));
 
-  RenderViewHost* render_view_host = RenderViewHost::FromID(
-      render_process_id_, render_view_id_);
-  if (!render_view_host) {
+  RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
+      render_process_id_, render_frame_id_);
+  if (!render_frame_host) {
     Cancel();
     return;
   }
 
-  WebContents* web_contents = WebContents::FromRenderViewHost(
-      render_view_host);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(
+      render_frame_host);
   if (!aw_http_auth_handler_->HandleOnUIThread(web_contents)) {
     Cancel();
     return;

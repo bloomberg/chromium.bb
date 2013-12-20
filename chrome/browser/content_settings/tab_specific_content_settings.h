@@ -96,7 +96,7 @@ class TabSpecificContentSettings
   // reading cookies was blocked due to the user's content settings. In that
   // case, this function should invoke OnContentBlocked.
   static void CookiesRead(int render_process_id,
-                          int render_view_id,
+                          int render_frame_id,
                           const GURL& url,
                           const GURL& first_party_url,
                           const net::CookieList& cookie_list,
@@ -107,7 +107,7 @@ class TabSpecificContentSettings
   // user's content settings. In that case, this function should invoke
   // OnContentBlocked.
   static void CookieChanged(int render_process_id,
-                            int render_view_id,
+                            int render_frame_id,
                             const GURL& url,
                             const GURL& first_party_url,
                             const std::string& cookie_line,

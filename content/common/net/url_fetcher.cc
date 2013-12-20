@@ -20,15 +20,15 @@ base::SupportsUserData::Data* CreateURLRequestUserData(
 
 }  // namespace
 
-void AssociateURLFetcherWithRenderView(net::URLFetcher* url_fetcher,
-                                       const GURL& first_party_for_cookies,
-                                       int render_process_id,
-                                       int render_view_id) {
+void AssociateURLFetcherWithRenderFrame(net::URLFetcher* url_fetcher,
+                                        const GURL& first_party_for_cookies,
+                                        int render_process_id,
+                                        int render_frame_id) {
   url_fetcher->SetFirstPartyForCookies(first_party_for_cookies);
   url_fetcher->SetURLRequestUserData(
       URLRequestUserData::kUserDataKey,
       base::Bind(&CreateURLRequestUserData,
-                 render_process_id, render_view_id));
+                 render_process_id, render_frame_id));
 }
 
 }  // namespace content

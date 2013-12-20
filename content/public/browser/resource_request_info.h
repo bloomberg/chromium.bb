@@ -37,14 +37,14 @@ class ResourceRequestInfo {
       int render_view_id,
       bool is_async);
 
-  // Returns the associated RenderView for a given process. Returns false, if
-  // there is no associated RenderView. This method does not rely on the
+  // Returns the associated RenderFrame for a given process. Returns false, if
+  // there is no associated RenderFrame. This method does not rely on the
   // request being allocated by the ResourceDispatcherHost, but works for all
-  // URLRequests that are associated with a RenderView.
-  CONTENT_EXPORT static bool GetRenderViewForRequest(
+  // URLRequests that are associated with a RenderFrame.
+  CONTENT_EXPORT static bool GetRenderFrameForRequest(
       const net::URLRequest* request,
       int* render_process_id,
-      int* render_view_id);
+      int* render_frame_id);
 
   // Returns the associated ResourceContext.
   virtual ResourceContext* GetContext() const = 0;
@@ -100,8 +100,13 @@ class ResourceRequestInfo {
   virtual bool WasIgnoredByHandler() const = 0;
 
   // Returns false if there is NOT an associated render view.
+  // TODO(jam): remove this. http://crbug.com/304341
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const = 0;
+
+  // Returns false if there is NOT an associated render frame.
+  virtual bool GetAssociatedRenderFrame(int* render_process_id,
+                                        int* render_frame_id) const = 0;
 
   // Returns true if this is associated with an asynchronous request.
   virtual bool IsAsync() const = 0;

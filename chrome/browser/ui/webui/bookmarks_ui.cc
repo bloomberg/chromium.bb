@@ -29,7 +29,7 @@ std::string BookmarksUIHTMLSource::GetSource() const {
 void BookmarksUIHTMLSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   NOTREACHED() << "We should never get here since the extension should have"
                << "been triggered";

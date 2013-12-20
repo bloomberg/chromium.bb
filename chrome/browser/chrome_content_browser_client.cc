@@ -1619,7 +1619,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
     const net::CookieList& cookie_list,
     content::ResourceContext* context,
     int render_process_id,
-    int render_view_id) {
+    int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow = io_data->GetCookieSettings()->
@@ -1628,7 +1628,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookiesRead, render_process_id,
-                 render_view_id, url, first_party, cookie_list, !allow));
+                 render_frame_id, url, first_party, cookie_list, !allow));
   return allow;
 }
 
@@ -1638,7 +1638,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     const std::string& cookie_line,
     content::ResourceContext* context,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     net::CookieOptions* options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
@@ -1648,7 +1648,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,
-                 render_view_id, url, first_party, cookie_line, *options,
+                 render_frame_id, url, first_party, cookie_line, *options,
                  !allow));
   return allow;
 }

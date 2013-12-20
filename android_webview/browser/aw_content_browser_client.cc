@@ -258,13 +258,13 @@ bool AwContentBrowserClient::AllowGetCookie(const GURL& url,
                                             const net::CookieList& cookie_list,
                                             content::ResourceContext* context,
                                             int render_process_id,
-                                            int render_view_id) {
+                                            int render_frame_id) {
   return AwCookieAccessPolicy::GetInstance()->AllowGetCookie(url,
                                                              first_party,
                                                              cookie_list,
                                                              context,
                                                              render_process_id,
-                                                             render_view_id);
+                                                             render_frame_id);
 }
 
 bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
@@ -272,14 +272,14 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                             const std::string& cookie_line,
                                             content::ResourceContext* context,
                                             int render_process_id,
-                                            int render_view_id,
+                                            int render_frame_id,
                                             net::CookieOptions* options) {
   return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(url,
                                                              first_party,
                                                              cookie_line,
                                                              context,
                                                              render_process_id,
-                                                             render_view_id,
+                                                             render_frame_id,
                                                              options);
 }
 

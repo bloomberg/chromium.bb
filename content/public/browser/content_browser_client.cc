@@ -121,7 +121,7 @@ bool ContentBrowserClient::AllowGetCookie(const GURL& url,
                                           const net::CookieList& cookie_list,
                                           ResourceContext* context,
                                           int render_process_id,
-                                          int render_view_id) {
+                                          int render_frame_id) {
   return true;
 }
 
@@ -130,7 +130,7 @@ bool ContentBrowserClient::AllowSetCookie(const GURL& url,
                                           const std::string& cookie_line,
                                           ResourceContext* context,
                                           int render_process_id,
-                                          int render_view_id,
+                                          int render_frame_id,
                                           net::CookieOptions* options) {
   return true;
 }

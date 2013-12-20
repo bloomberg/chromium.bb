@@ -56,11 +56,11 @@ class AwContentsIoThreadClient {
   virtual CacheMode GetCacheMode() const = 0;
 
   // This will attempt to fetch the AwContentsIoThreadClient for the given
-  // |render_process_id|, |render_view_id| pair.
+  // |render_process_id|, |render_frame_id| pair.
   // This method can be called from any thread.
   // An empty scoped_ptr is a valid return value.
   static scoped_ptr<AwContentsIoThreadClient> FromID(int render_process_id,
-                                                     int render_view_id);
+                                                     int render_frame_id);
 
   // This method is called on the IO thread only.
   virtual scoped_ptr<InterceptedRequestData> ShouldInterceptRequest(

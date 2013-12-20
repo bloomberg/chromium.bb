@@ -79,7 +79,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
                                    bool notify_redirects,
                                    bool is_plugin_src_load,
                                    int origin_pid,
-                                   int render_view_id,
+                                   int render_frame_id,
                                    unsigned long resource_id)
     : plugin_stream_(plugin_stream),
       url_(url),
@@ -99,7 +99,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.load_flags = net::LOAD_NORMAL;
   request_info.requestor_pid = origin_pid;
   request_info.request_type = ResourceType::OBJECT;
-  request_info.routing_id = render_view_id;
+  request_info.routing_id = render_frame_id;
 
   std::vector<char> body;
   if (method == "POST") {

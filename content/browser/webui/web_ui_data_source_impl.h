@@ -76,7 +76,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void StartDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const URLDataSource::GotDataCallback& callback);
 
   void disable_set_font_strings_for_testing() {

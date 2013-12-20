@@ -13,17 +13,18 @@ namespace content {
 // with a given render view.
 class URLRequestUserData : public base::SupportsUserData::Data {
  public:
-  URLRequestUserData(int render_process_id, int render_view_id);
+  URLRequestUserData(int render_process_id,
+                     int render_frame_id);
   virtual ~URLRequestUserData();
 
   int render_process_id() const { return render_process_id_; }
-  int render_view_id() const { return render_view_id_; }
+  int render_frame_id() const { return render_frame_id_; }
 
   static const void* kUserDataKey;
 
  private:
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 };
 
 }  // namespace content

@@ -37,7 +37,7 @@ std::string ThumbnailSource::GetSource() const {
 void ThumbnailSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedMemory> data;
   if (thumbnail_service_->GetPageThumbnail(GURL(path), capture_thumbnails_,

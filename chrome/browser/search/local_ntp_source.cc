@@ -134,7 +134,7 @@ std::string LocalNtpSource::GetSource() const {
 void LocalNtpSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   const std::string stripped_path = StripParameters(path);
   if (stripped_path == kConfigDataFilename) {

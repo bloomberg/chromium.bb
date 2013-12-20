@@ -122,14 +122,14 @@ class DevToolsDataSource : public content::URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
     std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
     bundled_path_prefix += "/";
     if (StartsWithASCII(path, bundled_path_prefix, false)) {
       StartBundledDataRequest(path.substr(bundled_path_prefix.length()),
                               render_process_id,
-                              render_view_id,
+                              render_frame_id,
                               callback);
       return;
     }
@@ -138,7 +138,7 @@ class DevToolsDataSource : public content::URLDataSource {
     if (StartsWithASCII(path, remote_path_prefix, false)) {
       StartRemoteDataRequest(path.substr(remote_path_prefix.length()),
                               render_process_id,
-                              render_view_id,
+                              render_frame_id,
                               callback);
       return;
     }
@@ -148,7 +148,7 @@ class DevToolsDataSource : public content::URLDataSource {
   void StartBundledDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) {
     std::string filename = PathWithoutParams(path);
 
@@ -168,7 +168,7 @@ class DevToolsDataSource : public content::URLDataSource {
   void StartRemoteDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) {
     GURL url = GURL(kRemoteFrontendBase + path);
     CHECK_EQ(url.host(), kRemoteFrontendDomain);

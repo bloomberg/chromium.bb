@@ -69,7 +69,7 @@ std::string SharedResourcesDataSource::GetSource() const {
 void SharedResourcesDataSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   int idr = PathToIDR(path);
   DCHECK_NE(-1, idr) << " path: " << path;

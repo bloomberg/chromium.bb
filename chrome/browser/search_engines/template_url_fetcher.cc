@@ -14,8 +14,8 @@
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
@@ -98,11 +98,11 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   url_fetcher_->SetRequestContext(fetcher->profile()->GetRequestContext());
   // Can be NULL during tests.
   if (web_contents) {
-    content::AssociateURLFetcherWithRenderView(
+    content::AssociateURLFetcherWithRenderFrame(
         url_fetcher_.get(),
         web_contents->GetURL(),
         web_contents->GetRenderProcessHost()->GetID(),
-        web_contents->GetRenderViewHost()->GetRoutingID());
+        web_contents->GetMainFrame()->GetRoutingID());
   }
 
   url_fetcher_->Start();

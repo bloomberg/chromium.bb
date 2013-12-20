@@ -57,16 +57,16 @@ void ResourceRequestInfo::AllocateForTesting(
 }
 
 // static
-bool ResourceRequestInfo::GetRenderViewForRequest(
+bool ResourceRequestInfo::GetRenderFrameForRequest(
     const net::URLRequest* request,
     int* render_process_id,
-    int* render_view_id) {
+    int* render_frame_id) {
   URLRequestUserData* user_data = static_cast<URLRequestUserData*>(
       request->GetUserData(URLRequestUserData::kUserDataKey));
   if (!user_data)
     return false;
   *render_process_id = user_data->render_process_id();
-  *render_view_id = user_data->render_view_id();
+  *render_frame_id = user_data->render_frame_id();
   return true;
 }
 
@@ -205,8 +205,9 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderView(
   if (process_type_ == PROCESS_TYPE_WORKER) {
     // Need to display some related UI for this network request - pick an
     // arbitrary parent to do so.
+    int unused;
     if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-            child_id_, render_process_id, render_view_id)) {
+            child_id_, render_process_id, render_view_id, &unused)) {
       *render_process_id = -1;
       *render_view_id = -1;
       return false;
@@ -217,6 +218,31 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderView(
   } else {
     *render_process_id = child_id_;
     *render_view_id = route_id_;
+  }
+  return true;
+}
+
+bool ResourceRequestInfoImpl::GetAssociatedRenderFrame(
+    int* render_process_id,
+    int* render_frame_id) const {
+  // If the request is from the worker process, find a content that owns the
+  // worker.
+  if (process_type_ == PROCESS_TYPE_WORKER) {
+    // Need to display some related UI for this network request - pick an
+    // arbitrary parent to do so.
+    int unused;
+    if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
+            child_id_, render_process_id, &unused, render_frame_id)) {
+      *render_process_id = -1;
+      *render_frame_id = -1;
+      return false;
+    }
+  } else if (process_type_ == PROCESS_TYPE_PLUGIN) {
+    *render_process_id = origin_pid_;
+    *render_frame_id = render_frame_id_;
+  } else {
+    *render_process_id = child_id_;
+    *render_frame_id = render_frame_id_;
   }
   return true;
 }
@@ -232,11 +258,11 @@ bool ResourceRequestInfoImpl::IsDownload() const {
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   request->SetUserData(NULL, this);
   int render_process_id;
-  int render_view_id;
-  if (GetAssociatedRenderView(&render_process_id, &render_view_id)) {
+  int render_frame_id;
+  if (GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
     request->SetUserData(
         URLRequestUserData::kUserDataKey,
-        new URLRequestUserData(render_process_id, render_view_id));
+        new URLRequestUserData(render_process_id, render_frame_id));
   }
 }
 

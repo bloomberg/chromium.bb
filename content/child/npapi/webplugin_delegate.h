@@ -142,7 +142,7 @@ class WebPluginDelegate {
                         bool notify_redirects,
                         bool is_plugin_src_load,
                         int origin_pid,
-                        int render_view_id) = 0;
+                        int render_frame_id) = 0;
 
 };
 

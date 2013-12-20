@@ -49,7 +49,7 @@ class CONTENT_EXPORT URLDataSource {
   // called either in this callback or asynchronously with the response.
   virtual void StartDataRequest(const std::string& path,
                                 int render_process_id,
-                                int render_view_id,
+                                int render_frame_id,
                                 const GotDataCallback& callback) = 0;
 
   // Return the mimetype that should be sent with this response, or empty

@@ -324,9 +324,8 @@ void WebPluginImpl::updateGeometry(
     new_geometry.cutout_rects.push_back(cutout_rects[i]);
 
   // Only send DidMovePlugin if the geometry changed in some way.
-  if (window_ && render_view_.get() &&
-      (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
-    render_view_->SchedulePluginMove(new_geometry);
+  if (window_ && (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
+    render_frame_->GetRenderWidget()->SchedulePluginMove(new_geometry);
     // We invalidate windowed plugins during the first geometry update to
     // ensure that they get reparented to the wrapper window in the browser.
     // This ensures that they become visible and are painted by the OS. This is
@@ -385,7 +384,7 @@ void WebPluginImpl::updateFocus(bool focused) {
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {
-  if (!window_ || !render_view_.get())
+  if (!window_)
     return;
 
   WebPluginGeometry move;
@@ -395,7 +394,7 @@ void WebPluginImpl::updateVisibility(bool visible) {
   move.rects_valid = false;
   move.visible = visible;
 
-  render_view_->SchedulePluginMove(move);
+  render_frame_->GetRenderWidget()->SchedulePluginMove(move);
 }
 
 bool WebPluginImpl::acceptsInputEvents() {
@@ -534,8 +533,8 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 #if defined(USE_X11)
     // Tell the view delegate that the plugin window was created, so that it
     // can create necessary container widgets.
-    render_view_->Send(new ViewHostMsg_CreatePluginContainer(
-        render_view_->routing_id(), window));
+    render_frame_->Send(new ViewHostMsg_CreatePluginContainer(
+        render_frame_->GetRenderWidget()->routing_id(), window));
 #endif  // USE_X11
 
 #endif  // OS_MACOSX
@@ -555,10 +554,10 @@ void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   window_ = gfx::kNullPluginWindow;
   if (render_view_.get()) {
 #if defined(USE_X11)
-    render_view_->Send(new ViewHostMsg_DestroyPluginContainer(
-        render_view_->routing_id(), window));
+    render_frame_->Send(new ViewHostMsg_DestroyPluginContainer(
+        render_frame_->GetRenderWidget()->routing_id(), window));
 #endif
-    render_view_->CleanupWindowInPluginMoves(window);
+    render_frame_->GetRenderWidget()->CleanupWindowInPluginMoves(window);
   }
 }
 
@@ -753,7 +752,7 @@ void WebPluginImpl::SetCookie(const GURL& url,
   if (!render_view_.get())
     return;
 
-  WebCookieJar* cookie_jar = render_view_->cookie_jar();
+  WebCookieJar* cookie_jar = render_frame_->cookie_jar();
   if (!cookie_jar) {
     DLOG(WARNING) << "No cookie jar!";
     return;
@@ -768,7 +767,7 @@ std::string WebPluginImpl::GetCookies(const GURL& url,
   if (!render_view_.get())
     return std::string();
 
-  WebCookieJar* cookie_jar = render_view_->cookie_jar();
+  WebCookieJar* cookie_jar = render_frame_->cookie_jar();
   if (!cookie_jar) {
     DLOG(WARNING) << "No cookie jar!";
     return std::string();
@@ -1220,7 +1219,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
     delegate_->FetchURL(resource_id, notify_id, complete_url,
                         first_party_for_cookies, method, buf, len, referrer,
                         notify_redirects, is_plugin_src_load, 0,
-                        render_view_->routing_id());
+                        render_frame_->GetRoutingID());
   } else {
     WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
         resource_id, complete_url, notify_id);

@@ -39,13 +39,13 @@ AwRequestInterceptor::QueryForInterceptedRequestData(
     const GURL& location,
     net::URLRequest* request) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  int render_process_id, render_view_id;
-  if (!ResourceRequestInfo::GetRenderViewForRequest(
-      request, &render_process_id, &render_view_id))
+  int render_process_id, render_frame_id;
+  if (!ResourceRequestInfo::GetRenderFrameForRequest(
+      request, &render_process_id, &render_frame_id))
     return scoped_ptr<InterceptedRequestData>();
 
   scoped_ptr<AwContentsIoThreadClient> io_thread_client =
-    AwContentsIoThreadClient::FromID(render_process_id, render_view_id);
+      AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
 
   if (!io_thread_client.get())
     return scoped_ptr<InterceptedRequestData>();

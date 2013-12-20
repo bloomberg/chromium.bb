@@ -120,7 +120,7 @@ class OptionsUIHTMLSource : public content::URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
   virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
@@ -146,7 +146,7 @@ std::string OptionsUIHTMLSource::GetSource() const {
 void OptionsUIHTMLSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedMemory> response_bytes;
   webui::SetFontAndTextDirection(localized_strings_.get());

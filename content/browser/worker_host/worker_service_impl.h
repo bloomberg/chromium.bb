@@ -68,7 +68,8 @@ class CONTENT_EXPORT WorkerServiceImpl
   // is how it is today until V8 can run in separate threads.
   bool GetRendererForWorker(int worker_process_id,
                             int* render_process_id,
-                            int* render_view_id) const;
+                            int* render_view_id,
+                            int* render_frame_id) const;
   const WorkerProcessHost::WorkerInstance* FindWorkerInstance(
       int worker_process_id);
 
