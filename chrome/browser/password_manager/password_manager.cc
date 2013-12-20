@@ -399,15 +399,21 @@ void PasswordManager::OnPasswordFormsRendered(
     UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
 
   if (ShouldShowSavePasswordInfoBar()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    #if defined(USE_AURA) || defined(OS_WIN)
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {
-      NotifyPasswordObserver(PasswordObserver::SAVE_NEW_PASSWORD,
-                             provisional_save_manager_->best_matches(),
-                             provisional_save_manager_->pending_credentials());
-    } else {
+        NotifyPasswordObserver(
+            PasswordObserver::SAVE_NEW_PASSWORD,
+            provisional_save_manager_->best_matches(),
+            provisional_save_manager_->pending_credentials());
+      } else {
+        delegate_->AddSavePasswordInfoBarIfPermitted(
+            provisional_save_manager_.release());
+      }
+    #else
       delegate_->AddSavePasswordInfoBarIfPermitted(
           provisional_save_manager_.release());
-    }
+    #endif
   } else {
     provisional_save_manager_->Save();
     provisional_save_manager_.reset();
@@ -485,11 +491,13 @@ void PasswordManager::Autofill(
       break;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSavePasswordBubble)) {
-    NotifyPasswordObserver(PasswordObserver::AUTOFILL_PASSWORDS, best_matches,
-                           form_for_autofill);
-  }
+  #if defined(USE_AURA) || defined(OS_WIN)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSavePasswordBubble)) {
+      NotifyPasswordObserver(PasswordObserver::AUTOFILL_PASSWORDS, best_matches,
+                             form_for_autofill);
+    }
+  #endif
 }
 
 void PasswordManager::UpdateBestMatches(
