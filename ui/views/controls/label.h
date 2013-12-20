@@ -27,9 +27,6 @@ namespace views {
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT Label : public View {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
-
   // The following enum is used to indicate whether using the Chrome UI's
   // directionality as the label's directionality, or auto-detecting the label's
   // directionality.
@@ -52,6 +49,12 @@ class VIEWS_EXPORT Label : public View {
     ELIDE_AS_EMAIL,   // Elide while retaining username/domain chars as needed.
   };
 
+  // Internal class name.
+  static const char kViewClassName[];
+
+  // The padding for the focus border when rendering focused text.
+  static const int kFocusBorderPadding;
+
   Label();
   explicit Label(const base::string16& text);
   Label(const base::string16& text, const gfx::FontList& font_list);
@@ -67,7 +70,7 @@ class VIEWS_EXPORT Label : public View {
 
   // Get or set the label text.
   const base::string16& text() const { return text_; }
-  void SetText(const base::string16& text);
+  virtual void SetText(const base::string16& text);
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
@@ -160,13 +163,13 @@ class VIEWS_EXPORT Label : public View {
   void set_collapse_when_hidden(bool value) { collapse_when_hidden_ = value; }
   bool collapse_when_hidden() const { return collapse_when_hidden_; }
 
-  void SetHasFocusBorder(bool has_focus_border);
-
   // Overridden from View:
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
   // Overridden to compute the size required to display this label.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // Returns the width of an ellipsis if the label is non-empty, or 0 otherwise.
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
   // Returns the height necessary to display this label with the provided width.
   // This method is used to layout multi-line labels. It is equivalent to
   // GetPreferredSize().height() if the receiver is not multi-line.
@@ -265,10 +268,6 @@ class VIEWS_EXPORT Label : public View {
   // directionality is auto-detected based on first strong directionality
   // character or is determined by chrome UI's locale.
   DirectionalityMode directionality_mode_;
-  // When embedded in a larger control that is focusable, setting this flag
-  // allows this view to reserve space for a focus border that it otherwise
-  // might not have because it is not itself focusable.
-  bool has_focus_border_;
 
   // Colors for shadow.
   SkColor enabled_shadow_color_;

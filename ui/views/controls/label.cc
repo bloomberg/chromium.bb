@@ -27,8 +27,6 @@
 
 namespace {
 
-// The padding for the focus border when rendering focused text.
-const int kFocusBorderPadding = 1;
 const int kCachedSizeLimit = 10;
 
 gfx::FontList GetDefaultFontList() {
@@ -42,6 +40,7 @@ namespace views {
 
 // static
 const char Label::kViewClassName[] = "Label";
+const int Label::kFocusBorderPadding = 1;
 
 Label::Label() {
   Init(base::string16(), GetDefaultFontList());
@@ -201,17 +200,9 @@ void Label::SizeToFit(int max_width) {
   SizeToPreferredSize();
 }
 
-void Label::SetHasFocusBorder(bool has_focus_border) {
-  has_focus_border_ = has_focus_border;
-  if (is_multi_line_) {
-    ResetCachedSize();
-    PreferredSizeChanged();
-  }
-}
-
 gfx::Insets Label::GetInsets() const {
   gfx::Insets insets = View::GetInsets();
-  if (focusable() || has_focus_border_) {
+  if (focusable()) {
     insets += gfx::Insets(kFocusBorderPadding, kFocusBorderPadding,
                           kFocusBorderPadding, kFocusBorderPadding);
   }
@@ -231,10 +222,23 @@ gfx::Size Label::GetPreferredSize() {
   if (!visible() && collapse_when_hidden_)
     return gfx::Size();
 
-  gfx::Size prefsize(GetTextSize());
+  gfx::Size size(GetTextSize());
   gfx::Insets insets = GetInsets();
-  prefsize.Enlarge(insets.width(), insets.height());
-  return prefsize;
+  size.Enlarge(insets.width(), insets.height());
+  return size;
+}
+
+gfx::Size Label::GetMinimumSize() {
+  gfx::Size text_size(GetTextSize());
+  if ((!visible() && collapse_when_hidden_) || text_size.IsEmpty())
+    return gfx::Size();
+
+  gfx::Size size(font_list_.GetStringWidth(string16(gfx::kEllipsisUTF16)),
+                 font_list_.GetHeight());
+  size.SetToMin(text_size);  // The actual text may be shorter than an ellipsis.
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
 }
 
 int Label::GetHeightForWidth(int w) {
@@ -381,7 +385,6 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   elide_behavior_ = ELIDE_AT_END;
   collapse_when_hidden_ = false;
   directionality_mode_ = USE_UI_DIRECTIONALITY;
-  has_focus_border_ = false;
   enabled_shadow_color_ = 0;
   disabled_shadow_color_ = 0;
   shadow_offset_.SetPoint(1, 1);
