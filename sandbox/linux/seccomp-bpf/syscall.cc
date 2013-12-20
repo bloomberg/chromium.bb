@@ -143,7 +143,7 @@ namespace sandbox {
             // used as a marker that BPF code inspects.
             "cmp r0, #0\n"
             "bge 1f\n"
-            "ldr r0, =2f\n"
+            "adr r0, 2f\n"
             "b   2f\n"
             // We declared (almost) all clobbered registers to the compiler. On
             // ARM there is no particular register pressure. So, we can go
