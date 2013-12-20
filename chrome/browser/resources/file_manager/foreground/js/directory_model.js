@@ -766,7 +766,7 @@ DirectoryModel.prototype.resolveDirectory = function(
     //
     // TODO(mtomasz, hashimoto): Consider rewriting this logic.
     //     crbug.com/253464.
-    var volumeInfo = volumeManager_.getVolumeInfo(path);
+    var volumeInfo = this.volumeManager_.getVolumeInfo(path);
     if (volumeInfo &&
         volumeInfo.volumeType === util.VolumeType.DRIVE &&
         error.code === FileError.INVALID_STATE_ERR) {
