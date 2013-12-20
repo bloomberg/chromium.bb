@@ -751,17 +751,9 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         if (feature->IsInternal())
           continue;
 
-        // If this API name has parent features, then this must be a function or
-        // event, so we should not register.
-        bool parent_feature_available = false;
-        for (Feature* parent = api_feature_provider->GetParent(feature);
-             parent != NULL; parent = api_feature_provider->GetParent(parent)) {
-          if (context->IsAnyFeatureAvailableToContext(*parent)) {
-            parent_feature_available = true;
-            break;
-          }
-        }
-        if (parent_feature_available)
+        // If this API has a parent feature (and isn't marked 'noparent'),
+        // then this must be a function or event, so we should not register.
+        if (api_feature_provider->GetParent(feature) != NULL)
           continue;
 
         if (context->IsAnyFeatureAvailableToContext(*feature))
