@@ -59,6 +59,10 @@
          "docs$writersCanInvite": {
             "value": "true"
          },
+         // Mark that the file is deleted (drive API v2 marks a newly added file
+         // in a trashed directory, so this test follows the behavior).
+         "gd$deleted": {
+         },
          "gd$etag": "\"WVAJThBcDyt7ImBk\"",
          "gd$feedLink": [ {
             "href": "https://feedLink",

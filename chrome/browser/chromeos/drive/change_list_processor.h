@@ -75,6 +75,10 @@ class ChangeList {
   const GURL& next_url() const { return next_url_; }
   int64 largest_changestamp() const { return largest_changestamp_; }
 
+  void set_largest_changestamp(int64 largest_changestamp) {
+    largest_changestamp_ = largest_changestamp;
+  }
+
  private:
   std::vector<ResourceEntry> entries_;
   std::vector<std::string> parent_resource_ids_;

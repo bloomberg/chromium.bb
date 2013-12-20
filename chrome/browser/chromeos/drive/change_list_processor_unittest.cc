@@ -582,5 +582,31 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
       util::GetDriveMyDriveRootPath().AppendASCII(new_file.title()), &entry));
 }
 
+TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
+  // Prepare metadata.
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+
+  // Create change lists.
+  ScopedVector<ChangeList> change_lists;
+  change_lists.push_back(new ChangeList);
+
+  // Add a new file with non-existing parent resource id to the change lists.
+  ResourceEntry new_file;
+  new_file.set_title("new_file");
+  new_file.set_resource_id("new_file_id");
+  change_lists[0]->mutable_entries()->push_back(new_file);
+  change_lists[0]->mutable_parent_resource_ids()->push_back("nonexisting");
+  change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 1);
+
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK, ApplyChangeList(change_lists.Pass(), &changed_dirs));
+
+  // "new_file" should be added under drive/other.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
+      util::GetDriveGrandRootPath().AppendASCII("other/new_file"), &entry));
+}
+
 }  // namespace internal
 }  // namespace drive

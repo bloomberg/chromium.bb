@@ -248,8 +248,16 @@ FileError ChangeListProcessor::ApplyEntryMap(
         FileError error = resource_metadata_->GetIdByResourceId(
             parent_resource_id, &parent_local_id);
         if (error != FILE_ERROR_OK) {
-          LOG(ERROR) << "Failed to get local ID: " << parent_resource_id
-                     << ", error = " << FileErrorToString(error);
+          // See crbug.com/326043. In some complicated situations, parent folder
+          // for shared entries may be accessible (and hence its resource id is
+          // included), but not in the change/file list.
+          // In such a case, clear the parent and move it to drive/other.
+          if (error == FILE_ERROR_NOT_FOUND) {
+            parent_resource_id_map_[it->first] = "";
+          } else {
+            LOG(ERROR) << "Failed to get local ID: " << parent_resource_id
+                       << ", error = " << FileErrorToString(error);
+          }
           break;
         }
         ResourceEntry parent_entry;
