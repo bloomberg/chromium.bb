@@ -4,7 +4,7 @@
 <body>
 <script>
 test(function () {
-    var A = document.register('x-a');
+    var A = document.registerElement('x-a');
     assert_equals(A.prototype.constructor, A,
                   'the default prototype\'s constructor should be the ' +
                   'generated constructor');

@@ -30,7 +30,7 @@ testRegisterInAInstantiateInB_shouldNotActivateDefinition = function () {
         assert_unreached('creating an x-u in a different context should ' +
                          'not invoke a callback in this context');
     };
-    this.documentA.register('x-u', {prototype: protoU});
+    this.documentA.registerElement('x-u', {prototype: protoU});
 
     var container = this.documentB.createElement('div');
     container.innerHTML = '<x-u></x-u>';
@@ -51,11 +51,11 @@ testRegisterSameName_definitionsShouldNotConflict = function () {
 
     var protoAV = Object.create(this.windowA.HTMLElement.prototype);
     protoAV.createdCallback = created('document A\'s element V');
-    this.documentA.register('x-v', {prototype: protoAV});
+    this.documentA.registerElement('x-v', {prototype: protoAV});
 
     var protoBV = Object.create(this.windowB.HTMLElement.prototype);
     protoBV.createdCallback = created('document B\'s element V');
-    this.documentB.register('x-v', {prototype: protoBV});
+    this.documentB.registerElement('x-v', {prototype: protoBV});
 
     var containerB = this.documentB.createElement('div');
     containerB.innerHTML = '<x-v data-doc="document B"></x-v>';
@@ -88,11 +88,11 @@ testRegisterSameName_lazyWrappingShouldNotSharePrototypes = function () {
     // callbacks, to try to tickle lazy wrapping.
 
     var protoAW = Object.create(this.windowA.HTMLElement.prototype);
-    this.documentA.register('x-w', {prototype: protoAW});
+    this.documentA.registerElement('x-w', {prototype: protoAW});
 
     var protoBW = Object.create(this.windowB.HTMLElement.prototype);
     protoBW.createdCallback = function () {};
-    this.documentB.register('x-w', {prototype: protoBW});
+    this.documentB.registerElement('x-w', {prototype: protoBW});
 
     var elementA = this.documentA.createElement('x-w');
     var elementB = this.documentB.createElement('x-w');

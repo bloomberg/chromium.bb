@@ -21,12 +21,12 @@ withFrame(t.step_func(function (frame) {
     var proto = Object.create(frame.contentWindow.HTMLElement.prototype);
     proto.createdCallback = log('created');
     proto.attributeChangedCallback = log('attribute changed');
-    proto.enteredViewCallback = log('entered');
-    proto.leftViewCallback = log('left');
+    proto.attachedCallback = log('entered');
+    proto.detachedCallback = log('left');
 
     // Created, owned by a document without a view
 
-    var A = docB.register('x-a', {prototype: proto});
+    var A = docB.registerElement('x-a', {prototype: proto});
     var a = new A();
     assert_equals(a.ownerDocument, docB,
                   'new instance should be owned by the document the ' +

@@ -21,7 +21,7 @@ if (fork()) {
             destroyContext();
     };
 
-    var A = document.register('x-a', {prototype: proto});
+    var A = document.registerElement('x-a', {prototype: proto});
     new A();
     done();
 }

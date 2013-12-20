@@ -8,10 +8,10 @@ function test() {
     var setup = [
         "var proto = Object.create(HTMLElement.prototype);",
         "proto.createdCallback = function() { output('Invoked createdCallback.'); };",
-        "proto.enteredViewCallback = function() { output('Invoked enteredViewCallback.'); };",
-        "proto.leftViewCallback = function() { output('Invoked leftViewCallback.'); };",
+        "proto.attachedCallback = function() { output('Invoked attachedCallback.'); };",
+        "proto.detachedCallback = function() { output('Invoked detachedCallback.'); };",
         "proto.attributeChangedCallback = function() { output('Invoked attributeChangedCallback.'); };",
-        "CustomElement = document.register('x-foo', {prototype: proto});",
+        "CustomElement = document.registerElement('x-foo', {prototype: proto});",
     ].join('\n');
 
     var lifecycleCallbacks = [

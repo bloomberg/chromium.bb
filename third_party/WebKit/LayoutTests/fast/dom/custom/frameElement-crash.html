@@ -14,7 +14,7 @@ window.jsTestIsAsync = true;
 description('Test that accessing window.frameElement from a custom iframe does not crash.');
 
 var proto = Object.create(HTMLIFrameElement.prototype);
-document.register('x-iframe', {prototype: proto, extends: 'iframe'});
+document.registerElement('x-iframe', {prototype: proto, extends: 'iframe'});
 </script>
 <iframe onload="test();" is="x-iframe" srcdoc="
     <script>

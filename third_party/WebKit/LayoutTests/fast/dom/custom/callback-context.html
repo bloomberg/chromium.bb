@@ -18,7 +18,7 @@ withFrame(function (frame) {
                       'the context should be the outer window');
     });
     var doc = frame.contentDocument;
-    doc.register('x-a', {prototype: proto});
+    doc.registerElement('x-a', {prototype: proto});
     var script = doc.createElement('script');
     script.textContent = 'document.body.innerHTML = "<x-a></x-a>";';
     doc.body.appendChild(script);
@@ -62,11 +62,11 @@ withFrame(function (frame) {
     var script = doc.createElement('script');
     script.textContent =
         'var proto = Object.create(HTMLElement.prototype); ' +
-        'proto.leftViewCallback = function () { ' +
+        'proto.detachedCallback = function () { ' +
         '    window.parent.postMessage(' +
         '        {step: "assert", name: document.name}, "*");' +
         '}; ' +
-        'document.register("x-a", {prototype: proto}); ' +
+        'document.registerElement("x-a", {prototype: proto}); ' +
         'document.body.innerHTML = "<x-a></x-a>"; ' +
         'window.parent.postMessage({step: "remove"}, "*");';
     doc.body.appendChild(script);

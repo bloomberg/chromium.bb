@@ -30,19 +30,19 @@ test(function () {
     for (var i = 0; i < invalidNames.length; i++) {
         var invalidName = invalidNames[i];
         assert_throws('INVALID_CHARACTER_ERR', function (){
-            document.register(invalidName, createRegisterParameters());
+            document.registerElement(invalidName, createRegisterParameters());
         }, 'register invalid custom element name: ' + invalidName);
     }
 
 }, 'invalid and reserved names');
 
 test(function (){
-    document.register('x-foo', createRegisterParameters());
+    document.registerElement('x-foo', createRegisterParameters());
     assert_throws('INVALID_STATE_ERR', function (){
-        document.register('x-foo', createRegisterParameters());
+        document.registerElement('x-foo', createRegisterParameters());
     }, 'register already registered "x-foo"');
     assert_throws('INVALID_STATE_ERR', function (){
-        document.register('X-FOO', createRegisterParameters());
+        document.registerElement('X-FOO', createRegisterParameters());
     }, 'register "X-FOO", same as already registered "x-foo"');
 }, 'name conflicts');
 
@@ -55,7 +55,7 @@ test(function () {
     };
     for(var elementName in validNameTagMap) {
         var expectedTagName = validNameTagMap[elementName];
-        var tagName = (new (document.register(elementName, createRegisterParameters()))()).tagName;
+        var tagName = (new (document.registerElement(elementName, createRegisterParameters()))()).tagName;
         assert_equals(tagName, expectedTagName, tagName + ' must be treated as a custom element');
     }
 }, 'strange but valid names');

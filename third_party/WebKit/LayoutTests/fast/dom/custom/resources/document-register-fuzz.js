@@ -29,7 +29,7 @@ function register(name, options)
 {
     var myConstructor = null;
     try {
-        myConstructor = document.register(name, options);
+        myConstructor = document.registerElement(name, options);
     } catch (e) { }
 
     try {

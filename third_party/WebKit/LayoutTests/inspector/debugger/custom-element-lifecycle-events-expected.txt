@@ -9,8 +9,8 @@ Invoked createdCallback.
 new CustomElement() instanceof CustomElement = true
 Invoked createdCallback.
 Invoked attributeChangedCallback.
-Invoked enteredViewCallback.
-Invoked leftViewCallback.
+Invoked attachedCallback.
+Invoked detachedCallback.
 Script execution resumed.
 Debugger was disabled.
 

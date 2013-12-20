@@ -1,4 +1,4 @@
-Using document.register() for extending HTML and non-HTML elements.
+Using document.registerElement() for extending HTML and non-HTML elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

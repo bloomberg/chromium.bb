@@ -646,8 +646,6 @@ String UseCounter::deprecationMessage(Feature feature)
     // Web Components
     case HTMLShadowElementOlderShadowRoot:
         return "HTMLShadowElement.olderShadowRoot is deprecated.";
-    case PrefixedDocumentRegister:
-        return "The document.webkitRegister method is deprecated. Use the document.register method instead.";
 
     // HTML Media Capture
     case CaptureAttributeAsEnum:

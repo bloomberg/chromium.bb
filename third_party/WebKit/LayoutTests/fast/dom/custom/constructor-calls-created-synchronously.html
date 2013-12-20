@@ -9,7 +9,7 @@ var ncallbacks = 0;
 proto.createdCallback = function () {
   ncallbacks++;
 };
-var A = document.register('x-a', {prototype: proto});
+var A = document.registerElement('x-a', {prototype: proto});
 var x = new A();
 shouldBe('ncallbacks', '1');
 

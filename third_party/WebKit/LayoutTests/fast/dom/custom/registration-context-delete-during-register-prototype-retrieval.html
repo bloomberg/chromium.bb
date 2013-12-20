@@ -22,7 +22,7 @@ if (fork()) {
     });
 
     try {
-        document.register('x-a', options);
+        document.registerElement('x-a', options);
         log('FAIL expected register to throw an exception');
     } catch (ex) {
         log('PASS caught expected exception "' + ex + '"');

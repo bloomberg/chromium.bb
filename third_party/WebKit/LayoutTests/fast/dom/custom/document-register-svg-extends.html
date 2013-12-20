@@ -7,10 +7,10 @@ test(function () {
     var proto = Object.create(SVGGElement.prototype);
 
     assert_throws('INVALID_CHARACTER_ERR', function() {
-        document.register('x-foo', {prototype: proto});
+        document.registerElement('x-foo', {prototype: proto});
     }, 'register of an SVG element requires the extends parameter');
 
-    var XFoo = document.register('x-foo', {prototype: proto, extends: 'g'});
+    var XFoo = document.registerElement('x-foo', {prototype: proto, extends: 'g'});
 
     var created = new XFoo();
     assert_true(created instanceof SVGGElement, 'created element should be an SVG element');

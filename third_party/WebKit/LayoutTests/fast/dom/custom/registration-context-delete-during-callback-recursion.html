@@ -26,7 +26,7 @@ if (fork()) {
             destroyContext();
     };
 
-    var A = document.register('x-a', {prototype: proto});
+    var A = document.registerElement('x-a', {prototype: proto});
     s.innerHTML =
         '<x-a id="t"></x-a>' +
         '<x-a id="u"></x-a>' +

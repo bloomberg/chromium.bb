@@ -5,7 +5,7 @@
 </head>
 <body>
 <script>
-description('Using document.register() for extending HTML and non-HTML elements.');
+description('Using document.registerElement() for extending HTML and non-HTML elements.');
 
 function createElementFromHTML(html)
 {
@@ -21,8 +21,8 @@ function createElementFromSVG(svg)
     return container.firstChild.firstChild;
 }
 
-CustomHTMLElement = document.register('html-foo', { prototype: Object.create(HTMLElement.prototype) });
-CustomSVGElement = document.register('svg-foo', { prototype: Object.create(SVGGElement.prototype), extends: 'g' });
+CustomHTMLElement = document.registerElement('html-foo', { prototype: Object.create(HTMLElement.prototype) });
+CustomSVGElement = document.registerElement('svg-foo', { prototype: Object.create(SVGGElement.prototype), extends: 'g' });
 
 var html1 = new CustomHTMLElement();
 shouldBe('html1.namespaceURI', '"http://www.w3.org/1999/xhtml"');

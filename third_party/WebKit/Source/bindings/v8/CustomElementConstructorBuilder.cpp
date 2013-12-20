@@ -145,11 +145,11 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Handle<v8::Function> created = retrieveCallback(isolate, "createdCallback");
-    v8::Handle<v8::Function> enteredView = retrieveCallback(isolate, "enteredViewCallback");
-    v8::Handle<v8::Function> leftView = retrieveCallback(isolate, "leftViewCallback");
+    v8::Handle<v8::Function> attached = retrieveCallback(isolate, "attachedCallback");
+    v8::Handle<v8::Function> detached = retrieveCallback(isolate, "detachedCallback");
     v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    m_callbacks = V8CustomElementLifecycleCallbacks::create(executionContext.get(), m_prototype, created, enteredView, leftView, attributeChanged);
+    m_callbacks = V8CustomElementLifecycleCallbacks::create(executionContext.get(), m_prototype, created, attached, detached, attributeChanged);
     return m_callbacks.get();
 }
 

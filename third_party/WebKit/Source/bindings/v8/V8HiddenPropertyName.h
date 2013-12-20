@@ -40,12 +40,12 @@ namespace WebCore {
     V(attributeListener) \
     V(callback) \
     V(condition) \
+    V(customElementAttached) \
     V(customElementAttributeChanged) \
     V(customElementCreated) \
+    V(customElementDetached) \
     V(customElementDocument) \
-    V(customElementEnteredView) \
     V(customElementIsInterfacePrototypeObject) \
-    V(customElementLeftView) \
     V(customElementNamespaceURI) \
     V(customElementTagName) \
     V(customElementType) \

@@ -55,22 +55,22 @@ void CustomElementCallbackScheduler::scheduleCreatedCallback(PassRefPtr<CustomEl
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
 }
 
-void CustomElementCallbackScheduler::scheduleEnteredViewCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementCallbackScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
-    if (!callbacks->hasEnteredViewCallback())
+    if (!callbacks->hasAttachedCallback())
         return;
 
     CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::EnteredView));
+    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Attached));
 }
 
-void CustomElementCallbackScheduler::scheduleLeftViewCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementCallbackScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
-    if (!callbacks->hasLeftViewCallback())
+    if (!callbacks->hasDetachedCallback())
         return;
 
     CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::LeftView));
+    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
 }
 
 CustomElementCallbackScheduler& CustomElementCallbackScheduler::instance()

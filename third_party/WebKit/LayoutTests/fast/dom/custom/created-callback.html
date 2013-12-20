@@ -25,7 +25,7 @@ test(function() {
         get: getter
       }
     });
-    var ctor = document.register('x-a', {prototype: proto});
+    var ctor = document.registerElement('x-a', {prototype: proto});
     assert_equals(getterInvocations, 1, 'the created callback must have been retrieved');
 
     proto.createdCallback = failer;
@@ -58,11 +58,11 @@ t.step(function() {
     }
 
     var protoB = Object.create(HTMLElement.prototype);
-    var B = document.register('x-b', {prototype: protoB});
+    var B = document.registerElement('x-b', {prototype: protoB});
 
     var protoC = Object.create(HTMLElement.prototype);
     protoC.createdCallback = created;
-    var C = document.register('x-c', {prototype: protoC});
+    var C = document.registerElement('x-c', {prototype: protoC});
 
     var div = document.createElement('div');
     div.innerHTML = '<x-c id="t"></x-c>' +
@@ -94,10 +94,10 @@ withFrame(t.step_func(function(frame) {
         this.setAttribute('prey', 'gargoyles');
         log('created finished');
     };
-    proto.enteredViewCallback = function() { log('entered'); };
-    proto.leftViewCallback = function() { log('left'); };
+    proto.attachedCallback = function() { log('entered'); };
+    proto.detachedCallback = function() { log('left'); };
     proto.attributeChangedCallback = function() { log('attribute changed'); };
-    var D = frame.contentDocument.register('x-d', {prototype: proto});
+    var D = frame.contentDocument.registerElement('x-d', {prototype: proto});
 
     frame.contentDocument.body.innerHTML = '<x-d></x-d>';
     log('done');

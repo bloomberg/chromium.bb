@@ -140,7 +140,7 @@ public:
         XSLProcessingInstruction,
         XSLTProcessor,
         SVGSwitchElement,
-        PrefixedDocumentRegister,
+        UnusedSlot05, // Removed, was document.webkitRegister
         HTMLShadowElementOlderShadowRoot,
         DocumentAll,
         FormElement,

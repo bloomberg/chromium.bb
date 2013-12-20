@@ -194,8 +194,7 @@ callback CustomElementConstructor = Element ();
                                                [Default=Undefined] optional float webkitForce);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
-    [DeprecateAs=PrefixedDocumentRegister, RuntimeEnabled=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
-    [RuntimeEnabled=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
+    [RuntimeEnabled=CustomElements, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor registerElement(DOMString name, optional Dictionary options);
     [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
     [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);

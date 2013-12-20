@@ -15,7 +15,7 @@ if (fork()) {
     destroyContext();
 
     try {
-        document.register('x-a', {prototype: proto});
+        document.registerElement('x-a', {prototype: proto});
         log('FAIL expected register to throw an exception');
     } catch (ex) {
         log('PASS caught expected exception "' + ex + '"');

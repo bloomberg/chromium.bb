@@ -24,7 +24,7 @@ test(function () {
         get: getter
       }
     });
-    var ctor = document.register('x-a', {prototype: proto});
+    var ctor = document.registerElement('x-a', {prototype: proto});
     assert_equals(getterInvocations, 1, 'the attribute changed callback must have been retrieved');
 
     proto.attributeChangedCallback = failer;
@@ -45,7 +45,7 @@ test(function () {
     var proto = Object.create(HTMLElement.prototype);
     proto.createdCallback = created;
     proto.attributeChangedCallback = attributeChanged;
-    var B = document.register('x-b', {prototype: proto});
+    var B = document.registerElement('x-b', {prototype: proto});
 
     var b = new B();
     b.id = 'x';

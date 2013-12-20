@@ -45,11 +45,11 @@ public:
     bool hasCreatedCallback() const { return m_which & Created; }
     virtual void created(Element*) = 0;
 
-    bool hasEnteredViewCallback() const { return m_which & EnteredView; }
-    virtual void enteredView(Element*) = 0;
+    bool hasAttachedCallback() const { return m_which & Attached; }
+    virtual void attached(Element*) = 0;
 
-    bool hasLeftViewCallback() const { return m_which & LeftView; }
-    virtual void leftView(Element*) = 0;
+    bool hasDetachedCallback() const { return m_which & Detached; }
+    virtual void detached(Element*) = 0;
 
     bool hasAttributeChangedCallback() const { return m_which & AttributeChanged; }
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
@@ -57,8 +57,8 @@ public:
     enum CallbackType {
         None             = 0,
         Created          = 1 << 0,
-        EnteredView      = 1 << 1,
-        LeftView         = 1 << 2,
+        Attached         = 1 << 1,
+        Detached         = 1 << 2,
         AttributeChanged = 1 << 3
     };
 

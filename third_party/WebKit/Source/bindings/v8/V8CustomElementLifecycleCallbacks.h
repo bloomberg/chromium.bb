@@ -48,18 +48,18 @@ class V8PerContextData;
 
 class V8CustomElementLifecycleCallbacks : public CustomElementLifecycleCallbacks, ContextLifecycleObserver {
 public:
-    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged);
+    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
 
     virtual ~V8CustomElementLifecycleCallbacks();
 
     bool setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding>);
 
 private:
-    V8CustomElementLifecycleCallbacks(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged);
+    V8CustomElementLifecycleCallbacks(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
 
     virtual void created(Element*) OVERRIDE;
-    virtual void enteredView(Element*) OVERRIDE;
-    virtual void leftView(Element*) OVERRIDE;
+    virtual void attached(Element*) OVERRIDE;
+    virtual void detached(Element*) OVERRIDE;
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
 
     void call(const ScopedPersistent<v8::Function>& weakCallback, Element*);
@@ -70,8 +70,8 @@ private:
     RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_created;
-    ScopedPersistent<v8::Function> m_enteredView;
-    ScopedPersistent<v8::Function> m_leftView;
+    ScopedPersistent<v8::Function> m_attached;
+    ScopedPersistent<v8::Function> m_detached;
     ScopedPersistent<v8::Function> m_attributeChanged;
 };
 

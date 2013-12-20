@@ -7,7 +7,7 @@
 <div id="container"></div>
 <form id="testForm"></form>
 <script>
-description('Testing document.register() type extension behaviours through createElement().');
+description('Testing document.registerElement() type extension behaviours through createElement().');
 
 function isFormControl(element)
 {
@@ -25,13 +25,13 @@ if (window.testRunner)
 //             <- x-foo <- x-baz
 //
 
-fooConstructor = document.register('x-foo', { prototype: Object.create(HTMLElement.prototype) });
-barConstructor = document.register('x-bar', { extends: 'input', prototype: Object.create(HTMLInputElement.prototype) });
-bazConstructor = document.register('x-baz', { prototype: Object.create(fooConstructor.prototype) });
-quxConstructor = document.register('x-qux', { extends: 'input', prototype: Object.create(barConstructor.prototype) });
+fooConstructor = document.registerElement('x-foo', { prototype: Object.create(HTMLElement.prototype) });
+barConstructor = document.registerElement('x-bar', { extends: 'input', prototype: Object.create(HTMLInputElement.prototype) });
+bazConstructor = document.registerElement('x-baz', { prototype: Object.create(fooConstructor.prototype) });
+quxConstructor = document.registerElement('x-qux', { extends: 'input', prototype: Object.create(barConstructor.prototype) });
 
 // Same name, different local name
-shouldThrow('document.register("x-foo", { prototype: Object.create(HTMLDivElement.prototype) })', '"InvalidStateError: Failed to execute \'register\' on \'Document\': Registration failed for type \'x-foo\'. A type with that name is already registered."');
+shouldThrow('document.registerElement("x-foo", { prototype: Object.create(HTMLDivElement.prototype) })', '"InvalidStateError: Failed to execute \'registerElement\' on \'Document\': Registration failed for type \'x-foo\'. A type with that name is already registered."');
 
 //
 // Generated constructors

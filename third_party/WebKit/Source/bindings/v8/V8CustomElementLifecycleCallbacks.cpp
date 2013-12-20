@@ -45,11 +45,11 @@ namespace WebCore {
 
 #define CALLBACK_LIST(V)                  \
     V(created, Created)                   \
-    V(enteredView, EnteredView)           \
-    V(leftView, LeftView)                 \
+    V(attached, Attached)           \
+    V(detached, Detached)                 \
     V(attributeChanged, AttributeChanged)
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
 {
     v8::Isolate* isolate = toIsolate(executionContext);
     // A given object can only be used as a Custom Element prototype
@@ -62,19 +62,19 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
     CALLBACK_LIST(SET_HIDDEN_PROPERTY)
 #undef SET_HIDDEN_PROPERTY
 
-    return adoptRef(new V8CustomElementLifecycleCallbacks(executionContext, prototype, created, enteredView, leftView, attributeChanged));
+    return adoptRef(new V8CustomElementLifecycleCallbacks(executionContext, prototype, created, attached, detached, attributeChanged));
 }
 
-static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
+static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
 {
     // V8 Custom Elements always run created to swizzle prototypes.
     int flags = CustomElementLifecycleCallbacks::Created;
 
-    if (!enteredView.IsEmpty())
-        flags |= CustomElementLifecycleCallbacks::EnteredView;
+    if (!attached.IsEmpty())
+        flags |= CustomElementLifecycleCallbacks::Attached;
 
-    if (!leftView.IsEmpty())
-        flags |= CustomElementLifecycleCallbacks::LeftView;
+    if (!detached.IsEmpty())
+        flags |= CustomElementLifecycleCallbacks::Detached;
 
     if (!attributeChanged.IsEmpty())
         flags |= CustomElementLifecycleCallbacks::AttributeChanged;
@@ -88,15 +88,15 @@ static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T> >& da
     data.GetParameter()->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
-    : CustomElementLifecycleCallbacks(flagSet(enteredView, leftView, attributeChanged))
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+    : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
     , ContextLifecycleObserver(executionContext)
     , m_owner(0)
     , m_world(DOMWrapperWorld::current())
     , m_prototype(toIsolate(executionContext), prototype)
     , m_created(toIsolate(executionContext), created)
-    , m_enteredView(toIsolate(executionContext), enteredView)
-    , m_leftView(toIsolate(executionContext), leftView)
+    , m_attached(toIsolate(executionContext), attached)
+    , m_detached(toIsolate(executionContext), detached)
     , m_attributeChanged(toIsolate(executionContext), attributeChanged)
 {
     m_prototype.setWeak(&m_prototype, weakCallback<v8::Object>);
@@ -190,14 +190,14 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
 }
 
-void V8CustomElementLifecycleCallbacks::enteredView(Element* element)
+void V8CustomElementLifecycleCallbacks::attached(Element* element)
 {
-    call(m_enteredView, element);
+    call(m_attached, element);
 }
 
-void V8CustomElementLifecycleCallbacks::leftView(Element* element)
+void V8CustomElementLifecycleCallbacks::detached(Element* element)
 {
-    call(m_leftView, element);
+    call(m_detached, element);
 }
 
 void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
